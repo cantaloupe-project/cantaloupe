@@ -4,9 +4,9 @@ import org.restlet.resource.Get;
 import org.restlet.resource.ServerResource;
 
 /**
- * Resource which has only one representation.
+ * Created by alexd on 9/1/15.
  */
-public class HelloWorldResource extends ServerResource {
+public class ImageResource extends ServerResource {
 
     @Get
     public String represent() {
