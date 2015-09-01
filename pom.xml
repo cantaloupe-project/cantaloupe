@@ -36,4 +36,21 @@
   <properties>
     <restlet-version>2.3.4</restlet-version>
   </properties>
+
+  <build>
+    <plugins>
+      <!-- bundles dependencies into the assembled jar -->
+      <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>
