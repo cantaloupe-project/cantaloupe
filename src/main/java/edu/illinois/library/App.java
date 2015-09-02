@@ -13,8 +13,7 @@ public class App {
         Component component = new Component();
         component.getServers().add(Protocol.HTTP,
                 Integer.valueOf((String) config.getProperty("http.port")));
-        component.getDefaultHost().attach("/iiif",
-                new ImageServerApplication());
+        component.getDefaultHost().attach("", new ImageServerApplication());
         component.start();
     }
 
