@@ -1,4 +1,4 @@
-package edu.illinois.library.image;
+package edu.illinois.library.cantaloupe.image;
 
 import org.apache.commons.lang3.StringUtils;
 

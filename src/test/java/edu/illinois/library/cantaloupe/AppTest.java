@@ -1,4 +1,4 @@
-package edu.illinois.library;
+package edu.illinois.library.cantaloupe;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

@@ -1,4 +1,4 @@
-package edu.illinois.library.resource;
+package edu.illinois.library.cantaloupe.resource;
 
 import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Representation;

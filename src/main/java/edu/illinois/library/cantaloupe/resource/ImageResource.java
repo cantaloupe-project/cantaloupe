@@ -1,12 +1,12 @@
-package edu.illinois.library.resource;
+package edu.illinois.library.cantaloupe.resource;
 
 import java.util.Map;
 
-import edu.illinois.library.image.Format;
-import edu.illinois.library.image.Quality;
-import edu.illinois.library.image.Region;
-import edu.illinois.library.image.Rotation;
-import edu.illinois.library.image.Size;
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Quality;
+import edu.illinois.library.cantaloupe.image.Region;
+import edu.illinois.library.cantaloupe.image.Rotation;
+import edu.illinois.library.cantaloupe.image.Size;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;

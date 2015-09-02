@@ -1,4 +1,4 @@
-package edu.illinois.library;
+package edu.illinois.library.cantaloupe;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.restlet.Component;

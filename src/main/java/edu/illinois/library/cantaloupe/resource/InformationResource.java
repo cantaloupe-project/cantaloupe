@@ -1,4 +1,4 @@
-package edu.illinois.library.resource;
+package edu.illinois.library.cantaloupe.resource;
 
 import java.util.Map;
 import org.json.JSONArray;
@@ -13,32 +13,11 @@ import org.restlet.resource.ServerResource;
  * Created by alexd on 9/1/15.
  */
 public class InformationResource extends ServerResource {
-    /*
-    class RdfRepresentation extends OutputRepresentation {
-
-        Model model;
-
-        public RdfRepresentation(MediaType mediaType, Model model) {
-            super(mediaType);
-            this.model = model;
-        }
-
-        public void write(OutputStream os) throws IOException {
-            model.write(os, "JSON-LD");
-        }
-
-    } */
 
     @Get
     public Representation doGet() {
         Map<String,Object> attrs = this.getRequest().getAttributes();
         String identifier = (String) attrs.get("identifier");
-
-        //Model model = ModelFactory.createDefaultModel();
-        //Resource foo = model.createResource("http://example.org/resource");
-
-        //MediaType mediaType = new MediaType("application/json");
-        //return new RdfRepresentation(mediaType, model);
 
         StringRepresentation rep = new StringRepresentation(
                 getJsonRepresentation().toString());

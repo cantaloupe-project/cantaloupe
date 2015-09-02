@@ -1,8 +1,8 @@
-package edu.illinois.library;
+package edu.illinois.library.cantaloupe;
 
-import edu.illinois.library.resource.ImageResource;
-import edu.illinois.library.resource.InformationResource;
-import edu.illinois.library.resource.LandingResource;
+import edu.illinois.library.cantaloupe.resource.ImageResource;
+import edu.illinois.library.cantaloupe.resource.InformationResource;
+import edu.illinois.library.cantaloupe.resource.LandingResource;
 import org.restlet.Application;
 import org.restlet.Request;
 import org.restlet.Response;
