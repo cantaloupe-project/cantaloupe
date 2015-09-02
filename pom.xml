@@ -77,7 +77,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>edu.illinois.library.cantaloupe.App</mainClass>
+              <mainClass>edu.illinois.library.cantaloupe.Application</mainClass>
             </manifest>
           </archive>
         </configuration>
