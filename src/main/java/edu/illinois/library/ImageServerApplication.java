@@ -22,9 +22,6 @@ public class ImageServerApplication extends Application {
      */
     @Override
     public synchronized Restlet createInboundRoot() {
-        // enable filename-extension-style content negotiation
-        this.getTunnelService().setExtensionsTunnel(true);
-
         final Router router = new Router(getContext());
         router.setDefaultMatchingMode(Template.MODE_EQUALS);
 
@@ -35,7 +32,7 @@ public class ImageServerApplication extends Application {
         // 2.1 Image Request
         // http://iiif.io/api/image/2.0/#image-request-uri-syntax
         // {scheme}://{server}{/prefix}/{identifier}/{region}/{size}/{rotation}/{quality}.{format}
-        router.attach("/{identifier}/{region}/{size}/{rotation}/{quality}",
+        router.attach("/{identifier}/{region}/{size}/{rotation}/{quality}.{format}",
                 ImageResource.class);
 
         // 5 Information Request
