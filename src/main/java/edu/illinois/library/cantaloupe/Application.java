@@ -16,7 +16,7 @@ public class Application {
     public static Configuration getConfiguration() throws ConfigurationException {
         if (config == null) {
             PropertiesConfiguration propConfig = new PropertiesConfiguration();
-            propConfig.load("cantaloupe.properties");
+            propConfig.load(System.getProperty("cantaloupe.config"));
             config = propConfig;
         }
         return config;
