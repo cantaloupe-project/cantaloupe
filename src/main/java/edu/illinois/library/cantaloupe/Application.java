@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.restlet.Component;
 import org.restlet.data.Protocol;
@@ -12,10 +13,11 @@ public class Application {
 
     private static Configuration config;
 
-    public static Configuration getConfiguration() {
+    public static Configuration getConfiguration() throws ConfigurationException {
         if (config == null) {
-            config = new PropertiesConfiguration();
-            config.load("cantaloupe.properties");
+            PropertiesConfiguration propConfig = new PropertiesConfiguration();
+            propConfig.load("cantaloupe.properties");
+            config = propConfig;
         }
         return config;
     }
