@@ -89,8 +89,8 @@ public class Size {
     }
 
     public void setHeight(Integer height) throws IllegalArgumentException {
-        if (height == 0) {
-            throw new IllegalArgumentException("Height must be nonzero");
+        if (height <= 0) {
+            throw new IllegalArgumentException("Height must be a positive integer");
         }
         this.height = height;
     }
@@ -104,8 +104,8 @@ public class Size {
     }
 
     public void setWidth(Integer width) throws IllegalArgumentException {
-        if (width == 0) {
-            throw new IllegalArgumentException("Width must be nonzero");
+        if (width <= 0) {
+            throw new IllegalArgumentException("Width must be a positive integer");
         }
         this.width = width;
     }

@@ -8,14 +8,19 @@ public class Rotation {
     private Float degrees;
     private boolean mirror = false;
 
-    public static Rotation fromUri(String rotationUri) {
+    public static Rotation fromUri(String rotationUri)
+            throws IllegalArgumentException {
         Rotation rotation = new Rotation();
-        if (rotationUri.startsWith("!")) {
-            rotation.setMirror(true);
-            rotation.setDegrees(Float.parseFloat(rotationUri.substring(1)));
-        } else {
-            rotation.setMirror(false);
-            rotation.setDegrees(Float.parseFloat(rotationUri));
+        try {
+            if (rotationUri.startsWith("!")) {
+                rotation.setMirror(true);
+                rotation.setDegrees(Float.parseFloat(rotationUri.substring(1)));
+            } else {
+                rotation.setMirror(false);
+                rotation.setDegrees(Float.parseFloat(rotationUri));
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid rotation");
         }
         return rotation;
     }

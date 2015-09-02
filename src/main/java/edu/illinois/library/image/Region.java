@@ -94,15 +94,15 @@ public class Region {
     }
 
     public void setX(Float x) throws IllegalArgumentException {
-        if (x <= 0) {
-            throw new IllegalArgumentException("X must be nonzero");
+        if (x < 0) {
+            throw new IllegalArgumentException("X must be a positive float");
         }
         this.x = x;
     }
 
     public void setY(Float y) throws IllegalArgumentException {
-        if (y <= 0) {
-            throw new IllegalArgumentException("Y must be nonzero");
+        if (y < 0) {
+            throw new IllegalArgumentException("Y must be a positive float");
         }
         this.y = y;
     }
