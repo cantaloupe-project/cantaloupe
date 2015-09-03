@@ -18,6 +18,7 @@ import org.restlet.routing.Router;
 import org.restlet.routing.Template;
 import org.restlet.service.StatusService;
 
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -51,6 +52,8 @@ public class ImageServerApplication extends Application {
             Throwable cause = t.getCause();
             if (cause instanceof IllegalArgumentException) {
                 status = new Status(Status.CLIENT_ERROR_BAD_REQUEST, t);
+            } else if (cause instanceof FileNotFoundException) {
+                status = new Status(Status.CLIENT_ERROR_NOT_FOUND, t);
             } else {
                 status = new Status(Status.SERVER_ERROR_INTERNAL, t);
             }
