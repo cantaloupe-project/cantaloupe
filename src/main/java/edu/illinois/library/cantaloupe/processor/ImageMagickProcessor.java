@@ -51,6 +51,7 @@ public class ImageMagickProcessor implements Processor {
 
             List<String> supports = new ArrayList<String>();
             // TODO: is this list accurate?
+            supports.add("baseUriRedirect");
             supports.add("mirroring");
             supports.add("regionByPx");
             supports.add("rotationArbitrary");
