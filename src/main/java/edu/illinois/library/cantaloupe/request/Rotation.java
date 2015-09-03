@@ -1,8 +1,7 @@
 package edu.illinois.library.cantaloupe.request;
 
-/**
- * Created by alexd on 9/2/15.
- */
+import edu.illinois.library.cantaloupe.util.NumberUtil;
+
 public class Rotation {
 
     private Float degrees;
@@ -53,6 +52,18 @@ public class Rotation {
      */
     public boolean shouldMirror() {
         return mirror;
+    }
+
+    /**
+     * @return Value compatible with the rotation component of an IIIF URI.
+     */
+    public String toString() {
+        String str = "";
+        if (this.shouldMirror()) {
+            str += "!";
+        }
+        str += NumberUtil.removeTrailingZeroes(this.getDegrees());
+        return str;
     }
 
 }

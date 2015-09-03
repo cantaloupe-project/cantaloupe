@@ -73,4 +73,14 @@ public class RotationTest extends TestCase {
         }
     }
 
+    /* toString */
+
+    public void testToString() {
+        Rotation r = Rotation.fromUri("50");
+        assertEquals("50", r.toString());
+
+        r = Rotation.fromUri("!50");
+        assertEquals("!50", r.toString());
+    }
+
 }
