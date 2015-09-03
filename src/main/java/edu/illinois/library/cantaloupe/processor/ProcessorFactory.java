@@ -7,12 +7,21 @@ public class ProcessorFactory {
 
     /**
      * @return The current image processor based on the
-     * <code>image.processor</code> setting in the configuration.
+     * <code>image.processor</code> setting in the configuration. May return
+     * null.
      */
-    public static Processor getProcessor() throws Exception {
-        Class class_ = Class.forName(ProcessorFactory.class.getPackage().getName() +
-                "." + getProcessorName());
-        return (Processor) class_.newInstance();
+    public static Processor getProcessor() {
+        try {
+            Class class_ = Class.forName(ProcessorFactory.class.getPackage().getName() +
+                    "." + getProcessorName());
+            return (Processor) class_.newInstance();
+        } catch (ClassNotFoundException e) {
+            return null; // TODO: log
+        } catch (InstantiationException e) {
+            return null; // TODO: log
+        } catch (IllegalAccessException e) {
+            return null; // TODO: log
+        }
     }
 
     private static String getProcessorName() {
