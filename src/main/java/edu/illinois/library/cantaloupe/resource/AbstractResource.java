@@ -4,6 +4,8 @@ import org.restlet.data.Header;
 import org.restlet.resource.ServerResource;
 import org.restlet.util.Series;
 
+import java.io.UnsupportedEncodingException;
+
 public abstract class AbstractResource extends ServerResource {
 
     /**
@@ -21,6 +23,16 @@ public abstract class AbstractResource extends ServerResource {
                     put("org.restlet.http.headers", responseHeaders);
         }
         responseHeaders.add(new Header(key, value));
+    }
+
+    protected String getImageUri(String identifier) {
+        try {
+            return this.getRootRef() + "/" +
+                    java.net.URLEncoder.encode(identifier, "UTF-8") +
+                    "/full/full/0/default.jpg";
+        } catch (UnsupportedEncodingException e) {
+            return null;
+        }
     }
 
 }
