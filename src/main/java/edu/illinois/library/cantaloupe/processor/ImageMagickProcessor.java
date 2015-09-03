@@ -94,9 +94,8 @@ public class ImageMagickProcessor implements Processor {
      * @param identifier Identifier component of an IIIF 2.0 URL
      * @return Full filesystem path of the file corresponding to the given
      * identifier
-     * @throws Exception
      */
-    private String getResolvedPathname(String identifier) throws Exception {
+    private String getResolvedPathname(String identifier) {
         Resolver resolver = ResolverFactory.getResolver();
         return resolver.resolve(identifier);
     }

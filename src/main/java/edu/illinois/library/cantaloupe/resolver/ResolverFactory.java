@@ -7,12 +7,20 @@ public class ResolverFactory {
 
     /**
      * @return The current image processor based on the
-     * <code>resolver</code> setting in the configuration.
+     * <code>resolver</code> setting in the configuration. May return null.
      */
-    public static Resolver getResolver() throws Exception {
-        Class class_ = Class.forName(ResolverFactory.class.getPackage().getName() +
-                "." + getResolverName());
-        return (Resolver) class_.newInstance();
+    public static Resolver getResolver() {
+        try {
+            Class class_ = Class.forName(ResolverFactory.class.getPackage().getName() +
+                    "." + getResolverName());
+            return (Resolver) class_.newInstance();
+        } catch (ClassNotFoundException e) {
+            return null; // TODO: log
+        } catch (InstantiationException e) {
+            return null; // TODO: log
+        } catch (IllegalAccessException e) {
+            return null; // TODO: log
+        }
     }
 
     private static String getResolverName() {
