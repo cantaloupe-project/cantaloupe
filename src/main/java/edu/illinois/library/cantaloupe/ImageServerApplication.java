@@ -26,6 +26,8 @@ import java.util.HashSet;
 
 public class ImageServerApplication extends Application {
 
+    private static final String BASE_IIIF_PATH = "/iiif";
+
     /**
      * Overrides the built-in Restlet status pages. Converts the following
      * exceptions to the following HTTP statuses:
@@ -90,23 +92,25 @@ public class ImageServerApplication extends Application {
         // http://iiif.io/api/image/2.0/#uri-syntax
         // {scheme}://{server}{/prefix}/{identifier}
         Redirector redirector = new Redirector(getContext(),
-                "{identifier}/info.json", Redirector.MODE_CLIENT_SEE_OTHER);
-        router.attach("/{identifier}", redirector);
+                BASE_IIIF_PATH + "/{identifier}/info.json",
+                Redirector.MODE_CLIENT_SEE_OTHER);
+        router.attach(BASE_IIIF_PATH + "/{identifier}", redirector);
 
         // 2.1 Image Request
         // http://iiif.io/api/image/2.0/#image-request-uri-syntax
         // {scheme}://{server}{/prefix}/{identifier}/{region}/{size}/{rotation}/{quality}.{format}
-        router.attach("/{identifier}/{region}/{size}/{rotation}/{quality}.{format}",
+        router.attach(BASE_IIIF_PATH + "/{identifier}/{region}/{size}/{rotation}/{quality}.{format}",
                 ImageResource.class);
 
         // 5 Information Request
         // http://iiif.io/api/image/2.0/#information-request
         // {scheme}://{server}{/prefix}/{identifier}/info.json
-        router.attach("/{identifier}/info", InformationResource.class);
+        router.attach(BASE_IIIF_PATH + "/{identifier}/info.{format}",
+                InformationResource.class);
 
         // landing page
-        router.attach("/{uri}", LandingResource.class).
-                setMatchingMode(Template.MODE_STARTS_WITH);
+        router.attach(BASE_IIIF_PATH, LandingResource.class);
+        router.attach("/", LandingResource.class);
 
         return corsFilter;
     }
