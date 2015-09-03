@@ -1,19 +1,40 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Map;
 
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Parameters;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import org.restlet.representation.StringRepresentation;
+import org.restlet.data.MediaType;
+import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ServerResource;
 
-/**
- * Created by alexd on 9/1/15.
- */
 public class ImageResource extends ServerResource {
+
+    class ImageRepresentation extends OutputRepresentation {
+
+        Parameters params;
+
+        public ImageRepresentation(MediaType mediaType, Parameters params) {
+            super(mediaType);
+            this.params = params;
+        }
+
+        public void write(OutputStream outputStream) throws IOException {
+            try {
+                Processor proc = ProcessorFactory.getProcessor();
+                proc.process(this.params, outputStream);
+            } catch (Exception e) {
+                throw new IOException(e);
+            }
+        }
+
+    }
 
     @Get
     public Representation doGet() {
@@ -27,10 +48,9 @@ public class ImageResource extends ServerResource {
         Parameters params = new Parameters(identifier, region, size, rotation,
                 quality, format);
 
-        Processor proc = ProcessorFactory.getProcessor();
-        proc.setParameters(params);
-
-        return new StringRepresentation("ImageResource");
+        MediaType mediaType = new MediaType(
+                Format.valueOf(format.toUpperCase()).getMediaType());
+        return new ImageRepresentation(mediaType, params);
     }
 
 }
