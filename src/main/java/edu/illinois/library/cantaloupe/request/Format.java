@@ -1,14 +1,14 @@
-package edu.illinois.library.cantaloupe.image;
+package edu.illinois.library.cantaloupe.request;
 
 public enum Format {
 
-    GIF("gif", "image/gif"),
-    JP2("jp2", "image/jp2"),
-    JPG("jpg", "image/jpeg"),
+    GIF("gif", "request/gif"),
+    JP2("jp2", "request/jp2"),
+    JPG("jpg", "request/jpeg"),
     PDF("pdf", "application/pdf"),
-    PNG("png", "image/png"),
-    TIF("tif", "image/tiff"),
-    WEBP("webp", "image/webp");
+    PNG("png", "request/png"),
+    TIF("tif", "request/tiff"),
+    WEBP("webp", "request/webp");
 
     private String extension;
     private String mediaType;

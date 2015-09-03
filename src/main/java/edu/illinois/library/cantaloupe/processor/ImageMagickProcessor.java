@@ -1,10 +1,10 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.image.Parameters;
-import edu.illinois.library.cantaloupe.image.Quality;
-import edu.illinois.library.cantaloupe.image.Region;
-import edu.illinois.library.cantaloupe.image.Rotation;
-import edu.illinois.library.cantaloupe.image.Size;
+import edu.illinois.library.cantaloupe.request.Parameters;
+import edu.illinois.library.cantaloupe.request.Quality;
+import edu.illinois.library.cantaloupe.request.Region;
+import edu.illinois.library.cantaloupe.request.Rotation;
+import edu.illinois.library.cantaloupe.request.Size;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import org.im4java.core.ConvertCmd;

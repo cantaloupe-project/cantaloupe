@@ -1,9 +1,9 @@
-package edu.illinois.library.cantaloupe.image;
+package edu.illinois.library.cantaloupe.request;
 
 /**
  * Encapsulates the parameters of an IIIF request.
  *
- * @see <a href="http://iiif.io/api/image/2.0/#image-request-parameters">IIIF
+ * @see <a href="http://iiif.io/api/request/2.0/#request-request-parameters">IIIF
  *      Image API 2.0</a>
  */
 public class Parameters {

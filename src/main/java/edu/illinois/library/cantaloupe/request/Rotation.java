@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.image;
+package edu.illinois.library.cantaloupe.request;
 
 /**
  * Created by alexd on 9/2/15.
@@ -41,7 +41,7 @@ public class Rotation {
     }
 
     /**
-     * @param mirror Whether the image should be mirrored before being
+     * @param mirror Whether the request should be mirrored before being
      *               rotated.
      */
     public void setMirror(boolean mirror) {
@@ -49,7 +49,7 @@ public class Rotation {
     }
 
     /**
-     * @return Whether the image should be mirrored before being rotated.
+     * @return Whether the request should be mirrored before being rotated.
      */
     public boolean shouldMirror() {
         return mirror;

@@ -6,8 +6,8 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Parameters;
+import edu.illinois.library.cantaloupe.request.Format;
+import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import org.restlet.data.MediaType;
