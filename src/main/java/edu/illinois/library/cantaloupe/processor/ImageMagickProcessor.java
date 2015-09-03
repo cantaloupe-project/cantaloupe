@@ -17,7 +17,7 @@ public class ImageMagickProcessor implements Processor {
         String filePath = this.getResolvedPathname(params.getIdentifier());
 
         IMOperation op = new IMOperation();
-        op.addImage(filePath);
+        op.addImage("-");
         op.addImage(params.getFormat().getExtension() + ":-"); // write to stdout
 
         FileInputStream fis = new FileInputStream(filePath);
