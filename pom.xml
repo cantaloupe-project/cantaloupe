@@ -8,6 +8,11 @@
   <name>Cantaloupe</name>
   <url>http://maven.apache.org</url>
   <dependencies>
+    <dependency> <!-- https://github.com/FasterXML/jackson-databind -->
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
     <dependency>
       <groupId>commons-configuration</groupId>
       <artifactId>commons-configuration</artifactId>
@@ -30,11 +35,6 @@
       <version>1.4.0</version>
     </dependency>
     <dependency>
-      <groupId>org.json</groupId>
-      <artifactId>json</artifactId>
-      <version>20141113</version>
-    </dependency>
-    <dependency>
       <groupId>org.restlet.jse</groupId>
       <artifactId>org.restlet</artifactId>
       <version>${restlet-version}</version>
@@ -55,6 +55,7 @@
   </repositories>
 
   <properties>
+    <jackson.version>2.6.0</jackson.version>
     <restlet-version>2.3.4</restlet-version>
   </properties>
 

@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.request.Format;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.request.Region;
@@ -9,13 +11,62 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IMOperation;
+import org.im4java.core.Info;
+import org.im4java.core.InfoException;
 import org.im4java.process.Pipe;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ImageMagickProcessor implements Processor {
+
+    public ImageInfo getImageInfo(String identifier, String imageBaseUri) {
+        String filePath = this.getResolvedPathname(identifier);
+        ImageInfo imageInfo = new ImageInfo();
+        try {
+            Info sourceInfo = new Info(filePath, true);
+            imageInfo.setId(imageBaseUri);
+            imageInfo.setHeight(sourceInfo.getImageHeight());
+            imageInfo.setWidth(sourceInfo.getImageWidth());
+
+            Map<String,List<String>> profile = new HashMap<String, List<String>>();
+            imageInfo.getProfile().add(profile);
+
+            List<String> formats = new ArrayList<String>();
+            for (Format format : Format.values()) {
+                formats.add(format.getExtension());
+            }
+            profile.put("formats", formats);
+
+            List<String> qualities = new ArrayList<String>();
+            for (Quality quality : Quality.values()) {
+                qualities.add(quality.toString().toLowerCase());
+            }
+            profile.put("qualities", qualities);
+
+            List<String> supports = new ArrayList<String>();
+            // TODO: is this list accurate?
+            supports.add("mirroring");
+            supports.add("regionByPx");
+            supports.add("rotationArbitrary");
+            supports.add("sizeByWhListed");
+            supports.add("sizeByForcedWh");
+            supports.add("sizeByH");
+            supports.add("sizeByPct");
+            supports.add("sizeByW");
+            supports.add("sizeWh");
+            profile.put("supports", supports);
+
+            return imageInfo;
+        } catch (InfoException e) {
+            return imageInfo;
+        }
+    }
 
     public void process(Parameters params, OutputStream outputStream)
             throws Exception {
