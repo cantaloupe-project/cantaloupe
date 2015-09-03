@@ -144,4 +144,26 @@ public class SizeTest extends TestCase {
         }
     }
 
+    /* toString */
+
+    public void testToString() {
+        Size s = Size.fromUri("full");
+        assertEquals("full", s.toString());
+
+        s = Size.fromUri("50,");
+        assertEquals("50,", s.toString());
+
+        s = Size.fromUri(",50");
+        assertEquals(",50", s.toString());
+
+        s = Size.fromUri("pct:50");
+        assertEquals("pct:50", s.toString());
+
+        s = Size.fromUri("50,40");
+        assertEquals("50,40", s.toString());
+
+        s = Size.fromUri("!50,40");
+        assertEquals("!50,40", s.toString());
+    }
+
 }

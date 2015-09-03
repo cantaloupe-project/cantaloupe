@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.request;
 
+import edu.illinois.library.cantaloupe.util.NumberUtil;
 import org.apache.commons.lang3.StringUtils;
 
 public class Size {
@@ -85,6 +86,30 @@ public class Size {
             throw new IllegalArgumentException("Width must be a positive integer");
         }
         this.width = width;
+    }
+
+    /**
+     * @return Value compatible with the size component of an IIIF URI.
+     */
+    public String toString() {
+        String str = "";
+        if (this.getScaleMode() == ScaleMode.FULL) {
+            str += "full";
+        } else if (this.getPercent() != null) {
+            str += "pct:" + NumberUtil.removeTrailingZeroes(this.getPercent());
+        } else {
+            if (this.getScaleMode() == ScaleMode.ASPECT_FIT_INSIDE) {
+                str += "!";
+            }
+            if (this.getWidth() != null && this.getWidth() > 0) {
+                str += this.getWidth();
+            }
+            str += ",";
+            if (this.getHeight() != null && this.getHeight() > 0) {
+                str += this.getHeight();
+            }
+        }
+        return str;
     }
 
 }
