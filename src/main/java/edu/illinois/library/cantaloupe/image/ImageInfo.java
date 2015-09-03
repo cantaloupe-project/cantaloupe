@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.image;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +14,8 @@ import java.util.Map;
  * @see <a href="https://github.com/FasterXML/jackson-databind">jackson-databind
  * docs</a>
  */
+@JsonPropertyOrder({ "@context", "@id", "protocol", "width", "height", "sizes",
+        "tiles", "profile", "service" })
 public class ImageInfo {
 
     private final String context = "http://iiif.io/api/image/2/context.json";
