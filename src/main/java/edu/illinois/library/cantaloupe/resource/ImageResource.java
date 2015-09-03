@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -37,7 +38,8 @@ public class ImageResource extends AbstractResource {
     }
 
     @Get
-    public Representation doGet() throws UnsupportedEncodingException {
+    public Representation doGet() throws UnsupportedEncodingException,
+            FileNotFoundException {
         Map<String,Object> attrs = this.getRequest().getAttributes();
         String identifier = java.net.URLDecoder.
                 decode((String) attrs.get("identifier"), "UTF-8");
@@ -48,6 +50,11 @@ public class ImageResource extends AbstractResource {
         String quality = (String) attrs.get("quality");
         Parameters params = new Parameters(identifier, region, size, rotation,
                 quality, format);
+
+        Processor proc = ProcessorFactory.getProcessor();
+        if (proc != null && !proc.resourceExists(params.getIdentifier())) {
+            throw new FileNotFoundException("Resource not found");
+        }
 
         MediaType mediaType = new MediaType(
                 Format.valueOf(format.toUpperCase()).getMediaType());
