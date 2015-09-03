@@ -8,4 +8,6 @@ public interface Processor {
 
     public void process(Parameters p, OutputStream os) throws Exception;
 
+    public boolean resourceExists(String identifier);
+
 }

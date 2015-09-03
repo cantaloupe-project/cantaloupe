@@ -11,6 +11,7 @@ import org.im4java.core.ConvertCmd;
 import org.im4java.core.IMOperation;
 import org.im4java.process.Pipe;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.OutputStream;
 
@@ -88,6 +89,12 @@ public class ImageMagickProcessor implements Processor {
         convert.setOutputConsumer(pipeOut);
         convert.run(op);
         fis.close();
+    }
+
+    public boolean resourceExists(String identifier) {
+        String filePath = this.getResolvedPathname(identifier);
+        File file = new File(filePath);
+        return file.exists() && !file.isDirectory();
     }
 
     /**
