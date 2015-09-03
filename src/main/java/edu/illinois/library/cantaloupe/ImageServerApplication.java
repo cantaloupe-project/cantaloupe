@@ -14,6 +14,7 @@ import org.restlet.data.Status;
 import org.restlet.engine.application.CorsFilter;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
+import org.restlet.routing.Redirector;
 import org.restlet.routing.Router;
 import org.restlet.routing.Template;
 import org.restlet.service.StatusService;
@@ -84,6 +85,13 @@ public class ImageServerApplication extends Application {
         CorsFilter corsFilter = new CorsFilter(getContext(), router);
         corsFilter.setAllowedOrigins(new HashSet<String>(Arrays.asList("*")));
         corsFilter.setAllowedCredentials(true);
+
+        // 2 Redirect image identifier to image information
+        // http://iiif.io/api/image/2.0/#uri-syntax
+        // {scheme}://{server}{/prefix}/{identifier}
+        Redirector redirector = new Redirector(getContext(),
+                "{identifier}/info.json", Redirector.MODE_CLIENT_SEE_OTHER);
+        router.attach("/{identifier}", redirector);
 
         // 2.1 Image Request
         // http://iiif.io/api/image/2.0/#image-request-uri-syntax
