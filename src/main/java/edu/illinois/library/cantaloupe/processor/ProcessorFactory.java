@@ -27,7 +27,7 @@ public class ProcessorFactory {
     private static String getProcessorName() {
         String name;
         try {
-            name = Application.getConfiguration().getString("image.processor");
+            name = Application.getConfiguration().getString("processor");
         } catch (ConfigurationException e) {
             return "ImageMagickProcessor";
         }
