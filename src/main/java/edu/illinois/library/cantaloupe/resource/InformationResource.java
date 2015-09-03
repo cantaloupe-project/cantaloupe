@@ -10,8 +10,11 @@ import org.restlet.resource.Get;
 
 public class InformationResource extends AbstractResource {
 
-    @Get
+    @Get("json")
     public Representation doGet() {
+        this.addHeader("Link",
+                "<http://iiif.io/api/image/2/level1.json>;rel=\"profile\"");
+
         Map<String,Object> attrs = this.getRequest().getAttributes();
         String identifier = (String) attrs.get("identifier");
 
