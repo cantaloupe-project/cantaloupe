@@ -43,6 +43,7 @@ public class ImageMagickProcessor implements Processor {
         supports.add("mirroring");
         supports.add("regionByPx");
         supports.add("rotationArbitrary");
+        supports.add("rotationBy90s");
         supports.add("sizeByWhListed");
         supports.add("sizeByForcedWh");
         supports.add("sizeByH");
