@@ -25,6 +25,32 @@ import java.util.Map;
 
 public class ImageMagickProcessor implements Processor {
 
+    private static final List<String> formats = new ArrayList<String>();
+    private static final List<String> qualities = new ArrayList<String>();
+    private static final List<String> supports = new ArrayList<String>();
+
+    static {
+        for (Format format : Format.values()) {
+            formats.add(format.getExtension());
+        }
+
+        for (Quality quality : Quality.values()) {
+            qualities.add(quality.toString().toLowerCase());
+        }
+
+        // TODO: is this list accurate?
+        supports.add("baseUriRedirect");
+        supports.add("mirroring");
+        supports.add("regionByPx");
+        supports.add("rotationArbitrary");
+        supports.add("sizeByWhListed");
+        supports.add("sizeByForcedWh");
+        supports.add("sizeByH");
+        supports.add("sizeByPct");
+        supports.add("sizeByW");
+        supports.add("sizeWh");
+    }
+
     public ImageInfo getImageInfo(String identifier, String imageBaseUri) {
         String filePath = this.getResolvedPathname(identifier);
         ImageInfo imageInfo = new ImageInfo();
@@ -37,30 +63,8 @@ public class ImageMagickProcessor implements Processor {
             Map<String,List<String>> profile = new HashMap<String, List<String>>();
             imageInfo.getProfile().add(profile);
 
-            List<String> formats = new ArrayList<String>();
-            for (Format format : Format.values()) {
-                formats.add(format.getExtension());
-            }
             profile.put("formats", formats);
-
-            List<String> qualities = new ArrayList<String>();
-            for (Quality quality : Quality.values()) {
-                qualities.add(quality.toString().toLowerCase());
-            }
             profile.put("qualities", qualities);
-
-            List<String> supports = new ArrayList<String>();
-            // TODO: is this list accurate?
-            supports.add("baseUriRedirect");
-            supports.add("mirroring");
-            supports.add("regionByPx");
-            supports.add("rotationArbitrary");
-            supports.add("sizeByWhListed");
-            supports.add("sizeByForcedWh");
-            supports.add("sizeByH");
-            supports.add("sizeByPct");
-            supports.add("sizeByW");
-            supports.add("sizeWh");
             profile.put("supports", supports);
 
             return imageInfo;
