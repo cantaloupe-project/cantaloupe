@@ -19,16 +19,21 @@ import org.restlet.routing.Template;
 import org.restlet.service.StatusService;
 
 import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.HashSet;
 
-/**
- * Created by alexd on 9/1/15.
- */
 public class ImageServerApplication extends Application {
 
     /**
-     * Overrides the built-in Restlet status pages.
+     * Overrides the built-in Restlet status pages. Converts the following
+     * exceptions to the following HTTP statuses:
+     *
+     * <ul>
+     *     <li>IllegalArgumentException: 400</li>
+     *     <li>FileNotFoundException: 404</li>
+     *     <li>Exception: 500</li>
+     * </ul>
      */
     private class CustomStatusService extends StatusService {
 
@@ -50,7 +55,8 @@ public class ImageServerApplication extends Application {
                                 Response response) {
             Status status;
             Throwable cause = t.getCause();
-            if (cause instanceof IllegalArgumentException) {
+            if (cause instanceof IllegalArgumentException ||
+                    cause instanceof UnsupportedEncodingException) {
                 status = new Status(Status.CLIENT_ERROR_BAD_REQUEST, t);
             } else if (cause instanceof FileNotFoundException) {
                 status = new Status(Status.CLIENT_ERROR_NOT_FOUND, t);
