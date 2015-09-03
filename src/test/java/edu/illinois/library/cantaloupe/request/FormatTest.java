@@ -25,13 +25,19 @@ public class FormatTest extends TestCase {
     }
 
     public void testMediaTypes() {
-        assertEquals("request/gif", Format.GIF.getMediaType());
-        assertEquals("request/jp2", Format.JP2.getMediaType());
-        assertEquals("request/jpeg", Format.JPG.getMediaType());
+        assertEquals("image/gif", Format.GIF.getMediaType());
+        assertEquals("image/jp2", Format.JP2.getMediaType());
+        assertEquals("image/jpeg", Format.JPG.getMediaType());
         assertEquals("application/pdf", Format.PDF.getMediaType());
-        assertEquals("request/png", Format.PNG.getMediaType());
-        assertEquals("request/tiff", Format.TIF.getMediaType());
-        assertEquals("request/webp", Format.WEBP.getMediaType());
+        assertEquals("image/png", Format.PNG.getMediaType());
+        assertEquals("image/tiff", Format.TIF.getMediaType());
+        assertEquals("image/webp", Format.WEBP.getMediaType());
+    }
+
+    public void testToString() {
+        for (Format format : Format.values()) {
+            assertEquals(format.getExtension(), format.toString());
+        }
     }
 
 }

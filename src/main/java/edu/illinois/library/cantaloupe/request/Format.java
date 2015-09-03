@@ -26,4 +26,11 @@ public enum Format {
         return this.mediaType;
     }
 
+    /**
+     * @return Value compatible with the format component of an IIIF URI.
+     */
+    public String toString() {
+        return this.getExtension();
+    }
+
 }
