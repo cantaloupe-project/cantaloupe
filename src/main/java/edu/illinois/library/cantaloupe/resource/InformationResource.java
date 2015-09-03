@@ -7,12 +7,8 @@ import org.restlet.data.MediaType;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
-import org.restlet.resource.ServerResource;
 
-/**
- * Created by alexd on 9/1/15.
- */
-public class InformationResource extends ServerResource {
+public class InformationResource extends AbstractResource {
 
     @Get
     public Representation doGet() {

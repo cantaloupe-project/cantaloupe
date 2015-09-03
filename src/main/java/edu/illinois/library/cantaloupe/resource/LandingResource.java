@@ -3,12 +3,11 @@ package edu.illinois.library.cantaloupe.resource;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
-import org.restlet.resource.ServerResource;
 
 /**
  * Handles the landing page.
  */
-public class LandingResource extends ServerResource {
+public class LandingResource extends AbstractResource {
 
     @Get
     public Representation doGet() {

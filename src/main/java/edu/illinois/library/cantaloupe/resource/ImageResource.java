@@ -13,9 +13,8 @@ import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
-import org.restlet.resource.ServerResource;
 
-public class ImageResource extends ServerResource {
+public class ImageResource extends AbstractResource {
 
     class ImageRepresentation extends OutputRepresentation {
 
