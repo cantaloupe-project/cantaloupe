@@ -14,7 +14,8 @@ public class FilesystemResolver implements Resolver {
     private String getPathPrefix() {
         String prefix;
         try {
-            prefix = Application.getConfiguration().getString("fs_resolver.path_prefix");
+            prefix = Application.getConfiguration().
+                    getString("FilesystemResolver.path_prefix");
         } catch (ConfigurationException e) {
             return "";
         }
@@ -24,7 +25,8 @@ public class FilesystemResolver implements Resolver {
     private String getPathSuffix() {
         String suffix;
         try {
-            suffix = Application.getConfiguration().getString("fs_resolver.path_suffix");
+            suffix = Application.getConfiguration().
+                    getString("FilesystemResolver.path_suffix");
         } catch (ConfigurationException e) {
             return "";
         }
