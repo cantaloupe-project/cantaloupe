@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 import edu.illinois.library.cantaloupe.image.Format;
@@ -37,9 +38,10 @@ public class ImageResource extends ServerResource {
     }
 
     @Get
-    public Representation doGet() {
+    public Representation doGet() throws UnsupportedEncodingException {
         Map<String,Object> attrs = this.getRequest().getAttributes();
-        String identifier = (String) attrs.get("identifier");
+        String identifier = java.net.URLDecoder.
+                decode((String) attrs.get("identifier"), "UTF-8");
         String format = (String) attrs.get("format");
         String region = (String) attrs.get("region");
         String size = (String) attrs.get("size");
