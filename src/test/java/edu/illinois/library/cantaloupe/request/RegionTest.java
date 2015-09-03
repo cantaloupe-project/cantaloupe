@@ -137,4 +137,17 @@ public class RegionTest extends TestCase {
         }
     }
 
+    /* toString */
+
+    public void testToString() {
+        Region r = Region.fromUri("full");
+        assertEquals("full", r.toString());
+
+        r = Region.fromUri("0,0,50,40");
+        assertEquals("0,0,50,40", r.toString());
+
+        r = Region.fromUri("pct:0,0,50,40");
+        assertEquals("pct:0,0,50,40", r.toString());
+    }
+
 }

@@ -47,6 +47,12 @@ public class Region {
         return region;
     }
 
+    private static String removeTrailingZeroes(Float f) {
+        String s = f.toString();
+        return s.indexOf(".") < 0 ? s : s.replaceAll("0*$", "").
+                replaceAll("\\.$", "");
+    }
+
     public Integer getHeight() {
         return height;
     }
@@ -105,6 +111,25 @@ public class Region {
             throw new IllegalArgumentException("Y must be a positive float");
         }
         this.y = y;
+    }
+
+    /**
+     * @return Value compatible with the region component of an IIIF URI.
+     */
+    public String toString() {
+        String str = "";
+        if (this.isFull()) {
+            str += "full";
+        } else {
+            if (this.isPercent()) {
+                str += "pct:" + removeTrailingZeroes(this.getX()) + "," +
+                        removeTrailingZeroes(this.getY());
+            } else {
+                str += Math.round(this.getX()) + "," + Math.round(this.getY());
+            }
+            str += "," + this.getWidth() + "," + this.getHeight();
+        }
+        return str;
     }
 
 }
