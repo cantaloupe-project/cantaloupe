@@ -17,7 +17,7 @@ public class SizeTest extends TestCase {
      */
     public void testFromUriFull() {
         Size s = Size.fromUri("full");
-        assertTrue(s.isFull());
+        assertEquals(Size.ScaleMode.FULL, s.getScaleMode());
     }
 
     /**
@@ -26,7 +26,7 @@ public class SizeTest extends TestCase {
     public void testFromUriWidthScaled() {
         Size s = Size.fromUri("50,");
         assertEquals(new Integer(50), s.getWidth());
-        assertFalse(s.isFull());
+        assertEquals(Size.ScaleMode.FILL_WIDTH, s.getScaleMode());
     }
 
     /**
@@ -35,7 +35,7 @@ public class SizeTest extends TestCase {
     public void testFromUriHeightScaled() {
         Size s = Size.fromUri(",50");
         assertEquals(new Integer(50), s.getHeight());
-        assertFalse(s.isFull());
+        assertEquals(Size.ScaleMode.FILL_HEIGHT, s.getScaleMode());
     }
 
     /**
@@ -43,8 +43,7 @@ public class SizeTest extends TestCase {
      */
     public void testFromUriPercentageScaled() {
         Size s = Size.fromUri("pct:50");
-        assertEquals(new Float(50), s.getScaleToPercent());
-        assertFalse(s.isFull());
+        assertEquals(new Float(50), s.getPercent());
     }
 
     /**
@@ -54,7 +53,7 @@ public class SizeTest extends TestCase {
         Size s = Size.fromUri("50,40");
         assertEquals(new Integer(50), s.getWidth());
         assertEquals(new Integer(40), s.getHeight());
-        assertFalse(s.isScaleToFit());
+        assertEquals(Size.ScaleMode.NON_ASPECT_FIT_INSIDE, s.getScaleMode());
     }
 
     /**
@@ -64,7 +63,7 @@ public class SizeTest extends TestCase {
         Size s = Size.fromUri("!50,40");
         assertEquals(new Integer(50), s.getWidth());
         assertEquals(new Integer(40), s.getHeight());
-        assertTrue(s.isScaleToFit());
+        assertEquals(Size.ScaleMode.ASPECT_FIT_INSIDE, s.getScaleMode());
     }
 
     /* height */
@@ -90,6 +89,32 @@ public class SizeTest extends TestCase {
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Height must be a positive integer", e.getMessage());
+        }
+    }
+
+    /* percent */
+
+    public void testSetPercent() {
+        Float percent = new Float(50);
+        this.size.setPercent(percent);
+        assertEquals(percent, this.size.getPercent());
+    }
+
+    public void testSetNegativePercent() {
+        try {
+            this.size.setPercent(new Float(-1.0));
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Percent must be positive", e.getMessage());
+        }
+    }
+
+    public void testSetZeroPercent() {
+        try {
+            this.size.setPercent(new Float(0));
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Percent must be positive", e.getMessage());
         }
     }
 

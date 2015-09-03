@@ -90,19 +90,19 @@ public class ImageMagickProcessor implements Processor {
 
         // size transformation
         Size size = params.getSize();
-        if (!size.isFull()) {
-            if (size.isFitWidth()) {
+        if (size.getScaleMode() != Size.ScaleMode.FULL) {
+            if (size.getScaleMode() == Size.ScaleMode.FILL_WIDTH) {
                 op.resize(size.getWidth());
-            } else if (size.isFitHeight()) {
+            } else if (size.getScaleMode() == Size.ScaleMode.FILL_HEIGHT) {
                 op.resize(null, size.getHeight());
-            } else if (size.getWidth() != null && size.getHeight() != null) {
+            } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FIT_INSIDE) {
                 op.resize(size.getWidth(), size.getHeight(), "!".charAt(0));
-            } else if (size.getScaleToPercent() != null) {
-                op.resize(Math.round(size.getScaleToPercent()),
-                        Math.round(size.getScaleToPercent()),
-                        "%".charAt(0));
-            } else if (size.isScaleToFit()) {
+            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
                 op.resize(size.getWidth(), size.getHeight());
+            } else if (size.getPercent() != null) {
+                op.resize(Math.round(size.getPercent()),
+                        Math.round(size.getPercent()),
+                        "%".charAt(0));
             }
         }
 
