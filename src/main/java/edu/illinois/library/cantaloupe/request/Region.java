@@ -1,8 +1,7 @@
 package edu.illinois.library.cantaloupe.request;
 
-/**
- * Created by alexd on 9/2/15.
- */
+import edu.illinois.library.cantaloupe.util.NumberUtil;
+
 public class Region {
 
     private Integer height;
@@ -45,12 +44,6 @@ public class Region {
             }
         }
         return region;
-    }
-
-    private static String removeTrailingZeroes(Float f) {
-        String s = f.toString();
-        return s.indexOf(".") < 0 ? s : s.replaceAll("0*$", "").
-                replaceAll("\\.$", "");
     }
 
     public Integer getHeight() {
@@ -122,8 +115,8 @@ public class Region {
             str += "full";
         } else {
             if (this.isPercent()) {
-                str += "pct:" + removeTrailingZeroes(this.getX()) + "," +
-                        removeTrailingZeroes(this.getY());
+                str += "pct:" + NumberUtil.removeTrailingZeroes(this.getX()) +
+                        "," + NumberUtil.removeTrailingZeroes(this.getY());
             } else {
                 str += Math.round(this.getX()) + "," + Math.round(this.getY());
             }
