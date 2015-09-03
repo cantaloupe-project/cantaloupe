@@ -56,6 +56,9 @@ public class ImageResource extends AbstractResource {
             throw new FileNotFoundException("Resource not found");
         }
 
+        this.addHeader("Link",
+                "<" + params.getCanonicalUri(this.getRootRef().toString()) + ">;rel=\"canonical\"");
+
         MediaType mediaType = new MediaType(
                 Format.valueOf(format.toUpperCase()).getMediaType());
         return new ImageRepresentation(mediaType, params);
