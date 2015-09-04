@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.request.Format;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Representation;
@@ -38,8 +39,8 @@ public class ImageResource extends AbstractResource {
     }
 
     @Get
-    public Representation doGet() throws UnsupportedEncodingException,
-            FileNotFoundException {
+    public Representation doGet() throws IllegalArgumentException,
+            UnsupportedEncodingException, FileNotFoundException {
         Map<String,Object> attrs = this.getRequest().getAttributes();
         String identifier = java.net.URLDecoder.
                 decode((String) attrs.get("identifier"), "UTF-8");
@@ -55,9 +56,15 @@ public class ImageResource extends AbstractResource {
         if (proc != null && !proc.resourceExists(params.getIdentifier())) {
             throw new FileNotFoundException("Resource not found");
         }
+        if (!proc.getSupportedFormats().contains(params.getFormat())) {
+            String msg = String.format("%s supports only the following formats: %s",
+                    proc, StringUtils.join(proc.getSupportedFormats(), ", "));
+            throw new IllegalArgumentException(msg);
+        }
 
         this.addHeader("Link",
-                "<" + params.getCanonicalUri(this.getRootRef().toString()) + ">;rel=\"canonical\"");
+                "<" + params.getCanonicalUri(this.getRootRef().toString()) +
+                        ">;rel=\"canonical\"");
 
         MediaType mediaType = new MediaType(
                 Format.valueOf(format.toUpperCase()).getMediaType());
