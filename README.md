@@ -74,15 +74,15 @@ ImageMagickProcessor.
 ## ImageMagickProcessor
 
 ImageMagickProcessor uses [im4java](http://im4java.sourceforge.net), which
-forks out to the ImageMagick `convert` and `identify` commands. These must be
-in the PATH in order to be found.
+forks out to the ImageMagick `convert` and `identify` shell commands. These
+must be in the PATH.
 
-ImageMagick is not known for being particularly fast or efficient, but it
-produces high quality output. Performance degrades and memory usage increases
-as image size increases. Fast storage and large amounts of RAM help.
+ImageMagick produces high quality output and supports all of the IIIF
+transforms and all IIIF output formats except WebP.
 
-ImageMagickProcessor supports all of the IIIF image transforms, and all formats
-except WebP.
+ImageMagick is not known for being particularly fast or efficient. Performance
+degrades and memory usage increases as image size increases. Large amounts of
+RAM and fast storage help.
 
 # Resolvers
 
@@ -161,13 +161,15 @@ author](mailto:alexd@illinois.edu).
 
 ## Adding Custom Resolvers
 
-Resolvers are super easy to write. All you have to do is implement the
-`edu.illinois.library.cantaloupe.resolver.Resolver` interface, which has just
-one method.
+Resolvers are easy to write. All you have to do is implement the one method
+in the `edu.illinois.library.cantaloupe.resolver.Resolver` interface.
 
-Feel free to add your own configuration keys to the properties file, which
-should be in the form of `NameOfMyResolverClass.whatever`, and can be read
-using `edu.illinois.library.cantaloupe.Application.getConfiguration()`.
+To use your custom resolver, set `resolver` in your properties file to its
+class name.
+
+Feel free to add new configuration keys to the properties file. They should
+be in the form of `NameOfMyResolverClass.whatever`. They can then be accessed
+via `edu.illinois.library.cantaloupe.Application.getConfiguration()`.
 
 See one of the existing resolvers for examples.
 
@@ -185,5 +187,5 @@ TODO: write this
 
 # License
 
-Cantaloupe is open-source software under the University of Illinois/NCSA Open
-Source License; see the LICENSE file for terms.
+Cantaloupe is open-source software distributed under the University of
+Illinois/NCSA Open Source License; see the file LICENSE for terms.
