@@ -6,19 +6,8 @@
 
 * Simple
 * Easy to get working
-* Simple
-* Simple
-
-## Supported Image Formats
-
-Cantaloupe supports pluggable image processors, each of which may support a
-different set of formats. See the Processors section below.
-
-## Supported Image Sources
-
-Cantaloupe supports pluggable resolvers, which can provide access to images
-from different sources. Currently, the local filesystem is the only available
-source.
+* Pluggable resolvers for filesystem and HTTP sources
+* Pluggable image processors
 
 ## What It Doesn't Do
 
@@ -36,30 +25,38 @@ source.
 
 # Configuration
 
-Create a file called `cantaloupe.properties` anywhere on disk, and paste into
+Create a file called `cantaloupe.properties` anywhere on disk and paste into
 it the following contents, editing it as necessary for your site:
 
-```
-# The HTTP port to bind to.
-http.port = 8182
+    # The HTTP port to bind to.
+    http.port = 8182
 
-# Set to true for debugging
-print_stack_trace_on_error_page = true
+    # To help in debugging
+    print_stack_trace_on_error_page = true
 
-# The image processor to use. The only available value is ImageMagickProcessor.
-# Note that the `convert` and `identify` binaries must be in the PATH.
-processor = ImageMagickProcessor
-
-# The path resolver that translates the identifier in the URL to a path. The
-# only available value is FilesystemResolver.
-resolver = FilesystemResolver
-
-# The server-side path that will be prefixed to the identifier in the URL.
-FilesystemResolver.path_prefix = /home/myself/images
-
-# The server-side path that will be suffixed to the identifier in the URL.
-FilesystemResolver.path_suffix =
-```
+    # The image processor to use. The only available value is
+    # `ImageMagickProcessor`.
+    # Note that the `convert` and `identify` binaries must be in the PATH.
+    processor = ImageMagickProcessor
+    
+    # The path resolver that translates the identifier in the URL to a path.
+    # Available values are `FilesystemResolver` and `HttpResolver`.
+    resolver = FilesystemResolver
+    
+    # The server-side path that will be prefixed to the identifier in the request
+    # URL.
+    FilesystemResolver.path_prefix = /home/myself/images
+    
+    # The server-side path or extension. that will be suffixed to the identifier
+    # in the request URL.
+    FilesystemResolver.path_suffix =
+    
+    # The URL that will be prefixed to the identifier in the request URL.
+    HttpResolver.url_prefix = http://localhost/~alexd/
+    
+    # The path, extension, query string, etc. that will be suffixed to the
+    # identifier in the request URL.
+    HttpResolver.url_suffix =
 
 # Running
 
@@ -78,21 +75,23 @@ ImageMagickProcessor.
 
 ImageMagickProcessor uses [im4java](http://im4java.sourceforge.net), which
 forks out to the ImageMagick `convert` and `identify` commands. These must be
-in the PATH in order for them to be found.
+in the PATH in order to be found.
 
 ImageMagick is not known for being particularly fast or efficient, but it
-produces high quality output. Performance degrades and memory usage
-increases as image size increases.
+produces high quality output. Performance degrades and memory usage increases
+as image size increases. Fast storage and large amounts of RAM help.
 
-ImageMagickProcessor supports all IIIF 2.0 formats except WebP.
+ImageMagickProcessor supports all of the IIIF image transforms, and all formats
+except WebP.
 
 # Resolvers
 
 ## FilesystemResolver
 
-FilesystemResolver maps an identifier from an IIIF URL to a filesystem path.
+FilesystemResolver maps an identifier from an IIIF URL to a filesystem path
+for retrieving images from a local filesystem.
 
-### Example With Prefix
+### Example With Prefix Only
 
 Given the following configuration options:
 
@@ -105,7 +104,6 @@ And the following URL:
 
 FilesystemResolver will look for an image located at
 /data/images/image.jpg.
-
 
 ### Example With Prefix and Suffix
 
@@ -120,6 +118,39 @@ And the following URL:
 
 FilesystemResolver will look for an image located at
 /data/images/some-uuid/image.jp2.
+
+## HttpResolver
+
+HttpResolver maps an identifier from an IIIF URL to some other URL, for
+retrieving images from a web server.
+
+### Example With Prefix Only
+
+Given the following configuration options:
+
+* `HttpResolver.url_prefix = http://localhost/images/`
+* `HttpResolver.url_suffix = `
+
+And the following URL:
+
+* http://example.org/iiif/image.jpg/full/full/0/default.jpg
+
+HttpResolver will look for an image located at
+http://localhost/images/image.jpg.
+
+### Example With Prefix and Suffix
+
+Given the following configuration options:
+
+* `HttpResolver.url_prefix = http://localhost/images/`
+* `HttpResolver.url_suffix = /image.jp2`
+
+And the following URL:
+
+* http://example.org/iiif/some-uuid/full/full/0/default.jpg
+
+HttpResolver will look for an image located at
+http://localhost/images/some-uuid/image.jp2.
 
 # Contributing
 
