@@ -47,7 +47,10 @@ public class ImageServerApplication extends Application {
         @Override
         public Representation toRepresentation(Status status, Request request,
                                                Response response) {
-            Throwable cause = status.getThrowable().getCause();
+            Throwable throwable = status.getThrowable();
+            if (throwable.getCause() != null) {
+                throwable = throwable.getCause();
+            }
 
             String stackTrace = "";
             try {
@@ -55,7 +58,7 @@ public class ImageServerApplication extends Application {
                         Application.getConfiguration();
                 if (config.getBoolean("print_stack_trace_on_error_page")) {
                     StringWriter sw = new StringWriter();
-                    cause.printStackTrace(new PrintWriter(sw));
+                    throwable.printStackTrace(new PrintWriter(sw));
                     stackTrace = sw.toString();
                 }
             } catch (ConfigurationException e) {
@@ -72,7 +75,8 @@ public class ImageServerApplication extends Application {
                     "</html>";
             String msg = String.format(template,
                     Integer.toString(status.getCode()),
-                    status.getReasonPhrase(), cause.getMessage(), stackTrace);
+                    status.getReasonPhrase(), throwable.getMessage(),
+                    stackTrace);
             return new StringRepresentation(msg, MediaType.TEXT_HTML,
                     Language.ENGLISH, CharacterSet.UTF_8);
         }
