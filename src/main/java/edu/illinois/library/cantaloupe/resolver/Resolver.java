@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.resolver;
 
+import java.io.InputStream;
+
 /**
  * Locates a source image.
  */
@@ -7,8 +9,9 @@ public interface Resolver {
 
     /**
      * @param identifier IIIF identifier.
-     * @return Path, URL, or some other locator to the source image.
+     * @return InputStream for reading the source image, or null if an image
+     * corresponding to the given identifier does not exist.
      */
-    String resolve(String identifier);
+    InputStream resolve(String identifier);
 
 }

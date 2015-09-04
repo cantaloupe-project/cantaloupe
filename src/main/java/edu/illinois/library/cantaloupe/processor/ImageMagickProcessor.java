@@ -15,8 +15,7 @@ import org.im4java.core.Info;
 import org.im4java.core.InfoException;
 import org.im4java.process.Pipe;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,10 +56,11 @@ public class ImageMagickProcessor implements Processor {
     }
 
     public ImageInfo getImageInfo(String identifier, String imageBaseUri) {
-        String filePath = this.getResolvedPathname(identifier);
+        Resolver resolver = ResolverFactory.getResolver();
         ImageInfo imageInfo = new ImageInfo();
         try {
-            Info sourceInfo = new Info(filePath, true);
+            InputStream imageStream = resolver.resolve(identifier);
+            Info sourceInfo = new Info("-", imageStream, true);
             imageInfo.setId(imageBaseUri);
             imageInfo.setHeight(sourceInfo.getImageHeight());
             imageInfo.setWidth(sourceInfo.getImageWidth());
@@ -84,8 +84,6 @@ public class ImageMagickProcessor implements Processor {
 
     public void process(Parameters params, OutputStream outputStream)
             throws Exception {
-        String filePath = this.getResolvedPathname(params.getIdentifier());
-
         IMOperation op = new IMOperation();
         op.addImage("-"); // read from stdin
 
@@ -145,35 +143,20 @@ public class ImageMagickProcessor implements Processor {
         // format transformation
         op.addImage(params.getFormat().getExtension() + ":-"); // write to stdout
 
-        FileInputStream fis = new FileInputStream(filePath);
-        Pipe pipeIn = new Pipe(fis, null);
+        Resolver resolver = ResolverFactory.getResolver();
+        InputStream inputStream = resolver.resolve(params.getIdentifier());
+        Pipe pipeIn = new Pipe(inputStream, null);
         Pipe pipeOut = new Pipe(null, outputStream);
 
         ConvertCmd convert = new ConvertCmd();
         convert.setInputProvider(pipeIn);
         convert.setOutputConsumer(pipeOut);
         convert.run(op);
-        fis.close();
-    }
-
-    public boolean resourceExists(String identifier) {
-        String filePath = this.getResolvedPathname(identifier);
-        File file = new File(filePath);
-        return file.exists() && !file.isDirectory();
+        inputStream.close();
     }
 
     public String toString() {
         return this.getClass().getSimpleName();
-    }
-
-    /**
-     * @param identifier Identifier component of an IIIF 2.0 URL
-     * @return Full filesystem path of the file corresponding to the given
-     * identifier
-     */
-    private String getResolvedPathname(String identifier) {
-        Resolver resolver = ResolverFactory.getResolver();
-        return resolver.resolve(identifier);
     }
 
 }

@@ -38,13 +38,6 @@ public interface Processor {
     void process(Parameters p, OutputStream os) throws Exception;
 
     /**
-     * @param identifier IIIF identifier
-     * @return Whether or not the resource corresponding to the given
-     * identifier exists.
-     */
-    boolean resourceExists(String identifier);
-
-    /**
      * @return Human-readable name of the processor.
      */
     String toString();

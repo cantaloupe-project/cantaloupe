@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.resolver.Resolver;
+import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import org.restlet.data.MediaType;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Representation;
@@ -26,12 +28,16 @@ public class InformationResource extends AbstractResource {
 
         Map<String,Object> attrs = this.getRequest().getAttributes();
         String identifier = (String) attrs.get("identifier");
-        Processor proc = ProcessorFactory.getProcessor();
-        if (proc != null && !proc.resourceExists(identifier)) {
+
+        Resolver resolver = ResolverFactory.getResolver();
+        if (resolver.resolve(identifier) == null) {
             throw new FileNotFoundException("Resource not found");
         }
+
+        Processor proc = ProcessorFactory.getProcessor();
         ImageInfo imageInfo = proc.getImageInfo(identifier,
                 this.getImageUri(identifier));
+
         ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writer().
                 without(SerializationFeature.WRITE_NULL_MAP_VALUES).

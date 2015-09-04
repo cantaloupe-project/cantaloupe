@@ -4,11 +4,23 @@ import edu.illinois.library.cantaloupe.Application;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+
 public class FilesystemResolver implements Resolver {
 
-    public String resolve(String identifier) {
-        String str = getPathPrefix() + "/" + identifier + "/" + getPathSuffix();
-        return StringUtils.stripEnd(str, "/");
+    public InputStream resolve(String identifier) {
+        try {
+            return new FileInputStream(getPath(identifier));
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+    }
+
+    private String getPath(String identifier) {
+        return StringUtils.stripEnd(getPathPrefix() + "/" + identifier + "/" +
+                getPathSuffix(), "/");
     }
 
     private String getPathPrefix() {

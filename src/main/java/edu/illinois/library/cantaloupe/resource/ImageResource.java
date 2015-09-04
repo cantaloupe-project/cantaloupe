@@ -10,6 +10,8 @@ import edu.illinois.library.cantaloupe.request.Format;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.resolver.Resolver;
+import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
@@ -52,10 +54,12 @@ public class ImageResource extends AbstractResource {
         Parameters params = new Parameters(identifier, region, size, rotation,
                 quality, format);
 
-        Processor proc = ProcessorFactory.getProcessor();
-        if (proc != null && !proc.resourceExists(params.getIdentifier())) {
+        Resolver resolver = ResolverFactory.getResolver();
+        if (resolver.resolve(identifier) == null) {
             throw new FileNotFoundException("Resource not found");
         }
+
+        Processor proc = ProcessorFactory.getProcessor();
         if (!proc.getSupportedFormats().contains(params.getFormat())) {
             String msg = String.format("%s supports only the following formats: %s",
                     proc, StringUtils.join(proc.getSupportedFormats(), ", "));
