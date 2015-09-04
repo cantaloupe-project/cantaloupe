@@ -10,7 +10,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class Parameters {
 
-    private Format format;
+    private OutputFormat outputFormat;
     private String identifier;
     private Quality quality;
     private Region region;
@@ -28,7 +28,7 @@ public class Parameters {
     public Parameters(String identifier, String region, String size,
                       String rotation, String quality, String format) {
         this.identifier = identifier;
-        this.format = Format.valueOf(format.toUpperCase());
+        this.outputFormat = OutputFormat.valueOf(format.toUpperCase());
         this.quality = Quality.valueOf(quality.toUpperCase());
         this.region = Region.fromUri(region);
         this.rotation = Rotation.fromUri(rotation);
@@ -38,11 +38,11 @@ public class Parameters {
     public String getCanonicalUri(String baseUri) {
         return StringUtils.stripEnd(baseUri, "/") + "/" + getIdentifier() +
                 "/" + getRegion() + "/" + getSize() + "/" + getRotation() +
-                "/" + getQuality().toString().toLowerCase() + "." + getFormat();
+                "/" + getQuality().toString().toLowerCase() + "." + getOutputFormat();
     }
 
-    public Format getFormat() {
-        return format;
+    public OutputFormat getOutputFormat() {
+        return outputFormat;
     }
 
     public String getIdentifier() {

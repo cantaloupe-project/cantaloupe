@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.ImageInfo;
-import edu.illinois.library.cantaloupe.request.Format;
+import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.request.Region;
@@ -22,35 +22,35 @@ import java.util.Map;
 
 public class ImageMagickProcessor implements Processor {
 
-    private static final List<Format> formats = new ArrayList<Format>();
-    private static final List<String> formatExtensions = new ArrayList<String>();
-    private static final List<String> qualities = new ArrayList<String>();
-    private static final List<String> supports = new ArrayList<String>();
+    private static final List<OutputFormat> OUTPUT_FORMATS = new ArrayList<OutputFormat>();
+    private static final List<String> FORMAT_EXTENSIONS = new ArrayList<String>();
+    private static final List<String> QUALITIES = new ArrayList<String>();
+    private static final List<String> SUPPORTS = new ArrayList<String>();
 
     static {
-        for (Format format : Format.values()) {
-            if (format != Format.WEBP) { // we don't support webp
-                formats.add(format);
-                formatExtensions.add(format.getExtension());
+        for (OutputFormat outputFormat : OutputFormat.values()) {
+            if (outputFormat != OutputFormat.WEBP) { // we don't support webp
+                OUTPUT_FORMATS.add(outputFormat);
+                FORMAT_EXTENSIONS.add(outputFormat.getExtension());
             }
         }
 
         for (Quality quality : Quality.values()) {
-            qualities.add(quality.toString().toLowerCase());
+            QUALITIES.add(quality.toString().toLowerCase());
         }
 
         // TODO: is this list accurate?
-        supports.add("baseUriRedirect");
-        supports.add("mirroring");
-        supports.add("regionByPx");
-        supports.add("rotationArbitrary");
-        supports.add("rotationBy90s");
-        supports.add("sizeByWhListed");
-        supports.add("sizeByForcedWh");
-        supports.add("sizeByH");
-        supports.add("sizeByPct");
-        supports.add("sizeByW");
-        supports.add("sizeWh");
+        SUPPORTS.add("baseUriRedirect");
+        SUPPORTS.add("mirroring");
+        SUPPORTS.add("regionByPx");
+        SUPPORTS.add("rotationArbitrary");
+        SUPPORTS.add("rotationBy90s");
+        SUPPORTS.add("sizeByWhListed");
+        SUPPORTS.add("sizeByForcedWh");
+        SUPPORTS.add("sizeByH");
+        SUPPORTS.add("sizeByPct");
+        SUPPORTS.add("sizeByW");
+        SUPPORTS.add("sizeWh");
     }
 
     public ImageInfo getImageInfo(InputStream inputStream,
@@ -65,9 +65,9 @@ public class ImageMagickProcessor implements Processor {
             Map<String,List<String>> profile = new HashMap<String, List<String>>();
             imageInfo.getProfile().add(profile);
 
-            profile.put("formatExtensions", formatExtensions);
-            profile.put("qualities", qualities);
-            profile.put("supports", supports);
+            profile.put("formats", FORMAT_EXTENSIONS);
+            profile.put("qualities", QUALITIES);
+            profile.put("supports", SUPPORTS);
 
             return imageInfo;
         } catch (InfoException e) {
@@ -75,8 +75,8 @@ public class ImageMagickProcessor implements Processor {
         }
     }
 
-    public List<Format> getSupportedFormats() {
-        return formats;
+    public List<OutputFormat> getSupportedFormats() {
+        return OUTPUT_FORMATS;
     }
 
     public void process(Parameters params, InputStream inputStream,
@@ -138,7 +138,7 @@ public class ImageMagickProcessor implements Processor {
         }
 
         // format transformation
-        op.addImage(params.getFormat().getExtension() + ":-"); // write to stdout
+        op.addImage(params.getOutputFormat().getExtension() + ":-"); // write to stdout
 
         Pipe pipeIn = new Pipe(inputStream, null);
         Pipe pipeOut = new Pipe(null, outputStream);

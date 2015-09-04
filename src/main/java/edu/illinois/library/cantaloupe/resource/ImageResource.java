@@ -7,7 +7,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
-import edu.illinois.library.cantaloupe.request.Format;
+import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
@@ -65,7 +65,7 @@ public class ImageResource extends AbstractResource {
         }
 
         Processor proc = ProcessorFactory.getProcessor();
-        if (!proc.getSupportedFormats().contains(params.getFormat())) {
+        if (!proc.getSupportedFormats().contains(params.getOutputFormat())) {
             String msg = String.format("%s supports only the following formats: %s",
                     proc, StringUtils.join(proc.getSupportedFormats(), ", "));
             throw new IllegalArgumentException(msg);
@@ -76,7 +76,7 @@ public class ImageResource extends AbstractResource {
                         ">;rel=\"canonical\"");
 
         MediaType mediaType = new MediaType(
-                Format.valueOf(format.toUpperCase()).getMediaType());
+                OutputFormat.valueOf(format.toUpperCase()).getMediaType());
         return new ImageRepresentation(mediaType, params, inputStream);
     }
 

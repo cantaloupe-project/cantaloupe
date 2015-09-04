@@ -5,7 +5,7 @@ package edu.illinois.library.cantaloupe.request;
  *
  * @see <a href="http://iiif.io/api/image/2.0/#format">IIIF Image API 2.0</a>
  */
-public enum Format {
+public enum OutputFormat {
 
     GIF("gif", "image/gif"),
     JP2("jp2", "image/jp2"),
@@ -18,7 +18,7 @@ public enum Format {
     private String extension;
     private String mediaType;
 
-    Format(String extension, String mediaType) {
+    OutputFormat(String extension, String mediaType) {
         this.extension = extension;
         this.mediaType = mediaType;
     }

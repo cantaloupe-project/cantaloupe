@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.ImageInfo;
-import edu.illinois.library.cantaloupe.request.Format;
+import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
 
 import java.io.InputStream;
@@ -16,18 +16,18 @@ public interface Processor {
     /**
      * @param inputStream An InputStream from which to read the image
      * @param imageBaseUri Base URI of the image
-     * @return ImageInfo for the image
+     * @return ImageInfo describing the image
      */
     ImageInfo getImageInfo(InputStream inputStream, String imageBaseUri);
 
     /**
      * @return List of formats supported by the processor.
      */
-    List<Format> getSupportedFormats();
+    List<OutputFormat> getSupportedFormats();
 
     /**
-     * Processes an image based on the supplied parameters and writes the
-     * result to the given OutputStream.
+     * Uses the supplied parameters to process an image from the supplied
+     * InputStream, and writes the result to the given OutputStream.
      *
      * @param p Parameters of the output image
      * @param is An InputStream from which to read the image
