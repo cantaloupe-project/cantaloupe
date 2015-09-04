@@ -26,7 +26,7 @@ import java.util.HashSet;
 
 public class ImageServerApplication extends Application {
 
-    private static final String BASE_IIIF_PATH = "/iiif";
+    public static final String BASE_IIIF_PATH = "/iiif";
 
     /**
      * Overrides the built-in Restlet status pages. Converts the following
