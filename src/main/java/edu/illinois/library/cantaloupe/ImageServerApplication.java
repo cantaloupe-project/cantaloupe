@@ -82,6 +82,7 @@ public class ImageServerApplication extends Application {
         }
 
         @Override
+        // TODO: docs say to replace this with toStatus() but that doesn't get called
         public Status getStatus(Throwable t, Request request,
                                 Response response) {
             Status status;
