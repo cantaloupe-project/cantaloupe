@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
@@ -22,17 +23,20 @@ public class ImageResource extends AbstractResource {
 
     class ImageRepresentation extends OutputRepresentation {
 
+        InputStream inputStream;
         Parameters params;
 
-        public ImageRepresentation(MediaType mediaType, Parameters params) {
+        public ImageRepresentation(MediaType mediaType, Parameters params,
+                                   InputStream inputStream) {
             super(mediaType);
+            this.inputStream = inputStream;
             this.params = params;
         }
 
         public void write(OutputStream outputStream) throws IOException {
             try {
                 Processor proc = ProcessorFactory.getProcessor();
-                proc.process(this.params, outputStream);
+                proc.process(this.params, inputStream, outputStream);
             } catch (Exception e) {
                 throw new IOException(e);
             }
@@ -55,7 +59,8 @@ public class ImageResource extends AbstractResource {
                 quality, format);
 
         Resolver resolver = ResolverFactory.getResolver();
-        if (resolver.resolve(identifier) == null) {
+        InputStream inputStream = resolver.resolve(identifier);
+        if (inputStream == null) {
             throw new FileNotFoundException("Resource not found");
         }
 
@@ -72,7 +77,7 @@ public class ImageResource extends AbstractResource {
 
         MediaType mediaType = new MediaType(
                 Format.valueOf(format.toUpperCase()).getMediaType());
-        return new ImageRepresentation(mediaType, params);
+        return new ImageRepresentation(mediaType, params, inputStream);
     }
 
 }

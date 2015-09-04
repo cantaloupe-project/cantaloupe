@@ -7,8 +7,6 @@ import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.request.Region;
 import edu.illinois.library.cantaloupe.request.Rotation;
 import edu.illinois.library.cantaloupe.request.Size;
-import edu.illinois.library.cantaloupe.resolver.Resolver;
-import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IMOperation;
 import org.im4java.core.Info;
@@ -81,8 +79,8 @@ public class ImageMagickProcessor implements Processor {
         return formats;
     }
 
-    public void process(Parameters params, OutputStream outputStream)
-            throws Exception {
+    public void process(Parameters params, InputStream inputStream,
+                        OutputStream outputStream) throws Exception {
         IMOperation op = new IMOperation();
         op.addImage("-"); // read from stdin
 
@@ -142,8 +140,6 @@ public class ImageMagickProcessor implements Processor {
         // format transformation
         op.addImage(params.getFormat().getExtension() + ":-"); // write to stdout
 
-        Resolver resolver = ResolverFactory.getResolver();
-        InputStream inputStream = resolver.resolve(params.getIdentifier());
         Pipe pipeIn = new Pipe(inputStream, null);
         Pipe pipeOut = new Pipe(null, outputStream);
 

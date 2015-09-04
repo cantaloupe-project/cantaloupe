@@ -27,16 +27,15 @@ public interface Processor {
 
     /**
      * Processes an image based on the supplied parameters and writes the
-     * result to the given OutputStream. Implementations should use
-     * <code>ResolverFactory.getResolver()</code> to obtain an instance of the
-     * correct Resolver, and use that to find the source image based on its
-     * identifier (<code>Parameters.getIdentifier()</code>).
+     * result to the given OutputStream.
      *
-     * @param p
-     * @param os
+     * @param p Parameters of the output image
+     * @param is An InputStream from which to read the image
+     * @param os An OutputStream to which to write the image
      * @throws Exception
      */
-    void process(Parameters p, OutputStream os) throws Exception;
+    void process(Parameters p, InputStream is, OutputStream os)
+            throws Exception;
 
     /**
      * @return Human-readable name of the processor.
