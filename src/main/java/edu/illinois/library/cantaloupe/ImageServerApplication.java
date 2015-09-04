@@ -3,6 +3,8 @@ package edu.illinois.library.cantaloupe;
 import edu.illinois.library.cantaloupe.resource.ImageResource;
 import edu.illinois.library.cantaloupe.resource.InformationResource;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
 import org.restlet.Application;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -20,6 +22,8 @@ import org.restlet.routing.Template;
 import org.restlet.service.StatusService;
 
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -44,11 +48,31 @@ public class ImageServerApplication extends Application {
         public Representation toRepresentation(Status status, Request request,
                                                Response response) {
             Throwable cause = status.getThrowable().getCause();
-            String msg = String.format(
-                    "<html><head></head><body><h1>%s %s</h1><p>%s</p></body></html>",
+
+            String stackTrace = "";
+            try {
+                Configuration config = edu.illinois.library.cantaloupe.
+                        Application.getConfiguration();
+                if (config.getBoolean("print_stack_trace_on_error_page")) {
+                    StringWriter sw = new StringWriter();
+                    cause.printStackTrace(new PrintWriter(sw));
+                    stackTrace = sw.toString();
+                }
+            } catch (ConfigurationException e) {
+                // nothing we can do
+            }
+
+            String template = "<html>" +
+                    "<head></head>" +
+                    "<body>" +
+                    "<h1>%s %s</h1>" +
+                    "<p>%s</p>" +
+                    "<pre>%s</pre>" +
+                    "</body>" +
+                    "</html>";
+            String msg = String.format(template,
                     Integer.toString(status.getCode()),
-                    status.getReasonPhrase(),
-                    cause.getMessage());
+                    status.getReasonPhrase(), cause.getMessage(), stackTrace);
             return new StringRepresentation(msg, MediaType.TEXT_HTML,
                     Language.ENGLISH, CharacterSet.UTF_8);
         }

@@ -43,6 +43,9 @@ it the following contents, editing it as necessary for your site:
 # The HTTP port to bind to.
 http.port = 8182
 
+# Set to true for debugging
+print_stack_trace_on_error_page = true
+
 # The image processor to use. The only available value is ImageMagickProcessor.
 # Note that the `convert` and `identify` binaries must be in the PATH.
 processor = ImageMagickProcessor
