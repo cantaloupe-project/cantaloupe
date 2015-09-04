@@ -65,9 +65,9 @@ public class ImageResource extends AbstractResource {
         }
 
         Processor proc = ProcessorFactory.getProcessor();
-        if (!proc.getSupportedFormats().contains(params.getOutputFormat())) {
+        if (!proc.getSupportedOutputFormats().contains(params.getOutputFormat())) {
             String msg = String.format("%s supports only the following formats: %s",
-                    proc, StringUtils.join(proc.getSupportedFormats(), ", "));
+                    proc, StringUtils.join(proc.getSupportedOutputFormats(), ", "));
             throw new IllegalArgumentException(msg);
         }
 

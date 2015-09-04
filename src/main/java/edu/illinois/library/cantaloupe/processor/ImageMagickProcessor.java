@@ -75,7 +75,7 @@ public class ImageMagickProcessor implements Processor {
         }
     }
 
-    public List<OutputFormat> getSupportedFormats() {
+    public List<OutputFormat> getSupportedOutputFormats() {
         return OUTPUT_FORMATS;
     }
 

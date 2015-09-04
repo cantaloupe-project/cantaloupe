@@ -21,9 +21,9 @@ public interface Processor {
     ImageInfo getImageInfo(InputStream inputStream, String imageBaseUri);
 
     /**
-     * @return List of formats supported by the processor.
+     * @return List of output formats supported by the processor.
      */
-    List<OutputFormat> getSupportedFormats();
+    List<OutputFormat> getSupportedOutputFormats();
 
     /**
      * Uses the supplied parameters to process an image from the supplied
