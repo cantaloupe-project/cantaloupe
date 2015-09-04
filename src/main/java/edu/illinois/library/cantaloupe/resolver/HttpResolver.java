@@ -11,10 +11,11 @@ import java.io.InputStream;
 
 public class HttpResolver implements Resolver {
 
+    private static Client client = new Client(new Context(), Protocol.HTTP);
+
     public InputStream resolve(String identifier) {
         try {
             String url = getUrl(identifier);
-            Client client = new Client(new Context(), Protocol.HTTP);
             ClientResource resource = new ClientResource(url);
             resource.setNext(client);
             return resource.get().getStream();
