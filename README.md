@@ -21,7 +21,7 @@ the [Simple](http://www.simpleframework.org) high-performance HTTP server.
 
 # Requirements
 
-* JRE 6+
+* JRE 7+
 * ImageMagick with PDF and JPEG2000 delegates (see the ImageMagickProcessor
   section below)
 
