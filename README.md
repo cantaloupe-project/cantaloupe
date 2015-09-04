@@ -1,4 +1,4 @@
-# Cantaloupe
+# 🍈 Cantaloupe
 
 *[IIIF 2.0](http://iiif.io) image server in Java*
 
@@ -12,7 +12,7 @@
 ## What It Doesn't Do
 
 * Cache anything. It may or may not do this some day. In the meantime, a
-  caching reverse proxy should be used in production.
+  caching reverse proxy would be an option.
 * Write log files. Log messages go to standard output.
 * Run inside an application server. ([Rationale]
   (http://johannesbrodwall.com/2010/03/08/why-and-how-to-use-jetty-in-mission-critical-production/))
@@ -152,10 +152,38 @@ And the following URL:
 HttpResolver will look for an image located at
 http://localhost/images/some-uuid/image.jp2.
 
-# Contributing
+# Feedback
+
+Ideas, suggestions, requests, and so on are welcome; please [contact the
+author](mailto:alexd@illinois.edu).
+
+# Custom Development
+
+## Adding Custom Resolvers
+
+Resolvers are super easy to write. All you have to do is implement the
+`edu.illinois.library.cantaloupe.resolver.Resolver` interface, which has just
+one method.
+
+Feel free to add your own configuration keys to the properties file, which
+should be in the form of `NameOfMyResolverClass.whatever`, and can be read
+using `edu.illinois.library.cantaloupe.Application.getConfiguration()`.
+
+See one of the existing resolvers for examples.
+
+## Adding Custom Image Processors
+
+TODO: write this
+
+## Contributing Code
 
 1. Fork it (https://github.com/medusa-project/cantaloupe/fork)
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
+
+# License
+
+Cantaloupe is open-source software under the University of Illinois/NCSA Open
+Source License; see the LICENSE file for terms.
