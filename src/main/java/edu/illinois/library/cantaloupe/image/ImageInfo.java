@@ -11,6 +11,8 @@ import java.util.Map;
  * Class whose instances are intended to be serialized to JSON for use in IIIF
  * Image Information responses.
  *
+ * @see <a href="http://iiif.io/api/image/2.0/#image-information">IIIF Image
+ * API 2.0</a>
  * @see <a href="https://github.com/FasterXML/jackson-databind">jackson-databind
  * docs</a>
  */

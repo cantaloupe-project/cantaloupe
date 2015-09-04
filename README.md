@@ -7,12 +7,11 @@
 * Simple
 * Easy to get working
 * Pluggable resolvers for filesystem and HTTP sources
-* Pluggable image processors for different source image formats
+* Pluggable processors for different source image formats
 
 ## What It Doesn't Do
 
-* Cache anything. It may or may not do this some day. In the meantime, a
-  caching reverse proxy would be an option.
+* Cache anything. A caching reverse proxy can do a better job.
 * Write log files. Log messages go to standard output.
 * Run inside an application server. ([Rationale]
   (http://johannesbrodwall.com/2010/03/08/why-and-how-to-use-jetty-in-mission-critical-production/))
@@ -35,7 +34,7 @@ it the following contents, editing it as necessary for your site:
     print_stack_trace_on_error_page = true
 
     # The image processor to use for various source formats. The only
-    # available value, currently, is `ImageMagickProcessor`.
+    # available value for any of these, currently, is `ImageMagickProcessor`.
     processor.jp2 = ImageMagickProcessor
     processor.jpg = ImageMagickProcessor
     processor.tif = ImageMagickProcessor
