@@ -55,12 +55,11 @@ public class ImageMagickProcessor implements Processor {
         supports.add("sizeWh");
     }
 
-    public ImageInfo getImageInfo(String identifier, String imageBaseUri) {
-        Resolver resolver = ResolverFactory.getResolver();
+    public ImageInfo getImageInfo(InputStream inputStream,
+                                  String imageBaseUri) {
         ImageInfo imageInfo = new ImageInfo();
         try {
-            InputStream imageStream = resolver.resolve(identifier);
-            Info sourceInfo = new Info("-", imageStream, true);
+            Info sourceInfo = new Info("-", inputStream, true);
             imageInfo.setId(imageBaseUri);
             imageInfo.setHeight(sourceInfo.getImageHeight());
             imageInfo.setWidth(sourceInfo.getImageWidth());

@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.request.Format;
 import edu.illinois.library.cantaloupe.request.Parameters;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
@@ -13,11 +14,11 @@ import java.util.List;
 public interface Processor {
 
     /**
-     * @param identifier IIIF identifier
+     * @param inputStream An InputStream from which to read the image
      * @param imageBaseUri Base URI of the image
-     * @return ImageInfo for the image corresponding to the given identifier.
+     * @return ImageInfo for the image
      */
-    ImageInfo getImageInfo(String identifier, String imageBaseUri);
+    ImageInfo getImageInfo(InputStream inputStream, String imageBaseUri);
 
     /**
      * @return List of formats supported by the processor.
