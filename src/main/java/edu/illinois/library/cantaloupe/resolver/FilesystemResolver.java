@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
 import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -19,10 +18,12 @@ public class FilesystemResolver implements Resolver {
     }
 
     private String getPath(String identifier) {
-        return StringUtils.stripEnd(getPathPrefix() + "/" + identifier + "/" +
-                getPathSuffix(), "/");
+        return getPathPrefix() + identifier + getPathSuffix();
     }
 
+    /**
+     * @return Path prefix, never with a trailing slash.
+     */
     private String getPathPrefix() {
         String prefix;
         try {
@@ -34,6 +35,9 @@ public class FilesystemResolver implements Resolver {
         return prefix;
     }
 
+    /**
+     * @return Path suffix, never with a leading slash.
+     */
     private String getPathSuffix() {
         String suffix;
         try {
