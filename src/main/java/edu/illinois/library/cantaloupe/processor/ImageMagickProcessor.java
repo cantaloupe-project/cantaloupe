@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
@@ -7,11 +8,13 @@ import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.request.Region;
 import edu.illinois.library.cantaloupe.request.Rotation;
 import edu.illinois.library.cantaloupe.request.Size;
+import org.apache.commons.configuration.ConfigurationException;
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IMOperation;
 import org.im4java.core.Info;
 import org.im4java.core.InfoException;
 import org.im4java.process.Pipe;
+import org.im4java.process.ProcessStarter;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,6 +31,11 @@ public class ImageMagickProcessor implements Processor {
     private static final List<String> SUPPORTS = new ArrayList<String>();
 
     static {
+        String binaryPath = getConfigurationString("ImageMagickProcessor.path_to_binaries");
+        if (binaryPath.length() > 0) {
+            ProcessStarter.setGlobalSearchPath(binaryPath);
+        }
+
         for (OutputFormat outputFormat : OutputFormat.values()) {
             if (outputFormat != OutputFormat.WEBP) { // we don't support webp
                 OUTPUT_FORMATS.add(outputFormat);
@@ -51,6 +59,15 @@ public class ImageMagickProcessor implements Processor {
         SUPPORTS.add("sizeByPct");
         SUPPORTS.add("sizeByW");
         SUPPORTS.add("sizeWh");
+    }
+
+    private static String getConfigurationString(String key) {
+        String value = "";
+        try {
+            value = Application.getConfiguration().getString(key);
+        } catch (ConfigurationException e) {
+        }
+        return value;
     }
 
     public ImageInfo getImageInfo(InputStream inputStream,

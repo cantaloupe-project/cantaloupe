@@ -44,6 +44,9 @@ it the following contents, modifying as desired:
     # Fall back to a general-purpose processor that supports just about
     # everything.
     processor.fallback = ImageMagickProcessor
+
+    # Optional; overrides the PATH
+    ImageMagickProcessor.path_to_binaries = /usr/local/bin
     
     # The path resolver that translates the identifier in the URL to a path.
     # Available values are `FilesystemResolver` and `HttpResolver`.
