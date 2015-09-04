@@ -27,10 +27,10 @@
 Create a file called `cantaloupe.properties` anywhere on disk and paste into
 it the following contents, editing it as necessary for your site:
 
-    # The HTTP port to bind to.
+    # TCP port to bind to.
     http.port = 8182
 
-    # To help in debugging
+    # Helps in debugging
     print_stack_trace_on_error_page = true
 
     # The image processor to use for various source formats. The only
@@ -60,6 +60,10 @@ it the following contents, editing it as necessary for your site:
     # The path, extension, query string, etc. that will be suffixed to the
     # identifier in the request URL.
     HttpResolver.url_suffix =
+
+    # Used for HTTP Basic authentication
+    HttpResolver.username =
+    HttpResolver.password =
 
 # Running
 
