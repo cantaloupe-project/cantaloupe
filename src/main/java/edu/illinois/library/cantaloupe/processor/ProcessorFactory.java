@@ -7,7 +7,7 @@ public class ProcessorFactory {
 
     /**
      * @return The current image processor based on the
-     * <code>image.processor</code> setting in the configuration. May return
+     * <code>processor</code> setting in the configuration. May return
      * null.
      */
     public static Processor getProcessor() {
