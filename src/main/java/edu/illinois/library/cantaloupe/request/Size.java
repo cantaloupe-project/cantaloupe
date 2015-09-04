@@ -3,6 +3,11 @@ package edu.illinois.library.cantaloupe.request;
 import edu.illinois.library.cantaloupe.util.NumberUtil;
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * Encapsulates the "size" component of an IIIF request URI.
+ *
+ * @see <a href="http://iiif.io/api/image/2.0/#size">IIIF Image API 2.0</a>
+ */
 public class Size {
 
     public enum ScaleMode {

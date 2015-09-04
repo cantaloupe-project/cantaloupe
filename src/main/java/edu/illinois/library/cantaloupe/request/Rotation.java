@@ -2,6 +2,11 @@ package edu.illinois.library.cantaloupe.request;
 
 import edu.illinois.library.cantaloupe.util.NumberUtil;
 
+/**
+ * Encapsulates the "rotation" component of an IIIF request URI.
+ *
+ * @see <a href="http://iiif.io/api/image/2.0/#rotation">IIIF Image API 2.0</a>
+ */
 public class Rotation {
 
     private Float degrees;

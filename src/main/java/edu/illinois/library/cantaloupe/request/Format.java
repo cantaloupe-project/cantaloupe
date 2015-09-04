@@ -1,5 +1,10 @@
 package edu.illinois.library.cantaloupe.request;
 
+/**
+ * Encapsulates the "format" component of an IIIF request URI.
+ *
+ * @see <a href="http://iiif.io/api/image/2.0/#format">IIIF Image API 2.0</a>
+ */
 public enum Format {
 
     GIF("gif", "image/gif"),
