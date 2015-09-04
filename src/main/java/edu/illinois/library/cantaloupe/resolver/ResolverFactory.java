@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
-import org.apache.commons.configuration.ConfigurationException;
 
 public class ResolverFactory {
 
@@ -11,26 +10,18 @@ public class ResolverFactory {
      */
     public static Resolver getResolver() {
         try {
+            String resolverName = Application.getConfiguration().
+                    getString("resolver", "FilesystemResolver");
             Class class_ = Class.forName(ResolverFactory.class.getPackage().getName() +
-                    "." + getResolverName());
+                    "." + resolverName);
             return (Resolver) class_.newInstance();
         } catch (ClassNotFoundException e) {
-            return null; // TODO: log
+            return null; // TODO: log fatal error
         } catch (InstantiationException e) {
-            return null; // TODO: log
+            return null; // TODO: log fatal error
         } catch (IllegalAccessException e) {
-            return null; // TODO: log
+            return null; // TODO: log fatal error
         }
-    }
-
-    private static String getResolverName() {
-        String name;
-        try {
-            name = Application.getConfiguration().getString("resolver");
-        } catch (ConfigurationException e) {
-            return "FilesystemResolver";
-        }
-        return name;
     }
 
 }

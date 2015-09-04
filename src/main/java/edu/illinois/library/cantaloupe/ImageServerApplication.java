@@ -4,7 +4,6 @@ import edu.illinois.library.cantaloupe.resource.ImageResource;
 import edu.illinois.library.cantaloupe.resource.InformationResource;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
 import org.restlet.Application;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -53,16 +52,12 @@ public class ImageServerApplication extends Application {
             }
 
             String stackTrace = "";
-            try {
-                Configuration config = edu.illinois.library.cantaloupe.
-                        Application.getConfiguration();
-                if (config.getBoolean("print_stack_trace_on_error_page")) {
-                    StringWriter sw = new StringWriter();
-                    throwable.printStackTrace(new PrintWriter(sw));
-                    stackTrace = sw.toString();
-                }
-            } catch (ConfigurationException e) {
-                // nothing we can do
+            Configuration config = edu.illinois.library.cantaloupe.
+                    Application.getConfiguration();
+            if (config.getBoolean("print_stack_trace_on_error_page")) {
+                StringWriter sw = new StringWriter();
+                throwable.printStackTrace(new PrintWriter(sw));
+                stackTrace = sw.toString();
             }
 
             String template = "<html>" +

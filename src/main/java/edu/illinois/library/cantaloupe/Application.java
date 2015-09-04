@@ -13,11 +13,15 @@ public class Application {
 
     private static Configuration config;
 
-    public static Configuration getConfiguration() throws ConfigurationException {
+    public static Configuration getConfiguration() {
         if (config == null) {
-            PropertiesConfiguration propConfig = new PropertiesConfiguration();
-            propConfig.load(System.getProperty("cantaloupe.config"));
-            config = propConfig;
+            try {
+                PropertiesConfiguration propConfig = new PropertiesConfiguration();
+                propConfig.load(System.getProperty("cantaloupe.config"));
+                config = propConfig;
+            } catch (ConfigurationException e) {
+                // TODO: log fatal error
+            }
         }
         return config;
     }

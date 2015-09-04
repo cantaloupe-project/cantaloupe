@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
-import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.Configuration;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -18,35 +18,9 @@ public class FilesystemResolver extends AbstractResolver implements Resolver {
     }
 
     private String getPath(String identifier) {
-        return getPathPrefix() + identifier + getPathSuffix();
-    }
-
-    /**
-     * @return Path prefix, never with a trailing slash.
-     */
-    private String getPathPrefix() {
-        String prefix;
-        try {
-            prefix = Application.getConfiguration().
-                    getString("FilesystemResolver.path_prefix");
-        } catch (ConfigurationException e) {
-            return "";
-        }
-        return prefix;
-    }
-
-    /**
-     * @return Path suffix, never with a leading slash.
-     */
-    private String getPathSuffix() {
-        String suffix;
-        try {
-            suffix = Application.getConfiguration().
-                    getString("FilesystemResolver.path_suffix");
-        } catch (ConfigurationException e) {
-            return "";
-        }
-        return suffix;
+        Configuration config = Application.getConfiguration();
+        return config.getString("FilesystemResolver.path_prefix") +
+                identifier + config.getString("FilesystemResolver.path_suffix");
     }
 
 }

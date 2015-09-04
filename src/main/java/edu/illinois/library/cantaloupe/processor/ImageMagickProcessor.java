@@ -9,11 +9,9 @@ import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.request.Region;
 import edu.illinois.library.cantaloupe.request.Rotation;
 import edu.illinois.library.cantaloupe.request.Size;
-import org.apache.commons.configuration.ConfigurationException;
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IMOperation;
 import org.im4java.core.Info;
-import org.im4java.core.InfoException;
 import org.im4java.process.Pipe;
 import org.im4java.process.ProcessStarter;
 
@@ -34,7 +32,8 @@ public class ImageMagickProcessor implements Processor {
     static {
         // overrides the PATH; see
         // http://im4java.sourceforge.net/docs/dev-guide.html
-        String binaryPath = getConfigurationString("ImageMagickProcessor.path_to_binaries");
+        String binaryPath = Application.getConfiguration().
+                getString("ImageMagickProcessor.path_to_binaries");
         if (binaryPath.length() > 0) {
             ProcessStarter.setGlobalSearchPath(binaryPath);
         }
@@ -62,15 +61,6 @@ public class ImageMagickProcessor implements Processor {
         SUPPORTS.add("sizeByPct");
         SUPPORTS.add("sizeByW");
         SUPPORTS.add("sizeWh");
-    }
-
-    private static String getConfigurationString(String key) {
-        String value = "";
-        try {
-            value = Application.getConfiguration().getString(key);
-        } catch (ConfigurationException e) {
-        }
-        return value;
     }
 
     public ImageInfo getImageInfo(InputStream inputStream,

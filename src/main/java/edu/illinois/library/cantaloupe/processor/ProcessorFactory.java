@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
 
 public class ProcessorFactory {
 
@@ -30,15 +29,12 @@ public class ProcessorFactory {
     }
 
     private static String getProcessorName(SourceFormat sourceFormat) {
-        String name;
-        try {
-            Configuration config = Application.getConfiguration();
-            name = config.getString("processor." + sourceFormat.getExtension());
-            if (name == null) {
-                name = config.getString("processor.fallback");
-            }
-        } catch (ConfigurationException e) {
-            return "ImageMagickProcessor";
+        Configuration config = Application.getConfiguration();
+        String name = config.
+                getString("processor." + sourceFormat.getExtension());
+        if (name == null) {
+            name = config.getString("processor.fallback",
+                    "ImageMagickProcessor");
         }
         return name;
     }
