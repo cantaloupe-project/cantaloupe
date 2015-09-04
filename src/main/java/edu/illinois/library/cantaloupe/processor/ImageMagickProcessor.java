@@ -31,6 +31,8 @@ public class ImageMagickProcessor implements Processor {
     private static final List<String> SUPPORTS = new ArrayList<String>();
 
     static {
+        // overrides the PATH; see
+        // http://im4java.sourceforge.net/docs/dev-guide.html
         String binaryPath = getConfigurationString("ImageMagickProcessor.path_to_binaries");
         if (binaryPath.length() > 0) {
             ProcessStarter.setGlobalSearchPath(binaryPath);
@@ -71,25 +73,22 @@ public class ImageMagickProcessor implements Processor {
     }
 
     public ImageInfo getImageInfo(InputStream inputStream,
-                                  String imageBaseUri) {
+                                  String imageBaseUri) throws Exception {
         ImageInfo imageInfo = new ImageInfo();
-        try {
-            Info sourceInfo = new Info("-", inputStream, true);
-            imageInfo.setId(imageBaseUri);
-            imageInfo.setHeight(sourceInfo.getImageHeight());
-            imageInfo.setWidth(sourceInfo.getImageWidth());
 
-            Map<String,List<String>> profile = new HashMap<String, List<String>>();
-            imageInfo.getProfile().add(profile);
+        Info sourceInfo = new Info("-", inputStream, true);
+        imageInfo.setId(imageBaseUri);
+        imageInfo.setHeight(sourceInfo.getImageHeight());
+        imageInfo.setWidth(sourceInfo.getImageWidth());
 
-            profile.put("formats", FORMAT_EXTENSIONS);
-            profile.put("qualities", QUALITIES);
-            profile.put("supports", SUPPORTS);
+        Map<String,List<String>> profile = new HashMap<String, List<String>>();
+        imageInfo.getProfile().add(profile);
 
-            return imageInfo;
-        } catch (InfoException e) {
-            return imageInfo;
-        }
+        profile.put("formats", FORMAT_EXTENSIONS);
+        profile.put("qualities", QUALITIES);
+        profile.put("supports", SUPPORTS);
+
+        return imageInfo;
     }
 
     public List<OutputFormat> getSupportedOutputFormats() {

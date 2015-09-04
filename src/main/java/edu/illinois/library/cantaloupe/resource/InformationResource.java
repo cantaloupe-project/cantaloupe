@@ -23,8 +23,7 @@ import org.restlet.resource.Get;
 public class InformationResource extends AbstractResource {
 
     @Get("json")
-    public Representation doGet() throws FileNotFoundException,
-            JsonProcessingException {
+    public Representation doGet() throws Exception {
         this.addHeader("Link",
                 "<http://iiif.io/api/image/2/level1.json>;rel=\"profile\"");
         this.addHeader("Link", "<http://iiif.io/api/image/2/context.json>; " +

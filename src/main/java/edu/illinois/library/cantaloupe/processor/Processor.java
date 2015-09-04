@@ -17,8 +17,10 @@ public interface Processor {
      * @param inputStream An InputStream from which to read the image
      * @param imageBaseUri Base URI of the image
      * @return ImageInfo describing the image
+     * @throws Exception
      */
-    ImageInfo getImageInfo(InputStream inputStream, String imageBaseUri);
+    ImageInfo getImageInfo(InputStream inputStream, String imageBaseUri)
+            throws Exception;
 
     /**
      * @return List of output formats supported by the processor.
