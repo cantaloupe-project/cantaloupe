@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
+import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -25,17 +26,22 @@ public class ImageResource extends AbstractResource {
 
         InputStream inputStream;
         Parameters params;
+        SourceFormat sourceFormat;
 
-        public ImageRepresentation(MediaType mediaType, Parameters params,
+        public ImageRepresentation(MediaType mediaType,
+                                   SourceFormat sourceFormat,
+                                   Parameters params,
                                    InputStream inputStream) {
             super(mediaType);
             this.inputStream = inputStream;
             this.params = params;
+            this.sourceFormat = sourceFormat;
         }
 
         public void write(OutputStream outputStream) throws IOException {
             try {
-                Processor proc = ProcessorFactory.getProcessor();
+                Processor proc = ProcessorFactory.
+                        getProcessor(this.sourceFormat);
                 proc.process(this.params, inputStream, outputStream);
             } catch (Exception e) {
                 throw new IOException(e);
@@ -64,7 +70,8 @@ public class ImageResource extends AbstractResource {
             throw new FileNotFoundException("Resource not found");
         }
 
-        Processor proc = ProcessorFactory.getProcessor();
+        SourceFormat sourceFormat = resolver.getExpectedSourceFormat(identifier);
+        Processor proc = ProcessorFactory.getProcessor(sourceFormat);
         if (!proc.getSupportedOutputFormats().contains(params.getOutputFormat())) {
             String msg = String.format("%s supports only the following formats: %s",
                     proc, StringUtils.join(proc.getSupportedOutputFormats(), ", "));
@@ -77,7 +84,8 @@ public class ImageResource extends AbstractResource {
 
         MediaType mediaType = new MediaType(
                 OutputFormat.valueOf(format.toUpperCase()).getMediaType());
-        return new ImageRepresentation(mediaType, params, inputStream);
+        return new ImageRepresentation(mediaType, sourceFormat, params,
+                inputStream);
     }
 
 }

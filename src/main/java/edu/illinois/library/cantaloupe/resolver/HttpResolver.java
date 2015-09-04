@@ -9,7 +9,7 @@ import org.restlet.resource.ClientResource;
 
 import java.io.InputStream;
 
-public class HttpResolver implements Resolver {
+public class HttpResolver extends AbstractResolver implements Resolver {
 
     private static Client client = new Client(new Context(), Protocol.HTTP);
 

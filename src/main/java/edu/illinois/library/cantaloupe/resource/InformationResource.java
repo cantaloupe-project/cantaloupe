@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
@@ -38,7 +39,8 @@ public class InformationResource extends AbstractResource {
             throw new FileNotFoundException("Resource not found");
         }
 
-        Processor proc = ProcessorFactory.getProcessor();
+        SourceFormat sourceFormat = resolver.getExpectedSourceFormat(identifier);
+        Processor proc = ProcessorFactory.getProcessor(sourceFormat);
         ImageInfo imageInfo = proc.getImageInfo(inputStream,
                 this.getImageUri(identifier));
 

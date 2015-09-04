@@ -7,7 +7,7 @@
 * Simple
 * Easy to get working
 * Pluggable resolvers for filesystem and HTTP sources
-* Pluggable image processors
+* Pluggable image processors for different source image formats
 
 ## What It Doesn't Do
 
@@ -34,10 +34,14 @@ it the following contents, editing it as necessary for your site:
     # To help in debugging
     print_stack_trace_on_error_page = true
 
-    # The image processor to use. The only available value is
-    # `ImageMagickProcessor`.
-    # Note that the `convert` and `identify` binaries must be in the PATH.
-    processor = ImageMagickProcessor
+    # The image processor to use for various source formats. The only
+    # available value, currently, is `ImageMagickProcessor`.
+    processor.jp2 = ImageMagickProcessor
+    processor.jpg = ImageMagickProcessor
+    processor.tif = ImageMagickProcessor
+    # Fall back to a general-purpose processor that supports just about
+    # everything.
+    processor.fallback = ImageMagickProcessor
     
     # The path resolver that translates the identifier in the URL to a path.
     # Available values are `FilesystemResolver` and `HttpResolver`.
@@ -78,7 +82,8 @@ forks out to the ImageMagick `convert` and `identify` shell commands. These
 must be in the PATH.
 
 ImageMagick produces high quality output and supports all of the IIIF
-transforms and all IIIF output formats except WebP.
+transforms and all IIIF output formats except WebP (assuming the JPEG2000 and
+PDF delegates are installed).
 
 ImageMagick is not known for being particularly fast or efficient. Performance
 degrades and memory usage increases as image size increases. Large amounts of
@@ -161,8 +166,8 @@ author](mailto:alexd@illinois.edu).
 
 ## Adding Custom Resolvers
 
-Resolvers are easy to write. All you have to do is implement the one method
-in the `edu.illinois.library.cantaloupe.resolver.Resolver` interface.
+Resolvers are easy to write. All you have to do is implement the simple
+`edu.illinois.library.cantaloupe.resolver.Resolver` interface.
 
 To use your custom resolver, set `resolver` in your properties file to its
 class name.

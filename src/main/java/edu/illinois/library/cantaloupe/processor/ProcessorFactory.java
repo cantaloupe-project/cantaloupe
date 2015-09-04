@@ -1,19 +1,24 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.SourceFormat;
+import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 
 public class ProcessorFactory {
 
     /**
-     * @return The current image processor based on the
-     * <code>processor</code> setting in the configuration. May return
-     * null.
+     * @param sourceFormat The source format for which to return an instance,
+     *                     based on configuration settings. If unsure, use
+     *                     <code>SourceFormat.UNKNOWN</code>.
+     * @return An instance suitable for handling the given source format, based
+     * on configuration settings. May return null.
      */
-    public static Processor getProcessor() {
+    public static Processor getProcessor(SourceFormat sourceFormat) {
         try {
-            Class class_ = Class.forName(ProcessorFactory.class.getPackage().getName() +
-                    "." + getProcessorName());
+            String className = ProcessorFactory.class.getPackage().getName() +
+                    "." + getProcessorName(sourceFormat);
+            Class class_ = Class.forName(className);
             return (Processor) class_.newInstance();
         } catch (ClassNotFoundException e) {
             return null; // TODO: log
@@ -24,10 +29,14 @@ public class ProcessorFactory {
         }
     }
 
-    private static String getProcessorName() {
+    private static String getProcessorName(SourceFormat sourceFormat) {
         String name;
         try {
-            name = Application.getConfiguration().getString("processor");
+            Configuration config = Application.getConfiguration();
+            name = config.getString("processor." + sourceFormat.getExtension());
+            if (name == null) {
+                name = config.getString("processor.fallback");
+            }
         } catch (ConfigurationException e) {
             return "ImageMagickProcessor";
         }
