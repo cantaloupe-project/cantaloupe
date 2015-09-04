@@ -1,9 +1,11 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.request.Format;
 import edu.illinois.library.cantaloupe.request.Parameters;
 
 import java.io.OutputStream;
+import java.util.List;
 
 /**
  * Interface to be implemented by all image processors.
@@ -16,6 +18,11 @@ public interface Processor {
      * @return ImageInfo for the image corresponding to the given identifier.
      */
     ImageInfo getImageInfo(String identifier, String imageBaseUri);
+
+    /**
+     * @return List of formats supported by the processor.
+     */
+    List<Format> getSupportedFormats();
 
     /**
      * Processes an image based on the supplied parameters and writes the
@@ -36,5 +43,10 @@ public interface Processor {
      * identifier exists.
      */
     boolean resourceExists(String identifier);
+
+    /**
+     * @return Human-readable name of the processor.
+     */
+    String toString();
 
 }

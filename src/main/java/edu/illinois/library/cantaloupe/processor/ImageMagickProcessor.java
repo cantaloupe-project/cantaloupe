@@ -25,13 +25,17 @@ import java.util.Map;
 
 public class ImageMagickProcessor implements Processor {
 
-    private static final List<String> formats = new ArrayList<String>();
+    private static final List<Format> formats = new ArrayList<Format>();
+    private static final List<String> formatExtensions = new ArrayList<String>();
     private static final List<String> qualities = new ArrayList<String>();
     private static final List<String> supports = new ArrayList<String>();
 
     static {
         for (Format format : Format.values()) {
-            formats.add(format.getExtension());
+            if (format != Format.WEBP) { // we don't support webp
+                formats.add(format);
+                formatExtensions.add(format.getExtension());
+            }
         }
 
         for (Quality quality : Quality.values()) {
@@ -64,7 +68,7 @@ public class ImageMagickProcessor implements Processor {
             Map<String,List<String>> profile = new HashMap<String, List<String>>();
             imageInfo.getProfile().add(profile);
 
-            profile.put("formats", formats);
+            profile.put("formatExtensions", formatExtensions);
             profile.put("qualities", qualities);
             profile.put("supports", supports);
 
@@ -72,6 +76,10 @@ public class ImageMagickProcessor implements Processor {
         } catch (InfoException e) {
             return imageInfo;
         }
+    }
+
+    public List<Format> getSupportedFormats() {
+        return formats;
     }
 
     public void process(Parameters params, OutputStream outputStream)
@@ -152,6 +160,10 @@ public class ImageMagickProcessor implements Processor {
         String filePath = this.getResolvedPathname(identifier);
         File file = new File(filePath);
         return file.exists() && !file.isDirectory();
+    }
+
+    public String toString() {
+        return this.getClass().getSimpleName();
     }
 
     /**
