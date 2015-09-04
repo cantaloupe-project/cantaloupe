@@ -1,11 +1,13 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
@@ -46,6 +48,16 @@ public class InformationResource extends AbstractResource {
         StringRepresentation rep = new StringRepresentation(json);
         rep.setMediaType(new MediaType("application/json"));
         return rep;
+    }
+
+    private String getImageUri(String identifier) {
+        try {
+            return this.getRootRef() +
+                    ((ImageServerApplication)this.getApplication()).BASE_IIIF_PATH +
+                    "/" + java.net.URLEncoder.encode(identifier, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            return null;
+        }
     }
 
 }
