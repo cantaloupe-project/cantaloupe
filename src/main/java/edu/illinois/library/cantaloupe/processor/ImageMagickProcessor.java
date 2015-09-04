@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.request.Quality;
@@ -73,10 +74,12 @@ public class ImageMagickProcessor implements Processor {
     }
 
     public ImageInfo getImageInfo(InputStream inputStream,
+                                  SourceFormat sourceFormat,
                                   String imageBaseUri) throws Exception {
         ImageInfo imageInfo = new ImageInfo();
 
-        Info sourceInfo = new Info("-", inputStream, true);
+        Info sourceInfo = new Info(sourceFormat.getExtension() + ":-",
+                inputStream, true);
         imageInfo.setId(imageBaseUri);
         imageInfo.setHeight(sourceInfo.getImageHeight());
         imageInfo.setWidth(sourceInfo.getImageWidth());
@@ -95,10 +98,11 @@ public class ImageMagickProcessor implements Processor {
         return OUTPUT_FORMATS;
     }
 
-    public void process(Parameters params, InputStream inputStream,
-                        OutputStream outputStream) throws Exception {
+    public void process(Parameters params, SourceFormat sourceFormat,
+                        InputStream inputStream, OutputStream outputStream)
+            throws Exception {
         IMOperation op = new IMOperation();
-        op.addImage("-"); // read from stdin
+        op.addImage(sourceFormat.getExtension() + ":-"); // read from stdin
 
         // region transformation
         Region region = params.getRegion();

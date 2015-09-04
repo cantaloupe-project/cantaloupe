@@ -42,7 +42,8 @@ public class ImageResource extends AbstractResource {
             try {
                 Processor proc = ProcessorFactory.
                         getProcessor(this.sourceFormat);
-                proc.process(this.params, inputStream, outputStream);
+                proc.process(this.params, this.sourceFormat, inputStream,
+                        outputStream);
             } catch (Exception e) {
                 throw new IOException(e);
             }

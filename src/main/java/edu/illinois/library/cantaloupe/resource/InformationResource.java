@@ -40,7 +40,7 @@ public class InformationResource extends AbstractResource {
 
         SourceFormat sourceFormat = resolver.getExpectedSourceFormat(identifier);
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
-        ImageInfo imageInfo = proc.getImageInfo(inputStream,
+        ImageInfo imageInfo = proc.getImageInfo(inputStream, sourceFormat,
                 this.getImageUri(identifier));
 
         ObjectMapper mapper = new ObjectMapper();

@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
 
@@ -15,12 +16,13 @@ public interface Processor {
 
     /**
      * @param inputStream An InputStream from which to read the image
+     * @param sourceFormat Format of the image
      * @param imageBaseUri Base URI of the image
      * @return ImageInfo describing the image
      * @throws Exception
      */
-    ImageInfo getImageInfo(InputStream inputStream, String imageBaseUri)
-            throws Exception;
+    ImageInfo getImageInfo(InputStream inputStream, SourceFormat sourceFormat,
+                           String imageBaseUri) throws Exception;
 
     /**
      * @return List of output formats supported by the processor.
@@ -31,12 +33,14 @@ public interface Processor {
      * Uses the supplied parameters to process an image from the supplied
      * InputStream, and writes the result to the given OutputStream.
      *
-     * @param p Parameters of the output image
-     * @param is An InputStream from which to read the image
-     * @param os An OutputStream to which to write the image
+     * @param params Parameters of the output image
+     * @param sourceFormat Format of the source image
+     * @param inputStream An InputStream from which to read the image
+     * @param outputStream An OutputStream to which to write the image
      * @throws Exception
      */
-    void process(Parameters p, InputStream is, OutputStream os)
+    void process(Parameters params, SourceFormat sourceFormat,
+                 InputStream inputStream, OutputStream outputStream)
             throws Exception;
 
     /**
