@@ -28,7 +28,8 @@ public class InformationResource extends AbstractResource {
                 "rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"");
 
         Map<String,Object> attrs = this.getRequest().getAttributes();
-        String identifier = (String) attrs.get("identifier");
+        String identifier = java.net.URLDecoder.
+                decode((String) attrs.get("identifier"), "UTF-8");
 
         Resolver resolver = ResolverFactory.getResolver();
         InputStream inputStream = resolver.resolve(identifier);
