@@ -24,8 +24,6 @@ public class InformationResource extends AbstractResource {
 
     @Get("json")
     public Representation doGet() throws Exception {
-        this.addHeader("Link",
-                "<http://iiif.io/api/image/2/level1.json>;rel=\"profile\"");
         this.addHeader("Link", "<http://iiif.io/api/image/2/context.json>; " +
                 "rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"");
 
