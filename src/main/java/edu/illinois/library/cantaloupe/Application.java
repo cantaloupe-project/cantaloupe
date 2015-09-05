@@ -13,6 +13,10 @@ public class Application {
 
     private static Configuration config;
 
+    public static void main(String[] args) throws Exception {
+        startRestlet();
+    }
+
     /**
      * @return The application-wide Configuration object.
      */
@@ -30,13 +34,13 @@ public class Application {
     }
 
     /**
-     * Overrides the configuration. To be used mainly in testing.
+     * Overrides the configuration, mainly for testing purposes.
      */
     public static void setConfiguration(Configuration c) {
         config = c;
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void startRestlet() throws Exception {
         Component component = new Component();
         Integer port = getConfiguration().getInteger("http.port", 8182);
         component.getServers().add(Protocol.HTTP, port);
