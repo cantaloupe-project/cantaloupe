@@ -29,10 +29,6 @@ public class ImageInfo {
     private List<Map<String,Object>> tiles;
     private Integer width;
 
-    public ImageInfo() {
-        this.getProfile().add("http://iiif.io/api/image/2/level2.json");
-    }
-
     @JsonProperty("@context")
     public String getContext() {
         return context;

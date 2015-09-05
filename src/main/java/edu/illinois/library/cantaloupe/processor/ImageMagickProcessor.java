@@ -74,6 +74,7 @@ public class ImageMagickProcessor implements Processor {
         imageInfo.setHeight(sourceInfo.getImageHeight());
         imageInfo.setWidth(sourceInfo.getImageWidth());
 
+        imageInfo.getProfile().add("http://iiif.io/api/image/2/level2.json");
         Map<String,List<String>> profile = new HashMap<String, List<String>>();
         imageInfo.getProfile().add(profile);
 
