@@ -3,6 +3,8 @@ package edu.illinois.library.cantaloupe;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,16 +27,18 @@ public class ApplicationTest extends TestCase {
             Path testPath = Paths.get(cwd, "src", "test", "java", "edu",
                     "illinois", "library", "cantaloupe", "test");
 
-            String bogusProps = testPath + File.separator + "bogus.properties";
-            System.setProperty("cantaloupe.config", bogusProps);
-            assertNull(Application.getConfiguration());
-
             String goodProps = testPath + File.separator + "cantaloupe.properties";
             System.setProperty("cantaloupe.config", goodProps);
             assertNotNull(Application.getConfiguration());
         } catch (IOException e) {
             fail("Failed to set cantaloupe.config");
         }
+    }
+
+    public void testSetConfiguration() {
+        Configuration newConfig = new BaseConfiguration();
+        Application.setConfiguration(newConfig);
+        assertSame(newConfig, Application.getConfiguration());
     }
 
 }

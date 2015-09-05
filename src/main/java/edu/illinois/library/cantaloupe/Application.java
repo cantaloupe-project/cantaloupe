@@ -13,6 +13,9 @@ public class Application {
 
     private static Configuration config;
 
+    /**
+     * @return The application-wide Configuration object.
+     */
     public static Configuration getConfiguration() {
         if (config == null) {
             try {
@@ -24,6 +27,13 @@ public class Application {
             }
         }
         return config;
+    }
+
+    /**
+     * Overrides the configuration. To be used mainly in testing.
+     */
+    public static void setConfiguration(Configuration c) {
+        config = c;
     }
 
     public static void main(String[] args) throws Exception {
