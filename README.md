@@ -2,28 +2,29 @@
 
 *[IIIF 2.0](http://iiif.io) image server in Java*
 
-Cantaloupe is an IIIF 2.0 image server written in Java. It uses the
-[Restlet](http://restlet.com/products/restlet-framework/) REST framework and
-the [Simple](http://www.simpleframework.org) high-performance HTTP server.
+Cantaloupe is an extensible IIIF 2.0 image server written in Java. It uses the
+[Restlet](http://restlet.com/products/restlet-framework/) REST framework on top
+of the [Simple](http://www.simpleframework.org) high-performance HTTP server.
 
 # Features
 
 * Simple
 * Easy to get working
 * Pluggable resolvers for filesystem and HTTP sources
-* Pluggable processors for different source image formats (currently, an
-  ImageMagick processor supports quite a few)
+* Pluggable processors for different source image formats
+* Self-contained configuration means easy upgrading and the ability to run
+  multiple instances with different configurations concurrently
 
 ## Missing Features
 
-* Caching. A caching reverse proxy can do a better job.
+* Caching. This would be made redundant by a caching reverse proxy like
+  Varnish, which can do a better job anyway.
 * Log file writing. Log messages go to standard output.
 
 # Requirements
 
-* JRE 7+
-* ImageMagick with PDF and JPEG2000 delegates (see the ImageMagickProcessor
-  section below)
+The only hard requirement is JRE 7+. Additional requirements depend on your
+choice of processor; see the Processors section below.
 
 # Configuration
 
@@ -38,12 +39,15 @@ it the following contents, modifying as desired:
 
     # The image processor to use for various source formats. The only
     # available value for any of these, currently, is `ImageMagickProcessor`.
-    processor.jp2 = ImageMagickProcessor
-    processor.jpg = ImageMagickProcessor
-    processor.tif = ImageMagickProcessor
+    processor.jp2 = GraphicsMagickProcessor
+    processor.jpg = GraphicsMagickProcessor
+    processor.tif = GraphicsMagickProcessor
     # Fall back to a general-purpose processor that supports just about
     # everything.
-    processor.fallback = ImageMagickProcessor
+    processor.fallback = GraphicsMagickProcessor
+
+    # Optional; overrides the PATH
+    GraphicsMagickProcessor.path_to_binaries = /usr/local/bin
 
     # Optional; overrides the PATH
     ImageMagickProcessor.path_to_binaries = /usr/local/bin
@@ -51,22 +55,19 @@ it the following contents, modifying as desired:
     # The path resolver that translates the identifier in the URL to a path.
     # Available values are `FilesystemResolver` and `HttpResolver`.
     resolver = FilesystemResolver
-    
+
     # The server-side path that will be prefixed to the identifier in the
     # request URL.
     FilesystemResolver.path_prefix = /home/myself/images
-    
     # The server-side path or extension. that will be suffixed to the identifier
     # in the request URL.
     FilesystemResolver.path_suffix =
     
     # The URL that will be prefixed to the identifier in the request URL.
     HttpResolver.url_prefix = http://localhost/images/
-    
     # The path, extension, query string, etc. that will be suffixed to the
     # identifier in the request URL.
     HttpResolver.url_suffix =
-
     # Used for HTTP Basic authentication
     HttpResolver.username =
     HttpResolver.password =
@@ -81,14 +82,33 @@ It is now ready for use at: `http://localhost:{http.port}/iiif/`
 
 # Processors
 
-Cantaloupe can use different image processors. Currently, it includes only the
-ImageMagickProcessor.
+Cantaloupe can use different image processors, each of which can be assigned to
+particular source formats via the config file (see the Configuration section
+above). Currently, available processors include:
+
+* GraphicsMagickProcessor
+* ImageMagickProcessor
+
+## GraphicsMagickProcessor
+
+GraphicsMagickProcessor uses [im4java](http://im4java.sourceforge.net), which
+forks out to the GraphicsMagick shell command (`gm`). As such,
+GraphicsMagick must be installed.
+
+GraphicsMagick produces high-quality output and supports all of the IIIF
+transforms and all IIIF output formats except WebP (assuming the necessary
+libraries are installed; see [Supported Formats]
+(http://www.graphicsmagick.org/formats.html)).
+
+GraphicsMagickProcessor is a decent go-to processor as it supports a wide range
+of formats and is generally faster than ImageMagickProcessor. As with any
+processor, performance degrades and memory usage increases as image size and
+traffic increase.
 
 ## ImageMagickProcessor
 
-ImageMagickProcessor uses [im4java](http://im4java.sourceforge.net), which
-forks out to the ImageMagick `convert` and `identify` shell commands, which
-must be present in the PATH.
+ImageMagickProcessor, like GraphicsMagickProcessor, also uses
+[im4java](http://im4java.sourceforge.net) to wrap ImageMagick commands.
 
 ImageMagick produces high-quality output and supports all of the IIIF
 transforms and all IIIF output formats except WebP (assuming the JPEG2000 and
@@ -97,6 +117,9 @@ PDF delegates are installed).
 ImageMagick is not known for being particularly fast or efficient. Performance
 degrades and memory usage increases as image size increases. Large amounts of
 RAM and fast storage help.
+
+The ImageMagickProcessor requires ImageMagick to be installed, as well as its
+PDF and JPEG2000 delegates.
 
 # Resolvers
 
@@ -168,8 +191,9 @@ http://localhost/images/some-uuid/image.jp2.
 
 # Feedback
 
-Ideas, suggestions, requests, bug reports, and so on are welcome; please
-either create an issue, or [contact the author](mailto:alexd@illinois.edu).
+Ideas, suggestions, feature requests, bug reports, and so on are welcome;
+please either create an issue, or
+[contact the author](mailto:alexd@illinois.edu).
 
 # Custom Development
 
@@ -190,8 +214,8 @@ See one of the existing resolvers for examples.
 ## Adding Custom Image Processors
 
 Processors implement the `edu.illinois.library.cantaloupe.processor.Processor`
-interface. See the interface documentation for details and
-`ImageMagickProcessor` for an example.
+interface. See the interface documentation for details and the existing
+implementations for examples.
 
 ## Contributing Code
 
