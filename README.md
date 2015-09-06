@@ -12,8 +12,6 @@ of the [Simple](http://www.simpleframework.org) high-performance HTTP server.
 * Easy to get working
 * Pluggable resolvers for filesystem and HTTP sources
 * Pluggable processors for different source image formats
-* Self-contained configuration means easy upgrading and the ability to run
-  multiple instances with different configurations concurrently
 
 ## Missing Features
 
@@ -37,14 +35,15 @@ it the following contents, modifying as desired:
     # Helpful in development
     print_stack_trace_on_error_page = true
 
-    # The image processor to use for various source formats. The only
-    # available value for any of these, currently, is `ImageMagickProcessor`.
-    processor.jp2 = GraphicsMagickProcessor
-    processor.jpg = GraphicsMagickProcessor
-    processor.tif = GraphicsMagickProcessor
+    # The image processor to use for various source formats. Available values
+    # are `ImageIoProcessor`, `GraphicsMagickProcessor`, and
+    # `ImageMagickProcessor`.
+    processor.jp2 = ImageMagickProcessor
+    processor.jpg = ImageIoProcessor
+    processor.tif = ImageMagickProcessor
     # Fall back to a general-purpose processor that supports just about
     # everything.
-    processor.fallback = GraphicsMagickProcessor
+    processor.fallback = ImageMagickProcessor
 
     # Optional; overrides the PATH
     GraphicsMagickProcessor.path_to_binaries = /usr/local/bin
@@ -86,13 +85,21 @@ Cantaloupe can use different image processors, each of which can be assigned to
 particular source formats via the config file (see the Configuration section
 above). Currently, available processors include:
 
+* ImageIoProcessor
 * GraphicsMagickProcessor
 * ImageMagickProcessor
 
+## ImageIoProcessor
+
+ImageIoProcessor is a native Java processor using the Java ImageIO interface.
+
+// TODO: IIIF compliance
+// TODO: supported formats
+
 ## GraphicsMagickProcessor
 
-GraphicsMagickProcessor uses [im4java](http://im4java.sourceforge.net), which
-forks out to the GraphicsMagick shell command (`gm`). As such,
+GraphicsMagickProcessor uses [im4java](http://im4java.sourceforge.net) to
+fork out to the GraphicsMagick shell command (`gm`). As such,
 GraphicsMagick must be installed.
 
 GraphicsMagick produces high-quality output and supports all of the IIIF
@@ -100,8 +107,8 @@ transforms and all IIIF output formats except WebP (assuming the necessary
 libraries are installed; see [Supported Formats]
 (http://www.graphicsmagick.org/formats.html)).
 
-GraphicsMagickProcessor is a decent go-to processor as it supports a wide range
-of formats and is generally faster than ImageMagickProcessor. As with any
+GraphicsMagickProcessor is a good fallback processor as it supports a wide
+range of formats and is generally faster than ImageMagickProcessor. As with any
 processor, performance degrades and memory usage increases as image size and
 traffic increase.
 
@@ -199,11 +206,10 @@ please either create an issue, or
 
 ## Adding Custom Resolvers
 
-Resolvers are easy to write. All you have to do is implement the simple
-`edu.illinois.library.cantaloupe.resolver.Resolver` interface.
-
-To use your custom resolver, set `resolver` in your properties file to its
-class name.
+Resolvers are easy to write: all you have to do is write a class that
+implements the
+`edu.illinois.library.cantaloupe.resolver.Resolver` interface. Then, to use it,
+set `resolver` in your properties file to its name.
 
 Feel free to add new configuration keys to the properties file. They should
 be in the form of `NameOfMyResolver.whatever`. They can then be accessed
