@@ -13,7 +13,7 @@ of the [Simple](http://www.simpleframework.org) high-performance HTTP server.
 * Pluggable resolvers for filesystem and HTTP sources
 * Pluggable processors for different source image formats
 
-## Missing Features
+## What It Doesn't Do
 
 * Caching. This would be made redundant by a caching reverse proxy like
   Varnish, which can do a better job anyway.
@@ -91,10 +91,23 @@ above). Currently, available processors include:
 
 ## ImageIoProcessor
 
-ImageIoProcessor is a native Java processor using the Java ImageIO interface.
+ImageIoProcessor uses the Java ImageIO interface to load and operate on
+BufferedImages.
 
-// TODO: IIIF compliance
-// TODO: supported formats
+ImageIO, as its name implies, is simply an I/O interface that does not know
+anything about image formats, and therefore the list of formats supported by
+this processor varies depending on platform and the available libraries (jars)
+in the classpath. By default, it is minimal -- typically something like JPEG,
+GIF, and PNG.
+
+See the following links for interesting possibilities:
+
+* [https://github.com/jai-imageio/jai-imageio-core]
+  (https://github.com/jai-imageio/jai-imageio-core)
+* [https://github.com/geosolutions-it/imageio-ext/]
+  (https://github.com/geosolutions-it/imageio-ext/)
+* [https://github.com/jai-imageio/jai-imageio-jpeg2000]
+  (https://github.com/jai-imageio/jai-imageio-jpeg2000)
 
 ## GraphicsMagickProcessor
 

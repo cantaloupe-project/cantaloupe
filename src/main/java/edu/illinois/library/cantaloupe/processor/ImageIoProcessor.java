@@ -26,20 +26,18 @@ import java.util.Set;
  */
 public class ImageIoProcessor implements Processor {
 
-    private static final Set<OutputFormat> OUTPUT_FORMATS = new HashSet<OutputFormat>();
+    private static final HashMap<SourceFormat,Set<OutputFormat>> OUTPUT_FORMATS =
+            getAvailableOutputFormats();
     private static final Set<String> FORMAT_EXTENSIONS = new HashSet<String>();
     private static final Set<String> QUALITIES = new HashSet<String>();
     private static final Set<String> SUPPORTS = new HashSet<String>();
 
     static {
-        OUTPUT_FORMATS.add(OutputFormat.GIF);
-        OUTPUT_FORMATS.add(OutputFormat.JPG);
-        OUTPUT_FORMATS.add(OutputFormat.PNG);
-        OUTPUT_FORMATS.add(OutputFormat.TIF);
-        FORMAT_EXTENSIONS.add("gif");
-        FORMAT_EXTENSIONS.add("jpg");
-        FORMAT_EXTENSIONS.add("png");
-        FORMAT_EXTENSIONS.add("tif");
+        for (Set<OutputFormat> set : OUTPUT_FORMATS.values()) {
+            for (OutputFormat format : set) {
+                FORMAT_EXTENSIONS.add(format.getExtension());
+            }
+        }
 
         for (Quality quality : Quality.values()) {
             QUALITIES.add(quality.toString().toLowerCase());
@@ -60,8 +58,31 @@ public class ImageIoProcessor implements Processor {
         SUPPORTS.add("sizeWh");
     }
 
+    /**
+     * @return Map of available output formats for all known source formats,
+     * based on information reported by the ImageIO library.
+     */
+    public static HashMap<SourceFormat, Set<OutputFormat>> getAvailableOutputFormats() {
+        final HashMap<SourceFormat,Set<OutputFormat>> map =
+                new HashMap<SourceFormat,Set<OutputFormat>>();
+        for (SourceFormat sourceFormat : SourceFormat.values()) {
+            final Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
+            final String[] formatNamesArray = ImageIO.getReaderMIMETypes();
+            for (int i = 0, length = formatNamesArray.length; i < length; i++) {
+                final String formatMediaType = formatNamesArray[i].toLowerCase();
+                for (OutputFormat format : OutputFormat.values()) {
+                    if (format.getMediaType().equals(formatMediaType)) {
+                        outputFormats.add(format);
+                    }
+                }
+            }
+            map.put(sourceFormat, outputFormats);
+        }
+        return map;
+    }
+
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
-        return OUTPUT_FORMATS;
+        return OUTPUT_FORMATS.get(sourceFormat);
     }
 
     public ImageInfo getImageInfo(InputStream inputStream,
