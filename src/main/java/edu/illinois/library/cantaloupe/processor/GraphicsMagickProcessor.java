@@ -24,7 +24,7 @@ import java.util.Map;
 
 public class GraphicsMagickProcessor implements Processor {
 
-    private static final List<OutputFormat> OUTPUT_FORMATS = new ArrayList<OutputFormat>();
+    private static final List<OutputFormat> OUTPUT_FORMATS = new ArrayList<OutputFormat>(); // TODO: use sets
     private static final List<String> FORMAT_EXTENSIONS = new ArrayList<String>();
     private static final List<String> QUALITIES = new ArrayList<String>();
     private static final List<String> SUPPORTS = new ArrayList<String>();
@@ -84,7 +84,7 @@ public class GraphicsMagickProcessor implements Processor {
         return imageInfo;
     }
 
-    public List<OutputFormat> getSupportedOutputFormats() {
+    public Iterable<OutputFormat> getSupportedOutputFormats() {
         return OUTPUT_FORMATS;
     }
 

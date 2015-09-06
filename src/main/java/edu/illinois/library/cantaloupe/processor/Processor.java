@@ -25,9 +25,9 @@ public interface Processor {
                            String imageBaseUri) throws Exception;
 
     /**
-     * @return List of output formats supported by the processor.
+     * @return Output formats supported by the processor.
      */
-    List<OutputFormat> getSupportedOutputFormats();
+    Iterable<OutputFormat> getSupportedOutputFormats();
 
     /**
      * Uses the supplied parameters to process an image from the supplied
