@@ -13,8 +13,8 @@ public class Region {
     private boolean isFull = false;
     private boolean isPercent = false;
     private Integer width;
-    private Float x;
-    private Float y;
+    private Float x = new Float(0.0);
+    private Float y = new Float(0.0);
 
     /**
      * @param uriRegion The "region" component of an IIIF URI.
