@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
+import java.util.Set;
 
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
@@ -73,9 +74,10 @@ public class ImageResource extends AbstractResource {
 
         SourceFormat sourceFormat = resolver.getExpectedSourceFormat(identifier);
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
-        if (!proc.getSupportedOutputFormats().contains(params.getOutputFormat())) {
-            String msg = String.format("%s supports only the following formats: %s",
-                    proc, StringUtils.join(proc.getSupportedOutputFormats(), ", "));
+        Set availableOutputFormats = proc.getAvailableOutputFormats(sourceFormat);
+        if (!availableOutputFormats.contains(params.getOutputFormat())) {
+            String msg = String.format("%s supports only the following source formats for this output format: %s",
+                    proc, StringUtils.join(availableOutputFormats, ", "));
             throw new IllegalArgumentException(msg);
         }
 

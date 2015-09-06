@@ -37,6 +37,17 @@ public class ImageMagickProcessorTest extends TestCase {
                 getConfiguration().getString("ImageMagickProcessor.path_to_binaries"));
     }
 
+    public void testGetAvailableOutputFormats() {
+        Set<OutputFormat> expectedFormats = new HashSet<OutputFormat>();
+        for (OutputFormat outputFormat : OutputFormat.values()) {
+            if (outputFormat != OutputFormat.WEBP) {
+                expectedFormats.add(outputFormat);
+            }
+        }
+        assertEquals(expectedFormats,
+                instance.getAvailableOutputFormats(SourceFormat.JPG));
+    }
+
     public void testGetImageInfo() throws Exception {
         // get an ImageInfo representing an image file
         File file = getFixture("escher_lego.jpg");
@@ -90,16 +101,6 @@ public class ImageMagickProcessorTest extends TestCase {
         expectedSupports.add("sizeByW");
         expectedSupports.add("sizeWh");
         assertEquals(expectedSupports, actualSupports);
-    }
-
-    public void testGetSupportedOutputFormats() {
-        Set<OutputFormat> expectedFormats = new HashSet<OutputFormat>();
-        for (OutputFormat outputFormat : OutputFormat.values()) {
-            if (outputFormat != OutputFormat.WEBP) {
-                expectedFormats.add(outputFormat);
-            }
-        }
-        assertEquals(expectedFormats, instance.getSupportedOutputFormats());
     }
 
     public void testProcess() {

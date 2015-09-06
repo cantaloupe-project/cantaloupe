@@ -25,6 +25,16 @@ public class ImageIoProcessorTest extends TestCase {
         instance = new ImageIoProcessor();
     }
 
+    public void testGetAvailableOutputFormats() {
+        HashSet<OutputFormat> expectedFormats = new HashSet<OutputFormat>();
+        expectedFormats.add(OutputFormat.GIF);
+        expectedFormats.add(OutputFormat.JPG);
+        expectedFormats.add(OutputFormat.PNG);
+        expectedFormats.add(OutputFormat.TIF);
+        assertEquals(expectedFormats,
+                instance.getAvailableOutputFormats(SourceFormat.JPG));
+    }
+
     public void testGetImageInfo() throws Exception {
         // get an ImageInfo representing an image file
         File file = getFixture("escher_lego.jpg");
@@ -77,15 +87,6 @@ public class ImageIoProcessorTest extends TestCase {
         expectedSupports.add("sizeByW");
         expectedSupports.add("sizeWh");
         assertEquals(expectedSupports, actualSupports);
-    }
-
-    public void testGetSupportedOutputFormats() {
-        HashSet<OutputFormat> expectedFormats = new HashSet<OutputFormat>();
-        expectedFormats.add(OutputFormat.GIF);
-        expectedFormats.add(OutputFormat.JPG);
-        expectedFormats.add(OutputFormat.PNG);
-        expectedFormats.add(OutputFormat.TIF);
-        assertEquals(expectedFormats, instance.getSupportedOutputFormats());
     }
 
     public void testProcess() {

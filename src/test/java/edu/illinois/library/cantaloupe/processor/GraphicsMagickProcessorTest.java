@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +36,15 @@ public class GraphicsMagickProcessorTest extends TestCase {
         assertEquals("true", System.getProperty("im4java.useGM"));
         assertEquals(ProcessStarter.getGlobalSearchPath(), Application.
                 getConfiguration().getString("GraphicsMagickProcessor.path_to_binaries"));
+    }
+
+    public void testGetAvailableOutputFormats() {
+        Set<OutputFormat> expectedFormats = new HashSet<OutputFormat>();
+        for (OutputFormat outputFormat : OutputFormat.values()) {
+            expectedFormats.add(outputFormat);
+        }
+        assertEquals(expectedFormats,
+                instance.getAvailableOutputFormats(SourceFormat.JPG));
     }
 
     public void testGetImageInfo() throws Exception {
@@ -90,14 +98,6 @@ public class GraphicsMagickProcessorTest extends TestCase {
         expectedSupports.add("sizeByW");
         expectedSupports.add("sizeWh");
         assertEquals(expectedSupports, actualSupports);
-    }
-
-    public void testGetSupportedOutputFormats() {
-        Set<OutputFormat> expectedFormats = new HashSet<OutputFormat>();
-        for (OutputFormat outputFormat : OutputFormat.values()) {
-            expectedFormats.add(outputFormat);
-        }
-        assertEquals(expectedFormats, instance.getSupportedOutputFormats());
     }
 
     public void testProcess() {

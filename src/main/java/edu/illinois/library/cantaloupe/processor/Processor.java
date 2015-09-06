@@ -15,6 +15,13 @@ import java.util.Set;
 public interface Processor {
 
     /**
+     * @param sourceFormat The source format for which to get a list of
+     *                     available output formats.
+     * @return Output formats available for the given source format.
+     */
+    Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat);
+
+    /**
      * @param inputStream An InputStream from which to read the image
      * @param sourceFormat Format of the image
      * @param imageBaseUri Base URI of the image
@@ -23,11 +30,6 @@ public interface Processor {
      */
     ImageInfo getImageInfo(InputStream inputStream, SourceFormat sourceFormat,
                            String imageBaseUri) throws Exception;
-
-    /**
-     * @return Output formats supported by the processor.
-     */
-    Set<OutputFormat> getSupportedOutputFormats();
 
     /**
      * Uses the supplied parameters to process an image from the supplied

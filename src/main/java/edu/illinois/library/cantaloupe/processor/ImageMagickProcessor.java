@@ -63,6 +63,10 @@ public class ImageMagickProcessor implements Processor {
         SUPPORTS.add("sizeWh");
     }
 
+    public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
+        return OUTPUT_FORMATS;
+    }
+
     public ImageInfo getImageInfo(InputStream inputStream,
                                   SourceFormat sourceFormat,
                                   String imageBaseUri) throws Exception {
@@ -83,10 +87,6 @@ public class ImageMagickProcessor implements Processor {
         profile.put("supports", SUPPORTS);
 
         return imageInfo;
-    }
-
-    public Set<OutputFormat> getSupportedOutputFormats() {
-        return OUTPUT_FORMATS;
     }
 
     public void process(Parameters params, SourceFormat sourceFormat,
