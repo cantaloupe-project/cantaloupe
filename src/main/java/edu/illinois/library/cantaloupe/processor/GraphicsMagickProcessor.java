@@ -17,17 +17,18 @@ import org.im4java.process.ProcessStarter;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class GraphicsMagickProcessor implements Processor {
 
-    private static final List<OutputFormat> OUTPUT_FORMATS = new ArrayList<OutputFormat>(); // TODO: use sets
-    private static final List<String> FORMAT_EXTENSIONS = new ArrayList<String>();
-    private static final List<String> QUALITIES = new ArrayList<String>();
-    private static final List<String> SUPPORTS = new ArrayList<String>();
+    private static final Set<OutputFormat> OUTPUT_FORMATS = new HashSet<OutputFormat>();
+    private static final Set<String> FORMAT_EXTENSIONS = new HashSet<String>();
+    private static final Set<String> QUALITIES = new HashSet<String>();
+    private static final Set<String> SUPPORTS = new HashSet<String>();
 
     static {
         System.setProperty("im4java.useGM", "true");
@@ -74,7 +75,7 @@ public class GraphicsMagickProcessor implements Processor {
         imageInfo.setWidth(sourceInfo.getImageWidth());
 
         imageInfo.getProfile().add("http://iiif.io/api/image/2/level2.json");
-        Map<String,List<String>> profile = new HashMap<String, List<String>>();
+        Map<String,Set<String>> profile = new HashMap<String, Set<String>>();
         imageInfo.getProfile().add(profile);
 
         profile.put("formats", FORMAT_EXTENSIONS);
@@ -84,7 +85,7 @@ public class GraphicsMagickProcessor implements Processor {
         return imageInfo;
     }
 
-    public Iterable<OutputFormat> getSupportedOutputFormats() {
+    public Set<OutputFormat> getSupportedOutputFormats() {
         return OUTPUT_FORMATS;
     }
 

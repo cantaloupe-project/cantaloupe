@@ -7,7 +7,7 @@ import edu.illinois.library.cantaloupe.request.Parameters;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.List;
+import java.util.Set;
 
 /**
  * Interface to be implemented by all image processors.
@@ -27,7 +27,7 @@ public interface Processor {
     /**
      * @return Output formats supported by the processor.
      */
-    Iterable<OutputFormat> getSupportedOutputFormats();
+    Set<OutputFormat> getSupportedOutputFormats();
 
     /**
      * Uses the supplied parameters to process an image from the supplied
