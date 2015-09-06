@@ -10,7 +10,6 @@ import edu.illinois.library.cantaloupe.request.Rotation;
 import edu.illinois.library.cantaloupe.request.Size;
 
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
@@ -19,7 +18,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -220,15 +218,15 @@ public class ImageIoProcessor implements Processor {
             scaledImage = inputImage;
         } else {
             int width = 0, height = 0;
-            if (size.getScaleMode() == Size.ScaleMode.FILL_WIDTH) {
+            if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
                 width = size.getWidth();
                 height = inputImage.getHeight() * width /
                         inputImage.getWidth();
-            } else if (size.getScaleMode() == Size.ScaleMode.FILL_HEIGHT) {
+            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
                 height = size.getHeight();
                 width = inputImage.getWidth() * height /
                         inputImage.getHeight();
-            } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FIT_INSIDE) {
+            } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
                 width = size.getWidth();
                 height = size.getHeight();
             } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {

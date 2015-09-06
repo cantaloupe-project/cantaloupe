@@ -19,7 +19,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -111,11 +110,11 @@ public class GraphicsMagickProcessor implements Processor {
         // size transformation
         Size size = params.getSize();
         if (size.getScaleMode() != Size.ScaleMode.FULL) {
-            if (size.getScaleMode() == Size.ScaleMode.FILL_WIDTH) {
+            if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
                 op.resize(size.getWidth());
-            } else if (size.getScaleMode() == Size.ScaleMode.FILL_HEIGHT) {
+            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
                 op.resize(null, size.getHeight());
-            } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FIT_INSIDE) {
+            } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
                 op.resize(size.getWidth(), size.getHeight(), "!".charAt(0));
             } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
                 op.resize(size.getWidth(), size.getHeight());
