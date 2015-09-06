@@ -5,8 +5,8 @@ import edu.illinois.library.cantaloupe.Application;
 public class ResolverFactory {
 
     /**
-     * @return The current image processor based on the
-     * <code>resolver</code> setting in the configuration. May return null.
+     * @return The current resolver based on the <code>resolver</code> setting
+     * in the configuration. May return null.
      */
     public static Resolver getResolver() {
         try {
