@@ -36,10 +36,17 @@ public class HttpResolver extends AbstractResolver implements Resolver {
         }
     }
 
-    private Reference getUrl(String identifier) {
+    public Reference getUrl(String identifier) {
         Configuration config = Application.getConfiguration();
-        return new Reference(config.getString("HttpResolver.url_prefix") +
-                identifier + config.getString("HttpResolver.url_suffix"));
+        String prefix = config.getString("HttpResolver.url_prefix");
+        if (prefix == null) {
+            prefix = "";
+        }
+        String suffix = config.getString("HttpResolver.url_suffix");
+        if (suffix == null) {
+            suffix = "";
+        }
+        return new Reference(prefix + identifier + suffix);
     }
 
 }
