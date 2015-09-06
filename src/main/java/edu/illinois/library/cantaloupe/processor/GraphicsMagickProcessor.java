@@ -127,10 +127,10 @@ public class GraphicsMagickProcessor implements Processor {
 
         // rotation transformation
         Rotation rotation = params.getRotation();
+        if (rotation.shouldMirror()) {
+            op.flop();
+        }
         if (rotation.getDegrees() != 0) {
-            if (rotation.shouldMirror()) {
-                op.flop();
-            }
             op.rotate(rotation.getDegrees().doubleValue());
         }
 
