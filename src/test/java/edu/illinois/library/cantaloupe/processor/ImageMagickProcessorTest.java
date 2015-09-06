@@ -15,9 +15,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ImageMagickProcessorTest extends TestCase {
 
@@ -59,8 +60,8 @@ public class ImageMagickProcessorTest extends TestCase {
         List<Object> profile = info.getProfile();
         assertEquals("http://iiif.io/api/image/2/level2.json", profile.get(0));
 
-        List<String> actualFormats = (List<String>)((Map)profile.get(1)).get("formats");
-        List<String> expectedFormats = new ArrayList<String>();
+        Set<String> actualFormats = (Set<String>)((Map)profile.get(1)).get("formats");
+        Set<String> expectedFormats = new HashSet<String>();
         for (OutputFormat outputFormat : OutputFormat.values()) {
             if (outputFormat != OutputFormat.WEBP) {
                 expectedFormats.add(outputFormat.getExtension());
@@ -68,15 +69,15 @@ public class ImageMagickProcessorTest extends TestCase {
         }
         assertEquals(expectedFormats, actualFormats);
 
-        List<String> actualQualities = (List<String>)((Map)profile.get(1)).get("qualities");
-        List<String> expectedQualities = new ArrayList<String>();
+        Set<String> actualQualities = (Set<String>)((Map)profile.get(1)).get("qualities");
+        Set<String> expectedQualities = new HashSet<String>();
         for (Quality quality : Quality.values()) {
             expectedQualities.add(quality.toString().toLowerCase());
         }
         assertEquals(expectedQualities, actualQualities);
 
-        List<String> actualSupports = (List<String>)((Map)profile.get(1)).get("supports");
-        List<String> expectedSupports = new ArrayList<String>();
+        Set<String> actualSupports = (Set<String>)((Map)profile.get(1)).get("supports");
+        Set<String> expectedSupports = new HashSet<String>();
         expectedSupports.add("baseUriRedirect");
         expectedSupports.add("mirroring");
         expectedSupports.add("regionByPx");
@@ -92,7 +93,7 @@ public class ImageMagickProcessorTest extends TestCase {
     }
 
     public void testGetSupportedOutputFormats() {
-        ArrayList<OutputFormat> expectedFormats = new ArrayList<OutputFormat>();
+        Set<OutputFormat> expectedFormats = new HashSet<OutputFormat>();
         for (OutputFormat outputFormat : OutputFormat.values()) {
             if (outputFormat != OutputFormat.WEBP) {
                 expectedFormats.add(outputFormat);
