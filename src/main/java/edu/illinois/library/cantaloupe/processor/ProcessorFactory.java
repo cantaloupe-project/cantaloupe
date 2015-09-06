@@ -33,8 +33,7 @@ public class ProcessorFactory {
         String name = config.
                 getString("processor." + sourceFormat.getExtension());
         if (name == null) {
-            name = config.getString("processor.fallback",
-                    "ImageMagickProcessor");
+            name = config.getString("processor.fallback", "ImageIoProcessor");
         }
         return name;
     }

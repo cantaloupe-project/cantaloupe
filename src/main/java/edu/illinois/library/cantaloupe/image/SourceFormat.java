@@ -2,6 +2,8 @@ package edu.illinois.library.cantaloupe.image;
 
 public enum SourceFormat {
 
+    BMP("bmp", "image/bmp"),
+    GIF("gif", "image/gif"),
     JP2("jp2", "image/jp2"),
     JPG("jpg", "image/jpeg"),
     PNG("png", "image/png"),
