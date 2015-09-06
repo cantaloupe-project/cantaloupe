@@ -17,7 +17,7 @@ public class FilesystemResolver extends AbstractResolver implements Resolver {
         }
     }
 
-    private String getPath(String identifier) {
+    public String getPath(String identifier) {
         Configuration config = Application.getConfiguration();
         String prefix = config.getString("FilesystemResolver.path_prefix");
         if (prefix == null) {
