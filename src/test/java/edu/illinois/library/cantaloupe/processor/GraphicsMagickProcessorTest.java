@@ -87,10 +87,12 @@ public class GraphicsMagickProcessorTest extends TestCase {
         Set<String> actualSupports = (Set<String>)((Map)profile.get(1)).get("supports");
         Set<String> expectedSupports = new HashSet<String>();
         expectedSupports.add("baseUriRedirect");
+        expectedSupports.add("canonicalLinkHeader");
         expectedSupports.add("mirroring");
         expectedSupports.add("regionByPx");
         expectedSupports.add("rotationArbitrary");
         expectedSupports.add("rotationBy90s");
+        expectedSupports.add("sizeAboveFull");
         expectedSupports.add("sizeByWhListed");
         expectedSupports.add("sizeByForcedWh");
         expectedSupports.add("sizeByH");

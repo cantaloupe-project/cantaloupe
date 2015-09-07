@@ -46,10 +46,12 @@ public class ImageIoProcessor implements Processor {
         // TODO: is this list accurate?
         // TODO: move some of these statements into ImageInfo
         SUPPORTS.add("baseUriRedirect");
+        SUPPORTS.add("canonicalLinkHeader");
         SUPPORTS.add("mirroring");
         SUPPORTS.add("regionByPx");
         SUPPORTS.add("rotationArbitrary");
         SUPPORTS.add("rotationBy90s");
+        SUPPORTS.add("sizeAboveFull");
         SUPPORTS.add("sizeByWhListed");
         SUPPORTS.add("sizeByForcedWh");
         SUPPORTS.add("sizeByH");
