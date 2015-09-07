@@ -63,16 +63,21 @@ public class ImageIoProcessor implements Processor {
      * based on information reported by the ImageIO library.
      */
     public static HashMap<SourceFormat, Set<OutputFormat>> getAvailableOutputFormats() {
+        final String[] readerMimeTypes = ImageIO.getReaderMIMETypes();
+        final String[] writerMimeTypes = ImageIO.getWriterMIMETypes();
         final HashMap<SourceFormat,Set<OutputFormat>> map =
                 new HashMap<SourceFormat,Set<OutputFormat>>();
         for (SourceFormat sourceFormat : SourceFormat.values()) {
-            final Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
-            final String[] formatNamesArray = ImageIO.getReaderMIMETypes();
-            for (int i = 0, length = formatNamesArray.length; i < length; i++) {
-                final String formatMediaType = formatNamesArray[i].toLowerCase();
-                for (OutputFormat format : OutputFormat.values()) {
-                    if (format.getMediaType().equals(formatMediaType)) {
-                        outputFormats.add(format);
+            Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
+
+            for (int i = 0, length = readerMimeTypes.length; i < length; i++) {
+                if (sourceFormat.getMediaType().equals(readerMimeTypes[i].toLowerCase())) {
+                    for (OutputFormat outputFormat : OutputFormat.values()) {
+                        for (i = 0, length = writerMimeTypes.length; i < length; i++) {
+                            if (outputFormat.getMediaType().equals(writerMimeTypes[i].toLowerCase())) {
+                                outputFormats.add(outputFormat);
+                            }
+                        }
                     }
                 }
             }

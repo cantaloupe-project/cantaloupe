@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Quality;
 import junit.framework.TestCase;
 
+import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -26,13 +27,17 @@ public class ImageIoProcessorTest extends TestCase {
     }
 
     public void testGetAvailableOutputFormats() {
-        HashSet<OutputFormat> expectedFormats = new HashSet<OutputFormat>();
-        expectedFormats.add(OutputFormat.GIF);
-        expectedFormats.add(OutputFormat.JPG);
-        expectedFormats.add(OutputFormat.PNG);
-        expectedFormats.add(OutputFormat.TIF);
+        Set<OutputFormat> expectedFormats = ImageIoProcessor.
+                getAvailableOutputFormats().get(SourceFormat.JPG);
+
+        // supported source format
         assertEquals(expectedFormats,
                 instance.getAvailableOutputFormats(SourceFormat.JPG));
+
+        // unsupported source format
+        expectedFormats = new HashSet<OutputFormat>();
+        assertEquals(expectedFormats,
+                instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
     }
 
     public void testGetImageInfo() throws Exception {
@@ -59,11 +64,13 @@ public class ImageIoProcessorTest extends TestCase {
         assertEquals("http://iiif.io/api/image/2/level2.json", profile.get(0));
 
         Set<String> actualFormats = (Set<String>)((Map)profile.get(1)).get("formats");
+
+        Set<OutputFormat> outputFormats = ImageIoProcessor.
+                getAvailableOutputFormats().get(SourceFormat.JPG);
         Set<String> expectedFormats = new HashSet<String>();
-        expectedFormats.add("gif");
-        expectedFormats.add("jpg");
-        expectedFormats.add("png");
-        expectedFormats.add("tif");
+        for (OutputFormat format : outputFormats) {
+            expectedFormats.add(format.getExtension());
+        }
         assertEquals(expectedFormats, actualFormats);
 
         Set<String> actualQualities = (Set<String>)((Map)profile.get(1)).get("qualities");
