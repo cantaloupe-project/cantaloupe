@@ -1,59 +1,60 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
-import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.Configuration;
 import org.restlet.Client;
 import org.restlet.Context;
+import org.restlet.data.ChallengeScheme;
 import org.restlet.data.Protocol;
+import org.restlet.data.Reference;
 import org.restlet.resource.ClientResource;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 
 public class HttpResolver extends AbstractResolver implements Resolver {
 
     private static Client client = new Client(new Context(), Protocol.HTTP);
 
-    public InputStream resolve(String identifier) {
+    public File getFile(String identifier) {
+        return null;
+    }
+
+    public InputStream getInputStream(String identifier)
+            throws FileNotFoundException {
         try {
-            String url = getUrl(identifier);
+            Configuration config = Application.getConfiguration();
+            Reference url = getUrl(identifier);
             ClientResource resource = new ClientResource(url);
             resource.setNext(client);
+
+            // set up HTTP Basic authentication
+            String username = config.getString("HttpResolver.username", "");
+            String password = config.getString("HttpResolver.password", "");
+            if (username.length() > 0 && password.length() > 0) {
+                resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC,
+                        username, password);
+            }
+
             return resource.get().getStream();
-        } catch (Exception e) {
-            return null;
+        } catch (IOException e) {
+            throw new FileNotFoundException(e.getMessage());
         }
     }
 
-    private String getUrl(String identifier) {
-        return getUrlPrefix() + identifier + getUrlSuffix();
-    }
-
-    /**
-     * @return URL prefix, never with a trailing slash.
-     */
-    private String getUrlPrefix() {
-        String prefix;
-        try {
-            prefix = Application.getConfiguration().
-                    getString("HttpResolver.url_prefix");
-        } catch (ConfigurationException e) {
-            return "";
+    public Reference getUrl(String identifier) {
+        Configuration config = Application.getConfiguration();
+        String prefix = config.getString("HttpResolver.url_prefix");
+        if (prefix == null) {
+            prefix = "";
         }
-        return prefix;
-    }
-
-    /**
-     * @return URL suffix, never with a leading slash.
-     */
-    private String getUrlSuffix() {
-        String suffix;
-        try {
-            suffix = Application.getConfiguration().
-                    getString("HttpResolver.url_suffix");
-        } catch (ConfigurationException e) {
-            return "";
+        String suffix = config.getString("HttpResolver.url_suffix");
+        if (suffix == null) {
+            suffix = "";
         }
-        return suffix;
+        return new Reference(prefix + identifier + suffix);
     }
 
 }

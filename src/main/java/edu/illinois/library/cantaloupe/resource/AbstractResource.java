@@ -12,6 +12,7 @@ public abstract class AbstractResource extends ServerResource {
      * @param key Header key
      * @param value Header value
      */
+    @SuppressWarnings({"unchecked"})
     protected void addHeader(String key, String value) {
         Series<Header> responseHeaders = (Series<Header>) getResponse().
                 getAttributes().get("org.restlet.http.headers");

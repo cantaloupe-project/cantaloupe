@@ -13,8 +13,8 @@ public class Region {
     private boolean isFull = false;
     private boolean isPercent = false;
     private Integer width;
-    private Float x;
-    private Float y;
+    private Float x = new Float(0.0);
+    private Float y = new Float(0.0);
 
     /**
      * @param uriRegion The "region" component of an IIIF URI.
@@ -42,8 +42,8 @@ public class Region {
             if (parts.length == 4) {
                 region.setX(Float.parseFloat(parts[0]));
                 region.setY(Float.parseFloat(parts[1]));
-                region.setWidth(Integer.parseUnsignedInt(parts[2]));
-                region.setHeight(Integer.parseUnsignedInt(parts[3]));
+                region.setWidth(Integer.parseInt(parts[2]));
+                region.setHeight(Integer.parseInt(parts[3]));
             } else {
                 throw new IllegalArgumentException("Invalid region");
             }

@@ -1,11 +1,18 @@
 package edu.illinois.library.cantaloupe.image;
 
+/**
+ * Should contain constants for every source format that anyone could possibly
+ * ever want to read.
+ */
 public enum SourceFormat {
 
+    BMP("bmp", "image/bmp"),
+    GIF("gif", "image/gif"),
     JP2("jp2", "image/jp2"),
     JPG("jpg", "image/jpeg"),
     PNG("png", "image/png"),
     TIF("tif", "image/tiff"),
+    WEBP("webp", "image/webp"),
     UNKNOWN("unknown", "unknown/unknown");
 
     private String extension;

@@ -1,32 +1,52 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
+import java.util.Set;
 
 import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
-import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.MediaType;
+import org.restlet.data.Reference;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 
+/**
+ * Handles IIIF image requests.
+ *
+ * @see <a href="http://iiif.io/api/image/2.0/#image-request-parameters">Image
+ * Request Parameters</a>
+ */
 public class ImageResource extends AbstractResource {
 
     class ImageRepresentation extends OutputRepresentation {
 
+        File sourceFile;
         InputStream inputStream;
         Parameters params;
         SourceFormat sourceFormat;
+
+        public ImageRepresentation(MediaType mediaType,
+                                   SourceFormat sourceFormat,
+                                   Parameters params,
+                                   File sourceFile) {
+            super(mediaType);
+            this.sourceFile = sourceFile;
+            this.params = params;
+            this.sourceFormat = sourceFormat;
+        }
 
         public ImageRepresentation(MediaType mediaType,
                                    SourceFormat sourceFormat,
@@ -42,7 +62,13 @@ public class ImageResource extends AbstractResource {
             try {
                 Processor proc = ProcessorFactory.
                         getProcessor(this.sourceFormat);
-                proc.process(this.params, inputStream, outputStream);
+                if (this.sourceFile != null) {
+                    proc.process(this.params, this.sourceFormat,
+                            this.sourceFile, outputStream);
+                } else {
+                    proc.process(this.params, this.sourceFormat,
+                            this.inputStream, outputStream);
+                }
             } catch (Exception e) {
                 throw new IOException(e);
             }
@@ -51,11 +77,9 @@ public class ImageResource extends AbstractResource {
     }
 
     @Get
-    public Representation doGet() throws IllegalArgumentException,
-            UnsupportedEncodingException, FileNotFoundException {
+    public Representation doGet() throws Exception {
         Map<String,Object> attrs = this.getRequest().getAttributes();
-        String identifier = java.net.URLDecoder.
-                decode((String) attrs.get("identifier"), "UTF-8");
+        String identifier = Reference.decode((String) attrs.get("identifier"));
         String format = (String) attrs.get("format");
         String region = (String) attrs.get("region");
         String size = (String) attrs.get("size");
@@ -65,27 +89,41 @@ public class ImageResource extends AbstractResource {
                 quality, format);
 
         Resolver resolver = ResolverFactory.getResolver();
-        InputStream inputStream = resolver.resolve(identifier);
-        if (inputStream == null) {
-            throw new FileNotFoundException("Resource not found");
-        }
-
         SourceFormat sourceFormat = resolver.getExpectedSourceFormat(identifier);
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
-        if (!proc.getSupportedOutputFormats().contains(params.getOutputFormat())) {
-            String msg = String.format("%s supports only the following formats: %s",
-                    proc, StringUtils.join(proc.getSupportedOutputFormats(), ", "));
-            throw new IllegalArgumentException(msg);
+        Set availableOutputFormats = proc.getAvailableOutputFormats(sourceFormat);
+        if (!availableOutputFormats.contains(params.getOutputFormat())) {
+            String msg;
+            if (sourceFormat == SourceFormat.UNKNOWN) {
+                msg = String.format("%s does not support this source format",
+                        proc.getClass().getSimpleName());
+            } else {
+                msg = String.format("%s does not support the \"%s\" source format",
+                        proc.getClass().getSimpleName(),
+                        sourceFormat.getExtension().replaceAll("[^a-zA-Z0-9]", ""));
+            }
+            throw new UnsupportedSourceFormatException(msg);
         }
 
         this.addHeader("Link",
                 "<" + params.getCanonicalUri(this.getRootRef().toString()) +
                         ">;rel=\"canonical\"");
 
+        File sourceFile = resolver.getFile(identifier);
+        InputStream inputStream = null;
+        if (sourceFile == null) {
+            inputStream = resolver.getInputStream(identifier);
+        }
         MediaType mediaType = new MediaType(
                 OutputFormat.valueOf(format.toUpperCase()).getMediaType());
-        return new ImageRepresentation(mediaType, sourceFormat, params,
-                inputStream);
+
+        if (sourceFile != null) {
+            return new ImageRepresentation(mediaType, sourceFormat, params,
+                    sourceFile);
+        } else {
+            return new ImageRepresentation(mediaType, sourceFormat, params,
+                    inputStream);
+        }
     }
 
 }

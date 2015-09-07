@@ -11,7 +11,21 @@ import org.apache.commons.lang3.StringUtils;
 public class Size {
 
     public enum ScaleMode {
-        FILL_HEIGHT, FILL_WIDTH, ASPECT_FIT_INSIDE, NON_ASPECT_FIT_INSIDE, FULL
+
+        /** <code>,h</code> in an IIIF request URI */
+        ASPECT_FIT_HEIGHT,
+
+        /** <code>w,</code> in an IIIF request URI */
+        ASPECT_FIT_WIDTH,
+
+        /** <code>!w,h</code> in an IIIF request URI */
+        ASPECT_FIT_INSIDE,
+
+        /** <code>w,h</code> in an IIIF request URI */
+        NON_ASPECT_FILL,
+
+        /** <code>full</code> in an IIIF request URI */
+        FULL
     }
 
     private Integer height;
@@ -30,10 +44,10 @@ public class Size {
             size.setScaleMode(ScaleMode.FULL);
         } else {
             if (uriSize.endsWith(",")) {
-                size.setScaleMode(ScaleMode.FILL_WIDTH);
+                size.setScaleMode(ScaleMode.ASPECT_FIT_WIDTH);
                 size.setWidth(Integer.parseInt(StringUtils.stripEnd(uriSize, ",")));
             } else if (uriSize.startsWith(",")) {
-                size.setScaleMode(ScaleMode.FILL_HEIGHT);
+                size.setScaleMode(ScaleMode.ASPECT_FIT_HEIGHT);
                 size.setHeight(Integer.parseInt(StringUtils.stripStart(uriSize, ",")));
             } else if (uriSize.startsWith("pct:")) {
                 size.setPercent(Float.parseFloat(StringUtils.stripStart(uriSize, "pct:")));
@@ -43,7 +57,7 @@ public class Size {
                 size.setWidth(Integer.parseInt(parts[0]));
                 size.setHeight(Integer.parseInt(parts[1]));
             } else {
-                size.setScaleMode(ScaleMode.NON_ASPECT_FIT_INSIDE);
+                size.setScaleMode(ScaleMode.NON_ASPECT_FILL);
                 String[] parts = uriSize.split(",");
                 size.setWidth(Integer.parseInt(parts[0]));
                 size.setHeight(Integer.parseInt(parts[1]));

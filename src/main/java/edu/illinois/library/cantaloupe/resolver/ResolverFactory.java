@@ -1,36 +1,23 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
-import org.apache.commons.configuration.ConfigurationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ResolverFactory {
 
-    /**
-     * @return The current image processor based on the
-     * <code>resolver</code> setting in the configuration. May return null.
-     */
-    public static Resolver getResolver() {
-        try {
-            Class class_ = Class.forName(ResolverFactory.class.getPackage().getName() +
-                    "." + getResolverName());
-            return (Resolver) class_.newInstance();
-        } catch (ClassNotFoundException e) {
-            return null; // TODO: log
-        } catch (InstantiationException e) {
-            return null; // TODO: log
-        } catch (IllegalAccessException e) {
-            return null; // TODO: log
-        }
-    }
+    private static Logger logger = LoggerFactory.getLogger(ResolverFactory.class);
 
-    private static String getResolverName() {
-        String name;
-        try {
-            name = Application.getConfiguration().getString("resolver");
-        } catch (ConfigurationException e) {
-            return "FilesystemResolver";
-        }
-        return name;
+    /**
+     * @return The current resolver based on the <code>resolver</code> setting
+     * in the configuration. May return null.
+     */
+    public static Resolver getResolver() throws Exception {
+        String resolverName = Application.getConfiguration().
+                getString("resolver", "FilesystemResolver");
+        Class class_ = Class.forName(ResolverFactory.class.getPackage().getName() +
+                "." + resolverName);
+        return (Resolver) class_.newInstance();
     }
 
 }

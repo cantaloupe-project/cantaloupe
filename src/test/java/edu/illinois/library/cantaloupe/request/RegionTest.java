@@ -48,7 +48,26 @@ public class RegionTest extends TestCase {
     }
 
     public void testFromUriWithIllegalValues() {
-        // TODO: write this
+        try {
+            Region.fromUri("pct:-2,3,50,50");
+        } catch (IllegalArgumentException e) {
+            assertEquals("X must be a positive float", e.getMessage());
+        }
+        try {
+            Region.fromUri("pct:2,-3,50,50");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Y must be a positive float", e.getMessage());
+        }
+        try {
+            Region.fromUri("2,3,-50,50");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Width must be a positive integer", e.getMessage());
+        }
+        try {
+            Region.fromUri("2,3,50,-50");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Height must be a positive integer", e.getMessage());
+        }
     }
 
     /* height */

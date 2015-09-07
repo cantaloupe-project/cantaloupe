@@ -5,6 +5,8 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.restlet.Component;
 import org.restlet.data.Protocol;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Main application class.
@@ -12,17 +14,36 @@ import org.restlet.data.Protocol;
 public class Application {
 
     private static Configuration config;
+    private static Logger logger = LoggerFactory.getLogger(Application.class);
 
-    public static Configuration getConfiguration() throws ConfigurationException {
+    public static void main(String[] args) throws Exception {
+        startRestlet();
+    }
+
+    /**
+     * @return The application-wide Configuration object.
+     */
+    public static Configuration getConfiguration() {
         if (config == null) {
-            PropertiesConfiguration propConfig = new PropertiesConfiguration();
-            propConfig.load(System.getProperty("cantaloupe.config"));
-            config = propConfig;
+            try {
+                PropertiesConfiguration propConfig = new PropertiesConfiguration();
+                propConfig.load(System.getProperty("cantaloupe.config"));
+                config = propConfig;
+            } catch (ConfigurationException e) {
+                logger.error("Failed to load the config file");
+            }
         }
         return config;
     }
 
-    public static void main(String[] args) throws Exception {
+    /**
+     * Overrides the configuration, mainly for testing purposes.
+     */
+    public static void setConfiguration(Configuration c) {
+        config = c;
+    }
+
+    public static void startRestlet() throws Exception {
         Component component = new Component();
         Integer port = getConfiguration().getInteger("http.port", 8182);
         component.getServers().add(Protocol.HTTP, port);

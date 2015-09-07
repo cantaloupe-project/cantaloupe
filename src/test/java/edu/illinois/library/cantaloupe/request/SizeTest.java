@@ -26,7 +26,7 @@ public class SizeTest extends TestCase {
     public void testFromUriWidthScaled() {
         Size s = Size.fromUri("50,");
         assertEquals(new Integer(50), s.getWidth());
-        assertEquals(Size.ScaleMode.FILL_WIDTH, s.getScaleMode());
+        assertEquals(Size.ScaleMode.ASPECT_FIT_WIDTH, s.getScaleMode());
     }
 
     /**
@@ -35,7 +35,7 @@ public class SizeTest extends TestCase {
     public void testFromUriHeightScaled() {
         Size s = Size.fromUri(",50");
         assertEquals(new Integer(50), s.getHeight());
-        assertEquals(Size.ScaleMode.FILL_HEIGHT, s.getScaleMode());
+        assertEquals(Size.ScaleMode.ASPECT_FIT_HEIGHT, s.getScaleMode());
     }
 
     /**
@@ -53,7 +53,7 @@ public class SizeTest extends TestCase {
         Size s = Size.fromUri("50,40");
         assertEquals(new Integer(50), s.getWidth());
         assertEquals(new Integer(40), s.getHeight());
-        assertEquals(Size.ScaleMode.NON_ASPECT_FIT_INSIDE, s.getScaleMode());
+        assertEquals(Size.ScaleMode.NON_ASPECT_FILL, s.getScaleMode());
     }
 
     /**

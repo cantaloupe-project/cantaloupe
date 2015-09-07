@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+        <title>Cantaloupe IIIF 2.0 Server</title>
+        <style type="text/css">
+            body {
+                font-size: 1.5em;
+            }
+            h1 {
+                margin-bottom: 0.8em;
+            }
+            dd {
+                margin-left: 1em;
+                margin-bottom: 1em;
+            }
+            ul {
+                margin-left: 1em;
+                padding-left: 0px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container-fluid">
+            <h1>&#127816; Cantaloupe IIIF 2.0 Server</h1>
+
+            <dl>
+                <dt>Resolver</dt>
+                <dd>$resolverName</dd>
+
+                <dt>Source Format Assignments</dt>
+                <dd>
+                    <table class="table table-condensed">
+                        #foreach ($sourceFormat in $sourceFormats.keySet())
+                            <tr>
+                                <td style="width:10%">$sourceFormat.getExtension()</td>
+                                <td>$sourceFormats.get($sourceFormat)</td>
+                            </tr>
+                        #end
+                    </table>
+                </dd>
+
+                <dt>Supported Source Formats</dt>
+                <dd>
+                    <dl>
+                        #foreach ($processor in $processors.keySet())
+                            <dt>$processor</dt>
+                            <dd>
+                                <ul>
+                                    #foreach ($sourceFormat in $processors.get($processor))
+                                        <li>$sourceFormat</li>
+                                    #end
+                                </ul>
+                            </dd>
+                        #end
+                    </dl>
+                </dd>
+            </dl>
+        </div>
+    </body>
+</html>

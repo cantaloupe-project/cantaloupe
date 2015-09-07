@@ -30,10 +30,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class ImageMagickProcessor implements Processor {
+public class GraphicsMagickProcessor implements Processor {
 
     private static Logger logger = LoggerFactory.
-            getLogger(ImageMagickProcessor.class);
+            getLogger(GraphicsMagickProcessor.class);
 
     private static final HashMap<SourceFormat,Set<OutputFormat>> OUTPUT_FORMATS =
             getAvailableOutputFormats();
@@ -45,7 +45,7 @@ public class ImageMagickProcessor implements Processor {
         // overrides the PATH; see
         // http://im4java.sourceforge.net/docs/dev-guide.html
         String binaryPath = Application.getConfiguration().
-                getString("ImageMagickProcessor.path_to_binaries", "");
+                getString("GraphicsMagickProcessor.path_to_binaries", "");
         if (binaryPath.length() > 0) {
             ProcessStarter.setGlobalSearchPath(binaryPath);
         }
@@ -78,58 +78,69 @@ public class ImageMagickProcessor implements Processor {
 
     /**
      * @return Map of available output formats for all known source formats,
-     * based on information reported by <code>identify -list format</code>.
+     * based on information reported by <code>gm version</code>.
      */
     public static HashMap<SourceFormat, Set<OutputFormat>> getAvailableOutputFormats() {
         final Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
         final Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
 
         try {
-            // retrieve the output of the `identify -list format` command,
-            // which contains a list of all supported formats
+            // retrieve the output of the `gm version` command, which contains a
+            // list of all optional formats
             Runtime runtime = Runtime.getRuntime();
             String cmdPath = "";
             Configuration config = Application.getConfiguration();
             if (config != null) {
-                cmdPath = config.getString("ImageMagickProcessor.path_to_binaries", "");
+                cmdPath = config.getString("GraphicsMagickProcessor.path_to_binaries", "");
             }
-            String[] commands = {cmdPath + File.separator + "identify",
-                    "-list", "format"};
+            String[] commands = {cmdPath + File.separator + "gm", "version"};
             Process proc = runtime.exec(commands);
             BufferedReader stdInput = new BufferedReader(
                     new InputStreamReader(proc.getInputStream()));
             String s;
-
+            boolean read = false;
             while ((s = stdInput.readLine()) != null) {
                 s = s.trim();
-                if (s.startsWith("JP2")) {
-                    sourceFormats.add(SourceFormat.JP2);
-                    outputFormats.add(OutputFormat.JP2);
+                if (s.contains("Feature Support")) {
+                    read = true;
+                } else if (s.contains("Host type:")) {
+                    read = false;
                 }
-                if (s.startsWith("JPEG")) {
-                    sourceFormats.add(SourceFormat.JPG);
-                    outputFormats.add(OutputFormat.JPG);
+                if (read) {
+                    if (s.startsWith("JPEG-2000  ") && s.endsWith(" yes")) {
+                        sourceFormats.add(SourceFormat.JP2);
+                        outputFormats.add(OutputFormat.JP2);
+                    }
+                    if (s.startsWith("JPEG  ") && s.endsWith(" yes")) {
+                        sourceFormats.add(SourceFormat.JPG);
+                        outputFormats.add(OutputFormat.JPG);
+                    }
+                    if (s.startsWith("PNG  ") && s.endsWith(" yes")) {
+                        sourceFormats.add(SourceFormat.PNG);
+                        outputFormats.add(OutputFormat.PNG);
+                    }
+                    if (s.startsWith("Ghostscript") && s.endsWith(" yes")) {
+                        outputFormats.add(OutputFormat.PDF);
+                    }
+                    if (s.startsWith("TIFF  ") && s.endsWith(" yes")) {
+                        sourceFormats.add(SourceFormat.TIF);
+                        outputFormats.add(OutputFormat.TIF);
+                    }
+                    if (s.startsWith("WebP  ") && s.endsWith(" yes")) {
+                        sourceFormats.add(SourceFormat.WEBP);
+                        outputFormats.add(OutputFormat.WEBP);
+                    }
                 }
-                if (s.startsWith("PNG")) {
-                    sourceFormats.add(SourceFormat.PNG);
-                    outputFormats.add(OutputFormat.PNG);
-                }
-                if (s.startsWith("PDF")) {
-                    outputFormats.add(OutputFormat.PDF);
-                }
-                if (s.startsWith("TIFF")) {
-                    sourceFormats.add(SourceFormat.TIF);
-                    outputFormats.add(OutputFormat.TIF);
-                }
-                if (s.startsWith("WEBP")) {
-                    sourceFormats.add(SourceFormat.WEBP);
-                    outputFormats.add(OutputFormat.WEBP);
-                }
-
             }
         } catch (IOException e) {
-            logger.error("Failed to execute identify command");
+            logger.error("Failed to execute gm command");
         }
+
+        // add formats that are definitely available
+        // (http://www.graphicsmagick.org/formats.html)
+        sourceFormats.add(SourceFormat.BMP);
+        sourceFormats.add(SourceFormat.GIF);
+        outputFormats.add(OutputFormat.GIF);
 
         final HashMap<SourceFormat,Set<OutputFormat>> map =
                 new HashMap<SourceFormat,Set<OutputFormat>>();
@@ -150,8 +161,8 @@ public class ImageMagickProcessor implements Processor {
     public ImageInfo getImageInfo(File sourceFile,
                                   SourceFormat sourceFormat,
                                   String imageBaseUri) throws Exception {
-        Info sourceInfo = new Info(sourceFormat.getExtension() + ":" + sourceFile.getAbsolutePath(),
-                true);
+        Info sourceInfo = new Info(sourceFormat.getExtension() + ":" +
+                sourceFile.getAbsolutePath(), true);
         return doGetImageInfo(sourceInfo, imageBaseUri);
     }
 
@@ -179,7 +190,6 @@ public class ImageMagickProcessor implements Processor {
         profile.put("formats", FORMAT_EXTENSIONS);
         profile.put("qualities", QUALITIES);
         profile.put("supports", SUPPORTS);
-
         return imageInfo;
     }
 
@@ -190,15 +200,12 @@ public class ImageMagickProcessor implements Processor {
     public void process(Parameters params, SourceFormat sourceFormat,
                         File file, OutputStream outputStream) throws Exception {
         IMOperation op = new IMOperation();
-        op.addImage(file.getAbsolutePath());
+        op.addImage(params.getOutputFormat().getExtension() + ":" + file.getAbsolutePath());
         op = assembleOperation(op, params);
-
-        // format transformation
-        op.addImage(params.getOutputFormat().getExtension() + ":-"); // write to stdout
 
         Pipe pipeOut = new Pipe(null, outputStream);
 
-        ConvertCmd convert = new ConvertCmd();
+        ConvertCmd convert = new ConvertCmd(true);
         convert.setOutputConsumer(pipeOut);
         convert.run(op);
     }
@@ -216,7 +223,7 @@ public class ImageMagickProcessor implements Processor {
         Pipe pipeIn = new Pipe(inputStream, null);
         Pipe pipeOut = new Pipe(null, outputStream);
 
-        ConvertCmd convert = new ConvertCmd();
+        ConvertCmd convert = new ConvertCmd(true);
         convert.setInputProvider(pipeIn);
         convert.setOutputConsumer(pipeOut);
         convert.run(op);

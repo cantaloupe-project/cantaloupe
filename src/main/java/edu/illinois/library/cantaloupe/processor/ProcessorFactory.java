@@ -3,9 +3,19 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class ProcessorFactory {
+
+    public static Set<Processor> getAllProcessors() {
+        Set<Processor> processors = new HashSet<Processor>();
+        processors.add(new GraphicsMagickProcessor());
+        processors.add(new ImageIoProcessor());
+        processors.add(new ImageMagickProcessor());
+        return processors;
+    }
 
     /**
      * @param sourceFormat The source format for which to return an instance,
@@ -13,32 +23,26 @@ public class ProcessorFactory {
      *                     <code>SourceFormat.UNKNOWN</code>.
      * @return An instance suitable for handling the given source format, based
      * on configuration settings. May return null.
+     * @throws UnsupportedSourceFormatException
      */
-    public static Processor getProcessor(SourceFormat sourceFormat) {
+    public static Processor getProcessor(SourceFormat sourceFormat)
+            throws UnsupportedSourceFormatException {
         try {
             String className = ProcessorFactory.class.getPackage().getName() +
                     "." + getProcessorName(sourceFormat);
             Class class_ = Class.forName(className);
             return (Processor) class_.newInstance();
-        } catch (ClassNotFoundException e) {
-            return null; // TODO: log
-        } catch (InstantiationException e) {
-            return null; // TODO: log
-        } catch (IllegalAccessException e) {
-            return null; // TODO: log
+        } catch (Exception e) {
+            throw new UnsupportedSourceFormatException("Unsupported source format");
         }
     }
 
     private static String getProcessorName(SourceFormat sourceFormat) {
-        String name;
-        try {
-            Configuration config = Application.getConfiguration();
-            name = config.getString("processor." + sourceFormat.getExtension());
-            if (name == null) {
-                name = config.getString("processor.fallback");
-            }
-        } catch (ConfigurationException e) {
-            return "ImageMagickProcessor";
+        Configuration config = Application.getConfiguration();
+        String name = config.
+                getString("processor." + sourceFormat.getExtension());
+        if (name == null) {
+            name = config.getString("processor.fallback", "ImageIoProcessor");
         }
         return name;
     }

@@ -1,52 +1,40 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
-import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.Configuration;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 public class FilesystemResolver extends AbstractResolver implements Resolver {
 
-    public InputStream resolve(String identifier) {
-        try {
-            return new FileInputStream(getPath(identifier));
-        } catch (FileNotFoundException e) {
-            return null;
+    public File getFile(String identifier) throws FileNotFoundException {
+        File file = new File(getPath(identifier));
+        if (!file.exists()) {
+            throw new FileNotFoundException(
+                    "File not found:" + file.getAbsolutePath());
         }
+        return file;
     }
 
-    private String getPath(String identifier) {
-        return getPathPrefix() + identifier + getPathSuffix();
+    public InputStream getInputStream(String identifier)
+            throws FileNotFoundException {
+        return new FileInputStream(getPath(identifier));
     }
 
-    /**
-     * @return Path prefix, never with a trailing slash.
-     */
-    private String getPathPrefix() {
-        String prefix;
-        try {
-            prefix = Application.getConfiguration().
-                    getString("FilesystemResolver.path_prefix");
-        } catch (ConfigurationException e) {
-            return "";
+    public String getPath(String identifier) {
+        Configuration config = Application.getConfiguration();
+        String prefix = config.getString("FilesystemResolver.path_prefix");
+        if (prefix == null) {
+            prefix = "";
         }
-        return prefix;
-    }
-
-    /**
-     * @return Path suffix, never with a leading slash.
-     */
-    private String getPathSuffix() {
-        String suffix;
-        try {
-            suffix = Application.getConfiguration().
-                    getString("FilesystemResolver.path_suffix");
-        } catch (ConfigurationException e) {
-            return "";
+        String suffix = config.getString("FilesystemResolver.path_suffix");
+        if (suffix == null) {
+            suffix = "";
         }
-        return suffix;
+        return prefix + identifier + suffix;
     }
 
 }
