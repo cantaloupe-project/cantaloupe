@@ -88,6 +88,7 @@ public class GraphicsMagickProcessorTest extends TestCase {
         Set<String> expectedSupports = new HashSet<String>();
         expectedSupports.add("baseUriRedirect");
         expectedSupports.add("canonicalLinkHeader");
+        expectedSupports.add("cors");
         expectedSupports.add("mirroring");
         expectedSupports.add("regionByPx");
         expectedSupports.add("rotationArbitrary");

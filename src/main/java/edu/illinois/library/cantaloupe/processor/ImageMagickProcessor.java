@@ -49,9 +49,9 @@ public class ImageMagickProcessor implements Processor {
             QUALITIES.add(quality.toString().toLowerCase());
         }
 
-        // TODO: is this list accurate?
         SUPPORTS.add("baseUriRedirect");
         SUPPORTS.add("canonicalLinkHeader");
+        SUPPORTS.add("cors");
         SUPPORTS.add("mirroring");
         SUPPORTS.add("regionByPx");
         SUPPORTS.add("rotationArbitrary");

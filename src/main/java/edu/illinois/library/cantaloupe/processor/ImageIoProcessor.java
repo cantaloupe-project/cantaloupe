@@ -43,10 +43,10 @@ public class ImageIoProcessor implements Processor {
             QUALITIES.add(quality.toString().toLowerCase());
         }
 
-        // TODO: is this list accurate?
         // TODO: move some of these statements into ImageInfo
         SUPPORTS.add("baseUriRedirect");
         SUPPORTS.add("canonicalLinkHeader");
+        SUPPORTS.add("cors");
         SUPPORTS.add("mirroring");
         SUPPORTS.add("regionByPx");
         SUPPORTS.add("rotationArbitrary");
