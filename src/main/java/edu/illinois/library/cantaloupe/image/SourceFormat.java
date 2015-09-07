@@ -8,6 +8,7 @@ public enum SourceFormat {
     JPG("jpg", "image/jpeg"),
     PNG("png", "image/png"),
     TIF("tif", "image/tiff"),
+    WEBP("webp", "image/webp"),
     UNKNOWN("unknown", "unknown/unknown");
 
     private String extension;

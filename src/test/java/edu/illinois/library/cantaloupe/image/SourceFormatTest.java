@@ -11,6 +11,7 @@ public class SourceFormatTest extends TestCase {
         assertNotNull(SourceFormat.valueOf("JPG"));
         assertNotNull(SourceFormat.valueOf("PNG"));
         assertNotNull(SourceFormat.valueOf("TIF"));
+        assertNotNull(SourceFormat.valueOf("WEBP"));
         assertNotNull(SourceFormat.valueOf("UNKNOWN"));
     }
 
@@ -21,6 +22,7 @@ public class SourceFormatTest extends TestCase {
         assertEquals("jpg", SourceFormat.JPG.getExtension());
         assertEquals("png", SourceFormat.PNG.getExtension());
         assertEquals("tif", SourceFormat.TIF.getExtension());
+        assertEquals("webp", SourceFormat.WEBP.getExtension());
         assertEquals("unknown", SourceFormat.UNKNOWN.getExtension());
     }
 
@@ -31,6 +33,7 @@ public class SourceFormatTest extends TestCase {
         assertEquals("image/jpeg", SourceFormat.JPG.getMediaType());
         assertEquals("image/png", SourceFormat.PNG.getMediaType());
         assertEquals("image/tiff", SourceFormat.TIF.getMediaType());
+        assertEquals("image/webp", SourceFormat.WEBP.getMediaType());
         assertEquals("unknown/unknown", SourceFormat.UNKNOWN.getMediaType());
     }
 
