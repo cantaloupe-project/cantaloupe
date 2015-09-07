@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -84,12 +85,13 @@ public class ImageResource extends AbstractResource {
             String msg;
             if (sourceFormat == SourceFormat.UNKNOWN) {
                 msg = String.format("%s does not support this source format",
-                        proc);
+                        proc.getClass().getSimpleName());
             } else {
                 msg = String.format("%s does not support the \"%s\" source format",
-                        proc, sourceFormat.getExtension().replaceAll("[^a-zA-Z0-9]", ""));
+                        proc.getClass().getSimpleName(),
+                        sourceFormat.getExtension().replaceAll("[^a-zA-Z0-9]", ""));
             }
-            throw new IllegalArgumentException(msg);
+            throw new UnsupportedSourceFormatException(msg);
         }
 
         this.addHeader("Link",
