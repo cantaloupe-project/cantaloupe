@@ -21,6 +21,12 @@ import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 
+/**
+ * Handles IIIF image requests.
+ *
+ * @see <a href="http://iiif.io/api/image/2.0/#image-request-parameters">Image
+ * Request Parameters</a>
+ */
 public class ImageResource extends AbstractResource {
 
     class ImageRepresentation extends OutputRepresentation {
@@ -76,7 +82,8 @@ public class ImageResource extends AbstractResource {
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
         Set availableOutputFormats = proc.getAvailableOutputFormats(sourceFormat);
         if (!availableOutputFormats.contains(params.getOutputFormat())) {
-            String msg = String.format("%s supports only the following source formats for this output format: %s",
+            String msg = String.format("%s supports only the following " +
+                    "source formats for this output format: %s",
                     proc, StringUtils.join(availableOutputFormats, ", "));
             throw new IllegalArgumentException(msg);
         }

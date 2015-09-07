@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
@@ -20,6 +19,12 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 
+/**
+ * Handles IIIF information requests.
+ *
+ * @see <a href="http://iiif.io/api/image/2.0/#information-request">Information
+ * Requests</a>
+ */
 public class InformationResource extends AbstractResource {
 
     @Get("json")
@@ -54,8 +59,7 @@ public class InformationResource extends AbstractResource {
 
     private String getImageUri(String identifier) {
         try {
-            return this.getRootRef() +
-                    ((ImageServerApplication)this.getApplication()).BASE_IIIF_PATH +
+            return this.getRootRef() + ImageServerApplication.BASE_IIIF_PATH +
                     "/" + java.net.URLEncoder.encode(identifier, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             return null;
