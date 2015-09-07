@@ -57,7 +57,7 @@ it the following contents, modifying as desired:
     # The server-side path that will be prefixed to the identifier in the
     # request URL.
     FilesystemResolver.path_prefix = /home/myself/images
-    # The server-side path or extension. that will be suffixed to the identifier
+    # The server-side path or extension that will be suffixed to the identifier
     # in the request URL.
     FilesystemResolver.path_suffix =
     
@@ -76,7 +76,24 @@ Run it like:
 
 `$ java -jar Cantaloupe-x.x.x.jar -Dcantaloupe.config=/path/to/cantaloupe.properties`
 
-It is now ready for use at: `http://localhost:{http.port}/iiif/`
+It is now ready for use at: `http://localhost:{http.port}/iiif`
+
+# Resolvers
+
+Resolvers locate a source image based on the identifier in an IIIF URL. In
+Java-speak, they take in an identifier and return an InputStream from which the
+corresponding image can be read by a processor, so that processors don't have
+to know where the images they read are coming from.
+
+## FilesystemResolver
+
+FilesystemResolver maps an identifier from an IIIF URL to a filesystem path,
+for retrieving local images.
+
+## HttpResolver
+
+HttpResolver maps an identifier from an IIIF URL to some other URL, for
+retrieving images from a web server.
 
 # Processors
 
@@ -90,16 +107,16 @@ above). Currently, available processors include:
 
 ## ImageIoProcessor
 
-ImageIoProcessor uses the Java ImageIO interface to load and operate on
+ImageIoProcessor uses the Java ImageIO framework to load and operate on
 BufferedImages.
 
 ImageIO, as its name implies, is simply an I/O interface that does not know
 anything about image formats, and therefore the list of formats supported by
-this processor varies depending on platform and the available libraries (jars)
-in the classpath. By default, it is minimal -- typically something like JPEG,
-GIF, and PNG.
+this processor varies depending on the libraries (jars) available in the
+classpath. By default, it is minimal -- typically something like JPEG, GIF, and
+PNG.
 
-See the following links for interesting possibilities:
+See the following links for some interesting possibilities:
 
 * [https://github.com/jai-imageio/jai-imageio-core]
   (https://github.com/jai-imageio/jai-imageio-core)
@@ -111,108 +128,35 @@ See the following links for interesting possibilities:
 ## GraphicsMagickProcessor
 
 GraphicsMagickProcessor uses [im4java](http://im4java.sourceforge.net) to
-fork out to the GraphicsMagick shell command (`gm`). As such,
-GraphicsMagick must be installed.
+fork out to the [GraphicsMagick](http://www.graphicsmagick.org) executable
+(`gm`). As such, GraphicsMagick must be installed.
 
 GraphicsMagick produces high-quality output and supports all of the IIIF
-transforms and all IIIF output formats except WebP (assuming the necessary
-libraries are installed; see [Supported Formats]
-(http://www.graphicsmagick.org/formats.html)).
+transforms and all IIIF output formats (assuming the necessary libraries are
+installed; see [Supported Formats](http://www.graphicsmagick.org/formats.html)).
+It also supports a wide array of source formats.
 
-GraphicsMagickProcessor is a good fallback processor as it supports a wide
-range of formats and is generally faster than ImageMagickProcessor. As with any
-processor, performance degrades and memory usage increases as image size and
-traffic increase.
+GraphicsMagickProcessor is a good fallback processor, as it supports a wide
+range of formats and is generally faster than ImageMagickProcessor.
 
 ## ImageMagickProcessor
 
 ImageMagickProcessor, like GraphicsMagickProcessor, also uses
-[im4java](http://im4java.sourceforge.net) to wrap ImageMagick commands.
+[im4java](http://im4java.sourceforge.net) to wrap [ImageMagick]
+(http://www.imagemagick.org/) commands.
 
 ImageMagick produces high-quality output and supports all of the IIIF
 transforms and all IIIF output formats except WebP (assuming the JPEG2000 and
-PDF delegates are installed).
+PDF delegates are installed). It also supports a wide array of source formats.
 
-ImageMagick is not known for being particularly fast or efficient. Performance
-degrades and memory usage increases as image size increases. Large amounts of
-RAM and fast storage help.
-
-The ImageMagickProcessor requires ImageMagick to be installed, as well as its
-PDF and JPEG2000 delegates.
-
-# Resolvers
-
-## FilesystemResolver
-
-FilesystemResolver maps an identifier from an IIIF URL to a filesystem path
-for retrieving images from a local filesystem.
-
-### Example With Prefix Only
-
-Given the following configuration options:
-
-* `FilesystemResolver.path_prefix = /data/images/`
-* `FilesystemResolver.path_suffix = `
-
-And the following URL:
-
-* http://example.org/iiif/image.jpg/full/full/0/default.jpg
-
-FilesystemResolver will look for an image located at
-/data/images/image.jpg.
-
-### Example With Prefix and Suffix
-
-Given the following configuration options:
-
-* `FilesystemResolver.path_prefix = /data/images/`
-* `FilesystemResolver.path_suffix = /image.jp2`
-
-And the following URL:
-
-* http://example.org/iiif/some-uuid/full/full/0/default.jpg
-
-FilesystemResolver will look for an image located at
-/data/images/some-uuid/image.jp2.
-
-## HttpResolver
-
-HttpResolver maps an identifier from an IIIF URL to some other URL, for
-retrieving images from a web server.
-
-### Example With Prefix Only
-
-Given the following configuration options:
-
-* `HttpResolver.url_prefix = http://localhost/images/`
-* `HttpResolver.url_suffix = `
-
-And the following URL:
-
-* http://example.org/iiif/image.jpg/full/full/0/default.jpg
-
-HttpResolver will look for an image located at
-http://localhost/images/image.jpg.
-
-### Example With Prefix and Suffix
-
-Given the following configuration options:
-
-* `HttpResolver.url_prefix = http://localhost/images/`
-* `HttpResolver.url_suffix = /image.jp2`
-
-And the following URL:
-
-* http://example.org/iiif/some-uuid/full/full/0/default.jpg
-
-HttpResolver will look for an image located at
-http://localhost/images/some-uuid/image.jp2.
+ImageMagick is not known for being particularly fast or efficient. Large
+amounts of RAM and fast storage help.
 
 # Feedback
 
 Ideas, suggestions, feature requests, bug reports, and so on are welcome;
-please either create an issue, or
-[contact the author](mailto:alexd@illinois.edu).
+please [contact the author](mailto:alexd@illinois.edu) or, better yet, create
+an issue.
 
 # Custom Development
 
