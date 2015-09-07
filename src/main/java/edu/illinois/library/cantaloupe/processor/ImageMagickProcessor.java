@@ -14,8 +14,14 @@ import org.im4java.core.IMOperation;
 import org.im4java.core.Info;
 import org.im4java.process.Pipe;
 import org.im4java.process.ProcessStarter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,10 +30,14 @@ import java.util.Set;
 
 public class ImageMagickProcessor implements Processor {
 
-    private static final Set<OutputFormat> OUTPUT_FORMATS = new HashSet<OutputFormat>();
+    private static final HashMap<SourceFormat,Set<OutputFormat>> OUTPUT_FORMATS =
+            getAvailableOutputFormats();
     private static final Set<String> FORMAT_EXTENSIONS = new HashSet<String>();
     private static final Set<String> QUALITIES = new HashSet<String>();
     private static final Set<String> SUPPORTS = new HashSet<String>();
+
+    private static Logger logger = LoggerFactory.
+            getLogger(ImageMagickProcessor.class);
 
     static {
         // overrides the PATH; see
@@ -38,10 +48,9 @@ public class ImageMagickProcessor implements Processor {
             ProcessStarter.setGlobalSearchPath(binaryPath);
         }
 
-        for (OutputFormat outputFormat : OutputFormat.values()) {
-            if (outputFormat != OutputFormat.WEBP) { // we don't support webp
-                OUTPUT_FORMATS.add(outputFormat);
-                FORMAT_EXTENSIONS.add(outputFormat.getExtension());
+        for (Set<OutputFormat> set : OUTPUT_FORMATS.values()) {
+            for (OutputFormat format : set) {
+                FORMAT_EXTENSIONS.add(format.getExtension());
             }
         }
 
@@ -65,8 +74,68 @@ public class ImageMagickProcessor implements Processor {
         SUPPORTS.add("sizeWh");
     }
 
+    /**
+     * @return Map of available output formats for all known source formats,
+     * based on information reported by <code>identify -list format</code>.
+     */
+    public static HashMap<SourceFormat, Set<OutputFormat>> getAvailableOutputFormats() {
+        final Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
+        final Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
+
+        try {
+            // retrieve the output of the `identify -list format` command,
+            // which contains a list of all supported formats
+            Runtime runtime = Runtime.getRuntime();
+            String cmdPath = Application.getConfiguration().
+                    getString("ImageMagickProcessor.path_to_binaries", "");
+            String[] commands = {cmdPath + File.separator + "identify",
+                    "-list", "format"};
+            Process proc = runtime.exec(commands);
+            BufferedReader stdInput = new BufferedReader(
+                    new InputStreamReader(proc.getInputStream()));
+            String s;
+
+            while ((s = stdInput.readLine()) != null) {
+                s = s.trim();
+                if (s.startsWith("JP2")) {
+                    sourceFormats.add(SourceFormat.JP2);
+                    outputFormats.add(OutputFormat.JP2);
+                }
+                if (s.startsWith("JPEG")) {
+                    sourceFormats.add(SourceFormat.JPG);
+                    outputFormats.add(OutputFormat.JPG);
+                }
+                if (s.startsWith("PNG")) {
+                    sourceFormats.add(SourceFormat.PNG);
+                    outputFormats.add(OutputFormat.PNG);
+                }
+                if (s.startsWith("PDF")) {
+                    outputFormats.add(OutputFormat.PDF);
+                }
+                if (s.startsWith("TIFF")) {
+                    sourceFormats.add(SourceFormat.TIF);
+                    outputFormats.add(OutputFormat.TIF);
+                }
+                if (s.startsWith("WEBP")) {
+                    sourceFormats.add(SourceFormat.WEBP);
+                    outputFormats.add(OutputFormat.WEBP);
+                }
+
+            }
+        } catch (IOException e) {
+            logger.error("Failed to execute identify command");
+        }
+
+        final HashMap<SourceFormat,Set<OutputFormat>> map =
+                new HashMap<SourceFormat,Set<OutputFormat>>();
+        for (SourceFormat sourceFormat : sourceFormats) {
+            map.put(sourceFormat, outputFormats);
+        }
+        return map;
+    }
+
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
-        return OUTPUT_FORMATS;
+        return OUTPUT_FORMATS.get(sourceFormat);
     }
 
     public ImageInfo getImageInfo(InputStream inputStream,
