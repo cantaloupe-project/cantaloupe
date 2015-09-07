@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,9 +33,20 @@ public class ImageResource extends AbstractResource {
 
     class ImageRepresentation extends OutputRepresentation {
 
+        File sourceFile;
         InputStream inputStream;
         Parameters params;
         SourceFormat sourceFormat;
+
+        public ImageRepresentation(MediaType mediaType,
+                                   SourceFormat sourceFormat,
+                                   Parameters params,
+                                   File sourceFile) {
+            super(mediaType);
+            this.sourceFile = sourceFile;
+            this.params = params;
+            this.sourceFormat = sourceFormat;
+        }
 
         public ImageRepresentation(MediaType mediaType,
                                    SourceFormat sourceFormat,
@@ -50,8 +62,13 @@ public class ImageResource extends AbstractResource {
             try {
                 Processor proc = ProcessorFactory.
                         getProcessor(this.sourceFormat);
-                proc.process(this.params, this.sourceFormat, inputStream,
-                        outputStream);
+                if (this.sourceFile != null) {
+                    proc.process(this.params, this.sourceFormat,
+                            this.sourceFile, outputStream);
+                } else {
+                    proc.process(this.params, this.sourceFormat,
+                            this.inputStream, outputStream);
+                }
             } catch (Exception e) {
                 throw new IOException(e);
             }
@@ -60,8 +77,7 @@ public class ImageResource extends AbstractResource {
     }
 
     @Get
-    public Representation doGet() throws IllegalArgumentException,
-            UnsupportedEncodingException, FileNotFoundException {
+    public Representation doGet() throws Exception {
         Map<String,Object> attrs = this.getRequest().getAttributes();
         String identifier = Reference.decode((String) attrs.get("identifier"));
         String format = (String) attrs.get("format");
@@ -73,11 +89,6 @@ public class ImageResource extends AbstractResource {
                 quality, format);
 
         Resolver resolver = ResolverFactory.getResolver();
-        InputStream inputStream = resolver.resolve(identifier);
-        if (inputStream == null) {
-            throw new FileNotFoundException("Resource not found");
-        }
-
         SourceFormat sourceFormat = resolver.getExpectedSourceFormat(identifier);
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
         Set availableOutputFormats = proc.getAvailableOutputFormats(sourceFormat);
@@ -98,10 +109,21 @@ public class ImageResource extends AbstractResource {
                 "<" + params.getCanonicalUri(this.getRootRef().toString()) +
                         ">;rel=\"canonical\"");
 
+        File sourceFile = resolver.getFile(identifier);
+        InputStream inputStream = null;
+        if (sourceFile == null) {
+            inputStream = resolver.getInputStream(identifier);
+        }
         MediaType mediaType = new MediaType(
                 OutputFormat.valueOf(format.toUpperCase()).getMediaType());
-        return new ImageRepresentation(mediaType, sourceFormat, params,
-                inputStream);
+
+        if (sourceFile != null) {
+            return new ImageRepresentation(mediaType, sourceFormat, params,
+                    sourceFile);
+        } else {
+            return new ImageRepresentation(mediaType, sourceFormat, params,
+                    inputStream);
+        }
     }
 
 }

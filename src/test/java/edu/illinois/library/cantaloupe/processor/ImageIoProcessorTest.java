@@ -39,14 +39,27 @@ public class ImageIoProcessorTest extends TestCase {
                 instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
     }
 
-    public void testGetImageInfo() throws Exception {
+    public void testGetImageInfoWithFile() throws Exception {
+        // get an ImageInfo representing an image file
+        File file = getFixture("escher_lego.jpg");
+        SourceFormat sourceFormat = SourceFormat.JPG;
+        String baseUri = "http://example.org/base/";
+        ImageInfo info = instance.getImageInfo(file, sourceFormat, baseUri);
+        testGetImageInfo(info, baseUri);
+    }
+
+    public void testGetImageInfoWithInputStream() throws Exception {
         // get an ImageInfo representing an image file
         File file = getFixture("escher_lego.jpg");
         InputStream is = new FileInputStream(file);
         SourceFormat sourceFormat = SourceFormat.JPG;
         String baseUri = "http://example.org/base/";
         ImageInfo info = instance.getImageInfo(is, sourceFormat, baseUri);
+        testGetImageInfo(info, baseUri);
+    }
 
+    private void testGetImageInfo(ImageInfo info, String baseUri)
+            throws Exception {
         assertEquals("http://iiif.io/api/image/2/context.json", info.getContext());
         assertEquals(baseUri, info.getId());
         assertEquals("http://iiif.io/api/image", info.getProtocol());

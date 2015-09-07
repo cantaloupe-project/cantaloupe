@@ -13,6 +13,7 @@ import org.apache.commons.configuration.Configuration;
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IMOperation;
 import org.im4java.core.Info;
+import org.im4java.core.InfoException;
 import org.im4java.process.Pipe;
 import org.im4java.process.ProcessStarter;
 import org.slf4j.Logger;
@@ -146,13 +147,27 @@ public class ImageMagickProcessor implements Processor {
         return formats;
     }
 
+    public ImageInfo getImageInfo(File sourceFile,
+                                  SourceFormat sourceFormat,
+                                  String imageBaseUri) throws Exception {
+        Info sourceInfo = new Info(sourceFormat.getExtension() + ":" + sourceFile.getAbsolutePath(),
+                true);
+        return doGetImageInfo(sourceInfo, imageBaseUri);
+    }
+
     public ImageInfo getImageInfo(InputStream inputStream,
                                   SourceFormat sourceFormat,
                                   String imageBaseUri) throws Exception {
-        ImageInfo imageInfo = new ImageInfo();
-
         Info sourceInfo = new Info(sourceFormat.getExtension() + ":-",
                 inputStream, true);
+        ImageInfo info = doGetImageInfo(sourceInfo, imageBaseUri);
+        inputStream.close();
+        return info;
+    }
+
+    private ImageInfo doGetImageInfo(Info sourceInfo, String imageBaseUri)
+            throws InfoException {
+        ImageInfo imageInfo = new ImageInfo();
         imageInfo.setId(imageBaseUri);
         imageInfo.setHeight(sourceInfo.getImageHeight());
         imageInfo.setWidth(sourceInfo.getImageWidth());
@@ -173,11 +188,42 @@ public class ImageMagickProcessor implements Processor {
     }
 
     public void process(Parameters params, SourceFormat sourceFormat,
+                        File file, OutputStream outputStream) throws Exception {
+        IMOperation op = new IMOperation();
+        op.addImage(file.getAbsolutePath());
+        op = assembleOperation(op, params);
+
+        // format transformation
+        op.addImage(params.getOutputFormat().getExtension() + ":-"); // write to stdout
+
+        Pipe pipeOut = new Pipe(null, outputStream);
+
+        ConvertCmd convert = new ConvertCmd();
+        convert.setOutputConsumer(pipeOut);
+        convert.run(op);
+    }
+
+    public void process(Parameters params, SourceFormat sourceFormat,
                         InputStream inputStream, OutputStream outputStream)
             throws Exception {
         IMOperation op = new IMOperation();
         op.addImage(sourceFormat.getExtension() + ":-"); // read from stdin
+        op = assembleOperation(op, params);
 
+        // format transformation
+        op.addImage(params.getOutputFormat().getExtension() + ":-"); // write to stdout
+
+        Pipe pipeIn = new Pipe(inputStream, null);
+        Pipe pipeOut = new Pipe(null, outputStream);
+
+        ConvertCmd convert = new ConvertCmd();
+        convert.setInputProvider(pipeIn);
+        convert.setOutputConsumer(pipeOut);
+        convert.run(op);
+        inputStream.close();
+    }
+
+    private IMOperation assembleOperation(IMOperation op, Parameters params) {
         // region transformation
         Region region = params.getRegion();
         if (!region.isFull()) {
@@ -231,17 +277,7 @@ public class ImageMagickProcessor implements Processor {
             }
         }
 
-        // format transformation
-        op.addImage(params.getOutputFormat().getExtension() + ":-"); // write to stdout
-
-        Pipe pipeIn = new Pipe(inputStream, null);
-        Pipe pipeOut = new Pipe(null, outputStream);
-
-        ConvertCmd convert = new ConvertCmd();
-        convert.setInputProvider(pipeIn);
-        convert.setOutputConsumer(pipeOut);
-        convert.run(op);
-        inputStream.close();
+        return op;
     }
 
 }

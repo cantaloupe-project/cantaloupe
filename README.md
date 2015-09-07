@@ -1,10 +1,6 @@
 # 🍈 Cantaloupe
 
-*[IIIF 2.0](http://iiif.io) image server in Java*
-
-Cantaloupe is an extensible IIIF 2.0 image server written in Java. It uses the
-[Restlet](http://restlet.com/products/restlet-framework/) REST framework on top
-of the [Simple](http://www.simpleframework.org) high-performance HTTP server.
+*Extensible [IIIF 2.0](http://iiif.io) image server in Java*
 
 # Features
 
@@ -70,32 +66,34 @@ it the following contents, modifying as desired:
     HttpResolver.username =
     HttpResolver.password =
 
-# Running
+(The above sample contains all available keys.)
 
-Run it like:
+# Running
 
 `$ java -jar Cantaloupe-x.x.x.jar -Dcantaloupe.config=/path/to/cantaloupe.properties`
 
 It is now ready for use at: `http://localhost:{http.port}/iiif`
 
-# Resolvers
+# Technical Overview
+
+## Resolvers
 
 Resolvers locate a source image based on the identifier in an IIIF URL. In
-Java-speak, they take in an identifier and return an InputStream from which the
-corresponding image can be read by a processor, so that processors don't have
-to know where the images they read are coming from.
+Java-speak, they take in an identifier and return either a File or an
+InputStream from which the corresponding image can be read by a processor, so
+that processors don't have to know where the images they read are coming from.
 
-## FilesystemResolver
+### FilesystemResolver
 
 FilesystemResolver maps an identifier from an IIIF URL to a filesystem path,
 for retrieving local images.
 
-## HttpResolver
+### HttpResolver
 
 HttpResolver maps an identifier from an IIIF URL to some other URL, for
 retrieving images from a web server.
 
-# Processors
+## Processors
 
 Cantaloupe can use different image processors, each of which can be assigned to
 particular source formats via the config file (see the Configuration section
@@ -116,20 +114,19 @@ the processor what to return in its `getSupportedSourceFormats()` and
 `getAvailableOutputFormats(SourceFormat)` methods.
 
 The list of supported source formats (source formats for which there are any
-output formats) for each processor is displayed at `/iiif`. The list of output
-formats supported *for a given source format* is contained within the response
-to an information request. 
+output formats) for each processor is displayed on the landing page, at
+`/iiif`. The list of output formats supported *for a given source format* is
+contained within the response to an information request. 
 
-## ImageIoProcessor
+### ImageIoProcessor
 
 ImageIoProcessor uses the Java ImageIO framework to load and operate on
 BufferedImages.
 
-ImageIO, as its name implies, is simply an I/O interface that does not know
-anything about image formats, and therefore the list of formats supported by
-this processor varies depending on the libraries (jars) available in the
-classpath. By default, it is minimal -- typically something like JPEG, GIF, and
-PNG.
+ImageIO, as its name implies, is simply an I/O interface that does not care 
+about image formats, and therefore the list of formats supported by this
+processor varies depending on the libraries (jars) available in the classpath.
+By default, it is minimal -- typically something like JPEG, GIF, and PNG.
 
 See the following links for some interesting possibilities:
 
@@ -140,7 +137,7 @@ See the following links for some interesting possibilities:
 * [https://github.com/jai-imageio/jai-imageio-jpeg2000]
   (https://github.com/jai-imageio/jai-imageio-jpeg2000)
 
-## GraphicsMagickProcessor
+### GraphicsMagickProcessor
 
 GraphicsMagickProcessor uses [im4java](http://im4java.sourceforge.net) to
 fork out to the [GraphicsMagick](http://www.graphicsmagick.org) executable
@@ -152,13 +149,13 @@ installed; see [Supported Formats](http://www.graphicsmagick.org/formats.html)).
 It also supports a wide array of source formats.
 
 GraphicsMagickProcessor is a good fallback processor, as it supports a wide
-range of formats and is generally faster than ImageMagickProcessor.
+range of source formats and is generally faster than ImageMagickProcessor.
 
 *Note: due to a quirk in im4java, ImageMagick has to be installed for this
 processor to work. (It needs to use the `identify` command to get image
 dimensions.) Eliminating this dependency is on the to-do list.*
 
-## ImageMagickProcessor
+### ImageMagickProcessor
 
 ImageMagickProcessor, like GraphicsMagickProcessor, also uses
 [im4java](http://im4java.sourceforge.net) to wrap [ImageMagick]
@@ -171,31 +168,43 @@ PDF delegates are installed). It also supports a wide array of source formats.
 ImageMagick is not known for being particularly fast or efficient. Large
 amounts of RAM and fast storage help.
 
-# Request/Response Sequence of Events
+## Request/Response Sequence of Events
 
-## Image Request
+### Image Request
 
 1. Restlet framework receives request and hands it off to ImageResource
 2. Extract parameters from the URL
 3. Obtain a resolver from the ResolverFactory, which consults the
    `resolver` key in the config file
-4. Using the resolver, obtain an InputStream from which the source image can be
-   read
+4. Using the resolver, obtain a File or InputStream from which the source image
+   can be read
 5. Obtain a processor appropriate for the source format
 6. Process the image based on the URL parameters
 7. Return the processed image in the response
 
-## Information Request
+### Information Request
 
 1. Restlet framework receives request and hands it off to InformationResource
 2. Extract identifier from the URL
 3. Obtain a resolver from the ResolverFactory, which consults the
    `resolver` key in the config file
-4. Using the resolver, obtain an InputStream from which the source image can be
-   read
+4. Using the resolver, obtain a File or InputStream from which the source image
+   can be read
 5. Obtain a processor appropriate for the source format
 6. Get an ImageInfo object from the processor
 7. Serialize it to JSON and return it in the response
+
+# Notes on Source Formats
+
+(Feel free to contact the author with your own notes.)
+
+## JPEG2000
+
+GraphicsMagick can read/write JPEG2000 files using JasPer, and ImageMagick
+using OpenJPEG. Both of these are very slow.
+
+ImageIO supports the Java Advanced Imaging library, with which it ought to be
+able to read this format. (This is untested.)
 
 # Custom Development
 
@@ -203,18 +212,18 @@ amounts of RAM and fast storage help.
 
 Resolvers are easy to write: all you have to do is write a class that
 implements the
-`edu.illinois.library.cantaloupe.resolver.Resolver` interface. Then, to use it,
+`e.i.l.cantaloupe.resolver.Resolver` interface. Then, to use it,
 set `resolver` in your properties file to its name.
 
 Feel free to add new configuration keys to the properties file. They should
 be in the form of `NameOfMyResolver.whatever`. They can then be accessed
-via `edu.illinois.library.cantaloupe.Application.getConfiguration()`.
+via `e.i.l.cantaloupe.Application.getConfiguration()`.
 
 See one of the existing resolvers for examples.
 
 ## Adding Custom Image Processors
 
-Processors implement the `edu.illinois.library.cantaloupe.processor.Processor`
+Processors implement the `e.i.l.cantaloupe.processor.Processor`
 interface. See the interface documentation for details and the existing
 implementations for examples.
 

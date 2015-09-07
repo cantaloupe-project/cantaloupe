@@ -14,6 +14,8 @@ import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -96,14 +98,52 @@ public class ImageIoProcessor implements Processor {
         return formats;
     }
 
+    public ImageInfo getImageInfo(File sourceFile,
+                                  SourceFormat sourceFormat,
+                                  String imageBaseUri) throws Exception {
+        ImageInfo imageInfo = new ImageInfo();
+        imageInfo.setId(imageBaseUri);
+        // TODO: this is inefficient as it reads the whole image into memory
+        BufferedImage image = ImageIO.read(sourceFile);
+        return doGetImageInfo(imageInfo, image);
+    }
+
     public ImageInfo getImageInfo(InputStream inputStream,
                                   SourceFormat sourceFormat,
                                   String imageBaseUri) throws Exception {
         ImageInfo imageInfo = new ImageInfo();
         imageInfo.setId(imageBaseUri);
-
         // TODO: this is inefficient as it reads the whole image into memory
         BufferedImage image = ImageIO.read(inputStream);
+        return doGetImageInfo(imageInfo, image);
+    }
+
+    public Set<SourceFormat> getSupportedSourceFormats() {
+        Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
+        for (SourceFormat sourceFormat : OUTPUT_FORMATS.keySet()) {
+            if (OUTPUT_FORMATS.get(sourceFormat) != null &&
+                    OUTPUT_FORMATS.get(sourceFormat).size() > 0) {
+                sourceFormats.add(sourceFormat);
+            }
+        }
+        return sourceFormats;
+    }
+
+    public void process(Parameters params, SourceFormat sourceFormat,
+                        File sourceFile, OutputStream outputStream)
+            throws Exception {
+        BufferedImage image = ImageIO.read(sourceFile);
+        doProcessing(image, params, outputStream);
+    }
+
+    public void process(Parameters params, SourceFormat sourceFormat,
+                        InputStream inputStream, OutputStream outputStream)
+            throws Exception {
+        BufferedImage image = ImageIO.read(inputStream);
+        doProcessing(image, params, outputStream);
+    }
+
+    private ImageInfo doGetImageInfo(ImageInfo imageInfo, BufferedImage image) {
         if (image == null) {
             throw new UnsupportedSourceFormatException();
         }
@@ -136,21 +176,8 @@ public class ImageIoProcessor implements Processor {
         return imageInfo;
     }
 
-    public Set<SourceFormat> getSupportedSourceFormats() {
-        Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
-        for (SourceFormat sourceFormat : OUTPUT_FORMATS.keySet()) {
-            if (OUTPUT_FORMATS.get(sourceFormat) != null &&
-                    OUTPUT_FORMATS.get(sourceFormat).size() > 0) {
-                sourceFormats.add(sourceFormat);
-            }
-        }
-        return sourceFormats;
-    }
-
-    public void process(Parameters params, SourceFormat sourceFormat,
-                        InputStream inputStream, OutputStream outputStream)
-            throws Exception {
-        BufferedImage image = ImageIO.read(inputStream);
+    private void doProcessing(BufferedImage image, Parameters params,
+                              OutputStream outputStream) throws IOException {
         if (image == null) {
             throw new UnsupportedSourceFormatException();
         }

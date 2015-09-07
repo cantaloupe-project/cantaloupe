@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -37,15 +38,19 @@ public class InformationResource extends AbstractResource {
         String identifier = Reference.decode((String) attrs.get("identifier"));
 
         Resolver resolver = ResolverFactory.getResolver();
-        InputStream inputStream = resolver.resolve(identifier);
-        if (inputStream == null) {
-            throw new FileNotFoundException("Resource not found");
-        }
+        File sourceFile = resolver.getFile(identifier);
+        InputStream inputStream = resolver.getInputStream(identifier);
 
         SourceFormat sourceFormat = resolver.getExpectedSourceFormat(identifier);
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
-        ImageInfo imageInfo = proc.getImageInfo(inputStream, sourceFormat,
-                this.getImageUri(identifier));
+        ImageInfo imageInfo;
+        if (sourceFile != null) {
+            imageInfo = proc.getImageInfo(sourceFile, sourceFormat,
+                    this.getImageUri(identifier));
+        } else {
+            imageInfo = proc.getImageInfo(inputStream, sourceFormat,
+                    this.getImageUri(identifier));
+        }
 
         ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writer().

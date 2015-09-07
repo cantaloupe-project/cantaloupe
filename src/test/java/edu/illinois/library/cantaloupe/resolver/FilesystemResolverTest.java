@@ -5,6 +5,7 @@ import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,9 +29,34 @@ public class FilesystemResolverTest extends TestCase {
         instance = new FilesystemResolver();
     }
 
-    public void testResolve() {
-        assertNotNull(instance.resolve(FILE));
-        assertNull(instance.resolve("bogus"));
+    public void testGetFile() {
+        try {
+            assertNotNull(instance.getFile(FILE));
+        } catch (FileNotFoundException e) {
+            fail();
+        }
+
+        try {
+            instance.getFile("bogus");
+            fail("Expected exception");
+        } catch (FileNotFoundException e) {
+            // pass
+        }
+    }
+
+    public void testGetInputStream() throws Exception {
+        try {
+            assertNotNull(instance.getInputStream(FILE));
+        } catch (FileNotFoundException e) {
+            fail();
+        }
+
+        try {
+            assertNull(instance.getInputStream("bogus"));
+            fail();
+        } catch (FileNotFoundException e) {
+            // pass
+        }
     }
 
     public void testGetPath() {

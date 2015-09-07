@@ -3,18 +3,25 @@ package edu.illinois.library.cantaloupe.resolver;
 import edu.illinois.library.cantaloupe.Application;
 import org.apache.commons.configuration.Configuration;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 public class FilesystemResolver extends AbstractResolver implements Resolver {
 
-    public InputStream resolve(String identifier) {
-        try {
-            return new FileInputStream(getPath(identifier));
-        } catch (FileNotFoundException e) {
-            return null;
+    public File getFile(String identifier) throws FileNotFoundException {
+        File file = new File(getPath(identifier));
+        if (!file.exists()) {
+            throw new FileNotFoundException(
+                    "File not found:" + file.getAbsolutePath());
         }
+        return file;
+    }
+
+    public InputStream getInputStream(String identifier)
+            throws FileNotFoundException {
+        return new FileInputStream(getPath(identifier));
     }
 
     public String getPath(String identifier) {

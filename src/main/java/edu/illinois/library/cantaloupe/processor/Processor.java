@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Set;
@@ -22,6 +23,16 @@ public interface Processor {
     Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat);
 
     /**
+     * @param sourceFile Source image
+     * @param sourceFormat Format of the image
+     * @param imageBaseUri Base URI of the image
+     * @return ImageInfo describing the image
+     * @throws Exception
+     */
+    ImageInfo getImageInfo(File sourceFile, SourceFormat sourceFormat,
+                           String imageBaseUri) throws Exception;
+
+    /**
      * @param inputStream An InputStream from which to read the image
      * @param sourceFormat Format of the image
      * @param imageBaseUri Base URI of the image
@@ -36,6 +47,20 @@ public interface Processor {
      * formats.
      */
     Set<SourceFormat> getSupportedSourceFormats();
+
+    /**
+     * Uses the supplied parameters to process an image from the supplied
+     * InputStream, and writes the result to the given OutputStream.
+     *
+     * @param params Parameters of the output image
+     * @param sourceFormat Format of the source image
+     * @param sourceFile Source image file
+     * @param outputStream An OutputStream to which to write the image
+     * @throws Exception
+     */
+    void process(Parameters params, SourceFormat sourceFormat,
+                 File sourceFile, OutputStream outputStream)
+            throws Exception;
 
     /**
      * Uses the supplied parameters to process an image from the supplied

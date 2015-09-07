@@ -35,13 +35,13 @@ public class LandingResource extends AbstractResource {
     }
 
     @Get
-    public Representation doGet() throws IOException {
+    public Representation doGet() throws Exception {
         Template template = Velocity.getTemplate("landing.vm");
         return new TemplateRepresentation(template, getTemplateVars(),
                 MediaType.TEXT_HTML);
     }
 
-    private Map<String,Object> getTemplateVars() {
+    private Map<String,Object> getTemplateVars() throws Exception {
         Map<String,Object> vars = new HashMap<String,Object>();
 
         // resolver name

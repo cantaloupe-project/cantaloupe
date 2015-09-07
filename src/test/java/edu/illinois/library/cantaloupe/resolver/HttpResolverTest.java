@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.Application;
 import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class HttpResolverTest extends TestCase {
@@ -14,14 +15,23 @@ public class HttpResolverTest extends TestCase {
 
     public void setUp() throws IOException {
         BaseConfiguration config = new BaseConfiguration();
-        config.setProperty("HttpResolver.url_prefix", "");
+        config.setProperty("HttpResolver.url_prefix", "http://localhost/");
         Application.setConfiguration(config);
 
         instance = new HttpResolver();
     }
 
-    public void testResolve() {
-        assertNull(instance.resolve("bogus"));
+    public void testGetFile() {
+        assertNull(instance.getFile("bogus"));
+    }
+
+    public void testGetInputStream() {
+        try {
+            instance.getInputStream("bogus");
+            fail("Expected exception");
+        } catch (FileNotFoundException e) {
+            // pass
+        }
         // TODO: test against a real server
     }
 
