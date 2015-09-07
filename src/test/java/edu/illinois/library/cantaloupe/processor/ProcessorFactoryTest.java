@@ -7,6 +7,10 @@ import org.apache.commons.configuration.BaseConfiguration;
 
 public class ProcessorFactoryTest extends TestCase {
 
+    public void testGetAllProcessors() {
+        assertEquals(3, ProcessorFactory.getAllProcessors().size());
+    }
+
     public void testGetProcessor() {
         BaseConfiguration config = new BaseConfiguration();
         Application.setConfiguration(config);
