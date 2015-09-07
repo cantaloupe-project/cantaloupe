@@ -132,6 +132,10 @@ public class ImageIoProcessor implements Processor {
         return imageInfo;
     }
 
+    public Set<SourceFormat> getSupportedSourceFormats() {
+        return OUTPUT_FORMATS.keySet();
+    }
+
     public void process(Parameters params, SourceFormat sourceFormat,
                         InputStream inputStream, OutputStream outputStream)
             throws Exception {

@@ -32,6 +32,12 @@ public interface Processor {
                            String imageBaseUri) throws Exception;
 
     /**
+     * @return Set of source formats for which there are any available output
+     * formats.
+     */
+    Set<SourceFormat> getSupportedSourceFormats();
+
+    /**
      * Uses the supplied parameters to process an image from the supplied
      * InputStream, and writes the result to the given OutputStream.
      *

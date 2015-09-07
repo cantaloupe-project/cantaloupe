@@ -105,6 +105,10 @@ public class ImageMagickProcessorTest extends TestCase {
         assertEquals(expectedSupports, actualSupports);
     }
 
+    public void testGetSupportedSourceFormats() {
+        // TODO: write this
+    }
+
     public void testProcess() {
         // This is not easily testable in code, so will have to be tested by
         // human eyes.

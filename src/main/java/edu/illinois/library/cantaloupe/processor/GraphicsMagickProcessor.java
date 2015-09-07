@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.request.Region;
 import edu.illinois.library.cantaloupe.request.Rotation;
 import edu.illinois.library.cantaloupe.request.Size;
+import org.apache.commons.configuration.Configuration;
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IMOperation;
 import org.im4java.core.Info;
@@ -30,14 +31,14 @@ import java.util.Set;
 
 public class GraphicsMagickProcessor implements Processor {
 
+    private static Logger logger = LoggerFactory.
+            getLogger(GraphicsMagickProcessor.class);
+
     private static final HashMap<SourceFormat,Set<OutputFormat>> OUTPUT_FORMATS =
             getAvailableOutputFormats();
     private static final Set<String> FORMAT_EXTENSIONS = new HashSet<String>();
     private static final Set<String> QUALITIES = new HashSet<String>();
     private static final Set<String> SUPPORTS = new HashSet<String>();
-
-    private static Logger logger = LoggerFactory.
-            getLogger(GraphicsMagickProcessor.class);
 
     static {
         // overrides the PATH; see
@@ -86,8 +87,11 @@ public class GraphicsMagickProcessor implements Processor {
             // retrieve the output of the `gm version` command, which contains a
             // list of all optional formats
             Runtime runtime = Runtime.getRuntime();
-            String cmdPath = Application.getConfiguration().
-                    getString("GraphicsMagickProcessor.path_to_binaries", "");
+            String cmdPath = "";
+            Configuration config = Application.getConfiguration();
+            if (config != null) {
+                cmdPath = config.getString("GraphicsMagickProcessor.path_to_binaries", "");
+            }
             String[] commands = {cmdPath + File.separator + "gm", "version"};
             Process proc = runtime.exec(commands);
             BufferedReader stdInput = new BufferedReader(
@@ -170,6 +174,10 @@ public class GraphicsMagickProcessor implements Processor {
 
         inputStream.close();
         return imageInfo;
+    }
+
+    public Set<SourceFormat> getSupportedSourceFormats() {
+        return OUTPUT_FORMATS.keySet();
     }
 
     public void process(Parameters params, SourceFormat sourceFormat,
