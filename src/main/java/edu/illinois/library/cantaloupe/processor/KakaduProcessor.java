@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.request.Quality;
@@ -12,39 +13,33 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * This processor works only with local filesystem resolvers because the Kakadu
- * binaries are unable to read from any other source.
+ * @see <a href="http://kakadusoftware.com/wp-content/uploads/2014/06/Usage_Examples-v7_7.txt">
+ *     Usage Examples for the Demonstration Applications Supplied with Kakadu
+ *     V7.7</a>
  */
 public class KakaduProcessor implements Processor {
 
-    private static final List<OutputFormat> OUTPUT_FORMATS = new ArrayList<OutputFormat>();
-    private static final List<String> FORMAT_EXTENSIONS = new ArrayList<String>();
-    private static final List<String> QUALITIES = new ArrayList<String>();
-    private static final List<String> SUPPORTS = new ArrayList<String>();
+    private static final Set<String> QUALITIES = new HashSet<String>();
+    private static final Set<String> SUPPORTS = new HashSet<String>();
 
     static {
-        for (OutputFormat outputFormat : OutputFormat.values()) {
-            if (outputFormat != OutputFormat.WEBP &&
-                    outputFormat != OutputFormat.PDF) {
-                OUTPUT_FORMATS.add(outputFormat);
-                FORMAT_EXTENSIONS.add(outputFormat.getExtension());
-            }
-        }
-
         for (Quality quality : Quality.values()) {
             QUALITIES.add(quality.toString().toLowerCase());
         }
 
-        // TODO: is this list accurate?
         SUPPORTS.add("baseUriRedirect");
+        SUPPORTS.add("canonicalLinkHeader");
+        SUPPORTS.add("cors");
         SUPPORTS.add("mirroring");
         SUPPORTS.add("regionByPx");
         SUPPORTS.add("rotationArbitrary");
         SUPPORTS.add("rotationBy90s");
+        SUPPORTS.add("sizeAboveFull");
         SUPPORTS.add("sizeByWhListed");
         SUPPORTS.add("sizeByForcedWh");
         SUPPORTS.add("sizeByH");
@@ -54,57 +49,72 @@ public class KakaduProcessor implements Processor {
     }
 
     /**
-     * This implementation simply wraps ImageMagickProcessor's implementation,
-     * because the `kdu_jp2info` command can't read from stdin or a FIFO, which
-     * are the only practical ways to pass data to it from Java.
-     *
-     * @param inputStream An InputStream from which to read the image
-     * @param imageBaseUri Base URI of the image
-     * @return
+     * @return Map of available output formats for all known source formats,
+     * based on information reported by <code>gm version</code>.
      */
-    public ImageInfo getImageInfo(InputStream inputStream,
-                                  String imageBaseUri) {
-        Processor proc = new ImageMagickProcessor();
-        return proc.getImageInfo(inputStream, imageBaseUri);
+    public static HashMap<SourceFormat, Set<OutputFormat>> getAvailableOutputFormats() {
+        // TODO: write this
     }
 
-    public List<OutputFormat> getSupportedOutputFormats() {
-        return OUTPUT_FORMATS;
-    }
-
-    public void process(Parameters params, InputStream inputStream,
-                        OutputStream outputStream) throws Exception {
-        String fifoPathname = createFifo();
-
-    }
-
-    public String toString() {
-        return this.getClass().getSimpleName();
-    }
-
-    private String getMkfifoPath() throws ConfigurationException {
-        Configuration config = Application.getConfiguration();
-        String mkFifoPath = config.getString("mkfifo_path");
-        if (mkFifoPath == null) {
-            throw new ConfigurationException("Missing configuration key: mkfifo_path");
+    public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
+        Set<SourceFormat> formats = new HashSet<SourceFormat>();
+        if (sourceFormat == SourceFormat.JP2) {
+            formats.add(SourceFormat.JPG);
         }
-        return mkFifoPath;
+        // TODO: write this
+    }
+
+    public ImageInfo getImageInfo(File sourceFile, SourceFormat sourceFormat,
+                           String imageBaseUri) throws Exception {
+        // TODO: write this
+    }
+
+    public ImageInfo getImageInfo(InputStream inputStream,
+                                  SourceFormat sourceFormat,
+                                  String imageBaseUri) throws Exception {
+        // TODO: write this
+    }
+
+    public Set<SourceFormat> getSupportedSourceFormats() {
+        Set<SourceFormat> formats = new HashSet<SourceFormat>();
+        formats.add(SourceFormat.JP2);
+        return formats;
+    }
+
+    public void process(Parameters params, SourceFormat sourceFormat,
+                        File file, OutputStream outputStream) throws Exception {
+        File fifo = createAndGetFifo(); // kdu_expand will write to this
+
+    }
+
+    public void process(Parameters params, SourceFormat sourceFormat,
+                        InputStream inputStream, OutputStream outputStream)
+            throws Exception {
+        // noop
     }
 
     /**
-     * Creates a new FIFO with a unique name.
+     * Creates and returns a new FIFO with a unique name.
      *
-     * @return Pathname of the FIFO
      * @throws IOException
-     * @throws ConfigurationException
      */
-    private String createFifo() throws IOException, ConfigurationException {
+    private File createAndGetFifo() throws IOException, ConfigurationException {
         // TODO: this is inefficient
         File temp = File.createTempFile("cantaloupe_kdu_fifo", ".tmp");
         String pathname = temp.getAbsolutePath();
         temp.delete();
         Runtime.getRuntime().exec(getMkfifoPath() + " " + pathname);
-        return pathname;
+        return new File(pathname);
+    }
+
+    private String getMkfifoPath() throws ConfigurationException {
+        Configuration config = Application.getConfiguration();
+        final String key = "path_to_mkfifo";
+        String mkFifoPath = config.getString(key);
+        if (mkFifoPath == null) {
+            throw new ConfigurationException("Missing configuration key: " + key);
+        }
+        return mkFifoPath;
     }
 
 }

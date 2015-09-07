@@ -31,9 +31,9 @@ it the following contents, modifying as desired:
     print_stack_trace_on_error_pages = true
 
     # The image processor to use for various source formats. Available values
-    # are `ImageIoProcessor`, `GraphicsMagickProcessor`, and
+    # are `ImageIoProcessor`, `GraphicsMagickProcessor`, `KakaduProcessor`, and
     # `ImageMagickProcessor`.
-    processor.jp2 = ImageMagickProcessor
+    processor.jp2 = KakaduProcessor
     processor.jpg = ImageIoProcessor
     processor.tif = ImageMagickProcessor
     # Fall back to a general-purpose processor that supports just about
@@ -46,6 +46,9 @@ it the following contents, modifying as desired:
     # Optional; overrides the PATH
     ImageMagickProcessor.path_to_binaries = /usr/local/bin
     
+    # Optional; overrides the PATH
+    KakaduProcessor.path_to_binaries = /usr/bin
+
     # The path resolver that translates the identifier in the URL to a path.
     # Available values are `FilesystemResolver` and `HttpResolver`.
     resolver = FilesystemResolver
@@ -168,6 +171,11 @@ PDF delegates are installed). It also supports a wide array of source formats.
 ImageMagick is not known for being particularly fast or efficient. Large
 amounts of RAM and fast storage help.
 
+### KakaduProcessor
+
+KakaduProcessor uses the proprietary Kakadu library to efficiently process
+JPEG2000 source images.
+
 ## Request/Response Sequence of Events
 
 ### Image Request
@@ -203,8 +211,11 @@ amounts of RAM and fast storage help.
 GraphicsMagick can read/write JPEG2000 files using JasPer, and ImageMagick
 using OpenJPEG. Both of these are very slow.
 
-ImageIO supports the Java Advanced Imaging library, with which it ought to be
-able to read this format. (This is untested.)
+ImageIO supports the Java Advanced Imaging (JAI) library, with which it ought
+to be able to read this format. (This is untested.)
+
+KakaduProcessor is, by far, the fastest and most efficient processor for this
+format.
 
 # Custom Development
 
