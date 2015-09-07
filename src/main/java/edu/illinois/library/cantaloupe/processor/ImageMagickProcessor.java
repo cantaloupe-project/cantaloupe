@@ -240,8 +240,4 @@ public class ImageMagickProcessor implements Processor {
         inputStream.close();
     }
 
-    public String toString() {
-        return this.getClass().getSimpleName();
-    }
-
 }

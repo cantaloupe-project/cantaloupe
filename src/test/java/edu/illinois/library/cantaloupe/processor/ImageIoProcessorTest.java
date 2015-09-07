@@ -108,10 +108,6 @@ public class ImageIoProcessorTest extends TestCase {
         // human eyes.
     }
 
-    public void testToString() {
-        assertEquals("ImageIoProcessor", instance.toString());
-    }
-
     private File getFixture(String filename) throws IOException {
         File directory = new File(".");
         String cwd = directory.getCanonicalPath();

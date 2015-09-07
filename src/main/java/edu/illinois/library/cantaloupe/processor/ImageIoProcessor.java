@@ -151,10 +151,6 @@ public class ImageIoProcessor implements Processor {
                 outputStream);
     }
 
-    public String toString() {
-        return this.getClass().getSimpleName();
-    }
-
     private BufferedImage cropImage(BufferedImage inputImage, Region region) {
         BufferedImage croppedImage;
         if (region.isFull()) {

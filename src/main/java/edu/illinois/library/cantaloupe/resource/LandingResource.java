@@ -53,19 +53,20 @@ public class LandingResource extends AbstractResource {
         vars.put("resolverName", resolverStr);
 
         // source formats
-        Map<SourceFormat,Processor> sourceFormats =
-                new HashMap<SourceFormat, Processor>();
+        Map<SourceFormat,String> sourceFormats =
+                new HashMap<SourceFormat, String>();
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             sourceFormats.put(sourceFormat,
-                    ProcessorFactory.getProcessor(sourceFormat));
+                    ProcessorFactory.getProcessor(sourceFormat).getClass().getSimpleName());
         }
         vars.put("sourceFormats", sourceFormats);
 
         // processors
-        Map<Processor,Set<SourceFormat>> processors =
-                new HashMap<Processor, Set<SourceFormat>>();
+        Map<String,Set<SourceFormat>> processors =
+                new HashMap<String, Set<SourceFormat>>();
         for (Processor processor : ProcessorFactory.getAllProcessors()) {
-            processors.put(processor, processor.getSupportedSourceFormats()); // TODO: fix
+            processors.put(processor.getClass().getSimpleName(),
+                    processor.getSupportedSourceFormats());
         }
         vars.put("processors", processors);
 

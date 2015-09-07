@@ -112,10 +112,6 @@ public class GraphicsMagickProcessorTest extends TestCase {
         // human eyes.
     }
 
-    public void testToString() {
-        assertEquals("GraphicsMagickProcessor", instance.toString());
-    }
-
     private File getFixture(String filename) throws IOException {
         File directory = new File(".");
         String cwd = directory.getCanonicalPath();

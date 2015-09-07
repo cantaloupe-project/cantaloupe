@@ -51,9 +51,4 @@ public interface Processor {
                  InputStream inputStream, OutputStream outputStream)
             throws Exception;
 
-    /**
-     * @return Human-readable name of the processor.
-     */
-    String toString();
-
 }
