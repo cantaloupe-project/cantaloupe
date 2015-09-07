@@ -105,6 +105,21 @@ above). Currently, available processors include:
 * GraphicsMagickProcessor
 * ImageMagickProcessor
 
+In terms of format support, processors distinguish between the concepts of
+source formats and output formats, and furthermore, available output formats
+may differ depending on the source format.
+
+Supported source formats depend on the processor, and maybe also the platform,
+installed libraries/delegates, etc. In the case of ImageMagickProcessor, it is
+compiled from the output of the `identify -list format` command, which tells
+the processor what to return in its `getSupportedSourceFormats()` and
+`getAvailableOutputFormats(SourceFormat)` methods.
+
+The list of supported source formats (source formats for which there are any
+output formats) for each processor is displayed at `/iiif`. The list of output
+formats supported *for a given source format* is contained within the response
+to an information request. 
+
 ## ImageIoProcessor
 
 ImageIoProcessor uses the Java ImageIO framework to load and operate on
@@ -156,11 +171,31 @@ PDF delegates are installed). It also supports a wide array of source formats.
 ImageMagick is not known for being particularly fast or efficient. Large
 amounts of RAM and fast storage help.
 
-# Feedback
+# Request/Response Sequence of Events
 
-Ideas, suggestions, feature requests, bug reports, and so on are welcome;
-please [contact the author](mailto:alexd@illinois.edu) or, better yet, create
-an issue.
+## Image Request
+
+1. Restlet framework receives request and hands it off to ImageResource
+2. Extract parameters from the URL
+3. Obtain a resolver from the ResolverFactory, which consults the
+   `resolver` key in the config file
+4. Using the resolver, obtain an InputStream from which the source image can be
+   read
+5. Obtain a processor appropriate for the source format
+6. Process the image based on the URL parameters
+7. Return the processed image in the response
+
+## Information Request
+
+1. Restlet framework receives request and hands it off to InformationResource
+2. Extract identifier from the URL
+3. Obtain a resolver from the ResolverFactory, which consults the
+   `resolver` key in the config file
+4. Using the resolver, obtain an InputStream from which the source image can be
+   read
+5. Obtain a processor appropriate for the source format
+6. Get an ImageInfo object from the processor
+7. Serialize it to JSON and return it in the response
 
 # Custom Development
 
@@ -190,6 +225,12 @@ implementations for examples.
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
+
+# Feedback
+
+Ideas, suggestions, feature requests, bug reports, and so on are welcome;
+please [contact the author](mailto:alexd@illinois.edu) or, better yet, create
+an issue.
 
 # License
 
