@@ -82,9 +82,14 @@ public class ImageResource extends AbstractResource {
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
         Set availableOutputFormats = proc.getAvailableOutputFormats(sourceFormat);
         if (!availableOutputFormats.contains(params.getOutputFormat())) {
-            String msg = String.format("%s supports only the following " +
-                    "source formats for this output format: %s",
-                    proc, StringUtils.join(availableOutputFormats, ", "));
+            String msg;
+            if (sourceFormat == SourceFormat.UNKNOWN) {
+                msg = String.format("%s does not support this source format",
+                        proc);
+            } else {
+                msg = String.format("%s does not support the \"%s\" source format",
+                        proc, sourceFormat.getExtension().replaceAll("[^a-zA-Z0-9]", ""));
+            }
             throw new IllegalArgumentException(msg);
         }
 
