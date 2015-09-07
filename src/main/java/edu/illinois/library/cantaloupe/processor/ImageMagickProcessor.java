@@ -44,7 +44,7 @@ public class ImageMagickProcessor implements Processor {
         // overrides the PATH; see
         // http://im4java.sourceforge.net/docs/dev-guide.html
         String binaryPath = Application.getConfiguration().
-                getString("ImageMagickProcessor.path_to_binaries");
+                getString("ImageMagickProcessor.path_to_binaries", "");
         if (binaryPath.length() > 0) {
             ProcessStarter.setGlobalSearchPath(binaryPath);
         }
