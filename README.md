@@ -28,11 +28,11 @@ choice of processor; see the Processors section below.
 Create a file called `cantaloupe.properties` anywhere on disk and paste into
 it the following contents, modifying as desired:
 
-    # TCP port to bind to the web server.
+    # TCP port to bind the web server to.
     http.port = 8182
 
     # Helpful in development
-    print_stack_trace_on_error_page = true
+    print_stack_trace_on_error_pages = true
 
     # The image processor to use for various source formats. Available values
     # are `ImageIoProcessor`, `GraphicsMagickProcessor`, and

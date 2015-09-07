@@ -55,7 +55,7 @@ public class ImageServerApplication extends Application {
             String stackTrace = "";
             Configuration config = edu.illinois.library.cantaloupe.
                     Application.getConfiguration();
-            if (config.getBoolean("print_stack_trace_on_error_page")) {
+            if (config.getBoolean("print_stack_trace_on_error_pages")) {
                 StringWriter sw = new StringWriter();
                 throwable.printStackTrace(new PrintWriter(sw));
                 stackTrace = sw.toString();
