@@ -1,5 +1,9 @@
 package edu.illinois.library.cantaloupe.image;
 
+/**
+ * Should contain constants for every source format that anyone could possibly
+ * ever want to read.
+ */
 public enum SourceFormat {
 
     BMP("bmp", "image/bmp"),
