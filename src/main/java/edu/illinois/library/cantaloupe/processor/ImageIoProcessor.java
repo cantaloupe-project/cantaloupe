@@ -93,11 +93,14 @@ public class ImageIoProcessor implements Processor {
 
         // TODO: this is inefficient as it reads the whole image into memory
         BufferedImage image = ImageIO.read(inputStream);
+        if (image == null) {
+            throw new UnsupportedSourceFormatException();
+        }
         imageInfo.setWidth(image.getWidth());
         imageInfo.setHeight(image.getHeight());
 
         /*
-        // get width & height without reading the entire image into memory
+        // get width & height (without reading the entire image into memory)
         Iterator<ImageReader> iter = ImageIO.
                 getImageReadersBySuffix(sourceFormat.getExtension());
         if (iter.hasNext()) {
@@ -126,6 +129,9 @@ public class ImageIoProcessor implements Processor {
                         InputStream inputStream, OutputStream outputStream)
             throws Exception {
         BufferedImage image = ImageIO.read(inputStream);
+        if (image == null) {
+            throw new UnsupportedSourceFormatException();
+        }
         image = cropImage(image, params.getRegion());
         image = scaleImage(image, params.getSize());
         image = rotateImage(image, params.getRotation());
