@@ -42,8 +42,8 @@ public class Region {
             if (parts.length == 4) {
                 region.setX(Float.parseFloat(parts[0]));
                 region.setY(Float.parseFloat(parts[1]));
-                region.setWidth(Integer.parseUnsignedInt(parts[2]));
-                region.setHeight(Integer.parseUnsignedInt(parts[3]));
+                region.setWidth(Integer.parseInt(parts[2]));
+                region.setHeight(Integer.parseInt(parts[3]));
             } else {
                 throw new IllegalArgumentException("Invalid region");
             }
