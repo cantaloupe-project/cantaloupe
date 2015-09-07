@@ -15,6 +15,7 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import org.restlet.data.MediaType;
+import org.restlet.data.Reference;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
@@ -33,8 +34,7 @@ public class InformationResource extends AbstractResource {
                 "rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"");
 
         Map<String,Object> attrs = this.getRequest().getAttributes();
-        String identifier = java.net.URLDecoder.
-                decode((String) attrs.get("identifier"), "UTF-8");
+        String identifier = Reference.decode((String) attrs.get("identifier"));
 
         Resolver resolver = ResolverFactory.getResolver();
         InputStream inputStream = resolver.resolve(identifier);
@@ -58,12 +58,8 @@ public class InformationResource extends AbstractResource {
     }
 
     private String getImageUri(String identifier) {
-        try {
-            return this.getRootRef() + ImageServerApplication.BASE_IIIF_PATH +
-                    "/" + java.net.URLEncoder.encode(identifier, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            return null;
-        }
+        return this.getRootRef() + ImageServerApplication.BASE_IIIF_PATH +
+                "/" + Reference.encode(identifier);
     }
 
 }

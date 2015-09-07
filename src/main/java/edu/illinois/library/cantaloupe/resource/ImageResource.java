@@ -15,8 +15,8 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
-import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.MediaType;
+import org.restlet.data.Reference;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
@@ -62,8 +62,7 @@ public class ImageResource extends AbstractResource {
     public Representation doGet() throws IllegalArgumentException,
             UnsupportedEncodingException, FileNotFoundException {
         Map<String,Object> attrs = this.getRequest().getAttributes();
-        String identifier = java.net.URLDecoder.
-                decode((String) attrs.get("identifier"), "UTF-8");
+        String identifier = Reference.decode((String) attrs.get("identifier"));
         String format = (String) attrs.get("format");
         String region = (String) attrs.get("region");
         String size = (String) attrs.get("size");
