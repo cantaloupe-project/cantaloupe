@@ -50,7 +50,7 @@ public interface Processor {
 
     /**
      * Uses the supplied parameters to process an image from the supplied
-     * InputStream, and writes the result to the given OutputStream.
+     * File, and writes the result to the given OutputStream.
      *
      * @param params Parameters of the output image
      * @param sourceFormat Format of the source image
@@ -63,8 +63,11 @@ public interface Processor {
             throws Exception;
 
     /**
-     * Uses the supplied parameters to process an image from the supplied
-     * InputStream, and writes the result to the given OutputStream.
+     * <p>Uses the supplied parameters to process an image from the supplied
+     * InputStream, and writes the result to the given OutputStream.</p>
+     *
+     * <p>If implementations are not able to use an InputStream, then they
+     * should do nothing.</p>
      *
      * @param params Parameters of the output image
      * @param sourceFormat Format of the source image
