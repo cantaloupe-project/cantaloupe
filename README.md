@@ -17,7 +17,6 @@ of the [Simple](http://www.simpleframework.org) high-performance HTTP server.
 
 * Caching. This would be made redundant by a caching reverse proxy like
   Varnish, which can do a better job anyway.
-* Log file writing. Log messages go to standard output.
 
 # Requirements
 

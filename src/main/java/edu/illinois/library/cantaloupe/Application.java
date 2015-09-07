@@ -5,6 +5,8 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.restlet.Component;
 import org.restlet.data.Protocol;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Main application class.
@@ -12,6 +14,7 @@ import org.restlet.data.Protocol;
 public class Application {
 
     private static Configuration config;
+    private static Logger logger = LoggerFactory.getLogger(Application.class);
 
     public static void main(String[] args) throws Exception {
         startRestlet();
@@ -27,7 +30,7 @@ public class Application {
                 propConfig.load(System.getProperty("cantaloupe.config"));
                 config = propConfig;
             } catch (ConfigurationException e) {
-                // TODO: log fatal error
+                logger.error("Failed to load the config file");
             }
         }
         return config;
