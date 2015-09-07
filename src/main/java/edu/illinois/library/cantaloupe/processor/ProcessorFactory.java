@@ -16,22 +16,17 @@ public class ProcessorFactory {
      *                     <code>SourceFormat.UNKNOWN</code>.
      * @return An instance suitable for handling the given source format, based
      * on configuration settings. May return null.
+     * @throws UnsupportedSourceFormatException
      */
-    public static Processor getProcessor(SourceFormat sourceFormat) {
+    public static Processor getProcessor(SourceFormat sourceFormat)
+            throws UnsupportedSourceFormatException {
         try {
             String className = ProcessorFactory.class.getPackage().getName() +
                     "." + getProcessorName(sourceFormat);
             Class class_ = Class.forName(className);
             return (Processor) class_.newInstance();
-        } catch (ClassNotFoundException e) {
-            logger.error("Processor not found", e);
-            return null;
-        } catch (InstantiationException e) {
-            logger.error("Unable to instantiate processor", e);
-            return null;
-        } catch (IllegalAccessException e) {
-            logger.error("Unable to instantiate processor", e);
-            return null;
+        } catch (Exception e) {
+            throw new UnsupportedSourceFormatException("Unsupported source format");
         }
     }
 

@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe;
 
+import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resource.ImageResource;
 import edu.illinois.library.cantaloupe.resource.InformationResource;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
@@ -85,6 +86,8 @@ public class ImageServerApplication extends Application {
             if (cause instanceof IllegalArgumentException ||
                     cause instanceof UnsupportedEncodingException) {
                 status = new Status(Status.CLIENT_ERROR_BAD_REQUEST, t);
+            } else if (cause instanceof UnsupportedSourceFormatException) {
+                status = new Status(Status.CLIENT_ERROR_FORBIDDEN, t);
             } else if (cause instanceof FileNotFoundException) {
                 status = new Status(Status.CLIENT_ERROR_NOT_FOUND, t);
             } else {
@@ -102,6 +105,8 @@ public class ImageServerApplication extends Application {
 
     /**
      * Creates a root Restlet that will receive all incoming calls.
+     *
+     * @see <a href="http://iiif.io/api/image/2.0/#uri-syntax">URI Syntax</a>
      */
     @Override
     public synchronized Restlet createInboundRoot() {
@@ -113,7 +118,6 @@ public class ImageServerApplication extends Application {
         corsFilter.setAllowedCredentials(true);
 
         // 2 Redirect image identifier to image information
-        // http://iiif.io/api/image/2.0/#uri-syntax
         // {scheme}://{server}{/prefix}/{identifier}
         Redirector redirector = new Redirector(getContext(),
                 BASE_IIIF_PATH + "/{identifier}/info.json",
@@ -121,13 +125,11 @@ public class ImageServerApplication extends Application {
         router.attach(BASE_IIIF_PATH + "/{identifier}", redirector);
 
         // 2.1 Image Request
-        // http://iiif.io/api/image/2.0/#image-request-uri-syntax
         // {scheme}://{server}{/prefix}/{identifier}/{region}/{size}/{rotation}/{quality}.{format}
         router.attach(BASE_IIIF_PATH + "/{identifier}/{region}/{size}/{rotation}/{quality}.{format}",
                 ImageResource.class);
 
         // 5 Information Request
-        // http://iiif.io/api/image/2.0/#information-request
         // {scheme}://{server}{/prefix}/{identifier}/info.json
         router.attach(BASE_IIIF_PATH + "/{identifier}/info.{format}",
                 InformationResource.class);
