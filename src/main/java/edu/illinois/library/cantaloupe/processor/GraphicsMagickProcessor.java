@@ -14,8 +14,14 @@ import org.im4java.core.IMOperation;
 import org.im4java.core.Info;
 import org.im4java.process.Pipe;
 import org.im4java.process.ProcessStarter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,10 +30,14 @@ import java.util.Set;
 
 public class GraphicsMagickProcessor implements Processor {
 
-    private static final Set<OutputFormat> OUTPUT_FORMATS = new HashSet<OutputFormat>();
+    private static final HashMap<SourceFormat,Set<OutputFormat>> OUTPUT_FORMATS =
+            getAvailableOutputFormats();
     private static final Set<String> FORMAT_EXTENSIONS = new HashSet<String>();
     private static final Set<String> QUALITIES = new HashSet<String>();
     private static final Set<String> SUPPORTS = new HashSet<String>();
+
+    private static Logger logger = LoggerFactory.
+            getLogger(GraphicsMagickProcessor.class);
 
     static {
         // overrides the PATH; see
@@ -38,9 +48,10 @@ public class GraphicsMagickProcessor implements Processor {
             ProcessStarter.setGlobalSearchPath(binaryPath);
         }
 
-        for (OutputFormat outputFormat : OutputFormat.values()) {
-            OUTPUT_FORMATS.add(outputFormat);
-            FORMAT_EXTENSIONS.add(outputFormat.getExtension());
+        for (Set<OutputFormat> set : OUTPUT_FORMATS.values()) {
+            for (OutputFormat format : set) {
+                FORMAT_EXTENSIONS.add(format.getExtension());
+            }
         }
 
         for (Quality quality : Quality.values()) {
@@ -63,8 +74,79 @@ public class GraphicsMagickProcessor implements Processor {
         SUPPORTS.add("sizeWh");
     }
 
+    /**
+     * @return Map of available output formats for all known source formats,
+     * based on information reported by <code>gm version</code>.
+     */
+    public static HashMap<SourceFormat, Set<OutputFormat>> getAvailableOutputFormats() {
+        final Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
+        final Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
+
+        try {
+            // retrieve the output of the `gm version` command, which contains a
+            // list of all optional formats
+            Runtime runtime = Runtime.getRuntime();
+            String cmdPath = Application.getConfiguration().
+                    getString("GraphicsMagickProcessor.path_to_binaries", "");
+            String[] commands = {cmdPath + File.separator + "gm", "version"};
+            Process proc = runtime.exec(commands);
+            BufferedReader stdInput = new BufferedReader(
+                    new InputStreamReader(proc.getInputStream()));
+            String s;
+            boolean read = false;
+            while ((s = stdInput.readLine()) != null) {
+                s = s.trim();
+                if (s.contains("Feature Support")) {
+                    read = true;
+                } else if (s.contains("Host type:")) {
+                    read = false;
+                }
+                if (read) {
+                    if (s.startsWith("JPEG-2000  ") && s.endsWith(" yes")) {
+                        sourceFormats.add(SourceFormat.JP2);
+                        outputFormats.add(OutputFormat.JP2);
+                    }
+                    if (s.startsWith("JPEG  ") && s.endsWith(" yes")) {
+                        sourceFormats.add(SourceFormat.JPG);
+                        outputFormats.add(OutputFormat.JPG);
+                    }
+                    if (s.startsWith("PNG  ") && s.endsWith(" yes")) {
+                        sourceFormats.add(SourceFormat.PNG);
+                        outputFormats.add(OutputFormat.PNG);
+                    }
+                    if (s.startsWith("Ghostscript") && s.endsWith(" yes")) {
+                        outputFormats.add(OutputFormat.PDF);
+                    }
+                    if (s.startsWith("TIFF  ") && s.endsWith(" yes")) {
+                        sourceFormats.add(SourceFormat.TIF);
+                        outputFormats.add(OutputFormat.TIF);
+                    }
+                    if (s.startsWith("WebP  ") && s.endsWith(" yes")) {
+                        sourceFormats.add(SourceFormat.WEBP);
+                        outputFormats.add(OutputFormat.WEBP);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            logger.error("Failed to execute gm command");
+        }
+
+        // add formats that are definitely available
+        // (http://www.graphicsmagick.org/formats.html)
+        sourceFormats.add(SourceFormat.BMP);
+        sourceFormats.add(SourceFormat.GIF);
+        outputFormats.add(OutputFormat.GIF);
+
+        final HashMap<SourceFormat,Set<OutputFormat>> map =
+                new HashMap<SourceFormat,Set<OutputFormat>>();
+        for (SourceFormat sourceFormat : sourceFormats) {
+            map.put(sourceFormat, outputFormats);
+        }
+        return map;
+    }
+
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
-        return OUTPUT_FORMATS;
+        return OUTPUT_FORMATS.get(sourceFormat);
     }
 
     public ImageInfo getImageInfo(InputStream inputStream,
@@ -86,6 +168,7 @@ public class GraphicsMagickProcessor implements Processor {
         profile.put("qualities", QUALITIES);
         profile.put("supports", SUPPORTS);
 
+        inputStream.close();
         return imageInfo;
     }
 
