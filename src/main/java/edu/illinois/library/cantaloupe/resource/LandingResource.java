@@ -11,7 +11,7 @@ public class LandingResource extends AbstractResource {
 
     @Get
     public Representation doGet() {
-        return new StringRepresentation("Cantaloupe IIIF 2.0 Server");
+        return new StringRepresentation("🍈 Cantaloupe IIIF 2.0 Server");
     }
 
 }
