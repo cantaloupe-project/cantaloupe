@@ -46,6 +46,12 @@ public class ImageMagickProcessorTest extends TestCase {
         */
     }
 
+    public void testGetAvailableOutputFormatsForUnsupportedSourceFormat() {
+        Set<OutputFormat> expectedFormats = new HashSet<OutputFormat>();
+        assertEquals(expectedFormats,
+                instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
+    }
+
     public void testGetImageInfo() throws Exception {
         // get an ImageInfo representing an image file
         File file = getFixture("escher_lego.jpg");

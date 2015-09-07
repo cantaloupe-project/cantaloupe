@@ -89,7 +89,11 @@ public class ImageIoProcessor implements Processor {
     }
 
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
-        return OUTPUT_FORMATS.get(sourceFormat);
+        Set<OutputFormat> formats = OUTPUT_FORMATS.get(sourceFormat);
+        if (formats == null) {
+            formats = new HashSet<OutputFormat>();
+        }
+        return formats;
     }
 
     public ImageInfo getImageInfo(InputStream inputStream,

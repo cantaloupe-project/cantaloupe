@@ -29,13 +29,12 @@ public class ImageIoProcessorTest extends TestCase {
     public void testGetAvailableOutputFormats() {
         Set<OutputFormat> expectedFormats = ImageIoProcessor.
                 getAvailableOutputFormats().get(SourceFormat.JPG);
-
-        // supported source format
         assertEquals(expectedFormats,
                 instance.getAvailableOutputFormats(SourceFormat.JPG));
+    }
 
-        // unsupported source format
-        expectedFormats = new HashSet<OutputFormat>();
+    public void testGetAvailableOutputFormatsForUnsupportedSourceFormat() {
+        Set<OutputFormat> expectedFormats = new HashSet<OutputFormat>();
         assertEquals(expectedFormats,
                 instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
     }
