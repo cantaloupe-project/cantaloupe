@@ -137,7 +137,14 @@ public class ImageIoProcessor implements Processor {
     }
 
     public Set<SourceFormat> getSupportedSourceFormats() {
-        return OUTPUT_FORMATS.keySet();
+        Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
+        for (SourceFormat sourceFormat : OUTPUT_FORMATS.keySet()) {
+            if (OUTPUT_FORMATS.get(sourceFormat) != null &&
+                    OUTPUT_FORMATS.get(sourceFormat).size() > 0) {
+                sourceFormats.add(sourceFormat);
+            }
+        }
+        return sourceFormats;
     }
 
     public void process(Parameters params, SourceFormat sourceFormat,
