@@ -33,7 +33,6 @@ public class GraphicsMagickProcessorTest extends TestCase {
     }
 
     public void testInitialization() {
-        assertEquals("true", System.getProperty("im4java.useGM"));
         assertEquals(ProcessStarter.getGlobalSearchPath(), Application.
                 getConfiguration().getString("GraphicsMagickProcessor.path_to_binaries"));
     }

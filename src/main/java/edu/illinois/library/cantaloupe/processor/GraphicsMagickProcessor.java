@@ -30,7 +30,6 @@ public class GraphicsMagickProcessor implements Processor {
     private static final Set<String> SUPPORTS = new HashSet<String>();
 
     static {
-        System.setProperty("im4java.useGM", "true");
         // overrides the PATH; see
         // http://im4java.sourceforge.net/docs/dev-guide.html
         String binaryPath = Application.getConfiguration().
@@ -155,7 +154,7 @@ public class GraphicsMagickProcessor implements Processor {
         Pipe pipeIn = new Pipe(inputStream, null);
         Pipe pipeOut = new Pipe(null, outputStream);
 
-        ConvertCmd convert = new ConvertCmd();
+        ConvertCmd convert = new ConvertCmd(true);
         convert.setInputProvider(pipeIn);
         convert.setOutputConsumer(pipeOut);
         convert.run(op);

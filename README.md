@@ -139,6 +139,10 @@ It also supports a wide array of source formats.
 GraphicsMagickProcessor is a good fallback processor, as it supports a wide
 range of formats and is generally faster than ImageMagickProcessor.
 
+*Note: due to a quirk in im4java, ImageMagick has to be installed for this
+processor to work. (It needs to use the `identify` command to get image
+dimensions.) Eliminating this dependency is on the to-do list.*
+
 ## ImageMagickProcessor
 
 ImageMagickProcessor, like GraphicsMagickProcessor, also uses
