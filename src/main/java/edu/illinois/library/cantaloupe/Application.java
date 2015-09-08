@@ -27,8 +27,10 @@ public class Application {
     public static Configuration getConfiguration() {
         if (config == null) {
             try {
+                String configFilePath = System.getProperty("cantaloupe.config");
+                logger.debug("Using config file: {}", configFilePath);
                 PropertiesConfiguration propConfig = new PropertiesConfiguration();
-                propConfig.load(System.getProperty("cantaloupe.config"));
+                propConfig.load(configFilePath);
                 config = propConfig;
             } catch (ConfigurationException e) {
                 logger.error("Failed to load the config file. Re-run with " +
