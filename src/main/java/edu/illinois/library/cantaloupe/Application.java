@@ -39,6 +39,8 @@ public class Application {
         if (config == null) {
             try {
                 String configFilePath = System.getProperty("cantaloupe.config");
+                configFilePath = configFilePath.replaceFirst("^~",
+                        System.getProperty("user.home"));
                 logger.debug("Using config file: {}", configFilePath);
                 PropertiesConfiguration propConfig = new PropertiesConfiguration();
                 propConfig.load(configFilePath);
