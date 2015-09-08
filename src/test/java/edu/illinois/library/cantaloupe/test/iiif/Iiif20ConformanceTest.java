@@ -460,7 +460,11 @@ public class Iiif20ConformanceTest extends TestCase {
      * @throws IOException
      */
     public void testCanonicalUriLinkHeader() throws IOException {
-        // TODO: write this
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.jpg");
+        client.get();
+        assertEquals("<" + getBaseUri() + "/" + IMAGE +
+                        "/full/full/0/default.jpg>;rel=\"canonical\"",
+                client.getResponse().getHeaders().getFirst("Link").getValue());
     }
 
     /**

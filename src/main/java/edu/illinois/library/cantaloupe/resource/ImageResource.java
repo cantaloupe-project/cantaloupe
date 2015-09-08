@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.Set;
 
+import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
@@ -105,9 +106,9 @@ public class ImageResource extends AbstractResource {
             throw new UnsupportedSourceFormatException(msg);
         }
 
-        this.addHeader("Link",
-                "<" + params.getCanonicalUri(this.getRootRef().toString()) +
-                        ">;rel=\"canonical\"");
+        this.addHeader("Link", String.format("<%s>;rel=\"canonical\"",
+                params.getCanonicalUri(this.getRootRef().toString() +
+                        ImageServerApplication.BASE_IIIF_PATH)));
 
         File sourceFile = resolver.getFile(identifier);
         InputStream inputStream = null;
