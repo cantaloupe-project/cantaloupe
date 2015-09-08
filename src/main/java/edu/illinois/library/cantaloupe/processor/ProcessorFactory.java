@@ -40,7 +40,7 @@ public class ProcessorFactory {
     private static String getProcessorName(SourceFormat sourceFormat) {
         Configuration config = Application.getConfiguration();
         String name = config.
-                getString("processor." + sourceFormat.getExtension());
+                getString("processor." + sourceFormat.getPreferredExtension());
         if (name == null) {
             name = config.getString("processor.fallback", "ImageIoProcessor");
         }

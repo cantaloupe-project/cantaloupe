@@ -16,14 +16,16 @@ public class SourceFormatTest extends TestCase {
     }
 
     public void testExtensions() {
-        assertEquals("bmp", SourceFormat.BMP.getExtension());
-        assertEquals("gif", SourceFormat.GIF.getExtension());
-        assertEquals("jp2", SourceFormat.JP2.getExtension());
-        assertEquals("jpg", SourceFormat.JPG.getExtension());
-        assertEquals("png", SourceFormat.PNG.getExtension());
-        assertEquals("tif", SourceFormat.TIF.getExtension());
-        assertEquals("webp", SourceFormat.WEBP.getExtension());
-        assertEquals("unknown", SourceFormat.UNKNOWN.getExtension());
+        assertTrue(SourceFormat.BMP.getExtensions().contains("bmp"));
+        assertTrue(SourceFormat.GIF.getExtensions().contains("gif"));
+        assertTrue(SourceFormat.JP2.getExtensions().contains("jp2"));
+        assertTrue(SourceFormat.JPG.getExtensions().contains("jpg"));
+        assertTrue(SourceFormat.JPG.getExtensions().contains("jpeg"));
+        assertTrue(SourceFormat.PNG.getExtensions().contains("png"));
+        assertTrue(SourceFormat.TIF.getExtensions().contains("tif"));
+        assertTrue(SourceFormat.TIF.getExtensions().contains("tiff"));
+        assertTrue(SourceFormat.WEBP.getExtensions().contains("webp"));
+        assertTrue(SourceFormat.UNKNOWN.getExtensions().contains("unknown"));
     }
 
     public void testMediaTypes() {
@@ -37,9 +39,21 @@ public class SourceFormatTest extends TestCase {
         assertEquals("unknown/unknown", SourceFormat.UNKNOWN.getMediaType());
     }
 
+    public void testPreferredExtension() {
+        assertEquals("bmp", SourceFormat.BMP.getPreferredExtension());
+        assertEquals("gif", SourceFormat.GIF.getPreferredExtension());
+        assertEquals("jp2", SourceFormat.JP2.getPreferredExtension());
+        assertEquals("jpg", SourceFormat.JPG.getPreferredExtension());
+        assertEquals("png", SourceFormat.PNG.getPreferredExtension());
+        assertEquals("tif", SourceFormat.TIF.getPreferredExtension());
+        assertEquals("webp", SourceFormat.WEBP.getPreferredExtension());
+        assertEquals("unknown", SourceFormat.UNKNOWN.getPreferredExtension());
+    }
+
     public void testToString() {
         for (SourceFormat sourceFormat : SourceFormat.values()) {
-            assertEquals(sourceFormat.getExtension(), sourceFormat.toString());
+            assertEquals(sourceFormat.getPreferredExtension(),
+                    sourceFormat.toString());
         }
     }
 

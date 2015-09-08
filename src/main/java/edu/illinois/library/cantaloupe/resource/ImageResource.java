@@ -100,7 +100,7 @@ public class ImageResource extends AbstractResource {
             } else {
                 msg = String.format("%s does not support the \"%s\" source format",
                         proc.getClass().getSimpleName(),
-                        sourceFormat.getExtension().replaceAll("[^a-zA-Z0-9]", ""));
+                        sourceFormat.getPreferredExtension());
             }
             throw new UnsupportedSourceFormatException(msg);
         }

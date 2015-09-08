@@ -34,7 +34,7 @@
             <table class="table table-condensed">
                 #foreach ($sourceFormat in $sourceFormats.keySet())
                     <tr>
-                        <td style="width:10%">$sourceFormat.getExtension()</td>
+                        <td style="width:10%">$sourceFormat.getPreferredExtension()</td>
                         <td>$sourceFormats.get($sourceFormat)</td>
                     </tr>
                 #end

@@ -12,7 +12,7 @@ public class AbstractResolver {
         }
         if (extension != null) {
             for (SourceFormat enumValue : SourceFormat.values()) {
-                if (enumValue.getExtension().equals(extension)) {
+                if (enumValue.getExtensions().contains(extension)) {
                     return enumValue;
                 }
             }

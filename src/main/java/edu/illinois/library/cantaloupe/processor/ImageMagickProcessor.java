@@ -150,15 +150,15 @@ public class ImageMagickProcessor implements Processor {
     public ImageInfo getImageInfo(File sourceFile,
                                   SourceFormat sourceFormat,
                                   String imageBaseUri) throws Exception {
-        Info sourceInfo = new Info(sourceFormat.getExtension() + ":" + sourceFile.getAbsolutePath(),
-                true);
+        Info sourceInfo = new Info(sourceFormat.getPreferredExtension() + ":" +
+                sourceFile.getAbsolutePath(), true);
         return doGetImageInfo(sourceInfo, imageBaseUri);
     }
 
     public ImageInfo getImageInfo(InputStream inputStream,
                                   SourceFormat sourceFormat,
                                   String imageBaseUri) throws Exception {
-        Info sourceInfo = new Info(sourceFormat.getExtension() + ":-",
+        Info sourceInfo = new Info(sourceFormat.getPreferredExtension() + ":-",
                 inputStream, true);
         ImageInfo info = doGetImageInfo(sourceInfo, imageBaseUri);
         inputStream.close();
@@ -207,7 +207,7 @@ public class ImageMagickProcessor implements Processor {
                         InputStream inputStream, OutputStream outputStream)
             throws Exception {
         IMOperation op = new IMOperation();
-        op.addImage(sourceFormat.getExtension() + ":-"); // read from stdin
+        op.addImage(sourceFormat.getPreferredExtension() + ":-"); // read from stdin
         op = assembleOperation(op, params);
 
         // format transformation
