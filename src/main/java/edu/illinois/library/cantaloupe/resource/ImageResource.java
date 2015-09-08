@@ -30,6 +30,9 @@ import org.restlet.resource.Get;
  */
 public class ImageResource extends AbstractResource {
 
+    /**
+     * Restlet representation for images, returned by ImageResource.doGet().
+     */
     class ImageRepresentation extends OutputRepresentation {
 
         File sourceFile;
@@ -37,6 +40,14 @@ public class ImageResource extends AbstractResource {
         Parameters params;
         SourceFormat sourceFormat;
 
+        /**
+         * Constructor for local-file images. Should be used preferentially.
+         *
+         * @param mediaType
+         * @param sourceFormat
+         * @param params
+         * @param sourceFile
+         */
         public ImageRepresentation(MediaType mediaType,
                                    SourceFormat sourceFormat,
                                    Parameters params,
@@ -47,6 +58,14 @@ public class ImageResource extends AbstractResource {
             this.sourceFormat = sourceFormat;
         }
 
+        /**
+         * Constructor for images from InputStreams.
+         *
+         * @param mediaType
+         * @param sourceFormat
+         * @param params
+         * @param inputStream
+         */
         public ImageRepresentation(MediaType mediaType,
                                    SourceFormat sourceFormat,
                                    Parameters params,
