@@ -16,8 +16,8 @@
 
 # Requirements
 
-The only hard requirement is JRE 7+. Additional requirements depend on your
-choice of processor; see the Processors section below.
+The only hard requirement is JRE 7+. Additional requirements depend on the
+particular processors being used; see the Processors section below.
 
 # Configuration
 
@@ -46,7 +46,7 @@ it the following contents, modifying as desired:
     # Optional; overrides the PATH
     ImageMagickProcessor.path_to_binaries = /usr/local/bin
     
-    # The path resolver that translates the identifier in the URL to a path.
+    # The resolver that translates the identifier in the URL to an image source.
     # Available values are `FilesystemResolver` and `HttpResolver`.
     resolver = FilesystemResolver
 
@@ -79,8 +79,9 @@ It is now ready for use at: `http://localhost:{http.port}/iiif`
 ## Resolvers
 
 Resolvers locate a source image based on the identifier in an IIIF URL. In
-Java-speak, they take in an identifier and return either a File or an
-InputStream from which the corresponding image can be read by a processor.
+Java-speak, they take in an identifier and return either a `File` or an
+`InputStream` object from which the corresponding image can be read by a
+processor.
 
 ### FilesystemResolver
 
@@ -107,10 +108,11 @@ source formats and output formats, and furthermore, available output formats
 may differ depending on the source format.
 
 Supported source formats depend on the processor, and maybe installed
-libraries/delegates, etc, as well. In the case of ImageMagickProcessor, the
-list is compiled from the output of the `identify -list format` command, which
-tells it what to return in its `getSupportedSourceFormats()` and
-`getAvailableOutputFormats(SourceFormat)` methods.
+libraries/delegates, etc., as well. Processors generally auto-detect these.
+In the case of ImageMagickProcessor, for example, the information is compiled
+from the output of the `identify -list format` command, which tells it what
+to return in its `getSupportedSourceFormats()` and
+`getAvailableOutputFormats(SourceFormat)` methods. 
 
 The list of supported source formats (source formats for which there are any
 output formats) for each processor is displayed on the landing page, at
@@ -125,19 +127,12 @@ BufferedImages.
 ImageIO, as its name implies, is simply an I/O interface that does not care 
 about image formats, and therefore the list of formats supported by this
 processor varies depending on the codec jars available in the classpath. By
-default, it is minimal -- typically something like JPEG, GIF, BMP, and PNG.
-
-Dropping [this JAI ImageIO jar]
+default, it is minimal -- typically something like JPEG, GIF, BMP, and PNG. But
+dropping a [JAI ImageIO jar]
 (http://maven.geotoolkit.org/javax/media/jai_imageio/1.1/) into the classpath
-will enable some other formats, including TIFF and a dog-slow JPEG2000. Also
-see the following links:
+will enable some other formats, including TIFF and a dog-slow JPEG2000.
 
-* [https://github.com/jai-imageio/jai-imageio-core]
-  (https://github.com/jai-imageio/jai-imageio-core)
-* [https://github.com/geosolutions-it/imageio-ext/]
-  (https://github.com/geosolutions-it/imageio-ext/)
-* [https://github.com/jai-imageio/jai-imageio-jpeg2000]
-  (https://github.com/jai-imageio/jai-imageio-jpeg2000)
+(See the "Notes on Source Formats" section below for more info on JPEG2000.)
 
 ### GraphicsMagickProcessor
 
@@ -208,7 +203,9 @@ Another JPEG2000 implementation exists in the Java Advanced Imaging (JAI)
 library, although it isn't much of an improvement over the above. See the
 ImageIoProcessor section for a link to a jar.
 
-Work is in progress on a KakaduProcessor.
+[See here](https://github.com/geosolutions-it/imageio-ext/) for an ImageIO
+codec supporting the Kakadu library that can theoretically work with
+ImageIoProcessor. (This is untested by the author.)
 
 # Custom Development
 
