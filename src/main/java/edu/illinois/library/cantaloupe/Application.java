@@ -31,7 +31,9 @@ public class Application {
                 propConfig.load(System.getProperty("cantaloupe.config"));
                 config = propConfig;
             } catch (ConfigurationException e) {
-                logger.error("Failed to load the config file");
+                logger.error("Failed to load the config file. Re-run with " +
+                        "the -Dcantaloupe.config=/path/to/cantaloupe.properties " +
+                        "option. (See the readme.)");
             }
         }
         return config;
