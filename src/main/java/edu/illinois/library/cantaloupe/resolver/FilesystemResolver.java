@@ -14,7 +14,7 @@ public class FilesystemResolver implements Resolver {
         File file = new File(getPath(identifier));
         if (!file.exists()) {
             throw new FileNotFoundException(
-                    "File not found:" + file.getAbsolutePath());
+                    "File not found: " + file.getName());
         }
         return file;
     }
