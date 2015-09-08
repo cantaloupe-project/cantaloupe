@@ -80,8 +80,7 @@ It is now ready for use at: `http://localhost:{http.port}/iiif`
 
 Resolvers locate a source image based on the identifier in an IIIF URL. In
 Java-speak, they take in an identifier and return either a File or an
-InputStream from which the corresponding image can be read by a processor, so
-that processors don't have to know where the images they read are coming from.
+InputStream from which the corresponding image can be read by a processor.
 
 ### FilesystemResolver
 
@@ -97,20 +96,20 @@ retrieving images from a web server.
 
 Cantaloupe can use different image processors, each of which can be assigned to
 particular source formats via the config file (see the Configuration section
-above). Currently, available processors include:
+above). Currently, the available processors are:
 
 * ImageIoProcessor
 * GraphicsMagickProcessor
 * ImageMagickProcessor
 
-In terms of format support, processors distinguish between the concepts of
+In terms of format support, a distinction is made between the concepts of
 source formats and output formats, and furthermore, available output formats
 may differ depending on the source format.
 
-Supported source formats depend on the processor, and maybe also the platform,
-installed libraries/delegates, etc. In the case of ImageMagickProcessor, it is
-compiled from the output of the `identify -list format` command, which tells
-the processor what to return in its `getSupportedSourceFormats()` and
+Supported source formats depend on the processor, and maybe installed
+libraries/delegates, etc, as well. In the case of ImageMagickProcessor, the
+list is compiled from the output of the `identify -list format` command, which
+tells it what to return in its `getSupportedSourceFormats()` and
 `getAvailableOutputFormats(SourceFormat)` methods.
 
 The list of supported source formats (source formats for which there are any
@@ -125,12 +124,13 @@ BufferedImages.
 
 ImageIO, as its name implies, is simply an I/O interface that does not care 
 about image formats, and therefore the list of formats supported by this
-processor varies depending on the libraries (jars) available in the classpath.
-By default, it is minimal -- typically something like JPEG, GIF, and PNG.
+processor varies depending on the codec jars available in the classpath. By
+default, it is minimal -- typically something like JPEG, GIF, BMP, and PNG.
 
-Dropping [this jar](http://maven.geotoolkit.org/javax/media/jai_imageio/1.1/)
-into your classpath will enable some other formats, including a dog-slow
-JPEG2000. Also see the following links:
+Dropping [this JAI ImageIO jar]
+(http://maven.geotoolkit.org/javax/media/jai_imageio/1.1/) into the classpath
+will enable some other formats, including TIFF and a dog-slow JPEG2000. Also
+see the following links:
 
 * [https://github.com/jai-imageio/jai-imageio-core]
   (https://github.com/jai-imageio/jai-imageio-core)
@@ -148,14 +148,13 @@ fork out to the [GraphicsMagick](http://www.graphicsmagick.org) executable
 GraphicsMagick produces high-quality output and supports all of the IIIF
 transforms and all IIIF output formats (assuming the necessary libraries are
 installed; see [Supported Formats](http://www.graphicsmagick.org/formats.html)).
-It also supports a wide array of source formats.
 
 GraphicsMagickProcessor is a good fallback processor, as it supports a wide
 range of source formats and is generally faster than ImageMagickProcessor.
 
 *Note: due to a quirk in im4java, ImageMagick has to be installed for this
-processor to work. (It needs to use the `identify` command to get image
-dimensions.) Eliminating this dependency is on the to-do list.*
+processor to work. (The `identify` command is used to get image dimensions.)
+Eliminating this dependency is on the to-do list.*
 
 ### ImageMagickProcessor
 
@@ -164,7 +163,7 @@ ImageMagickProcessor, like GraphicsMagickProcessor, also uses
 (http://www.imagemagick.org/) commands.
 
 ImageMagick produces high-quality output and supports all of the IIIF
-transforms and all IIIF output formats except WebP (assuming the JPEG2000 and
+transforms and all IIIF output formats (assuming the WebP, JPEG2000, and
 PDF delegates are installed). It also supports a wide array of source formats.
 
 ImageMagick is not known for being particularly fast or efficient. Large
@@ -181,8 +180,8 @@ amounts of RAM and fast storage help.
 4. Using the resolver, obtain a File or InputStream from which the source image
    can be read
 5. Obtain a processor appropriate for the source format
-6. Process the image based on the URL parameters
-7. Return the processed image in the response
+6. Processor processes the image based on the URL parameters
+7. Processor writes the processed image to the response OutputStream
 
 ### Information Request
 
@@ -205,9 +204,11 @@ amounts of RAM and fast storage help.
 GraphicsMagick can read/write JPEG2000 files using JasPer, and ImageMagick
 using OpenJPEG. Both of these are very slow.
 
-JPEG2000 support exists in the Java Advanced Imaging (JAI) library, although
-it isn't much of an improvement on the above. See the ImageIoProcessor section
-for a link to a jar.
+Another JPEG2000 implementation exists in the Java Advanced Imaging (JAI)
+library, although it isn't much of an improvement over the above. See the
+ImageIoProcessor section for a link to a jar.
+
+Work is in progress on a KakaduProcessor.
 
 # Custom Development
 

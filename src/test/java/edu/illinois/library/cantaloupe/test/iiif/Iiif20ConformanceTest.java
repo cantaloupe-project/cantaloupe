@@ -1,7 +1,9 @@
 package edu.illinois.library.cantaloupe.test.iiif;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
+import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
@@ -9,7 +11,6 @@ import edu.illinois.library.cantaloupe.request.OutputFormat;
 import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.restlet.Client;
 import org.restlet.Context;
 import org.restlet.data.MediaType;
@@ -98,7 +99,6 @@ public class Iiif20ConformanceTest extends TestCase {
         assertEquals(Status.REDIRECTION_SEE_OTHER, client.getStatus());
         assertEquals(getBaseUri() + "/" + IMAGE + "/info.json",
                 client.getLocationRef().toString());
-        // TODO: check for application/json content-type
     }
 
     /**
@@ -288,7 +288,21 @@ public class Iiif20ConformanceTest extends TestCase {
      * @throws IOException
      */
     public void testResultingWidthOrHeightIsZero() throws IOException {
-        // TODO: write this
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/pct:0/15/color.jpg");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
+        }
+
+        client = getClientForUriPath("/" + IMAGE + "/full/0,0/15/color.jpg");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
+        }
     }
 
     /**
@@ -548,7 +562,7 @@ public class Iiif20ConformanceTest extends TestCase {
      * @throws IOException
      */
     public void testInformationRequestJson() throws IOException {
-        // TODO: write this
+        // this will be tested in the processor tests
     }
 
     /**
@@ -560,7 +574,8 @@ public class Iiif20ConformanceTest extends TestCase {
      * @throws IOException
      */
     public void testInformationRequestEmptyJsonProperties() throws IOException {
-        // TODO: write this
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
+        assertFalse(client.get().getText().contains("null"));
     }
 
     /**
@@ -570,7 +585,12 @@ public class Iiif20ConformanceTest extends TestCase {
      * @throws IOException
      */
     public void testComplianceLevel() throws IOException {
-        // TODO: write this
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
+        String json = client.get().getText();
+        ObjectMapper mapper = new ObjectMapper();
+        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        assertEquals("http://iiif.io/api/image/2/level2.json",
+                info.getProfile().get(0));
     }
 
     private ClientResource getClientForUriPath(String path) {
