@@ -128,7 +128,9 @@ about image formats, and therefore the list of formats supported by this
 processor varies depending on the libraries (jars) available in the classpath.
 By default, it is minimal -- typically something like JPEG, GIF, and PNG.
 
-See the following links for some interesting possibilities:
+Dropping [this jar](http://maven.geotoolkit.org/javax/media/jai_imageio/1.1/)
+into your classpath will enable some other formats, including a dog-slow
+JPEG2000. Also see the following links:
 
 * [https://github.com/jai-imageio/jai-imageio-core]
   (https://github.com/jai-imageio/jai-imageio-core)
@@ -203,8 +205,9 @@ amounts of RAM and fast storage help.
 GraphicsMagick can read/write JPEG2000 files using JasPer, and ImageMagick
 using OpenJPEG. Both of these are very slow.
 
-ImageIO supports the Java Advanced Imaging library, with which it ought to be
-able to read this format. (This is untested.)
+JPEG2000 support exists in the Java Advanced Imaging (JAI) library, although
+it isn't much of an improvement on the above. See the ImageIoProcessor section
+for a link to a jar.
 
 # Custom Development
 
