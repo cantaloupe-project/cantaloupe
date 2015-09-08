@@ -397,7 +397,8 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
-        // TODO: check for image/jpeg content-type
+        assertEquals("image/jpeg",
+                client.getResponse().getHeaders().getFirst("Content-type").getValue());
     }
 
     /**
@@ -409,7 +410,8 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.tif");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
-        // TODO: check for image/tiff content-type
+        assertEquals("image/tiff",
+                client.getResponse().getHeaders().getFirst("Content-type").getValue());
     }
 
     /**
@@ -421,7 +423,8 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.png");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
-        // TODO: check for image/png content-type
+        assertEquals("image/png",
+                client.getResponse().getHeaders().getFirst("Content-type").getValue());
     }
 
     /**
@@ -433,7 +436,8 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.gif");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
-        // TODO: check for image/gif content-type
+        assertEquals("image/gif",
+                client.getResponse().getHeaders().getFirst("Content-type").getValue());
     }
 
     /**
@@ -445,7 +449,8 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.jp2");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
-        // TODO: check for image/jp2 content-type
+        assertEquals("image/jp2",
+                client.getResponse().getHeaders().getFirst("Content-type").getValue());
     }
 
     /**
@@ -457,7 +462,8 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.pdf");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
-        // TODO: check for application/pdf content-type
+        assertEquals("image/pdf",
+                client.getResponse().getHeaders().getFirst("Content-type").getValue());
     }
 
     /**
@@ -469,7 +475,8 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.webp");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
-        // TODO: check for image/webp content-type
+        assertEquals("image/webp",
+                client.getResponse().getHeaders().getFirst("Content-type").getValue());
     }
 
     /**
@@ -516,7 +523,10 @@ public class Iiif20ConformanceTest extends TestCase {
      * @throws IOException
      */
     public void testInformationRequestContentType() throws IOException {
-        // TODO: write this
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
+        client.get();
+        assertEquals("application/json; charset=UTF-8",
+                client.getResponse().getHeaders().getFirst("Content-type"));
     }
 
     /**
