@@ -48,25 +48,24 @@ public class ImageServerApplication extends Application {
         @Override
         public Representation toRepresentation(Status status, Request request,
                                                Response response) {
-            Throwable throwable = status.getThrowable();
-            if (throwable.getCause() != null) {
-                throwable = throwable.getCause();
-            }
-
-            String stackTrace = "";
-            Configuration config = edu.illinois.library.cantaloupe.
-                    Application.getConfiguration();
-            if (config.getBoolean("print_stack_trace_on_error_pages")) {
-                StringWriter sw = new StringWriter();
-                throwable.printStackTrace(new PrintWriter(sw));
-                stackTrace = sw.toString();
-            }
-
             Map<String,Object> templateVars = new HashMap<String,Object>();
             templateVars.put("pageTitle", status.getCode() + " " +
                     status.getReasonPhrase());
-            templateVars.put("message", throwable.getMessage());
-            templateVars.put("stackTrace", stackTrace);
+
+            Throwable throwable = status.getThrowable();
+            if (throwable != null) {
+                templateVars.put("message", throwable.getMessage());
+                if (throwable.getCause() != null) {
+                    throwable = throwable.getCause();
+                }
+                Configuration config = edu.illinois.library.cantaloupe.
+                        Application.getConfiguration();
+                if (config.getBoolean("print_stack_trace_on_error_pages")) {
+                    StringWriter sw = new StringWriter();
+                    throwable.printStackTrace(new PrintWriter(sw));
+                    templateVars.put("stackTrace", sw.toString());
+                }
+            }
 
             org.apache.velocity.Template template = Velocity.getTemplate("error.vm");
             return new TemplateRepresentation(template, templateVars,
