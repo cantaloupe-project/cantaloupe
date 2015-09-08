@@ -3,6 +3,9 @@ package edu.illinois.library.cantaloupe;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.velocity.app.Velocity;
+import org.apache.velocity.runtime.RuntimeConstants;
+import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.restlet.Component;
 import org.restlet.data.Protocol;
 import org.slf4j.Logger;
@@ -16,6 +19,14 @@ public class Application {
     private static Logger logger = LoggerFactory.getLogger(Application.class);
     private static Component component = new Component();
     private static Configuration config;
+
+    static {
+        Velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
+        Velocity.setProperty("classpath.resource.loader.class",
+                ClasspathResourceLoader.class.getName());
+        Velocity.setProperty("class.resource.loader.cache", true);
+        Velocity.init();
+    }
 
     public static void main(String[] args) throws Exception {
         start();
