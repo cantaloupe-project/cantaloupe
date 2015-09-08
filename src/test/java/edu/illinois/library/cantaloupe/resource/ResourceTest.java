@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
 import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
+import org.junit.AfterClass;
 import org.restlet.Client;
 import org.restlet.Context;
 import org.restlet.data.Protocol;
@@ -23,10 +24,10 @@ public abstract class ResourceTest extends TestCase {
     /**
      * Initializes the Restlet application
      */
-    static {
+    static { // TODO: why doesn't this code work in a @BeforeClass?
         try {
             Application.setConfiguration(getConfiguration());
-            Application.startRestlet();
+            Application.start();
         } catch (Exception e) {
             fail("Failed to start the Restlet");
         }
@@ -48,6 +49,11 @@ public abstract class ResourceTest extends TestCase {
             fail("Failed to get the configuration");
         }
         return config;
+    }
+
+    @AfterClass
+    public void afterClass() throws Exception {
+        Application.stop();
     }
 
     public void setUp() {

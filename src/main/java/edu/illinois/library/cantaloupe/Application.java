@@ -13,11 +13,12 @@ import org.slf4j.LoggerFactory;
  */
 public class Application {
 
-    private static Configuration config;
     private static Logger logger = LoggerFactory.getLogger(Application.class);
+    private static Component component = new Component();
+    private static Configuration config;
 
     public static void main(String[] args) throws Exception {
-        startRestlet();
+        start();
     }
 
     /**
@@ -43,12 +44,15 @@ public class Application {
         config = c;
     }
 
-    public static void startRestlet() throws Exception {
-        Component component = new Component();
+    public static void start() throws Exception {
         Integer port = getConfiguration().getInteger("http.port", 8182);
         component.getServers().add(Protocol.HTTP, port);
         component.getDefaultHost().attach("", new ImageServerApplication());
         component.start();
+    }
+
+    public static void stop() throws Exception {
+        component.stop();
     }
 
 }
