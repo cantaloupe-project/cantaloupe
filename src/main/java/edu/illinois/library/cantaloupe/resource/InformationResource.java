@@ -1,9 +1,8 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,6 +15,7 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import org.restlet.data.MediaType;
+import org.restlet.data.Preference;
 import org.restlet.data.Reference;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Representation;
@@ -57,8 +57,19 @@ public class InformationResource extends AbstractResource {
                 without(SerializationFeature.WRITE_NULL_MAP_VALUES).
                 without(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS).
                 writeValueAsString(imageInfo);
+        // TODO: could use JacksonRepresentation; not sure whether it's worth bothering
         StringRepresentation rep = new StringRepresentation(json);
-        rep.setMediaType(new MediaType("application/json"));
+
+        // if the client has requested JSON-LD, set a content type of JSON-LD;
+        // otherwise set it to JSON
+        List<Preference<MediaType>> preferences = this.getRequest().
+                getClientInfo().getAcceptedMediaTypes();
+        if (preferences.get(0) != null && preferences.get(0).toString().
+                startsWith("application/ld+json")) {
+            rep.setMediaType(new MediaType("application/ld+json"));
+        } else {
+            rep.setMediaType(new MediaType("application/json"));
+        }
         return rep;
     }
 

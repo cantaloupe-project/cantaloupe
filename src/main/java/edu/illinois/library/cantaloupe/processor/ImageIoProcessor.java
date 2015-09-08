@@ -49,6 +49,7 @@ public class ImageIoProcessor implements Processor {
         SUPPORTS.add("baseUriRedirect");
         SUPPORTS.add("canonicalLinkHeader");
         SUPPORTS.add("cors");
+        SUPPORTS.add("jsonldMediaType");
         SUPPORTS.add("mirroring");
         SUPPORTS.add("regionByPx");
         SUPPORTS.add("rotationArbitrary");

@@ -97,6 +97,7 @@ public class ImageIoProcessorTest extends TestCase {
         expectedSupports.add("baseUriRedirect");
         expectedSupports.add("canonicalLinkHeader");
         expectedSupports.add("cors");
+        expectedSupports.add("jsonldMediaType");
         expectedSupports.add("mirroring");
         expectedSupports.add("regionByPx");
         expectedSupports.add("rotationArbitrary");
