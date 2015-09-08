@@ -235,11 +235,11 @@ public class GraphicsMagickProcessor implements Processor {
         Region region = params.getRegion();
         if (!region.isFull()) {
             if (region.isPercent()) {
-                op.crop(region.getWidth(), region.getHeight(),
+                op.crop(Math.round(region.getWidth()), Math.round(region.getHeight()),
                         Math.round(region.getX()), Math.round(region.getY()),
                         "%".charAt(0)); // TODO: this doesn't work
             } else {
-                op.crop(region.getWidth(), region.getHeight(),
+                op.crop(Math.round(region.getWidth()), Math.round(region.getHeight()),
                         Math.round(region.getX()), Math.round(region.getY()));
             }
         }

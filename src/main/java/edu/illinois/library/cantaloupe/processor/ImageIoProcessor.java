@@ -207,8 +207,8 @@ public class ImageIoProcessor implements Processor {
             } else {
                 x = Math.round(region.getX());
                 y = Math.round(region.getY());
-                requestedWidth = region.getWidth();
-                requestedHeight = region.getHeight();
+                requestedWidth = Math.round(region.getWidth());
+                requestedHeight = Math.round(region.getHeight());
             }
             // BufferedImage.getSubimage() will protest if asked for more
             // width/height than is available

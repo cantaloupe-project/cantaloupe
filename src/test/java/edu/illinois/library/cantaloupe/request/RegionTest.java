@@ -28,8 +28,8 @@ public class RegionTest extends TestCase {
         Region r = Region.fromUri("0,0,50,40");
         assertEquals(new Float(0), r.getX());
         assertEquals(new Float(0), r.getY());
-        assertEquals(new Integer(50), r.getWidth());
-        assertEquals(new Integer(40), r.getHeight());
+        assertEquals(new Float(50), r.getWidth());
+        assertEquals(new Float(40), r.getHeight());
         assertFalse(r.isPercent());
         assertFalse(r.isFull());
     }
@@ -41,8 +41,8 @@ public class RegionTest extends TestCase {
         Region r = Region.fromUri("pct:0,0,50,40");
         assertEquals(new Float(0), r.getX());
         assertEquals(new Float(0), r.getY());
-        assertEquals(new Integer(50), r.getWidth());
-        assertEquals(new Integer(40), r.getHeight());
+        assertEquals(new Float(50), r.getWidth());
+        assertEquals(new Float(40), r.getHeight());
         assertTrue(r.isPercent());
         assertFalse(r.isFull());
     }
@@ -73,14 +73,14 @@ public class RegionTest extends TestCase {
     /* height */
 
     public void testSetHeight() {
-        Integer height = 50;
+        Float height = (float) 50;
         this.region.setHeight(height);
         assertEquals(height, this.region.getHeight());
     }
 
     public void testSetNegativeHeight() {
         try {
-            this.region.setHeight(-1);
+            this.region.setHeight((float) -1);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Height must be a positive integer", e.getMessage());
@@ -89,7 +89,7 @@ public class RegionTest extends TestCase {
 
     public void testSetZeroHeight() {
         try {
-            this.region.setHeight(0);
+            this.region.setHeight((float) 0);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Height must be a positive integer", e.getMessage());
@@ -99,14 +99,14 @@ public class RegionTest extends TestCase {
     /* width */
 
     public void testSetWidth() {
-        Integer width = 50;
+        Float width = (float) 50;
         this.region.setWidth(width);
         assertEquals(width, this.region.getWidth());
     }
 
     public void testSetNegativeWidth() {
         try {
-            this.region.setWidth(-1);
+            this.region.setWidth((float) -1);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Width must be a positive integer", e.getMessage());
@@ -115,7 +115,7 @@ public class RegionTest extends TestCase {
 
     public void testSetZeroWidth() {
         try {
-            this.region.setWidth(0);
+            this.region.setWidth((float) 0);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Width must be a positive integer", e.getMessage());
