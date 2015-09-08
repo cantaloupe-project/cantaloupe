@@ -70,7 +70,7 @@ it the following contents, modifying as desired:
 
 # Running
 
-`$ java -jar Cantaloupe-x.x.x.jar -Dcantaloupe.config=/path/to/cantaloupe.properties`
+`$ java -Dcantaloupe.config=/path/to/cantaloupe.properties -jar Cantaloupe-x.x.x.jar`
 
 It is now ready for use at: `http://localhost:{http.port}/iiif`
 
