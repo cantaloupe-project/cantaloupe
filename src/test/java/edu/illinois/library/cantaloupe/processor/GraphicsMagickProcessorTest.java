@@ -71,6 +71,7 @@ public class GraphicsMagickProcessorTest extends TestCase {
         testGetImageInfo(info, baseUri);
     }
 
+    @SuppressWarnings({"unchecked"})
     private void testGetImageInfo(ImageInfo info, String baseUri)
             throws Exception {
         assertEquals("http://iiif.io/api/image/2/context.json", info.getContext());
