@@ -4,7 +4,6 @@ import edu.illinois.library.cantaloupe.Application;
 import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class HttpResolverTest extends TestCase {
@@ -27,10 +26,9 @@ public class HttpResolverTest extends TestCase {
 
     public void testGetInputStream() {
         try {
-            instance.getInputStream("bogus");
-            fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
+            assertNotNull(instance.getInputStream("bogus"));
+        } catch (IOException e) {
+            fail("Unexpected exception");
         }
         // TODO: test against a real server
     }

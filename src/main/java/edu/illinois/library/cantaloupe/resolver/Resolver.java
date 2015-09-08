@@ -1,9 +1,8 @@
 package edu.illinois.library.cantaloupe.resolver;
 
-import edu.illinois.library.cantaloupe.image.SourceFormat;
-
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -27,9 +26,8 @@ public interface Resolver {
      * <strong>must</strong> implement this.
      *
      * @param identifier IIIF identifier.
-     * @return InputStream for reading the source image, or null if an image
-     * corresponding to the given identifier does not exist.
+     * @return InputStream for reading the source image; never null.
      */
-    InputStream getInputStream(String identifier) throws FileNotFoundException;
+    InputStream getInputStream(String identifier) throws IOException;
 
 }
