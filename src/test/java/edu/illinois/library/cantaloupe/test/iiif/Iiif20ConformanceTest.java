@@ -2,10 +2,17 @@ package edu.illinois.library.cantaloupe.test.iiif;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
+import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.processor.Processor;
+import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.request.OutputFormat;
 import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.restlet.Client;
 import org.restlet.Context;
+import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.data.Status;
@@ -38,10 +45,10 @@ public class Iiif20ConformanceTest extends TestCase {
     /**
      * Initializes the Restlet application
      */
-    static {
+    static { // TODO: why doesn't this code work in a @BeforeClass?
         try {
             Application.setConfiguration(getConfiguration());
-            Application.startRestlet();
+            Application.start();
         } catch (Exception e) {
             fail("Failed to start the Restlet");
         }
@@ -65,6 +72,11 @@ public class Iiif20ConformanceTest extends TestCase {
             fail("Failed to get the configuration");
         }
         return config;
+    }
+
+    @AfterClass
+    public void afterClass() throws Exception {
+        Application.stop();
     }
 
     public void setUp() {
@@ -108,7 +120,7 @@ public class Iiif20ConformanceTest extends TestCase {
         config.setProperty("FilesystemResolver.path_prefix", path + File.separator);
         Application.setConfiguration(config);
 
-        String identifier = java.net.URLEncoder.encode("fixtures/" + IMAGE);
+        String identifier = Reference.encode("fixtures/" + IMAGE);
         ClientResource client = getClientForUriPath("/" + identifier + "/info.json");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
@@ -237,7 +249,7 @@ public class Iiif20ConformanceTest extends TestCase {
      * @throws IOException
      */
     public void testSizeScaledToPercent() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/pct:50,50/0/color.jpg");
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/pct:50/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
     }
@@ -393,90 +405,36 @@ public class Iiif20ConformanceTest extends TestCase {
      *
      * @throws IOException
      */
-    public void testJpgFormat() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.jpg");
-        client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
-        assertEquals("image/jpeg",
-                client.getResponse().getHeaders().getFirst("Content-type").getValue());
+    public void testFormats() {
+        testFormat(OutputFormat.JPG);
+        testFormat(OutputFormat.TIF);
+        testFormat(OutputFormat.PNG);
+        testFormat(OutputFormat.GIF);
+        testFormat(OutputFormat.JP2);
+        testFormat(OutputFormat.PDF);
+        testFormat(OutputFormat.WEBP);
     }
 
-    /**
-     * 4.5
-     *
-     * @throws IOException
-     */
-    public void testTifFormat() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.tif");
-        client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
-        assertEquals("image/tiff",
-                client.getResponse().getHeaders().getFirst("Content-type").getValue());
-    }
+    private void testFormat(OutputFormat format) {
+        ClientResource client = getClientForUriPath("/" + IMAGE +
+                "/full/full/0/default." + format.getExtension());
 
-    /**
-     * 4.5
-     *
-     * @throws IOException
-     */
-    public void testPngFormat() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.png");
-        client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
-        assertEquals("image/png",
-                client.getResponse().getHeaders().getFirst("Content-type").getValue());
-    }
-
-    /**
-     * 4.5
-     *
-     * @throws IOException
-     */
-    public void testGifFormat() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.gif");
-        client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
-        assertEquals("image/gif",
-                client.getResponse().getHeaders().getFirst("Content-type").getValue());
-    }
-
-    /**
-     * 4.5
-     *
-     * @throws IOException
-     */
-    public void testJp2Format() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.jp2");
-        client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
-        assertEquals("image/jp2",
-                client.getResponse().getHeaders().getFirst("Content-type").getValue());
-    }
-
-    /**
-     * 4.5
-     *
-     * @throws IOException
-     */
-    public void testPdfFormat() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.pdf");
-        client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
-        assertEquals("image/pdf",
-                client.getResponse().getHeaders().getFirst("Content-type").getValue());
-    }
-
-    /**
-     * 4.5
-     *
-     * @throws IOException
-     */
-    public void testWebpFormat() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.webp");
-        client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
-        assertEquals("image/webp",
-                client.getResponse().getHeaders().getFirst("Content-type").getValue());
+        // does the current processor support this output format?
+        SourceFormat sourceFormat = SourceFormat.getSourceFormat(IMAGE);
+        Processor processor = ProcessorFactory.getProcessor(sourceFormat);
+        if (processor.getAvailableOutputFormats(sourceFormat).contains(format)) {
+            client.get();
+            assertEquals(Status.SUCCESS_OK, client.getStatus());
+            assertEquals(format.getMediaType(),
+                    client.getResponse().getHeaders().getFirst("Content-type").getValue());
+        } else {
+            try {
+                client.get();
+                fail("Expected exception");
+            } catch (ResourceException e) {
+                assertEquals(Status.CLIENT_ERROR_FORBIDDEN, client.getStatus());
+            }
+        }
     }
 
     /**
@@ -526,7 +484,7 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
         client.get();
         assertEquals("application/json; charset=UTF-8",
-                client.getResponse().getHeaders().getFirst("Content-type"));
+                client.getResponse().getHeaders().getFirst("Content-type").getValue());
     }
 
     /**
@@ -537,7 +495,17 @@ public class Iiif20ConformanceTest extends TestCase {
      * @throws IOException
      */
     public void testInformationRequestContentTypeJsonLd() throws IOException {
-        // TODO: write this
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
+        client.accept(new MediaType("application/ld+json"));
+        client.get();
+        assertEquals("application/ld+json; charset=UTF-8",
+                client.getResponse().getHeaders().getFirst("Content-type").getValue());
+
+        client = getClientForUriPath("/" + IMAGE + "/info.json");
+        client.accept(new MediaType("application/json"));
+        client.get();
+        assertEquals("application/json; charset=UTF-8",
+                client.getResponse().getHeaders().getFirst("Content-type").getValue());
     }
 
     /**
@@ -551,7 +519,11 @@ public class Iiif20ConformanceTest extends TestCase {
      */
     public void testInformationRequestLinkHeaderToContextDocument()
             throws IOException {
-        // TODO: write this
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
+        client.get();
+        assertEquals("<http://iiif.io/api/image/2/context.json>; " +
+                        "rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"",
+                client.getResponse().getHeaders().getFirst("Link").getValue());
     }
 
     /**
