@@ -5,17 +5,16 @@ import edu.illinois.library.cantaloupe.resource.ImageResource;
 import edu.illinois.library.cantaloupe.resource.InformationResource;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
 import org.apache.commons.configuration.Configuration;
+import org.apache.velocity.app.Velocity;
 import org.restlet.Application;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
-import org.restlet.data.CharacterSet;
-import org.restlet.data.Language;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.engine.application.CorsFilter;
+import org.restlet.ext.velocity.TemplateRepresentation;
 import org.restlet.representation.Representation;
-import org.restlet.representation.StringRepresentation;
 import org.restlet.routing.Redirector;
 import org.restlet.routing.Router;
 import org.restlet.routing.Template;
@@ -26,7 +25,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 public class ImageServerApplication extends Application {
 
@@ -61,20 +62,15 @@ public class ImageServerApplication extends Application {
                 stackTrace = sw.toString();
             }
 
-            String template = "<html>" +
-                    "<head></head>" +
-                    "<body>" +
-                    "<h1>%s %s</h1>" +
-                    "<p>%s</p>" +
-                    "<pre>%s</pre>" +
-                    "</body>" +
-                    "</html>";
-            String msg = String.format(template,
-                    Integer.toString(status.getCode()),
-                    status.getReasonPhrase(), throwable.getMessage(),
-                    stackTrace);
-            return new StringRepresentation(msg, MediaType.TEXT_HTML,
-                    Language.ENGLISH, CharacterSet.UTF_8);
+            Map<String,Object> templateVars = new HashMap<String,Object>();
+            templateVars.put("pageTitle", status.getCode() + " " +
+                    status.getReasonPhrase());
+            templateVars.put("message", throwable.getMessage());
+            templateVars.put("stackTrace", stackTrace);
+
+            org.apache.velocity.Template template = Velocity.getTemplate("error.vm");
+            return new TemplateRepresentation(template, templateVars,
+                    MediaType.TEXT_HTML);
         }
 
         @Override

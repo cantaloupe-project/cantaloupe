@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <title>$pageTitle</title>
+</head>
+
+<body>
+<div class="container-fluid">
+    <h1>$pageTitle</h1>
+
+    <p>$message</p>
+
+    #if ($stackTrace.length() > 0)
+        <pre>$stackTrace</pre>
+    #end
+
+</div>
+</body>
+</html>
