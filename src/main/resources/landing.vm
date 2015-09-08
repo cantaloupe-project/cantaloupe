@@ -26,38 +26,34 @@
         <div class="container-fluid">
             <h1>&#127816; Cantaloupe IIIF 2.0 Server</h1>
 
+            <h3>Resolver</h3>
+            <p>$resolverName</p>
+
+            <h3>Source Format Assignments</h3>
+
+            <table class="table table-condensed">
+                #foreach ($sourceFormat in $sourceFormats.keySet())
+                    <tr>
+                        <td style="width:10%">$sourceFormat.getExtension()</td>
+                        <td>$sourceFormats.get($sourceFormat)</td>
+                    </tr>
+                #end
+            </table>
+
+            <h3>Supported Source Formats</h3>
             <dl>
-                <dt>Resolver</dt>
-                <dd>$resolverName</dd>
-
-                <dt>Source Format Assignments</dt>
-                <dd>
-                    <table class="table table-condensed">
-                        #foreach ($sourceFormat in $sourceFormats.keySet())
-                            <tr>
-                                <td style="width:10%">$sourceFormat.getExtension()</td>
-                                <td>$sourceFormats.get($sourceFormat)</td>
-                            </tr>
-                        #end
-                    </table>
-                </dd>
-
-                <dt>Supported Source Formats</dt>
-                <dd>
-                    <dl>
-                        #foreach ($processor in $processors.keySet())
-                            <dt>$processor</dt>
-                            <dd>
-                                <ul>
-                                    #foreach ($sourceFormat in $processors.get($processor))
-                                        <li>$sourceFormat</li>
-                                    #end
-                                </ul>
-                            </dd>
-                        #end
-                    </dl>
-                </dd>
+                #foreach ($processor in $processors.keySet())
+                    <dt>$processor</dt>
+                    <dd>
+                        <ul>
+                            #foreach ($sourceFormat in $processors.get($processor))
+                                <li>$sourceFormat</li>
+                            #end
+                        </ul>
+                    </dd>
+                #end
             </dl>
+
         </div>
     </body>
 </html>
