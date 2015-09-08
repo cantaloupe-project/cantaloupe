@@ -12,13 +12,6 @@ import java.io.InputStream;
 public interface Resolver {
 
     /**
-     * @param identifier IIIF identifier.
-     * @return The expected format of the image corresponding to the given
-     * identifier. Never null.
-     */
-    SourceFormat getExpectedSourceFormat(String identifier);
-
-    /**
      * Implementations should implement this instead of getInputStream() if
      * they wish for it to be used preferentially instead of getInputStream().
      * Otherwise, they should return null.

@@ -20,6 +20,26 @@ public enum SourceFormat {
 
     private String mediaType;
 
+    /**
+     * @param identifier IIIF identifier.
+     * @return The source format corresponding to the given identifier.
+     */
+    public static SourceFormat getSourceFormat(String identifier) {
+        String extension = null;
+        int i = identifier.lastIndexOf('.');
+        if (i > 0) {
+            extension = identifier.substring(i + 1);
+        }
+        if (extension != null) {
+            for (SourceFormat enumValue : SourceFormat.values()) {
+                if (enumValue.getExtensions().contains(extension)) {
+                    return enumValue;
+                }
+            }
+        }
+        return SourceFormat.UNKNOWN;
+    }
+
     SourceFormat(String mediaType) {
         this.mediaType = mediaType;
     }

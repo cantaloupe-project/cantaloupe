@@ -14,7 +14,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class HttpResolver extends AbstractResolver implements Resolver {
+public class HttpResolver implements Resolver {
 
     private static Client client = new Client(new Context(), Protocol.HTTP);
 

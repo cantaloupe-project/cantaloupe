@@ -41,7 +41,7 @@ public class InformationResource extends AbstractResource {
         File sourceFile = resolver.getFile(identifier);
         InputStream inputStream = resolver.getInputStream(identifier);
 
-        SourceFormat sourceFormat = resolver.getExpectedSourceFormat(identifier);
+        SourceFormat sourceFormat = SourceFormat.getSourceFormat(identifier);
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
         ImageInfo imageInfo;
         if (sourceFile != null) {

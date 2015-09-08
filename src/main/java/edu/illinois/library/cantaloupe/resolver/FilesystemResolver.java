@@ -8,7 +8,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-public class FilesystemResolver extends AbstractResolver implements Resolver {
+public class FilesystemResolver implements Resolver {
 
     public File getFile(String identifier) throws FileNotFoundException {
         File file = new File(getPath(identifier));

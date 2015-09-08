@@ -89,7 +89,7 @@ public class ImageResource extends AbstractResource {
                 quality, format);
 
         Resolver resolver = ResolverFactory.getResolver();
-        SourceFormat sourceFormat = resolver.getExpectedSourceFormat(identifier);
+        SourceFormat sourceFormat = SourceFormat.getSourceFormat(identifier);
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
         Set availableOutputFormats = proc.getAvailableOutputFormats(sourceFormat);
         if (!availableOutputFormats.contains(params.getOutputFormat())) {

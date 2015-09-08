@@ -15,6 +15,13 @@ public class SourceFormatTest extends TestCase {
         assertNotNull(SourceFormat.valueOf("UNKNOWN"));
     }
 
+    public void testGetSourceFormat() {
+        assertEquals(SourceFormat.JP2, SourceFormat.getSourceFormat("bla.jp2"));
+        assertEquals(SourceFormat.JPG, SourceFormat.getSourceFormat("bla.jpeg"));
+        assertEquals(SourceFormat.TIF, SourceFormat.getSourceFormat("bla.tiff"));
+        assertEquals(SourceFormat.UNKNOWN, SourceFormat.getSourceFormat("bla.bogus"));
+    }
+
     public void testExtensions() {
         assertTrue(SourceFormat.BMP.getExtensions().contains("bmp"));
         assertTrue(SourceFormat.GIF.getExtensions().contains("gif"));
