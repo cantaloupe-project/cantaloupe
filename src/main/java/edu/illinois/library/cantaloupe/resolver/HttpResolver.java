@@ -92,6 +92,7 @@ public class HttpResolver implements Resolver {
     public SourceFormat getSourceFormatFromIdentifier(String identifier) {
         // try to get the source format based on a filename extension in the
         // identifier
+        identifier = identifier.toLowerCase();
         String extension = null;
         SourceFormat sourceFormat = SourceFormat.UNKNOWN;
         int i = identifier.lastIndexOf('.');
