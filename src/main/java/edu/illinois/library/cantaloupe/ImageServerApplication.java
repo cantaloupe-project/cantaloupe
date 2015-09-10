@@ -133,6 +133,11 @@ public class ImageServerApplication extends Application {
         router.attach(BASE_IIIF_PATH, LandingResource.class);
         router.attach("/", LandingResource.class);
 
+        // Redirect / to BASE_IIIF_PATH
+        redirector = new Redirector(getContext(), BASE_IIIF_PATH,
+                Redirector.MODE_CLIENT_PERMANENT);
+        router.attach("/", redirector);
+
         return corsFilter;
     }
 
