@@ -27,9 +27,10 @@ public class HttpResolverTest extends TestCase {
 
     public void testGetInputStream() {
         try {
-            assertNotNull(instance.getInputStream("bogus"));
+            assertNull(instance.getInputStream("bogus"));
+            fail("Expected exception");
         } catch (IOException e) {
-            fail("Unexpected exception");
+            // pass
         }
         // TODO: test against a real server
     }

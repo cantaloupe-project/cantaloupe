@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -50,7 +51,11 @@ public class HttpResolver implements Resolver {
             resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC,
                     username, password);
         }
-        return resource.get().getStream();
+        try {
+            return resource.get().getStream();
+        } catch (ResourceException e) {
+            throw new FileNotFoundException(e.getMessage());
+        }
     }
 
     /**
