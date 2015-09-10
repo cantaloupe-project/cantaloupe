@@ -54,10 +54,10 @@ public class ImageServerApplication extends Application {
 
             Throwable throwable = status.getThrowable();
             if (throwable != null) {
-                templateVars.put("message", throwable.getMessage());
                 if (throwable.getCause() != null) {
                     throwable = throwable.getCause();
                 }
+                templateVars.put("message", throwable.getMessage());
                 Configuration config = edu.illinois.library.cantaloupe.
                         Application.getConfiguration();
                 if (config.getBoolean("print_stack_trace_on_error_pages")) {
