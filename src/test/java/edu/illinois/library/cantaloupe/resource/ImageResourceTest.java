@@ -17,7 +17,8 @@ public class ImageResourceTest extends ResourceTest {
             client.get();
             fail("Expected exception");
         } catch (ResourceException e) {
-            assertEquals(Status.CLIENT_ERROR_FORBIDDEN, client.getStatus());
+            assertEquals(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE,
+                    client.getStatus());
         }
     }
 

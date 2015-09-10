@@ -82,7 +82,7 @@ public class ImageServerApplication extends Application {
                     cause instanceof UnsupportedEncodingException) {
                 status = new Status(Status.CLIENT_ERROR_BAD_REQUEST, t);
             } else if (cause instanceof UnsupportedSourceFormatException) {
-                status = new Status(Status.CLIENT_ERROR_FORBIDDEN, t);
+                status = new Status(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE, t);
             } else if (cause instanceof FileNotFoundException) {
                 status = new Status(Status.CLIENT_ERROR_NOT_FOUND, t);
             } else {
