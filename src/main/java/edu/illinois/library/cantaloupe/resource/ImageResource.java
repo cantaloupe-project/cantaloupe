@@ -110,6 +110,7 @@ public class ImageResource extends AbstractResource {
 
     @Get
     public Representation doGet() throws Exception {
+        // 1. Assemble the URI parameters into a Parameters object
         Map<String,Object> attrs = this.getRequest().getAttributes();
         String identifier = Reference.decode((String) attrs.get("identifier"));
         String format = (String) attrs.get("format");
@@ -119,10 +120,14 @@ public class ImageResource extends AbstractResource {
         String quality = (String) attrs.get("quality");
         Parameters params = new Parameters(identifier, region, size, rotation,
                 quality, format);
-
+        // 2. Determine the format of the source image
         Resolver resolver = ResolverFactory.getResolver();
-        SourceFormat sourceFormat = SourceFormat.getSourceFormat(identifier);
+        SourceFormat sourceFormat = resolver.getSourceFormat(identifier);
+        // 3. Obtain an instance of the processor assigned to that format in
+        // the config file
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
+        // 4. Find out whether the processor supports that source format by
+        // asking it whether it offers any output formats for it
         Set availableOutputFormats = proc.getAvailableOutputFormats(sourceFormat);
         if (!availableOutputFormats.contains(params.getOutputFormat())) {
             String msg;
@@ -137,23 +142,25 @@ public class ImageResource extends AbstractResource {
             logger.warn(msg + ": " + this.getReference());
             throw new UnsupportedSourceFormatException(msg);
         }
-
+        // 5. All checks made; at this point, we are pretty sure we can fulfill
+        // the request
         this.addHeader("Link", String.format("<%s>;rel=\"canonical\"",
                 params.getCanonicalUri(this.getRootRef().toString() +
                         ImageServerApplication.BASE_IIIF_PATH)));
 
-        File sourceFile = resolver.getFile(identifier);
-        InputStream inputStream = null;
-        if (sourceFile == null) {
-            inputStream = resolver.getInputStream(identifier);
-        }
         MediaType mediaType = new MediaType(
                 OutputFormat.valueOf(format.toUpperCase()).getMediaType());
 
+        // 6. If we can resolve the identifier to a File, then:
+        // 6a. serve the source image from a File, as it should be the fastest
+        // option
+        File sourceFile = resolver.getFile(identifier);
         if (sourceFile != null) {
             return new ImageRepresentation(mediaType, sourceFormat, params,
                     sourceFile);
         } else {
+            // 6b. serve it from an InputStream as a fallback option
+            InputStream inputStream = resolver.getInputStream(identifier);
             return new ImageRepresentation(mediaType, sourceFormat, params,
                     inputStream);
         }

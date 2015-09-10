@@ -31,18 +31,20 @@ public class InformationResource extends AbstractResource {
 
     @Get("json")
     public Representation doGet() throws Exception {
-        this.addHeader("Link", "<http://iiif.io/api/image/2/context.json>; " +
-                "rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"");
-
+        // 1. Assemble the URI parameters into a Parameters object
         Map<String,Object> attrs = this.getRequest().getAttributes();
         String identifier = Reference.decode((String) attrs.get("identifier"));
-
+        // 2. Obtain a reference to the source image as a File and/or an
+        // InputStream
         Resolver resolver = ResolverFactory.getResolver();
         File sourceFile = resolver.getFile(identifier);
         InputStream inputStream = resolver.getInputStream(identifier);
-
-        SourceFormat sourceFormat = SourceFormat.getSourceFormat(identifier);
+        // 3. Determine the format of the source image
+        SourceFormat sourceFormat = resolver.getSourceFormat(identifier);
+        // 4. Obtain an instance of the processor assigned to that format in
+        // the config file
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
+        // 5. Get an ImageInfo instance corresponding to the source image
         ImageInfo imageInfo;
         if (sourceFile != null) {
             imageInfo = proc.getImageInfo(sourceFile, sourceFormat,
@@ -51,17 +53,20 @@ public class InformationResource extends AbstractResource {
             imageInfo = proc.getImageInfo(inputStream, sourceFormat,
                     this.getImageUri(identifier));
         }
-
+        // 6. Transform the ImageInfo into JSON
         ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writer().
                 without(SerializationFeature.WRITE_NULL_MAP_VALUES).
                 without(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS).
                 writeValueAsString(imageInfo);
-        // TODO: could use JacksonRepresentation; not sure whether it's worth bothering
+        // TODO: could use JacksonRepresentation here; not sure whether it's worth bothering
         StringRepresentation rep = new StringRepresentation(json);
 
-        // if the client has requested JSON-LD, set a content type of JSON-LD;
-        // otherwise set it to JSON
+        this.addHeader("Link", "<http://iiif.io/api/image/2/context.json>; " +
+                "rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"");
+
+        // 7. If the client has requested JSON-LD, set the content type to
+        // that; otherwise set it to JSON
         List<Preference<MediaType>> preferences = this.getRequest().
                 getClientInfo().getAcceptedMediaTypes();
         if (preferences.get(0) != null && preferences.get(0).toString().
