@@ -42,7 +42,20 @@ public enum SourceFormat {
         return SourceFormat.UNKNOWN;
     }
 
-    SourceFormat(String mediaType) {
+    /**
+     * @param mediaType Media (MIME) type.
+     * @return The source format corresponding to the given media type.
+     */
+    public static SourceFormat getSourceFormat(MediaType mediaType) {
+        for (SourceFormat enumValue : SourceFormat.values()) {
+            if (enumValue.getMediaType().equals(mediaType)) {
+                return enumValue;
+            }
+        }
+        return SourceFormat.UNKNOWN;
+    }
+
+    SourceFormat(MediaType mediaType) {
         this.mediaType = mediaType;
     }
 
