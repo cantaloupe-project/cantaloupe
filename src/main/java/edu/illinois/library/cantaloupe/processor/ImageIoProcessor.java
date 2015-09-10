@@ -67,7 +67,8 @@ public class ImageIoProcessor implements Processor {
      * @return Map of available output formats for all known source formats,
      * based on information reported by the ImageIO library.
      */
-    public static HashMap<SourceFormat, Set<OutputFormat>> getAvailableOutputFormats() {
+    public static HashMap<SourceFormat, Set<OutputFormat>>
+    getAvailableOutputFormats() {
         final String[] readerMimeTypes = ImageIO.getReaderMIMETypes();
         final String[] writerMimeTypes = ImageIO.getWriterMIMETypes();
         final HashMap<SourceFormat,Set<OutputFormat>> map =
@@ -76,7 +77,7 @@ public class ImageIoProcessor implements Processor {
             Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
 
             for (int i = 0, length = readerMimeTypes.length; i < length; i++) {
-                if (sourceFormat.getMediaType().equals(readerMimeTypes[i].toLowerCase())) {
+                if (sourceFormat.getMediaType().toString().equals(readerMimeTypes[i].toLowerCase())) {
                     for (OutputFormat outputFormat : OutputFormat.values()) {
                         for (i = 0, length = writerMimeTypes.length; i < length; i++) {
                             if (outputFormat.getMediaType().equals(writerMimeTypes[i].toLowerCase())) {
