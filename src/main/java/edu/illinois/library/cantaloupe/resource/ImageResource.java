@@ -21,6 +21,8 @@ import org.restlet.data.Reference;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handles IIIF image requests.
@@ -32,6 +34,10 @@ public class ImageResource extends AbstractResource {
 
     /**
      * Restlet representation for images, returned by ImageResource.doGet().
+     *
+     * <em>Note:</em> doGet() should handle all preflight checks. Once it has
+     * returned an instance of this class, it will no longer be possible to
+     * render the error page, as response headers will have already been sent.
      */
     class ImageRepresentation extends OutputRepresentation {
 
@@ -41,7 +47,7 @@ public class ImageResource extends AbstractResource {
         SourceFormat sourceFormat;
 
         /**
-         * Constructor for local-file images. Should be used preferentially.
+         * Constructor for local-file images.
          *
          * @param mediaType
          * @param sourceFormat
@@ -76,6 +82,12 @@ public class ImageResource extends AbstractResource {
             this.sourceFormat = sourceFormat;
         }
 
+        /**
+         * Writes the source image to the given output stream.
+         *
+         * @param outputStream Response body output stream supplied by Restlet
+         * @throws IOException
+         */
         public void write(OutputStream outputStream) throws IOException {
             try {
                 Processor proc = ProcessorFactory.
@@ -93,6 +105,8 @@ public class ImageResource extends AbstractResource {
         }
 
     }
+
+    private static Logger logger = LoggerFactory.getLogger(ImageResource.class);
 
     @Get
     public Representation doGet() throws Exception {
@@ -120,6 +134,7 @@ public class ImageResource extends AbstractResource {
                         proc.getClass().getSimpleName(),
                         sourceFormat.getPreferredExtension());
             }
+            logger.warn(msg + ": " + this.getReference());
             throw new UnsupportedSourceFormatException(msg);
         }
 
