@@ -23,7 +23,7 @@ public class FilesystemResolver implements Resolver {
             logger.warn(message);
             throw new FileNotFoundException(message);
         }
-        logger.info("Resolved {} to {}", identifier, file.getAbsolutePath());
+        logger.debug("Resolved {} to {}", identifier, file.getAbsolutePath());
         return file;
     }
 

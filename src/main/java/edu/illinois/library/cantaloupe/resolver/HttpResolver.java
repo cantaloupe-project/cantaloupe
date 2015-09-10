@@ -35,7 +35,7 @@ public class HttpResolver implements Resolver {
     public InputStream getInputStream(String identifier) throws IOException {
         Configuration config = Application.getConfiguration();
         Reference url = getUrl(identifier);
-        logger.info("Resolved {} to {}", identifier, url);
+        logger.debug("Resolved {} to {}", identifier, url);
         ClientResource resource = new ClientResource(url);
         resource.setNext(client);
 
