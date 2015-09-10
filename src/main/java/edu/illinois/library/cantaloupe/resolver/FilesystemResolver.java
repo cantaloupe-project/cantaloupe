@@ -2,6 +2,8 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
 import org.apache.commons.configuration.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,12 +12,18 @@ import java.io.InputStream;
 
 public class FilesystemResolver implements Resolver {
 
+    private static Logger logger = LoggerFactory.
+            getLogger(FilesystemResolver.class);
+
     public File getFile(String identifier) throws FileNotFoundException {
         File file = new File(getPath(identifier));
         if (!file.exists()) {
-            throw new FileNotFoundException(
-                    "File not found: " + file.getName());
+            String message = "Failed to resolve " + identifier + " to " +
+                    file.getAbsolutePath();
+            logger.warn(message);
+            throw new FileNotFoundException(message);
         }
+        logger.info("Resolved {} to {}", identifier, file.getAbsolutePath());
         return file;
     }
 
