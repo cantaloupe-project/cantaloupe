@@ -62,6 +62,7 @@ public enum SourceFormat {
     public List<String> getExtensions() {
         List<String> extensions = new ArrayList<String>();
         String mediaType = this.getMediaType().toString();
+        // the first extension will be the preferred extension
         if (mediaType.equals("image/bmp")) {
             extensions.add("bmp");
         } else if (mediaType.equals("image/gif")) {
@@ -75,6 +76,7 @@ public enum SourceFormat {
             extensions.add("png");
         } else if (mediaType.equals("image/tiff")) {
             extensions.add("tif");
+            extensions.add("ptif");
             extensions.add("tiff");
         } else if (mediaType.equals("image/webp")) {
             extensions.add("webp");

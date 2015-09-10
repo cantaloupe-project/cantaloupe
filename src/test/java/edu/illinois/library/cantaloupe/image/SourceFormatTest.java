@@ -37,7 +37,9 @@ public class SourceFormatTest extends TestCase {
         assertTrue(SourceFormat.JPG.getExtensions().contains("jpg"));
         assertTrue(SourceFormat.JPG.getExtensions().contains("jpeg"));
         assertTrue(SourceFormat.PNG.getExtensions().contains("png"));
+        assertTrue(SourceFormat.TIF.getExtensions().contains("ptif"));
         assertTrue(SourceFormat.TIF.getExtensions().contains("tif"));
+        assertTrue(SourceFormat.TIF.getExtensions().contains("tiff"));
         assertTrue(SourceFormat.TIF.getExtensions().contains("tiff"));
         assertTrue(SourceFormat.WEBP.getExtensions().contains("webp"));
         assertTrue(SourceFormat.UNKNOWN.getExtensions().contains("unknown"));
