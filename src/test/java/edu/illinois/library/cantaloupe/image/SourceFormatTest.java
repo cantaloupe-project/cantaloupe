@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.image;
 
 import junit.framework.TestCase;
+import org.restlet.data.MediaType;
 
 public class SourceFormatTest extends TestCase {
 
@@ -36,14 +37,14 @@ public class SourceFormatTest extends TestCase {
     }
 
     public void testMediaTypes() {
-        assertEquals("image/bmp", SourceFormat.BMP.getMediaType());
-        assertEquals("image/gif", SourceFormat.GIF.getMediaType());
-        assertEquals("image/jp2", SourceFormat.JP2.getMediaType());
-        assertEquals("image/jpeg", SourceFormat.JPG.getMediaType());
-        assertEquals("image/png", SourceFormat.PNG.getMediaType());
-        assertEquals("image/tiff", SourceFormat.TIF.getMediaType());
-        assertEquals("image/webp", SourceFormat.WEBP.getMediaType());
-        assertEquals("unknown/unknown", SourceFormat.UNKNOWN.getMediaType());
+        assertEquals("image/bmp", SourceFormat.BMP.getMediaType().toString());
+        assertEquals("image/gif", SourceFormat.GIF.getMediaType().toString());
+        assertEquals("image/jp2", SourceFormat.JP2.getMediaType().toString());
+        assertEquals("image/jpeg", SourceFormat.JPG.getMediaType().toString());
+        assertEquals("image/png", SourceFormat.PNG.getMediaType().toString());
+        assertEquals("image/tiff", SourceFormat.TIF.getMediaType().toString());
+        assertEquals("image/webp", SourceFormat.WEBP.getMediaType().toString());
+        assertEquals("unknown/unknown", SourceFormat.UNKNOWN.getMediaType().toString());
     }
 
     public void testPreferredExtension() {

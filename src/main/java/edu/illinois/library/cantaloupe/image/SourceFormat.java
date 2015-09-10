@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.image;
 
+import org.restlet.data.MediaType;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,16 +11,16 @@ import java.util.List;
  */
 public enum SourceFormat {
 
-    BMP("image/bmp"),
-    GIF("image/gif"),
-    JP2("image/jp2"),
-    JPG("image/jpeg"),
-    PNG("image/png"),
-    TIF("image/tiff"),
-    WEBP("image/webp"),
-    UNKNOWN("unknown/unknown");
+    BMP(new MediaType("image/bmp")),
+    GIF(new MediaType("image/gif")),
+    JP2(new MediaType("image/jp2")),
+    JPG(new MediaType("image/jpeg")),
+    PNG(new MediaType("image/png")),
+    TIF(new MediaType("image/tiff")),
+    WEBP(new MediaType("image/webp")),
+    UNKNOWN(new MediaType("unknown/unknown"));
 
-    private String mediaType;
+    private MediaType mediaType;
 
     /**
      * @param identifier IIIF identifier.
@@ -46,7 +48,7 @@ public enum SourceFormat {
 
     public List<String> getExtensions() {
         List<String> extensions = new ArrayList<String>();
-        String mediaType = this.getMediaType();
+        String mediaType = this.getMediaType().toString();
         if (mediaType.equals("image/bmp")) {
             extensions.add("bmp");
         } else if (mediaType.equals("image/gif")) {
@@ -69,7 +71,7 @@ public enum SourceFormat {
         return extensions;
     }
 
-    public String getMediaType() {
+    public MediaType getMediaType() {
         return this.mediaType;
     }
 
