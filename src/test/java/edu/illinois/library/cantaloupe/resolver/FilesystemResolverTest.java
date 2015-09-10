@@ -20,8 +20,7 @@ public class FilesystemResolverTest extends TestCase {
     public void setUp() throws IOException {
         File directory = new File(".");
         String cwd = directory.getCanonicalPath();
-        Path fixturePath = Paths.get(cwd, "src", "test", "java", "edu",
-                "illinois", "library", "cantaloupe", "test", "fixtures");
+        Path fixturePath = Paths.get(cwd, "src", "test", "resources");
         BaseConfiguration config = new BaseConfiguration();
         config.setProperty("FilesystemResolver.path_prefix",
                         fixturePath + File.separator);

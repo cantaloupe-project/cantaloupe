@@ -60,8 +60,7 @@ public class Iiif20ConformanceTest extends TestCase {
         try {
             File directory = new File(".");
             String cwd = directory.getCanonicalPath();
-            Path fixturePath = Paths.get(cwd, "src", "test", "java", "edu",
-                    "illinois", "library", "cantaloupe", "test", "fixtures");
+            Path fixturePath = Paths.get(cwd, "src", "test", "resources");
             // TODO: externalize these
             config.setProperty("print_stack_trace_on_error_pages", false);
             config.setProperty("http.port", PORT);

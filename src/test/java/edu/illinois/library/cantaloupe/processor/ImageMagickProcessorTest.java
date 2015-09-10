@@ -138,8 +138,7 @@ public class ImageMagickProcessorTest extends TestCase {
     private File getFixture(String filename) throws IOException {
         File directory = new File(".");
         String cwd = directory.getCanonicalPath();
-        Path testPath = Paths.get(cwd, "src", "test", "java", "edu",
-                "illinois", "library", "cantaloupe", "test", "fixtures");
+        Path testPath = Paths.get(cwd, "src", "test", "resources");
         return new File(testPath + File.separator + filename);
     }
 
