@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.SourceFormat;
 import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
 
@@ -67,6 +68,12 @@ public class FilesystemResolverTest extends TestCase {
         // with suffix
         config.setProperty("FilesystemResolver.path_suffix", "/suffix");
         assertEquals("/prefix/id/suffix", instance.getPath("id"));
+    }
+
+    public void testGetSourceFormat() {
+        assertEquals(SourceFormat.JPG, instance.getSourceFormat("image.jpg"));
+        assertEquals(SourceFormat.UNKNOWN, instance.getSourceFormat("image.bogus"));
+        assertEquals(SourceFormat.UNKNOWN, instance.getSourceFormat("image"));
     }
 
 }
