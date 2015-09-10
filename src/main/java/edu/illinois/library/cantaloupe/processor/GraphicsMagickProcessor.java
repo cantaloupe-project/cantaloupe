@@ -201,8 +201,11 @@ public class GraphicsMagickProcessor implements Processor {
     public void process(Parameters params, SourceFormat sourceFormat,
                         File file, OutputStream outputStream) throws Exception {
         IMOperation op = new IMOperation();
-        op.addImage(params.getOutputFormat().getExtension() + ":" + file.getAbsolutePath());
+        op.addImage(file.getAbsolutePath());
         op = assembleOperation(op, params);
+
+        // format transformation
+        op.addImage(params.getOutputFormat().getExtension() + ":-"); // write to stdout
 
         Pipe pipeOut = new Pipe(null, outputStream);
 
