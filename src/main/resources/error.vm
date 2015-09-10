@@ -12,7 +12,7 @@
 
     <p>$message</p>
 
-    #if ($stackTrace.length() > 0)
+    #if ($stackTrace)
         <pre>$stackTrace</pre>
     #end
 
