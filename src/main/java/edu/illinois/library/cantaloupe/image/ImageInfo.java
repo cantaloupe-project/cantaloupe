@@ -22,19 +22,18 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ImageInfo {
 
-    private static final String CONTEXT = "http://iiif.io/api/image/2/context.json";
-    private static final String PROTOCOL = "http://iiif.io/api/image";
-
+    private final String context = "http://iiif.io/api/image/2/context.json";
     private Integer height;
     private String id;
     private final List<Object> profile = new ArrayList<Object>();
+    private final String protocol = "http://iiif.io/api/image";
     private List<Map<String,Integer>> sizes;
     private List<Map<String,Object>> tiles;
     private Integer width;
 
     @JsonProperty("@context")
     public String getContext() {
-        return CONTEXT;
+        return context;
     }
 
     public Integer getHeight() {
@@ -59,7 +58,7 @@ public class ImageInfo {
     }
 
     public String getProtocol() {
-        return PROTOCOL;
+        return protocol;
     }
 
     public List<Map<String, Integer>> getSizes() {
