@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
@@ -14,6 +13,7 @@ import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,27 +40,27 @@ public class LandingResource extends AbstractResource {
         }
         vars.put("resolverName", resolverStr);
 
-        // source formats
-        Map<SourceFormat,String> sourceFormats =
+        // source format assignments
+        Map<SourceFormat,String> assignments =
                 new HashMap<SourceFormat, String>();
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             try {
-                sourceFormats.put(sourceFormat,
+                assignments.put(sourceFormat,
                         ProcessorFactory.getProcessor(sourceFormat).getClass().getSimpleName());
             } catch (UnsupportedSourceFormatException e) {
                 // noop
             }
         }
-        vars.put("sourceFormats", sourceFormats);
+        vars.put("processorAssignments", assignments);
 
-        // processors
-        Map<String,Set<SourceFormat>> processors =
-                new HashMap<String, Set<SourceFormat>>();
-        for (Processor processor : ProcessorFactory.getAllProcessors()) {
-            processors.put(processor.getClass().getSimpleName(),
-                    processor.getSupportedSourceFormats());
+        Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
+        for (SourceFormat sourceFormat : SourceFormat.values()) {
+            if (sourceFormat != SourceFormat.UNKNOWN) {
+                sourceFormats.add(sourceFormat);
+            }
         }
-        vars.put("processors", processors);
+        vars.put("sourceFormats", sourceFormats);
+        vars.put("processors", ProcessorFactory.getAllProcessors());
 
         return vars;
     }
