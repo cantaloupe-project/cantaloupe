@@ -89,7 +89,7 @@ public class HttpResolver implements Resolver {
      * @param identifier
      * @return A source format, or <code>SourceFormat.UNKNOWN</code> if unknown.
      */
-    public SourceFormat getSourceFormatFromIdentifier(String identifier) {
+    private SourceFormat getSourceFormatFromIdentifier(String identifier) {
         // try to get the source format based on a filename extension in the
         // identifier
         identifier = identifier.toLowerCase();
@@ -117,7 +117,7 @@ public class HttpResolver implements Resolver {
      * @param identifier
      * @return A source format, or <code>SourceFormat.UNKNOWN</code> if unknown.
      */
-    public SourceFormat getSourceFormatFromServer(String identifier) {
+    private SourceFormat getSourceFormatFromServer(String identifier) {
         SourceFormat sourceFormat = SourceFormat.UNKNOWN;
         String contentType = "";
         Reference url = getUrl(identifier);
