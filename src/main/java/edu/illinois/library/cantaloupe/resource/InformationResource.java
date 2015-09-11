@@ -59,7 +59,7 @@ public class InformationResource extends AbstractResource {
                 without(SerializationFeature.WRITE_NULL_MAP_VALUES).
                 without(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS).
                 writeValueAsString(imageInfo);
-        // TODO: could use JacksonRepresentation here; not sure whether it's worth bothering
+        // could use JacksonRepresentation here; not sure whether it's worth bothering
         StringRepresentation rep = new StringRepresentation(json);
 
         this.addHeader("Link", "<http://iiif.io/api/image/2/context.json>; " +

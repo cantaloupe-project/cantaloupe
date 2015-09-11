@@ -10,7 +10,8 @@ import java.util.Set;
 public class ProcessorFactory {
 
     public static Set<Processor> getAllProcessors() {
-        // TODO: would be preferable to scan the package for classes implementing Processor
+        // might be preferable to scan the package for classes implementing
+        // Processor, but might also not be worth the hassle/overhead
         Set<Processor> processors = new HashSet<Processor>();
         processors.add(new GraphicsMagickProcessor());
         processors.add(new ImageIoProcessor());

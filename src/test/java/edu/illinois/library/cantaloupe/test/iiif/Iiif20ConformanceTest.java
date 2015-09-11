@@ -61,11 +61,9 @@ public class Iiif20ConformanceTest extends TestCase {
             File directory = new File(".");
             String cwd = directory.getCanonicalPath();
             Path fixturePath = Paths.get(cwd, "src", "test", "resources");
-            // TODO: externalize these
             config.setProperty("print_stack_trace_on_error_pages", false);
             config.setProperty("http.port", PORT);
-            config.setProperty("processor.fallback", "GraphicsMagickProcessor");
-            config.setProperty("GraphicsMagickProcessor.path_to_binaries", "/usr/local/bin");
+            config.setProperty("processor.fallback", "ImageIoProcessor");
             config.setProperty("resolver", "FilesystemResolver");
             config.setProperty("FilesystemResolver.path_prefix", fixturePath + File.separator);
         } catch (Exception e) {
