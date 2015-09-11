@@ -231,11 +231,11 @@ See one of the existing resolvers for examples.
 
 ## Adding Custom Image Processors
 
-Ideally, it would be best to add an image ImageIO format plugin instead of a
+Ideally, it would be best to add an ImageIO format plugin instead of a
 custom processor, as this is the most "Java way" and will work with
 ImageIoProcessor.
 
-If that is not an option, a custom processors can be added by implementing the
+If that is not an option, a custom processor can be added by implementing the
 `e.i.l.cantaloupe.processor.Processor` interface. See the interface
 documentation for details and the existing implementations for examples.
 
