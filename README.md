@@ -1,23 +1,27 @@
 # 🍈 Cantaloupe
 
-*Extensible [IIIF 2.0](http://iiif.io) image server in Java*
+*Extensible [IIIF Image API 2.0](http://iiif.io) image server in Java*
+
+Home: [https://github.com/medusa-project/cantaloupe]
+(https://github.com/medusa-project/cantaloupe)
 
 # Features
 
 * Simple
+* Self-contained
 * Easy to get working
 * Pluggable resolvers for filesystem and HTTP sources
-* Pluggable processors for different source image formats
+* Pluggable processors to support a wide variety of source image formats
 
 ## What It Doesn't Do
 
-* Caching. This would be made redundant by a caching reverse proxy like
-  Varnish, which can do a better job anyway.
+* Caching. The current thinking is that this would add a lot of complexity and
+  be made redundant by a caching HTTP proxy, which can do a better job anyway.
 
 # Requirements
 
 The only hard requirement is JRE 7+. Additional requirements depend on the
-particular processors being used; see the Processors section below.
+processor(s) being used; see the Processors section below.
 
 # Configuration
 
@@ -30,14 +34,14 @@ it the following contents, modifying as desired:
     # Helpful in development
     print_stack_trace_on_error_pages = true
 
-    # The image processor to use for various source formats. Available values
-    # are `ImageIoProcessor`, `GraphicsMagickProcessor`, and
-    # `ImageMagickProcessor`.
+    # Image processor to use for various source formats. Available values are
+    # `ImageIoProcessor`, `GraphicsMagickProcessor`, and `ImageMagickProcessor`.
+    # These definitions are optional.
     processor.jp2 = ImageMagickProcessor
     processor.jpg = ImageIoProcessor
     processor.tif = ImageMagickProcessor
-    # Fall back to a general-purpose processor that supports just about
-    # everything.
+    # For any formats not assigned above, fall back to a general-purpose
+    # processor.
     processor.fallback = ImageMagickProcessor
 
     # Optional; overrides the PATH
@@ -70,11 +74,17 @@ it the following contents, modifying as desired:
 
 # Running
 
+From the command prompt, simply run:
+
 `$ java -Dcantaloupe.config=/path/to/cantaloupe.properties -jar Cantaloupe-x.x.x.jar`
 
 It is now ready for use at: `http://localhost:{http.port}/iiif`
 
 # Technical Overview
+
+Cantaloupe has a configurable processing pipeline based on resolvers, that
+locate source images; and processors, that transform them according to the
+parameters in an image request.
 
 ## Resolvers
 
@@ -89,13 +99,38 @@ FilesystemResolver maps an identifier from an IIIF URL to a filesystem path,
 for retrieving local images.
 
 For files with extensions that are missing or unrecognized, this resolver will
-check the "magic number" to determine its type. It is, therefore, slightly
-more efficient to serve files with extensions.
+check the "magic number" to determine type, which will add some overhead. It
+is therefore slightly more efficient to serve files with extensions.
+
+The `FilesystemResolver.path_prefix` and `path_suffix` configuration options
+are optional and intended to make URLs shorter, more stable, and hide
+potentially sensitive information. For example, with these options set as such:
+
+FilesystemResolver.path_prefix = /usr/local/images/
+FilesystemResolver.path_suffix =
+
+An identifier of `image.jpg` in the IIIF URL will resolve to
+`/usr/local/images/image.jpg`.
 
 ### HttpResolver
 
 HttpResolver maps an identifier from an IIIF URL to some other URL, for
 retrieving images from a web server.
+
+It is preferable to use this resolver with source images with recognizable file
+extensions. For images with an extension that is missing or unrecognizable, it
+will issue an HTTP HEAD request to the server to check the Content-Type header.
+If the type cannot be inferred from that, the image won't be processable.
+
+The `HttpResolver.url_prefix` and `url_suffix` configuration options are
+optional and intended to make URLs shorter, more stable, and hide potentially
+sensitive information. For example, with these options set as such:
+
+HttpResolver.url_prefix = http://example.org/images/
+HttpResolver.url_suffix =
+
+An identifier of `image.jpg` in the IIIF URL will resolve to
+`http://example.org/images/image.jpg`.
 
 ## Processors
 
@@ -112,16 +147,9 @@ source formats and output formats, and furthermore, available output formats
 may differ depending on the source format.
 
 Supported source formats depend on the processor, and maybe installed
-libraries/delegates, etc., as well. Processors generally auto-detect these.
-In the case of ImageMagickProcessor, for example, the information is compiled
-from the output of the `identify -list format` command, which tells it what
-to return in its `getSupportedSourceFormats()` and
-`getAvailableOutputFormats(SourceFormat)` methods. 
-
-The list of supported source formats (source formats for which there are any
-output formats) for each processor is displayed on the landing page, at
-`/iiif`. The list of output formats supported *for a given source format* is
-contained within the response to an information request. 
+libraries/delegates, etc., as well. Lists of these are displayed on the
+landing page, at `/iiif`. A list of output formats supported *for a given
+source format* is contained within the response to an information request.
 
 ### ImageIoProcessor
 
@@ -130,13 +158,18 @@ BufferedImages.
 
 ImageIO, as its name implies, is simply an I/O interface that does not care 
 about image formats, and therefore the list of formats supported by this
-processor varies depending on the codec jars available in the classpath. By
-default, it is minimal -- typically something like JPEG, GIF, BMP, and PNG. But
-dropping a [JAI ImageIO jar]
-(http://maven.geotoolkit.org/javax/media/jai_imageio/1.1/) into the classpath
-will enable some other formats, including TIFF and a dog-slow JPEG2000.
+processor varies depending on the codec JARss available in the classpath. By
+default, it is rather limited -- typically something like JPEG, GIF, BMP, and
+PNG.
 
-(See the "Notes on Source Formats" section below for more info on JPEG2000.)
+#### Additional Codec JARs
+
+(These are untested by the author; please report back if you have any
+experiences to report.)
+
+* [JAI ImageIO jar supporting JPEG2000, TIFF, and a few others]
+  (http://maven.geotoolkit.org/javax/media/jai_imageio/1.1/)
+* [ImageIO Kakadu adapter](https://github.com/geosolutions-it/imageio-ext/)
 
 ### GraphicsMagickProcessor
 
@@ -168,32 +201,6 @@ PDF delegates are installed). It also supports a wide array of source formats.
 ImageMagick is not known for being particularly fast or efficient. Large
 amounts of RAM and fast storage help.
 
-## Request/Response Sequence of Events
-
-### Image Request
-
-1. Restlet framework receives request and hands it off to ImageResource
-2. Extract parameters from the URL
-3. Obtain a resolver from the ResolverFactory, which consults the
-   `resolver` key in the config file
-4. Using the resolver, obtain a File or InputStream from which the source image
-   can be read
-5. Obtain a processor appropriate for the source format
-6. Processor processes the image based on the URL parameters
-7. Processor writes the processed image to the response OutputStream
-
-### Information Request
-
-1. Restlet framework receives request and hands it off to InformationResource
-2. Extract identifier from the URL
-3. Obtain a resolver from the ResolverFactory, which consults the
-   `resolver` key in the config file
-4. Using the resolver, obtain a File or InputStream from which the source image
-   can be read
-5. Obtain a processor appropriate for the source format
-6. Get an ImageInfo object from the processor
-7. Serialize it to JSON and return it in the response
-
 # Notes on Source Formats
 
 (Feel free to contact the author with your own notes.)
@@ -201,24 +208,20 @@ amounts of RAM and fast storage help.
 ## JPEG2000
 
 GraphicsMagick can read/write JPEG2000 files using JasPer, and ImageMagick
-using OpenJPEG. Both of these are very slow.
+using OpenJPEG. Both of these are extremely slow.
 
-Another JPEG2000 implementation exists in the Java Advanced Imaging (JAI)
-library, although it isn't much of an improvement over the above. See the
-ImageIoProcessor section for a link to a jar.
+Another JPEG2000 implementation is available in the Java Advanced Imaging (JAI)
+library, but the story is the same.
 
-[See here](https://github.com/geosolutions-it/imageio-ext/) for an ImageIO
-codec supporting the Kakadu library that can theoretically work with
-ImageIoProcessor. (This is untested by the author.)
+There does appear to be an ImageIO Kakadu adapter available; see the
+ImageIoProcessor section for a link.
 
 # Custom Development
 
 ## Adding Custom Resolvers
 
-Resolvers are easy to write: all you have to do is write a class that
-implements the
-`e.i.l.cantaloupe.resolver.Resolver` interface. Then, to use it,
-set `resolver` in your properties file to its name.
+A custom resolver needs to implement the `e.i.l.cantaloupe.resolver.Resolver`
+interface. Then, to use it, set `resolver` in your properties file to its name.
 
 Feel free to add new configuration keys to the properties file. They should
 be in the form of `NameOfMyResolver.whatever`. They can then be accessed
@@ -228,9 +231,13 @@ See one of the existing resolvers for examples.
 
 ## Adding Custom Image Processors
 
-Processors implement the `e.i.l.cantaloupe.processor.Processor`
-interface. See the interface documentation for details and the existing
-implementations for examples.
+Ideally, it would be best to add an image ImageIO format plugin instead of a
+custom processor, as this is the most "Java way" and will work with
+ImageIoProcessor.
+
+If that is not an option, a custom processors can be added by implementing the
+`e.i.l.cantaloupe.processor.Processor` interface. See the interface
+documentation for details and the existing implementations for examples.
 
 ## Contributing Code
 
@@ -242,9 +249,8 @@ implementations for examples.
 
 # Feedback
 
-Ideas, suggestions, feature requests, bug reports, and so on are welcome;
-please [contact the author](mailto:alexd@illinois.edu) or, better yet, create
-an issue.
+Ideas, suggestions, feature requests, bug reports, and other kinds of feedback
+are welcome; please [contact the author](mailto:alexd@illinois.edu).
 
 # License
 
