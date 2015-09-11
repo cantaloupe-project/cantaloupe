@@ -5,22 +5,18 @@ import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Quality;
-import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.im4java.process.ProcessStarter;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ImageMagickProcessorTest extends TestCase {
+public class ImageMagickProcessorTest extends ProcessorTest {
 
     ImageMagickProcessor instance;
 
@@ -133,13 +129,6 @@ public class ImageMagickProcessorTest extends TestCase {
     public void testProcess() {
         // This is not easily testable in code, so will have to be tested by
         // human eyes.
-    }
-
-    private File getFixture(String filename) throws IOException {
-        File directory = new File(".");
-        String cwd = directory.getCanonicalPath();
-        Path testPath = Paths.get(cwd, "src", "test", "resources");
-        return new File(testPath + File.separator + filename);
     }
 
 }
