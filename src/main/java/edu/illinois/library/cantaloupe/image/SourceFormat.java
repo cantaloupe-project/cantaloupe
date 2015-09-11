@@ -11,17 +11,17 @@ import java.util.List;
  */
 public enum SourceFormat {
 
-    BMP(new MediaType("image/bmp")),
-    GIF(new MediaType("image/gif")),
-    JP2(new MediaType("image/jp2")),
-    JPG(new MediaType("image/jpeg")),
-    PDF(new MediaType("application/pdf")),
-    PNG(new MediaType("image/png")),
-    TIF(new MediaType("image/tiff")),
-    WEBP(new MediaType("image/webp")),
-    UNKNOWN(new MediaType("unknown/unknown"));
+    BMP("bmp"),
+    GIF("gif"),
+    JP2("jp2"),
+    JPG("jpg"),
+    PDF("pdf"),
+    PNG("png"),
+    TIF("tif"),
+    WEBP("webp"),
+    UNKNOWN("unknown");
 
-    private MediaType mediaType;
+    private String id;
 
     /**
      * @param identifier IIIF identifier.
@@ -49,59 +49,84 @@ public enum SourceFormat {
      */
     public static SourceFormat getSourceFormat(MediaType mediaType) {
         for (SourceFormat enumValue : SourceFormat.values()) {
-            if (enumValue.getMediaType().equals(mediaType)) {
+            if (enumValue.getMediaTypes().contains(mediaType)) {
                 return enumValue;
             }
         }
         return SourceFormat.UNKNOWN;
     }
 
-    SourceFormat(MediaType mediaType) {
-        this.mediaType = mediaType;
+    SourceFormat(String internalId) {
+        this.id = internalId;
     }
 
     public List<String> getExtensions() {
         List<String> extensions = new ArrayList<String>();
-        String mediaType = this.getMediaType().toString();
         // the first extension will be the preferred extension
-        if (mediaType.equals("application/pdf")) {
-            extensions.add("pdf");
-        } else if (mediaType.equals("image/bmp")) {
+        if (this.id.equals("bmp")) {
             extensions.add("bmp");
-        } else if (mediaType.equals("image/gif")) {
+        } else if (this.id.equals("gif")) {
             extensions.add("gif");
-        } else if (mediaType.equals("image/jp2")) {
+        } else if (this.id.equals("jp2")) {
             extensions.add("jp2");
-        } else if (mediaType.equals("image/jpeg")) {
+        } else if (this.id.equals("jpg")) {
             extensions.add("jpg");
             extensions.add("jpeg");
-        } else if (mediaType.equals("image/png")) {
+        } else if (this.id.equals("pdf")) {
+            extensions.add("pdf");
+        } else if (this.id.equals("png")) {
             extensions.add("png");
-        } else if (mediaType.equals("image/tiff")) {
+        } else if (this.id.equals("tif")) {
             extensions.add("tif");
             extensions.add("ptif");
             extensions.add("tiff");
-        } else if (mediaType.equals("image/webp")) {
+        } else if (this.id.equals("webp")) {
             extensions.add("webp");
-        } else if (mediaType.equals("unknown/unknown")) {
+        } else if (this.id.equals("unknown")) {
             extensions.add("unknown");
         }
         return extensions;
     }
 
-    public MediaType getMediaType() {
-        return this.mediaType;
+    public List<MediaType> getMediaTypes() {
+        List<MediaType> types = new ArrayList<MediaType>();
+        // the first type will be the preferred extension
+        if (this.id.equals("bmp")) {
+            types.add(new MediaType("image/bmp"));
+            types.add(new MediaType("image/x-ms-bmp"));
+        } else if (this.id.equals("gif")) {
+            types.add(new MediaType("image/gif"));
+        } else if (this.id.equals("jp2")) {
+            types.add(new MediaType("image/jp2"));
+        } else if (this.id.equals("jpg")) {
+            types.add(new MediaType("image/jpeg"));
+        } else if (this.id.equals("pdf")) {
+            types.add(new MediaType("application/pdf"));
+        } else if (this.id.equals("png")) {
+            types.add(new MediaType("image/png"));
+        } else if (this.id.equals("tif")) {
+            types.add(new MediaType("image/tiff"));
+        } else if (this.id.equals("webp")) {
+            types.add(new MediaType("image/webp"));
+        } else if (this.id.equals("unknown")) {
+            types.add(new MediaType("unknown/unknown"));
+        }
+        return types;
     }
 
     public String getPreferredExtension() {
         return this.getExtensions().get(0);
     }
 
+    public MediaType getPreferredMediaType() {
+        return this.getMediaTypes().get(0);
+    }
+
     /**
      * @return Extension.
      */
     public String toString() {
-        return (String) this.getExtensions().toArray()[0];
+        return this.getPreferredExtension();
     }
 
 }

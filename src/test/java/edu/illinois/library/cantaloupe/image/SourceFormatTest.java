@@ -38,7 +38,7 @@ public class SourceFormatTest extends TestCase {
         assertEquals(SourceFormat.UNKNOWN, SourceFormat.getSourceFormat("bla.bogus"));
     }
 
-    public void testExtensions() {
+    public void testGetExtensions() {
         assertTrue(SourceFormat.BMP.getExtensions().contains("bmp"));
         assertTrue(SourceFormat.GIF.getExtensions().contains("gif"));
         assertTrue(SourceFormat.JP2.getExtensions().contains("jp2"));
@@ -54,19 +54,51 @@ public class SourceFormatTest extends TestCase {
         assertTrue(SourceFormat.UNKNOWN.getExtensions().contains("unknown"));
     }
 
-    public void testMediaTypes() {
-        assertEquals("application/pdf", SourceFormat.PDF.getMediaType().toString());
-        assertEquals("image/bmp", SourceFormat.BMP.getMediaType().toString());
-        assertEquals("image/gif", SourceFormat.GIF.getMediaType().toString());
-        assertEquals("image/jp2", SourceFormat.JP2.getMediaType().toString());
-        assertEquals("image/jpeg", SourceFormat.JPG.getMediaType().toString());
-        assertEquals("image/png", SourceFormat.PNG.getMediaType().toString());
-        assertEquals("image/tiff", SourceFormat.TIF.getMediaType().toString());
-        assertEquals("image/webp", SourceFormat.WEBP.getMediaType().toString());
-        assertEquals("unknown/unknown", SourceFormat.UNKNOWN.getMediaType().toString());
+    public void testGetMediaTypes() {
+        assertTrue(SourceFormat.BMP.getMediaTypes().
+                contains(new MediaType("image/bmp")));
+        assertTrue(SourceFormat.BMP.getMediaTypes().
+                contains(new MediaType("image/x-ms-bmp")));
+        assertTrue(SourceFormat.GIF.getMediaTypes().
+                contains(new MediaType("image/gif")));
+        assertTrue(SourceFormat.JP2.getMediaTypes().
+                contains(new MediaType("image/jp2")));
+        assertTrue(SourceFormat.JPG.getMediaTypes().
+                contains(new MediaType("image/jpeg")));
+        assertTrue(SourceFormat.PDF.getMediaTypes().
+                contains(new MediaType("application/pdf")));
+        assertTrue(SourceFormat.PNG.getMediaTypes().
+                contains(new MediaType("image/png")));
+        assertTrue(SourceFormat.TIF.getMediaTypes().
+                contains(new MediaType("image/tiff")));
+        assertTrue(SourceFormat.WEBP.getMediaTypes().
+                contains(new MediaType("image/webp")));
+        assertTrue(SourceFormat.UNKNOWN.getMediaTypes().
+                contains(new MediaType("unknown/unknown")));
     }
 
-    public void testPreferredExtension() {
+    public void testGetPreferredMediaType() {
+        assertEquals("application/pdf",
+                SourceFormat.PDF.getPreferredMediaType().toString());
+        assertEquals("image/bmp",
+                SourceFormat.BMP.getPreferredMediaType().toString());
+        assertEquals("image/gif",
+                SourceFormat.GIF.getPreferredMediaType().toString());
+        assertEquals("image/jp2",
+                SourceFormat.JP2.getPreferredMediaType().toString());
+        assertEquals("image/jpeg",
+                SourceFormat.JPG.getPreferredMediaType().toString());
+        assertEquals("image/png",
+                SourceFormat.PNG.getPreferredMediaType().toString());
+        assertEquals("image/tiff",
+                SourceFormat.TIF.getPreferredMediaType().toString());
+        assertEquals("image/webp",
+                SourceFormat.WEBP.getPreferredMediaType().toString());
+        assertEquals("unknown/unknown",
+                SourceFormat.UNKNOWN.getPreferredMediaType().toString());
+    }
+
+    public void testGetPreferredExtension() {
         assertEquals("bmp", SourceFormat.BMP.getPreferredExtension());
         assertEquals("gif", SourceFormat.GIF.getPreferredExtension());
         assertEquals("jp2", SourceFormat.JP2.getPreferredExtension());

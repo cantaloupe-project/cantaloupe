@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.request.Region;
 import edu.illinois.library.cantaloupe.request.Rotation;
 import edu.illinois.library.cantaloupe.request.Size;
+import org.restlet.data.MediaType;
 
 import javax.imageio.ImageIO;
 import java.awt.Graphics2D;
@@ -77,7 +78,8 @@ public class ImageIoProcessor implements Processor {
             Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
 
             for (int i = 0, length = readerMimeTypes.length; i < length; i++) {
-                if (sourceFormat.getMediaType().toString().equals(readerMimeTypes[i].toLowerCase())) {
+                if (sourceFormat.getMediaTypes().
+                        contains(new MediaType(readerMimeTypes[i].toLowerCase()))) {
                     for (OutputFormat outputFormat : OutputFormat.values()) {
                         for (i = 0, length = writerMimeTypes.length; i < length; i++) {
                             if (outputFormat.getMediaType().equals(writerMimeTypes[i].toLowerCase())) {
