@@ -19,6 +19,7 @@ import org.im4java.process.ProcessStarter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +42,10 @@ public class ImageMagickProcessor implements Processor {
     private static final Set<String> QUALITIES = new HashSet<String>();
     private static final Set<String> SUPPORTS = new HashSet<String>();
     private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
+
+    private File file;
+    private InputStream inputStream;
+    private SourceFormat sourceFormat;
 
     static {
         // overrides the PATH; see
@@ -157,27 +162,26 @@ public class ImageMagickProcessor implements Processor {
     public ImageInfo getImageInfo(File sourceFile,
                                   SourceFormat sourceFormat,
                                   String imageBaseUri) throws Exception {
-        Info sourceInfo = new Info(sourceFormat.getPreferredExtension() + ":" +
-                sourceFile.getAbsolutePath(), true);
-        return doGetImageInfo(sourceInfo, imageBaseUri);
+        Dimension size = getSize(sourceFile, sourceFormat);
+        return doGetImageInfo(size, imageBaseUri);
     }
 
     public ImageInfo getImageInfo(InputStream inputStream,
                                   SourceFormat sourceFormat,
                                   String imageBaseUri) throws Exception {
-        Info sourceInfo = new Info(sourceFormat.getPreferredExtension() + ":-",
-                inputStream, true);
-        ImageInfo info = doGetImageInfo(sourceInfo, imageBaseUri);
+        Dimension size = getSize(inputStream, sourceFormat);
+        ImageInfo info = doGetImageInfo(size, imageBaseUri);
         inputStream.close();
         return info;
     }
 
-    private ImageInfo doGetImageInfo(Info sourceInfo, String imageBaseUri)
+    private ImageInfo doGetImageInfo(Dimension size, String imageBaseUri)
             throws InfoException {
         ImageInfo imageInfo = new ImageInfo();
         imageInfo.setId(imageBaseUri);
-        imageInfo.setHeight(sourceInfo.getImageHeight());
-        imageInfo.setWidth(sourceInfo.getImageWidth());
+
+        imageInfo.setHeight(size.height);
+        imageInfo.setWidth(size.width);
 
         imageInfo.getProfile().add("http://iiif.io/api/image/2/level2.json");
         Map<String,Set<String>> profile = new HashMap<String, Set<String>>();
@@ -190,12 +194,31 @@ public class ImageMagickProcessor implements Processor {
         return imageInfo;
     }
 
+    private Dimension getSize(File sourceFile, SourceFormat sourceFormat)
+            throws InfoException {
+        Info sourceInfo = new Info(sourceFormat.getPreferredExtension() + ":" +
+                sourceFile.getAbsolutePath(), true);
+        return new Dimension(sourceInfo.getImageWidth(),
+                sourceInfo.getImageHeight());
+    }
+
+    private Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
+            throws InfoException {
+        Info sourceInfo = new Info(sourceFormat.getPreferredExtension() + ":-",
+                inputStream, true);
+        return new Dimension(sourceInfo.getImageWidth(),
+                sourceInfo.getImageHeight());
+    };
+
     public Set<SourceFormat> getSupportedSourceFormats() {
         return OUTPUT_FORMATS.keySet();
     }
 
     public void process(Parameters params, SourceFormat sourceFormat,
                         File file, OutputStream outputStream) throws Exception {
+        this.file = file;
+        this.sourceFormat = sourceFormat;
+
         IMOperation op = new IMOperation();
         op.addImage(file.getAbsolutePath());
         op = assembleOperation(op, params);
@@ -213,6 +236,9 @@ public class ImageMagickProcessor implements Processor {
     public void process(Parameters params, SourceFormat sourceFormat,
                         InputStream inputStream, OutputStream outputStream)
             throws Exception {
+        this.inputStream = inputStream;
+        this.sourceFormat = sourceFormat;
+
         IMOperation op = new IMOperation();
         op.addImage(sourceFormat.getPreferredExtension() + ":-"); // read from stdin
         op = assembleOperation(op, params);
@@ -235,9 +261,23 @@ public class ImageMagickProcessor implements Processor {
         Region region = params.getRegion();
         if (!region.isFull()) {
             if (region.isPercent()) {
-                op.crop(Math.round(region.getWidth()), Math.round(region.getHeight()),
-                        Math.round(region.getX()), Math.round(region.getY()),
-                        "%".charAt(0)); // TODO: this affects only width/height, not x/y
+                try {
+                    // im4java doesn't support cropping x/y by percentage (only
+                    // width/height), so we have to calculate them.
+                    Dimension imageSize;
+                    if (this.file != null) {
+                        imageSize = getSize(this.file, this.sourceFormat);
+                    } else {
+                        imageSize = getSize(this.inputStream, this.sourceFormat);
+                    }
+                    int x = (int) Math.round(region.getX() / 100.0 * imageSize.width);
+                    int y = (int) Math.round(region.getY() / 100.0 * imageSize.height);
+                    op.crop(Math.round(region.getWidth()),
+                            Math.round(region.getHeight()), x, y, "%");
+                } catch (InfoException e) {
+                    logger.debug("Failed to get dimensions for {}",
+                            params.getIdentifier());
+                }
             } else {
                 op.crop(Math.round(region.getWidth()), Math.round(region.getHeight()),
                         Math.round(region.getX()), Math.round(region.getY()));
