@@ -1,10 +1,11 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
+import edu.illinois.library.cantaloupe.request.Quality;
 
+import java.awt.Dimension;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -23,24 +24,35 @@ public interface Processor {
     Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat);
 
     /**
-     * @param sourceFile Source image
-     * @param sourceFormat Format of the image
-     * @param imageBaseUri Base URI of the image
-     * @return ImageInfo describing the image
+     * @param file Source image
+     * @param sourceFormat
+     * @return Size of the source image in pixels.
      * @throws Exception
      */
-    ImageInfo getImageInfo(File sourceFile, SourceFormat sourceFormat,
-                           String imageBaseUri) throws Exception;
+    Dimension getSize(File file, SourceFormat sourceFormat) throws Exception;
 
     /**
-     * @param inputStream An InputStream from which to read the image
-     * @param sourceFormat Format of the image
-     * @param imageBaseUri Base URI of the image
-     * @return ImageInfo describing the image
+     * @param inputStream Source image
+     * @param sourceFormat
+     * @return Size of the source image in pixels.
      * @throws Exception
      */
-    ImageInfo getImageInfo(InputStream inputStream, SourceFormat sourceFormat,
-                           String imageBaseUri) throws Exception;
+    Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
+            throws Exception;
+
+    /**
+     * @param sourceFormat
+     * @return All features supported by the processor for the given source
+     * format.
+     */
+    Set<ProcessorFeature> getSupportedFeatures(SourceFormat sourceFormat);
+
+    /**
+     * @param sourceFormat
+     * @return All features supported by the processor for the given source
+     * format.
+     */
+    Set<Quality> getSupportedQualities(SourceFormat sourceFormat);
 
     /**
      * @return Set of source formats for which there are any available output

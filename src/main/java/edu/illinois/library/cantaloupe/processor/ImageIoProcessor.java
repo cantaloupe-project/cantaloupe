@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
@@ -11,6 +10,7 @@ import edu.illinois.library.cantaloupe.request.Size;
 import org.restlet.data.MediaType;
 
 import javax.imageio.ImageIO;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
@@ -21,47 +21,37 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
- * Processor using the Java ImageIO library.
+ * Processor using the Java ImageIO framework.
  */
 public class ImageIoProcessor implements Processor {
 
-    private static final HashMap<SourceFormat,Set<OutputFormat>> OUTPUT_FORMATS =
+    private static final HashMap<SourceFormat,Set<OutputFormat>> FORMATS =
             getAvailableOutputFormats();
-    private static final Set<String> FORMAT_EXTENSIONS = new HashSet<String>();
-    private static final Set<String> QUALITIES = new HashSet<String>();
-    private static final Set<String> SUPPORTS = new HashSet<String>();
+    private static final Set<Quality> SUPPORTED_QUALITIES = new HashSet<Quality>();
+    private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
+            new HashSet<ProcessorFeature>();
 
     static {
-        for (Set<OutputFormat> set : OUTPUT_FORMATS.values()) {
-            for (OutputFormat format : set) {
-                FORMAT_EXTENSIONS.add(format.getExtension());
-            }
-        }
+        SUPPORTED_QUALITIES.add(Quality.BITONAL);
+        SUPPORTED_QUALITIES.add(Quality.COLOR);
+        SUPPORTED_QUALITIES.add(Quality.DEFAULT);
+        SUPPORTED_QUALITIES.add(Quality.GRAY);
 
-        for (Quality quality : Quality.values()) {
-            QUALITIES.add(quality.toString().toLowerCase());
-        }
-
-        // TODO: move some of these statements into ImageInfo
-        SUPPORTS.add("baseUriRedirect");
-        SUPPORTS.add("canonicalLinkHeader");
-        SUPPORTS.add("cors");
-        SUPPORTS.add("jsonldMediaType");
-        SUPPORTS.add("mirroring");
-        SUPPORTS.add("regionByPx");
-        SUPPORTS.add("rotationArbitrary");
-        SUPPORTS.add("rotationBy90s");
-        SUPPORTS.add("sizeAboveFull");
-        SUPPORTS.add("sizeByWhListed");
-        SUPPORTS.add("sizeByForcedWh");
-        SUPPORTS.add("sizeByH");
-        SUPPORTS.add("sizeByPct");
-        SUPPORTS.add("sizeByW");
-        SUPPORTS.add("sizeWh");
+        SUPPORTED_FEATURES.add(ProcessorFeature.MIRRORING);
+        SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PERCENT);
+        SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PIXELS);
+        SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_ARBITRARY);
+        SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_BY_90S);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_ABOVE_FULL);
+        //SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WHITELISTED);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_HEIGHT);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_PERCENT);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
     }
 
     /**
@@ -95,38 +85,40 @@ public class ImageIoProcessor implements Processor {
     }
 
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
-        Set<OutputFormat> formats = OUTPUT_FORMATS.get(sourceFormat);
+        Set<OutputFormat> formats = FORMATS.get(sourceFormat);
         if (formats == null) {
             formats = new HashSet<OutputFormat>();
         }
         return formats;
     }
 
-    public ImageInfo getImageInfo(File sourceFile,
-                                  SourceFormat sourceFormat,
-                                  String imageBaseUri) throws Exception {
-        ImageInfo imageInfo = new ImageInfo();
-        imageInfo.setId(imageBaseUri);
+    public Dimension getSize(File file, SourceFormat sourceFormat)
+            throws Exception {
         // TODO: this is inefficient as it reads the whole image into memory
-        BufferedImage image = ImageIO.read(sourceFile);
-        return doGetImageInfo(imageInfo, image);
+        BufferedImage image = ImageIO.read(file);
+        return new Dimension(image.getWidth(), image.getHeight());
     }
 
-    public ImageInfo getImageInfo(InputStream inputStream,
-                                  SourceFormat sourceFormat,
-                                  String imageBaseUri) throws Exception {
-        ImageInfo imageInfo = new ImageInfo();
-        imageInfo.setId(imageBaseUri);
+    public Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
+            throws Exception {
         // TODO: this is inefficient as it reads the whole image into memory
         BufferedImage image = ImageIO.read(inputStream);
-        return doGetImageInfo(imageInfo, image);
+        return new Dimension(image.getWidth(), image.getHeight());
+    }
+
+    public Set<ProcessorFeature> getSupportedFeatures(SourceFormat sourceFormat) {
+        return SUPPORTED_FEATURES;
+    }
+
+    public Set<Quality> getSupportedQualities(SourceFormat sourceFormat) {
+        return SUPPORTED_QUALITIES;
     }
 
     public Set<SourceFormat> getSupportedSourceFormats() {
         Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
-        for (SourceFormat sourceFormat : OUTPUT_FORMATS.keySet()) {
-            if (OUTPUT_FORMATS.get(sourceFormat) != null &&
-                    OUTPUT_FORMATS.get(sourceFormat).size() > 0) {
+        for (SourceFormat sourceFormat : FORMATS.keySet()) {
+            if (FORMATS.get(sourceFormat) != null &&
+                    FORMATS.get(sourceFormat).size() > 0) {
                 sourceFormats.add(sourceFormat);
             }
         }
@@ -145,39 +137,6 @@ public class ImageIoProcessor implements Processor {
             throws Exception {
         BufferedImage image = ImageIO.read(inputStream);
         doProcessing(image, params, outputStream);
-    }
-
-    private ImageInfo doGetImageInfo(ImageInfo imageInfo, BufferedImage image) {
-        if (image == null) {
-            throw new UnsupportedSourceFormatException();
-        }
-        imageInfo.setWidth(image.getWidth());
-        imageInfo.setHeight(image.getHeight());
-
-        /*
-        // get width & height (without reading the entire image into memory)
-        Iterator<ImageReader> iter = ImageIO.
-                getImageReadersBySuffix(sourceFormat.getExtension());
-        if (iter.hasNext()) {
-            ImageReader reader = iter.next();
-            try {
-                reader.setInput(inputStream); // TODO: this needs to be an ImageInputStream
-                imageInfo.setWidth(reader.getWidth(reader.getMinIndex()));
-                imageInfo.setHeight(reader.getHeight(reader.getMinIndex()));
-            } finally {
-                reader.dispose();
-            }
-        }*/
-
-        imageInfo.getProfile().add("http://iiif.io/api/image/2/level2.json");
-        Map<String,Iterable<String>> profile = new HashMap<String, Iterable<String>>();
-        imageInfo.getProfile().add(profile);
-
-        profile.put("formats", FORMAT_EXTENSIONS);
-        profile.put("qualities", QUALITIES);
-        profile.put("supports", SUPPORTS);
-
-        return imageInfo;
     }
 
     private void doProcessing(BufferedImage image, Parameters params,

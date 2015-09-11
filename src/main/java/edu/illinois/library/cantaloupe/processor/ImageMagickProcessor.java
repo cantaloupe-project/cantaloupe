@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
@@ -28,7 +27,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 public class ImageMagickProcessor implements Processor {
@@ -36,11 +34,12 @@ public class ImageMagickProcessor implements Processor {
     private static Logger logger = LoggerFactory.
             getLogger(ImageMagickProcessor.class);
 
-    private static final HashMap<SourceFormat,Set<OutputFormat>> OUTPUT_FORMATS =
+    private static final HashMap<SourceFormat,Set<OutputFormat>> FORMATS =
             getAvailableOutputFormats();
-    private static final Set<String> FORMAT_EXTENSIONS = new HashSet<String>();
-    private static final Set<String> QUALITIES = new HashSet<String>();
-    private static final Set<String> SUPPORTS = new HashSet<String>();
+    private static final Set<Quality> SUPPORTED_QUALITIES =
+            new HashSet<Quality>();
+    private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
+            new HashSet<ProcessorFeature>();
     private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
 
     private File file;
@@ -56,31 +55,23 @@ public class ImageMagickProcessor implements Processor {
             ProcessStarter.setGlobalSearchPath(binaryPath);
         }
 
-        for (Set<OutputFormat> set : OUTPUT_FORMATS.values()) {
-            for (OutputFormat format : set) {
-                FORMAT_EXTENSIONS.add(format.getExtension());
-            }
-        }
+        SUPPORTED_QUALITIES.add(Quality.BITONAL);
+        SUPPORTED_QUALITIES.add(Quality.COLOR);
+        SUPPORTED_QUALITIES.add(Quality.DEFAULT);
+        SUPPORTED_QUALITIES.add(Quality.GRAY);
 
-        for (Quality quality : Quality.values()) {
-            QUALITIES.add(quality.toString().toLowerCase());
-        }
-
-        SUPPORTS.add("baseUriRedirect");
-        SUPPORTS.add("canonicalLinkHeader");
-        SUPPORTS.add("cors");
-        SUPPORTS.add("jsonldMediaType");
-        SUPPORTS.add("mirroring");
-        SUPPORTS.add("regionByPx");
-        SUPPORTS.add("rotationArbitrary");
-        SUPPORTS.add("rotationBy90s");
-        SUPPORTS.add("sizeAboveFull");
-        SUPPORTS.add("sizeByWhListed");
-        SUPPORTS.add("sizeByForcedWh");
-        SUPPORTS.add("sizeByH");
-        SUPPORTS.add("sizeByPct");
-        SUPPORTS.add("sizeByW");
-        SUPPORTS.add("sizeWh");
+        SUPPORTED_FEATURES.add(ProcessorFeature.MIRRORING);
+        SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PERCENT);
+        SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PIXELS);
+        SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_ARBITRARY);
+        SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_BY_90S);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_ABOVE_FULL);
+        //SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WHITELISTED);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_HEIGHT);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_PERCENT);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
     }
 
     /**
@@ -152,49 +143,14 @@ public class ImageMagickProcessor implements Processor {
     }
 
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
-        Set<OutputFormat> formats = OUTPUT_FORMATS.get(sourceFormat);
+        Set<OutputFormat> formats = FORMATS.get(sourceFormat);
         if (formats == null) {
             formats = new HashSet<OutputFormat>();
         }
         return formats;
     }
 
-    public ImageInfo getImageInfo(File sourceFile,
-                                  SourceFormat sourceFormat,
-                                  String imageBaseUri) throws Exception {
-        Dimension size = getSize(sourceFile, sourceFormat);
-        return doGetImageInfo(size, imageBaseUri);
-    }
-
-    public ImageInfo getImageInfo(InputStream inputStream,
-                                  SourceFormat sourceFormat,
-                                  String imageBaseUri) throws Exception {
-        Dimension size = getSize(inputStream, sourceFormat);
-        ImageInfo info = doGetImageInfo(size, imageBaseUri);
-        inputStream.close();
-        return info;
-    }
-
-    private ImageInfo doGetImageInfo(Dimension size, String imageBaseUri)
-            throws InfoException {
-        ImageInfo imageInfo = new ImageInfo();
-        imageInfo.setId(imageBaseUri);
-
-        imageInfo.setHeight(size.height);
-        imageInfo.setWidth(size.width);
-
-        imageInfo.getProfile().add("http://iiif.io/api/image/2/level2.json");
-        Map<String,Set<String>> profile = new HashMap<String, Set<String>>();
-        imageInfo.getProfile().add(profile);
-
-        profile.put("formats", FORMAT_EXTENSIONS);
-        profile.put("qualities", QUALITIES);
-        profile.put("supports", SUPPORTS);
-
-        return imageInfo;
-    }
-
-    private Dimension getSize(File sourceFile, SourceFormat sourceFormat)
+    public Dimension getSize(File sourceFile, SourceFormat sourceFormat)
             throws InfoException {
         Info sourceInfo = new Info(sourceFormat.getPreferredExtension() + ":" +
                 sourceFile.getAbsolutePath(), true);
@@ -202,7 +158,7 @@ public class ImageMagickProcessor implements Processor {
                 sourceInfo.getImageHeight());
     }
 
-    private Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
+    public Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
             throws InfoException {
         Info sourceInfo = new Info(sourceFormat.getPreferredExtension() + ":-",
                 inputStream, true);
@@ -210,8 +166,16 @@ public class ImageMagickProcessor implements Processor {
                 sourceInfo.getImageHeight());
     };
 
+    public Set<ProcessorFeature> getSupportedFeatures(SourceFormat sourceFormat) {
+        return SUPPORTED_FEATURES;
+    }
+
+    public Set<Quality> getSupportedQualities(SourceFormat sourceFormat) {
+        return SUPPORTED_QUALITIES;
+    }
+
     public Set<SourceFormat> getSupportedSourceFormats() {
-        return OUTPUT_FORMATS.keySet();
+        return FORMATS.keySet();
     }
 
     public void process(Parameters params, SourceFormat sourceFormat,

@@ -1,17 +1,25 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import java.awt.*;
 import java.io.File;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import edu.illinois.library.cantaloupe.Feature;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.processor.ProcessorFeature;
+import edu.illinois.library.cantaloupe.request.OutputFormat;
+import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import org.restlet.data.MediaType;
@@ -47,11 +55,17 @@ public class InformationResource extends AbstractResource {
         // 5. Get an ImageInfo instance corresponding to the source image
         ImageInfo imageInfo;
         if (sourceFile != null) {
-            imageInfo = proc.getImageInfo(sourceFile, sourceFormat,
-                    this.getImageUri(identifier));
+            imageInfo = getImageInfo(identifier,
+                    proc.getSize(sourceFile, sourceFormat),
+                    proc.getSupportedQualities(sourceFormat),
+                    proc.getSupportedFeatures(sourceFormat),
+                    proc.getAvailableOutputFormats(sourceFormat));
         } else {
-            imageInfo = proc.getImageInfo(inputStream, sourceFormat,
-                    this.getImageUri(identifier));
+            imageInfo = getImageInfo(identifier,
+                    proc.getSize(inputStream, sourceFormat),
+                    proc.getSupportedQualities(sourceFormat),
+                    proc.getSupportedFeatures(sourceFormat),
+                    proc.getAvailableOutputFormats(sourceFormat));
         }
         // 6. Transform the ImageInfo into JSON
         ObjectMapper mapper = new ObjectMapper();
@@ -76,6 +90,47 @@ public class InformationResource extends AbstractResource {
             rep.setMediaType(new MediaType("application/json"));
         }
         return rep;
+    }
+
+    private ImageInfo getImageInfo(String identifier, Dimension size,
+                                   Set<Quality> qualities,
+                                   Set<ProcessorFeature> features,
+                                   Set<OutputFormat> outputFormats) {
+        ImageInfo imageInfo = new ImageInfo();
+        imageInfo.setId(getImageUri(identifier));
+        imageInfo.setWidth(size.width);
+        imageInfo.setHeight(size.height);
+
+        imageInfo.getProfile().add("http://iiif.io/api/image/2/level2.json"); // TODO: automatically determine this
+
+        // formats
+        Map<String, Set<String>> formatMap = new HashMap<String, Set<String>>();
+        Set<String> formatStrings = new HashSet<String>();
+        for (OutputFormat format : outputFormats) {
+            formatStrings.add(format.getExtension());
+        }
+        formatMap.put("formats", formatStrings);
+        imageInfo.getProfile().add(formatMap);
+
+        // qualities
+        Map<String, Set<String>> qualityMap = new HashMap<String, Set<String>>();
+        Set<String> qualityStrings = new HashSet<String>();
+        for (Quality quality : qualities) {
+            qualityStrings.add(quality.toString().toLowerCase());
+        }
+        qualityMap.put("qualities", qualityStrings);
+        imageInfo.getProfile().add(qualityMap);
+
+        // supports
+        Map<String, Set<String>> featureMap = new HashMap<String, Set<String>>();
+        Set<String> featureStrings = new HashSet<String>();
+        for (Feature feature : features) {
+            featureStrings.add(feature.getName());
+        }
+        featureMap.put("features", featureStrings);
+        imageInfo.getProfile().add(featureMap);
+
+        return imageInfo;
     }
 
     private String getImageUri(String identifier) {
