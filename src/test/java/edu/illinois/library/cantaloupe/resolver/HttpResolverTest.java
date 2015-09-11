@@ -52,6 +52,11 @@ public class HttpResolverTest extends TestCase {
         config.setProperty("HttpResolver.url_suffix", "/suffix");
         assertEquals("http://example.org/prefix/id/suffix",
                 instance.getUrl("id").toString());
+        // without prefix or suffix
+        config.setProperty("HttpResolver.url_prefix", "");
+        config.setProperty("HttpResolver.url_suffix", "");
+        assertEquals("http://example.org/images/image.jpg",
+                instance.getUrl("http://example.org/images/image.jpg").toString());
     }
 
 }
