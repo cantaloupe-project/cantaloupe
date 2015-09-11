@@ -126,14 +126,12 @@ public class HttpResolver implements Resolver {
             ClientResource resource = new ClientResource(url);
             resource.setNext(client);
             resource.head();
-            Header contentTypeHeader = resource.getResponse().getHeaders().
-                    getFirst("Content-Type"); // TODO: getFirst() appears to be case-sensitive for some reason
-            if (contentTypeHeader != null) {
-                contentType = contentTypeHeader.getValue();
-                if (contentType != null) {
-                    sourceFormat = SourceFormat.
-                            getSourceFormat(new MediaType(contentType));
-                }
+
+            contentType = resource.getResponse().getHeaders().
+                    getFirstValue("Content-Type", true);
+            if (contentType != null) {
+                sourceFormat = SourceFormat.
+                        getSourceFormat(new MediaType(contentType));
             }
         } catch (ResourceException e) {
             // nothing we can do but log it
