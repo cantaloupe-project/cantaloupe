@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.request.Region;
 import edu.illinois.library.cantaloupe.request.Rotation;
 import edu.illinois.library.cantaloupe.request.Size;
 import org.apache.commons.configuration.Configuration;
+import org.im4java.core.CommandException;
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IMOperation;
 import org.im4java.core.Info;
@@ -211,7 +212,15 @@ public class GraphicsMagickProcessor implements Processor {
 
         ConvertCmd convert = new ConvertCmd(true);
         convert.setOutputConsumer(pipeOut);
-        convert.run(op);
+        try {
+            convert.run(op);
+        } catch (CommandException e) {
+            // im4java throws this apparently spuriously when using
+            // IMOperation.resize(width).
+            if (!e.getMessage().contains("unable to resize image (Non-zero width and height required)")) {
+                throw e;
+            }
+        }
     }
 
     public void process(Parameters params, SourceFormat sourceFormat,
