@@ -22,13 +22,17 @@ public class Application {
     private static Configuration config;
 
     static {
-        // Commons Configuration uses log4j; we don't really care.
+        // Commons Configuration uses log4j; easier to disable it than to set
+        // it up to log useless messages
         org.apache.log4j.Logger.getRootLogger().setLevel(Level.OFF);
 
         Velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
         Velocity.setProperty("classpath.resource.loader.class",
                 ClasspathResourceLoader.class.getName());
         Velocity.setProperty("class.resource.loader.cache", true);
+        // tell velocity to put a sock in it
+        Velocity.setProperty("runtime.log.logsystem.class",
+                "org.apache.velocity.runtime.log.NullLogChute");
         Velocity.init();
     }
 
