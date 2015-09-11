@@ -88,6 +88,10 @@ processor.
 FilesystemResolver maps an identifier from an IIIF URL to a filesystem path,
 for retrieving local images.
 
+For files with extensions that are missing or unrecognized, this resolver will
+check the "magic number" to determine its type. It is, therefore, slightly
+more efficient to serve files with extensions.
+
 ### HttpResolver
 
 HttpResolver maps an identifier from an IIIF URL to some other URL, for

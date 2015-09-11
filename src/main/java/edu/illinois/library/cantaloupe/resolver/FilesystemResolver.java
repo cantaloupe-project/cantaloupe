@@ -2,7 +2,9 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
+import eu.medsea.mimeutil.MimeUtil;
 import org.apache.commons.configuration.Configuration;
+import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,14 +12,19 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.Collection;
 
 public class FilesystemResolver implements Resolver {
+
+    static {
+        MimeUtil.registerMimeDetector("eu.medsea.mimeutil.detector.MagicMimeMimeDetector");
+    }
 
     private static Logger logger = LoggerFactory.
             getLogger(FilesystemResolver.class);
 
     public File getFile(String identifier) throws FileNotFoundException {
-        File file = new File(getPath(identifier));
+        File file = new File(getPathname(identifier));
         if (!file.exists()) {
             String message = "Failed to resolve " + identifier + " to " +
                     file.getAbsolutePath();
@@ -30,10 +37,10 @@ public class FilesystemResolver implements Resolver {
 
     public InputStream getInputStream(String identifier)
             throws FileNotFoundException {
-        return new FileInputStream(getPath(identifier));
+        return new FileInputStream(getPathname(identifier));
     }
 
-    public String getPath(String identifier) {
+    public String getPathname(String identifier) {
         Configuration config = Application.getConfiguration();
         String prefix = config.getString("FilesystemResolver.path_prefix");
         if (prefix == null) {
@@ -46,9 +53,21 @@ public class FilesystemResolver implements Resolver {
         return prefix + identifier + suffix;
     }
 
+    /**
+     * Returns the format of the image corresponding to the given identifier.
+     *
+     * @param identifier IIIF identifier.
+     * @return A source format, or <code>SourceFormat.UNKNOWN</code> if unknown.
+     */
     public SourceFormat getSourceFormat(String identifier) {
-        // try to get the source format based on a filename extension in the
-        // identifier
+        SourceFormat sourceFormat = getSourceFormatFromIdentifier(identifier);
+        if (sourceFormat == SourceFormat.UNKNOWN) {
+            sourceFormat = getDetectedSourceFormat(identifier);
+        }
+        return sourceFormat;
+    }
+
+    private SourceFormat getSourceFormatFromIdentifier(String identifier) {
         identifier = identifier.toLowerCase();
         String extension = null;
         SourceFormat sourceFormat = SourceFormat.UNKNOWN;
@@ -64,7 +83,18 @@ public class FilesystemResolver implements Resolver {
                 }
             }
         }
-        // TODO: if that failed (or maybe even instead of doing that), read the magic byte in the file header
+        return sourceFormat;
+    }
+
+    private SourceFormat getDetectedSourceFormat(String identifier) {
+        SourceFormat sourceFormat = SourceFormat.UNKNOWN;
+        String pathname = getPathname(identifier);
+        Collection<?> detectedTypes = MimeUtil.getMimeTypes(pathname);
+        if (detectedTypes.size() > 0) {
+            String detectedType = detectedTypes.toArray()[0].toString();
+            sourceFormat = SourceFormat.
+                    getSourceFormat(new MediaType(detectedType));
+        }
         return sourceFormat;
     }
 

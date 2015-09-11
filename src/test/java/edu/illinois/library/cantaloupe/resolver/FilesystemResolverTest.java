@@ -59,20 +59,35 @@ public class FilesystemResolverTest extends TestCase {
         }
     }
 
-    public void testGetPath() {
+    public void testGetPathname() {
         BaseConfiguration config = (BaseConfiguration) Application.getConfiguration();
         // with prefix
         config.setProperty("FilesystemResolver.path_prefix", "/prefix/");
-        assertEquals("/prefix/id", instance.getPath("id"));
+        assertEquals("/prefix/id", instance.getPathname("id"));
         // with suffix
         config.setProperty("FilesystemResolver.path_suffix", "/suffix");
-        assertEquals("/prefix/id/suffix", instance.getPath("id"));
+        assertEquals("/prefix/id/suffix", instance.getPathname("id"));
     }
 
-    public void testGetSourceFormat() {
-        assertEquals(SourceFormat.JPG, instance.getSourceFormat("image.jpg"));
-        assertEquals(SourceFormat.UNKNOWN, instance.getSourceFormat("image.bogus"));
-        assertEquals(SourceFormat.UNKNOWN, instance.getSourceFormat("image"));
+    public void testGetSourceFormatWithExtensions() {
+        assertEquals(SourceFormat.BMP, instance.getSourceFormat("bla.bmp"));
+        assertEquals(SourceFormat.GIF, instance.getSourceFormat("bla.gif"));
+        assertEquals(SourceFormat.JP2, instance.getSourceFormat("bla.JP2"));
+        assertEquals(SourceFormat.PDF, instance.getSourceFormat("bla.pdf"));
+        assertEquals(SourceFormat.PNG, instance.getSourceFormat("bla.png"));
+        assertEquals(SourceFormat.TIF, instance.getSourceFormat("bla.tif"));
+        assertEquals(SourceFormat.UNKNOWN, instance.getSourceFormat("bla.bogus"));
+    }
+
+    public void testGetSourceFormatByDetection() {
+        assertEquals(SourceFormat.BMP, instance.getSourceFormat("bmp"));
+        assertEquals(SourceFormat.GIF, instance.getSourceFormat("gif"));
+        assertEquals(SourceFormat.JP2, instance.getSourceFormat("jp2"));
+        assertEquals(SourceFormat.JPG, instance.getSourceFormat("jpg"));
+        assertEquals(SourceFormat.PDF, instance.getSourceFormat("pdf"));
+        assertEquals(SourceFormat.PNG, instance.getSourceFormat("png"));
+        assertEquals(SourceFormat.TIF, instance.getSourceFormat("tif"));
+        assertEquals(SourceFormat.UNKNOWN, instance.getSourceFormat("txt"));
     }
 
 }
