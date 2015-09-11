@@ -67,6 +67,10 @@ public class FilesystemResolverTest extends TestCase {
         // with suffix
         config.setProperty("FilesystemResolver.path_suffix", "/suffix");
         assertEquals("/prefix/id/suffix", instance.getPathname("id"));
+        // without prefix or suffix
+        config.setProperty("FilesystemResolver.path_prefix", "");
+        config.setProperty("FilesystemResolver.path_suffix", "");
+        assertEquals("id", instance.getPathname("id"));
     }
 
     public void testGetSourceFormatWithExtensions() {
