@@ -40,6 +40,7 @@ public class ImageMagickProcessor implements Processor {
     private static final Set<String> FORMAT_EXTENSIONS = new HashSet<String>();
     private static final Set<String> QUALITIES = new HashSet<String>();
     private static final Set<String> SUPPORTS = new HashSet<String>();
+    private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
 
     static {
         // overrides the PATH; see
@@ -82,6 +83,13 @@ public class ImageMagickProcessor implements Processor {
      * based on information reported by <code>identify -list format</code>.
      */
     public static HashMap<SourceFormat, Set<OutputFormat>> getAvailableOutputFormats() {
+        if (supportedFormats == null) {
+            loadSupportedFormats();
+        }
+        return supportedFormats;
+    }
+
+    public static void loadSupportedFormats() {
         final Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
         final Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
 
@@ -132,12 +140,10 @@ public class ImageMagickProcessor implements Processor {
             logger.error("Failed to execute identify command");
         }
 
-        final HashMap<SourceFormat,Set<OutputFormat>> map =
-                new HashMap<SourceFormat,Set<OutputFormat>>();
+        supportedFormats = new HashMap<SourceFormat,Set<OutputFormat>>();
         for (SourceFormat sourceFormat : sourceFormats) {
-            map.put(sourceFormat, outputFormats);
+            supportedFormats.put(sourceFormat, outputFormats);
         }
-        return map;
     }
 
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
@@ -231,7 +237,7 @@ public class ImageMagickProcessor implements Processor {
             if (region.isPercent()) {
                 op.crop(Math.round(region.getWidth()), Math.round(region.getHeight()),
                         Math.round(region.getX()), Math.round(region.getY()),
-                        "%".charAt(0)); // TODO: this doesn't work
+                        "%".charAt(0)); // TODO: this affects only width/height, not x/y
             } else {
                 op.crop(Math.round(region.getWidth()), Math.round(region.getHeight()),
                         Math.round(region.getX()), Math.round(region.getY()));
