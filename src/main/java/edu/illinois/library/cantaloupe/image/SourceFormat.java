@@ -15,6 +15,7 @@ public enum SourceFormat {
     GIF(new MediaType("image/gif")),
     JP2(new MediaType("image/jp2")),
     JPG(new MediaType("image/jpeg")),
+    PDF(new MediaType("application/pdf")),
     PNG(new MediaType("image/png")),
     TIF(new MediaType("image/tiff")),
     WEBP(new MediaType("image/webp")),
@@ -63,7 +64,9 @@ public enum SourceFormat {
         List<String> extensions = new ArrayList<String>();
         String mediaType = this.getMediaType().toString();
         // the first extension will be the preferred extension
-        if (mediaType.equals("image/bmp")) {
+        if (mediaType.equals("application/pdf")) {
+            extensions.add("pdf");
+        } else if (mediaType.equals("image/bmp")) {
             extensions.add("bmp");
         } else if (mediaType.equals("image/gif")) {
             extensions.add("gif");

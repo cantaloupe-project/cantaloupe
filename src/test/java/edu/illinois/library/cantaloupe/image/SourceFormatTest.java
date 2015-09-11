@@ -10,6 +10,7 @@ public class SourceFormatTest extends TestCase {
         assertNotNull(SourceFormat.valueOf("GIF"));
         assertNotNull(SourceFormat.valueOf("JP2"));
         assertNotNull(SourceFormat.valueOf("JPG"));
+        assertNotNull(SourceFormat.valueOf("PDF"));
         assertNotNull(SourceFormat.valueOf("PNG"));
         assertNotNull(SourceFormat.valueOf("TIF"));
         assertNotNull(SourceFormat.valueOf("WEBP"));
@@ -17,15 +18,22 @@ public class SourceFormatTest extends TestCase {
     }
 
     public void testGetSourceFormatWithMediaType() {
-        assertEquals(SourceFormat.JP2, SourceFormat.getSourceFormat(new MediaType("image/jp2")));
-        assertEquals(SourceFormat.JPG, SourceFormat.getSourceFormat(new MediaType("image/jpeg")));
-        assertEquals(SourceFormat.TIF, SourceFormat.getSourceFormat(new MediaType("image/tiff")));
-        assertEquals(SourceFormat.UNKNOWN, SourceFormat.getSourceFormat(new MediaType("image/bogus")));
+        assertEquals(SourceFormat.JP2,
+                SourceFormat.getSourceFormat(new MediaType("image/jp2")));
+        assertEquals(SourceFormat.JPG,
+                SourceFormat.getSourceFormat(new MediaType("image/jpeg")));
+        assertEquals(SourceFormat.PDF,
+                SourceFormat.getSourceFormat(new MediaType("application/pdf")));
+        assertEquals(SourceFormat.TIF,
+                SourceFormat.getSourceFormat(new MediaType("image/tiff")));
+        assertEquals(SourceFormat.UNKNOWN,
+                SourceFormat.getSourceFormat(new MediaType("image/bogus")));
     }
 
     public void testGetSourceFormatWithString() {
         assertEquals(SourceFormat.JP2, SourceFormat.getSourceFormat("bla.jp2"));
         assertEquals(SourceFormat.JPG, SourceFormat.getSourceFormat("bla.jpeg"));
+        assertEquals(SourceFormat.PDF, SourceFormat.getSourceFormat("bla.pdf"));
         assertEquals(SourceFormat.TIF, SourceFormat.getSourceFormat("bla.tiff"));
         assertEquals(SourceFormat.UNKNOWN, SourceFormat.getSourceFormat("bla.bogus"));
     }
@@ -36,6 +44,7 @@ public class SourceFormatTest extends TestCase {
         assertTrue(SourceFormat.JP2.getExtensions().contains("jp2"));
         assertTrue(SourceFormat.JPG.getExtensions().contains("jpg"));
         assertTrue(SourceFormat.JPG.getExtensions().contains("jpeg"));
+        assertTrue(SourceFormat.PDF.getExtensions().contains("pdf"));
         assertTrue(SourceFormat.PNG.getExtensions().contains("png"));
         assertTrue(SourceFormat.TIF.getExtensions().contains("ptif"));
         assertTrue(SourceFormat.TIF.getExtensions().contains("tif"));
@@ -46,6 +55,7 @@ public class SourceFormatTest extends TestCase {
     }
 
     public void testMediaTypes() {
+        assertEquals("application/pdf", SourceFormat.PDF.getMediaType().toString());
         assertEquals("image/bmp", SourceFormat.BMP.getMediaType().toString());
         assertEquals("image/gif", SourceFormat.GIF.getMediaType().toString());
         assertEquals("image/jp2", SourceFormat.JP2.getMediaType().toString());
@@ -61,6 +71,7 @@ public class SourceFormatTest extends TestCase {
         assertEquals("gif", SourceFormat.GIF.getPreferredExtension());
         assertEquals("jp2", SourceFormat.JP2.getPreferredExtension());
         assertEquals("jpg", SourceFormat.JPG.getPreferredExtension());
+        assertEquals("pdf", SourceFormat.PDF.getPreferredExtension());
         assertEquals("png", SourceFormat.PNG.getPreferredExtension());
         assertEquals("tif", SourceFormat.TIF.getPreferredExtension());
         assertEquals("webp", SourceFormat.WEBP.getPreferredExtension());
