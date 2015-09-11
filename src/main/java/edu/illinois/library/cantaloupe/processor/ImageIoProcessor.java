@@ -214,7 +214,7 @@ public class ImageIoProcessor implements Processor {
             AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
             tx.translate(-mirroredImage.getWidth(null), 0);
             AffineTransformOp op = new AffineTransformOp(tx,
-                    AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+                    AffineTransformOp.TYPE_BILINEAR);
             mirroredImage = op.filter(mirroredImage, null);
         }
         // do rotation
