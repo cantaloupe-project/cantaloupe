@@ -113,13 +113,12 @@ public class Iiif20ConformanceTest extends TestCase {
         // a slash in the identifier
         File directory = new File(".");
         String cwd = directory.getCanonicalPath();
-        Path path = Paths.get(cwd, "src", "test", "java", "edu", "illinois",
-                "library", "cantaloupe", "test");
+        Path path = Paths.get(cwd, "src", "test");
         BaseConfiguration config = getConfiguration();
         config.setProperty("FilesystemResolver.path_prefix", path + File.separator);
         Application.setConfiguration(config);
 
-        String identifier = Reference.encode("fixtures/" + IMAGE);
+        String identifier = Reference.encode("resources/" + IMAGE);
         ClientResource client = getClientForUriPath("/" + identifier + "/info.json");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
@@ -418,7 +417,7 @@ public class Iiif20ConformanceTest extends TestCase {
      *
      * @throws IOException
      */
-    public void testFormats() {
+    public void testFormats() throws Exception {
         testFormat(OutputFormat.JPG);
         testFormat(OutputFormat.TIF);
         testFormat(OutputFormat.PNG);
@@ -428,7 +427,7 @@ public class Iiif20ConformanceTest extends TestCase {
         testFormat(OutputFormat.WEBP);
     }
 
-    private void testFormat(OutputFormat format) {
+    private void testFormat(OutputFormat format) throws Exception {
         ClientResource client = getClientForUriPath("/" + IMAGE +
                 "/full/full/0/default." + format.getExtension());
 
@@ -445,7 +444,7 @@ public class Iiif20ConformanceTest extends TestCase {
                 client.get();
                 fail("Expected exception");
             } catch (ResourceException e) {
-                assertEquals(Status.CLIENT_ERROR_FORBIDDEN, client.getStatus());
+                assertEquals(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE, client.getStatus());
             }
         }
     }
