@@ -37,6 +37,16 @@ import org.restlet.resource.Get;
  */
 public class InformationResource extends AbstractResource {
 
+    private static final Set<ServiceFeature> SUPPORTED_SERVICE_FEATURES =
+            new HashSet<ServiceFeature>();
+
+    static {
+        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.BASE_URI_REDIRECT);
+        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.CANONICAL_LINK_HEADER);
+        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.CORS);
+        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.JSON_LD_MEDIA_TYPE);
+    }
+
     @Get("json")
     public Representation doGet() throws Exception {
         // 1. Assemble the URI parameters into a Parameters object
@@ -104,22 +114,20 @@ public class InformationResource extends AbstractResource {
         imageInfo.getProfile().add("http://iiif.io/api/image/2/level2.json"); // TODO: automatically determine this
 
         // formats
-        Map<String, Set<String>> formatMap = new HashMap<String, Set<String>>();
+        Map<String, Set<String>> profileMap = new HashMap<String, Set<String>>();
         Set<String> formatStrings = new HashSet<String>();
         for (OutputFormat format : outputFormats) {
             formatStrings.add(format.getExtension());
         }
-        formatMap.put("formats", formatStrings);
-        imageInfo.getProfile().add(formatMap);
+        profileMap.put("formats", formatStrings);
+        imageInfo.getProfile().add(profileMap);
 
         // qualities
-        Map<String, Set<String>> qualityMap = new HashMap<String, Set<String>>();
         Set<String> qualityStrings = new HashSet<String>();
         for (Quality quality : qualities) {
             qualityStrings.add(quality.toString().toLowerCase());
         }
-        qualityMap.put("qualities", qualityStrings);
-        imageInfo.getProfile().add(qualityMap);
+        profileMap.put("qualities", qualityStrings);
 
         // supports
         Map<String, Set<String>> featureMap = new HashMap<String, Set<String>>();
@@ -127,8 +135,10 @@ public class InformationResource extends AbstractResource {
         for (Feature feature : features) {
             featureStrings.add(feature.getName());
         }
-        featureMap.put("features", featureStrings);
-        imageInfo.getProfile().add(featureMap);
+        for (Feature feature : SUPPORTED_SERVICE_FEATURES) {
+            featureStrings.add(feature.getName());
+        }
+        profileMap.put("features", featureStrings);
 
         return imageInfo;
     }
