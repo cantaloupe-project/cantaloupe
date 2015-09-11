@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import org.apache.velocity.Template;
@@ -43,8 +44,12 @@ public class LandingResource extends AbstractResource {
         Map<SourceFormat,String> sourceFormats =
                 new HashMap<SourceFormat, String>();
         for (SourceFormat sourceFormat : SourceFormat.values()) {
-            sourceFormats.put(sourceFormat,
-                    ProcessorFactory.getProcessor(sourceFormat).getClass().getSimpleName());
+            try {
+                sourceFormats.put(sourceFormat,
+                        ProcessorFactory.getProcessor(sourceFormat).getClass().getSimpleName());
+            } catch (UnsupportedSourceFormatException e) {
+                // noop
+            }
         }
         vars.put("sourceFormats", sourceFormats);
 
