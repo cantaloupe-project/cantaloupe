@@ -7,7 +7,7 @@ import edu.illinois.library.cantaloupe.Feature;
  *
  * @see edu.illinois.library.cantaloupe.processor.ProcessorFeature
  */
-public enum ServiceFeature implements Feature {
+enum ServiceFeature implements Feature {
 
     BASE_URI_REDIRECT("baseUriRedirect"),
     CANONICAL_LINK_HEADER("canonicalLinkHeader"),

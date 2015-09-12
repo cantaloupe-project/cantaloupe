@@ -14,7 +14,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 
-public class FilesystemResolver implements Resolver {
+class FilesystemResolver implements Resolver {
 
     static {
         MimeUtil.registerMimeDetector("eu.medsea.mimeutil.detector.MagicMimeMimeDetector");

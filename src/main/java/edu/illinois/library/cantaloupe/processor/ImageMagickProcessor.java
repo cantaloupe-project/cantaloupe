@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ImageMagickProcessor implements Processor {
+class ImageMagickProcessor implements Processor {
 
     private static Logger logger = LoggerFactory.
             getLogger(ImageMagickProcessor.class);

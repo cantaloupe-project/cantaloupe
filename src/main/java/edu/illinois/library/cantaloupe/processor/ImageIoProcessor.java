@@ -24,7 +24,7 @@ import java.util.Set;
 /**
  * Processor using the Java ImageIO framework.
  */
-public class ImageIoProcessor implements Processor {
+class ImageIoProcessor implements Processor {
 
     private static final HashMap<SourceFormat,Set<OutputFormat>> FORMATS =
             getAvailableOutputFormats();
