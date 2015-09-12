@@ -18,11 +18,11 @@ import org.im4java.process.ProcessStarter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -42,8 +42,7 @@ public class ImageMagickProcessor implements Processor {
             new HashSet<ProcessorFeature>();
     private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
 
-    private File file;
-    private InputStream inputStream;
+    private ImageInputStream inputStream;
     private SourceFormat sourceFormat;
 
     static {
@@ -150,18 +149,11 @@ public class ImageMagickProcessor implements Processor {
         return formats;
     }
 
-    public Dimension getSize(File sourceFile, SourceFormat sourceFormat)
-            throws InfoException {
-        Info sourceInfo = new Info(sourceFormat.getPreferredExtension() + ":" +
-                sourceFile.getAbsolutePath(), true);
-        return new Dimension(sourceInfo.getImageWidth(),
-                sourceInfo.getImageHeight());
-    }
-
-    public Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
-            throws InfoException {
+    public Dimension getSize(ImageInputStream inputStream,
+                             SourceFormat sourceFormat) throws InfoException {
+        ImageInputStreamWrapper bridge = new ImageInputStreamWrapper(inputStream);
         Info sourceInfo = new Info(sourceFormat.getPreferredExtension() + ":-",
-                inputStream, true);
+                bridge, true);
         return new Dimension(sourceInfo.getImageWidth(),
                 sourceInfo.getImageHeight());
     };
@@ -179,26 +171,7 @@ public class ImageMagickProcessor implements Processor {
     }
 
     public void process(Parameters params, SourceFormat sourceFormat,
-                        File file, OutputStream outputStream) throws Exception {
-        this.file = file;
-        this.sourceFormat = sourceFormat;
-
-        IMOperation op = new IMOperation();
-        op.addImage(file.getAbsolutePath());
-        op = assembleOperation(op, params);
-
-        // format transformation
-        op.addImage(params.getOutputFormat().getExtension() + ":-"); // write to stdout
-
-        Pipe pipeOut = new Pipe(null, outputStream);
-
-        ConvertCmd convert = new ConvertCmd();
-        convert.setOutputConsumer(pipeOut);
-        convert.run(op);
-    }
-
-    public void process(Parameters params, SourceFormat sourceFormat,
-                        InputStream inputStream, OutputStream outputStream)
+                        ImageInputStream inputStream, OutputStream outputStream)
             throws Exception {
         this.inputStream = inputStream;
         this.sourceFormat = sourceFormat;
@@ -210,7 +183,8 @@ public class ImageMagickProcessor implements Processor {
         // format transformation
         op.addImage(params.getOutputFormat().getExtension() + ":-"); // write to stdout
 
-        Pipe pipeIn = new Pipe(inputStream, null);
+        ImageInputStreamWrapper wrapper = new ImageInputStreamWrapper(inputStream);
+        Pipe pipeIn = new Pipe(wrapper, null);
         Pipe pipeOut = new Pipe(null, outputStream);
 
         ConvertCmd convert = new ConvertCmd();
@@ -228,12 +202,8 @@ public class ImageMagickProcessor implements Processor {
                 try {
                     // im4java doesn't support cropping x/y by percentage (only
                     // width/height), so we have to calculate them.
-                    Dimension imageSize;
-                    if (this.file != null) {
-                        imageSize = getSize(this.file, this.sourceFormat);
-                    } else {
-                        imageSize = getSize(this.inputStream, this.sourceFormat);
-                    }
+                    Dimension imageSize = getSize(this.inputStream,
+                            this.sourceFormat);
                     int x = (int) Math.round(region.getX() / 100.0 * imageSize.width);
                     int y = (int) Math.round(region.getY() / 100.0 * imageSize.height);
                     op.crop(Math.round(region.getWidth()),

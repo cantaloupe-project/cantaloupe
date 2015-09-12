@@ -5,9 +5,8 @@ import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.request.Quality;
 
+import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
-import java.io.File;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Set;
 
@@ -24,20 +23,12 @@ public interface Processor {
     Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat);
 
     /**
-     * @param file Source image
-     * @param sourceFormat
-     * @return Size of the source image in pixels.
-     * @throws Exception
-     */
-    Dimension getSize(File file, SourceFormat sourceFormat) throws Exception;
-
-    /**
      * @param inputStream Source image
-     * @param sourceFormat
+     * @param sourceFormat Format of the source image
      * @return Size of the source image in pixels.
      * @throws Exception
      */
-    Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
+    Dimension getSize(ImageInputStream inputStream, SourceFormat sourceFormat)
             throws Exception;
 
     /**
@@ -62,33 +53,16 @@ public interface Processor {
 
     /**
      * Uses the supplied parameters to process an image from the supplied
-     * File, and writes the result to the given OutputStream.
+     * ImageInputStream, and writes the result to the given OutputStream.
      *
      * @param params Parameters of the output image
      * @param sourceFormat Format of the source image
-     * @param sourceFile Source image file
-     * @param outputStream An OutputStream to which to write the image
+     * @param inputStream Stream from which to read the image
+     * @param outputStream Stream to which to write the image
      * @throws Exception
      */
     void process(Parameters params, SourceFormat sourceFormat,
-                 File sourceFile, OutputStream outputStream)
-            throws Exception;
-
-    /**
-     * <p>Uses the supplied parameters to process an image from the supplied
-     * InputStream, and writes the result to the given OutputStream.</p>
-     *
-     * <p>If implementations are not able to use an InputStream, then they
-     * should do nothing.</p>
-     *
-     * @param params Parameters of the output image
-     * @param sourceFormat Format of the source image
-     * @param inputStream An InputStream from which to read the image
-     * @param outputStream An OutputStream to which to write the image
-     * @throws Exception
-     */
-    void process(Parameters params, SourceFormat sourceFormat,
-                 InputStream inputStream, OutputStream outputStream)
+                 ImageInputStream inputStream, OutputStream outputStream)
             throws Exception;
 
 }

@@ -10,14 +10,12 @@ import edu.illinois.library.cantaloupe.request.Size;
 import org.restlet.data.MediaType;
 
 import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -92,15 +90,8 @@ public class ImageIoProcessor implements Processor {
         return formats;
     }
 
-    public Dimension getSize(File file, SourceFormat sourceFormat)
-            throws Exception {
-        // TODO: this is inefficient as it reads the whole image into memory
-        BufferedImage image = ImageIO.read(file);
-        return new Dimension(image.getWidth(), image.getHeight());
-    }
-
-    public Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
-            throws Exception {
+    public Dimension getSize(ImageInputStream inputStream,
+                             SourceFormat sourceFormat) throws Exception {
         // TODO: this is inefficient as it reads the whole image into memory
         BufferedImage image = ImageIO.read(inputStream);
         return new Dimension(image.getWidth(), image.getHeight());
@@ -126,21 +117,9 @@ public class ImageIoProcessor implements Processor {
     }
 
     public void process(Parameters params, SourceFormat sourceFormat,
-                        File sourceFile, OutputStream outputStream)
-            throws Exception {
-        BufferedImage image = ImageIO.read(sourceFile);
-        doProcessing(image, params, outputStream);
-    }
-
-    public void process(Parameters params, SourceFormat sourceFormat,
-                        InputStream inputStream, OutputStream outputStream)
+                        ImageInputStream inputStream, OutputStream outputStream)
             throws Exception {
         BufferedImage image = ImageIO.read(inputStream);
-        doProcessing(image, params, outputStream);
-    }
-
-    private void doProcessing(BufferedImage image, Parameters params,
-                              OutputStream outputStream) throws IOException {
         if (image == null) {
             throw new UnsupportedSourceFormatException();
         }

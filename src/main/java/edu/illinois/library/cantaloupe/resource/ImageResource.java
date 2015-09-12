@@ -24,6 +24,8 @@ import org.restlet.resource.Get;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.stream.ImageInputStream;
+
 /**
  * Handles IIIF image requests.
  *
@@ -41,28 +43,9 @@ public class ImageResource extends AbstractResource {
      */
     class ImageRepresentation extends OutputRepresentation {
 
-        File sourceFile;
-        InputStream inputStream;
+        ImageInputStream inputStream;
         Parameters params;
         SourceFormat sourceFormat;
-
-        /**
-         * Constructor for local-file images.
-         *
-         * @param mediaType
-         * @param sourceFormat
-         * @param params
-         * @param sourceFile
-         */
-        public ImageRepresentation(MediaType mediaType,
-                                   SourceFormat sourceFormat,
-                                   Parameters params,
-                                   File sourceFile) {
-            super(mediaType);
-            this.sourceFile = sourceFile;
-            this.params = params;
-            this.sourceFormat = sourceFormat;
-        }
 
         /**
          * Constructor for images from InputStreams.
@@ -75,7 +58,7 @@ public class ImageResource extends AbstractResource {
         public ImageRepresentation(MediaType mediaType,
                                    SourceFormat sourceFormat,
                                    Parameters params,
-                                   InputStream inputStream) {
+                                   ImageInputStream inputStream) {
             super(mediaType);
             this.inputStream = inputStream;
             this.params = params;
@@ -92,13 +75,8 @@ public class ImageResource extends AbstractResource {
             try {
                 Processor proc = ProcessorFactory.
                         getProcessor(this.sourceFormat);
-                if (this.sourceFile != null) {
-                    proc.process(this.params, this.sourceFormat,
-                            this.sourceFile, outputStream);
-                } else {
-                    proc.process(this.params, this.sourceFormat,
-                            this.inputStream, outputStream);
-                }
+                proc.process(this.params, this.sourceFormat,
+                        this.inputStream, outputStream);
             } catch (Exception e) {
                 throw new IOException(e);
             }
@@ -123,8 +101,7 @@ public class ImageResource extends AbstractResource {
         // 2. Get a reference to the source image (this will also cause an
         // exception if not found)
         Resolver resolver = ResolverFactory.getResolver();
-        File sourceFile = resolver.getFile(identifier);
-        InputStream inputStream = resolver.getInputStream(identifier);
+        ImageInputStream inputStream = resolver.getInputStream(identifier);
         // 3. Determine the format of the source image
         SourceFormat sourceFormat = resolver.getSourceFormat(identifier);
         // 4. Obtain an instance of the processor assigned to that format in
@@ -154,18 +131,8 @@ public class ImageResource extends AbstractResource {
 
         MediaType mediaType = new MediaType(
                 OutputFormat.valueOf(format.toUpperCase()).getMediaType());
-
-        // 7. If we can resolve the identifier to a File, then:
-        // 8a. serve the source image from a File, as it should be the fastest
-        // option
-        if (sourceFile != null) {
-            return new ImageRepresentation(mediaType, sourceFormat, params,
-                    sourceFile);
-        } else {
-            // 8b. serve it from an InputStream as a fallback option
-            return new ImageRepresentation(mediaType, sourceFormat, params,
-                    inputStream);
-        }
+        return new ImageRepresentation(mediaType, sourceFormat, params,
+                inputStream);
     }
 
 }

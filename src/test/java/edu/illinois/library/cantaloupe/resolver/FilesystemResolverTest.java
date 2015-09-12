@@ -29,21 +29,6 @@ public class FilesystemResolverTest extends TestCase {
         instance = new FilesystemResolver();
     }
 
-    public void testGetFile() {
-        try {
-            assertNotNull(instance.getFile(FILE));
-        } catch (FileNotFoundException e) {
-            fail();
-        }
-
-        try {
-            instance.getFile("bogus");
-            fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
-        }
-    }
-
     public void testGetInputStream() throws Exception {
         try {
             assertNotNull(instance.getInputStream(FILE));

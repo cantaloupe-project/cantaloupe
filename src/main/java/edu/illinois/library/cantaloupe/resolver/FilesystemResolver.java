@@ -8,10 +8,10 @@ import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.stream.FileImageInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.IOException;
 import java.util.Collection;
 
 public class FilesystemResolver implements Resolver {
@@ -23,7 +23,8 @@ public class FilesystemResolver implements Resolver {
     private static Logger logger = LoggerFactory.
             getLogger(FilesystemResolver.class);
 
-    public File getFile(String identifier) throws FileNotFoundException {
+    public FileImageInputStream getInputStream(String identifier)
+            throws IOException {
         File file = new File(getPathname(identifier));
         if (!file.exists()) {
             String message = "Failed to resolve " + identifier + " to " +
@@ -32,12 +33,7 @@ public class FilesystemResolver implements Resolver {
             throw new FileNotFoundException(message);
         }
         logger.debug("Resolved {} to {}", identifier, file.getAbsolutePath());
-        return file;
-    }
-
-    public InputStream getInputStream(String identifier)
-            throws FileNotFoundException {
-        return new FileInputStream(getPathname(identifier));
+        return new FileImageInputStream(file);
     }
 
     public String getPathname(String identifier) {

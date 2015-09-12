@@ -21,10 +21,6 @@ public class HttpResolverTest extends TestCase {
         instance = new HttpResolver();
     }
 
-    public void testGetFile() {
-        assertNull(instance.getFile("bogus"));
-    }
-
     public void testGetInputStream() {
         try {
             assertNull(instance.getInputStream("bogus"));

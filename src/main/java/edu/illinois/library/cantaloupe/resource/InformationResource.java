@@ -29,6 +29,8 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 
+import javax.imageio.stream.ImageInputStream;
+
 /**
  * Handles IIIF information requests.
  *
@@ -52,31 +54,20 @@ public class InformationResource extends AbstractResource {
         // 1. Assemble the URI parameters into a Parameters object
         Map<String,Object> attrs = this.getRequest().getAttributes();
         String identifier = Reference.decode((String) attrs.get("identifier"));
-        // 2. Obtain a reference to the source image as a File and/or an
-        // InputStream
+        // 2. Obtain a reference to the source image as an ImageInputStream
         Resolver resolver = ResolverFactory.getResolver();
-        File sourceFile = resolver.getFile(identifier);
-        InputStream inputStream = resolver.getInputStream(identifier);
+        ImageInputStream inputStream = resolver.getInputStream(identifier);
         // 3. Determine the format of the source image
         SourceFormat sourceFormat = resolver.getSourceFormat(identifier);
         // 4. Obtain an instance of the processor assigned to that format in
         // the config file
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
         // 5. Get an ImageInfo instance corresponding to the source image
-        ImageInfo imageInfo;
-        if (sourceFile != null) {
-            imageInfo = getImageInfo(identifier,
-                    proc.getSize(sourceFile, sourceFormat),
-                    proc.getSupportedQualities(sourceFormat),
-                    proc.getSupportedFeatures(sourceFormat),
-                    proc.getAvailableOutputFormats(sourceFormat));
-        } else {
-            imageInfo = getImageInfo(identifier,
-                    proc.getSize(inputStream, sourceFormat),
-                    proc.getSupportedQualities(sourceFormat),
-                    proc.getSupportedFeatures(sourceFormat),
-                    proc.getAvailableOutputFormats(sourceFormat));
-        }
+        ImageInfo imageInfo = getImageInfo(identifier,
+                proc.getSize(inputStream, sourceFormat),
+                proc.getSupportedQualities(sourceFormat),
+                proc.getSupportedFeatures(sourceFormat),
+                proc.getAvailableOutputFormats(sourceFormat));
         // 6. Transform the ImageInfo into JSON
         ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writer().

@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.request.Quality;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.im4java.process.ProcessStarter;
 
+import javax.imageio.stream.FileImageInputStream;
 import java.awt.Dimension;
 import java.io.FileInputStream;
 import java.util.HashSet;
@@ -44,17 +45,10 @@ public class GraphicsMagickProcessorTest extends ProcessorTest {
                 instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
     }
 
-    public void testGetSizeWithFile() throws Exception {
-        Dimension expectedSize = new Dimension(594, 522);
-        Dimension actualSize = instance.getSize(getFixture("escher_lego.jpg"),
-                SourceFormat.JPG);
-        assertEquals(expectedSize, actualSize);
-    }
-
-    public void testGetSizeWithInputStream() throws Exception {
+    public void testGetSize() throws Exception {
         Dimension expectedSize = new Dimension(594, 522);
         Dimension actualSize = instance.getSize(
-                new FileInputStream(getFixture("escher_lego.jpg")),
+                new FileImageInputStream(getFixture("escher_lego.jpg")),
                 SourceFormat.JPG);
         assertEquals(expectedSize, actualSize);
     }

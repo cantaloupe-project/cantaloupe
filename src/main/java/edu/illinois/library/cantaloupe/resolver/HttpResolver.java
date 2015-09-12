@@ -6,7 +6,6 @@ import org.apache.commons.configuration.Configuration;
 import org.restlet.Client;
 import org.restlet.Context;
 import org.restlet.data.ChallengeScheme;
-import org.restlet.data.Header;
 import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
@@ -15,10 +14,10 @@ import org.restlet.resource.ResourceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 
 public class HttpResolver implements Resolver {
 
@@ -26,18 +25,8 @@ public class HttpResolver implements Resolver {
 
     private static Client client = new Client(new Context(), Protocol.HTTP);
 
-    /**
-     * Exists to comply with Resolver. Returns null always. Use
-     * <code>getInputStream()</code> instead.
-     *
-     * @param identifier IIIF identifier.
-     * @return Null.
-     */
-    public File getFile(String identifier) {
-        return null;
-    }
-
-    public InputStream getInputStream(String identifier) throws IOException {
+    public ImageInputStream getInputStream(String identifier)
+            throws IOException {
         Configuration config = Application.getConfiguration();
         Reference url = getUrl(identifier);
         logger.debug("Resolved {} to {}", identifier, url);
@@ -52,7 +41,7 @@ public class HttpResolver implements Resolver {
                     username, password);
         }
         try {
-            return resource.get().getStream();
+            return ImageIO.createImageInputStream(resource.get().getStream());
         } catch (ResourceException e) {
             throw new FileNotFoundException(e.getMessage());
         }

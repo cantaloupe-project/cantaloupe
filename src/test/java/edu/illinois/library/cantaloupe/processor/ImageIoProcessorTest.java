@@ -4,8 +4,8 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Quality;
 
+import javax.imageio.stream.FileImageInputStream;
 import java.awt.Dimension;
-import java.io.FileInputStream;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -30,17 +30,10 @@ public class ImageIoProcessorTest extends ProcessorTest {
                 instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
     }
 
-    public void testGetSizeWithFile() throws Exception {
-        Dimension expectedSize = new Dimension(594, 522);
-        Dimension actualSize = instance.getSize(getFixture("escher_lego.jpg"),
-                SourceFormat.JPG);
-        assertEquals(expectedSize, actualSize);
-    }
-
-    public void testGetSizeWithInputStream() throws Exception {
+    public void testGetSize() throws Exception {
         Dimension expectedSize = new Dimension(594, 522);
         Dimension actualSize = instance.getSize(
-                new FileInputStream(getFixture("escher_lego.jpg")),
+                new FileImageInputStream(getFixture("escher_lego.jpg")),
                 SourceFormat.JPG);
         assertEquals(expectedSize, actualSize);
     }
