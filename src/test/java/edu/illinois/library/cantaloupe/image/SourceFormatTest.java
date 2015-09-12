@@ -77,6 +77,18 @@ public class SourceFormatTest extends TestCase {
                 contains(new MediaType("unknown/unknown")));
     }
 
+    public void testGetName() {
+        assertEquals("BMP", SourceFormat.BMP.getName());
+        assertEquals("GIF", SourceFormat.GIF.getName());
+        assertEquals("JPEG2000", SourceFormat.JP2.getName());
+        assertEquals("JPEG", SourceFormat.JPG.getName());
+        assertEquals("PDF", SourceFormat.PDF.getName());
+        assertEquals("PNG", SourceFormat.PNG.getName());
+        assertEquals("TIFF", SourceFormat.TIF.getName());
+        assertEquals("WebP", SourceFormat.WEBP.getName());
+        assertEquals("Unknown", SourceFormat.UNKNOWN.getName());
+    }
+
     public void testGetPreferredMediaType() {
         assertEquals("application/pdf",
                 SourceFormat.PDF.getPreferredMediaType().toString());

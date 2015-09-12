@@ -23,12 +23,12 @@
             <h3>Resolver</h3>
             <p>$resolverName</p>
 
-            <h3>Source Format Assignments</h3>
+            <h3>Effective Source Format Assignments</h3>
 
             <table class="table table-condensed table-bordered">
                 #foreach ($sourceFormat in $processorAssignments.keySet())
                     <tr>
-                        <td style="width:10%">$sourceFormat.getPreferredExtension()</td>
+                        <td style="width:10%">$sourceFormat.getName()</td>
                         <td>$processorAssignments.get($sourceFormat)</td>
                     </tr>
                 #end
@@ -40,7 +40,7 @@
                 <tr>
                     <th></th>
                     #foreach ($sourceFormat in $sourceFormats)
-                        <th class="text-center">$sourceFormat</th>
+                        <th class="text-center">$sourceFormat.getName()</th>
                     #end
                 </tr>
 

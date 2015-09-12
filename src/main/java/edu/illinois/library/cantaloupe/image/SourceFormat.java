@@ -11,17 +11,18 @@ import java.util.List;
  */
 public enum SourceFormat {
 
-    BMP("bmp"),
-    GIF("gif"),
-    JP2("jp2"),
-    JPG("jpg"),
-    PDF("pdf"),
-    PNG("png"),
-    TIF("tif"),
-    WEBP("webp"),
-    UNKNOWN("unknown");
+    BMP("bmp", "BMP"),
+    GIF("gif", "GIF"),
+    JP2("jp2", "JPEG2000"),
+    JPG("jpg", "JPEG"),
+    PDF("pdf", "PDF"),
+    PNG("png", "PNG"),
+    TIF("tif", "TIFF"),
+    WEBP("webp", "WebP"),
+    UNKNOWN("unknown", "Unknown");
 
     private String id;
+    private String name;
 
     /**
      * @param identifier IIIF identifier.
@@ -56,8 +57,9 @@ public enum SourceFormat {
         return SourceFormat.UNKNOWN;
     }
 
-    SourceFormat(String internalId) {
+    SourceFormat(String internalId, String name) {
         this.id = internalId;
+        this.name = name;
     }
 
     public List<String> getExtensions() {
@@ -112,6 +114,13 @@ public enum SourceFormat {
             types.add(new MediaType("unknown/unknown"));
         }
         return types;
+    }
+
+    /**
+     * @return Human-readable name.
+     */
+    public String getName() {
+        return this.name;
     }
 
     public String getPreferredExtension() {
