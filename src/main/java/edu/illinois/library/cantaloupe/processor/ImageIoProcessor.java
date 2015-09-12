@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.request.Size;
 import org.restlet.data.MediaType;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
@@ -19,6 +20,7 @@ import java.awt.image.BufferedImage;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -92,9 +94,22 @@ class ImageIoProcessor implements Processor {
 
     public Dimension getSize(ImageInputStream inputStream,
                              SourceFormat sourceFormat) throws Exception {
-        // TODO: this is inefficient as it reads the whole image into memory
-        BufferedImage image = ImageIO.read(inputStream);
-        return new Dimension(image.getWidth(), image.getHeight());
+        // get width & height (without reading the entire image into memory)
+        Iterator<ImageReader> iter = ImageIO.
+                getImageReadersBySuffix(sourceFormat.getPreferredExtension());
+        if (iter.hasNext()) {
+            ImageReader reader = iter.next();
+            int width, height;
+            try {
+                reader.setInput(inputStream);
+                width = reader.getWidth(reader.getMinIndex());
+                height = reader.getHeight(reader.getMinIndex());
+            } finally {
+                reader.dispose();
+            }
+            return new Dimension(width, height);
+        }
+        return null;
     }
 
     public Set<ProcessorFeature> getSupportedFeatures(SourceFormat sourceFormat) {
