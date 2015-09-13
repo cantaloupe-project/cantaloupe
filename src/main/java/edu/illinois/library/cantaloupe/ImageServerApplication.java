@@ -48,24 +48,29 @@ public class ImageServerApplication extends Application {
         @Override
         public Representation toRepresentation(Status status, Request request,
                                                Response response) {
-            Map<String,Object> templateVars = new HashMap<String,Object>();
-            templateVars.put("pageTitle", status.getCode() + " " +
-                    status.getReasonPhrase());
-
+            String message = null, stackTrace = null;
             Throwable throwable = status.getThrowable();
             if (throwable != null) {
                 if (throwable.getCause() != null) {
                     throwable = throwable.getCause();
                 }
-                templateVars.put("message", throwable.getMessage());
+                message = throwable.getMessage();
                 Configuration config = edu.illinois.library.cantaloupe.
                         Application.getConfiguration();
                 if (config.getBoolean("print_stack_trace_on_error_pages")) {
                     StringWriter sw = new StringWriter();
                     throwable.printStackTrace(new PrintWriter(sw));
-                    templateVars.put("stackTrace", sw.toString());
+                    stackTrace = sw.toString();
                 }
+            } else if (status == Status.CLIENT_ERROR_NOT_FOUND) {
+                message = "No resource exists at this URL.";
             }
+
+            Map<String,Object> templateVars = new HashMap<String,Object>();
+            templateVars.put("pageTitle", status.getCode() + " " +
+                    status.getReasonPhrase());
+            templateVars.put("message", message);
+            templateVars.put("stackTrace", stackTrace);
 
             org.apache.velocity.Template template = Velocity.getTemplate("error.vm");
             return new TemplateRepresentation(template, templateVars,
