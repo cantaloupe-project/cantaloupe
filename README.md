@@ -217,6 +217,15 @@ There does appear to be an [ImageIO Kakadu adapter]
 (https://github.com/geosolutions-it/imageio-ext/) available. Please report
 back if you have any experience with it.
 
+## TIFF
+
+GraphicsMagickProcessor and ImageMagickProcessor can both handle TIFF if the
+necessary delegate or plugin is installed. (See the Cantaloupe landing page.)
+
+ImageIoProcessor can read and write TIFF thanks to the bundled (JAI-EXT)
+[https://github.com/geosolutions-it/jai-ext] library. Unfortunately, it is
+currently super slow.
+
 # Custom Development
 
 ## Adding Custom Resolvers
