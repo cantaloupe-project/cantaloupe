@@ -138,7 +138,17 @@ class ImageIoProcessor implements Processor {
         if (image == null) {
             throw new UnsupportedSourceFormatException();
         }
-        image = cropImage(image, params.getRegion());
+
+        // The image may be of type TYPE_CUSTOM, which won't work with various
+        // operations, so copy it into a new image of type TYPE_INT_RGB.
+        BufferedImage rgbImage = new BufferedImage(image.getWidth(),
+                image.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = rgbImage.createGraphics();
+        g.drawImage(image, 0, 0, null);
+        g.dispose();
+        image.flush();
+
+        image = cropImage(rgbImage, params.getRegion());
         image = scaleImage(image, params.getSize());
         image = rotateImage(image, params.getRotation());
         image = filterImage(image, params.getQuality());
