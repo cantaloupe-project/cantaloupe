@@ -41,7 +41,7 @@ public class ImageResource extends AbstractResource {
      * returned an instance of this class, it will no longer be possible to
      * render the error page, as response headers will have already been sent.
      */
-    class ImageRepresentation extends OutputRepresentation {
+    private class ImageRepresentation extends OutputRepresentation {
 
         ImageInputStream inputStream;
         Parameters params;
@@ -75,8 +75,12 @@ public class ImageResource extends AbstractResource {
             try {
                 Processor proc = ProcessorFactory.
                         getProcessor(this.sourceFormat);
+                long msec = System.currentTimeMillis();
                 proc.process(this.params, this.sourceFormat,
                         this.inputStream, outputStream);
+                logger.debug("{} processed in {} msec",
+                        proc.getClass().getSimpleName(),
+                        System.currentTimeMillis() - msec);
             } catch (Exception e) {
                 throw new IOException(e);
             }

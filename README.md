@@ -16,8 +16,8 @@ Home: [https://github.com/medusa-project/cantaloupe]
 
 ## What It Doesn't Do
 
-* Caching. The current thinking is that this would add a lot of complexity and
-  be made redundant by a caching HTTP proxy, which can do a better job anyway.
+* Caching. The current thinking is that this would add complexity and be made
+  redundant by a caching HTTP proxy, which can do a better job anyway.
 
 # Requirements
 
@@ -50,7 +50,10 @@ it the following contents, modifying as desired:
 
     # Optional; overrides the PATH
     ImageMagickProcessor.path_to_binaries = /usr/local/bin
-    
+
+    # JPEG output quality. Should be a number between 0-1 ending in "f"
+    ImageIoProcessor.jpg.quality = 0.7f
+
     # The resolver that translates the identifier in the URL to an image source.
     # Available values are `FilesystemResolver` and `HttpResolver`.
     resolver = FilesystemResolver
@@ -157,23 +160,14 @@ source format* is contained within the response to an information request.
 
 ### ImageIoProcessor
 
-ImageIoProcessor uses the Java ImageIO framework to load and operate on
-BufferedImages.
+ImageIoProcessor uses Java ImageIO framework to load and process images in a
+native-Java way.
 
 ImageIO, as its name implies, is simply an I/O interface that does not care 
 about image formats, and therefore the list of formats supported by this
-processor varies depending on the codec JARss available in the classpath. By
-default, it is rather limited -- typically something like JPEG, GIF, BMP, and
-PNG.
-
-#### Additional Codec JARs
-
-(These are untested by the author; please report back if you have any
-experiences to report.)
-
-* [JAI ImageIO jar supporting JPEG2000, TIFF, and a few others]
-  (http://maven.geotoolkit.org/javax/media/jai_imageio/1.1/)
-* [ImageIO Kakadu adapter](https://github.com/geosolutions-it/imageio-ext/)
+processor varies depending on the codec JARs available in the classpath.
+(JAI-EXT)[https://github.com/geosolutions-it/jai-ext] by GeoSolutions is
+bundled in to improve the versatility of this processor.
 
 ### GraphicsMagickProcessor
 
@@ -199,7 +193,7 @@ Eliminating this dependency is on the to-do list.*
 
 ImageMagickProcessor, like GraphicsMagickProcessor, also uses
 [im4java](http://im4java.sourceforge.net) to wrap [ImageMagick]
-(http://www.imagemagick.org/) commands.
+(http://www.imagemagick.org/) commands. As such, ImageMagick must be installed.
 
 ImageMagick produces high-quality output and supports all of the IIIF
 transforms and all IIIF output formats (assuming the WebP, JPEG2000, and
@@ -211,18 +205,34 @@ particularly fast or efficient. Large amounts of RAM and fast storage help.
 
 # Notes on Source Formats
 
-(Feel free to contact the author with your own notes.)
+(Feel free to add in your own notes, and send a pull request.)
 
 ## JPEG2000
 
-GraphicsMagick can read/write JPEG2000 files using JasPer, and ImageMagick
-using OpenJPEG. Both of these are extremely slow.
+GraphicsMagick can read/write JPEG2000 using JasPer, and ImageMagick using
+OpenJPEG. Both of these are unusably slow.
 
-Another JPEG2000 implementation is available in the Java Advanced Imaging (JAI)
-library, but the story is the same.
+Cantaloupe includes the (JAI-EXT)[https://github.com/geosolutions-it/jai-ext]
+library, which adds support for several codecs in addition to the few supported
+natively by ImageIO -- JPEG2000 among them. Unfortunately, this implementation
+is not much of an improvement over the above.
 
-There does appear to be an ImageIO Kakadu adapter available; see the
-ImageIoProcessor section for a link.
+Apparently, platform-native adapters are available for the JPEG2000 codec that
+improve its performance. These are quite old and are available only for Windows
+and Linux, and maybe not current versions. (The author has not looked into it.)
+
+There does appear to be an [ImageIO Kakadu adapter]
+(https://github.com/geosolutions-it/imageio-ext/) available. Please report
+back if you have any experience with it.
+
+## TIFF
+
+GraphicsMagickProcessor and ImageMagickProcessor can both handle TIFF if the
+necessary delegate or plugin is installed. (See the Cantaloupe landing page.)
+
+ImageIoProcessor can read and write TIFF thanks to the bundled (JAI-EXT)
+[https://github.com/geosolutions-it/jai-ext] library. Unfortunately, it is
+currently super slow.
 
 # Custom Development
 
@@ -239,13 +249,12 @@ See one of the existing resolvers for examples.
 
 ## Adding Custom Image Processors
 
-Ideally, it would be best to add an ImageIO format plugin instead of a
-custom processor, as this is the most "Java way" and will work with
-ImageIoProcessor.
-
-If that is not an option, a custom processor can be added by implementing the
+Custom processors can be added by implementing the
 `e.i.l.cantaloupe.processor.Processor` interface. See the interface
 documentation for details and the existing implementations for examples.
+
+A better but more difficult option would be to add an ImageIO format plugin
+instead of a custom processor, and then use ImageIoProcessor with it.
 
 ## Contributing Code
 

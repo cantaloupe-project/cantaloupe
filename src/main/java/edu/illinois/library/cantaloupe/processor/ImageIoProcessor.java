@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
@@ -9,11 +10,16 @@ import edu.illinois.library.cantaloupe.request.Rotation;
 import edu.illinois.library.cantaloupe.request.Size;
 import org.restlet.data.MediaType;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -138,12 +144,41 @@ class ImageIoProcessor implements Processor {
         if (image == null) {
             throw new UnsupportedSourceFormatException();
         }
-        image = cropImage(image, params.getRegion());
+
+        // The image may be of type TYPE_CUSTOM, which won't work with various
+        // operations, so copy it into a new image of type TYPE_INT_RGB.
+        BufferedImage rgbImage = new BufferedImage(image.getWidth(),
+                image.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = rgbImage.createGraphics();
+        g.drawImage(image, 0, 0, null);
+        g.dispose();
+        image.flush();
+
+        image = cropImage(rgbImage, params.getRegion());
         image = scaleImage(image, params.getSize());
         image = rotateImage(image, params.getRotation());
         image = filterImage(image, params.getQuality());
-        ImageIO.write(image, params.getOutputFormat().getExtension(),
-                outputStream);
+
+        switch (params.getOutputFormat()) {
+            case JPG:
+                float quality = Application.getConfiguration().
+                        getFloat("ImageIoProcessor.jpg.quality", 0.7f);
+                Iterator iter = ImageIO.getImageWritersByFormatName("jpeg");
+                ImageWriter writer = (ImageWriter) iter.next();
+                ImageWriteParam param = writer.getDefaultWriteParam();
+                param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                param.setCompressionQuality(quality);
+                ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
+                writer.setOutput(os);
+                IIOImage iioImage = new IIOImage(image, null, null);
+                writer.write(null, iioImage, param);
+                writer.dispose();
+                break;
+            default:
+                ImageIO.write(image, params.getOutputFormat().getExtension(),
+                        outputStream);
+                break;
+        }
     }
 
     private BufferedImage cropImage(BufferedImage inputImage, Region region) {
@@ -236,12 +271,75 @@ class ImageIoProcessor implements Processor {
             rotatedImage = new BufferedImage(canvasWidth, canvasHeight,
                     inputImage.getType());
             Graphics2D g2d = rotatedImage.createGraphics();
+            RenderingHints hints = new RenderingHints(
+                    RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2d.setRenderingHints(hints);
             g2d.drawImage(mirroredImage, tx, null);
         }
         return rotatedImage;
     }
 
     private BufferedImage scaleImage(BufferedImage inputImage, Size size) {
+        // use G2D for no particular reason.
+        return scaleImageWithG2d(inputImage, size);
+    }
+
+    /**
+     * Scales an image using an AffineTransform.
+     *
+     * @param inputImage
+     * @param size
+     * @return
+     */
+    private BufferedImage scaleImageWithAffineTransform(
+            BufferedImage inputImage, Size size) {
+        BufferedImage scaledImage;
+        if (size.getScaleMode() == Size.ScaleMode.FULL) {
+            scaledImage = inputImage;
+        } else {
+            double xScale = 0.0f, yScale = 0.0f;
+            if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
+                xScale = size.getWidth() / (double) inputImage.getWidth();
+                yScale = xScale;
+            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
+                yScale = size.getHeight() / (double) inputImage.getHeight();
+                xScale = yScale;
+            } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
+                xScale = size.getWidth() / (double) inputImage.getWidth();
+                yScale = size.getHeight() / (double) inputImage.getHeight();
+            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
+                double hScale = (double) size.getWidth() /
+                        (double) inputImage.getWidth();
+                double vScale = (double) size.getHeight() /
+                        (double) inputImage.getHeight();
+                xScale = inputImage.getWidth() * Math.min(hScale, vScale);
+                yScale = inputImage.getHeight() * Math.min(hScale, vScale);
+            } else if (size.getPercent() != null) {
+                xScale = size.getPercent() / 100.0;
+                yScale = xScale;
+            }
+            int width = (int) Math.round(inputImage.getWidth() * xScale);
+            int height = (int) Math.round(inputImage.getHeight() * yScale);
+            scaledImage = new BufferedImage(width, height, inputImage.getType());
+            AffineTransform at = new AffineTransform();
+            at.scale(xScale, yScale);
+            AffineTransformOp scaleOp = new AffineTransformOp(at,
+                    AffineTransformOp.TYPE_BILINEAR);
+            scaledImage = scaleOp.filter(inputImage, scaledImage);
+        }
+        return scaledImage;
+    }
+
+    /**
+     * Scales an image using Graphics2D.
+     *
+     * @param inputImage
+     * @param size
+     * @return
+     */
+    private BufferedImage scaleImageWithG2d(BufferedImage inputImage,
+                                            Size size) {
         BufferedImage scaledImage;
         if (size.getScaleMode() == Size.ScaleMode.FULL) {
             scaledImage = inputImage;
@@ -276,6 +374,10 @@ class ImageIoProcessor implements Processor {
             scaledImage = new BufferedImage(width, height,
                     inputImage.getType());
             Graphics2D g2d = scaledImage.createGraphics();
+            RenderingHints hints = new RenderingHints(
+                    RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2d.setRenderingHints(hints);
             g2d.drawImage(inputImage, 0, 0, width, height, null);
             g2d.dispose();
         }
