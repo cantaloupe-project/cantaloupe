@@ -16,6 +16,7 @@ public class ProcessorFactory {
         processors.add(new GraphicsMagickProcessor());
         processors.add(new ImageIoProcessor());
         processors.add(new ImageMagickProcessor());
+        processors.add(new JaiProcessor());
         return processors;
     }
 

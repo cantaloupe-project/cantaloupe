@@ -12,6 +12,7 @@ Home: [https://github.com/medusa-project/cantaloupe]
 * Easy to get working
 * Pluggable resolvers for filesystem and HTTP sources
 * Pluggable processors to support a wide variety of source image formats
+* Excellent performance with (some types of) massive images
 
 ## What It Doesn't Do
 
@@ -96,7 +97,8 @@ processor.
 ### FilesystemResolver
 
 FilesystemResolver maps an identifier from an IIIF URL to a filesystem path,
-for retrieving local images.
+for retrieving local images. This is the best resolver for performance, as it
+returns a FileImageInputStream, which supports arbitrary file seeking.
 
 For files with extensions that are missing or unrecognized, this resolver will
 check the "magic number" to determine type, which will add some overhead. It
@@ -114,8 +116,10 @@ An identifier of `image.jpg` in the IIIF URL will resolve to
 
 ### HttpResolver
 
-HttpResolver maps an identifier from an IIIF URL to some other URL, for
-retrieving images from a web server.
+HttpResolver maps an identifier from an IIIF URL to an HTTP resource. Image
+access via HTTP is likely to be slower than via a filesystem, though this
+varies depending on the relative performance of both, as well as the particular
+source image format and whether it supports tile-based loading.
 
 It is preferable to use this resolver with source images with recognizable file
 extensions. For images with an extension that is missing or unrecognizable, it
@@ -184,6 +188,9 @@ installed; see [Supported Formats](http://www.graphicsmagick.org/formats.html)).
 GraphicsMagickProcessor is a good fallback processor, as it supports a wide
 range of source formats and is generally faster than ImageMagickProcessor.
 
+GraphicsMagickProcessor buffers entire source images in RAM, and is therefore
+memory-intensive. Large amounts of RAM and fast storage help.
+
 *Note: due to a quirk in im4java, ImageMagick has to be installed for this
 processor to work. (The `identify` command is used to get image dimensions.)
 Eliminating this dependency is on the to-do list.*
@@ -198,8 +205,9 @@ ImageMagick produces high-quality output and supports all of the IIIF
 transforms and all IIIF output formats (assuming the WebP, JPEG2000, and
 PDF delegates are installed). It also supports a wide array of source formats.
 
-ImageMagick is not known for being particularly fast or efficient. Large
-amounts of RAM and fast storage help.
+ImageMagickProcessor buffers entire source images in RAM, and is therefore
+memory-intensive. On top of this, ImageMagick itself is not known for being
+particularly fast or efficient. Large amounts of RAM and fast storage help.
 
 # Notes on Source Formats
 
