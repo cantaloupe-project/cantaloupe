@@ -252,6 +252,65 @@ class ImageIoProcessor implements Processor {
     }
 
     private BufferedImage scaleImage(BufferedImage inputImage, Size size) {
+        // use G2D for no particular reason.
+        return scaleImageWithG2d(inputImage, size);
+    }
+
+    /**
+     * Scales an image using an AffineTransform.
+     *
+     * @param inputImage
+     * @param size
+     * @return
+     */
+    private BufferedImage scaleImageWithAffineTransform(
+            BufferedImage inputImage, Size size) {
+        BufferedImage scaledImage;
+        if (size.getScaleMode() == Size.ScaleMode.FULL) {
+            scaledImage = inputImage;
+        } else {
+            double xScale = 0.0f, yScale = 0.0f;
+            if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
+                xScale = size.getWidth() / (double) inputImage.getWidth();
+                yScale = xScale;
+            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
+                yScale = size.getHeight() / (double) inputImage.getHeight();
+                xScale = yScale;
+            } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
+                xScale = size.getWidth() / (double) inputImage.getWidth();
+                yScale = size.getHeight() / (double) inputImage.getHeight();
+            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
+                double hScale = (double) size.getWidth() /
+                        (double) inputImage.getWidth();
+                double vScale = (double) size.getHeight() /
+                        (double) inputImage.getHeight();
+                xScale = inputImage.getWidth() * Math.min(hScale, vScale);
+                yScale = inputImage.getHeight() * Math.min(hScale, vScale);
+            } else if (size.getPercent() != null) {
+                xScale = size.getPercent() / 100.0;
+                yScale = xScale;
+            }
+            int width = (int) Math.round(inputImage.getWidth() * xScale);
+            int height = (int) Math.round(inputImage.getHeight() * yScale);
+            scaledImage = new BufferedImage(width, height, inputImage.getType());
+            AffineTransform at = new AffineTransform();
+            at.scale(xScale, yScale);
+            AffineTransformOp scaleOp = new AffineTransformOp(at,
+                    AffineTransformOp.TYPE_BILINEAR);
+            scaledImage = scaleOp.filter(inputImage, scaledImage);
+        }
+        return scaledImage;
+    }
+
+    /**
+     * Scales an image using Graphics2D.
+     *
+     * @param inputImage
+     * @param size
+     * @return
+     */
+    private BufferedImage scaleImageWithG2d(BufferedImage inputImage,
+                                            Size size) {
         BufferedImage scaledImage;
         if (size.getScaleMode() == Size.ScaleMode.FULL) {
             scaledImage = inputImage;
