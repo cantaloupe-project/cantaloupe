@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
@@ -9,9 +10,13 @@ import edu.illinois.library.cantaloupe.request.Rotation;
 import edu.illinois.library.cantaloupe.request.Size;
 import org.restlet.data.MediaType;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -153,8 +158,27 @@ class ImageIoProcessor implements Processor {
         image = scaleImage(image, params.getSize());
         image = rotateImage(image, params.getRotation());
         image = filterImage(image, params.getQuality());
-        ImageIO.write(image, params.getOutputFormat().getExtension(),
-                outputStream);
+
+        switch (params.getOutputFormat()) {
+            case JPG:
+                float quality = Application.getConfiguration().
+                        getFloat("ImageIoProcessor.jpg.quality", 0.7f);
+                Iterator iter = ImageIO.getImageWritersByFormatName("jpeg");
+                ImageWriter writer = (ImageWriter) iter.next();
+                ImageWriteParam param = writer.getDefaultWriteParam();
+                param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                param.setCompressionQuality(quality);
+                ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
+                writer.setOutput(os);
+                IIOImage iioImage = new IIOImage(image, null, null);
+                writer.write(null, iioImage, param);
+                writer.dispose();
+                break;
+            default:
+                ImageIO.write(image, params.getOutputFormat().getExtension(),
+                        outputStream);
+                break;
+        }
     }
 
     private BufferedImage cropImage(BufferedImage inputImage, Region region) {

@@ -49,7 +49,10 @@ it the following contents, modifying as desired:
 
     # Optional; overrides the PATH
     ImageMagickProcessor.path_to_binaries = /usr/local/bin
-    
+
+    # JPEG output quality. Should be a number between 0-1 ending in "f"
+    ImageIoProcessor.jpg.quality = 0.7f
+
     # The resolver that translates the identifier in the URL to an image source.
     # Available values are `FilesystemResolver` and `HttpResolver`.
     resolver = FilesystemResolver
