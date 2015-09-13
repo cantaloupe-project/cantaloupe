@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
 import com.sun.media.jai.codec.ImageCodec;
 import com.sun.media.jai.codec.ImageEncoder;
 import com.sun.media.jai.codec.JPEGEncodeParam;
@@ -14,9 +15,13 @@ import edu.illinois.library.cantaloupe.request.Rotation;
 import edu.illinois.library.cantaloupe.request.Size;
 import org.restlet.data.MediaType;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
@@ -154,8 +159,6 @@ class JaiProcessor implements Processor {
     }
 
     private RenderedOp loadRegion(ImageInputStream inputStream, Region region) {
-        // Load the requested region via JAI, which supports tiling for some
-        // formats, in contrast to ImageIO.read() which loads the entire image
         ParameterBlockJAI pbj = new ParameterBlockJAI("ImageRead");
         ImageLayout layout = new ImageLayout();
         layout.setTileWidth(JAI_TILE_SIZE);
@@ -221,7 +224,7 @@ class JaiProcessor implements Processor {
                 xScale = (float) (inputImage.getWidth() * Math.min(hScale, vScale));
                 yScale = (float) (inputImage.getHeight() * Math.min(hScale, vScale));
             } else if (size.getPercent() != null) {
-                xScale = (float) (inputImage.getWidth() * (size.getPercent() / 100.0));
+                xScale = size.getPercent() / 100.0f;
                 yScale = xScale;
             }
             ParameterBlock pb = new ParameterBlock();
@@ -230,7 +233,7 @@ class JaiProcessor implements Processor {
             pb.add(yScale);
             pb.add(0.0f);
             pb.add(0.0f);
-            pb.add(Interpolation.getInstance(Interpolation.INTERP_NEAREST)); // TODO: try bilinear/bicubic
+            pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
             scaledImage = JAI.create("scale", pb);
         }
         return scaledImage;
@@ -250,10 +253,10 @@ class JaiProcessor implements Processor {
         if (rotation.getDegrees() > 0) {
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(rotatedImage);
-            pb.add(mirroredImage.getWidth() / 2);
-            pb.add(mirroredImage.getHeight() / 2);
-            pb.add(Math.toRadians(rotation.getDegrees()));
-            pb.add(Interpolation.getInstance(Interpolation.INTERP_NEAREST)); // TODO: try bilinear/bicubic
+            pb.add(mirroredImage.getWidth() / 2.0f);
+            pb.add(mirroredImage.getHeight() / 2.0f);
+            pb.add((float) Math.toRadians(rotation.getDegrees()));
+            pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
             rotatedImage = JAI.create("rotate", pb);
         }
         return rotatedImage;
@@ -261,23 +264,20 @@ class JaiProcessor implements Processor {
 
     private RenderedOp filterImage(RenderedOp inputImage, Quality quality) {
         RenderedOp filteredImage = inputImage;
-        /* TODO: write this
         if (quality != Quality.COLOR && quality != Quality.DEFAULT) {
-            switch (quality) {
-                case GRAY:
-                    filteredImage = new BufferedImage(inputImage.getWidth(),
-                            inputImage.getHeight(),
-                            BufferedImage.TYPE_BYTE_GRAY);
-                    break;
-                case BITONAL:
-                    filteredImage = new BufferedImage(inputImage.getWidth(),
-                            inputImage.getHeight(),
-                            BufferedImage.TYPE_BYTE_BINARY);
-                    break;
+            // convert to grayscale
+            double[][] matrix = { { 0.114, 0.587, 0.299, 0 } };
+            ParameterBlock pb = new ParameterBlock();
+            pb.addSource(inputImage);
+            pb.add(matrix);
+            filteredImage = JAI.create("bandcombine", pb, null);
+            if (quality == Quality.BITONAL) {
+                 pb = new ParameterBlock();
+                 pb.addSource(filteredImage);
+                 pb.add(1.0 * 128);
+                 filteredImage = JAI.create("binarize", pb);
             }
-            Graphics2D g2d = filteredImage.createGraphics();
-            g2d.drawImage(inputImage, 0, 0, null);
-        }*/
+        }
         return filteredImage;
     }
 
@@ -285,16 +285,37 @@ class JaiProcessor implements Processor {
                              OutputStream outputStream) throws IOException {
         switch (format) {
             case GIF:
+                Iterator writers = ImageIO.getImageWritersByFormatName("GIF");
+                if (writers.hasNext()) {
+                    ImageWriter writer = (ImageWriter) writers.next();
+                    ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
+                    writer.setOutput(os);
+                    // TODO: this doesn't seem to write anything
+                    writer.write(image);
+                }
                 break;
             case JP2:
+                writers = ImageIO.getImageWritersByFormatName("JPEG2000");
+                if (writers.hasNext()) {
+                    ImageWriter writer = (ImageWriter) writers.next();
+                    IIOImage iioImage = new IIOImage(image, null, null);
+                    J2KImageWriteParam j2Param = new J2KImageWriteParam();
+                    j2Param.setLossless(false);
+                    j2Param.setEncodingRate(Double.MAX_VALUE);
+                    j2Param.setCodeBlockSize(new int[]{128, 8});
+                    j2Param.setTilingMode(ImageWriteParam.MODE_DISABLED);
+                    j2Param.setProgressionType("res");
+                    ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
+                    writer.setOutput(os);
+                    // TODO: this doesn't seem to write anything
+                    writer.write(null, iioImage, j2Param);
+                }
                 break;
             case JPG:
-                JPEGEncodeParam param = new JPEGEncodeParam();
+                JPEGEncodeParam jParam = new JPEGEncodeParam();
                 ImageEncoder encoder = ImageCodec.createImageEncoder("JPEG",
-                        outputStream, param);
+                        outputStream, jParam);
                 encoder.encode(image);
-                break;
-            case PDF:
                 break;
             case PNG:
                 PNGEncodeParam pngParam = new PNGEncodeParam.RGB();
@@ -306,8 +327,6 @@ class JaiProcessor implements Processor {
                 TIFFImageEncoder tiffEnc = new TIFFImageEncoder(outputStream,
                         null);
                 tiffEnc.encode(image);
-                break;
-            case WEBP:
                 break;
         }
 

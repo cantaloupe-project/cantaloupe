@@ -12,7 +12,7 @@ Home: [https://github.com/medusa-project/cantaloupe]
 * Easy to get working
 * Pluggable resolvers for filesystem and HTTP sources
 * Pluggable processors to support a wide variety of source image formats
-* Excellent performance with (some types of) massive images
+* Excellent performance possible with (some types of) massive images
 
 ## What It Doesn't Do
 
@@ -40,7 +40,7 @@ it the following contents, modifying as desired:
     # These definitions are optional.
     processor.jp2 = ImageMagickProcessor
     processor.jpg = ImageIoProcessor
-    processor.tif = ImageMagickProcessor
+    processor.tif = JaiProcessor
     # For any formats not assigned above, fall back to a general-purpose
     # processor.
     processor.fallback = ImageMagickProcessor
@@ -146,6 +146,7 @@ particular source formats via the config file (see the Configuration section
 above). Currently, the available processors are:
 
 * ImageIoProcessor
+* JaiProcessor
 * GraphicsMagickProcessor
 * ImageMagickProcessor
 
@@ -168,6 +169,18 @@ about image formats, and therefore the list of formats supported by this
 processor varies depending on the codec JARs available in the classpath.
 (JAI-EXT)[https://github.com/geosolutions-it/jai-ext] by GeoSolutions is
 bundled in to improve the versatility of this processor.
+
+### JaiProcessor
+
+JaiProcessor uses the Java Advanced Imaging (JAI) framework. JAI is very
+powerful, but has not been updated in many years. Nevertheless, it still works.
+
+JaiProcessor's main advantage is its internal tiling engine which makes it
+abie to selectively load image regions (with some formats). This can result in
+a huge performance win for very large images, but only with the
+FilesystemResolver.
+
+JaiProcessor can read and write the same formats as ImageIoProcessor.
 
 ### GraphicsMagickProcessor
 
@@ -232,7 +245,10 @@ necessary delegate or plugin is installed. (See the Cantaloupe landing page.)
 
 ImageIoProcessor can read and write TIFF thanks to the bundled (JAI-EXT)
 [https://github.com/geosolutions-it/jai-ext] library. Unfortunately, it is
-currently super slow.
+very slow.
+
+JaiProcessor, on the other hand, is able to load TIFF images in tiles, which
+makes it very fast with this format.
 
 # Custom Development
 

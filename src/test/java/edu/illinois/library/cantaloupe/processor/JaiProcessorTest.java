@@ -11,14 +11,14 @@ import java.util.Set;
 
 public class JaiProcessorTest extends ProcessorTest {
 
-    ImageIoProcessor instance;
+    JaiProcessor instance;
 
     public void setUp() {
-        instance = new ImageIoProcessor();
+        instance = new JaiProcessor();
     }
 
     public void testGetFormats() {
-        Set<OutputFormat> expectedFormats = ImageIoProcessor.
+        Set<OutputFormat> expectedFormats = JaiProcessor.
                 getFormats().get(SourceFormat.JPG);
         assertEquals(expectedFormats,
                 instance.getAvailableOutputFormats(SourceFormat.JPG));
