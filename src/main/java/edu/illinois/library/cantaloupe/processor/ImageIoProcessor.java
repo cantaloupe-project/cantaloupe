@@ -14,6 +14,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -246,6 +247,10 @@ class ImageIoProcessor implements Processor {
             rotatedImage = new BufferedImage(canvasWidth, canvasHeight,
                     inputImage.getType());
             Graphics2D g2d = rotatedImage.createGraphics();
+            RenderingHints hints = new RenderingHints(
+                    RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2d.setRenderingHints(hints);
             g2d.drawImage(mirroredImage, tx, null);
         }
         return rotatedImage;
@@ -345,6 +350,10 @@ class ImageIoProcessor implements Processor {
             scaledImage = new BufferedImage(width, height,
                     inputImage.getType());
             Graphics2D g2d = scaledImage.createGraphics();
+            RenderingHints hints = new RenderingHints(
+                    RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2d.setRenderingHints(hints);
             g2d.drawImage(inputImage, 0, 0, width, height, null);
             g2d.dispose();
         }
