@@ -70,66 +70,61 @@ class ImageMagickProcessor implements Processor {
      */
     public static HashMap<SourceFormat, Set<OutputFormat>> getAvailableOutputFormats() {
         if (supportedFormats == null) {
-            loadSupportedFormats();
+            final Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
+            final Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
+            try {
+                // retrieve the output of the `identify -list format` command,
+                // which contains a list of all supported formats
+                Runtime runtime = Runtime.getRuntime();
+                String cmdPath = "";
+                Configuration config = Application.getConfiguration();
+                if (config != null) {
+                    cmdPath = config.getString("ImageMagickProcessor.path_to_binaries", "");
+                }
+                String[] commands = {cmdPath + File.separator + "identify",
+                        "-list", "format"};
+                Process proc = runtime.exec(commands);
+                BufferedReader stdInput = new BufferedReader(
+                        new InputStreamReader(proc.getInputStream()));
+                String s;
+
+                while ((s = stdInput.readLine()) != null) {
+                    s = s.trim();
+                    if (s.startsWith("JP2")) {
+                        sourceFormats.add(SourceFormat.JP2);
+                        outputFormats.add(OutputFormat.JP2);
+                    }
+                    if (s.startsWith("JPEG")) {
+                        sourceFormats.add(SourceFormat.JPG);
+                        outputFormats.add(OutputFormat.JPG);
+                    }
+                    if (s.startsWith("PNG")) {
+                        sourceFormats.add(SourceFormat.PNG);
+                        outputFormats.add(OutputFormat.PNG);
+                    }
+                    if (s.startsWith("PDF")) {
+                        outputFormats.add(OutputFormat.PDF);
+                    }
+                    if (s.startsWith("TIFF")) {
+                        sourceFormats.add(SourceFormat.TIF);
+                        outputFormats.add(OutputFormat.TIF);
+                    }
+                    if (s.startsWith("WEBP")) {
+                        sourceFormats.add(SourceFormat.WEBP);
+                        outputFormats.add(OutputFormat.WEBP);
+                    }
+
+                }
+            } catch (IOException e) {
+                logger.error("Failed to execute identify command");
+            }
+
+            supportedFormats = new HashMap<SourceFormat,Set<OutputFormat>>();
+            for (SourceFormat sourceFormat : sourceFormats) {
+                supportedFormats.put(sourceFormat, outputFormats);
+            }
         }
         return supportedFormats;
-    }
-
-    public static void loadSupportedFormats() {
-        final Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
-        final Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
-
-        try {
-            // retrieve the output of the `identify -list format` command,
-            // which contains a list of all supported formats
-            Runtime runtime = Runtime.getRuntime();
-            String cmdPath = "";
-            Configuration config = Application.getConfiguration();
-            if (config != null) {
-                cmdPath = config.getString("ImageMagickProcessor.path_to_binaries", "");
-            }
-            String[] commands = {cmdPath + File.separator + "identify",
-                    "-list", "format"};
-            Process proc = runtime.exec(commands);
-            BufferedReader stdInput = new BufferedReader(
-                    new InputStreamReader(proc.getInputStream()));
-            String s;
-
-            while ((s = stdInput.readLine()) != null) {
-                s = s.trim();
-                if (s.startsWith("JP2")) {
-                    sourceFormats.add(SourceFormat.JP2);
-                    outputFormats.add(OutputFormat.JP2);
-                }
-                if (s.startsWith("JPEG")) {
-                    sourceFormats.add(SourceFormat.JPG);
-                    outputFormats.add(OutputFormat.JPG);
-                }
-                if (s.startsWith("PNG")) {
-                    sourceFormats.add(SourceFormat.PNG);
-                    outputFormats.add(OutputFormat.PNG);
-                }
-                if (s.startsWith("PDF")) {
-                    outputFormats.add(OutputFormat.PDF);
-                }
-                if (s.startsWith("TIFF")) {
-                    sourceFormats.add(SourceFormat.TIF);
-                    outputFormats.add(OutputFormat.TIF);
-                }
-                if (s.startsWith("WEBP")) {
-                    sourceFormats.add(SourceFormat.WEBP);
-                    outputFormats.add(OutputFormat.WEBP);
-                }
-
-            }
-        } catch (IOException e) {
-            logger.error("Failed to execute identify command");
-        }
-
-        supportedFormats = new HashMap<SourceFormat,Set<OutputFormat>>();
-        for (SourceFormat sourceFormat : sourceFormats) {
-            supportedFormats.put(sourceFormat, outputFormats);
-        }
     }
 
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {

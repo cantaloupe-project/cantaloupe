@@ -70,77 +70,72 @@ class GraphicsMagickProcessor implements Processor {
      */
     public static HashMap<SourceFormat, Set<OutputFormat>> getAvailableOutputFormats() {
         if (supportedFormats == null) {
-            loadSupportedFormats();
+            final Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
+            final Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
+            try {
+                // retrieve the output of the `gm version` command, which contains a
+                // list of all optional formats
+                Runtime runtime = Runtime.getRuntime();
+                String cmdPath = "";
+                Configuration config = Application.getConfiguration();
+                if (config != null) {
+                    cmdPath = config.getString("GraphicsMagickProcessor.path_to_binaries", "");
+                }
+                String[] commands = {cmdPath + File.separator + "gm", "version"};
+                Process proc = runtime.exec(commands);
+                BufferedReader stdInput = new BufferedReader(
+                        new InputStreamReader(proc.getInputStream()));
+                String s;
+                boolean read = false;
+                while ((s = stdInput.readLine()) != null) {
+                    s = s.trim();
+                    if (s.contains("Feature Support")) {
+                        read = true;
+                    } else if (s.contains("Host type:")) {
+                        read = false;
+                    }
+                    if (read) {
+                        if (s.startsWith("JPEG-2000  ") && s.endsWith(" yes")) {
+                            sourceFormats.add(SourceFormat.JP2);
+                            outputFormats.add(OutputFormat.JP2);
+                        }
+                        if (s.startsWith("JPEG  ") && s.endsWith(" yes")) {
+                            sourceFormats.add(SourceFormat.JPG);
+                            outputFormats.add(OutputFormat.JPG);
+                        }
+                        if (s.startsWith("PNG  ") && s.endsWith(" yes")) {
+                            sourceFormats.add(SourceFormat.PNG);
+                            outputFormats.add(OutputFormat.PNG);
+                        }
+                        if (s.startsWith("Ghostscript") && s.endsWith(" yes")) {
+                            outputFormats.add(OutputFormat.PDF);
+                        }
+                        if (s.startsWith("TIFF  ") && s.endsWith(" yes")) {
+                            sourceFormats.add(SourceFormat.TIF);
+                            outputFormats.add(OutputFormat.TIF);
+                        }
+                        if (s.startsWith("WebP  ") && s.endsWith(" yes")) {
+                            sourceFormats.add(SourceFormat.WEBP);
+                            outputFormats.add(OutputFormat.WEBP);
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                logger.error("Failed to execute gm command");
+            }
+
+            // add formats that are definitely available
+            // (http://www.graphicsmagick.org/formats.html)
+            sourceFormats.add(SourceFormat.BMP);
+            sourceFormats.add(SourceFormat.GIF);
+            outputFormats.add(OutputFormat.GIF);
+
+            supportedFormats = new HashMap<SourceFormat,Set<OutputFormat>>();
+            for (SourceFormat sourceFormat : sourceFormats) {
+                supportedFormats.put(sourceFormat, outputFormats);
+            }
         }
         return supportedFormats;
-    }
-
-    private static void loadSupportedFormats() {
-        final Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
-        final Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
-
-        try {
-            // retrieve the output of the `gm version` command, which contains a
-            // list of all optional formats
-            Runtime runtime = Runtime.getRuntime();
-            String cmdPath = "";
-            Configuration config = Application.getConfiguration();
-            if (config != null) {
-                cmdPath = config.getString("GraphicsMagickProcessor.path_to_binaries", "");
-            }
-            String[] commands = {cmdPath + File.separator + "gm", "version"};
-            Process proc = runtime.exec(commands);
-            BufferedReader stdInput = new BufferedReader(
-                    new InputStreamReader(proc.getInputStream()));
-            String s;
-            boolean read = false;
-            while ((s = stdInput.readLine()) != null) {
-                s = s.trim();
-                if (s.contains("Feature Support")) {
-                    read = true;
-                } else if (s.contains("Host type:")) {
-                    read = false;
-                }
-                if (read) {
-                    if (s.startsWith("JPEG-2000  ") && s.endsWith(" yes")) {
-                        sourceFormats.add(SourceFormat.JP2);
-                        outputFormats.add(OutputFormat.JP2);
-                    }
-                    if (s.startsWith("JPEG  ") && s.endsWith(" yes")) {
-                        sourceFormats.add(SourceFormat.JPG);
-                        outputFormats.add(OutputFormat.JPG);
-                    }
-                    if (s.startsWith("PNG  ") && s.endsWith(" yes")) {
-                        sourceFormats.add(SourceFormat.PNG);
-                        outputFormats.add(OutputFormat.PNG);
-                    }
-                    if (s.startsWith("Ghostscript") && s.endsWith(" yes")) {
-                        outputFormats.add(OutputFormat.PDF);
-                    }
-                    if (s.startsWith("TIFF  ") && s.endsWith(" yes")) {
-                        sourceFormats.add(SourceFormat.TIF);
-                        outputFormats.add(OutputFormat.TIF);
-                    }
-                    if (s.startsWith("WebP  ") && s.endsWith(" yes")) {
-                        sourceFormats.add(SourceFormat.WEBP);
-                        outputFormats.add(OutputFormat.WEBP);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            logger.error("Failed to execute gm command");
-        }
-
-        // add formats that are definitely available
-        // (http://www.graphicsmagick.org/formats.html)
-        sourceFormats.add(SourceFormat.BMP);
-        sourceFormats.add(SourceFormat.GIF);
-        outputFormats.add(OutputFormat.GIF);
-
-        supportedFormats = new HashMap<SourceFormat,Set<OutputFormat>>();
-        for (SourceFormat sourceFormat : sourceFormats) {
-            supportedFormats.put(sourceFormat, outputFormats);
-        }
     }
 
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
