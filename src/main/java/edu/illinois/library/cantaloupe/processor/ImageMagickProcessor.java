@@ -33,12 +33,11 @@ class ImageMagickProcessor implements Processor {
     private static Logger logger = LoggerFactory.
             getLogger(ImageMagickProcessor.class);
 
-    private static final HashMap<SourceFormat,Set<OutputFormat>> FORMATS =
-            getAvailableOutputFormats();
     private static final Set<Quality> SUPPORTED_QUALITIES =
             new HashSet<Quality>();
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<ProcessorFeature>();
+    // Lazy-initialized by getFormats()
     private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
 
     private ImageInputStream inputStream;
@@ -68,21 +67,23 @@ class ImageMagickProcessor implements Processor {
      * @return Map of available output formats for all known source formats,
      * based on information reported by <code>identify -list format</code>.
      */
-    public static HashMap<SourceFormat, Set<OutputFormat>> getAvailableOutputFormats() {
+    private static HashMap<SourceFormat, Set<OutputFormat>> getFormats() {
         if (supportedFormats == null) {
             final Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
             final Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
+            String cmdPath = "identify";
             try {
                 // retrieve the output of the `identify -list format` command,
                 // which contains a list of all supported formats
                 Runtime runtime = Runtime.getRuntime();
-                String cmdPath = "";
                 Configuration config = Application.getConfiguration();
                 if (config != null) {
-                    cmdPath = config.getString("ImageMagickProcessor.path_to_binaries", "");
+                    String pathPrefix = config.getString("ImageMagickProcessor.path_to_binaries");
+                    if (pathPrefix != null) {
+                        cmdPath = pathPrefix + File.separator + cmdPath;
+                    }
                 }
-                String[] commands = {cmdPath + File.separator + "identify",
-                        "-list", "format"};
+                String[] commands = {cmdPath, "-list", "format"};
                 Process proc = runtime.exec(commands);
                 BufferedReader stdInput = new BufferedReader(
                         new InputStreamReader(proc.getInputStream()));
@@ -92,31 +93,41 @@ class ImageMagickProcessor implements Processor {
                     s = s.trim();
                     if (s.startsWith("JP2")) {
                         sourceFormats.add(SourceFormat.JP2);
-                        outputFormats.add(OutputFormat.JP2);
+                        if (s.contains(" rw")) {
+                            outputFormats.add(OutputFormat.JP2);
+                        }
                     }
                     if (s.startsWith("JPEG")) {
                         sourceFormats.add(SourceFormat.JPG);
-                        outputFormats.add(OutputFormat.JPG);
+                        if (s.contains(" rw")) {
+                            outputFormats.add(OutputFormat.JPG);
+                        }
                     }
                     if (s.startsWith("PNG")) {
                         sourceFormats.add(SourceFormat.PNG);
-                        outputFormats.add(OutputFormat.PNG);
+                        if (s.contains(" rw")) {
+                            outputFormats.add(OutputFormat.PNG);
+                        }
                     }
-                    if (s.startsWith("PDF")) {
+                    if (s.startsWith("PDF") && s.contains(" rw")) {
                         outputFormats.add(OutputFormat.PDF);
                     }
                     if (s.startsWith("TIFF")) {
                         sourceFormats.add(SourceFormat.TIF);
-                        outputFormats.add(OutputFormat.TIF);
+                        if (s.contains(" rw")) {
+                            outputFormats.add(OutputFormat.TIF);
+                        }
                     }
                     if (s.startsWith("WEBP")) {
                         sourceFormats.add(SourceFormat.WEBP);
-                        outputFormats.add(OutputFormat.WEBP);
+                        if (s.contains(" rw")) {
+                            outputFormats.add(OutputFormat.WEBP);
+                        }
                     }
 
                 }
             } catch (IOException e) {
-                logger.error("Failed to execute identify command");
+                logger.error("Failed to execute {}", cmdPath);
             }
 
             supportedFormats = new HashMap<SourceFormat,Set<OutputFormat>>();
@@ -128,7 +139,7 @@ class ImageMagickProcessor implements Processor {
     }
 
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
-        Set<OutputFormat> formats = FORMATS.get(sourceFormat);
+        Set<OutputFormat> formats = getFormats().get(sourceFormat);
         if (formats == null) {
             formats = new HashSet<OutputFormat>();
         }
@@ -136,13 +147,17 @@ class ImageMagickProcessor implements Processor {
     }
 
     public Dimension getSize(ImageInputStream inputStream,
-                             SourceFormat sourceFormat) throws InfoException {
-        ImageInputStreamWrapper bridge = new ImageInputStreamWrapper(inputStream);
+                             SourceFormat sourceFormat)
+            throws InfoException, IOException {
+        inputStream.mark();
+        ImageInputStreamWrapper wrapper = new ImageInputStreamWrapper(inputStream);
         Info sourceInfo = new Info(sourceFormat.getPreferredExtension() + ":-",
-                bridge, true);
-        return new Dimension(sourceInfo.getImageWidth(),
+                wrapper, true);
+        Dimension dimension = new Dimension(sourceInfo.getImageWidth(),
                 sourceInfo.getImageHeight());
-    };
+        inputStream.reset();
+        return dimension;
+    }
 
     public Set<ProcessorFeature> getSupportedFeatures(SourceFormat sourceFormat) {
         return SUPPORTED_FEATURES;
@@ -155,12 +170,20 @@ class ImageMagickProcessor implements Processor {
     public void process(Parameters params, SourceFormat sourceFormat,
                         ImageInputStream inputStream, OutputStream outputStream)
             throws Exception {
+        final Set<OutputFormat> availableOutputFormats =
+                getAvailableOutputFormats(sourceFormat);
+        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
+            throw new UnsupportedSourceFormatException();
+        } else if (!availableOutputFormats.contains(params.getOutputFormat())) {
+            throw new UnsupportedOutputFormatException();
+        }
+
         this.inputStream = inputStream;
         this.sourceFormat = sourceFormat;
 
         IMOperation op = new IMOperation();
         op.addImage(sourceFormat.getPreferredExtension() + ":-"); // read from stdin
-        op = assembleOperation(op, params);
+        assembleOperation(op, params);
 
         // format transformation
         op.addImage(params.getOutputFormat().getExtension() + ":-"); // write to stdout
@@ -182,7 +205,8 @@ class ImageMagickProcessor implements Processor {
         inputStream.close();
     }
 
-    private IMOperation assembleOperation(IMOperation op, Parameters params) {
+    private void assembleOperation(IMOperation op, Parameters params)
+            throws IOException {
         // region transformation
         Region region = params.getRegion();
         if (!region.isFull()) {
@@ -192,10 +216,11 @@ class ImageMagickProcessor implements Processor {
                     // width/height), so we have to calculate them.
                     Dimension imageSize = getSize(this.inputStream,
                             this.sourceFormat);
-                    int x = (int) Math.round(region.getX() / 100.0 * imageSize.width);
-                    int y = (int) Math.round(region.getY() / 100.0 * imageSize.height);
-                    op.crop(Math.round(region.getWidth()),
-                            Math.round(region.getHeight()), x, y, "%");
+                    int x = Math.round(region.getX() / 100.0f * imageSize.width);
+                    int y = Math.round(region.getY() / 100.0f * imageSize.height);
+                    int width = Math.round(region.getWidth());
+                    int height = Math.round(region.getHeight());
+                    op.crop(width, height, x, y, "%");
                 } catch (InfoException e) {
                     logger.debug("Failed to get dimensions for {}",
                             params.getIdentifier());
@@ -245,8 +270,6 @@ class ImageMagickProcessor implements Processor {
                     break;
             }
         }
-
-        return op;
     }
 
 }
