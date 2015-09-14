@@ -150,12 +150,16 @@ class GraphicsMagickProcessor implements Processor {
     }
 
     public Dimension getSize(ImageInputStream inputStream,
-                             SourceFormat sourceFormat) throws InfoException {
+                             SourceFormat sourceFormat)
+            throws InfoException, IOException {
+        inputStream.mark();
         ImageInputStreamWrapper wrapper = new ImageInputStreamWrapper(inputStream);
         Info sourceInfo = new Info(sourceFormat.getPreferredExtension() + ":-",
                 wrapper, true);
-        return new Dimension(sourceInfo.getImageWidth(),
+        Dimension dimension = new Dimension(sourceInfo.getImageWidth(),
                 sourceInfo.getImageHeight());
+        inputStream.reset();
+        return dimension;
     }
 
     public Set<ProcessorFeature> getSupportedFeatures(SourceFormat sourceFormat) {
