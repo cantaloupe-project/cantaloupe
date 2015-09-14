@@ -22,4 +22,14 @@ public class ImageResourceTest extends ResourceTest {
         }
     }
 
+    public void testUnavailableOutputFormat() throws IOException {
+        ClientResource client = getClientForUriPath("/escher_logo.jpg/full/full/0/default.bogus");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
+        }
+    }
+
 }
