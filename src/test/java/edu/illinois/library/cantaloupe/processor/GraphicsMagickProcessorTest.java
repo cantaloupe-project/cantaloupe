@@ -1,56 +1,108 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Quality;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.im4java.process.ProcessStarter;
 
-import javax.imageio.stream.FileImageInputStream;
-import java.awt.Dimension;
-import java.io.FileInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * For this to work, the GraphicsMagick binaries must be on the PATH.
+ */
 public class GraphicsMagickProcessorTest extends ProcessorTest {
 
-    GraphicsMagickProcessor instance;
+    private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
 
-    public void setUp() {
-        BaseConfiguration config = new BaseConfiguration();
-        config.setProperty("GraphicsMagickProcessor.path_to_binaries", "/usr/local/bin"); // TODO: externalize this
-        Application.setConfiguration(config);
+    GraphicsMagickProcessor instance = new GraphicsMagickProcessor();
 
-        instance = new GraphicsMagickProcessor();
+    private static HashMap<SourceFormat, Set<OutputFormat>>
+    getAvailableOutputFormats() throws IOException {
+        if (supportedFormats == null) {
+            final Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
+            final Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
+
+            // retrieve the output of the `gm version` command, which contains a
+            // list of all optional formats
+            Runtime runtime = Runtime.getRuntime();
+            String[] commands = {"gm", "version"};
+            Process proc = runtime.exec(commands);
+            BufferedReader stdInput = new BufferedReader(
+                    new InputStreamReader(proc.getInputStream()));
+            String s;
+            boolean read = false;
+            while ((s = stdInput.readLine()) != null) {
+                s = s.trim();
+                if (s.contains("Feature Support")) {
+                    read = true;
+                } else if (s.contains("Host type:")) {
+                    break;
+                }
+                if (read) {
+                    if (s.startsWith("JPEG-2000  ") && s.endsWith(" yes")) {
+                        sourceFormats.add(SourceFormat.JP2);
+                        outputFormats.add(OutputFormat.JP2);
+                    }
+                    if (s.startsWith("JPEG  ") && s.endsWith(" yes")) {
+                        sourceFormats.add(SourceFormat.JPG);
+                        outputFormats.add(OutputFormat.JPG);
+                    }
+                    if (s.startsWith("PNG  ") && s.endsWith(" yes")) {
+                        sourceFormats.add(SourceFormat.PNG);
+                        outputFormats.add(OutputFormat.PNG);
+                    }
+                    if (s.startsWith("Ghostscript") && s.endsWith(" yes")) {
+                        outputFormats.add(OutputFormat.PDF);
+                    }
+                    if (s.startsWith("TIFF  ") && s.endsWith(" yes")) {
+                        sourceFormats.add(SourceFormat.TIF);
+                        outputFormats.add(OutputFormat.TIF);
+                    }
+                    if (s.startsWith("WebP  ") && s.endsWith(" yes")) {
+                        sourceFormats.add(SourceFormat.WEBP);
+                        outputFormats.add(OutputFormat.WEBP);
+                    }
+                }
+            }
+
+            // add formats that are definitely available
+            // (http://www.graphicsmagick.org/formats.html)
+            sourceFormats.add(SourceFormat.BMP);
+            sourceFormats.add(SourceFormat.GIF);
+            outputFormats.add(OutputFormat.GIF);
+
+            supportedFormats = new HashMap<SourceFormat,Set<OutputFormat>>();
+            for (SourceFormat sourceFormat : SourceFormat.values()) {
+                supportedFormats.put(sourceFormat, new HashSet<OutputFormat>());
+            }
+            for (SourceFormat sourceFormat : sourceFormats) {
+                supportedFormats.put(sourceFormat, outputFormats);
+            }
+        }
+        return supportedFormats;
     }
 
-    public void testInitialization() {
-        assertEquals(ProcessStarter.getGlobalSearchPath(), Application.
-                getConfiguration().getString("GraphicsMagickProcessor.path_to_binaries"));
+    protected Processor getProcessor() {
+        return instance;
     }
 
-    public void testGetAvailableOutputFormats() {
-        /*
-        Set<OutputFormat> expectedFormats = new HashSet<OutputFormat>();
-        TODO: write this
-        assertEquals(expectedFormats,
-                instance.getAvailableOutputFormats(SourceFormat.JPG));
-        */
+    public void testGetAvailableOutputFormats() throws IOException {
+        for (SourceFormat sourceFormat : SourceFormat.values()) {
+            Set<OutputFormat> expectedFormats = getAvailableOutputFormats().
+                    get(sourceFormat);
+            assertEquals(expectedFormats,
+                    instance.getAvailableOutputFormats(sourceFormat));
+        }
     }
 
     public void testGetAvailableOutputFormatsForUnsupportedSourceFormat() {
         Set<OutputFormat> expectedFormats = new HashSet<OutputFormat>();
         assertEquals(expectedFormats,
                 instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
-    }
-
-    public void testGetSize() throws Exception {
-        Dimension expectedSize = new Dimension(594, 522);
-        Dimension actualSize = instance.getSize(
-                new FileImageInputStream(getFixture("escher_lego.jpg")),
-                SourceFormat.JPG);
-        assertEquals(expectedSize, actualSize);
     }
 
     public void testGetSupportedFeatures() {
@@ -78,15 +130,6 @@ public class GraphicsMagickProcessorTest extends ProcessorTest {
         expectedQualities.add(Quality.GRAY);
         assertEquals(expectedQualities,
                 instance.getSupportedQualities(SourceFormat.UNKNOWN));
-    }
-
-    public void testGetSupportedSourceFormats() {
-        // TODO: write this
-    }
-
-    public void testProcess() {
-        // This is not easily testable in code, so will have to be tested by
-        // human eyes.
     }
 
 }

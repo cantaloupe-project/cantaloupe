@@ -14,7 +14,6 @@ import org.im4java.core.IMOperation;
 import org.im4java.core.Info;
 import org.im4java.core.InfoException;
 import org.im4java.process.Pipe;
-import org.im4java.process.ProcessStarter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,26 +33,17 @@ class GraphicsMagickProcessor implements Processor {
     private static Logger logger = LoggerFactory.
             getLogger(GraphicsMagickProcessor.class);
 
-    private static final HashMap<SourceFormat,Set<OutputFormat>> FORMATS =
-            getAvailableOutputFormats();
     private static final Set<Quality> SUPPORTED_QUALITIES =
             new HashSet<Quality>();
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<ProcessorFeature>();
+    // Lazy-initialized by getFormats()
     private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
 
     private ImageInputStream inputStream;
     private SourceFormat sourceFormat;
 
     static {
-        // overrides the PATH; see
-        // http://im4java.sourceforge.net/docs/dev-guide.html
-        String binaryPath = Application.getConfiguration().
-                getString("GraphicsMagickProcessor.path_to_binaries", "");
-        if (binaryPath.length() > 0) {
-            ProcessStarter.setGlobalSearchPath(binaryPath);
-        }
-
         SUPPORTED_QUALITIES.add(Quality.BITONAL);
         SUPPORTED_QUALITIES.add(Quality.COLOR);
         SUPPORTED_QUALITIES.add(Quality.DEFAULT);
@@ -77,83 +67,82 @@ class GraphicsMagickProcessor implements Processor {
      * @return Map of available output formats for all known source formats,
      * based on information reported by <code>gm version</code>.
      */
-    public static HashMap<SourceFormat, Set<OutputFormat>> getAvailableOutputFormats() {
+    private static HashMap<SourceFormat, Set<OutputFormat>> getFormats() {
         if (supportedFormats == null) {
-            loadSupportedFormats();
+            final Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
+            final Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
+            String cmdPath = "gm";
+            try {
+                // retrieve the output of the `gm version` command, which contains a
+                // list of all optional formats
+                Runtime runtime = Runtime.getRuntime();
+                Configuration config = Application.getConfiguration();
+                if (config != null) {
+                    String pathPrefix = config.getString("GraphicsMagickProcessor.path_to_binaries");
+                    if (pathPrefix != null) {
+                        cmdPath = pathPrefix + File.separator + cmdPath;
+                    }
+                }
+                String[] commands = {cmdPath, "version"};
+                Process proc = runtime.exec(commands);
+                BufferedReader stdInput = new BufferedReader(
+                        new InputStreamReader(proc.getInputStream()));
+                String s;
+                boolean read = false;
+                while ((s = stdInput.readLine()) != null) {
+                    s = s.trim();
+                    if (s.contains("Feature Support")) {
+                        read = true; // start reading
+                    } else if (s.contains("Host type:")) {
+                        break; // stop reading
+                    }
+                    if (read) {
+                        if (s.startsWith("JPEG-2000  ") && s.endsWith(" yes")) {
+                            sourceFormats.add(SourceFormat.JP2);
+                            outputFormats.add(OutputFormat.JP2);
+                        }
+                        if (s.startsWith("JPEG  ") && s.endsWith(" yes")) {
+                            sourceFormats.add(SourceFormat.JPG);
+                            outputFormats.add(OutputFormat.JPG);
+                        }
+                        if (s.startsWith("PNG  ") && s.endsWith(" yes")) {
+                            sourceFormats.add(SourceFormat.PNG);
+                            outputFormats.add(OutputFormat.PNG);
+                        }
+                        if (s.startsWith("Ghostscript") && s.endsWith(" yes")) {
+                            outputFormats.add(OutputFormat.PDF);
+                        }
+                        if (s.startsWith("TIFF  ") && s.endsWith(" yes")) {
+                            sourceFormats.add(SourceFormat.TIF);
+                            outputFormats.add(OutputFormat.TIF);
+                        }
+                        if (s.startsWith("WebP  ") && s.endsWith(" yes")) {
+                            sourceFormats.add(SourceFormat.WEBP);
+                            outputFormats.add(OutputFormat.WEBP);
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                logger.error("Failed to execute {}", cmdPath);
+            }
+
+            // add formats that are not listed in the output of "gm version"
+            // but are definitely available
+            // (http://www.graphicsmagick.org/formats.html)
+            sourceFormats.add(SourceFormat.BMP);
+            sourceFormats.add(SourceFormat.GIF);
+            outputFormats.add(OutputFormat.GIF);
+
+            supportedFormats = new HashMap<SourceFormat,Set<OutputFormat>>();
+            for (SourceFormat sourceFormat : sourceFormats) {
+                supportedFormats.put(sourceFormat, outputFormats);
+            }
         }
         return supportedFormats;
     }
 
-    private static void loadSupportedFormats() {
-        final Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
-        final Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
-
-        try {
-            // retrieve the output of the `gm version` command, which contains a
-            // list of all optional formats
-            Runtime runtime = Runtime.getRuntime();
-            String cmdPath = "";
-            Configuration config = Application.getConfiguration();
-            if (config != null) {
-                cmdPath = config.getString("GraphicsMagickProcessor.path_to_binaries", "");
-            }
-            String[] commands = {cmdPath + File.separator + "gm", "version"};
-            Process proc = runtime.exec(commands);
-            BufferedReader stdInput = new BufferedReader(
-                    new InputStreamReader(proc.getInputStream()));
-            String s;
-            boolean read = false;
-            while ((s = stdInput.readLine()) != null) {
-                s = s.trim();
-                if (s.contains("Feature Support")) {
-                    read = true;
-                } else if (s.contains("Host type:")) {
-                    read = false;
-                }
-                if (read) {
-                    if (s.startsWith("JPEG-2000  ") && s.endsWith(" yes")) {
-                        sourceFormats.add(SourceFormat.JP2);
-                        outputFormats.add(OutputFormat.JP2);
-                    }
-                    if (s.startsWith("JPEG  ") && s.endsWith(" yes")) {
-                        sourceFormats.add(SourceFormat.JPG);
-                        outputFormats.add(OutputFormat.JPG);
-                    }
-                    if (s.startsWith("PNG  ") && s.endsWith(" yes")) {
-                        sourceFormats.add(SourceFormat.PNG);
-                        outputFormats.add(OutputFormat.PNG);
-                    }
-                    if (s.startsWith("Ghostscript") && s.endsWith(" yes")) {
-                        outputFormats.add(OutputFormat.PDF);
-                    }
-                    if (s.startsWith("TIFF  ") && s.endsWith(" yes")) {
-                        sourceFormats.add(SourceFormat.TIF);
-                        outputFormats.add(OutputFormat.TIF);
-                    }
-                    if (s.startsWith("WebP  ") && s.endsWith(" yes")) {
-                        sourceFormats.add(SourceFormat.WEBP);
-                        outputFormats.add(OutputFormat.WEBP);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            logger.error("Failed to execute gm command");
-        }
-
-        // add formats that are definitely available
-        // (http://www.graphicsmagick.org/formats.html)
-        sourceFormats.add(SourceFormat.BMP);
-        sourceFormats.add(SourceFormat.GIF);
-        outputFormats.add(OutputFormat.GIF);
-
-        supportedFormats = new HashMap<SourceFormat,Set<OutputFormat>>();
-        for (SourceFormat sourceFormat : sourceFormats) {
-            supportedFormats.put(sourceFormat, outputFormats);
-        }
-    }
-
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
-        Set<OutputFormat> formats = FORMATS.get(sourceFormat);
+        Set<OutputFormat> formats = getFormats().get(sourceFormat);
         if (formats == null) {
             formats = new HashSet<OutputFormat>();
         }
@@ -161,12 +150,16 @@ class GraphicsMagickProcessor implements Processor {
     }
 
     public Dimension getSize(ImageInputStream inputStream,
-                             SourceFormat sourceFormat) throws InfoException {
+                             SourceFormat sourceFormat)
+            throws InfoException, IOException {
+        inputStream.mark();
         ImageInputStreamWrapper wrapper = new ImageInputStreamWrapper(inputStream);
         Info sourceInfo = new Info(sourceFormat.getPreferredExtension() + ":-",
                 wrapper, true);
-        return new Dimension(sourceInfo.getImageWidth(),
+        Dimension dimension = new Dimension(sourceInfo.getImageWidth(),
                 sourceInfo.getImageHeight());
+        inputStream.reset();
+        return dimension;
     }
 
     public Set<ProcessorFeature> getSupportedFeatures(SourceFormat sourceFormat) {
@@ -177,19 +170,23 @@ class GraphicsMagickProcessor implements Processor {
         return SUPPORTED_QUALITIES;
     }
 
-    public Set<SourceFormat> getSupportedSourceFormats() {
-        return FORMATS.keySet();
-    }
-
     public void process(Parameters params, SourceFormat sourceFormat,
                         ImageInputStream inputStream, OutputStream outputStream)
             throws Exception {
+        final Set<OutputFormat> availableOutputFormats =
+                getAvailableOutputFormats(sourceFormat);
+        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
+            throw new UnsupportedSourceFormatException();
+        } else if (!availableOutputFormats.contains(params.getOutputFormat())) {
+            throw new UnsupportedOutputFormatException();
+        }
+
         this.inputStream = inputStream;
         this.sourceFormat = sourceFormat;
 
         IMOperation op = new IMOperation();
         op.addImage(sourceFormat.getPreferredExtension() + ":-"); // read from stdin
-        op = assembleOperation(op, params);
+        assembleOperation(op, params);
 
         // format transformation
         op.addImage(params.getOutputFormat().getExtension() + ":-"); // write to stdout
@@ -199,13 +196,20 @@ class GraphicsMagickProcessor implements Processor {
         Pipe pipeOut = new Pipe(null, outputStream);
 
         ConvertCmd convert = new ConvertCmd(true);
+
+        String binaryPath = Application.getConfiguration().
+                getString("GraphicsMagickProcessor.path_to_binaries", "");
+        if (binaryPath.length() > 0) {
+            convert.setSearchPath(binaryPath);
+        }
         convert.setInputProvider(pipeIn);
         convert.setOutputConsumer(pipeOut);
         convert.run(op);
         inputStream.close();
     }
 
-    private IMOperation assembleOperation(IMOperation op, Parameters params) {
+    private void assembleOperation(IMOperation op, Parameters params)
+            throws IOException {
         // region transformation
         Region region = params.getRegion();
         if (!region.isFull()) {
@@ -215,10 +219,11 @@ class GraphicsMagickProcessor implements Processor {
                     // width/height), so we have to calculate them.
                     Dimension imageSize = getSize(this.inputStream,
                             this.sourceFormat);
-                    int x = (int) Math.round(region.getX() / 100.0 * imageSize.width);
-                    int y = (int) Math.round(region.getY() / 100.0 * imageSize.height);
-                    op.crop(Math.round(region.getWidth()),
-                            Math.round(region.getHeight()), x, y, "%");
+                    int x = Math.round(region.getX() / 100.0f * imageSize.width);
+                    int y = Math.round(region.getY() / 100.0f * imageSize.height);
+                    int width = Math.round(region.getWidth());
+                    int height = Math.round(region.getHeight());
+                    op.crop(width, height, x, y, "%");
                 } catch (InfoException e) {
                     logger.debug("Failed to get dimensions for {}",
                             params.getIdentifier());
@@ -268,8 +273,6 @@ class GraphicsMagickProcessor implements Processor {
                     break;
             }
         }
-
-        return op;
     }
 
 }

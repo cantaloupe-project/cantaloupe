@@ -4,52 +4,117 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Quality;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.im4java.process.ProcessStarter;
+import org.apache.commons.configuration.Configuration;
 
-import javax.imageio.stream.FileImageInputStream;
-import java.awt.Dimension;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * For this to work, the ImageMagick binaries must be on the PATH.
+ */
 public class ImageMagickProcessorTest extends ProcessorTest {
 
-    ImageMagickProcessor instance;
+    private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
 
-    public void setUp() {
-        BaseConfiguration config = new BaseConfiguration();
-        config.setProperty("ImageMagickProcessor.path_to_binaries", "/usr/local/bin"); // TODO: externalize this
-        Application.setConfiguration(config);
+    ImageMagickProcessor instance = new ImageMagickProcessor();
 
-        instance = new ImageMagickProcessor();
+    /**
+     * @return Map of available output formats for all known source formats,
+     * based on information reported by <code>identify -list format</code>.
+     */
+    private static HashMap<SourceFormat, Set<OutputFormat>> getFormats()
+            throws IOException {
+        if (supportedFormats == null) {
+            final Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
+            final Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
+
+            String cmdPath = "identify";
+            // retrieve the output of the `identify -list format` command,
+            // which contains a list of all supported formats
+            Runtime runtime = Runtime.getRuntime();
+            Configuration config = Application.getConfiguration();
+            if (config != null) {
+                String pathPrefix = config.getString("ImageMagickProcessor.path_to_binaries");
+                if (pathPrefix != null) {
+                    cmdPath = pathPrefix + File.separator + cmdPath;
+                }
+            }
+            String[] commands = {cmdPath, "-list", "format"};
+            Process proc = runtime.exec(commands);
+            BufferedReader stdInput = new BufferedReader(
+                    new InputStreamReader(proc.getInputStream()));
+            String s;
+
+            while ((s = stdInput.readLine()) != null) {
+                s = s.trim();
+                if (s.startsWith("JP2")) {
+                    sourceFormats.add(SourceFormat.JP2);
+                    if (s.contains(" rw")) {
+                        outputFormats.add(OutputFormat.JP2);
+                    }
+                }
+                if (s.startsWith("JPEG")) {
+                    sourceFormats.add(SourceFormat.JPG);
+                    if (s.contains(" rw")) {
+                        outputFormats.add(OutputFormat.JPG);
+                    }
+                }
+                if (s.startsWith("PNG")) {
+                    sourceFormats.add(SourceFormat.PNG);
+                    if (s.contains(" rw")) {
+                        outputFormats.add(OutputFormat.PNG);
+                    }
+                }
+                if (s.startsWith("PDF") && s.contains(" rw")) {
+                    outputFormats.add(OutputFormat.PDF);
+                }
+                if (s.startsWith("TIFF")) {
+                    sourceFormats.add(SourceFormat.TIF);
+                    if (s.contains(" rw")) {
+                        outputFormats.add(OutputFormat.TIF);
+                    }
+                }
+                if (s.startsWith("WEBP")) {
+                    sourceFormats.add(SourceFormat.WEBP);
+                    if (s.contains(" rw")) {
+                        outputFormats.add(OutputFormat.WEBP);
+                    }
+                }
+
+            }
+
+            supportedFormats = new HashMap<SourceFormat,Set<OutputFormat>>();
+            for (SourceFormat sourceFormat : SourceFormat.values()) {
+                supportedFormats.put(sourceFormat, new HashSet<OutputFormat>());
+            }
+            for (SourceFormat sourceFormat : sourceFormats) {
+                supportedFormats.put(sourceFormat, outputFormats);
+            }
+        }
+        return supportedFormats;
     }
 
-    public void testInitialization() {
-        assertEquals(ProcessStarter.getGlobalSearchPath(), Application.
-                getConfiguration().getString("ImageMagickProcessor.path_to_binaries"));
+    protected Processor getProcessor() {
+        return instance;
     }
 
-    public void testGetAvailableOutputFormats() {
-        /*
-        Set<OutputFormat> expectedFormats = new HashSet<OutputFormat>();
-        TODO: write this
-        assertEquals(expectedFormats,
-                instance.getAvailableOutputFormats(SourceFormat.JPG));
-        */
+    public void testGetAvailableOutputFormats() throws IOException {
+        for (SourceFormat sourceFormat : SourceFormat.values()) {
+            Set<OutputFormat> expectedFormats = getFormats().get(sourceFormat);
+            assertEquals(expectedFormats,
+                    instance.getAvailableOutputFormats(sourceFormat));
+        }
     }
 
     public void testGetAvailableOutputFormatsForUnsupportedSourceFormat() {
         Set<OutputFormat> expectedFormats = new HashSet<OutputFormat>();
         assertEquals(expectedFormats,
                 instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
-    }
-
-    public void testGetSize() throws Exception {
-        Dimension expectedSize = new Dimension(594, 522);
-        Dimension actualSize = instance.getSize(
-                new FileImageInputStream(getFixture("escher_lego.jpg")),
-                SourceFormat.JPG);
-        assertEquals(expectedSize, actualSize);
     }
 
     public void testGetSupportedFeatures() {
@@ -77,15 +142,6 @@ public class ImageMagickProcessorTest extends ProcessorTest {
         expectedQualities.add(Quality.GRAY);
         assertEquals(expectedQualities,
                 instance.getSupportedQualities(SourceFormat.UNKNOWN));
-    }
-
-    public void testGetSupportedSourceFormats() {
-        // TODO: write this
-    }
-
-    public void testProcess() {
-        // This is not easily testable in code, so will have to be tested by
-        // human eyes.
     }
 
 }

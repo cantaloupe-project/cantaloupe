@@ -115,23 +115,18 @@ public class ImageResource extends AbstractResource {
         // asking it whether it offers any output formats for it
         Set availableOutputFormats = proc.getAvailableOutputFormats(sourceFormat);
         if (!availableOutputFormats.contains(params.getOutputFormat())) {
-            String msg;
-            if (sourceFormat == SourceFormat.UNKNOWN) {
-                msg = String.format("%s does not support this source format",
-                        proc.getClass().getSimpleName());
-            } else {
-                msg = String.format("%s does not support the \"%s\" source format",
-                        proc.getClass().getSimpleName(),
-                        sourceFormat.getPreferredExtension());
-            }
+            String msg = String.format("%s does not support the \"%s\" output format",
+                    proc.getClass().getSimpleName(),
+                    params.getOutputFormat().getExtension());
             logger.warn(msg + ": " + this.getReference());
             throw new UnsupportedSourceFormatException(msg);
         }
         // 6. All checks made; at this point, we are pretty sure we can fulfill
         // the request
-        this.addHeader("Link", String.format("<%s>;rel=\"canonical\"",
-                params.getCanonicalUri(this.getRootRef().toString() +
-                        ImageServerApplication.BASE_IIIF_PATH)));
+        this.addHeader("Link", String.format("<%s%s/%s>;rel=\"canonical\"",
+                this.getRootRef().toString(),
+                ImageServerApplication.BASE_IIIF_PATH,
+                params.toString()));
 
         MediaType mediaType = new MediaType(
                 OutputFormat.valueOf(format.toUpperCase()).getMediaType());

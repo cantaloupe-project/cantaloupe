@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe;
 
+import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resource.ImageResource;
 import edu.illinois.library.cantaloupe.resource.InformationResource;
@@ -84,7 +85,8 @@ public class ImageServerApplication extends Application {
             Status status;
             Throwable cause = t.getCause();
             if (cause instanceof IllegalArgumentException ||
-                    cause instanceof UnsupportedEncodingException) {
+                    cause instanceof UnsupportedEncodingException ||
+                    cause instanceof UnsupportedOutputFormatException) {
                 status = new Status(Status.CLIENT_ERROR_BAD_REQUEST, t);
             } else if (cause instanceof UnsupportedSourceFormatException) {
                 status = new Status(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE, t);

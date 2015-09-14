@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.request;
 
-import org.apache.commons.lang3.StringUtils;
-
 /**
  * Encapsulates the parameters of an IIIF request.
  *
@@ -35,12 +33,6 @@ public class Parameters {
         this.size = Size.fromUri(size);
     }
 
-    public String getCanonicalUri(String baseUri) {
-        return StringUtils.stripEnd(baseUri, "/") + "/" + getIdentifier() +
-                "/" + getRegion() + "/" + getSize() + "/" + getRotation() +
-                "/" + getQuality().toString().toLowerCase() + "." + getOutputFormat();
-    }
-
     public OutputFormat getOutputFormat() {
         return outputFormat;
     }
@@ -63,6 +55,15 @@ public class Parameters {
 
     public Size getSize() {
         return size;
+    }
+
+    /**
+     * @return IIIF URI parameters with no leading slash.
+     */
+    public String toString() {
+        return String.format("%s/%s/%s/%s/%s.%s", getIdentifier(), getRegion(),
+                getSize(), getRotation(), getQuality().toString().toLowerCase(),
+                getOutputFormat());
     }
 
 }
