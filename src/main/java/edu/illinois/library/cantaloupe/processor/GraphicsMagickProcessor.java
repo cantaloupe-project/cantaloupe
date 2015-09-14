@@ -182,7 +182,7 @@ class GraphicsMagickProcessor implements Processor {
 
         IMOperation op = new IMOperation();
         op.addImage(sourceFormat.getPreferredExtension() + ":-"); // read from stdin
-        op = assembleOperation(op, params);
+        assembleOperation(op, params);
 
         // format transformation
         op.addImage(params.getOutputFormat().getExtension() + ":-"); // write to stdout
@@ -204,7 +204,8 @@ class GraphicsMagickProcessor implements Processor {
         inputStream.close();
     }
 
-    private IMOperation assembleOperation(IMOperation op, Parameters params) {
+    private void assembleOperation(IMOperation op, Parameters params)
+            throws IOException {
         // region transformation
         Region region = params.getRegion();
         if (!region.isFull()) {
@@ -268,8 +269,6 @@ class GraphicsMagickProcessor implements Processor {
                     break;
             }
         }
-
-        return op;
     }
 
 }
