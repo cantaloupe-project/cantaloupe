@@ -129,6 +129,14 @@ class ImageIoProcessor implements Processor {
     public void process(Parameters params, SourceFormat sourceFormat,
                         ImageInputStream inputStream, OutputStream outputStream)
             throws Exception {
+        final Set<OutputFormat> availableOutputFormats =
+                getAvailableOutputFormats(sourceFormat);
+        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
+            throw new UnsupportedSourceFormatException();
+        } else if (!availableOutputFormats.contains(params.getOutputFormat())) {
+            throw new UnsupportedOutputFormatException();
+        }
+
         BufferedImage image = ImageIO.read(inputStream);
         if (image == null) {
             throw new UnsupportedSourceFormatException();

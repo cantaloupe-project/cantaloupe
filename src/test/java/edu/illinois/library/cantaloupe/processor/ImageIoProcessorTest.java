@@ -4,17 +4,15 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Quality;
 
-import javax.imageio.stream.FileImageInputStream;
-import java.awt.Dimension;
 import java.util.HashSet;
 import java.util.Set;
 
 public class ImageIoProcessorTest extends ProcessorTest {
 
-    ImageIoProcessor instance;
+    ImageIoProcessor instance = new ImageIoProcessor();
 
-    public void setUp() {
-        instance = new ImageIoProcessor();
+    protected Processor getProcessor() {
+        return instance;
     }
 
     public void testGetAvailableOutputFormats() {
@@ -28,14 +26,6 @@ public class ImageIoProcessorTest extends ProcessorTest {
         Set<OutputFormat> expectedFormats = new HashSet<OutputFormat>();
         assertEquals(expectedFormats,
                 instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
-    }
-
-    public void testGetSize() throws Exception {
-        Dimension expectedSize = new Dimension(594, 522);
-        Dimension actualSize = instance.getSize(
-                new FileImageInputStream(getFixture("escher_lego.jpg")),
-                SourceFormat.JPG);
-        assertEquals(expectedSize, actualSize);
     }
 
     public void testGetSupportedFeatures() {
@@ -63,11 +53,6 @@ public class ImageIoProcessorTest extends ProcessorTest {
         expectedQualities.add(Quality.GRAY);
         assertEquals(expectedQualities,
                 instance.getSupportedQualities(SourceFormat.UNKNOWN));
-    }
-
-    public void testProcess() {
-        // This is not easily testable in code, so will have to be tested by
-        // human eyes.
     }
 
 }
