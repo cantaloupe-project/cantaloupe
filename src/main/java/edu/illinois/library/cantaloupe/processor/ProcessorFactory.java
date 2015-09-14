@@ -47,7 +47,7 @@ public class ProcessorFactory {
         Class class_ = Class.forName(className);
         Processor processor = (Processor) class_.newInstance();
 
-        if (!processor.getSupportedSourceFormats().contains(sourceFormat)) {
+        if (processor.getAvailableOutputFormats(sourceFormat).size() < 1) {
             String msg;
             if (fallingBack) {
                 msg = String.format("No processor assigned to this format " +

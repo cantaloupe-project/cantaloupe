@@ -152,10 +152,6 @@ class ImageMagickProcessor implements Processor {
         return SUPPORTED_QUALITIES;
     }
 
-    public Set<SourceFormat> getSupportedSourceFormats() {
-        return FORMATS.keySet();
-    }
-
     public void process(Parameters params, SourceFormat sourceFormat,
                         ImageInputStream inputStream, OutputStream outputStream)
             throws Exception {

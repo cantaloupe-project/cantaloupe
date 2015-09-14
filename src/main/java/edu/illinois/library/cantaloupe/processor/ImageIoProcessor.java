@@ -126,17 +126,6 @@ class ImageIoProcessor implements Processor {
         return SUPPORTED_QUALITIES;
     }
 
-    public Set<SourceFormat> getSupportedSourceFormats() {
-        Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
-        for (SourceFormat sourceFormat : FORMATS.keySet()) {
-            if (FORMATS.get(sourceFormat) != null &&
-                    FORMATS.get(sourceFormat).size() > 0) {
-                sourceFormats.add(sourceFormat);
-            }
-        }
-        return sourceFormats;
-    }
-
     public void process(Parameters params, SourceFormat sourceFormat,
                         ImageInputStream inputStream, OutputStream outputStream)
             throws Exception {

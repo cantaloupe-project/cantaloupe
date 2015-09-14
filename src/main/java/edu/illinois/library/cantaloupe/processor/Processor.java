@@ -40,16 +40,10 @@ public interface Processor {
 
     /**
      * @param sourceFormat
-     * @return All features supported by the processor for the given source
+     * @return All qualities supported by the processor for the given source
      * format.
      */
     Set<Quality> getSupportedQualities(SourceFormat sourceFormat);
-
-    /**
-     * @return Set of source formats for which there are any available output
-     * formats.
-     */
-    Set<SourceFormat> getSupportedSourceFormats();
 
     /**
      * Uses the supplied parameters to process an image from the supplied

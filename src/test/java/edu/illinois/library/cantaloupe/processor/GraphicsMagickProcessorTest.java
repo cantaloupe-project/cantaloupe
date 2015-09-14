@@ -73,10 +73,6 @@ public class GraphicsMagickProcessorTest extends ProcessorTest {
                 instance.getSupportedQualities(SourceFormat.UNKNOWN));
     }
 
-    public void testGetSupportedSourceFormats() {
-        // TODO: write this
-    }
-
     public void testProcess() {
         // This is not easily testable in code, so will have to be tested by
         // human eyes.
