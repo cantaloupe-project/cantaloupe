@@ -115,15 +115,9 @@ public class ImageResource extends AbstractResource {
         // asking it whether it offers any output formats for it
         Set availableOutputFormats = proc.getAvailableOutputFormats(sourceFormat);
         if (!availableOutputFormats.contains(params.getOutputFormat())) {
-            String msg;
-            if (sourceFormat == SourceFormat.UNKNOWN) {
-                msg = String.format("%s does not support this source format",
-                        proc.getClass().getSimpleName());
-            } else {
-                msg = String.format("%s does not support the \"%s\" source format",
-                        proc.getClass().getSimpleName(),
-                        sourceFormat.getPreferredExtension());
-            }
+            String msg = String.format("%s does not support the \"%s\" output format",
+                    proc.getClass().getSimpleName(),
+                    params.getOutputFormat().getExtension());
             logger.warn(msg + ": " + this.getReference());
             throw new UnsupportedSourceFormatException(msg);
         }
