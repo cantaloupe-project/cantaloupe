@@ -10,6 +10,7 @@ public class ServiceFeatureTest extends TestCase {
         assertNotNull(ServiceFeature.valueOf("CORS"));
         assertNotNull(ServiceFeature.valueOf("JSON_LD_MEDIA_TYPE"));
         assertNotNull(ServiceFeature.valueOf("PROFILE_LINK_HEADER"));
+        assertNotNull(ServiceFeature.valueOf("SIZE_BY_WHITELISTED"));
     }
 
     public void testGetName() {
@@ -18,6 +19,7 @@ public class ServiceFeatureTest extends TestCase {
         assertEquals("cors", ServiceFeature.CORS.getName());
         assertEquals("jsonldMediaType", ServiceFeature.JSON_LD_MEDIA_TYPE.getName());
         assertEquals("profileLinkHeader", ServiceFeature.PROFILE_LINK_HEADER.getName());
+        assertEquals("sizeByWhListed", ServiceFeature.SIZE_BY_WHITELISTED.getName());
     }
 
     public void testToString() {
@@ -25,7 +27,7 @@ public class ServiceFeatureTest extends TestCase {
         assertEquals("canonicalLinkHeader", ServiceFeature.CANONICAL_LINK_HEADER.toString());
         assertEquals("cors", ServiceFeature.CORS.toString());
         assertEquals("jsonldMediaType", ServiceFeature.JSON_LD_MEDIA_TYPE.toString());
-        assertEquals("profileLinkHeader", ServiceFeature.PROFILE_LINK_HEADER.toString());
+        assertEquals("sizeByWhListed", ServiceFeature.SIZE_BY_WHITELISTED.toString());
     }
 
 }

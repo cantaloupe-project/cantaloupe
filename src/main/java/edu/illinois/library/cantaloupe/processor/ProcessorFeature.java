@@ -15,7 +15,6 @@ public enum ProcessorFeature implements Feature {
     ROTATION_ARBITRARY("rotationArbitrary"),
     ROTATION_BY_90S("rotationBy90s"),
     SIZE_ABOVE_FULL("sizeAboveFull"),
-    SIZE_BY_WHITELISTED("sizeByWhListed"), // TODO: this is not really a processor feature
     SIZE_BY_FORCED_WIDTH_HEIGHT("sizeByForcedWh"),
     SIZE_BY_HEIGHT("sizeByH"),
     SIZE_BY_PERCENT("sizeByPct"),

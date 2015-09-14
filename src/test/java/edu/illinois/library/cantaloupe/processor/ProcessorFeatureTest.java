@@ -11,7 +11,6 @@ public class ProcessorFeatureTest extends TestCase {
         assertNotNull(ProcessorFeature.valueOf("ROTATION_ARBITRARY"));
         assertNotNull(ProcessorFeature.valueOf("ROTATION_BY_90S"));
         assertNotNull(ProcessorFeature.valueOf("SIZE_ABOVE_FULL"));
-        assertNotNull(ProcessorFeature.valueOf("SIZE_BY_WHITELISTED"));
         assertNotNull(ProcessorFeature.valueOf("SIZE_BY_FORCED_WIDTH_HEIGHT"));
         assertNotNull(ProcessorFeature.valueOf("SIZE_BY_HEIGHT"));
         assertNotNull(ProcessorFeature.valueOf("SIZE_BY_PERCENT"));
@@ -26,7 +25,6 @@ public class ProcessorFeatureTest extends TestCase {
         assertEquals("rotationArbitrary", ProcessorFeature.ROTATION_ARBITRARY.getName());
         assertEquals("rotationBy90s", ProcessorFeature.ROTATION_BY_90S.getName());
         assertEquals("sizeAboveFull", ProcessorFeature.SIZE_ABOVE_FULL.getName());
-        assertEquals("sizeByWhListed", ProcessorFeature.SIZE_BY_WHITELISTED.getName());
         assertEquals("sizeByForcedWh", ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT.getName());
         assertEquals("sizeByH", ProcessorFeature.SIZE_BY_HEIGHT.getName());
         assertEquals("sizeByPct", ProcessorFeature.SIZE_BY_PERCENT.getName());
@@ -41,7 +39,6 @@ public class ProcessorFeatureTest extends TestCase {
         assertEquals("rotationArbitrary", ProcessorFeature.ROTATION_ARBITRARY.toString());
         assertEquals("rotationBy90s", ProcessorFeature.ROTATION_BY_90S.toString());
         assertEquals("sizeAboveFull", ProcessorFeature.SIZE_ABOVE_FULL.toString());
-        assertEquals("sizeByWhListed", ProcessorFeature.SIZE_BY_WHITELISTED.toString());
         assertEquals("sizeByForcedWh", ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT.toString());
         assertEquals("sizeByH", ProcessorFeature.SIZE_BY_HEIGHT.toString());
         assertEquals("sizeByPct", ProcessorFeature.SIZE_BY_PERCENT.toString());

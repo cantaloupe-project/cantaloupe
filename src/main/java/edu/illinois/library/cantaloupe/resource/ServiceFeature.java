@@ -13,7 +13,8 @@ enum ServiceFeature implements Feature {
     CANONICAL_LINK_HEADER("canonicalLinkHeader"),
     CORS("cors"),
     JSON_LD_MEDIA_TYPE("jsonldMediaType"),
-    PROFILE_LINK_HEADER("profileLinkHeader");
+    PROFILE_LINK_HEADER("profileLinkHeader"),
+    SIZE_BY_WHITELISTED("sizeByWhListed");
 
     private String name;
 

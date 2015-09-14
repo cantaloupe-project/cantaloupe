@@ -52,7 +52,6 @@ class ImageIoProcessor implements Processor {
         SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_ARBITRARY);
         SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_BY_90S);
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_ABOVE_FULL);
-        //SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WHITELISTED);
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_HEIGHT);
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_PERCENT);
