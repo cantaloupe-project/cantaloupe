@@ -36,12 +36,12 @@ it the following contents, modifying as desired:
 
     # Image processor to use for various source formats. Available values are
     # `ImageIoProcessor`, `GraphicsMagickProcessor`, and `ImageMagickProcessor`.
-    # These definitions are optional.
-    processor.jp2 = ImageMagickProcessor
-    processor.jpg = ImageIoProcessor
-    processor.tif = ImageMagickProcessor
+    # These extension-specific definitions are optional.
+    processor.jp2 = JaiProcessor
+    processor.jpg = GraphicsMagickProcessor
+    processor.tif = JaiProcessor
     # For any formats not assigned above, fall back to a general-purpose
-    # processor.
+    # processor. (This is NOT optional.)
     processor.fallback = ImageMagickProcessor
 
     # Optional; overrides the PATH
@@ -92,9 +92,8 @@ parameters in an image request.
 ## Resolvers
 
 Resolvers locate a source image based on the identifier in an IIIF URL. In
-Java-speak, they take in an identifier and return either a `File` or an
-`InputStream` object from which the corresponding image can be read by a
-processor.
+Java-speak, they take in an identifier and return an `ImageInputStream` object
+from which the corresponding image can be read by a processor.
 
 ### FilesystemResolver
 
@@ -118,12 +117,15 @@ An identifier of `image.jpg` in the IIIF URL will resolve to
 ### HttpResolver
 
 HttpResolver maps an identifier from an IIIF URL to some other URL, for
-retrieving images from a web server.
+retrieving images from a web server. This is inherently less efficient than
+direct file access, but the performance differential will depend on a number of
+factors.
 
 It is preferable to use this resolver with source images with recognizable file
 extensions. For images with an extension that is missing or unrecognizable, it
-will issue an HTTP HEAD request to the server to check the Content-Type header.
-If the type cannot be inferred from that, the image won't be processable.
+will issue an HTTP HEAD request to the server to check the `Content-Type`
+header. If the type cannot be inferred from that, an HTTP 415 response will be
+returned.
 
 The `HttpResolver.url_prefix` and `url_suffix` configuration options are
 optional and intended to make URLs shorter, more stable, and hide potentially
@@ -137,9 +139,9 @@ An identifier of `image.jpg` in the IIIF URL will resolve to
 
 ## Processors
 
-Cantaloupe can use different image processors, each of which can be assigned to
-particular source formats via the config file (see the Configuration section
-above). Currently, the available processors are:
+Cantaloupe can use different image processors for different source formats.
+Assignments are made in the config file. (See the Configuration section above.)
+Currently, the available processors are:
 
 * ImageIoProcessor
 * GraphicsMagickProcessor
@@ -192,8 +194,8 @@ ImageMagick produces high-quality output and supports all of the IIIF
 transforms and all IIIF output formats (assuming the WebP, JPEG2000, and
 PDF delegates are installed). It also supports a wide array of source formats.
 
-ImageMagick is not known for being particularly fast or efficient. Large
-amounts of RAM and fast storage help.
+ImageMagick is not known for being particularly fast or efficient, but it is
+generally usable. Large amounts of RAM and fast storage help.
 
 # Notes on Source Formats
 
@@ -205,9 +207,9 @@ GraphicsMagick can read/write JPEG2000 using JasPer, and ImageMagick using
 OpenJPEG. Both of these are unusably slow.
 
 Cantaloupe includes the (JAI-EXT)[https://github.com/geosolutions-it/jai-ext]
-library, which adds support for several codecs in addition to the few supported
-natively by ImageIO -- JPEG2000 among them. Unfortunately, this implementation
-is not much of an improvement over the above.
+library, which adds support for several codecs in addition to the ones bundled
+with the JRE -- JPEG2000 among them. Unfortunately, this implementation is not
+much of an improvement over the above.
 
 Apparently, platform-native adapters are available for the JPEG2000 codec that
 improve its performance. These are quite old and are available only for Windows
@@ -215,27 +217,28 @@ and Linux, and maybe not current versions. (The author has not looked into it.)
 
 There does appear to be an [ImageIO Kakadu adapter]
 (https://github.com/geosolutions-it/imageio-ext/) available. Please report
-back if you have any experience with it.
+back if you have any experience with this.
 
 ## TIFF
 
 GraphicsMagickProcessor and ImageMagickProcessor can both handle TIFF if the
-necessary delegate or plugin is installed. (See the Cantaloupe landing page.)
+necessary delegate or plugin is installed. (See the landing page, at `/iiif`.)
 
 ImageIoProcessor can read and write TIFF thanks to the bundled (JAI-EXT)
 [https://github.com/geosolutions-it/jai-ext] library. Unfortunately, it is
-currently super slow.
+very slow.
 
 # Custom Development
+
+If adding your own resolver or processor, feel free to add new configuration
+keys to the properties file. They should be in the form of
+`NameOfMyClass.whatever`. They can then be accessed via
+`e.i.l.cantaloupe.Application.getConfiguration()`.
 
 ## Adding Custom Resolvers
 
 A custom resolver needs to implement the `e.i.l.cantaloupe.resolver.Resolver`
 interface. Then, to use it, set `resolver` in your properties file to its name.
-
-Feel free to add new configuration keys to the properties file. They should
-be in the form of `NameOfMyResolver.whatever`. They can then be accessed
-via `e.i.l.cantaloupe.Application.getConfiguration()`.
 
 See one of the existing resolvers for examples.
 
@@ -245,8 +248,8 @@ Custom processors can be added by implementing the
 `e.i.l.cantaloupe.processor.Processor` interface. See the interface
 documentation for details and the existing implementations for examples.
 
-A better but more difficult option would be to add an ImageIO format plugin
-instead of a custom processor, and then use ImageIoProcessor with it.
+A more difficult option would be to add an ImageIO format plugin instead of a
+custom processor, and then use ImageIoProcessor with it.
 
 ## Contributing Code
 
