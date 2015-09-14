@@ -5,11 +5,9 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Quality;
 import org.apache.commons.configuration.BaseConfiguration;
-import org.im4java.process.ProcessStarter;
 
 import javax.imageio.stream.FileImageInputStream;
 import java.awt.Dimension;
-import java.io.FileInputStream;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,11 +21,6 @@ public class GraphicsMagickProcessorTest extends ProcessorTest {
         Application.setConfiguration(config);
 
         instance = new GraphicsMagickProcessor();
-    }
-
-    public void testInitialization() {
-        assertEquals(ProcessStarter.getGlobalSearchPath(), Application.
-                getConfiguration().getString("GraphicsMagickProcessor.path_to_binaries"));
     }
 
     public void testGetAvailableOutputFormats() {

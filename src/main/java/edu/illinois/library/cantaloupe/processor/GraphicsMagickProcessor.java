@@ -14,7 +14,6 @@ import org.im4java.core.IMOperation;
 import org.im4java.core.Info;
 import org.im4java.core.InfoException;
 import org.im4java.process.Pipe;
-import org.im4java.process.ProcessStarter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,14 +45,6 @@ class GraphicsMagickProcessor implements Processor {
     private SourceFormat sourceFormat;
 
     static {
-        // overrides the PATH; see
-        // http://im4java.sourceforge.net/docs/dev-guide.html
-        String binaryPath = Application.getConfiguration().
-                getString("GraphicsMagickProcessor.path_to_binaries", "");
-        if (binaryPath.length() > 0) {
-            ProcessStarter.setGlobalSearchPath(binaryPath);
-        }
-
         SUPPORTED_QUALITIES.add(Quality.BITONAL);
         SUPPORTED_QUALITIES.add(Quality.COLOR);
         SUPPORTED_QUALITIES.add(Quality.DEFAULT);
@@ -199,6 +190,12 @@ class GraphicsMagickProcessor implements Processor {
         Pipe pipeOut = new Pipe(null, outputStream);
 
         ConvertCmd convert = new ConvertCmd(true);
+
+        String binaryPath = Application.getConfiguration().
+                getString("GraphicsMagickProcessor.path_to_binaries", "");
+        if (binaryPath.length() > 0) {
+            convert.setSearchPath(binaryPath);
+        }
         convert.setInputProvider(pipeIn);
         convert.setOutputConsumer(pipeOut);
         convert.run(op);
