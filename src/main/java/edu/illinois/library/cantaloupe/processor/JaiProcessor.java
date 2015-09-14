@@ -25,6 +25,7 @@ import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
+import javax.media.jai.OpImage;
 import javax.media.jai.operator.TransposeDescriptor;
 import javax.media.jai.ParameterBlockJAI;
 import javax.media.jai.RenderedOp;
@@ -101,11 +102,7 @@ class JaiProcessor implements Processor {
     }
 
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
-        Set<OutputFormat> formats = getFormats().get(sourceFormat);
-        if (formats == null) {
-            formats = new HashSet<OutputFormat>();
-        }
-        return formats;
+        return getFormats().get(sourceFormat);
     }
 
     public Dimension getSize(ImageInputStream inputStream,
@@ -136,21 +133,17 @@ class JaiProcessor implements Processor {
         return SUPPORTED_QUALITIES;
     }
 
-    public Set<SourceFormat> getSupportedSourceFormats() {
-        Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
-        HashMap<SourceFormat, Set<OutputFormat>> formats = getFormats();
-        for (SourceFormat sourceFormat : formats.keySet()) {
-            if (formats.get(sourceFormat) != null &&
-                    formats.get(sourceFormat).size() > 0) {
-                sourceFormats.add(sourceFormat);
-            }
-        }
-        return sourceFormats;
-    }
-
     public void process(Parameters params, SourceFormat sourceFormat,
                         ImageInputStream inputStream, OutputStream outputStream)
             throws Exception {
+        final Set<OutputFormat> availableOutputFormats =
+                getAvailableOutputFormats(sourceFormat);
+        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
+            throw new UnsupportedSourceFormatException();
+        } else if (!availableOutputFormats.contains(params.getOutputFormat())) {
+            throw new UnsupportedOutputFormatException();
+        }
+
         RenderedOp image = loadRegion(inputStream, params.getRegion());
         image = scaleImage(image, params.getSize());
         image = rotateImage(image, params.getRotation());
@@ -266,10 +259,16 @@ class JaiProcessor implements Processor {
         RenderedOp filteredImage = inputImage;
         if (quality != Quality.COLOR && quality != Quality.DEFAULT) {
             // convert to grayscale
-            double[][] matrix = { { 0.114, 0.587, 0.299, 0 } };
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(inputImage);
-            pb.add(matrix);
+            double[][] matrixRgb = { { 0.114, 0.587, 0.299, 0 } };
+            double[][] matrixRgba = { { 0.114, 0.587, 0.299, 0, 0 } };
+            if (OpImage.getExpandedNumBands(inputImage.getSampleModel(),
+                    inputImage.getColorModel()) == 4) {
+                pb.add(matrixRgba);
+            } else {
+                pb.add(matrixRgb);
+            }
             filteredImage = JAI.create("bandcombine", pb, null);
             if (quality == Quality.BITONAL) {
                  pb = new ParameterBlock();
@@ -287,6 +286,13 @@ class JaiProcessor implements Processor {
             case GIF:
                 Iterator writers = ImageIO.getImageWritersByFormatName("GIF");
                 if (writers.hasNext()) {
+                    // GIFWriter can't deal with a non-0,0 origin
+                    ParameterBlock pb = new ParameterBlock();
+                    pb.addSource(image);
+                    pb.add((float) -image.getMinX());
+                    pb.add((float) -image.getMinY());
+                    image = JAI.create("translate", pb);
+
                     ImageWriter writer = (ImageWriter) writers.next();
                     ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
                     writer.setOutput(os);
