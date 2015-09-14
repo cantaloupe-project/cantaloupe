@@ -18,7 +18,8 @@ public interface Processor {
     /**
      * @param sourceFormat The source format for which to get a list of
      *                     available output formats.
-     * @return Output formats available for the given source format.
+     * @return Output formats available for the given source format, or an
+     * empty set if none.
      */
     Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat);
 
@@ -53,6 +54,8 @@ public interface Processor {
      * @param sourceFormat Format of the source image
      * @param inputStream Stream from which to read the image
      * @param outputStream Stream to which to write the image
+     * @throws UnsupportedOutputFormatException
+     * @throws UnsupportedSourceFormatException
      * @throws Exception
      */
     void process(Parameters params, SourceFormat sourceFormat,

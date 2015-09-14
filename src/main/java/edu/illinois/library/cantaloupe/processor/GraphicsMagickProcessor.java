@@ -33,12 +33,11 @@ class GraphicsMagickProcessor implements Processor {
     private static Logger logger = LoggerFactory.
             getLogger(GraphicsMagickProcessor.class);
 
-    private static final HashMap<SourceFormat,Set<OutputFormat>> FORMATS =
-            getAvailableOutputFormats();
     private static final Set<Quality> SUPPORTED_QUALITIES =
             new HashSet<Quality>();
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<ProcessorFeature>();
+    // Lazy-initialized by getFormats()
     private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
 
     private ImageInputStream inputStream;
@@ -68,20 +67,23 @@ class GraphicsMagickProcessor implements Processor {
      * @return Map of available output formats for all known source formats,
      * based on information reported by <code>gm version</code>.
      */
-    public static HashMap<SourceFormat, Set<OutputFormat>> getAvailableOutputFormats() {
+    private static HashMap<SourceFormat, Set<OutputFormat>> getFormats() {
         if (supportedFormats == null) {
             final Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
             final Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
+            String cmdPath = "gm";
             try {
                 // retrieve the output of the `gm version` command, which contains a
                 // list of all optional formats
                 Runtime runtime = Runtime.getRuntime();
-                String cmdPath = "";
                 Configuration config = Application.getConfiguration();
                 if (config != null) {
-                    cmdPath = config.getString("GraphicsMagickProcessor.path_to_binaries", "");
+                    String pathPrefix = config.getString("GraphicsMagickProcessor.path_to_binaries");
+                    if (pathPrefix != null) {
+                        cmdPath = pathPrefix + File.separator + cmdPath;
+                    }
                 }
-                String[] commands = {cmdPath + File.separator + "gm", "version"};
+                String[] commands = {cmdPath, "version"};
                 Process proc = runtime.exec(commands);
                 BufferedReader stdInput = new BufferedReader(
                         new InputStreamReader(proc.getInputStream()));
@@ -90,9 +92,9 @@ class GraphicsMagickProcessor implements Processor {
                 while ((s = stdInput.readLine()) != null) {
                     s = s.trim();
                     if (s.contains("Feature Support")) {
-                        read = true;
+                        read = true; // start reading
                     } else if (s.contains("Host type:")) {
-                        read = false;
+                        break; // stop reading
                     }
                     if (read) {
                         if (s.startsWith("JPEG-2000  ") && s.endsWith(" yes")) {
@@ -121,10 +123,11 @@ class GraphicsMagickProcessor implements Processor {
                     }
                 }
             } catch (IOException e) {
-                logger.error("Failed to execute gm command");
+                logger.error("Failed to execute {}", cmdPath);
             }
 
-            // add formats that are definitely available
+            // add formats that are not listed in the output of "gm version"
+            // but are definitely available
             // (http://www.graphicsmagick.org/formats.html)
             sourceFormats.add(SourceFormat.BMP);
             sourceFormats.add(SourceFormat.GIF);
@@ -139,7 +142,7 @@ class GraphicsMagickProcessor implements Processor {
     }
 
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
-        Set<OutputFormat> formats = FORMATS.get(sourceFormat);
+        Set<OutputFormat> formats = getFormats().get(sourceFormat);
         if (formats == null) {
             formats = new HashSet<OutputFormat>();
         }
@@ -166,6 +169,14 @@ class GraphicsMagickProcessor implements Processor {
     public void process(Parameters params, SourceFormat sourceFormat,
                         ImageInputStream inputStream, OutputStream outputStream)
             throws Exception {
+        final Set<OutputFormat> availableOutputFormats =
+                getAvailableOutputFormats(sourceFormat);
+        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
+            throw new UnsupportedSourceFormatException();
+        } else if (!availableOutputFormats.contains(params.getOutputFormat())) {
+            throw new UnsupportedOutputFormatException();
+        }
+
         this.inputStream = inputStream;
         this.sourceFormat = sourceFormat;
 
@@ -203,10 +214,11 @@ class GraphicsMagickProcessor implements Processor {
                     // width/height), so we have to calculate them.
                     Dimension imageSize = getSize(this.inputStream,
                             this.sourceFormat);
-                    int x = (int) Math.round(region.getX() / 100.0 * imageSize.width);
-                    int y = (int) Math.round(region.getY() / 100.0 * imageSize.height);
-                    op.crop(Math.round(region.getWidth()),
-                            Math.round(region.getHeight()), x, y, "%");
+                    int x = Math.round(region.getX() / 100.0f * imageSize.width);
+                    int y = Math.round(region.getY() / 100.0f * imageSize.height);
+                    int width = Math.round(region.getWidth());
+                    int height = Math.round(region.getHeight());
+                    op.crop(width, height, x, y, "%");
                 } catch (InfoException e) {
                     logger.debug("Failed to get dimensions for {}",
                             params.getIdentifier());
