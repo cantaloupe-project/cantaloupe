@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.log4j.Level;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
@@ -22,15 +21,11 @@ public class Application {
     private static Configuration config;
 
     static {
-        // Commons Configuration uses log4j; easier to disable it than to set
-        // it up to log useless messages
-        org.apache.log4j.Logger.getRootLogger().setLevel(Level.OFF);
-
         Velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
         Velocity.setProperty("classpath.resource.loader.class",
                 ClasspathResourceLoader.class.getName());
         Velocity.setProperty("class.resource.loader.cache", true);
-        // tell velocity to put a sock in it
+        // we don't really care about velocity log messages
         Velocity.setProperty("runtime.log.logsystem.class",
                 "org.apache.velocity.runtime.log.NullLogChute");
         Velocity.init();
@@ -49,7 +44,6 @@ public class Application {
                 String configFilePath = System.getProperty("cantaloupe.config");
                 configFilePath = configFilePath.replaceFirst("^~",
                         System.getProperty("user.home"));
-                logger.debug("Using config file: {}", configFilePath);
                 PropertiesConfiguration propConfig = new PropertiesConfiguration();
                 propConfig.load(configFilePath);
                 config = propConfig;

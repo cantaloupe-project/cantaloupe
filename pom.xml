@@ -22,6 +22,12 @@
       <groupId>commons-configuration</groupId>
       <artifactId>commons-configuration</artifactId>
       <version>1.6</version>
+      <exclusions>
+        <exclusion> <!-- divert log messages to the log4j-over-slf4j bridge -->
+          <groupId>org.log4j</groupId>
+          <artifactId>log4j</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>eu.medsea.mimeutil</groupId>
@@ -88,6 +94,11 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
+      <version>1.7.12</version>
+    </dependency>
+    <dependency> <!-- intercepts log4j messages from Commons Configuration -->
+      <groupId>org.slf4j</groupId>
+      <artifactId>log4j-over-slf4j</artifactId>
       <version>1.7.12</version>
     </dependency>
   </dependencies>
