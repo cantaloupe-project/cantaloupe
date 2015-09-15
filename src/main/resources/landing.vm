@@ -49,7 +49,7 @@
                         <td>$processor.getClass().getSimpleName()</td>
                         #foreach ($sourceFormat in $sourceFormats)
                             <td class="text-center">
-                                #if ($processor.getSupportedSourceFormats().contains($sourceFormat))
+                                #if ($processor.getAvailableOutputFormats($sourceFormat).size() > 0)
                                     <span class="text-success">&check;</span>
                                 #end
                             </td>
