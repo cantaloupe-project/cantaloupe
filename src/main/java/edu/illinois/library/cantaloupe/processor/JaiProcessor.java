@@ -13,6 +13,7 @@ import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.request.Region;
 import edu.illinois.library.cantaloupe.request.Rotation;
 import edu.illinois.library.cantaloupe.request.Size;
+import it.geosolutions.jaiext.JAIExt;
 import org.restlet.data.MediaType;
 
 import javax.imageio.IIOImage;
@@ -52,6 +53,9 @@ class JaiProcessor implements Processor {
     private static HashMap<SourceFormat,Set<OutputFormat>> formatsMap;
 
     static {
+        // replace the JRE JAI operations with GeoTools JAI-EXT
+        JAIExt.initJAIEXT();
+
         SUPPORTED_QUALITIES.add(Quality.BITONAL);
         SUPPORTED_QUALITIES.add(Quality.COLOR);
         SUPPORTED_QUALITIES.add(Quality.DEFAULT);
