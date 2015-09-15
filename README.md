@@ -9,7 +9,7 @@ Home: [https://github.com/medusa-project/cantaloupe]
 
 * Simple
 * Self-contained
-* Easy to get working
+* Easy to install and get working
 * Pluggable resolvers for filesystem and HTTP sources
 * Pluggable processors to support a wide variety of source image formats
 * Excellent performance possible with (some types of) massive images
@@ -35,22 +35,21 @@ it the following contents, modifying as desired:
     # Helpful in development
     print_stack_trace_on_error_pages = true
 
-    # Image processor to use for various source formats. Available values are
+    # Image processors to use for various source formats. Available values are
     # `ImageIoProcessor`, `GraphicsMagickProcessor`, `ImageMagickProcessor`,
     # and `JaiProcessor`.
     # These extension-specific definitions are optional.
-    processor.jp2 = JaiProcessor
-    processor.jpg = GraphicsMagickProcessor
-    processor.tif = JaiProcessor
+    processor.jpg = ImageIoProcessor
+    processor.tif = GraphicsMagickProcessor
     # For any formats not assigned above, fall back to a general-purpose
     # processor. (This is NOT optional.)
     processor.fallback = ImageMagickProcessor
 
     # Optional; overrides the PATH
-    GraphicsMagickProcessor.path_to_binaries = /usr/local/bin
+    #GraphicsMagickProcessor.path_to_binaries = /usr/local/bin
 
     # Optional; overrides the PATH
-    ImageMagickProcessor.path_to_binaries = /usr/local/bin
+    #ImageMagickProcessor.path_to_binaries = /usr/local/bin
 
     # JPEG output quality. Should be a number between 0-1 ending in "f"
     ImageIoProcessor.jpg.quality = 0.7f
@@ -59,19 +58,19 @@ it the following contents, modifying as desired:
     # Available values are `FilesystemResolver` and `HttpResolver`.
     resolver = FilesystemResolver
 
-    # The server-side path that will be prefixed to the identifier in the
-    # request URL.
+    # Server-side path that will be prefixed to the identifier in the request
+    # URL.
     FilesystemResolver.path_prefix = /home/myself/images
-    # The server-side path or extension that will be suffixed to the identifier
+    # Server-side path or extension that will be suffixed to the identifier
     # in the request URL.
     FilesystemResolver.path_suffix =
     
-    # The URL that will be prefixed to the identifier in the request URL.
+    # URL that will be prefixed to the identifier in the request URL.
     HttpResolver.url_prefix = http://localhost/images/
-    # The path, extension, query string, etc. that will be suffixed to the
+    # Path, extension, query string, etc. that will be suffixed to the
     # identifier in the request URL.
     HttpResolver.url_suffix =
-    # Used for HTTP Basic authentication
+    # Used for HTTP Basic authentication.
     HttpResolver.username =
     HttpResolver.password =
 
@@ -85,9 +84,15 @@ From the command prompt, simply run:
 
 It is now ready for use at: `http://localhost:{http.port}/iiif`
 
+To see information about an image, visit:
+`http://localhost:{http.port}/iiif/{image filename}/info.json`
+
+To see the image itself, try:
+`http://localhost:{http.port}/iiif/{image filename}/full/full/0/default.jpg`
+
 # Technical Overview
 
-Cantaloupe has a configurable processing pipeline based on resolvers, that
+Cantaloupe features a configurable processing pipeline based on resolvers, that
 locate source images; and processors, that transform them according to the
 parameters in an image request.
 
@@ -95,13 +100,14 @@ parameters in an image request.
 
 Resolvers locate a source image based on the identifier in an IIIF URL. In
 Java-speak, they take in an identifier and return an `ImageInputStream` object
-from which the corresponding image can be read by a processor.
+from which the corresponding image can be read by a `Processor`.
 
 ### FilesystemResolver
 
 FilesystemResolver maps an identifier from an IIIF URL to a filesystem path,
-for retrieving local images. This is the best resolver for performance, as it
-returns a FileImageInputStream, which supports arbitrary file seeking.
+for retrieving images on a local or attached filesystem. This is the best
+resolver for performance, as it returns a `FileImageInputStream`, which supports
+arbitrary seeking.
 
 For files with extensions that are missing or unrecognized, this resolver will
 check the "magic number" to determine type, which will add some overhead. It
@@ -111,8 +117,8 @@ The `FilesystemResolver.path_prefix` and `path_suffix` configuration options
 are optional and intended to make URLs shorter, more stable, and hide
 potentially sensitive information. For example, with these options set as such:
 
-FilesystemResolver.path_prefix = /usr/local/images/
-FilesystemResolver.path_suffix =
+    FilesystemResolver.path_prefix = /usr/local/images/
+    FilesystemResolver.path_suffix =
 
 An identifier of `image.jpg` in the IIIF URL will resolve to
 `/usr/local/images/image.jpg`.
@@ -134,8 +140,8 @@ The `HttpResolver.url_prefix` and `url_suffix` configuration options are
 optional and intended to make URLs shorter, more stable, and hide potentially
 sensitive information. For example, with these options set as such:
 
-HttpResolver.url_prefix = http://example.org/images/
-HttpResolver.url_suffix =
+    HttpResolver.url_prefix = http://example.org/images/
+    HttpResolver.url_suffix =
 
 An identifier of `image.jpg` in the IIIF URL will resolve to
 `http://example.org/images/image.jpg`.
@@ -152,7 +158,7 @@ Currently, the available processors are:
 * ImageMagickProcessor
 
 In terms of format support, a distinction is made between the concepts of
-source formats and output formats, and furthermore, available output formats
+source format and output format, and furthermore, the available output formats
 may differ depending on the source format.
 
 Supported source formats depend on the processor, and maybe installed
@@ -176,15 +182,18 @@ memory-intensive. Large amounts of RAM and fast storage help.
 
 ### JaiProcessor
 
-JaiProcessor uses the Java Advanced Imaging (JAI) framework. JAI is very
-powerful, but has not been updated in many years. Nevertheless, it still works.
+Java Advanced Imaging (JAI) is a powerful low-level imaging framework
+developed by Sun Microsystems beginning in the late nineties. JaiProcessor uses
+an updated fork called [JAI-EXT](https://github.com/geosolutions-it/jai-ext).
 
-JaiProcessor's main advantage is its internal tiling engine which makes it
-abie to selectively load image regions (with some formats). This can result in
-a huge performance win for very large images, but only with the
-FilesystemResolver.
+JaiProcessor's main advantage (see below for disclaimer) is that it can exploit
+JAI's internal tiling engine, which makes it abie, with some formats, to load
+image regions selectively. This can result in a huge performance win.
 
 JaiProcessor can read and write the same formats as ImageIoProcessor.
+
+*Note: JaiProcessor is very much experimental at this time. Stand by with
+CTRL+C if you don't want to melt your CPU.*
 
 ### GraphicsMagickProcessor
 
@@ -213,33 +222,49 @@ ImageMagickProcessor, like GraphicsMagickProcessor, also uses
 (http://www.imagemagick.org/) commands. As such, ImageMagick must be installed.
 
 ImageMagick produces high-quality output and supports all of the IIIF
-transforms and all IIIF output formats (assuming the WebP, JPEG2000, and
-PDF delegates are installed). It also supports a wide array of source formats.
+transforms and all IIIF output formats, assuming the necessary delegates are
+installed. It also supports a wide array of source formats.
 
 ImageMagick is not known for being particularly fast or efficient, but it is
 generally usable. Large amounts of RAM and fast storage help.
 
+### Ideas for Future Processors
+
+* KakaduProcessor (using `kdu_expand`)
+* [VipsProcessor](http://www.vips.ecs.soton.ac.uk/index.php?title=VIPS)
+* [GdalProcessor](http://gdal.org) (see also
+  [ImageIO-Ext](https://github.com/geosolutions-it/imageio-ext))
+* [CommonsImagingProcessor](https://commons.apache.org/proper/commons-imaging/)
+
 # Notes on Source Formats
 
-(Feel free to add in your own notes, and send a pull request.)
+(Feel free to add in your own notes, and send a pull request. Controlled
+benchmarks are also welcome.)
+
+## BMP
+
+Probably no one is going to care about this source format. Too bad, because it
+is blazing fast with ImageIoProcessor. Now you can serve your Microsoft Paint
+drawings faster than ever before.
 
 ## JPEG2000
 
 GraphicsMagick can read/write JPEG2000 using JasPer, and ImageMagick using
-OpenJPEG. Both of these are unusably slow.
+OpenJPEG. Both of these are extremely slow.
 
-Cantaloupe includes the (JAI-EXT)[https://github.com/geosolutions-it/jai-ext]
-library, which adds support for several codecs in addition to the ones bundled
-with the JRE -- JPEG2000 among them. Unfortunately, this implementation is not
-much of an improvement over the above.
+Cantaloupe bundles the [ImageIO-EXT]
+(https://github.com/geosolutions-it/imageio-ext) library, which adds support
+for several codecs in addition to the ones bundled with the JRE -- JPEG2000
+among them. Bundled along with that is imageio-ext-kakadu, which ought to be
+able to interface with Kakadu via the kdu_jni.dll (Windows) or kdu_jni.so
+(Linux) library. The author lacks access to this library and is unable to test
+against it, so this feature probably doesn't work in Cantaloupe yet.
 
-Apparently, platform-native adapters are available for the JPEG2000 codec that
-improve its performance. These are quite old and are available only for Windows
-and Linux, and maybe not current versions. (The author has not looked into it.)
-
-There does appear to be an [ImageIO Kakadu adapter]
-(https://github.com/geosolutions-it/imageio-ext/) available. Please report
-back if you have any experience with this.
+Years ago, Sun published platform-native JAI JPEG2000 accelerator JARs for
+Windows, Linux, and Solaris, which improved performance from dreadful to merely
+poor. It is unknown what has happened to these amidst the Sun web page flotsam
+on the Oracle website, but in any case, they probably wouldn't help enough for
+this application.
 
 ## TIFF
 
@@ -250,8 +275,8 @@ ImageIoProcessor can read and write TIFF thanks to the bundled [ImageIO-Ext]
 (https://github.com/geosolutions-it/imageio-ext) library. ZIP-compressed TIFFs
 are not supported.
 
-JaiProcessor, on the other hand, is able to load TIFF images in tiles, which
-makes it very fast with this format.
+JaiProcessor is able to load TIFF images in tiles, which makes it pretty fast
+with this format.
 
 # Custom Development
 
@@ -273,8 +298,8 @@ Custom processors can be added by implementing the
 `e.i.l.cantaloupe.processor.Processor` interface. See the interface
 documentation for details and the existing implementations for examples.
 
-A more difficult option would be to add an ImageIO format plugin instead of a
-custom processor, and then use ImageIoProcessor with it.
+Another option would be to add an ImageIO format plugin instead of a custom
+processor, and then use ImageIoProcessor or JaiProcessor with it.
 
 ## Contributing Code
 
@@ -287,7 +312,8 @@ custom processor, and then use ImageIoProcessor with it.
 # Feedback
 
 Ideas, suggestions, feature requests, bug reports, and other kinds of feedback
-are welcome; please [contact the author](mailto:alexd@illinois.edu).
+are welcome; please [contact the author](mailto:alexd@illinois.edu), or submit
+an issue or pull request.
 
 # License
 
