@@ -91,6 +91,8 @@
   </repositories>
 
   <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <jackson.version>2.6.0</jackson.version>
     <restlet-version>2.3.4</restlet-version>
   </properties>
