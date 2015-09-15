@@ -34,10 +34,30 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency> <!-- https://github.com/geosolutions-it/imageio-ext -->
+      <groupId>it.geosolutions.imageio-ext</groupId>
+      <artifactId>imageio-ext</artifactId>
+      <version>1.1.12</version>
+    </dependency>
+    <dependency>
+      <groupId>it.geosolutions.imageio-ext</groupId>
+      <artifactId>imageio-ext-kakadu</artifactId>
+      <version>1.1.11</version>
+    </dependency>
+    <dependency>
+      <groupId>it.geosolutions.imageio-ext</groupId>
+      <artifactId>imageio-ext-kakadujni</artifactId>
+      <version>5.2.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-jp2k</artifactId>
+      <version>${geotools.version}</version>
+    </dependency>
     <dependency> <!-- https://github.com/geosolutions-it/jai-ext -->
-      <groupId>it.geosolutions.jaiext.rescale</groupId>
-      <artifactId>jt-rescale</artifactId>
-      <version>${project.version}</version>
+      <groupId>it.geosolutions.jaiext</groupId>
+      <artifactId>jaiext</artifactId>
+      <version>1.0.6</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -95,6 +115,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <jackson.version>2.6.0</jackson.version>
     <restlet-version>2.3.4</restlet-version>
+    <geotools.version>13.2</geotools.version>
   </properties>
 
   <build>
