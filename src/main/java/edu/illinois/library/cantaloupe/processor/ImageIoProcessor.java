@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import com.sun.media.jai.codec.ImageCodec;
+import com.sun.media.jai.codec.ImageDecoder;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
@@ -25,6 +27,9 @@ import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -140,24 +145,7 @@ class ImageIoProcessor implements Processor {
             throw new UnsupportedOutputFormatException();
         }
 
-        BufferedImage image = ImageIO.read(inputStream);
-        if (image == null) {
-            throw new UnsupportedSourceFormatException();
-        }
-
-        // TYPE_CUSTOM won't work with various operations, so copy into a new
-        // image of the correct type.
-        // TODO: this is horrific
-        if (image.getType() == BufferedImage.TYPE_CUSTOM) {
-            logger.debug("Redrawing image of TYPE_CUSTOM into a new image of TYPE_INT_RGB");
-            BufferedImage rgbImage = new BufferedImage(image.getWidth(),
-                    image.getHeight(), BufferedImage.TYPE_INT_RGB);
-            Graphics2D g = rgbImage.createGraphics();
-            g.drawImage(image, 0, 0, null);
-            g.dispose();
-            image = rgbImage;
-        }
-
+        BufferedImage image = loadImage(inputStream, sourceFormat);
         image = cropImage(image, params.getRegion());
         image = scaleImage(image, params.getSize());
         image = rotateImage(image, params.getRotation());
@@ -183,6 +171,42 @@ class ImageIoProcessor implements Processor {
                         outputStream);
                 break;
         }
+    }
+
+    private BufferedImage loadImage(ImageInputStream inputStream,
+                                    SourceFormat sourceFormat) throws IOException {
+        BufferedImage image;
+        // TIFF BufferedImages often end up with a type of TYPE_CUSTOM when
+        // loaded by ImageIO.read(), which causes many subsequent operations to
+        // fail. We can get an image of the correct type by using a different
+        // loading method.
+        if (sourceFormat == SourceFormat.TIF) {
+            InputStream is = new ImageInputStreamWrapper(inputStream);
+            ImageDecoder dec = ImageCodec.createImageDecoder("tiff", is, null);
+            RenderedImage op = dec.decodeAsRenderedImage();
+            BufferedImage rgbImage = new BufferedImage(op.getWidth(),
+                    op.getHeight(), BufferedImage.TYPE_INT_RGB);
+            rgbImage.setData(op.getData());
+            image = rgbImage;
+        } else {
+            image = ImageIO.read(inputStream);
+            if (image == null) {
+                throw new UnsupportedSourceFormatException();
+            }
+            // TYPE_CUSTOM won't work with various operations, so copy into a
+            // new image of the correct type. (This is extremely expensive)
+            if (image.getType() == BufferedImage.TYPE_CUSTOM) {
+                logger.debug("Redrawing image of TYPE_CUSTOM into a new image of TYPE_INT_RGB: {}",
+                        image.toString());
+                BufferedImage rgbImage = new BufferedImage(image.getWidth(),
+                        image.getHeight(), BufferedImage.TYPE_INT_RGB);
+                Graphics2D g = rgbImage.createGraphics();
+                g.drawImage(image, 0, 0, null);
+                g.dispose();
+                image = rgbImage;
+            }
+        }
+        return image;
     }
 
     private BufferedImage cropImage(BufferedImage inputImage, Region region) {

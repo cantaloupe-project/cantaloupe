@@ -162,14 +162,17 @@ source format* is contained within the response to an information request.
 
 ### ImageIoProcessor
 
-ImageIoProcessor uses Java ImageIO framework to load and process images in a
-native-Java way.
+ImageIoProcessor uses the Java ImageIO framework to load and process images in
+a native-Java way.
 
 ImageIO, as its name implies, is simply an I/O interface that does not care 
 about image formats, and therefore the list of formats supported by this
 processor varies depending on the codec JARs available in the classpath.
-(JAI-EXT)[https://github.com/geosolutions-it/jai-ext] by GeoSolutions is
-bundled in to improve the versatility of this processor.
+[ImageIO-Ext](https://github.com/geosolutions-it/imageio-ext/) by GeoSolutions
+is bundled in to improve the format support.
+
+ImageIoProcessor buffers entire source images in RAM, and is therefore
+memory-intensive. Large amounts of RAM and fast storage help.
 
 ### JaiProcessor
 
@@ -243,9 +246,9 @@ back if you have any experience with this.
 GraphicsMagickProcessor and ImageMagickProcessor can both handle TIFF if the
 necessary delegate or plugin is installed. (See the landing page, at `/iiif`.)
 
-ImageIoProcessor can read and write TIFF thanks to the bundled (JAI-EXT)
-[https://github.com/geosolutions-it/jai-ext] library. Unfortunately, it is
-very slow.
+ImageIoProcessor can read and write TIFF thanks to the bundled [ImageIO-Ext]
+(https://github.com/geosolutions-it/imageio-ext) library. ZIP-compressed TIFFs
+are not supported.
 
 JaiProcessor, on the other hand, is able to load TIFF images in tiles, which
 makes it very fast with this format.
