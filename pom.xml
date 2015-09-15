@@ -123,6 +123,16 @@
             <manifest>
               <mainClass>edu.illinois.library.cantaloupe.Application</mainClass>
             </manifest>
+            <!-- JAI apparently requires these:
+            http://stackoverflow.com/questions/7051603/jai-vendorname-null -->
+            <manifestEntries>
+              <Specification-Title>Cantaloupe</Specification-Title>
+              <Specification-Version>Cantaloupe</Specification-Version>
+              <Specification-Vendor>Cantaloupe</Specification-Vendor>
+              <Implementation-Title>Cantaloupe</Implementation-Title>
+              <Implementation-Version>Cantaloupe</Implementation-Version>
+              <Implementation-Vendor>Cantaloup</Implementation-Vendor>
+            </manifestEntries>
           </archive>
         </configuration>
       </plugin>
