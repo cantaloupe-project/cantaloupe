@@ -9,6 +9,8 @@ import edu.illinois.library.cantaloupe.request.Region;
 import edu.illinois.library.cantaloupe.request.Rotation;
 import edu.illinois.library.cantaloupe.request.Size;
 import org.restlet.data.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -33,6 +35,8 @@ import java.util.Set;
  * Processor using the Java ImageIO framework.
  */
 class ImageIoProcessor implements Processor {
+
+    private static Logger logger = LoggerFactory.getLogger(ImageIoProcessor.class);
 
     private static final HashMap<SourceFormat,Set<OutputFormat>> FORMATS =
             getAvailableOutputFormats();
@@ -141,16 +145,20 @@ class ImageIoProcessor implements Processor {
             throw new UnsupportedSourceFormatException();
         }
 
-        // The image may be of type TYPE_CUSTOM, which won't work with various
-        // operations, so copy it into a new image of type TYPE_INT_RGB.
-        BufferedImage rgbImage = new BufferedImage(image.getWidth(),
-                image.getHeight(), BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = rgbImage.createGraphics();
-        g.drawImage(image, 0, 0, null);
-        g.dispose();
-        image.flush();
+        // TYPE_CUSTOM won't work with various operations, so copy into a new
+        // image of the correct type.
+        // TODO: this is horrific
+        if (image.getType() == BufferedImage.TYPE_CUSTOM) {
+            logger.debug("Redrawing image of TYPE_CUSTOM into a new image of TYPE_INT_RGB");
+            BufferedImage rgbImage = new BufferedImage(image.getWidth(),
+                    image.getHeight(), BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = rgbImage.createGraphics();
+            g.drawImage(image, 0, 0, null);
+            g.dispose();
+            image = rgbImage;
+        }
 
-        image = cropImage(rgbImage, params.getRegion());
+        image = cropImage(image, params.getRegion());
         image = scaleImage(image, params.getSize());
         image = rotateImage(image, params.getRotation());
         image = filterImage(image, params.getQuality());
