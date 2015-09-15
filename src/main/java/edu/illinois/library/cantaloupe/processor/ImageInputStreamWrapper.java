@@ -20,6 +20,10 @@ class ImageInputStreamWrapper extends InputStream {
         return imageInputStream.read();
     }
 
+    public int read(byte[] b) throws IOException {
+        return imageInputStream.read(b);
+    }
+
     public int read(byte[] b, int off, int len) throws IOException {
         return imageInputStream.read(b, off, len);
     }
