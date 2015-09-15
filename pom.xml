@@ -34,15 +34,10 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency> <!-- https://github.com/geosolutions-it/imageio-ext -->
-      <groupId>it.geosolutions.imageio-ext</groupId>
-      <artifactId>imageio-ext</artifactId>
-      <version>1.1.12</version>
-    </dependency>
     <dependency>
       <groupId>it.geosolutions.imageio-ext</groupId>
       <artifactId>imageio-ext-kakadu</artifactId>
-      <version>1.1.11</version>
+      <version>${imageio-ext.version}</version>
     </dependency>
     <dependency>
       <groupId>it.geosolutions.imageio-ext</groupId>
@@ -55,8 +50,8 @@
       <version>${geotools.version}</version>
     </dependency>
     <dependency> <!-- https://github.com/geosolutions-it/jai-ext -->
-      <groupId>it.geosolutions.jaiext</groupId>
-      <artifactId>jaiext</artifactId>
+      <groupId>it.geosolutions.jaiext.scale</groupId>
+      <artifactId>jt-scale</artifactId>
       <version>1.0.6</version>
     </dependency>
     <dependency>
@@ -78,17 +73,17 @@
     <dependency>
       <groupId>org.restlet.jse</groupId>
       <artifactId>org.restlet.ext.velocity</artifactId>
-      <version>${restlet-version}</version>
+      <version>${restlet.version}</version>
     </dependency>
     <dependency>
       <groupId>org.restlet.jse</groupId>
       <artifactId>org.restlet</artifactId>
-      <version>${restlet-version}</version>
+      <version>${restlet.version}</version>
     </dependency>
     <dependency>
       <groupId>org.restlet.jse</groupId>
       <artifactId>org.restlet.ext.jackson</artifactId>
-      <version>${restlet-version}</version>
+      <version>${restlet.version}</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -101,7 +96,7 @@
     <repository>
       <id>geosolutions</id>
       <name>GeoSolutions Repository</name>
-      <url>http://maven.geo-solutions.it</url>
+      <url>http://maven.geo-solutions.it/</url>
     </repository>
     <repository>
       <id>maven-restlet</id>
@@ -113,8 +108,9 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <imageio-ext.version>1.1.12</imageio-ext.version>
     <jackson.version>2.6.0</jackson.version>
-    <restlet-version>2.3.4</restlet-version>
+    <restlet.version>2.3.4</restlet.version>
     <geotools.version>13.2</geotools.version>
   </properties>
 
