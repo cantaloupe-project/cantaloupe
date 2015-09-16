@@ -42,15 +42,19 @@ public class Application {
         if (config == null) {
             try {
                 String configFilePath = System.getProperty("cantaloupe.config");
+                if (configFilePath == null) {
+                    throw new ConfigurationException("No configuration file " +
+                            "specified. Try again with the " +
+                            "-Dcantaloupe.config=/path/to/cantaloupe.properties " +
+                            "option.");
+                }
                 configFilePath = configFilePath.replaceFirst("^~",
                         System.getProperty("user.home"));
                 PropertiesConfiguration propConfig = new PropertiesConfiguration();
                 propConfig.load(configFilePath);
                 config = propConfig;
             } catch (ConfigurationException e) {
-                logger.error("Failed to load the config file. Re-run with " +
-                        "the -Dcantaloupe.config=/path/to/cantaloupe.properties " +
-                        "option. (See the readme.)");
+                logger.error(e.getMessage());
             }
         }
         return config;
