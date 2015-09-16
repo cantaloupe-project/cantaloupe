@@ -12,12 +12,13 @@ Home: [https://github.com/medusa-project/cantaloupe]
 * Easy to install and get working
 * Pluggable resolvers for filesystem and HTTP sources
 * Pluggable processors to support a wide variety of source image formats
-* Excellent performance possible with (some types of) massive images
 
 ## What It Doesn't Do
 
-* Caching. The current thinking is that this would add complexity and be made
-  redundant by a caching HTTP proxy, which can do a better job anyway.
+* Caching. The current thinking is that this would add be made redundant by a
+  caching HTTP proxy, which can do a better job anyway.
+* Write log files. This may come in a future version. In the meantime,
+  log messages go to standard output.
 
 # Requirements
 
@@ -90,6 +91,9 @@ To see information about an image, visit:
 To see the image itself, try:
 `http://localhost:{http.port}/iiif/{image filename}/full/full/0/default.jpg`
 
+Though it should go without saying, please do not run Cantaloupe in production
+without a caching reverse proxy server in front of it.
+
 # Technical Overview
 
 Cantaloupe features a configurable processing pipeline based on resolvers, that
@@ -105,8 +109,8 @@ from which the corresponding image can be read by a `Processor`.
 ### FilesystemResolver
 
 FilesystemResolver maps an identifier from an IIIF URL to a filesystem path,
-for retrieving images on a local or attached filesystem. This is the best
-resolver for performance, as it returns a `FileImageInputStream`, which supports
+for retrieving images on a local or attached filesystem. This is theoretically
+the fastest resolver, as it returns a `FileImageInputStream`, which supports
 arbitrary seeking.
 
 For files with extensions that are missing or unrecognized, this resolver will
@@ -158,8 +162,8 @@ Currently, the available processors are:
 * ImageMagickProcessor
 
 In terms of format support, a distinction is made between the concepts of
-source format and output format, and furthermore, the available output formats
-may differ depending on the source format.
+source format and output format, and furthermore, available output formats may
+differ depending on the source format.
 
 Supported source formats depend on the processor, and maybe installed
 libraries/delegates, etc., as well. Lists of these are displayed on the
@@ -187,8 +191,8 @@ developed by Sun Microsystems beginning in the late nineties. JaiProcessor uses
 an updated fork called [JAI-EXT](https://github.com/geosolutions-it/jai-ext).
 
 JaiProcessor's main advantage (see below for disclaimer) is that it can exploit
-JAI's internal tiling engine, which makes it abie, with some formats, to load
-image regions selectively. This can result in a huge performance win.
+JAI's internal tiling engine, which makes it capable of region-of-interest
+decoding with some formats.
 
 JaiProcessor can read and write the same formats as ImageIoProcessor.
 
@@ -226,12 +230,14 @@ transforms and all IIIF output formats, assuming the necessary delegates are
 installed. It also supports a wide array of source formats.
 
 ImageMagick is not known for being particularly fast or efficient, but it is
-generally usable. Large amounts of RAM and fast storage help.
+generally usable. Large amounts of RAM and fast storage help. If you can find or
+compile a "Q8" version of ImageMagick, its memory use will be halved.
 
 ### Ideas for Future Processors
 
 * KakaduProcessor (using `kdu_expand`)
-* [VipsProcessor](http://www.vips.ecs.soton.ac.uk/index.php?title=VIPS)
+* [VipsProcessor](http://www.vips.ecs.soton.ac.uk/index.php?title=VIPS) using
+  JNI
 * [GdalProcessor](http://gdal.org) (see also
   [ImageIO-Ext](https://github.com/geosolutions-it/imageio-ext))
 * [CommonsImagingProcessor](https://commons.apache.org/proper/commons-imaging/)
@@ -252,19 +258,19 @@ drawings faster than ever before.
 GraphicsMagick can read/write JPEG2000 using JasPer, and ImageMagick using
 OpenJPEG. Both of these are extremely slow.
 
-Cantaloupe bundles the [ImageIO-EXT]
+Cantaloupe bundles the [ImageIO-Ext]
 (https://github.com/geosolutions-it/imageio-ext) library, which adds support
 for several codecs in addition to the ones bundled with the JRE -- JPEG2000
 among them. Bundled along with that is imageio-ext-kakadu, which ought to be
-able to interface with Kakadu via the kdu_jni.dll (Windows) or kdu_jni.so
+able to interface with Kakadu via the `kdu_jni.dll` (Windows) or `kdu_jni.so`
 (Linux) library. The author lacks access to this library and is unable to test
 against it, so this feature probably doesn't work in Cantaloupe yet.
 
 Years ago, Sun published platform-native JAI JPEG2000 accelerator JARs for
 Windows, Linux, and Solaris, which improved performance from dreadful to merely
-poor. It is unknown what has happened to these amidst the Sun web page flotsam
-on the Oracle website, but in any case, they probably wouldn't help enough for
-this application.
+poor. It is unknown what has happened to these amidst the flotsam of the old
+Sun Java web pages on the Oracle website, but in any case, they probably
+wouldn't help enough for this application.
 
 ## TIFF
 
