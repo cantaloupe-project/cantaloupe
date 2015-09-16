@@ -15,7 +15,7 @@ Home: [https://github.com/medusa-project/cantaloupe]
 
 ## What It Doesn't Do
 
-* Caching. The current thinking is that this would add be made redundant by a
+* Caching. The current thinking is that this would be made redundant by a
   caching HTTP proxy, which can do a better job anyway.
 * Write log files. This may come in a future version. In the meantime,
   log messages go to standard output.
