@@ -65,12 +65,24 @@ it the following contents, modifying as desired:
     # Server-side path or extension that will be suffixed to the identifier
     # in the request URL.
     FilesystemResolver.path_suffix =
-    
+    # Normally, slashes in an identifier must be percent-encoded as "%2F". If
+    # your web stack can't deal with this, you can define an alternate character
+    # or character sequence to represent a path separator. Supply the non-
+    # percent-encoded version here, and use the percent-encoded version in IIIF
+    # request URLs.
+    #FilesystemResolver.path_separator =
+
     # URL that will be prefixed to the identifier in the request URL.
     HttpResolver.url_prefix = http://localhost/images/
     # Path, extension, query string, etc. that will be suffixed to the
     # identifier in the request URL.
     HttpResolver.url_suffix =
+    # Normally, slashes in an identifier must be percent-encoded as "%2F". If
+    # your web stack can't deal with this, you can define an alternate character
+    # or character sequence to represent a path separator. Supply the non-
+    # percent-encoded version here, and use the percent-encoded version in IIIF
+    # request URLs.
+    #HttpResolver.path_separator =
     # Used for HTTP Basic authentication.
     HttpResolver.username =
     HttpResolver.password =
@@ -117,6 +129,8 @@ For files with extensions that are missing or unrecognized, this resolver will
 check the "magic number" to determine type, which will add some overhead. It
 is therefore slightly more efficient to serve files with extensions.
 
+#### Prefix and Suffix
+
 The `FilesystemResolver.path_prefix` and `path_suffix` configuration options
 are optional and intended to make URLs shorter, more stable, and hide
 potentially sensitive information. For example, with these options set as such:
@@ -126,6 +140,15 @@ potentially sensitive information. For example, with these options set as such:
 
 An identifier of `image.jpg` in the IIIF URL will resolve to
 `/usr/local/images/image.jpg`.
+
+#### Path Separator
+
+The IIIF Image API 2.0 spec mandates that identifiers in URLs be
+percent-encoded, which changes slashes to `%2F`. Unfortunately, some web
+servers have issues dealing with this. If this affects you, you can use the
+`FilesystemResolver.path_separator` option to use an alternate string as a path
+separator in a URL. (Be sure to supply the non-percent-encoded string, and then
+percent-encode it in URLs if it contains any URL-unsafe characters.)
 
 ### HttpResolver
 
@@ -140,6 +163,8 @@ will issue an HTTP HEAD request to the server to check the `Content-Type`
 header. If the type cannot be inferred from that, an HTTP 415 response will be
 returned.
 
+#### Prefix and Suffix
+
 The `HttpResolver.url_prefix` and `url_suffix` configuration options are
 optional and intended to make URLs shorter, more stable, and hide potentially
 sensitive information. For example, with these options set as such:
@@ -149,6 +174,15 @@ sensitive information. For example, with these options set as such:
 
 An identifier of `image.jpg` in the IIIF URL will resolve to
 `http://example.org/images/image.jpg`.
+
+#### Path Separator
+
+The IIIF Image API 2.0 spec mandates that identifiers in URLs be
+percent-encoded, which changes slashes to `%2F`. Unfortunately, some web
+servers have issues dealing with this. If this affects you, you can use the
+`HttpResolver.path_separator` option to use an alternate string as a path
+separator in a URL. (Be sure to supply the non-percent-encoded string, and then
+percent-encode it in URLs if it contains any URL-unsafe characters.)
 
 ## Processors
 

@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resolver;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.lang3.StringUtils;
 import org.restlet.Client;
 import org.restlet.Context;
 import org.restlet.data.ChallengeScheme;
@@ -70,6 +71,14 @@ class HttpResolver implements Resolver {
         String suffix = config.getString("HttpResolver.url_suffix");
         if (suffix == null) {
             suffix = "";
+        }
+        // The Image API 2.0 spec mandates the use of percent-encoded
+        // identifiers. But some web servers have issues dealing with the
+        // encoded slash (%2F). FilesystemResolver.path_separator enables the
+        // use of an alternate string as a path separator.
+        String separator = config.getString("HttpResolver.path_separator", "/");
+        if (!separator.equals("/")) {
+            identifier = StringUtils.replace(identifier, separator, "/");
         }
         return new Reference(prefix + identifier + suffix);
     }
