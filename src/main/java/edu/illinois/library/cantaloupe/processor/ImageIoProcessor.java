@@ -150,27 +150,7 @@ class ImageIoProcessor implements Processor {
         image = scaleImage(image, params.getSize());
         image = rotateImage(image, params.getRotation());
         image = filterImage(image, params.getQuality());
-
-        switch (params.getOutputFormat()) {
-            case JPG:
-                float quality = Application.getConfiguration().
-                        getFloat("ImageIoProcessor.jpg.quality", 0.7f);
-                Iterator iter = ImageIO.getImageWritersByFormatName("jpeg");
-                ImageWriter writer = (ImageWriter) iter.next();
-                ImageWriteParam param = writer.getDefaultWriteParam();
-                param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                param.setCompressionQuality(quality);
-                ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
-                writer.setOutput(os);
-                IIOImage iioImage = new IIOImage(image, null, null);
-                writer.write(null, iioImage, param);
-                writer.dispose();
-                break;
-            default:
-                ImageIO.write(image, params.getOutputFormat().getExtension(),
-                        outputStream);
-                break;
-        }
+        outputImage(image, params.getOutputFormat(), outputStream);
     }
 
     private BufferedImage loadImage(ImageInputStream inputStream,
@@ -410,6 +390,29 @@ class ImageIoProcessor implements Processor {
             g2d.dispose();
         }
         return scaledImage;
+    }
+
+    private void outputImage(BufferedImage image, OutputFormat outputFormat,
+                             OutputStream outputStream) throws IOException {
+        switch (outputFormat) {
+            case JPG:
+                float quality = Application.getConfiguration().
+                        getFloat("ImageIoProcessor.jpg.quality", 0.7f);
+                Iterator iter = ImageIO.getImageWritersByFormatName("jpeg");
+                ImageWriter writer = (ImageWriter) iter.next();
+                ImageWriteParam param = writer.getDefaultWriteParam();
+                param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                param.setCompressionQuality(quality);
+                ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
+                writer.setOutput(os);
+                IIOImage iioImage = new IIOImage(image, null, null);
+                writer.write(null, iioImage, param);
+                writer.dispose();
+                break;
+            default:
+                ImageIO.write(image, outputFormat.getExtension(), outputStream);
+                break;
+        }
     }
 
 }
