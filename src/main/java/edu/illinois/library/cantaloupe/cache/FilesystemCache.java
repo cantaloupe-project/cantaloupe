@@ -14,18 +14,31 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * Simple cache using a filesystem folder. Configurable by
+ * <code>FilesystemResolver.pathname</code> and
+ * <code>FilesystemResolver.ttl_seconds</code> keys in the application
+ * configuration.
+ */
 class FilesystemCache implements Cache {
 
     private static Logger logger = LoggerFactory.getLogger(FilesystemCache.class);
 
     public InputStream get(Parameters params) {
         File cacheFile = getCacheFile(params);
-        if (cacheFile != null) {
-            try {
-                logger.debug("Hit: {}", params);
-                return new FileInputStream(cacheFile);
-            } catch (FileNotFoundException e) {
-                // noop
+        if (cacheFile != null && cacheFile.exists()) {
+            long ttl_msec = 1000 * Application.getConfiguration().
+                    getLong("FilesystemCache.ttl_seconds", 0);
+            if (System.currentTimeMillis() - cacheFile.lastModified() < ttl_msec) {
+                try {
+                    logger.debug("Hit: {}", params);
+                    return new FileInputStream(cacheFile);
+                } catch (FileNotFoundException e) {
+                    // noop
+                }
+            } else {
+                logger.debug("Deleting stale cache file: {}", params);
+                cacheFile.delete();
             }
         }
         return null;

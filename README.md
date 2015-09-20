@@ -84,9 +84,16 @@ it the following contents, modifying as desired:
     # Used for HTTP Basic authentication.
     HttpResolver.username =
     HttpResolver.password =
-    
-    cache.enabled = false
+
+    # The only available value is `FilesystemCache`. Comment out or set blank
+    # to disable caching.
+    #cache = FilesystemCache
+
+    # If this directory does not exist, it will be created automatically.
     FilesystemCache.pathname = /var/cache/cantaloupe
+    # Time before a cached image becomes stale and needs to be reloaded. Set to
+    # blank or 0 for "forever"
+    FilesystemCache.ttl_seconds = 604800 # 1 week
 
 (The above sample contains all available keys.)
 
@@ -106,9 +113,12 @@ To see the image itself, try:
 
 # Technical Overview
 
-Cantaloupe features a configurable processing pipeline based on resolvers, that
-locate source images; and processors, that transform them according to the
-parameters in an image request.
+Cantaloupe features a configurable processing pipeline based on:
+
+* Resolvers, that locate source images;
+* Processors, that transform them according to the parameters in an image
+  request; and
+* Caches, that cache image tiles.
 
 ## Resolvers
 
@@ -272,7 +282,13 @@ compile a "Q8" version of ImageMagick, its memory use will be halved.
   JNI
 * [GdalProcessor](http://gdal.org) (see also
   [ImageIO-Ext](https://github.com/geosolutions-it/imageio-ext))
-* [CommonsImagingProcessor](https://commons.apache.org/proper/commons-imaging/)
+
+## Caches
+
+There is currently one cache, `FilesystemCache`, which caches generated image
+tiles into a filesystem directory. The location of this directory is
+configurable, as is the "time-to-live" of the cached tiles. Expired tiles are
+deleted automatically.
 
 # Notes on Source Formats
 
@@ -295,8 +311,7 @@ Cantaloupe bundles the [ImageIO-Ext]
 for several codecs in addition to the ones bundled with the JRE -- JPEG2000
 among them. Bundled along with that is imageio-ext-kakadu, which ought to be
 able to interface with Kakadu via the `kdu_jni.dll` (Windows) or `kdu_jni.so`
-(Linux) library. The author lacks access to this library and is unable to test
-against it, so this feature probably doesn't work in Cantaloupe yet.
+(Linux) library. The author hasn't tested this yet.
 
 Years ago, Sun published platform-native JAI JPEG2000 accelerator JARs for
 Windows, Linux, and Solaris, which improved performance from dreadful to merely

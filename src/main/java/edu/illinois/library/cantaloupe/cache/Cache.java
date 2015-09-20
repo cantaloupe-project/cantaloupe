@@ -11,8 +11,8 @@ public interface Cache {
     /**
      * @param params Request parameters
      * @return An input stream corresponding to the given parameters, or null
-     * if an image corresponding to the given parameters does not exist in the
-     * cache.
+     * if a non-expired image corresponding to the given parameters does not
+     * exist in the cache.
      */
     InputStream get(Parameters params);
 
