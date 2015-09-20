@@ -15,8 +15,6 @@ Home: [https://github.com/medusa-project/cantaloupe]
 
 ## What It Doesn't Do
 
-* Caching. The current thinking is that this would be made redundant by a
-  caching HTTP proxy, which can do a better job anyway.
 * Write log files. This may come in a future version. In the meantime,
   log messages go to standard output.
 
@@ -86,6 +84,9 @@ it the following contents, modifying as desired:
     # Used for HTTP Basic authentication.
     HttpResolver.username =
     HttpResolver.password =
+    
+    cache.enabled = false
+    FilesystemCache.pathname = /var/cache/cantaloupe
 
 (The above sample contains all available keys.)
 
@@ -102,9 +103,6 @@ To see information about an image, visit:
 
 To see the image itself, try:
 `http://localhost:{http.port}/iiif/{image filename}/full/full/0/default.jpg`
-
-Though it should go without saying, please do not run Cantaloupe in production
-without a caching reverse proxy server in front of it.
 
 # Technical Overview
 

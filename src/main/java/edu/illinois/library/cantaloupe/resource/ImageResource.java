@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -8,6 +7,8 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.illinois.library.cantaloupe.ImageServerApplication;
+import edu.illinois.library.cantaloupe.cache.Cache;
+import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
@@ -16,6 +17,8 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.TeeOutputStream;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
 import org.restlet.representation.OutputRepresentation;
@@ -72,6 +75,26 @@ public class ImageResource extends AbstractResource {
          * @throws IOException
          */
         public void write(OutputStream outputStream) throws IOException {
+            try {
+                Cache cache = CacheFactory.getCache();
+                if (cache != null) {
+                    InputStream cacheStream = cache.get(this.params);
+                    if (cacheStream != null) {
+                        IOUtils.copy(cacheStream, outputStream);
+                    } else {
+                        TeeOutputStream tos = new TeeOutputStream(outputStream,
+                                cache.getOutputStream(this.params));
+                        doWrite(tos);
+                    }
+                } else {
+                    doWrite(outputStream);
+                }
+            } catch (Exception e) {
+                throw new IOException(e);
+            }
+        }
+
+        private void doWrite(OutputStream outputStream) throws IOException {
             try {
                 Processor proc = ProcessorFactory.
                         getProcessor(this.sourceFormat);
