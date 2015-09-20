@@ -27,9 +27,10 @@ class FilesystemCache implements Cache {
     public InputStream get(Parameters params) {
         File cacheFile = getCacheFile(params);
         if (cacheFile != null && cacheFile.exists()) {
-            long ttl_msec = 1000 * Application.getConfiguration().
+            long ttlMsec = 1000 * Application.getConfiguration().
                     getLong("FilesystemCache.ttl_seconds", 0);
-            if (System.currentTimeMillis() - cacheFile.lastModified() < ttl_msec) {
+            if (System.currentTimeMillis() - cacheFile.lastModified() < ttlMsec ||
+                    ttlMsec == 0) {
                 try {
                     logger.debug("Hit: {}", params);
                     return new FileInputStream(cacheFile);
@@ -37,7 +38,7 @@ class FilesystemCache implements Cache {
                     // noop
                 }
             } else {
-                logger.debug("Deleting stale cache file: {}", params);
+                logger.debug("Deleting stale cache file: {}", cacheFile.getName());
                 cacheFile.delete();
             }
         }
@@ -61,13 +62,17 @@ class FilesystemCache implements Cache {
      * <code>FilesystemCache.pathname</code> is not set in the configuration.
      */
     public File getCacheFile(Parameters params) {
-        String dir = Application.getConfiguration().
+        final String dir = Application.getConfiguration().
                 getString("FilesystemCache.pathname");
         if (dir != null) {
-            String pathname = String.format("%s%s%s_%s_%s_%s_%s.%s",
+            final String search = "[^A-Za-z0-9._-]";
+            final String replacement = "";
+            final String pathname = String.format("%s%s%s_%s_%s_%s_%s.%s",
                     StringUtils.stripEnd(dir, File.separator), File.separator,
-                    params.getIdentifier(), params.getRegion(),
-                    params.getSize(), params.getRotation(),
+                    params.getIdentifier().replaceAll(search, replacement),
+                    params.getRegion().toString().replaceAll(search, replacement),
+                    params.getSize().toString().replaceAll(search, replacement),
+                    params.getRotation().toString().replaceAll(search, replacement),
                     params.getQuality().toString().toLowerCase(),
                     params.getOutputFormat().getExtension());
             return new File(pathname);
