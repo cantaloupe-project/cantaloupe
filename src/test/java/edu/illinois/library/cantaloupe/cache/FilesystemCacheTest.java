@@ -8,6 +8,7 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
 
@@ -70,11 +71,30 @@ public class FilesystemCacheTest extends TestCase {
     }
 
     public void testGetOutputStream() throws Exception {
-        // TODO: write this
+        String identifier = "cats";
+        String region = "full";
+        String size = "full";
+        String rotation = "0";
+        String quality = "color";
+        String format = "tif";
+        Parameters params = new Parameters(identifier, region, size, rotation,
+                quality, format);
+        assertTrue(instance.getOutputStream(params) instanceof FileOutputStream);
     }
 
-    public void testOutputStreamCreatesFolder() {
-        // TODO: write this
+    public void testOutputStreamCreatesFolder() throws IOException {
+        FileUtils.deleteDirectory(fixturePath);
+
+        String identifier = "cats";
+        String region = "full";
+        String size = "full";
+        String rotation = "0";
+        String quality = "color";
+        String format = "tif";
+        Parameters params = new Parameters(identifier, region, size, rotation,
+                quality, format);
+        instance.getOutputStream(params);
+        assertTrue(fixturePath.exists());
     }
 
     public void testGetCacheFile() {
