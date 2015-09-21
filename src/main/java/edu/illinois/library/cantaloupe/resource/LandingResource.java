@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.cache.Cache;
+import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
@@ -51,12 +53,28 @@ public class LandingResource extends AbstractResource {
         Map<String,Object> vars = new HashMap<String,Object>();
 
         // resolver name
-        Resolver resolver = ResolverFactory.getResolver();
         String resolverStr = "None";
-        if (resolver != null) {
-            resolverStr = resolver.getClass().getSimpleName();
+        try {
+            Resolver resolver = ResolverFactory.getResolver();
+            if (resolver != null) {
+                resolverStr = resolver.getClass().getSimpleName();
+            }
+        } catch (Exception e) {
+            // noop
         }
         vars.put("resolverName", resolverStr);
+
+        // cache name
+        String cacheStr = "None";
+        try {
+            Cache cache = CacheFactory.getCache();
+            if (cache != null) {
+                cacheStr = cache.getClass().getSimpleName();
+            }
+        } catch (Exception e) {
+            // noop
+        }
+        vars.put("cacheName", cacheStr);
 
         // source format assignments
         Map<SourceFormat,String> assignments =
