@@ -12,11 +12,7 @@ Home: [https://github.com/medusa-project/cantaloupe]
 * Easy to install and get working
 * Pluggable resolvers for filesystem and HTTP sources
 * Pluggable processors to support a wide variety of source image formats
-
-## What It Doesn't Do
-
-* Write log files. This may come in a future version. In the meantime,
-  log messages go to standard output.
+* Optional caching
 
 # Requirements
 
@@ -118,7 +114,7 @@ Cantaloupe features a configurable processing pipeline based on:
 * Resolvers, that locate source images;
 * Processors, that transform them according to the parameters in an image
   request; and
-* Caches, that cache image tiles.
+* Caches, that cache generated image tiles.
 
 ## Resolvers
 
@@ -151,12 +147,12 @@ An identifier of `image.jpg` in the IIIF URL will resolve to
 
 #### Path Separator
 
-The IIIF Image API 2.0 spec mandates that identifiers in URLs be
-percent-encoded, which changes slashes to `%2F`. Unfortunately, some web
-servers have issues dealing with this. If this affects you, you can use the
-`FilesystemResolver.path_separator` option to use an alternate string as a path
-separator in a URL. (Be sure to supply the non-percent-encoded string, and then
-percent-encode it in URLs if it contains any URL-unsafe characters.)
+The Image API 2.0 spec mandates that non-URL-safe characters in identifiers be
+percent-encoded, which changes slashes to `%2F`. Cantaloupe deals with these
+properly by itself, but some reverse proxies might decode the slashes before
+passing on the request, thereby confusing Cantaloupe. If this affects you, you
+can use the `FilesystemResolver.path_separator` option to use an alternate
+string as a path separator in a URL.
 
 ### HttpResolver
 
@@ -288,7 +284,18 @@ compile a "Q8" version of ImageMagick, its memory use will be halved.
 There is currently one cache, `FilesystemCache`, which caches generated image
 tiles into a filesystem directory. The location of this directory is
 configurable, as is the "time-to-live" of the cached tiles. Expired tiles are
-deleted automatically.
+replaced at the next request.
+
+### Flushing the Cache
+
+To delete expired images only, start Cantaloupe with the
+`-Dcantaloupe.cache.flush_expired` option:
+
+`$ java -Dcantaloupe.config=... -Dcantaloupe.cache.flush_expired -jar Cantaloupe-x.x.x.jar`
+
+To flush the cache completely, use the `-Dcantaloupe.cache.flush` option:
+
+`$ java -Dcantaloupe.config=... -Dcantaloupe.cache.flush -jar Cantaloupe-x.x.x.jar`
 
 # Notes on Source Formats
 

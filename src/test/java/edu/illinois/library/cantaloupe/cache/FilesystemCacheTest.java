@@ -36,15 +36,33 @@ public class FilesystemCacheTest extends TestCase {
         FileUtils.deleteDirectory(fixturePath);
     }
 
+    public void testFlush() throws Exception {
+        Parameters params = new Parameters("cats", "full", "full", "0",
+                "default", "jpg");
+        instance.getCacheFile(params).createNewFile();
+        instance.flush();
+        assertEquals(0, fixturePath.listFiles().length);
+    }
+
+    public void testFlushExpired() throws Exception {
+        Application.getConfiguration().setProperty("FilesystemCache.ttl_seconds", 1);
+
+        Parameters params = new Parameters("cats", "full", "full", "0",
+                "default", "jpg");
+        instance.getCacheFile(params).createNewFile();
+
+        Thread.sleep(2000);
+
+        params = new Parameters("dogs", "full", "full", "0", "default", "jpg");
+        instance.getCacheFile(params).createNewFile();
+
+        instance.flushExpired();
+        assertEquals(1, fixturePath.listFiles().length);
+    }
+
     public void testGetWithZeroTtl() throws Exception {
-        String identifier = "cats";
-        String region = "full";
-        String size = "full";
-        String rotation = "0";
-        String quality = "color";
-        String format = "tif";
-        Parameters params = new Parameters(identifier, region, size, rotation,
-                quality, format);
+        Parameters params = new Parameters("cats", "full", "full", "0",
+                "default", "jpg");
         assertNull(instance.get(params));
 
         instance.getCacheFile(params).createNewFile();
@@ -52,15 +70,8 @@ public class FilesystemCacheTest extends TestCase {
     }
 
     public void testGetWithNonzeroTtl() throws Exception {
-        String identifier = "cats";
-        String region = "full";
-        String size = "full";
-        String rotation = "0";
-        String quality = "color";
-        String format = "tif";
-        Parameters params = new Parameters(identifier, region, size, rotation,
-                quality, format);
-
+        Parameters params = new Parameters("cats", "full", "full", "0",
+                "default", "jpg");
         Application.getConfiguration().setProperty("FilesystemCache.ttl_seconds", 1);
         File cacheFile = instance.getCacheFile(params);
         cacheFile.createNewFile();
@@ -71,28 +82,15 @@ public class FilesystemCacheTest extends TestCase {
     }
 
     public void testGetOutputStream() throws Exception {
-        String identifier = "cats";
-        String region = "full";
-        String size = "full";
-        String rotation = "0";
-        String quality = "color";
-        String format = "tif";
-        Parameters params = new Parameters(identifier, region, size, rotation,
-                quality, format);
+        Parameters params = new Parameters("cats", "full", "full", "0",
+                "default", "jpg");
         assertTrue(instance.getOutputStream(params) instanceof FileOutputStream);
     }
 
     public void testOutputStreamCreatesFolder() throws IOException {
         FileUtils.deleteDirectory(fixturePath);
-
-        String identifier = "cats";
-        String region = "full";
-        String size = "full";
-        String rotation = "0";
-        String quality = "color";
-        String format = "tif";
-        Parameters params = new Parameters(identifier, region, size, rotation,
-                quality, format);
+        Parameters params = new Parameters("cats", "full", "full", "0",
+                "default", "jpg");
         instance.getOutputStream(params);
         assertTrue(fixturePath.exists());
     }

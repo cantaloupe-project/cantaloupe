@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe;
 
+import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -32,7 +33,13 @@ public class Application {
     }
 
     public static void main(String[] args) throws Exception {
-        start();
+        if (System.getProperty("cantaloupe.cache.flush") != null) {
+            CacheFactory.getCache().flush();
+        } else if (System.getProperty("cantaloupe.cache.flush_expired") != null) {
+            CacheFactory.getCache().flushExpired();
+        } else {
+            start();
+        }
     }
 
     /**
