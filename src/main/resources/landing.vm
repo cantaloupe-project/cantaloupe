@@ -23,6 +23,9 @@
             <h3>Resolver</h3>
             <p>$resolverName</p>
 
+            <h3>Cache</h3>
+            <p>$cacheName</p>
+
             <h3>Effective Source Format Assignments</h3>
 
             <table class="table table-condensed table-bordered">
