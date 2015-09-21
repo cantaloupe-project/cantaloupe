@@ -121,16 +121,16 @@ class GraphicsMagickProcessor implements Processor {
                         }
                     }
                 }
+
+                // add formats that are not listed in the output of "gm version"
+                // but are definitely available
+                // (http://www.graphicsmagick.org/formats.html)
+                sourceFormats.add(SourceFormat.BMP);
+                sourceFormats.add(SourceFormat.GIF);
+                outputFormats.add(OutputFormat.GIF);
             } catch (IOException e) {
                 logger.error("Failed to execute {}", cmdPath);
             }
-
-            // add formats that are not listed in the output of "gm version"
-            // but are definitely available
-            // (http://www.graphicsmagick.org/formats.html)
-            sourceFormats.add(SourceFormat.BMP);
-            sourceFormats.add(SourceFormat.GIF);
-            outputFormats.add(OutputFormat.GIF);
 
             supportedFormats = new HashMap<SourceFormat,Set<OutputFormat>>();
             for (SourceFormat sourceFormat : sourceFormats) {
