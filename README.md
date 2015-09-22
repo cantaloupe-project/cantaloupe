@@ -12,7 +12,9 @@ Home: [https://github.com/medusa-project/cantaloupe]
 * Easy to install and get working
 * Pluggable resolvers for filesystem and HTTP sources
 * Pluggable processors to support a wide variety of source image formats
-* Optional caching
+* Efficient stream-based architecture
+* Lean and fast with no app server or Servlet stack overhead
+* Configurable caching
 
 # Requirements
 
@@ -89,7 +91,7 @@ it the following contents, modifying as desired:
     FilesystemCache.pathname = /var/cache/cantaloupe
     # Time before a cached image becomes stale and needs to be reloaded. Set to
     # blank or 0 for "forever"
-    FilesystemCache.ttl_seconds = 604800 # 1 week
+    FilesystemCache.ttl_seconds = 2592000 # 1 month
 
 (The above sample contains all available keys.)
 

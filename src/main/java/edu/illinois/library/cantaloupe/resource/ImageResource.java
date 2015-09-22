@@ -84,7 +84,7 @@ public class ImageResource extends AbstractResource {
                     } else {
                         TeeOutputStream tos = new TeeOutputStream(outputStream,
                                 cache.getOutputStream(this.params));
-                        doWrite(tos);
+                        doWrite(tos, cache);
                     }
                 } else {
                     doWrite(outputStream);
@@ -106,6 +106,23 @@ public class ImageResource extends AbstractResource {
                         System.currentTimeMillis() - msec);
             } catch (Exception e) {
                 throw new IOException(e);
+            }
+        }
+
+        /**
+         * Variant of doWrite() that cleans up incomplete cached images when
+         * the connection has been interrupted.
+         *
+         * @param outputStream
+         * @param cache
+         * @throws IOException
+         */
+        private void doWrite(OutputStream outputStream, Cache cache)
+                throws IOException {
+            try {
+                doWrite(outputStream);
+            } catch (IOException e) {
+                cache.flush(this.params);
             }
         }
 
