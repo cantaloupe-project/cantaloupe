@@ -13,7 +13,7 @@ public interface Cache {
      *
      * @throws Exception
      */
-    void flush() throws Exception;
+    void flush() throws IOException;
 
     /**
      * Deletes the cached image corresponding to the given parameters.
@@ -21,13 +21,13 @@ public interface Cache {
      * @param params
      * @throws Exception
      */
-    void flush(Parameters params) throws Exception;
+    void flush(Parameters params) throws IOException;
 
     /**
      * Deletes expired images from the cache.
      * @throws Exception
      */
-    void flushExpired() throws Exception;
+    void flushExpired() throws IOException;
 
     /**
      * @param params Request parameters

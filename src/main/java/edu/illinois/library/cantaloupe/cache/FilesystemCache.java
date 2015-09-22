@@ -34,7 +34,7 @@ class FilesystemCache implements Cache {
                 getLong("FilesystemCache.ttl_seconds", 0);
     }
 
-    public void flush() throws Exception {
+    public void flush() throws IOException {
         final String cachePathname = getPathname();
         if (cachePathname != null) {
             final File cacheDir = new File(cachePathname);
@@ -48,18 +48,18 @@ class FilesystemCache implements Cache {
             }
             logger.info("Flushed {} images", count);
         } else {
-            throw new Exception("FilesystemCache.pathname is not set");
+            throw new IOException("FilesystemCache.pathname is not set");
         }
     }
 
-    public void flush(Parameters params) throws Exception {
+    public void flush(Parameters params) throws IOException {
         File cacheFile = getCacheFile(params);
         if (cacheFile != null && cacheFile.exists()) {
             cacheFile.delete();
         }
     }
 
-    public void flushExpired() throws Exception {
+    public void flushExpired() throws IOException {
         final String cachePathname = getPathname();
         if (cachePathname != null) {
             final long ttlMsec = getTtlMsec();
@@ -74,7 +74,7 @@ class FilesystemCache implements Cache {
             }
             logger.info("Flushed {} expired images", count);
         } else {
-            throw new Exception("FilesystemCache.pathname is not set");
+            throw new IOException("FilesystemCache.pathname is not set");
         }
     }
 
