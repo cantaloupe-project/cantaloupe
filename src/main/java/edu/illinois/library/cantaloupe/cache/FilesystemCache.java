@@ -52,6 +52,13 @@ class FilesystemCache implements Cache {
         }
     }
 
+    public void flush(Parameters params) throws Exception {
+        File cacheFile = getCacheFile(params);
+        if (cacheFile != null && cacheFile.exists()) {
+            cacheFile.delete();
+        }
+    }
+
     public void flushExpired() throws Exception {
         final String cachePathname = getPathname();
         if (cachePathname != null) {

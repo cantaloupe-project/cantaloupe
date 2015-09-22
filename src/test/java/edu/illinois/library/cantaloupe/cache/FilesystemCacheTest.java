@@ -40,7 +40,19 @@ public class FilesystemCacheTest extends TestCase {
         Parameters params = new Parameters("cats", "full", "full", "0",
                 "default", "jpg");
         instance.getCacheFile(params).createNewFile();
+
+        params = new Parameters("dogs", "full", "full", "15", "gray", "jpg");
+        instance.getCacheFile(params).createNewFile();
+
         instance.flush();
+        assertEquals(0, fixturePath.listFiles().length);
+    }
+
+    public void testFlushWithParameters() throws Exception {
+        Parameters params = new Parameters("cats", "full", "full", "0",
+                "default", "jpg");
+        instance.getCacheFile(params).createNewFile();
+        instance.flush(params);
         assertEquals(0, fixturePath.listFiles().length);
     }
 

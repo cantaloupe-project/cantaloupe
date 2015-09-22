@@ -16,6 +16,14 @@ public interface Cache {
     void flush() throws Exception;
 
     /**
+     * Deletes the cached image corresponding to the given parameters.
+     *
+     * @param params
+     * @throws Exception
+     */
+    void flush(Parameters params) throws Exception;
+
+    /**
      * Deletes expired images from the cache.
      * @throws Exception
      */
