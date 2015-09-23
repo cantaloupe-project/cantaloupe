@@ -13,29 +13,14 @@ public class CacheFactoryTest extends TestCase {
         config.setProperty("cache", "FilesystemCache");
         assertTrue(CacheFactory.getCache() instanceof FilesystemCache);
 
-        try {
-            config.setProperty("cache", "");
-            assertNull(CacheFactory.getCache());
-            fail("Expected exception");
-        } catch (ClassNotFoundException e) {
-            // pass
-        }
+        config.setProperty("cache", "");
+        assertNull(CacheFactory.getCache());
 
-        try {
-            config.setProperty("cache", null);
-            assertNull(CacheFactory.getCache());
-            fail("Expected exception");
-        } catch (ClassNotFoundException e) {
-            // pass
-        }
+        config.setProperty("cache", null);
+        assertNull(CacheFactory.getCache());
 
-        try {
-            config.setProperty("cache", "bogus");
-            assertNull(CacheFactory.getCache());
-            fail("Expected exception");
-        } catch (ClassNotFoundException e) {
-            // pass
-        }
+        config.setProperty("cache", "bogus");
+        assertNull(CacheFactory.getCache());
     }
 
 }
