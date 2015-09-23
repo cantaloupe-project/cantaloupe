@@ -45,9 +45,9 @@ class ImageIoProcessor implements Processor {
 
     private static final HashMap<SourceFormat,Set<OutputFormat>> FORMATS =
             getAvailableOutputFormats();
-    private static final Set<Quality> SUPPORTED_QUALITIES = new HashSet<Quality>();
+    private static final Set<Quality> SUPPORTED_QUALITIES = new HashSet<>();
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
-            new HashSet<ProcessorFeature>();
+            new HashSet<>();
 
     static {
         SUPPORTED_QUALITIES.add(Quality.BITONAL);
@@ -77,9 +77,9 @@ class ImageIoProcessor implements Processor {
         final String[] readerMimeTypes = ImageIO.getReaderMIMETypes();
         final String[] writerMimeTypes = ImageIO.getWriterMIMETypes();
         final HashMap<SourceFormat,Set<OutputFormat>> map =
-                new HashMap<SourceFormat,Set<OutputFormat>>();
+                new HashMap<>();
         for (SourceFormat sourceFormat : SourceFormat.values()) {
-            Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
+            Set<OutputFormat> outputFormats = new HashSet<>();
 
             for (int i = 0, length = readerMimeTypes.length; i < length; i++) {
                 if (sourceFormat.getMediaTypes().
@@ -101,7 +101,7 @@ class ImageIoProcessor implements Processor {
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
         Set<OutputFormat> formats = FORMATS.get(sourceFormat);
         if (formats == null) {
-            formats = new HashSet<OutputFormat>();
+            formats = new HashSet<>();
         }
         return formats;
     }
@@ -396,6 +396,9 @@ class ImageIoProcessor implements Processor {
                              OutputStream outputStream) throws IOException {
         switch (outputFormat) {
             case JPG:
+                // TurboJpegImageWriter is used automatically if libjpeg-turbo
+                // is available in java.library.path:
+                // https://github.com/geosolutions-it/imageio-ext/wiki/TurboJPEG-plugin
                 float quality = Application.getConfiguration().
                         getFloat("ImageIoProcessor.jpg.quality", 0.7f);
                 Iterator iter = ImageIO.getImageWritersByFormatName("jpeg");
@@ -403,6 +406,7 @@ class ImageIoProcessor implements Processor {
                 ImageWriteParam param = writer.getDefaultWriteParam();
                 param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
                 param.setCompressionQuality(quality);
+                param.setCompressionType("JPEG");
                 ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
                 writer.setOutput(os);
                 IIOImage iioImage = new IIOImage(image, null, null);
