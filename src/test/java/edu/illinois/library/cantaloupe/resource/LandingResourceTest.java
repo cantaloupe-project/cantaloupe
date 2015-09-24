@@ -14,7 +14,7 @@ public class LandingResourceTest extends ResourceTest {
         ClientResource client = getClientForUriPath("");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
-        assertTrue(client.get().getText().contains("Cantaloupe IIIF"));
+        assertTrue(client.get().getText().contains("Cantaloupe Image"));
     }
 
 }
