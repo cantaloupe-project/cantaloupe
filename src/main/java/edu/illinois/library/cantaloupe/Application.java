@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe;
 
+import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -10,6 +11,11 @@ import org.restlet.Component;
 import org.restlet.data.Protocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 /**
  * Main application class.
@@ -32,7 +38,19 @@ public class Application {
     }
 
     public static void main(String[] args) throws Exception {
-        start();
+        String version = getVersion();
+        if (version == null) {
+            version = "(unknown version)";
+        }
+        logger.info("Starting Cantaloupe {}", version);
+
+        if (System.getProperty("cantaloupe.cache.flush") != null) {
+            CacheFactory.getCache().flush();
+        } else if (System.getProperty("cantaloupe.cache.flush_expired") != null) {
+            CacheFactory.getCache().flushExpired();
+        } else {
+            start();
+        }
     }
 
     /**
@@ -65,6 +83,28 @@ public class Application {
      */
     public static void setConfiguration(Configuration c) {
         config = c;
+    }
+
+    /**
+     * @return The application version from manifest.mf, or null if not running
+     * from a jar.
+     */
+    public static String getVersion() {
+        Class clazz = Application.class;
+        String className = clazz.getSimpleName() + ".class";
+        String classPath = clazz.getResource(className).toString();
+        if (classPath.startsWith("jar")) {
+            String manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1) +
+                    "/META-INF/MANIFEST.MF";
+            try {
+                Manifest manifest = new Manifest(new URL(manifestPath).openStream());
+                Attributes attr = manifest.getMainAttributes();
+                return attr.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
+            } catch (IOException e) {
+                // noop
+            }
+        }
+        return null;
     }
 
     public static void start() throws Exception {

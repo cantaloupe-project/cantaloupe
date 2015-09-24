@@ -12,13 +12,9 @@ Home: [https://github.com/medusa-project/cantaloupe]
 * Easy to install and get working
 * Pluggable resolvers for filesystem and HTTP sources
 * Pluggable processors to support a wide variety of source image formats
-
-## What It Doesn't Do
-
-* Caching. The current thinking is that this would be made redundant by a
-  caching HTTP proxy, which can do a better job anyway.
-* Write log files. This may come in a future version. In the meantime,
-  log messages go to standard output.
+* Efficient stream-based architecture
+* Lean and fast with no app server or Servlet stack overhead
+* Configurable caching
 
 # Requirements
 
@@ -40,11 +36,10 @@ it the following contents, modifying as desired:
     # `ImageIoProcessor`, `GraphicsMagickProcessor`, `ImageMagickProcessor`,
     # and `JaiProcessor`.
     # These extension-specific definitions are optional.
-    processor.jpg = ImageIoProcessor
-    processor.tif = GraphicsMagickProcessor
-    # For any formats not assigned above, fall back to a general-purpose
-    # processor. (This is NOT optional.)
-    processor.fallback = ImageMagickProcessor
+    #processor.jpg = ImageMagickProcessor
+    #processor.tif = GraphicsMagickProcessor
+    # Fall back to this processor for any formats not assigned above.
+    processor.fallback = ImageIoProcessor
 
     # Optional; overrides the PATH
     #GraphicsMagickProcessor.path_to_binaries = /usr/local/bin
@@ -65,21 +60,43 @@ it the following contents, modifying as desired:
     # Server-side path or extension that will be suffixed to the identifier
     # in the request URL.
     FilesystemResolver.path_suffix =
-    
+    # Normally, slashes in an identifier must be percent-encoded as "%2F". If
+    # your web stack can't deal with this, you can define an alternate character
+    # or character sequence to represent a path separator. Supply the non-
+    # percent-encoded version here, and use the percent-encoded version in IIIF
+    # request URLs.
+    #FilesystemResolver.path_separator =
+
     # URL that will be prefixed to the identifier in the request URL.
     HttpResolver.url_prefix = http://localhost/images/
     # Path, extension, query string, etc. that will be suffixed to the
     # identifier in the request URL.
     HttpResolver.url_suffix =
+    # Normally, slashes in an identifier must be percent-encoded as "%2F". If
+    # your web stack can't deal with this, you can define an alternate character
+    # or character sequence to represent a path separator. Supply the non-
+    # percent-encoded version here, and use the percent-encoded version in IIIF
+    # request URLs.
+    #HttpResolver.path_separator =
     # Used for HTTP Basic authentication.
     HttpResolver.username =
     HttpResolver.password =
+
+    # The only available value is `FilesystemCache`. Comment out or set blank
+    # to disable caching.
+    #cache = FilesystemCache
+
+    # If this directory does not exist, it will be created automatically.
+    FilesystemCache.pathname = /var/cache/cantaloupe
+    # Time before a cached image becomes stale and needs to be reloaded. Set to
+    # blank or 0 for "forever"
+    FilesystemCache.ttl_seconds = 2592000 # 1 month
 
 (The above sample contains all available keys.)
 
 # Running
 
-From the command prompt, simply run:
+From the command prompt:
 
 `$ java -Dcantaloupe.config=/path/to/cantaloupe.properties -jar Cantaloupe-x.x.x.jar`
 
@@ -91,14 +108,14 @@ To see information about an image, visit:
 To see the image itself, try:
 `http://localhost:{http.port}/iiif/{image filename}/full/full/0/default.jpg`
 
-Though it should go without saying, please do not run Cantaloupe in production
-without a caching reverse proxy server in front of it.
-
 # Technical Overview
 
-Cantaloupe features a configurable processing pipeline based on resolvers, that
-locate source images; and processors, that transform them according to the
-parameters in an image request.
+Cantaloupe features a configurable processing pipeline based on:
+
+* Resolvers, that locate source images;
+* Processors, that transform them according to the parameters in an image
+  request; and
+* Caches, that cache generated image tiles.
 
 ## Resolvers
 
@@ -117,6 +134,8 @@ For files with extensions that are missing or unrecognized, this resolver will
 check the "magic number" to determine type, which will add some overhead. It
 is therefore slightly more efficient to serve files with extensions.
 
+#### Prefix and Suffix
+
 The `FilesystemResolver.path_prefix` and `path_suffix` configuration options
 are optional and intended to make URLs shorter, more stable, and hide
 potentially sensitive information. For example, with these options set as such:
@@ -126,6 +145,15 @@ potentially sensitive information. For example, with these options set as such:
 
 An identifier of `image.jpg` in the IIIF URL will resolve to
 `/usr/local/images/image.jpg`.
+
+#### Path Separator
+
+The Image API 2.0 spec mandates that non-URL-safe characters in identifiers be
+percent-encoded, which changes slashes to `%2F`. Cantaloupe deals with these
+properly by itself, but some reverse proxies might decode the slashes before
+passing on the request, thereby confusing Cantaloupe. If this affects you, you
+can use the `FilesystemResolver.path_separator` option to use an alternate
+string as a path separator in a URL.
 
 ### HttpResolver
 
@@ -140,6 +168,8 @@ will issue an HTTP HEAD request to the server to check the `Content-Type`
 header. If the type cannot be inferred from that, an HTTP 415 response will be
 returned.
 
+#### Prefix and Suffix
+
 The `HttpResolver.url_prefix` and `url_suffix` configuration options are
 optional and intended to make URLs shorter, more stable, and hide potentially
 sensitive information. For example, with these options set as such:
@@ -150,16 +180,29 @@ sensitive information. For example, with these options set as such:
 An identifier of `image.jpg` in the IIIF URL will resolve to
 `http://example.org/images/image.jpg`.
 
+#### Path Separator
+
+The IIIF Image API 2.0 specification mandates that identifiers in URLs be
+percent-encoded, which changes slashes to `%2F`. Some reverse-proxy servers
+automatically decode `%2F` into `/` before passing on the request. This will
+cause HTTP 404 errors in Cantaloupe.
+
+If you are unable to configure your reverse proxy to stop decoding slashes,
+the `HttpResolver.path_separator` configuration option will enable you to use
+an alternate string as a path separator in an identifier. (Be sure to supply
+the non-percent-encoded string, and then percent-encode it in URLs if it
+contains any URL-unsafe characters.)
+
 ## Processors
 
 Cantaloupe can use different image processors for different source formats.
-Assignments are made in the config file. (See the Configuration section above.)
-Currently, the available processors are:
+Assignments are made in the config file. Currently, the available processors
+are:
 
 * ImageIoProcessor
-* JaiProcessor
 * GraphicsMagickProcessor
 * ImageMagickProcessor
+* JaiProcessor (experimental)
 
 In terms of format support, a distinction is made between the concepts of
 source format and output format, and furthermore, available output formats may
@@ -168,36 +211,21 @@ differ depending on the source format.
 Supported source formats depend on the processor, and maybe installed
 libraries/delegates, etc., as well. Lists of these are displayed on the
 landing page, at `/iiif`. A list of output formats supported *for a given
-source format* is contained within the response to an information request.
+source format* is contained within the response to an information request
+(`/iiif/{identifier}/info.json`).
 
 ### ImageIoProcessor
 
 ImageIoProcessor uses the Java ImageIO framework to load and process images in
-a native-Java way.
+a native-Java way. This is a good processor to get started with as it has no
+external dependencies and works out-of-the-jar.
 
 ImageIO, as its name implies, is simply an I/O interface that does not care 
 about image formats, and therefore the list of formats supported by this
 processor varies depending on the codec JARs available in the classpath.
-[ImageIO-Ext](https://github.com/geosolutions-it/imageio-ext/) by GeoSolutions
-is bundled in to improve the format support.
 
 ImageIoProcessor buffers entire source images in RAM, and is therefore
 memory-intensive. Large amounts of RAM and fast storage help.
-
-### JaiProcessor
-
-Java Advanced Imaging (JAI) is a powerful low-level imaging framework
-developed by Sun Microsystems beginning in the late nineties. JaiProcessor uses
-an updated fork called [JAI-EXT](https://github.com/geosolutions-it/jai-ext).
-
-JaiProcessor's main advantage (see below for disclaimer) is that it can exploit
-JAI's internal tiling engine, which makes it capable of region-of-interest
-decoding with some formats.
-
-JaiProcessor can read and write the same formats as ImageIoProcessor.
-
-*Note: JaiProcessor is very much experimental at this time. Stand by with
-CTRL+C if you don't want to melt your CPU.*
 
 ### GraphicsMagickProcessor
 
@@ -230,8 +258,31 @@ transforms and all IIIF output formats, assuming the necessary delegates are
 installed. It also supports a wide array of source formats.
 
 ImageMagick is not known for being particularly fast or efficient, but it is
-generally usable. Large amounts of RAM and fast storage help. If you can find or
+quite usable. Large amounts of RAM and fast storage help. If you can find or
 compile a "Q8" version of ImageMagick, its memory use will be halved.
+
+### JaiProcessor
+
+Java Advanced Imaging (JAI) is a powerful low-level imaging framework
+developed by Sun Microsystems beginning in the late nineties. JaiProcessor uses
+an updated fork called [JAI-EXT](https://github.com/geosolutions-it/jai-ext).
+
+JaiProcessor's main advantage (see below for disclaimer) is that it can exploit
+JAI's internal tiling engine, which makes it capable of region-of-interest
+decoding with some formats.
+
+JaiProcessor can read and write the same formats as ImageIoProcessor.
+
+*Note: JaiProcessor is very much experimental at this time. Stand by with
+CTRL+C to prevent your CPU from melting.*
+
+### Which Processor Should I Use?
+
+1. Don't use JaiProcessor
+2. For each of the source formats you would like to serve, it's a good idea to
+experiment with different processors, comparing their performance, resource
+usage, and output quality. Benchmark results, if you can contribute them, are
+welcome.
 
 ### Ideas for Future Processors
 
@@ -240,7 +291,34 @@ compile a "Q8" version of ImageMagick, its memory use will be halved.
   JNI
 * [GdalProcessor](http://gdal.org) (see also
   [ImageIO-Ext](https://github.com/geosolutions-it/imageio-ext))
-* [CommonsImagingProcessor](https://commons.apache.org/proper/commons-imaging/)
+
+## Caches
+
+There is currently one cache, FilesystemCache, which caches generated images
+into a filesystem directory. The location of this directory is configurable,
+as is the "time-to-live" of the cached tiles. Expired images are replaced the
+next time they are requested.
+
+Cantaloupe does not cache entire information responses -- only image dimensions,
+which are the only expensive part to generate. This means it is possible to
+change variables that might affect the contents of the response (like
+processors) without having to flush the cache.
+
+### Flushing the Cache
+
+Of course, `rm *` works, but there are other options too:
+
+#### Expired Images Only
+
+Start Cantaloupe with the `-Dcantaloupe.cache.flush_expired` option:
+
+`$ java -Dcantaloupe.config=... -Dcantaloupe.cache.flush_expired -jar Cantaloupe-x.x.x.jar`
+
+#### All Images
+
+Start Cantaloupe with the `-Dcantaloupe.cache.flush` option:
+
+`$ java -Dcantaloupe.config=... -Dcantaloupe.cache.flush -jar Cantaloupe-x.x.x.jar`
 
 # Notes on Source Formats
 
@@ -253,52 +331,52 @@ Probably no one is going to care about this source format. Too bad, because it
 is blazing fast with ImageIoProcessor. Now you can serve your Microsoft Paint
 drawings faster than ever before.
 
+## JPEG
+
+It should be possible to use TurboJPEG (high-level API over [libjpeg-turbo]
+(http://www.libjpeg-turbo.org)) with ImageIoProcessor to hardware-accelerate
+JPEG coding. To do so, include the [TurboJPEG plugin JAR]
+(https://github.com/geosolutions-it/imageio-ext/wiki/TurboJPEG-plugin) in your
+classpath, and compile libjpeg-turbo with Java support (using the `--with-java`
+configuration option). (The author has not tried this.)
+
 ## JPEG2000
 
 GraphicsMagick can read/write JPEG2000 using JasPer, and ImageMagick using
 OpenJPEG. Both of these are extremely slow.
 
-Cantaloupe bundles the [ImageIO-Ext]
-(https://github.com/geosolutions-it/imageio-ext) library, which adds support
-for several codecs in addition to the ones bundled with the JRE -- JPEG2000
-among them. Bundled along with that is imageio-ext-kakadu, which ought to be
-able to interface with Kakadu via the `kdu_jni.dll` (Windows) or `kdu_jni.so`
-(Linux) library. The author lacks access to this library and is unable to test
-against it, so this feature probably doesn't work in Cantaloupe yet.
+Cantaloupe bundles the GeoTools [JP2K Plugin]
+(http://docs.geotools.org/latest/userguide/library/coverage/jp2k.html), which
+ought to be able to interface with Kakadu. The author hasn't tested this yet.
 
-Years ago, Sun published platform-native JAI JPEG2000 accelerator JARs for
+Years ago, Sun published [platform-native JAI JPEG2000 accelerator JARs]
+(http://download.java.net/media/jai/builds/release/1_1_3/INSTALL.html) for
 Windows, Linux, and Solaris, which improved performance from dreadful to merely
-poor. It is unknown what has happened to these amidst the flotsam of the old
-Sun Java web pages on the Oracle website, but in any case, they probably
-wouldn't help enough for this application.
+poor. It is unknown whether these are still available or whether they would
+still work on modern platforms.
 
 ## TIFF
 
 GraphicsMagickProcessor and ImageMagickProcessor can both handle TIFF if the
 necessary delegate or plugin is installed. (See the landing page, at `/iiif`.)
 
-ImageIoProcessor can read and write TIFF thanks to the bundled [ImageIO-Ext]
-(https://github.com/geosolutions-it/imageio-ext) library. ZIP-compressed TIFFs
-are not supported.
+ImageIoProcessor can read and write standard uncompressed and LZW-compressed
+RGB TIFF. ZIP-compressed TIFFs are not supported, and other more exotic
+encodings may or may not be.
 
 JaiProcessor is able to load TIFF images in tiles, which makes it pretty fast
 with this format.
 
 # Custom Development
 
-If adding your own resolver or processor, feel free to add new configuration
-keys to the properties file. They should be in the form of
-`NameOfMyClass.whatever`. They can then be accessed via
-`e.i.l.cantaloupe.Application.getConfiguration()`.
-
-## Adding Custom Resolvers
+## Custom Resolvers
 
 A custom resolver needs to implement the `e.i.l.cantaloupe.resolver.Resolver`
 interface. Then, to use it, set `resolver` in your properties file to its name.
 
 See one of the existing resolvers for examples.
 
-## Adding Custom Image Processors
+## Custom Image Processors
 
 Custom processors can be added by implementing the
 `e.i.l.cantaloupe.processor.Processor` interface. See the interface
@@ -306,6 +384,18 @@ documentation for details and the existing implementations for examples.
 
 Another option would be to add an ImageIO format plugin instead of a custom
 processor, and then use ImageIoProcessor or JaiProcessor with it.
+
+## Custom Caches
+
+Custom caches can be added by implementing the `e.i.l.cantaloupe.cache.Cache`
+interface. See the interface documentation for details and the existing
+implementions for examples.
+
+## Custom Configuration
+
+Feel free to add new configuration keys to the properties file. They should
+be in the form of `NameOfMyClass.whatever`. They can then be accessed via
+`e.i.l.cantaloupe.Application.getConfiguration()`.
 
 ## Contributing Code
 
@@ -318,8 +408,8 @@ processor, and then use ImageIoProcessor or JaiProcessor with it.
 # Feedback
 
 Ideas, suggestions, feature requests, bug reports, and other kinds of feedback
-are welcome; please [contact the author](mailto:alexd@illinois.edu), or submit
-an issue or pull request.
+are welcome; [contact the author](mailto:alexd@illinois.edu), or submit an
+issue or pull request.
 
 # License
 

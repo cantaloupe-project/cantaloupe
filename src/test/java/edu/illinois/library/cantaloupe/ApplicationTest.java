@@ -41,4 +41,8 @@ public class ApplicationTest extends TestCase {
         assertSame(newConfig, Application.getConfiguration());
     }
 
+    public void testMain() throws Exception {
+        // TODO: write this
+    }
+
 }

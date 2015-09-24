@@ -9,8 +9,6 @@ import java.io.IOException;
 
 public class HttpResolverTest extends TestCase {
 
-    private static final String FILE = "escher_lego.jpg";
-
     HttpResolver instance;
 
     public void setUp() throws IOException {
@@ -53,6 +51,13 @@ public class HttpResolverTest extends TestCase {
         config.setProperty("HttpResolver.url_suffix", "");
         assertEquals("http://example.org/images/image.jpg",
                 instance.getUrl("http://example.org/images/image.jpg").toString());
+        // with path separator
+        config.setProperty("HttpResolver.url_prefix", "http://example.org/");
+        config.setProperty("HttpResolver.url_suffix", "");
+        String separator = "CATS";
+        config.setProperty("HttpResolver.path_separator", separator);
+        assertEquals("http://example.org/1/2/3",
+                instance.getUrl("1" + separator + "2" + separator + "3").toString());
     }
 
 }

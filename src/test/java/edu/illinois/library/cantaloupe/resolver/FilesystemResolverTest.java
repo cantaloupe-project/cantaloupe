@@ -56,6 +56,11 @@ public class FilesystemResolverTest extends TestCase {
         config.setProperty("FilesystemResolver.path_prefix", "");
         config.setProperty("FilesystemResolver.path_suffix", "");
         assertEquals("id", instance.getPathname("id"));
+        // with path separator
+        String separator = "CATS";
+        config.setProperty("FilesystemResolver.path_separator", separator);
+        assertEquals("1" + File.separator + "2" + File.separator + "3",
+                instance.getPathname("1" + separator + "2" + separator + "3"));
     }
 
     public void testGetSourceFormatWithExtensions() {

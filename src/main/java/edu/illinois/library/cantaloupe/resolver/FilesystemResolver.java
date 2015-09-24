@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import eu.medsea.mimeutil.MimeUtil;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,16 @@ class FilesystemResolver implements Resolver {
         String suffix = config.getString("FilesystemResolver.path_suffix");
         if (suffix == null) {
             suffix = "";
+        }
+        // The Image API 2.0 spec mandates the use of percent-encoded
+        // identifiers. But some web servers have issues dealing with the
+        // encoded slash (%2F). FilesystemResolver.path_separator enables the
+        // use of an alternate string as a path separator.
+        String separator = config.getString("FilesystemResolver.path_separator",
+                File.separator);
+        if (!separator.equals(File.separator)) {
+            identifier = StringUtils.replace(identifier, separator,
+                    File.separator);
         }
         return prefix + identifier + suffix;
     }
