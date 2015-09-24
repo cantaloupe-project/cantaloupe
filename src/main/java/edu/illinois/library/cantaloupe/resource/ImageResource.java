@@ -78,12 +78,12 @@ public class ImageResource extends AbstractResource {
             try {
                 Cache cache = CacheFactory.getCache();
                 if (cache != null) {
-                    InputStream cacheStream = cache.get(this.params);
+                    InputStream cacheStream = cache.getImageInputStream(this.params);
                     if (cacheStream != null) {
                         IOUtils.copy(cacheStream, outputStream);
                     } else {
                         TeeOutputStream tos = new TeeOutputStream(outputStream,
-                                cache.getOutputStream(this.params));
+                                cache.getImageOutputStream(this.params));
                         doWrite(tos, cache);
                     }
                 } else {

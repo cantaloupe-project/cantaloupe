@@ -1,8 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import java.awt.*;
-import java.io.File;
-import java.io.InputStream;
+import java.awt.Dimension;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -13,6 +11,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import edu.illinois.library.cantaloupe.Feature;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
+import edu.illinois.library.cantaloupe.cache.Cache;
+import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -40,7 +40,7 @@ import javax.imageio.stream.ImageInputStream;
 public class InformationResource extends AbstractResource {
 
     private static final Set<ServiceFeature> SUPPORTED_SERVICE_FEATURES =
-            new HashSet<ServiceFeature>();
+            new HashSet<>();
 
     static {
         SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.BASE_URI_REDIRECT);
@@ -64,7 +64,7 @@ public class InformationResource extends AbstractResource {
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
         // 5. Get an ImageInfo instance corresponding to the source image
         ImageInfo imageInfo = getImageInfo(identifier,
-                proc.getSize(inputStream, sourceFormat),
+                getSize(identifier, proc, inputStream, sourceFormat),
                 proc.getSupportedQualities(sourceFormat),
                 proc.getSupportedFeatures(sourceFormat),
                 proc.getAvailableOutputFormats(sourceFormat));
@@ -105,8 +105,8 @@ public class InformationResource extends AbstractResource {
         imageInfo.getProfile().add("http://iiif.io/api/image/2/level2.json"); // TODO: automatically determine this
 
         // formats
-        Map<String, Set<String>> profileMap = new HashMap<String, Set<String>>();
-        Set<String> formatStrings = new HashSet<String>();
+        Map<String, Set<String>> profileMap = new HashMap<>();
+        Set<String> formatStrings = new HashSet<>();
         for (OutputFormat format : outputFormats) {
             formatStrings.add(format.getExtension());
         }
@@ -114,15 +114,14 @@ public class InformationResource extends AbstractResource {
         imageInfo.getProfile().add(profileMap);
 
         // qualities
-        Set<String> qualityStrings = new HashSet<String>();
+        Set<String> qualityStrings = new HashSet<>();
         for (Quality quality : qualities) {
             qualityStrings.add(quality.toString().toLowerCase());
         }
         profileMap.put("qualities", qualityStrings);
 
         // supports
-        Map<String, Set<String>> featureMap = new HashMap<String, Set<String>>();
-        Set<String> featureStrings = new HashSet<String>();
+        Set<String> featureStrings = new HashSet<>();
         for (Feature feature : features) {
             featureStrings.add(feature.getName());
         }
@@ -137,6 +136,24 @@ public class InformationResource extends AbstractResource {
     private String getImageUri(String identifier) {
         return this.getRootRef() + ImageServerApplication.BASE_IIIF_PATH +
                 "/" + Reference.encode(identifier);
+    }
+
+    private Dimension getSize(String identifier, Processor proc,
+                              ImageInputStream inputStream,
+                              SourceFormat sourceFormat) throws Exception {
+        Dimension size = null;
+        Cache cache = CacheFactory.getCache();
+        if (cache != null) {
+            size = cache.getDimension(identifier);
+            if (size == null) {
+                size = proc.getSize(inputStream, sourceFormat);
+                cache.putDimension(identifier, size);
+            }
+        }
+        if (size == null) {
+            size = proc.getSize(inputStream, sourceFormat);
+        }
+        return size;
     }
 
 }
