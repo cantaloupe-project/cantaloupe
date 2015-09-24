@@ -49,7 +49,7 @@
       <groupId>it.geosolutions.imageio-ext</groupId>
       <artifactId>imageio-ext-imagereadmt</artifactId>
       <version>${imageio-ext.version}</version>
-    </dependency>
+    </dependency><!--
     <dependency>
       <groupId>it.geosolutions.imageio-ext</groupId>
       <artifactId>imageio-ext-kakadu</artifactId>
@@ -59,7 +59,7 @@
       <groupId>it.geosolutions.imageio-ext</groupId>
       <artifactId>imageio-ext-kakadujni</artifactId>
       <version>5.2.6</version>
-    </dependency>
+    </dependency>-->
     <dependency>
       <groupId>org.geotools</groupId>
       <artifactId>gt-jp2k</artifactId>
@@ -183,7 +183,7 @@
               <Specification-Vendor>Cantaloupe</Specification-Vendor>
               <Implementation-Title>Cantaloupe</Implementation-Title>
               <Implementation-Version>Cantaloupe</Implementation-Version>
-              <Implementation-Vendor>Cantaloup</Implementation-Vendor>
+              <Implementation-Vendor>Cantaloupe</Implementation-Vendor>
             </manifestEntries>
           </archive>
         </configuration>

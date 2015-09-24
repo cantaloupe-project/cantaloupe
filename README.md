@@ -345,9 +345,9 @@ configuration option). (The author has not tried this.)
 GraphicsMagick can read/write JPEG2000 using JasPer, and ImageMagick using
 OpenJPEG. Both of these are extremely slow.
 
-Cantaloupe bundles the imageio-ext-kakadu plugin, which ought to be able to
-interface with Kakadu via the `kdu_jni.dll` (Windows) or `kdu_jni.so`
-(Linux) library. The author hasn't tested this yet.
+Cantaloupe bundles the GeoTools [JP2K Plugin]
+(http://docs.geotools.org/latest/userguide/library/coverage/jp2k.html), which
+ought to be able to interface with Kakadu. The author hasn't tested this yet.
 
 Years ago, Sun published [platform-native JAI JPEG2000 accelerator JARs]
 (http://download.java.net/media/jai/builds/release/1_1_3/INSTALL.html) for
