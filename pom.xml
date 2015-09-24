@@ -61,11 +61,6 @@
       <version>5.2.6</version>
     </dependency>
     <dependency>
-      <groupId>it.geosolutions.imageio-ext</groupId>
-      <artifactId>imageio-ext-turbojpeg</artifactId>
-      <version>${imageio-ext.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.geotools</groupId>
       <artifactId>gt-jp2k</artifactId>
       <version>${geotools.version}</version>
