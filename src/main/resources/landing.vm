@@ -20,11 +20,16 @@
         <div class="container-fluid">
             <h1>&#127816; Cantaloupe IIIF Image API 2.0 Server</h1>
 
-            <h3>Resolver</h3>
-            <p>$resolverName</p>
-
-            <h3>Cache</h3>
-            <p>$cacheName</p>
+            <div class="row">
+                <div class="col-sm-6">
+                    <h3>Resolver</h3>
+                    <p>$resolverName</p>
+                </div>
+                <div class="col-sm-6">
+                    <h3>Cache</h3>
+                    <p>$cacheName</p>
+                </div>
+            </div>
 
             <h3>Effective Source Format Assignments</h3>
 
