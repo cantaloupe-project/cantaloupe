@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
@@ -52,6 +53,9 @@ public class LandingResource extends AbstractResource {
     private Map<String,Object> getTemplateVars() throws Exception {
         Map<String,Object> vars = new HashMap<String,Object>();
 
+        // version
+        vars.put("version", Application.getVersion());
+
         // resolver name
         String resolverStr = "None";
         try {
@@ -77,8 +81,7 @@ public class LandingResource extends AbstractResource {
         vars.put("cacheName", cacheStr);
 
         // source format assignments
-        Map<SourceFormat,String> assignments =
-                new TreeMap<SourceFormat, String>();
+        Map<SourceFormat,String> assignments = new TreeMap<>();
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             try {
                 assignments.put(sourceFormat,
@@ -90,7 +93,7 @@ public class LandingResource extends AbstractResource {
         vars.put("processorAssignments", assignments);
 
         // source formats
-        List<SourceFormat> sourceFormats = new ArrayList<SourceFormat>();
+        List<SourceFormat> sourceFormats = new ArrayList<>();
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             if (sourceFormat != SourceFormat.UNKNOWN) {
                 sourceFormats.add(sourceFormat);
@@ -101,7 +104,7 @@ public class LandingResource extends AbstractResource {
 
         // processors
         List<Processor> sortedProcessors =
-                new ArrayList<Processor>(ProcessorFactory.getAllProcessors());
+                new ArrayList<>(ProcessorFactory.getAllProcessors());
         Collections.sort(sortedProcessors, new ProcessorComparator());
         vars.put("processors", sortedProcessors);
 

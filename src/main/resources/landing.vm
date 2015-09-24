@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-        <title>Cantaloupe IIIF Image API 2.0 Server</title>
+        <title>Cantaloupe Image Server</title>
         <style type="text/css">
             body {
                 font-size: 1.5em;
@@ -18,7 +18,14 @@
 
     <body>
         <div class="container-fluid">
-            <h1>&#127816; Cantaloupe IIIF Image API 2.0 Server</h1>
+            <h1>&#127816; Cantaloupe Image Server
+                #* version will be null when not running from a jar *#
+                #if ($version)
+                    <small>$version</small>
+                #else
+                    <small>Non-Release</small>
+                #end
+            </h1>
 
             <div class="row">
                 <div class="col-sm-6">

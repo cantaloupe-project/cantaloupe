@@ -4,7 +4,7 @@
   <groupId>edu.illinois.library.cantaloupe</groupId>
   <artifactId>Cantaloupe</artifactId>
   <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
+  <version>${cantaloupe.version}</version>
   <name>Cantaloupe</name>
   <url>http://maven.apache.org</url>
   <dependencies>
@@ -132,6 +132,7 @@
   </repositories>
 
   <properties>
+    <cantaloupe.version>1.0-SNAPSHOT</cantaloupe.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <imageio-ext.version>1.1.12</imageio-ext.version>
@@ -179,10 +180,10 @@
             http://stackoverflow.com/questions/7051603/jai-vendorname-null -->
             <manifestEntries>
               <Specification-Title>Cantaloupe</Specification-Title>
-              <Specification-Version>Cantaloupe</Specification-Version>
+              <Specification-Version>${cantaloupe.version}</Specification-Version>
               <Specification-Vendor>Cantaloupe</Specification-Vendor>
               <Implementation-Title>Cantaloupe</Implementation-Title>
-              <Implementation-Version>Cantaloupe</Implementation-Version>
+              <Implementation-Version>${cantaloupe.version}</Implementation-Version>
               <Implementation-Vendor>Cantaloupe</Implementation-Vendor>
             </manifestEntries>
           </archive>
