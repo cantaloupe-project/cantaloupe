@@ -132,7 +132,7 @@
   </repositories>
 
   <properties>
-    <cantaloupe.version>1.0-SNAPSHOT</cantaloupe.version>
+    <cantaloupe.version>1.0-beta2</cantaloupe.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <imageio-ext.version>1.1.12</imageio-ext.version>
