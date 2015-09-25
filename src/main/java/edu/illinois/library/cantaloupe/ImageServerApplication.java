@@ -11,6 +11,7 @@ import org.restlet.Application;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
+import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.engine.application.CorsFilter;
@@ -19,7 +20,11 @@ import org.restlet.representation.Representation;
 import org.restlet.routing.Redirector;
 import org.restlet.routing.Router;
 import org.restlet.routing.Template;
+import org.restlet.security.ChallengeAuthenticator;
+import org.restlet.security.MapVerifier;
 import org.restlet.service.StatusService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -29,6 +34,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 public class ImageServerApplication extends Application {
 
@@ -67,7 +73,7 @@ public class ImageServerApplication extends Application {
                 message = "No resource exists at this URL.";
             }
 
-            Map<String,Object> templateVars = new HashMap<String,Object>();
+            Map<String,Object> templateVars = new HashMap<>();
             templateVars.put("pageTitle", status.getCode() + " " +
                     status.getReasonPhrase());
             templateVars.put("message", message);
@@ -100,6 +106,9 @@ public class ImageServerApplication extends Application {
 
     }
 
+    private static Logger logger = LoggerFactory.
+            getLogger(ImageServerApplication.class);
+
     public ImageServerApplication() {
         super();
         this.setStatusService(new CustomStatusService());
@@ -116,23 +125,20 @@ public class ImageServerApplication extends Application {
         router.setDefaultMatchingMode(Template.MODE_EQUALS);
 
         CorsFilter corsFilter = new CorsFilter(getContext(), router);
-        corsFilter.setAllowedOrigins(new HashSet<String>(Arrays.asList("*")));
+        corsFilter.setAllowedOrigins(new HashSet<>(Arrays.asList("*")));
         corsFilter.setAllowedCredentials(true);
 
         // 2 Redirect image identifier to image information
-        // {scheme}://{server}{/prefix}/{identifier}
         Redirector redirector = new Redirector(getContext(),
                 BASE_IIIF_PATH + "/{identifier}/info.json",
                 Redirector.MODE_CLIENT_SEE_OTHER);
         router.attach(BASE_IIIF_PATH + "/{identifier}", redirector);
 
         // 2.1 Image Request
-        // {scheme}://{server}{/prefix}/{identifier}/{region}/{size}/{rotation}/{quality}.{format}
         router.attach(BASE_IIIF_PATH + "/{identifier}/{region}/{size}/{rotation}/{quality}.{format}",
                 ImageResource.class);
 
         // 5 Information Request
-        // {scheme}://{server}{/prefix}/{identifier}/info.json
         router.attach(BASE_IIIF_PATH + "/{identifier}/info.{format}",
                 InformationResource.class);
 
@@ -145,6 +151,25 @@ public class ImageServerApplication extends Application {
                 Redirector.MODE_CLIENT_PERMANENT);
         router.attach("/", redirector);
 
+        // Hook up HTTP Basic authentication
+        try {
+            Configuration config = edu.illinois.library.cantaloupe.Application.
+                    getConfiguration();
+            if (config.getBoolean("http.auth.basic")) {
+                ChallengeAuthenticator authenticator = new ChallengeAuthenticator(
+                        getContext(), ChallengeScheme.HTTP_BASIC,
+                        "Cantaloupe Realm");
+                MapVerifier verifier = new MapVerifier();
+                verifier.getLocalSecrets().put(
+                        config.getString("http.auth.basic.username"),
+                        config.getString("http.auth.basic.secret").toCharArray());
+                authenticator.setVerifier(verifier);
+                authenticator.setNext(corsFilter);
+                return authenticator;
+            }
+        } catch (NoSuchElementException e) {
+            logger.info("HTTP Basic authentication disabled.");
+        }
         return corsFilter;
     }
 

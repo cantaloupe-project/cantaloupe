@@ -28,6 +28,11 @@ it the following contents, modifying as desired:
 
     # TCP port to bind the web server to.
     http.port = 8182
+    
+    # Uncomment to require HTTP Basic authentication.
+    #http.auth.basic = true
+    #http.auth.basic.username = myself
+    #http.auth.basic.secret = password
 
     # Helpful in development
     print_stack_trace_on_error_pages = true
@@ -344,6 +349,11 @@ Start Cantaloupe with the `-Dcantaloupe.cache.flush` option:
 
 `$ java -Dcantaloupe.config=... -Dcantaloupe.cache.flush -jar Cantaloupe-x.x.x.jar`
 
+# Authentication
+
+Cantaloupe supports HTTP Basic authentication via the `http.auth.basic*` keys
+in the configuration file.
+
 # Client-Side Caching
 
 The HTTP/1.1 `Cache-Control` header is configurable via the `cache.client.*`
@@ -438,13 +448,17 @@ be in the form of `NameOfMyClass.whatever`. They can then be accessed via
 
 ## 1.0-beta3
 
-* Added client-side caching. You will need to change the `cache` key in your
-  configuration file to `cache.server`, and add the `cache.client.*` keys from
-  the sample configuration above.
+* `cache` key in the configuration file renamed to `cache.server`.
+* Added client-side caching. To enable, add the `cache.client.*` keys from the
+  sample configuration above.
+* Added HTTP Basic authentication. To enable, add the `http.auth.basic*` keys
+  from the sample configuration above.
+* Improved the thread-safety of FilesystemCache.
 
 ## 1.0-beta2
 
-* Added optional caching.
+* Added optional server-side caching. To enable, add the `cache` and
+  `FilesystemCache.*` keys from the sample configuration above.
 * Added configurable path separators in FilesystemResolver and HttpResolver.
 * The application version is displayed on the landing page and in a startup log
   message.

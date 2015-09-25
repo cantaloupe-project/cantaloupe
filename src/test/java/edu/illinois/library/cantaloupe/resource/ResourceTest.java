@@ -21,18 +21,6 @@ public abstract class ResourceTest extends TestCase {
 
     private static Client client = new Client(new Context(), Protocol.HTTP);
 
-    /**
-     * Initializes the Restlet application
-     */
-    static { // TODO: why doesn't this code work in a @BeforeClass?
-        try {
-            Application.setConfiguration(newConfiguration());
-            Application.start();
-        } catch (Exception e) {
-            fail("Failed to start the Restlet");
-        }
-    }
-
     public static BaseConfiguration newConfiguration() {
         BaseConfiguration config = new BaseConfiguration();
         try {
@@ -50,14 +38,13 @@ public abstract class ResourceTest extends TestCase {
         return config;
     }
 
-    @AfterClass
-    public void afterClass() throws Exception {
-        Application.stop();
+    public void setUp() throws Exception {
+        Application.setConfiguration(newConfiguration());
+        Application.start();
     }
 
-    public void setUp() {
-        BaseConfiguration config = newConfiguration();
-        Application.setConfiguration(config);
+    public void tearDown() throws Exception {
+        Application.stop();
     }
 
     protected ClientResource getClientForUriPath(String path) {
@@ -70,6 +57,18 @@ public abstract class ResourceTest extends TestCase {
     protected String getBaseUri() {
         return "http://localhost:" + PORT +
                 ImageServerApplication.BASE_IIIF_PATH;
+    }
+
+    public void testBasicAuth() {
+        /* TODO: write this
+        Configuration config = Application.getConfiguration();
+        config.setProperty("http.auth.basic", "true");
+        config.setProperty("http.auth.basic.username", "user");
+        config.setProperty("http.auth.basic.secret", "pass");
+
+        ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
+        client.get();
+        */
     }
 
 }
