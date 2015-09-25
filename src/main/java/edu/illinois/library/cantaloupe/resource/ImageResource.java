@@ -78,10 +78,9 @@ public class ImageResource extends AbstractResource {
          * @throws IOException
          */
         public void write(OutputStream outputStream) throws IOException {
-            try {
-                Cache cache = CacheFactory.getInstance();
-                if (cache != null) {
-                    InputStream cacheStream = cache.getImageInputStream(this.params);
+            Cache cache = CacheFactory.getInstance();
+            if (cache != null) {
+                try (InputStream cacheStream = cache.getImageInputStream(this.params)) {
                     if (cacheStream != null) {
                         IOUtils.copy(cacheStream, outputStream);
                     } else {
@@ -89,11 +88,11 @@ public class ImageResource extends AbstractResource {
                                 cache.getImageOutputStream(this.params));
                         doWrite(tos, cache);
                     }
-                } else {
-                    doWrite(outputStream);
+                } catch (Exception e) {
+                    throw new IOException(e);
                 }
-            } catch (Exception e) {
-                throw new IOException(e);
+            } else {
+                doWrite(outputStream);
             }
         }
 
