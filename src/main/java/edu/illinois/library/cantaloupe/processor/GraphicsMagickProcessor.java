@@ -175,7 +175,7 @@ class GraphicsMagickProcessor implements Processor {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
-            throw new UnsupportedSourceFormatException();
+            throw new UnsupportedSourceFormatException(sourceFormat);
         } else if (!availableOutputFormats.contains(params.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
