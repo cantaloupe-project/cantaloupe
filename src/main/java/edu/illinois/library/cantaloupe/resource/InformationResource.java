@@ -22,12 +22,14 @@ import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
+import org.restlet.data.CacheDirective;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
+import org.restlet.resource.ResourceException;
 
 import javax.imageio.stream.ImageInputStream;
 
@@ -41,12 +43,20 @@ public class InformationResource extends AbstractResource {
 
     private static final Set<ServiceFeature> SUPPORTED_SERVICE_FEATURES =
             new HashSet<>();
+    private static final List<CacheDirective> CACHE_DIRECTIVES =
+            getCacheDirectives();
 
     static {
         SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.BASE_URI_REDIRECT);
         SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.CANONICAL_LINK_HEADER);
         SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.CORS);
         SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.JSON_LD_MEDIA_TYPE);
+    }
+
+    @Override
+    protected void doInit() throws ResourceException {
+        super.doInit();
+        getResponseCacheDirectives().addAll(CACHE_DIRECTIVES);
     }
 
     @Get("json")

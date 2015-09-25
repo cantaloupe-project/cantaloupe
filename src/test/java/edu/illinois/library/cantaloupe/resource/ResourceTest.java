@@ -26,14 +26,14 @@ public abstract class ResourceTest extends TestCase {
      */
     static { // TODO: why doesn't this code work in a @BeforeClass?
         try {
-            Application.setConfiguration(getConfiguration());
+            Application.setConfiguration(newConfiguration());
             Application.start();
         } catch (Exception e) {
             fail("Failed to start the Restlet");
         }
     }
 
-    public static BaseConfiguration getConfiguration() {
+    public static BaseConfiguration newConfiguration() {
         BaseConfiguration config = new BaseConfiguration();
         try {
             File directory = new File(".");
@@ -56,7 +56,7 @@ public abstract class ResourceTest extends TestCase {
     }
 
     public void setUp() {
-        BaseConfiguration config = getConfiguration();
+        BaseConfiguration config = newConfiguration();
         Application.setConfiguration(config);
     }
 

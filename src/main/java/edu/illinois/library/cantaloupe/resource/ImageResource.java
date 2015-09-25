@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,11 +20,13 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
+import org.restlet.data.CacheDirective;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
+import org.restlet.resource.ResourceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,6 +132,15 @@ public class ImageResource extends AbstractResource {
     }
 
     private static Logger logger = LoggerFactory.getLogger(ImageResource.class);
+
+    private static final List<CacheDirective> CACHE_DIRECTIVES =
+            getCacheDirectives();
+
+    @Override
+    protected void doInit() throws ResourceException {
+        super.doInit();
+        getResponseCacheDirectives().addAll(CACHE_DIRECTIVES);
+    }
 
     @Get
     public Representation doGet() throws Exception {
