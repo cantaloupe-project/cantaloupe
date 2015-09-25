@@ -154,38 +154,50 @@ class ImageIoProcessor implements Processor {
 
     private BufferedImage loadImage(ImageInputStream inputStream,
                                     SourceFormat sourceFormat) throws IOException {
-        BufferedImage image;
+        BufferedImage image = null;
         // TIFF BufferedImages often end up with a type of TYPE_CUSTOM when
         // loaded by ImageIO.read(), which causes many subsequent operations to
         // fail. We can get an image of the correct type by using a different
         // loading method.
-        if (sourceFormat == SourceFormat.TIF) {
-            try (InputStream is = new ImageInputStreamWrapper(inputStream)) {
-                ImageDecoder dec = ImageCodec.createImageDecoder("tiff",
-                        is, null);
-                RenderedImage op = dec.decodeAsRenderedImage();
-                BufferedImage rgbImage = new BufferedImage(op.getWidth(),
-                        op.getHeight(), BufferedImage.TYPE_INT_RGB);
-                rgbImage.setData(op.getData());
-                image = rgbImage;
-            }
-        } else {
-            image = ImageIO.read(inputStream);
-            if (image == null) {
-                throw new UnsupportedSourceFormatException();
-            }
-            // TYPE_CUSTOM won't work with various operations, so copy into a
-            // new image of the correct type. (This is extremely expensive)
-            if (image.getType() == BufferedImage.TYPE_CUSTOM) {
-                logger.debug("Redrawing image of TYPE_CUSTOM into a new image of TYPE_INT_RGB: {}",
-                        image.toString());
-                BufferedImage rgbImage = new BufferedImage(image.getWidth(),
-                        image.getHeight(), BufferedImage.TYPE_INT_RGB);
-                Graphics2D g = rgbImage.createGraphics();
-                g.drawImage(image, 0, 0, null);
-                g.dispose();
-                image = rgbImage;
-            }
+        switch (sourceFormat) {
+            case TIF:
+                try (InputStream is = new ImageInputStreamWrapper(inputStream)) {
+                    ImageDecoder dec = ImageCodec.createImageDecoder("tiff",
+                            is, null);
+                    RenderedImage op = dec.decodeAsRenderedImage();
+                    BufferedImage rgbImage = new BufferedImage(op.getWidth(),
+                            op.getHeight(), BufferedImage.TYPE_INT_RGB);
+                    rgbImage.setData(op.getData());
+                    image = rgbImage;
+                }
+                break;
+            default:
+                Iterator<ImageReader> it = ImageIO.getImageReaders(inputStream);
+                while (it.hasNext()) {
+                    ImageReader reader = it.next();
+                    try {
+                        reader.setInput(inputStream);
+                        image = reader.read(0);
+                    } finally {
+                        reader.dispose();
+                    }
+                }
+                if (image == null) {
+                    throw new UnsupportedSourceFormatException(sourceFormat);
+                }
+                // TYPE_CUSTOM won't work with various operations, so copy into a
+                // new image of the correct type. (This is extremely expensive)
+                if (image.getType() == BufferedImage.TYPE_CUSTOM) {
+                    logger.debug("Redrawing image of TYPE_CUSTOM into a new image of TYPE_INT_RGB: {}",
+                            image.toString());
+                    BufferedImage rgbImage = new BufferedImage(image.getWidth(),
+                            image.getHeight(), BufferedImage.TYPE_INT_RGB);
+                    Graphics2D g = rgbImage.createGraphics();
+                    g.drawImage(image, 0, 0, null);
+                    g.dispose();
+                    image = rgbImage;
+                }
+                break;
         }
         return image;
     }
