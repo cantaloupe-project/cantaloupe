@@ -80,7 +80,6 @@ class ImageIoProcessor implements Processor {
                 new HashMap<>();
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             Set<OutputFormat> outputFormats = new HashSet<>();
-
             for (int i = 0, length = readerMimeTypes.length; i < length; i++) {
                 if (sourceFormat.getMediaTypes().
                         contains(new MediaType(readerMimeTypes[i].toLowerCase()))) {
@@ -161,13 +160,15 @@ class ImageIoProcessor implements Processor {
         // fail. We can get an image of the correct type by using a different
         // loading method.
         if (sourceFormat == SourceFormat.TIF) {
-            InputStream is = new ImageInputStreamWrapper(inputStream);
-            ImageDecoder dec = ImageCodec.createImageDecoder("tiff", is, null);
-            RenderedImage op = dec.decodeAsRenderedImage();
-            BufferedImage rgbImage = new BufferedImage(op.getWidth(),
-                    op.getHeight(), BufferedImage.TYPE_INT_RGB);
-            rgbImage.setData(op.getData());
-            image = rgbImage;
+            try (InputStream is = new ImageInputStreamWrapper(inputStream)) {
+                ImageDecoder dec = ImageCodec.createImageDecoder("tiff",
+                        is, null);
+                RenderedImage op = dec.decodeAsRenderedImage();
+                BufferedImage rgbImage = new BufferedImage(op.getWidth(),
+                        op.getHeight(), BufferedImage.TYPE_INT_RGB);
+                rgbImage.setData(op.getData());
+                image = rgbImage;
+            }
         } else {
             image = ImageIO.read(inputStream);
             if (image == null) {
