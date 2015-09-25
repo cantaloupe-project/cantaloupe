@@ -1,10 +1,19 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.Application;
 import org.restlet.data.Header;
+import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
 import org.restlet.util.Series;
 
 public abstract class AbstractResource extends ServerResource {
+
+    @Override
+    protected void doInit() throws ResourceException {
+        super.doInit();
+        // override the Server header
+        this.getServerInfo().setAgent("Cantaloupe/" + Application.getVersion());
+    }
 
     /**
      * Convenience method that adds a response header.
