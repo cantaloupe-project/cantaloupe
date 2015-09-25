@@ -218,6 +218,7 @@ class ImageIoProcessor implements Processor {
             height = (y + requestedHeight > inputImage.getHeight()) ?
                     inputImage.getHeight() - y : requestedHeight;
             croppedImage = inputImage.getSubimage(x, y, width, height);
+            inputImage.flush();
         }
         return croppedImage;
     }
@@ -240,6 +241,7 @@ class ImageIoProcessor implements Processor {
             }
             Graphics2D g2d = filteredImage.createGraphics();
             g2d.drawImage(inputImage, 0, 0, null);
+            inputImage.flush();
         }
         return filteredImage;
     }
@@ -253,7 +255,7 @@ class ImageIoProcessor implements Processor {
             tx.translate(-mirroredImage.getWidth(null), 0);
             AffineTransformOp op = new AffineTransformOp(tx,
                     AffineTransformOp.TYPE_BILINEAR);
-            mirroredImage = op.filter(mirroredImage, null);
+            mirroredImage = op.filter(inputImage, null);
         }
         // do rotation
         BufferedImage rotatedImage = mirroredImage;
@@ -285,7 +287,9 @@ class ImageIoProcessor implements Processor {
                     RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             g2d.setRenderingHints(hints);
             g2d.drawImage(mirroredImage, tx, null);
+            mirroredImage.flush();
         }
+        inputImage.flush();
         return rotatedImage;
     }
 
@@ -336,6 +340,7 @@ class ImageIoProcessor implements Processor {
             AffineTransformOp scaleOp = new AffineTransformOp(at,
                     AffineTransformOp.TYPE_BILINEAR);
             scaledImage = scaleOp.filter(inputImage, scaledImage);
+            inputImage.flush();
         }
         return scaledImage;
     }
@@ -389,34 +394,39 @@ class ImageIoProcessor implements Processor {
             g2d.setRenderingHints(hints);
             g2d.drawImage(inputImage, 0, 0, width, height, null);
             g2d.dispose();
+            inputImage.flush();
         }
         return scaledImage;
     }
 
     private void outputImage(BufferedImage image, OutputFormat outputFormat,
                              OutputStream outputStream) throws IOException {
-        switch (outputFormat) {
-            case JPG:
-                // TurboJpegImageWriter is used automatically if libjpeg-turbo
-                // is available in java.library.path:
-                // https://github.com/geosolutions-it/imageio-ext/wiki/TurboJPEG-plugin
-                float quality = Application.getConfiguration().
-                        getFloat("ImageIoProcessor.jpg.quality", 0.7f);
-                Iterator iter = ImageIO.getImageWritersByFormatName("jpeg");
-                ImageWriter writer = (ImageWriter) iter.next();
-                ImageWriteParam param = writer.getDefaultWriteParam();
-                param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                param.setCompressionQuality(quality);
-                param.setCompressionType("JPEG");
-                ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
-                writer.setOutput(os);
-                IIOImage iioImage = new IIOImage(image, null, null);
-                writer.write(null, iioImage, param);
-                writer.dispose();
-                break;
-            default:
-                ImageIO.write(image, outputFormat.getExtension(), outputStream);
-                break;
+        try {
+            switch (outputFormat) {
+                case JPG:
+                    // TurboJpegImageWriter is used automatically if libjpeg-turbo
+                    // is available in java.library.path:
+                    // https://github.com/geosolutions-it/imageio-ext/wiki/TurboJPEG-plugin
+                    float quality = Application.getConfiguration().
+                            getFloat("ImageIoProcessor.jpg.quality", 0.7f);
+                    Iterator iter = ImageIO.getImageWritersByFormatName("jpeg");
+                    ImageWriter writer = (ImageWriter) iter.next();
+                    ImageWriteParam param = writer.getDefaultWriteParam();
+                    param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                    param.setCompressionQuality(quality);
+                    param.setCompressionType("JPEG");
+                    ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
+                    writer.setOutput(os);
+                    IIOImage iioImage = new IIOImage(image, null, null);
+                    writer.write(null, iioImage, param);
+                    writer.dispose();
+                    break;
+                default:
+                    ImageIO.write(image, outputFormat.getExtension(), outputStream);
+                    break;
+            }
+        } finally {
+            image.flush();
         }
     }
 
