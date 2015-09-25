@@ -7,10 +7,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * Interface to be implemented by all caches. Instances will not be shared, but
+ * do need to take into account that they will be accessing a shared resource
+ * (the cache).
+ */
 public interface Cache {
 
     /**
-     * Deletes the entire cache contents.
+     * Deletes the entire cache contents. Must be thread-safe.
      *
      * @throws Exception
      */
@@ -18,7 +23,7 @@ public interface Cache {
 
     /**
      * Deletes the cached image and dimensions corresponding to the given
-     * parameters.
+     * parameters. Must be thread-safe.
      *
      * @param params
      * @throws Exception
@@ -26,7 +31,8 @@ public interface Cache {
     void flush(Parameters params) throws IOException;
 
     /**
-     * Deletes expired images and dimensions from the cache.
+     * Deletes expired images and dimensions from the cache. Must be
+     * thread-safe.
      *
      * @throws Exception
      */
@@ -58,7 +64,7 @@ public interface Cache {
     OutputStream getImageOutputStream(Parameters params) throws IOException;
 
     /**
-     * Adds an image's dimension information to the cache.
+     * Adds an image's dimension information to the cache. Must be thread-safe.
      *
      * @param identifier IIIF identifier
      * @param size Dimension containing width and height in pixels.

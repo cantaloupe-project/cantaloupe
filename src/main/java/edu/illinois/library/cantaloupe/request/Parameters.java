@@ -6,7 +6,7 @@ package edu.illinois.library.cantaloupe.request;
  * @see <a href="http://iiif.io/api/request/2.0/#request-request-parameters">IIIF
  *      Image API 2.0</a>
  */
-public class Parameters {
+public class Parameters implements Comparable<Parameters> {
 
     private OutputFormat outputFormat;
     private String identifier;
@@ -31,6 +31,12 @@ public class Parameters {
         this.region = Region.fromUri(region);
         this.rotation = Rotation.fromUri(rotation);
         this.size = Size.fromUri(size);
+    }
+
+    @Override
+    public int compareTo(Parameters params) {
+        int last = this.toString().compareTo(params.toString());
+        return (last == 0) ? this.toString().compareTo(params.toString()) : last;
     }
 
     public OutputFormat getOutputFormat() {
