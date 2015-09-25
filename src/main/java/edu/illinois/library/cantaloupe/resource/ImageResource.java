@@ -76,7 +76,7 @@ public class ImageResource extends AbstractResource {
          */
         public void write(OutputStream outputStream) throws IOException {
             try {
-                Cache cache = CacheFactory.getCache();
+                Cache cache = CacheFactory.getInstance();
                 if (cache != null) {
                     InputStream cacheStream = cache.getImageInputStream(this.params);
                     if (cacheStream != null) {

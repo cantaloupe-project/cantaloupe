@@ -40,29 +40,27 @@ class FilesystemCache implements Cache {
 
     private static final ObjectMapper infoMapper = new ObjectMapper();
 
-    private static boolean flushingInProgress = false;
+    private boolean flushingInProgress = false;
 
     /** Set of identifiers for which info files are currently being read. */
-    private static final Set<String> infosBeingRead =
-            new ConcurrentSkipListSet<>();
+    private final Set<String> infosBeingRead = new ConcurrentSkipListSet<>();
 
     /** Set of identifiers for which info files are currently being written. */
-    private static final Set<String> infosBeingWritten =
-            new ConcurrentSkipListSet<>();
+    private final Set<String> infosBeingWritten = new ConcurrentSkipListSet<>();
 
     /** Set of Parameters for which image files are currently being flushed by
      * flush(Parameters). */
-    private static final Set<Parameters> paramsBeingFlushed =
+    private final Set<Parameters> paramsBeingFlushed =
             new ConcurrentSkipListSet<>();
 
     /** Lock object for synchronization */
-    private static final Object lock1 = new Object();
+    private final Object lock1 = new Object();
     /** Lock object for synchronization */
-    private static final Object lock2 = new Object();
+    private final Object lock2 = new Object();
     /** Lock object for synchronization */
-    private static final Object lock3 = new Object();
+    private final Object lock3 = new Object();
     /** Lock object for synchronization */
-    private static final Object lock4 = new Object();
+    private final Object lock4 = new Object();
 
     /**
      * @return Pathname of the image cache folder, or null if
