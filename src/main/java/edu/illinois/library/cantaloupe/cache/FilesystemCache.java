@@ -263,7 +263,7 @@ class FilesystemCache implements Cache {
     }
 
     public OutputStream getImageOutputStream(Parameters params)
-            throws IOException {
+            throws IOException { // TODO: make this work better concurrently
         if (getImageInputStream(params) == null) {
             logger.debug("Miss; caching {}", params);
             File cacheFile = getCachedImageFile(params);

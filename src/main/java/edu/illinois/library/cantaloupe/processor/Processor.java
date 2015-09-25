@@ -52,8 +52,9 @@ public interface Processor {
      *
      * @param params Parameters of the output image
      * @param sourceFormat Format of the source image
-     * @param inputStream Stream from which to read the image
-     * @param outputStream Stream to which to write the image
+     * @param inputStream Stream from which to read the image. Implementations
+     *                    must close it.
+     * @param outputStream Stream to which to write the image.
      * @throws UnsupportedOutputFormatException
      * @throws UnsupportedSourceFormatException
      * @throws Exception

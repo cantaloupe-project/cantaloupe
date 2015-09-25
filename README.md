@@ -12,14 +12,14 @@ Home: [https://github.com/medusa-project/cantaloupe]
 * Easy to install and get working
 * Pluggable resolvers for filesystem and HTTP sources
 * Pluggable processors to support a wide variety of source image formats
-* Efficient stream-based architecture
-* Lean and fast with no app server or Servlet stack overhead
+* Lean and efficient with no app server or Servlet stack overhead
 * Configurable caching
+* Optional authentication
 
 # Requirements
 
-The only hard requirement is JRE 7+. Additional requirements depend on the
-processor(s) being used; see the Processors section below.
+The only hard requirement is JRE 7+. Particular processors may have additional
+requirements; see the Processors section below.
 
 # Configuration
 
@@ -59,17 +59,16 @@ it the following contents, modifying as desired:
     # Available values are `FilesystemResolver` and `HttpResolver`.
     resolver = FilesystemResolver
 
-    # Server-side path that will be prefixed to the identifier in the request
-    # URL.
+    # Server-side path that will be prefixed to the identifier in the URL.
     FilesystemResolver.path_prefix = /home/myself/images
     # Server-side path or extension that will be suffixed to the identifier
-    # in the request URL.
+    # in the URL.
     FilesystemResolver.path_suffix =
     # Normally, slashes in an identifier must be percent-encoded as "%2F". If
-    # your web stack can't deal with this, you can define an alternate character
-    # or character sequence to represent a path separator. Supply the non-
-    # percent-encoded version here, and use the percent-encoded version in IIIF
-    # request URLs.
+    # your proxy is incapable of passing these through un-decoded, you can
+    # define an alternate character or character sequence to represent a path
+    # separator. Supply the non-percent-encoded version here, and use the
+    # percent-encoded version in IIIF URLs.
     #FilesystemResolver.path_separator =
 
     # URL that will be prefixed to the identifier in the request URL.
@@ -77,19 +76,14 @@ it the following contents, modifying as desired:
     # Path, extension, query string, etc. that will be suffixed to the
     # identifier in the request URL.
     HttpResolver.url_suffix =
-    # Normally, slashes in an identifier must be percent-encoded as "%2F". If
-    # your web stack can't deal with this, you can define an alternate character
-    # or character sequence to represent a path separator. Supply the non-
-    # percent-encoded version here, and use the percent-encoded version in IIIF
-    # request URLs.
+    # See FilesystemResolver.path_separator for an explanation of this.
     #HttpResolver.path_separator =
     # Used for HTTP Basic authentication.
     HttpResolver.username =
     HttpResolver.password =
 
-    # Customize the response Cache-Control header. This may be overridden by
-    # proxies. Note that only certain combinations are valid. These are
-    # reasonable defaults. Comment out to disable the Cache-Control header.
+    # Customize the response Cache-Control header. This header may be
+    # overridden by proxies. Comment out to disable the Cache-Control header.
     cache.client.max_age = 2592000
     cache.client.shared_max_age =
     cache.client.public = true
@@ -130,8 +124,8 @@ To see the image itself, try:
 
 Upgrading is usually just a matter of downloading a new version and running it.
 Sometimes there are backwards-incompatible changes to the configuration file
-structure. Check the change log (near the bottom) to see if there is anything
-you need to do.
+structure, though, so check the change log (near the bottom) to see if there is
+anything extra to do.
 
 # Technical Overview
 
@@ -155,9 +149,9 @@ for retrieving images on a local or attached filesystem. This is theoretically
 the fastest resolver, as it returns a `FileImageInputStream`, which supports
 arbitrary seeking.
 
-For files with extensions that are missing or unrecognized, this resolver will
+For images with extensions that are missing or unrecognized, this resolver will
 check the "magic number" to determine type, which will add some overhead. It
-is therefore slightly more efficient to serve files with extensions.
+is therefore slightly more efficient to serve images with extensions.
 
 #### Prefix and Suffix
 
@@ -168,7 +162,7 @@ potentially sensitive information. For example, with these options set as such:
     FilesystemResolver.path_prefix = /usr/local/images/
     FilesystemResolver.path_suffix =
 
-An identifier of `image.jpg` in the IIIF URL will resolve to
+An identifier of `image.jpg` in the URL will resolve to
 `/usr/local/images/image.jpg`.
 
 #### Path Separator
@@ -206,21 +200,21 @@ sensitive information. For example, with these options set as such:
     HttpResolver.url_prefix = http://example.org/images/
     HttpResolver.url_suffix =
 
-An identifier of `image.jpg` in the IIIF URL will resolve to
+An identifier of `image.jpg` in the URL will resolve to
 `http://example.org/images/image.jpg`.
 
 #### Path Separator
 
 The IIIF Image API 2.0 specification mandates that identifiers in URLs be
-percent-encoded, which changes slashes to `%2F`. Some reverse-proxy servers
+percent-encoded, which changes slashes to `%2F`. Some proxy servers
 automatically decode `%2F` into `/` before passing on the request. This will
 cause HTTP 404 errors in Cantaloupe.
 
-If you are unable to configure your reverse proxy to stop decoding slashes,
-the `HttpResolver.path_separator` configuration option will enable you to use
-an alternate string as a path separator in an identifier. (Be sure to supply
-the non-percent-encoded string, and then percent-encode it in URLs if it
-contains any URL-unsafe characters.)
+If you are unable to configure your proxy to stop decoding slashes, the
+`HttpResolver.path_separator` configuration option will enable you to use an
+alternate string as a path separator in an identifier. (Be sure to supply the
+non-percent-encoded string, and then percent-encode it in URLs if it contains
+any URL-unsafe characters.)
 
 ## Processors
 
@@ -328,10 +322,10 @@ into a filesystem directory. The location of this directory is configurable,
 as is the "time-to-live" of the cached tiles. Expired images are replaced the
 next time they are requested.
 
-Cantaloupe does not cache entire information responses -- only image dimensions,
-which are the only expensive part to generate. This means it is possible to
-change variables that might affect the contents of the response (like
-processors) without having to flush the cache.
+Cantaloupe does not cache entire information response representations -- only
+image dimensions, which are the only expensive part to generate. This means it
+is possible to change variables that might affect the contents of the
+representation (like processors) without having to flush the cache.
 
 ### Flushing the Cache
 
@@ -356,8 +350,8 @@ in the configuration file.
 
 # Client-Side Caching
 
-The HTTP/1.1 `Cache-Control` header is configurable via the `cache.client.*`
-keys in the configuration file.
+The HTTP/1.1 `Cache-Control` response header is configurable via the
+`cache.client.*` keys in the configuration file.
 
 # Notes on Source Formats
 
@@ -428,7 +422,7 @@ processor, and then use ImageIoProcessor or JaiProcessor with it.
 
 Custom caches can be added by implementing the `e.i.l.cantaloupe.cache.Cache`
 interface. See the interface documentation for details and the existing
-implementions for examples.
+implementations for examples.
 
 ## Custom Configuration
 
