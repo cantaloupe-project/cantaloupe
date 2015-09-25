@@ -16,14 +16,22 @@ class ImageInputStreamWrapper extends InputStream {
         this.imageInputStream = is;
     }
 
+    @Override
+    public void close() throws IOException {
+        imageInputStream.close();
+    }
+
+    @Override
     public int read() throws IOException {
         return imageInputStream.read();
     }
 
+    @Override
     public int read(byte[] b) throws IOException {
         return imageInputStream.read(b);
     }
 
+    @Override
     public int read(byte[] b, int off, int len) throws IOException {
         return imageInputStream.read(b, off, len);
     }
