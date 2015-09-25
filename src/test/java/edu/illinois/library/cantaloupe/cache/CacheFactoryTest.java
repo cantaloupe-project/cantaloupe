@@ -6,23 +6,23 @@ import org.apache.commons.configuration.BaseConfiguration;
 
 public class CacheFactoryTest extends TestCase {
 
-    public void testGetCache() throws Exception {
+    public void testGetInstance() throws Exception {
         BaseConfiguration config = new BaseConfiguration();
         Application.setConfiguration(config);
 
         final String key = CacheFactory.CACHE_CONFIG_KEY;
 
         config.setProperty(key, "FilesystemCache");
-        assertTrue(CacheFactory.getCache() instanceof FilesystemCache);
+        assertTrue(CacheFactory.getInstance() instanceof FilesystemCache);
 
         config.setProperty(key, "");
-        assertNull(CacheFactory.getCache());
+        assertNull(CacheFactory.getInstance());
 
         config.setProperty(key, null);
-        assertNull(CacheFactory.getCache());
+        assertNull(CacheFactory.getInstance());
 
         config.setProperty(key, "bogus");
-        assertNull(CacheFactory.getCache());
+        assertNull(CacheFactory.getInstance());
     }
 
 }
