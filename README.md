@@ -82,9 +82,22 @@ it the following contents, modifying as desired:
     HttpResolver.username =
     HttpResolver.password =
 
+    # Customize the response Cache-Control header. This may be overridden by
+    # proxies. Note that only certain combinations are valid. These are
+    # reasonable defaults. Comment out to disable the Cache-Control header.
+    cache.client.max_age = 2592000
+    cache.client.shared_max_age =
+    cache.client.public = true
+    cache.client.private = false
+    cache.client.no_cache = false
+    cache.client.no_store = false
+    cache.client.must_revalidate = false
+    cache.client.proxy_revalidate = false
+    cache.client.no_transform = true
+
     # The only available value is `FilesystemCache`. Comment out or set blank
     # to disable caching.
-    #cache = FilesystemCache
+    #cache.server = FilesystemCache
 
     # If this directory does not exist, it will be created automatically.
     FilesystemCache.pathname = /var/cache/cantaloupe
@@ -107,6 +120,13 @@ To see information about an image, visit:
 
 To see the image itself, try:
 `http://localhost:{http.port}/iiif/{image filename}/full/full/0/default.jpg`
+
+# Upgrading
+
+Upgrading is usually just a matter of downloading a new version and running it.
+Sometimes there are backwards-incompatible changes to the configuration file
+structure. Check the change log (near the bottom) to see if there is anything
+you need to do.
 
 # Technical Overview
 
@@ -148,12 +168,16 @@ An identifier of `image.jpg` in the IIIF URL will resolve to
 
 #### Path Separator
 
-The Image API 2.0 spec mandates that non-URL-safe characters in identifiers be
-percent-encoded, which changes slashes to `%2F`. Cantaloupe deals with these
-properly by itself, but some reverse proxies might decode the slashes before
-passing on the request, thereby confusing Cantaloupe. If this affects you, you
-can use the `FilesystemResolver.path_separator` option to use an alternate
-string as a path separator in a URL.
+The IIIF Image API 2.0 specification mandates that identifiers in URLs be
+percent-encoded, which changes slashes to `%2F`. Some reverse-proxy servers
+automatically decode `%2F` into `/` before passing on the request. This will
+cause HTTP 404 errors in Cantaloupe.
+
+If you are unable to configure your reverse proxy to stop decoding slashes,
+the `FilesystemResolver.path_separator` configuration option will enable you to
+use an alternate string as a path separator in an identifier. (Be sure to
+supply the non-percent-encoded string, and then percent-encode it in URLs if it
+contains any URL-unsafe characters.)
 
 ### HttpResolver
 
@@ -320,6 +344,11 @@ Start Cantaloupe with the `-Dcantaloupe.cache.flush` option:
 
 `$ java -Dcantaloupe.config=... -Dcantaloupe.cache.flush -jar Cantaloupe-x.x.x.jar`
 
+# Client-Side Caching
+
+The HTTP/1.1 `Cache-Control` header is configurable via the `cache.client.*`
+keys in the configuration file.
+
 # Notes on Source Formats
 
 (Feel free to add in your own notes, and send a pull request. Controlled
@@ -404,6 +433,25 @@ be in the form of `NameOfMyClass.whatever`. They can then be accessed via
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
+
+# Change Log
+
+## 1.0-beta3
+
+* Added client-side caching. You will need to change the `cache` key in your
+  configuration file to `cache.server`, and add the `cache.client.*` keys from
+  the sample configuration above.
+
+## 1.0-beta2
+
+* Added optional caching.
+* Added configurable path separators in FilesystemResolver and HttpResolver.
+* The application version is displayed on the landing page and in a startup log
+  message.
+
+## 1.0-beta1
+
+* First version.
 
 # Feedback
 

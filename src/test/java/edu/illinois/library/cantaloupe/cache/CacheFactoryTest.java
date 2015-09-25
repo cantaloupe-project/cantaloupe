@@ -10,16 +10,18 @@ public class CacheFactoryTest extends TestCase {
         BaseConfiguration config = new BaseConfiguration();
         Application.setConfiguration(config);
 
-        config.setProperty("cache", "FilesystemCache");
+        final String key = CacheFactory.CACHE_CONFIG_KEY;
+
+        config.setProperty(key, "FilesystemCache");
         assertTrue(CacheFactory.getCache() instanceof FilesystemCache);
 
-        config.setProperty("cache", "");
+        config.setProperty(key, "");
         assertNull(CacheFactory.getCache());
 
-        config.setProperty("cache", null);
+        config.setProperty(key, null);
         assertNull(CacheFactory.getCache());
 
-        config.setProperty("cache", "bogus");
+        config.setProperty(key, "bogus");
         assertNull(CacheFactory.getCache());
     }
 
