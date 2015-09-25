@@ -45,9 +45,9 @@ public class Application {
         logger.info("Starting Cantaloupe {}", version);
 
         if (System.getProperty("cantaloupe.cache.flush") != null) {
-            CacheFactory.getCache().flush();
+            CacheFactory.getInstance().flush();
         } else if (System.getProperty("cantaloupe.cache.flush_expired") != null) {
-            CacheFactory.getCache().flushExpired();
+            CacheFactory.getInstance().flushExpired();
         } else {
             start();
         }

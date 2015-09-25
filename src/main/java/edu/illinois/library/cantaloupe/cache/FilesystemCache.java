@@ -16,28 +16,66 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
- * Simple cache using a filesystem folder. Configurable by
- * <code>FilesystemResolver.pathname</code> and
- * <code>FilesystemResolver.ttl_seconds</code> keys in the application
+ * Cache using a filesystem folder, storing images and info files separately in
+ * subfolders. Configurable by <code>FilesystemCache.pathname</code> and
+ * <code>FilesystemCache.ttl_seconds</code> keys in the application
  * configuration.
  */
 class FilesystemCache implements Cache {
 
+    private static final Logger logger = LoggerFactory.
+            getLogger(FilesystemCache.class);
+
+    // https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations
+    private static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
+    private static final String IMAGE_FOLDER = "image";
+    private static final String INFO_FOLDER = "info";
     private static final String INFO_EXTENSION = ".json";
 
-    private static ObjectMapper infoMapper = new ObjectMapper();
-    private static Logger logger = LoggerFactory.getLogger(FilesystemCache.class);
+    private static final ObjectMapper infoMapper = new ObjectMapper();
+
+    private boolean flushingInProgress = false;
+
+    /** Set of identifiers for which info files are currently being read. */
+    private final Set<String> infosBeingRead = new ConcurrentSkipListSet<>();
+
+    /** Set of identifiers for which info files are currently being written. */
+    private final Set<String> infosBeingWritten = new ConcurrentSkipListSet<>();
+
+    /** Set of Parameters for which image files are currently being flushed by
+     * flush(Parameters). */
+    private final Set<Parameters> paramsBeingFlushed =
+            new ConcurrentSkipListSet<>();
+
+    /** Lock object for synchronization */
+    private final Object lock1 = new Object();
+    /** Lock object for synchronization */
+    private final Object lock2 = new Object();
+    /** Lock object for synchronization */
+    private final Object lock3 = new Object();
+    /** Lock object for synchronization */
+    private final Object lock4 = new Object();
+
+    /**
+     * @return Pathname of the root cache folder.
+     */
+    private static String getCachePathname() {
+        return Application.getConfiguration().
+                getString("FilesystemCache.pathname");
+    }
 
     /**
      * @return Pathname of the image cache folder, or null if
      * <code>FilesystemCache.pathname</code> is not set.
      */
     private static String getImagePathname() {
-        final String pathname = getPathname();
+        final String pathname = getCachePathname();
         if (pathname != null) {
-            return pathname + File.separator + "image";
+            return pathname + File.separator + IMAGE_FOLDER;
         }
         return null;
     }
@@ -47,109 +85,160 @@ class FilesystemCache implements Cache {
      * <code>FilesystemCache.pathname</code> is not set.
      */
     private static String getInfoPathname() {
-        final String pathname = getPathname();
+        final String pathname = getCachePathname();
         if (pathname != null) {
-            return pathname + File.separator + "info";
+            return pathname + File.separator + INFO_FOLDER;
         }
         return null;
     }
 
-    /**
-     * @return Pathname of the root cache folder, or null if
-     * <code>FilesystemCache.pathname</code> is not set.
-     */
-    private static String getPathname() {
-        return Application.getConfiguration().
-                getString("FilesystemCache.pathname");
-    }
-
-    private static long getTtlMsec() {
-        return 1000 * Application.getConfiguration().
+    private static boolean isExpired(File file) {
+        final long ttlMsec = 1000 * Application.getConfiguration().
                 getLong("FilesystemCache.ttl_seconds", 0);
+        return (ttlMsec > 0) && file.isFile() &&
+                System.currentTimeMillis() - file.lastModified() >= ttlMsec;
     }
 
     public void flush() throws IOException {
-        final String imagePathname = getImagePathname();
-        final String infoPathname = getInfoPathname();
-        if (imagePathname != null && infoPathname != null) {
-            final File imageDir = new File(imagePathname);
-            long imageCount = 0;
-            for (File file : imageDir.listFiles()) {
-                if (file.isFile() && file.delete()) {
-                    imageCount++;
+        synchronized (lock4) {
+            while (flushingInProgress || !paramsBeingFlushed.isEmpty()) {
+                try {
+                    lock4.wait();
+                } catch (InterruptedException e) {
+                    break;
                 }
             }
+        }
 
-            final File infoDir = new File(infoPathname);
-            long infoCount = 0;
-            for (File file : infoDir.listFiles()) {
-                if (file.isFile() && file.delete()) {
-                    infoCount++;
+        try {
+            flushingInProgress = true;
+            final String imagePathname = getImagePathname();
+            final String infoPathname = getInfoPathname();
+            if (imagePathname != null && infoPathname != null) {
+                final File imageDir = new File(imagePathname);
+                long imageCount = 0;
+                for (File file : imageDir.listFiles()) {
+                    if (file.isFile() && file.delete()) {
+                        imageCount++;
+                    }
                 }
+
+                final File infoDir = new File(infoPathname);
+                long infoCount = 0;
+                for (File file : infoDir.listFiles()) {
+                    if (file.isFile() && file.delete()) {
+                        infoCount++;
+                    }
+                }
+                logger.info("Flushed {} images and {} dimensions", imageCount,
+                        infoCount);
+            } else {
+                throw new IOException("FilesystemCache.pathname is not set");
             }
-            logger.info("Flushed {} images and {} dimensions", imageCount,
-                    infoCount);
-        } else {
-            throw new IOException("FilesystemCache.pathname is not set");
+        } finally {
+            flushingInProgress = false;
         }
     }
 
     public void flush(Parameters params) throws IOException {
-        File imageFile = getCachedImageFile(params);
-        if (imageFile != null && imageFile.exists()) {
-            imageFile.delete();
+        synchronized (lock1) {
+            while (flushingInProgress || paramsBeingFlushed.contains(params)) {
+                try {
+                    lock1.wait();
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
         }
-        File dimensionFile = getCachedInfoFile(params.getIdentifier());
-        if (dimensionFile != null && dimensionFile.exists()) {
-            dimensionFile.delete();
+
+        try {
+            paramsBeingFlushed.add(params);
+            File imageFile = getCachedImageFile(params);
+            if (imageFile != null && imageFile.exists()) {
+                imageFile.delete();
+            }
+            File dimensionFile = getCachedInfoFile(params.getIdentifier());
+            if (dimensionFile != null && dimensionFile.exists()) {
+                dimensionFile.delete();
+            }
+            logger.info("Flushed {}", params);
+        } finally {
+            paramsBeingFlushed.remove(params);
         }
-        logger.info("Flushed {}", params);
     }
 
     public void flushExpired() throws IOException {
-        final String imagePathname = getImagePathname();
-        final String infoPathname = getInfoPathname();
-        if (imagePathname != null && infoPathname != null) {
-            final File imageDir = new File(imagePathname);
-            long imageCount = 0;
-            for (File file : imageDir.listFiles()) {
-                if (file.isFile() && isExpired(file) && file.delete()) {
-                    imageCount++;
+        synchronized (lock4) {
+            while (flushingInProgress || !paramsBeingFlushed.isEmpty()) {
+                try {
+                    lock4.wait();
+                } catch (InterruptedException e) {
+                    break;
                 }
             }
+        }
 
-            final File infoDir = new File(infoPathname);
-            long infoCount = 0;
-            for (File file : infoDir.listFiles()) {
-                if (file.isFile() && isExpired(file) && file.delete()) {
-                    infoCount++;
+        try {
+            flushingInProgress = true;
+            final String imagePathname = getImagePathname();
+            final String infoPathname = getInfoPathname();
+            if (imagePathname != null && infoPathname != null) {
+                final File imageDir = new File(imagePathname);
+                long imageCount = 0;
+                for (File file : imageDir.listFiles()) {
+                    if (file.isFile() && isExpired(file) && file.delete()) {
+                        imageCount++;
+                    }
                 }
+
+                final File infoDir = new File(infoPathname);
+                long infoCount = 0;
+                for (File file : infoDir.listFiles()) {
+                    if (file.isFile() && isExpired(file) && file.delete()) {
+                        infoCount++;
+                    }
+                }
+                logger.info("Flushed {} expired images and {} expired dimensions",
+                        imageCount, infoCount);
+            } else {
+                throw new IOException("FilesystemCache.pathname is not set");
             }
-            logger.info("Flushed {} expired images and {} expired dimensions",
-                    imageCount, infoCount);
-        } else {
-            throw new IOException("FilesystemCache.pathname is not set");
+        } finally {
+            flushingInProgress = false;
         }
     }
 
     public Dimension getDimension(String identifier) throws IOException {
-        File cacheFile = getCachedInfoFile(identifier);
-        if (cacheFile != null && cacheFile.exists()) {
-            if (!isExpired(cacheFile)) {
+        synchronized (lock2) {
+            while (infosBeingWritten.contains(identifier)) {
                 try {
+                    lock2.wait();
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        }
+
+        try {
+            infosBeingRead.add(identifier);
+            File cacheFile = getCachedInfoFile(identifier);
+            if (cacheFile != null && cacheFile.exists()) {
+                if (!isExpired(cacheFile)) {
                     logger.debug("Hit for dimension: {}", cacheFile.getName());
 
                     ImageInfo info = infoMapper.readValue(cacheFile,
                             ImageInfo.class);
                     return new Dimension(info.getWidth(), info.getHeight());
-                } catch (FileNotFoundException e) {
-                    // noop
+                } else {
+                    logger.debug("Deleting stale cache file: {}",
+                            cacheFile.getName());
+                    cacheFile.delete();
                 }
-            } else {
-                logger.debug("Deleting stale cache file: {}",
-                        cacheFile.getName());
-                cacheFile.delete();
             }
+        } catch (FileNotFoundException e) {
+            // noop
+        } finally {
+            infosBeingRead.remove(identifier);
         }
         return null;
     }
@@ -193,14 +282,13 @@ class FilesystemCache implements Cache {
     public File getCachedImageFile(Parameters params) {
         final String cachePathname = getImagePathname();
         if (cachePathname != null) {
-            final String search = "[^A-Za-z0-9._-]";
-            final String replacement = "";
             final String pathname = String.format("%s%s%s_%s_%s_%s_%s.%s",
-                    StringUtils.stripEnd(cachePathname, File.separator), File.separator,
-                    params.getIdentifier().replaceAll(search, replacement),
-                    params.getRegion().toString().replaceAll(search, replacement),
-                    params.getSize().toString().replaceAll(search, replacement),
-                    params.getRotation().toString().replaceAll(search, replacement),
+                    StringUtils.stripEnd(cachePathname, File.separator),
+                    File.separator,
+                    params.getIdentifier().replaceAll(FILENAME_CHARACTERS, "_"),
+                    params.getRegion().toString().replaceAll(FILENAME_CHARACTERS, "_"),
+                    params.getSize().toString().replaceAll(FILENAME_CHARACTERS, "_"),
+                    params.getRotation().toString().replaceAll(FILENAME_CHARACTERS, "_"),
                     params.getQuality().toString().toLowerCase(),
                     params.getOutputFormat().getExtension());
             return new File(pathname);
@@ -216,10 +304,10 @@ class FilesystemCache implements Cache {
     public File getCachedInfoFile(String identifier) {
         final String cachePathname = getInfoPathname();
         if (cachePathname != null) {
-            final String search = "[^A-Za-z0-9._-]";
-            final String replacement = "";
-            final String pathname = StringUtils.stripEnd(cachePathname, File.separator) +
-                    File.separator + identifier.replaceAll(search, replacement) +
+            final String pathname =
+                    StringUtils.stripEnd(cachePathname, File.separator) +
+                    File.separator +
+                    identifier.replaceAll(FILENAME_CHARACTERS, "_") +
                     INFO_EXTENSION;
             return new File(pathname);
         }
@@ -228,19 +316,33 @@ class FilesystemCache implements Cache {
 
     public void putDimension(String identifier, Dimension dimension)
             throws IOException {
-        logger.debug("Caching dimension: {}", identifier);
-        final File cacheFile = getCachedInfoFile(identifier);
-        cacheFile.getParentFile().mkdirs();
-        ImageInfo info = new ImageInfo();
-        info.setWidth(dimension.width);
-        info.setHeight(dimension.height);
-        infoMapper.writeValue(cacheFile, info);
-    }
+        synchronized (lock3) {
+            while (infosBeingWritten.contains(identifier) ||
+                    infosBeingRead.contains(identifier)) {
+                try {
+                    lock3.wait();
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        }
 
-    private boolean isExpired(File file) {
-        long ttlMsec = getTtlMsec();
-        return (ttlMsec > 0) && file.isFile() &&
-                System.currentTimeMillis() - file.lastModified() >= ttlMsec;
+        try {
+            infosBeingWritten.add(identifier);
+            final File cacheFile = getCachedInfoFile(identifier);
+            if (cacheFile != null) {
+                logger.debug("Caching dimension: {}", identifier);
+                cacheFile.getParentFile().mkdirs();
+                ImageInfo info = new ImageInfo();
+                info.setWidth(dimension.width);
+                info.setHeight(dimension.height);
+                infoMapper.writeValue(cacheFile, info);
+            } else {
+                throw new IOException("FilesystemCache.pathname is not set");
+            }
+        } finally {
+            infosBeingWritten.remove(identifier);
+        }
     }
 
 }

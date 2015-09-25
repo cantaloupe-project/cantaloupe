@@ -152,7 +152,7 @@ public class InformationResource extends AbstractResource {
                               ImageInputStream inputStream,
                               SourceFormat sourceFormat) throws Exception {
         Dimension size = null;
-        Cache cache = CacheFactory.getCache();
+        Cache cache = CacheFactory.getInstance();
         if (cache != null) {
             size = cache.getDimension(identifier);
             if (size == null) {

@@ -81,7 +81,7 @@ public class LandingResource extends AbstractResource {
         // cache name
         String cacheStr = "None";
         try {
-            Cache cache = CacheFactory.getCache();
+            Cache cache = CacheFactory.getInstance();
             if (cache != null) {
                 cacheStr = cache.getClass().getSimpleName();
             }

@@ -10,10 +10,17 @@ public class CacheFactory {
 
     public static final String CACHE_CONFIG_KEY = "cache.server";
 
+    /** Singleton instance */
+    private static Cache instance;
+
     /**
-     * @return Cache, or null if not available.
+     * Provides access to the shared Cache instance. This methods respects
+     * live changes in application configuration, mostly for the sake of
+     * testing.
+     *
+     * @return The shared Cache Singleton, or null if a cache is not available.
      */
-    public static Cache getCache() {
+    public static synchronized Cache getInstance() {
         try {
             String cacheName = Application.getConfiguration().
                     getString(CACHE_CONFIG_KEY);
@@ -21,12 +28,18 @@ public class CacheFactory {
                 String className = CacheFactory.class.getPackage().getName() +
                         "." + cacheName;
                 Class class_ = Class.forName(className);
-                return (Cache) class_.newInstance();
+                if (instance == null ||
+                        !instance.getClass().getSimpleName().equals(className)) {
+                    instance = (Cache) class_.newInstance();
+                }
+            } else {
+                instance = null;
             }
         } catch (Exception e) {
             logger.error(e.getMessage());
+            instance = null;
         }
-        return null;
+        return instance;
     }
 
 }

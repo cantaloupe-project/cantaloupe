@@ -162,7 +162,7 @@ public class FilesystemCacheTest extends TestCase {
         Parameters params = new Parameters(identifier, region, size, rotation,
                 quality, format);
         final String search = "[^A-Za-z0-9._-]";
-        final String replacement = "";
+        final String replacement = "_";
         String expected = String.format("%s%simage%s%s_%s_%s_%s_%s.%s", pathname,
                 File.separator,
                 File.separator,

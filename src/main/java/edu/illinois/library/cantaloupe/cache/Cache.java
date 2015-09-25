@@ -7,10 +7,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * Interface to be implemented by all caches. Instances will be shared
+ * Singletons.
+ */
 public interface Cache {
 
     /**
-     * Deletes the entire cache contents.
+     * Deletes the entire cache contents. Must be thread-safe.
      *
      * @throws Exception
      */
