@@ -86,10 +86,11 @@ public class Application {
     }
 
     /**
-     * @return The application version from manifest.mf, or null if not running
-     * from a jar.
+     * @return The application version from manifest.mf, or a string like
+     * "Non-Release" if running from a jar.
      */
     public static String getVersion() {
+        String versionStr = "Non-Release";
         Class clazz = Application.class;
         String className = clazz.getSimpleName() + ".class";
         String classPath = clazz.getResource(className).toString();
@@ -99,12 +100,15 @@ public class Application {
             try {
                 Manifest manifest = new Manifest(new URL(manifestPath).openStream());
                 Attributes attr = manifest.getMainAttributes();
-                return attr.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
+                String version = attr.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
+                if (version != null) {
+                    versionStr = version;
+                }
             } catch (IOException e) {
                 // noop
             }
         }
-        return null;
+        return versionStr;
     }
 
     public static void start() throws Exception {

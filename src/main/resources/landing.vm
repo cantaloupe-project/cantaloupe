@@ -18,14 +18,7 @@
 
     <body>
         <div class="container-fluid">
-            <h1>&#127816; Cantaloupe Image Server
-                #* version will be null when not running from a jar *#
-                #if ($version)
-                    <small>$version</small>
-                #else
-                    <small>Non-Release</small>
-                #end
-            </h1>
+            <h1>&#127816; Cantaloupe Image Server <small>$version</small></h1>
 
             <div class="row">
                 <div class="col-sm-6">
