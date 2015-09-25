@@ -12,7 +12,9 @@
 <div class="container-fluid">
     <h1>$pageTitle</h1>
 
-    <p>$message</p>
+    #if ($message)
+        <p>$message</p>
+    #end
 
     #if ($stackTrace)
         <pre>$stackTrace</pre>
