@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
@@ -9,51 +8,44 @@ import edu.illinois.library.cantaloupe.request.Quality;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 
+import javax.imageio.stream.ImageInputStream;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * Processor using the kdu_expand tool.
+ *
  * @see <a href="http://kakadusoftware.com/wp-content/uploads/2014/06/Usage_Examples-v7_7.txt">
  *     Usage Examples for the Demonstration Applications Supplied with Kakadu
  *     V7.7</a>
  */
-public class KakaduProcessor implements Processor {
+class KakaduProcessor implements Processor {
 
-    private static final Set<String> QUALITIES = new HashSet<String>();
-    private static final Set<String> SUPPORTS = new HashSet<String>();
+    private static final Set<Quality> SUPPORTED_QUALITIES = new HashSet<>();
+    private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
+            new HashSet<>();
 
     static {
-        for (Quality quality : Quality.values()) {
-            QUALITIES.add(quality.toString().toLowerCase());
-        }
+        SUPPORTED_QUALITIES.add(Quality.BITONAL);
+        SUPPORTED_QUALITIES.add(Quality.COLOR);
+        SUPPORTED_QUALITIES.add(Quality.DEFAULT);
+        SUPPORTED_QUALITIES.add(Quality.GRAY);
 
-        SUPPORTS.add("baseUriRedirect");
-        SUPPORTS.add("canonicalLinkHeader");
-        SUPPORTS.add("cors");
-        SUPPORTS.add("mirroring");
-        SUPPORTS.add("regionByPx");
-        SUPPORTS.add("rotationArbitrary");
-        SUPPORTS.add("rotationBy90s");
-        SUPPORTS.add("sizeAboveFull");
-        SUPPORTS.add("sizeByWhListed");
-        SUPPORTS.add("sizeByForcedWh");
-        SUPPORTS.add("sizeByH");
-        SUPPORTS.add("sizeByPct");
-        SUPPORTS.add("sizeByW");
-        SUPPORTS.add("sizeWh");
-    }
-
-    /**
-     * @return Map of available output formats for all known source formats,
-     * based on information reported by <code>gm version</code>.
-     */
-    public static HashMap<SourceFormat, Set<OutputFormat>> getAvailableOutputFormats() {
-        // TODO: write this
+        SUPPORTED_FEATURES.add(ProcessorFeature.MIRRORING);
+        SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PERCENT);
+        SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PIXELS);
+        SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_ARBITRARY);
+        SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_BY_90S);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_ABOVE_FULL);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_HEIGHT);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_PERCENT);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
     }
 
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
@@ -61,36 +53,29 @@ public class KakaduProcessor implements Processor {
         if (sourceFormat == SourceFormat.JP2) {
             formats.add(SourceFormat.JPG);
         }
+        return new HashSet<>();
         // TODO: write this
     }
 
-    public ImageInfo getImageInfo(File sourceFile, SourceFormat sourceFormat,
-                           String imageBaseUri) throws Exception {
+    public Dimension getSize(ImageInputStream inputStream,
+                             SourceFormat sourceFormat) throws Exception {
         // TODO: write this
+        return new Dimension(0, 0);
     }
 
-    public ImageInfo getImageInfo(InputStream inputStream,
-                                  SourceFormat sourceFormat,
-                                  String imageBaseUri) throws Exception {
-        // TODO: write this
+    public Set<ProcessorFeature> getSupportedFeatures(SourceFormat sourceFormat) {
+        return SUPPORTED_FEATURES;
     }
 
-    public Set<SourceFormat> getSupportedSourceFormats() {
-        Set<SourceFormat> formats = new HashSet<SourceFormat>();
-        formats.add(SourceFormat.JP2);
-        return formats;
+    public Set<Quality> getSupportedQualities(SourceFormat sourceFormat) {
+        return SUPPORTED_QUALITIES;
     }
 
     public void process(Parameters params, SourceFormat sourceFormat,
-                        File file, OutputStream outputStream) throws Exception {
+                        ImageInputStream inputStream, OutputStream outputStream)
+            throws Exception {
         File fifo = createAndGetFifo(); // kdu_expand will write to this
 
-    }
-
-    public void process(Parameters params, SourceFormat sourceFormat,
-                        InputStream inputStream, OutputStream outputStream)
-            throws Exception {
-        // noop
     }
 
     /**

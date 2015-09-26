@@ -39,9 +39,10 @@ it the following contents, modifying as desired:
 
     # Image processors to use for various source formats. Available values are
     # `ImageIoProcessor`, `GraphicsMagickProcessor`, `ImageMagickProcessor`,
-    # and `JaiProcessor`.
+    # `KakaduProcessor`, and `JaiProcessor`.
     # These extension-specific definitions are optional.
     #processor.jpg = ImageMagickProcessor
+    #processor.jp2 = KakaduProcessor
     #processor.tif = GraphicsMagickProcessor
     # Fall back to this processor for any formats not assigned above.
     processor.fallback = ImageIoProcessor
@@ -52,11 +53,11 @@ it the following contents, modifying as desired:
     # Optional; overrides the PATH
     #ImageMagickProcessor.path_to_binaries = /usr/local/bin
     
-    # Optional; overrides the PATH
-    KakaduProcessor.path_to_binaries = /usr/bin
-
     # JPEG output quality. Should be a number between 0-1 ending in "f"
     ImageIoProcessor.jpg.quality = 0.7f
+
+    # Optional; overrides the PATH
+    KakaduProcessor.path_to_kdu_expand = /usr/bin/kdu_expand
 
     # The resolver that translates the identifier in the URL to an image source.
 

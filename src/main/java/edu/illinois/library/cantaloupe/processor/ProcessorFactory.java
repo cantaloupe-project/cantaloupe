@@ -11,12 +11,13 @@ public class ProcessorFactory {
 
     public static Set<Processor> getAllProcessors() {
         // might be preferable to scan the package for classes implementing
-        // Processor, but might also not be worth the hassle/overhead
-        Set<Processor> processors = new HashSet<Processor>();
+        // Processor, but might also not be worth the hassle
+        Set<Processor> processors = new HashSet<>();
         processors.add(new GraphicsMagickProcessor());
         processors.add(new ImageIoProcessor());
         processors.add(new ImageMagickProcessor());
         processors.add(new JaiProcessor());
+        processors.add(new KakaduProcessor());
         return processors;
     }
 
