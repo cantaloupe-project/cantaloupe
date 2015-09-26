@@ -287,12 +287,13 @@ compile a "Q8" version of ImageMagick, its memory use will be halved.
 ### JaiProcessor
 
 Java Advanced Imaging (JAI) is a powerful low-level imaging framework
-developed by Sun Microsystems beginning in the late nineties. JaiProcessor uses
-an updated fork called [JAI-EXT](https://github.com/geosolutions-it/jai-ext).
+developed by Sun Microsystems until around 2006. JaiProcessor uses an updated
+fork called [JAI-EXT](https://github.com/geosolutions-it/jai-ext).
 
-JaiProcessor's main advantage (see below for disclaimer) is that it can exploit
-JAI's internal tiling engine, which makes it capable of region-of-interest
-decoding with some formats.
+JaiProcessor's main theoretical advantage is the ability to exploit JAI's
+internal tiling engine, which makes it capable of region-of-interest decoding
+with some formats. Unfortunately, JAI is old and buggy and the defects offset
+the advantages.
 
 JaiProcessor can read and write the same formats as ImageIoProcessor.
 
@@ -393,12 +394,7 @@ still work on modern platforms.
 GraphicsMagickProcessor and ImageMagickProcessor can both handle TIFF if the
 necessary delegate or plugin is installed. (See the landing page, at `/iiif`.)
 
-ImageIoProcessor can read and write standard uncompressed and LZW-compressed
-RGB TIFF. ZIP-compressed TIFFs are not supported, and other more exotic
-encodings may or may not be.
-
-JaiProcessor is able to load TIFF images in tiles, which makes it pretty fast
-with this format.
+TIFF is disabled in ImageIoProcessor because it is too buggy.
 
 # Custom Development
 
