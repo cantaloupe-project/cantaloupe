@@ -1,14 +1,12 @@
 package edu.illinois.library.cantaloupe.request;
 
-import org.apache.commons.lang3.StringUtils;
-
 /**
  * Encapsulates the parameters of an IIIF request.
  *
  * @see <a href="http://iiif.io/api/request/2.0/#request-request-parameters">IIIF
  *      Image API 2.0</a>
  */
-public class Parameters {
+public class Parameters implements Comparable<Parameters> {
 
     private OutputFormat outputFormat;
     private String identifier;
@@ -35,10 +33,10 @@ public class Parameters {
         this.size = Size.fromUri(size);
     }
 
-    public String getCanonicalUri(String baseUri) {
-        return StringUtils.stripEnd(baseUri, "/") + "/" + getIdentifier() +
-                "/" + getRegion() + "/" + getSize() + "/" + getRotation() +
-                "/" + getQuality().toString().toLowerCase() + "." + getOutputFormat();
+    @Override
+    public int compareTo(Parameters params) {
+        int last = this.toString().compareTo(params.toString());
+        return (last == 0) ? this.toString().compareTo(params.toString()) : last;
     }
 
     public OutputFormat getOutputFormat() {
@@ -63,6 +61,15 @@ public class Parameters {
 
     public Size getSize() {
         return size;
+    }
+
+    /**
+     * @return IIIF URI parameters with no leading slash.
+     */
+    public String toString() {
+        return String.format("%s/%s/%s/%s/%s.%s", getIdentifier(), getRegion(),
+                getSize(), getRotation(), getQuality().toString().toLowerCase(),
+                getOutputFormat());
     }
 
 }

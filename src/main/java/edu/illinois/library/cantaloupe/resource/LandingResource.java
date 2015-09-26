@@ -1,37 +1,56 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.cache.Cache;
+import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.request.OutputFormat;
+import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import org.apache.velocity.Template;
 import org.apache.velocity.app.Velocity;
-import org.apache.velocity.runtime.RuntimeConstants;
-import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
+import org.restlet.data.CacheDirective;
 import org.restlet.data.MediaType;
 import org.restlet.ext.velocity.TemplateRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
+import org.restlet.resource.ResourceException;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Handles the landing page.
  */
 public class LandingResource extends AbstractResource {
 
-    static {
-        Velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
-        Velocity.setProperty("classpath.resource.loader.class",
-                ClasspathResourceLoader.class.getName());
-        Velocity.setProperty("class.resource.loader.cache", true);
-        Velocity.init();
+    private class ProcessorComparator implements Comparator<Processor> {
+        public int compare(Processor o1, Processor o2) {
+            return o1.getClass().getSimpleName().
+                    compareTo(o2.getClass().getSimpleName());
+        }
+    }
+
+    private class SourceFormatComparator implements Comparator<SourceFormat> {
+        public int compare(SourceFormat o1, SourceFormat o2) {
+            return o1.getPreferredExtension().
+                    compareTo(o2.getPreferredExtension());
+        }
+    }
+
+    @Override
+    protected void doInit() throws ResourceException {
+        super.doInit();
+        // add a "Cache-Control: no-cache" header because this page is dynamic
+        // and contains information critical to the function of the application
+        getResponseCacheDirectives().add(CacheDirective.noCache());
     }
 
     @Get
@@ -44,31 +63,60 @@ public class LandingResource extends AbstractResource {
     private Map<String,Object> getTemplateVars() throws Exception {
         Map<String,Object> vars = new HashMap<String,Object>();
 
+        // version
+        vars.put("version", Application.getVersion());
+
         // resolver name
-        Resolver resolver = ResolverFactory.getResolver();
         String resolverStr = "None";
-        if (resolver != null) {
-            resolverStr = resolver.getClass().getSimpleName();
+        try {
+            Resolver resolver = ResolverFactory.getResolver();
+            if (resolver != null) {
+                resolverStr = resolver.getClass().getSimpleName();
+            }
+        } catch (Exception e) {
+            // noop
         }
         vars.put("resolverName", resolverStr);
 
-        // source formats
-        Map<SourceFormat,String> sourceFormats =
-                new HashMap<SourceFormat, String>();
-        for (SourceFormat sourceFormat : SourceFormat.values()) {
-            sourceFormats.put(sourceFormat,
-                    ProcessorFactory.getProcessor(sourceFormat).getClass().getSimpleName());
+        // cache name
+        String cacheStr = "None";
+        try {
+            Cache cache = CacheFactory.getInstance();
+            if (cache != null) {
+                cacheStr = cache.getClass().getSimpleName();
+            }
+        } catch (Exception e) {
+            // noop
         }
+        vars.put("cacheName", cacheStr);
+
+        // source format assignments
+        Map<SourceFormat,String> assignments = new TreeMap<>();
+        for (SourceFormat sourceFormat : SourceFormat.values()) {
+            try {
+                assignments.put(sourceFormat,
+                        ProcessorFactory.getProcessor(sourceFormat).getClass().getSimpleName());
+            } catch (UnsupportedSourceFormatException e) {
+                // noop
+            }
+        }
+        vars.put("processorAssignments", assignments);
+
+        // source formats
+        List<SourceFormat> sourceFormats = new ArrayList<>();
+        for (SourceFormat sourceFormat : SourceFormat.values()) {
+            if (sourceFormat != SourceFormat.UNKNOWN) {
+                sourceFormats.add(sourceFormat);
+            }
+        }
+        Collections.sort(sourceFormats, new SourceFormatComparator());
         vars.put("sourceFormats", sourceFormats);
 
         // processors
-        Map<String,Set<SourceFormat>> processors =
-                new HashMap<String, Set<SourceFormat>>();
-        for (Processor processor : ProcessorFactory.getAllProcessors()) {
-            processors.put(processor.getClass().getSimpleName(),
-                    processor.getSupportedSourceFormats());
-        }
-        vars.put("processors", processors);
+        List<Processor> sortedProcessors =
+                new ArrayList<>(ProcessorFactory.getAllProcessors());
+        Collections.sort(sortedProcessors, new ProcessorComparator());
+        vars.put("processors", sortedProcessors);
 
         return vars;
     }

@@ -1,12 +1,8 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ResolverFactory {
-
-    private static Logger logger = LoggerFactory.getLogger(ResolverFactory.class);
 
     /**
      * @return The current resolver based on the <code>resolver</code> setting

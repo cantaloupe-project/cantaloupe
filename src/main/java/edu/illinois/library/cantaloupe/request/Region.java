@@ -9,10 +9,10 @@ import edu.illinois.library.cantaloupe.util.NumberUtil;
  */
 public class Region {
 
-    private Integer height;
+    private Float height = new Float(0.0);
     private boolean isFull = false;
     private boolean isPercent = false;
-    private Integer width;
+    private Float width = new Float(0.0);
     private Float x = new Float(0.0);
     private Float y = new Float(0.0);
 
@@ -42,8 +42,8 @@ public class Region {
             if (parts.length == 4) {
                 region.setX(Float.parseFloat(parts[0]));
                 region.setY(Float.parseFloat(parts[1]));
-                region.setWidth(Integer.parseInt(parts[2]));
-                region.setHeight(Integer.parseInt(parts[3]));
+                region.setWidth(Float.parseFloat(parts[2]));
+                region.setHeight(Float.parseFloat(parts[3]));
             } else {
                 throw new IllegalArgumentException("Invalid region");
             }
@@ -51,11 +51,11 @@ public class Region {
         return region;
     }
 
-    public Integer getHeight() {
+    public Float getHeight() {
         return height;
     }
 
-    public Integer getWidth() {
+    public Float getWidth() {
         return width;
     }
 
@@ -79,7 +79,7 @@ public class Region {
         this.isFull = isFull;
     }
 
-    public void setHeight(Integer height) throws IllegalArgumentException {
+    public void setHeight(Float height) throws IllegalArgumentException {
         if (height <= 0) {
             throw new IllegalArgumentException("Height must be a positive integer");
         }
@@ -90,7 +90,7 @@ public class Region {
         this.isPercent = isPercent;
     }
 
-    public void setWidth(Integer width) throws IllegalArgumentException {
+    public void setWidth(Float width) throws IllegalArgumentException {
         if (width <= 0) {
             throw new IllegalArgumentException("Width must be a positive integer");
         }
@@ -119,13 +119,18 @@ public class Region {
         if (this.isFull()) {
             str += "full";
         } else {
+            String x, y;
             if (this.isPercent()) {
-                str += "pct:" + NumberUtil.removeTrailingZeroes(this.getX()) +
-                        "," + NumberUtil.removeTrailingZeroes(this.getY());
+                x = NumberUtil.removeTrailingZeroes(this.getX());
+                y = NumberUtil.removeTrailingZeroes(this.getY());
+                str += "pct:";
             } else {
-                str += Math.round(this.getX()) + "," + Math.round(this.getY());
+                x = Integer.toString(Math.round(this.getX()));
+                y = Integer.toString(Math.round(this.getY()));
             }
-            str += "," + this.getWidth() + "," + this.getHeight();
+            str += String.format("%s,%s,%s,%s", x, y,
+                    NumberUtil.removeTrailingZeroes(this.getWidth()),
+                    NumberUtil.removeTrailingZeroes(this.getHeight()));
         }
         return str;
     }

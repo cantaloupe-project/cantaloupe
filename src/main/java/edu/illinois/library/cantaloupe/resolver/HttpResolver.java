@@ -1,47 +1,65 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.SourceFormat;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.lang3.StringUtils;
 import org.restlet.Client;
 import org.restlet.Context;
 import org.restlet.data.ChallengeScheme;
+import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.resource.ClientResource;
+import org.restlet.resource.ResourceException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 
-public class HttpResolver extends AbstractResolver implements Resolver {
+class HttpResolver implements Resolver {
+
+    private static Logger logger = LoggerFactory.getLogger(HttpResolver.class);
 
     private static Client client = new Client(new Context(), Protocol.HTTP);
 
-    public File getFile(String identifier) {
-        return null;
-    }
+    public ImageInputStream getInputStream(String identifier)
+            throws IOException {
+        Configuration config = Application.getConfiguration();
+        Reference url = getUrl(identifier);
+        logger.debug("Resolved {} to {}", identifier, url);
+        ClientResource resource = new ClientResource(url);
+        resource.setNext(client);
 
-    public InputStream getInputStream(String identifier)
-            throws FileNotFoundException {
+        // set up HTTP Basic authentication
+        String username = config.getString("HttpResolver.username", "");
+        String password = config.getString("HttpResolver.password", "");
+        if (username.length() > 0 && password.length() > 0) {
+            resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC,
+                    username, password);
+        }
         try {
-            Configuration config = Application.getConfiguration();
-            Reference url = getUrl(identifier);
-            ClientResource resource = new ClientResource(url);
-            resource.setNext(client);
-
-            // set up HTTP Basic authentication
-            String username = config.getString("HttpResolver.username", "");
-            String password = config.getString("HttpResolver.password", "");
-            if (username.length() > 0 && password.length() > 0) {
-                resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC,
-                        username, password);
-            }
-
-            return resource.get().getStream();
-        } catch (IOException e) {
+            return ImageIO.createImageInputStream(resource.get().getStream());
+        } catch (ResourceException e) {
             throw new FileNotFoundException(e.getMessage());
         }
+    }
+
+    /**
+     * Returns the format of the image corresponding to the given identifier.
+     *
+     * @param identifier IIIF identifier.
+     * @return A source format, or <code>SourceFormat.UNKNOWN</code> if unknown.
+     */
+    public SourceFormat getSourceFormat(String identifier) {
+        SourceFormat format = getSourceFormatFromIdentifier(identifier);
+        if (format == SourceFormat.UNKNOWN) {
+            format = getSourceFormatFromServer(identifier);
+        }
+        return format;
     }
 
     public Reference getUrl(String identifier) {
@@ -54,7 +72,75 @@ public class HttpResolver extends AbstractResolver implements Resolver {
         if (suffix == null) {
             suffix = "";
         }
+        // The Image API 2.0 spec mandates the use of percent-encoded
+        // identifiers. But some web servers have issues dealing with the
+        // encoded slash (%2F). FilesystemResolver.path_separator enables the
+        // use of an alternate string as a path separator.
+        String separator = config.getString("HttpResolver.path_separator", "/");
+        if (!separator.equals("/")) {
+            identifier = StringUtils.replace(identifier, separator, "/");
+        }
         return new Reference(prefix + identifier + suffix);
+    }
+
+    /**
+     * @param identifier
+     * @return A source format, or <code>SourceFormat.UNKNOWN</code> if unknown.
+     */
+    private SourceFormat getSourceFormatFromIdentifier(String identifier) {
+        // try to get the source format based on a filename extension in the
+        // identifier
+        identifier = identifier.toLowerCase();
+        String extension = null;
+        SourceFormat sourceFormat = SourceFormat.UNKNOWN;
+        int i = identifier.lastIndexOf('.');
+        if (i > 0) {
+            extension = identifier.substring(i + 1);
+        }
+        if (extension != null) {
+            for (SourceFormat enumValue : SourceFormat.values()) {
+                if (enumValue.getExtensions().contains(extension)) {
+                    sourceFormat = enumValue;
+                    break;
+                }
+            }
+        }
+        return sourceFormat;
+    }
+
+    /**
+     * Issues an HTTP HEAD request and checks the Content-Type header in the
+     * response to determine the source format.
+     *
+     * @param identifier
+     * @return A source format, or <code>SourceFormat.UNKNOWN</code> if unknown.
+     */
+    private SourceFormat getSourceFormatFromServer(String identifier) {
+        SourceFormat sourceFormat = SourceFormat.UNKNOWN;
+        String contentType = "";
+        Reference url = getUrl(identifier);
+        try {
+            Client client = new Client(new Context(), Protocol.HTTP);
+            ClientResource resource = new ClientResource(url);
+            resource.setNext(client);
+            resource.head();
+
+            contentType = resource.getResponse().getHeaders().
+                    getFirstValue("Content-Type", true);
+            if (contentType != null) {
+                sourceFormat = SourceFormat.
+                        getSourceFormat(new MediaType(contentType));
+            }
+        } catch (ResourceException e) {
+            // nothing we can do but log it
+            if (contentType.length() > 0) {
+                logger.debug("Failed to determine source format based on a Content-Type of {}",
+                        contentType);
+            } else {
+                logger.debug("Failed to determine source format (missing Content-Type at {})", url);
+            }
+        }
+        return sourceFormat;
     }
 
 }

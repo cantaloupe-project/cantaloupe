@@ -1,10 +1,71 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.Application;
+import org.apache.commons.configuration.Configuration;
+import org.restlet.data.CacheDirective;
 import org.restlet.data.Header;
+import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
 import org.restlet.util.Series;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 public abstract class AbstractResource extends ServerResource {
+
+    private static Logger logger = LoggerFactory.
+            getLogger(AbstractResource.class);
+
+    protected static List<CacheDirective> getCacheDirectives() {
+        List<CacheDirective> directives = new ArrayList<>();
+        try {
+            Configuration config = Application.getConfiguration();
+            String maxAge = config.getString("cache.client.max_age");
+            if (maxAge != null && maxAge.length() > 0) {
+                directives.add(CacheDirective.maxAge(Integer.parseInt(maxAge)));
+            }
+            String sMaxAge = config.getString("cache.client.shared_max_age");
+            if (sMaxAge != null && sMaxAge.length() > 0) {
+                directives.add(CacheDirective.
+                        sharedMaxAge(Integer.parseInt(sMaxAge)));
+            }
+            if (config.getBoolean("cache.client.public")) {
+                directives.add(CacheDirective.publicInfo());
+            } else if (config.getBoolean("cache.client.private")) {
+                directives.add(CacheDirective.privateInfo());
+            }
+            if (config.getBoolean("cache.client.no_cache")) {
+                directives.add(CacheDirective.noCache());
+            }
+            if (config.getBoolean("cache.client.no_store")) {
+                directives.add(CacheDirective.noStore());
+            }
+            if (config.getBoolean("cache.client.must_revalidate")) {
+                directives.add(CacheDirective.mustRevalidate());
+            }
+            if (config.getBoolean("cache.client.proxy_revalidate")) {
+                directives.add(CacheDirective.proxyMustRevalidate());
+            }
+            if (config.getBoolean("cache.client.no_transform")) {
+                directives.add(CacheDirective.noTransform());
+            }
+        } catch (NoSuchElementException e) {
+            logger.warn("Configuration file is missing one or more " +
+                    "cache.client.* keys. Cache-Control headers are disabled. " +
+                    "Original error: {}", e.getMessage());
+        }
+        return directives;
+    }
+
+    @Override
+    protected void doInit() throws ResourceException {
+        super.doInit();
+        // override the Server header
+        this.getServerInfo().setAgent("Cantaloupe/" + Application.getVersion());
+    }
 
     /**
      * Convenience method that adds a response header.

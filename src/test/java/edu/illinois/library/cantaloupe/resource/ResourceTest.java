@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
 import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
+import org.junit.AfterClass;
 import org.restlet.Client;
 import org.restlet.Context;
 import org.restlet.data.Protocol;
@@ -20,25 +21,12 @@ public abstract class ResourceTest extends TestCase {
 
     private static Client client = new Client(new Context(), Protocol.HTTP);
 
-    /**
-     * Initializes the Restlet application
-     */
-    static {
-        try {
-            Application.setConfiguration(getConfiguration());
-            Application.startRestlet();
-        } catch (Exception e) {
-            fail("Failed to start the Restlet");
-        }
-    }
-
-    public static BaseConfiguration getConfiguration() {
+    public static BaseConfiguration newConfiguration() {
         BaseConfiguration config = new BaseConfiguration();
         try {
             File directory = new File(".");
             String cwd = directory.getCanonicalPath();
-            Path fixturePath = Paths.get(cwd, "src", "test", "java", "edu",
-                    "illinois", "library", "cantaloupe", "test", "fixtures");
+            Path fixturePath = Paths.get(cwd, "src", "test", "resources");
             config.setProperty("print_stack_trace_on_error_pages", false);
             config.setProperty("http.port", PORT);
             config.setProperty("processor.fallback", "ImageIoProcessor");
@@ -50,9 +38,13 @@ public abstract class ResourceTest extends TestCase {
         return config;
     }
 
-    public void setUp() {
-        BaseConfiguration config = getConfiguration();
-        Application.setConfiguration(config);
+    public void setUp() throws Exception {
+        Application.setConfiguration(newConfiguration());
+        Application.start();
+    }
+
+    public void tearDown() throws Exception {
+        Application.stop();
     }
 
     protected ClientResource getClientForUriPath(String path) {
@@ -65,6 +57,18 @@ public abstract class ResourceTest extends TestCase {
     protected String getBaseUri() {
         return "http://localhost:" + PORT +
                 ImageServerApplication.BASE_IIIF_PATH;
+    }
+
+    public void testBasicAuth() {
+        /* TODO: write this
+        Configuration config = Application.getConfiguration();
+        config.setProperty("http.auth.basic", "true");
+        config.setProperty("http.auth.basic.username", "user");
+        config.setProperty("http.auth.basic.secret", "pass");
+
+        ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
+        client.get();
+        */
     }
 
 }

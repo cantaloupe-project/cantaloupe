@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-        <title>Cantaloupe IIIF 2.0 Server</title>
+        <title>Cantaloupe Image Server</title>
         <style type="text/css">
             body {
                 font-size: 1.5em;
@@ -11,53 +13,58 @@
             h1 {
                 margin-bottom: 0.8em;
             }
-            dd {
-                margin-left: 1em;
-                margin-bottom: 1em;
-            }
-            ul {
-                margin-left: 1em;
-                padding-left: 0px;
-            }
         </style>
     </head>
 
     <body>
         <div class="container-fluid">
-            <h1>&#127816; Cantaloupe IIIF 2.0 Server</h1>
+            <h1>&#127816; Cantaloupe Image Server <small>$version</small></h1>
 
-            <dl>
-                <dt>Resolver</dt>
-                <dd>$resolverName</dd>
+            <div class="row">
+                <div class="col-sm-6">
+                    <h3>Resolver</h3>
+                    <p>$resolverName</p>
+                </div>
+                <div class="col-sm-6">
+                    <h3>Cache</h3>
+                    <p>$cacheName</p>
+                </div>
+            </div>
 
-                <dt>Source Format Assignments</dt>
-                <dd>
-                    <table class="table table-condensed">
-                        #foreach ($sourceFormat in $sourceFormats.keySet())
-                            <tr>
-                                <td style="width:10%">$sourceFormat.getExtension()</td>
-                                <td>$sourceFormats.get($sourceFormat)</td>
-                            </tr>
+            <h3>Effective Source Format Assignments</h3>
+
+            <table class="table table-condensed table-bordered">
+                #foreach ($sourceFormat in $processorAssignments.keySet())
+                    <tr>
+                        <td style="width:10%">$sourceFormat.getName()</td>
+                        <td>$processorAssignments.get($sourceFormat)</td>
+                    </tr>
+                #end
+            </table>
+
+            <h3>Supported Source Formats</h3>
+
+            <table class="table table-condensed table-bordered">
+                <tr>
+                    <th></th>
+                    #foreach ($sourceFormat in $sourceFormats)
+                        <th class="text-center">$sourceFormat.getName()</th>
+                    #end
+                </tr>
+
+                #foreach ($processor in $processors)
+                    <tr>
+                        <td>$processor.getClass().getSimpleName()</td>
+                        #foreach ($sourceFormat in $sourceFormats)
+                            <td class="text-center">
+                                #if ($processor.getAvailableOutputFormats($sourceFormat).size() > 0)
+                                    <span class="text-success">&check;</span>
+                                #end
+                            </td>
                         #end
-                    </table>
-                </dd>
-
-                <dt>Supported Source Formats</dt>
-                <dd>
-                    <dl>
-                        #foreach ($processor in $processors.keySet())
-                            <dt>$processor</dt>
-                            <dd>
-                                <ul>
-                                    #foreach ($sourceFormat in $processors.get($processor))
-                                        <li>$sourceFormat</li>
-                                    #end
-                                </ul>
-                            </dd>
-                        #end
-                    </dl>
-                </dd>
-            </dl>
+                    </tr>
+                #end
+            </table>
         </div>
     </body>
 </html>
