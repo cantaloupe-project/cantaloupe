@@ -15,6 +15,8 @@ import edu.illinois.library.cantaloupe.request.Rotation;
 import edu.illinois.library.cantaloupe.request.Size;
 import it.geosolutions.jaiext.JAIExt;
 import org.restlet.data.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -44,6 +46,8 @@ import java.util.Set;
  * Processor using the Java Advanced Imaging (JAI) framework.
  */
 class JaiProcessor implements Processor {
+
+    private static Logger logger = LoggerFactory.getLogger(JaiProcessor.class);
 
     private static final int JAI_TILE_SIZE = 512;
     private static final Set<Quality> SUPPORTED_QUALITIES = new HashSet<>();
@@ -158,6 +162,12 @@ class JaiProcessor implements Processor {
             outputImage(image, params.getOutputFormat(), outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
+        } finally {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                logger.warn(e.getMessage(), e);
+            }
         }
     }
 

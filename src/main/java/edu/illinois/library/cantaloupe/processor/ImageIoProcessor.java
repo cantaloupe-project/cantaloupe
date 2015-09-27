@@ -161,6 +161,12 @@ class ImageIoProcessor implements Processor {
             outputImage(image, params.getOutputFormat(), outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
+        } finally {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                logger.warn(e.getMessage(), e);
+            }
         }
     }
 
