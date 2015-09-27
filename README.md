@@ -56,7 +56,6 @@ it the following contents, modifying as desired:
     # JPEG output quality. Should be a number between 0-1 ending in "f"
     ImageIoProcessor.jpg.quality = 0.7f
 
-    # Optional; overrides the PATH
     KakaduProcessor.path_to_kdu_expand = /usr/bin/kdu_expand
 
     # The resolver that translates the identifier in the URL to an image source.
