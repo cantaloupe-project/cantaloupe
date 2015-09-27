@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 
-public class UnsupportedSourceFormatException extends RuntimeException {
+public class UnsupportedSourceFormatException extends ProcessorException {
 
     public UnsupportedSourceFormatException() {
         super("Unsupported source format");

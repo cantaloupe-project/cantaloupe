@@ -69,7 +69,8 @@ public abstract class ProcessorTest extends TestCase {
                             outputStream);
                     fail("Expected exception");
                 } catch (UnsupportedSourceFormatException e) {
-                    assertEquals(e.getMessage(), "Unsupported source format");
+                    assertEquals(e.getMessage(), "Unsupported source format: " +
+                            sourceFormat.getPreferredExtension());
                 }
             }
         }

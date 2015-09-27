@@ -111,7 +111,8 @@ class ImageIoProcessor implements Processor {
     }
 
     public Dimension getSize(ImageInputStream inputStream,
-                             SourceFormat sourceFormat) throws Exception {
+                             SourceFormat sourceFormat)
+            throws ProcessorException {
         // get width & height (without reading the entire image into memory)
         Iterator<ImageReader> iter = ImageIO.
                 getImageReadersBySuffix(sourceFormat.getPreferredExtension());
@@ -122,6 +123,8 @@ class ImageIoProcessor implements Processor {
                 reader.setInput(inputStream);
                 width = reader.getWidth(reader.getMinIndex());
                 height = reader.getHeight(reader.getMinIndex());
+            } catch (IOException e) {
+                throw new ProcessorException(e.getMessage(), e);
             } finally {
                 reader.dispose();
             }
@@ -140,7 +143,7 @@ class ImageIoProcessor implements Processor {
 
     public void process(Parameters params, SourceFormat sourceFormat,
                         ImageInputStream inputStream, OutputStream outputStream)
-            throws Exception {
+            throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -149,16 +152,27 @@ class ImageIoProcessor implements Processor {
             throw new UnsupportedOutputFormatException();
         }
 
-        BufferedImage image = loadImage(inputStream, sourceFormat);
-        image = cropImage(image, params.getRegion());
-        image = scaleImage(image, params.getSize());
-        image = rotateImage(image, params.getRotation());
-        image = filterImage(image, params.getQuality());
-        outputImage(image, params.getOutputFormat(), outputStream);
+        try {
+            BufferedImage image = loadImage(inputStream, sourceFormat);
+            image = cropImage(image, params.getRegion());
+            image = scaleImage(image, params.getSize());
+            image = rotateImage(image, params.getRotation());
+            image = filterImage(image, params.getQuality());
+            outputImage(image, params.getOutputFormat(), outputStream);
+        } catch (IOException e) {
+            throw new ProcessorException(e.getMessage(), e);
+        } finally {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                logger.warn(e.getMessage(), e);
+            }
+        }
     }
 
     private BufferedImage loadImage(ImageInputStream inputStream,
-                                    SourceFormat sourceFormat) throws IOException {
+                                    SourceFormat sourceFormat)
+            throws IOException, UnsupportedSourceFormatException {
         BufferedImage image = null;
         switch (sourceFormat) {
             case TIF:
