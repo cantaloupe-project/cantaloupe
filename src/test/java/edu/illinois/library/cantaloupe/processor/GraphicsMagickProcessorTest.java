@@ -23,8 +23,8 @@ public class GraphicsMagickProcessorTest extends ProcessorTest {
     private static HashMap<SourceFormat, Set<OutputFormat>>
     getAvailableOutputFormats() throws IOException {
         if (supportedFormats == null) {
-            final Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
-            final Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
+            final Set<SourceFormat> sourceFormats = new HashSet<>();
+            final Set<OutputFormat> outputFormats = new HashSet<>();
 
             // retrieve the output of the `gm version` command, which contains a
             // list of all optional formats
@@ -75,7 +75,7 @@ public class GraphicsMagickProcessorTest extends ProcessorTest {
             sourceFormats.add(SourceFormat.GIF);
             outputFormats.add(OutputFormat.GIF);
 
-            supportedFormats = new HashMap<SourceFormat,Set<OutputFormat>>();
+            supportedFormats = new HashMap<>();
             for (SourceFormat sourceFormat : SourceFormat.values()) {
                 supportedFormats.put(sourceFormat, new HashSet<OutputFormat>());
             }

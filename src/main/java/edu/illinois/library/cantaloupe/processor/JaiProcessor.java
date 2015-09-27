@@ -46,9 +46,9 @@ import java.util.Set;
 class JaiProcessor implements Processor {
 
     private static final int JAI_TILE_SIZE = 512;
-    private static final Set<Quality> SUPPORTED_QUALITIES = new HashSet<Quality>();
+    private static final Set<Quality> SUPPORTED_QUALITIES = new HashSet<>();
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
-            new HashSet<ProcessorFeature>();
+            new HashSet<>();
 
     private static HashMap<SourceFormat,Set<OutputFormat>> formatsMap;
 
@@ -82,9 +82,9 @@ class JaiProcessor implements Processor {
         if (formatsMap == null) {
             final String[] readerMimeTypes = ImageIO.getReaderMIMETypes();
             final String[] writerMimeTypes = ImageIO.getWriterMIMETypes();
-            formatsMap = new HashMap<SourceFormat, Set<OutputFormat>>();
+            formatsMap = new HashMap<>();
             for (SourceFormat sourceFormat : SourceFormat.values()) {
-                Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
+                Set<OutputFormat> outputFormats = new HashSet<>();
 
                 for (int i = 0, length = readerMimeTypes.length; i < length; i++) {
                     if (sourceFormat.getMediaTypes().
@@ -109,17 +109,20 @@ class JaiProcessor implements Processor {
     }
 
     public Dimension getSize(ImageInputStream inputStream,
-                             SourceFormat sourceFormat) throws Exception {
+                             SourceFormat sourceFormat)
+            throws ProcessorException {
         // get width & height (without reading the entire image into memory)
-        Iterator<ImageReader> iter = ImageIO.
+        Iterator<ImageReader> it = ImageIO.
                 getImageReadersBySuffix(sourceFormat.getPreferredExtension());
-        if (iter.hasNext()) {
-            ImageReader reader = iter.next();
+        if (it.hasNext()) {
+            ImageReader reader = it.next();
             int width, height;
             try {
                 reader.setInput(inputStream);
                 width = reader.getWidth(reader.getMinIndex());
                 height = reader.getHeight(reader.getMinIndex());
+            } catch (IOException e) {
+                throw new ProcessorException(e.getMessage(), e);
             } finally {
                 reader.dispose();
             }
@@ -138,7 +141,7 @@ class JaiProcessor implements Processor {
 
     public void process(Parameters params, SourceFormat sourceFormat,
                         ImageInputStream inputStream, OutputStream outputStream)
-            throws Exception {
+            throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -147,11 +150,15 @@ class JaiProcessor implements Processor {
             throw new UnsupportedOutputFormatException();
         }
 
-        RenderedOp image = loadRegion(inputStream, params.getRegion());
-        image = scaleImage(image, params.getSize());
-        image = rotateImage(image, params.getRotation());
-        image = filterImage(image, params.getQuality());
-        outputImage(image, params.getOutputFormat(), outputStream);
+        try {
+            RenderedOp image = loadRegion(inputStream, params.getRegion());
+            image = scaleImage(image, params.getSize());
+            image = rotateImage(image, params.getRotation());
+            image = filterImage(image, params.getQuality());
+            outputImage(image, params.getOutputFormat(), outputStream);
+        } catch (IOException e) {
+            throw new ProcessorException(e.getMessage(), e);
+        }
     }
 
     private RenderedOp loadRegion(ImageInputStream inputStream, Region region) {

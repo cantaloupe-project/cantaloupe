@@ -27,10 +27,10 @@ public interface Processor {
      * @param inputStream Source image
      * @param sourceFormat Format of the source image
      * @return Size of the source image in pixels.
-     * @throws Exception
+     * @throws ProcessorException
      */
     Dimension getSize(ImageInputStream inputStream, SourceFormat sourceFormat)
-            throws Exception;
+            throws ProcessorException;
 
     /**
      * @param sourceFormat
@@ -57,10 +57,10 @@ public interface Processor {
      * @param outputStream Stream to which to write the image.
      * @throws UnsupportedOutputFormatException
      * @throws UnsupportedSourceFormatException
-     * @throws Exception
+     * @throws ProcessorException
      */
     void process(Parameters params, SourceFormat sourceFormat,
                  ImageInputStream inputStream, OutputStream outputStream)
-            throws Exception;
+            throws ProcessorException;
 
 }
