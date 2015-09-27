@@ -165,7 +165,8 @@ class ImageIoProcessor implements Processor {
     }
 
     private BufferedImage loadImage(ImageInputStream inputStream,
-                                    SourceFormat sourceFormat) throws IOException {
+                                    SourceFormat sourceFormat)
+            throws IOException, UnsupportedSourceFormatException {
         BufferedImage image = null;
         switch (sourceFormat) {
             case TIF:
