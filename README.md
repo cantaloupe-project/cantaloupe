@@ -57,6 +57,9 @@ it the following contents, modifying as desired:
     ImageIoProcessor.jpg.quality = 0.7f
 
     KakaduProcessor.path_to_kdu_expand = /usr/bin/kdu_expand
+    # Due to a quirk of kdu_expand, you will need to create a symbolic link to
+    # /dev/stdout called `stdout.tif`: `ln -s /dev/stdout /path/to/stdout.tif`
+    KakaduProcessor.path_to_stdout_symlink = /some/path/to/stdout.tif
 
     # The resolver that translates the identifier in the URL to an image source.
 
