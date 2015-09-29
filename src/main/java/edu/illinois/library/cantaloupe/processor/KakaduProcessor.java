@@ -6,23 +6,34 @@ import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.request.Region;
+
 import gov.lanl.adore.djatoka.io.reader.PNMReader;
-import org.apache.commons.exec.ExecuteStreamHandler;
-import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -34,30 +45,40 @@ import java.util.Set;
  */
 class KakaduProcessor implements Processor {
 
+    private class StreamCopier implements Runnable {
+
+        private final InputStream inputStream;
+        private final OutputStream outputStream;
+
+        public StreamCopier(InputStream is, OutputStream os) {
+            inputStream = is;
+            outputStream = os;
+        }
+
+        public void run() {
+            try {
+                IOUtils.copy(inputStream, outputStream);
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+
+    }
+
     private static Logger logger = LoggerFactory.getLogger(KakaduProcessor.class);
 
-    private static final String KDU_EXPAND = Application.getConfiguration().
-            getString("KakaduProcessor.path_to_kdu_expand");
-    private static final String STDOUT = "/dev/stdout";
+    private static final String BINARIES_PATH = StringUtils.stripEnd(
+            Application.getConfiguration().getString("KakaduProcessor.path_to_binaries"),
+            File.separator);
     private static final String STDIN = "/dev/stdin";
+    private static final String STDOUT = StringUtils.stripEnd(
+            Application.getConfiguration().getString("KakaduProcessor.path_to_stdout_symlink"),
+            File.separator);
     private static final Set<Quality> SUPPORTED_QUALITIES = new HashSet<>();
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
 
-    private static String[] envParams;
-
     static {
-        if (System.getProperty("os.name").startsWith("Mac")) {
-            envParams = new String[] {
-                    "DYLD_LIBRARY_PATH=" + System.getProperty("DYLD_LIBRARY_PATH")
-            };
-        } else if (System.getProperty("os.name").startsWith("Linux") ||
-                System.getProperty("os.name").startsWith("Solaris")) {
-            envParams = new String[] {
-                    "LD_LIBRARY_PATH=" + System.getProperty("LD_LIBRARY_PATH")
-            };
-        }
-
         SUPPORTED_QUALITIES.add(Quality.BITONAL);
         SUPPORTED_QUALITIES.add(Quality.COLOR);
         SUPPORTED_QUALITIES.add(Quality.DEFAULT);
@@ -76,6 +97,12 @@ class KakaduProcessor implements Processor {
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
     }
 
+    /**
+     * Quotes command-line parameters with spaces.
+     *
+     * @param path
+     * @return
+     */
     private static String quote(String path) {
         if (path.contains(" ")) {
             path = "\"" + path + "\"";
@@ -84,18 +111,50 @@ class KakaduProcessor implements Processor {
     }
 
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
-        Set<OutputFormat> formats = new HashSet<>();
+        Set<OutputFormat> outputFormats = new HashSet<>();
         if (sourceFormat == SourceFormat.JP2) {
-            formats.add(OutputFormat.JPG);
-            formats.add(OutputFormat.TIF);
+            outputFormats.addAll(ProcessorUtil.imageIoOutputFormats());
         }
-        return formats; // TODO: any more formats?
+        return outputFormats;
     }
 
+    /**
+     * Gets the size of the given image by parsing the XML output of
+     * kdu_jp2info.
+     *
+     * @param inputStream Source image
+     * @param sourceFormat Format of the source image
+     * @return
+     * @throws ProcessorException
+     */
     public Dimension getSize(ImageInputStream inputStream,
-                             SourceFormat sourceFormat) throws Exception {
-        // TODO: write this
-        return new Dimension(4096, 4096);
+                             SourceFormat sourceFormat)
+            throws ProcessorException {
+        try {
+            // TODO: use the inputstream
+            List<String> command = new ArrayList<>();
+            command.add(BINARIES_PATH + File.separator + "kdu_jp2info");
+            command.add("-i");
+            //command.add(quote(new File(STDIN).getAbsolutePath()));
+            command.add("/Volumes/Data/alexd/Sites/iiif-test/orion-hubble-4096.jp2");
+
+            ProcessBuilder pb = new ProcessBuilder(command);
+            pb.redirectErrorStream(true);
+            Process process = pb.start();
+
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document doc = db.parse(process.getInputStream());
+
+            XPath xpath = XPathFactory.newInstance().newXPath();
+            XPathExpression expr = xpath.compile("//codestream/width");
+            int width = (int) Math.round((double) expr.evaluate(doc, XPathConstants.NUMBER));
+            expr = xpath.compile("//codestream/height");
+            int height = (int) Math.round((double) expr.evaluate(doc, XPathConstants.NUMBER));
+            return new Dimension(width, height);
+        } catch (Exception e) {
+            throw new ProcessorException(e.getMessage(), e);
+        }
     }
 
     public Set<ProcessorFeature> getSupportedFeatures(SourceFormat sourceFormat) {
@@ -108,86 +167,79 @@ class KakaduProcessor implements Processor {
 
     public void process(Parameters params, SourceFormat sourceFormat,
                         ImageInputStream inputStream, OutputStream outputStream)
-            throws Exception {
-        final Dimension fullSize = getSize(inputStream, sourceFormat);
-        final String command = getKduCommand(params, fullSize, STDIN, STDOUT);
-        System.out.println(command);
-        final Process process = Runtime.getRuntime().exec(command, envParams,
-                new File(KDU_EXPAND).getParentFile());
-        final ByteArrayOutputStream stdout = new ByteArrayOutputStream();
-        final ByteArrayOutputStream stderr = new ByteArrayOutputStream();
-        final ExecuteStreamHandler streamHandler = new PumpStreamHandler(stdout,
-                //stderr, new ImageInputStreamWrapper(inputStream));
-                stderr, new FileInputStream(new File("/Volumes/Data/alexd/Sites/iiif-test/orion-hubble-4096.jp2")));
+            throws ProcessorException {
         try {
-            streamHandler.setProcessInputStream(process.getOutputStream());
-            streamHandler.setProcessOutputStream(process.getInputStream());
-            streamHandler.setProcessErrorStream(process.getErrorStream());
-        } catch (IOException e) {
-            process.getInputStream().close();
-            process.getOutputStream().close();
-            process.getErrorStream().close();
-            process.destroy();
-            throw e;
-        }
+            final Dimension fullSize = getSize(inputStream, sourceFormat);
+            final ProcessBuilder pb = getProcessBuilder(params, fullSize);
+            final Process process = pb.start();
 
-        streamHandler.start();
+            final ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
+            final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
 
-        try {
-            process.waitFor();
-            final String error = stderr.toString();
-            if (error != null && error.length() > 0) {
-                throw new Exception(error);
+            DataInputStream stdoutData = new DataInputStream(process.getInputStream());
+            DataInputStream errorData = new DataInputStream(process.getErrorStream());
+            new Thread(new StreamCopier(stdoutData, outputBucket)).start();
+            new Thread(new StreamCopier(errorData, errorBucket)).start();
+            //IOUtils.copy(stdoutData, outputBucket);
+            //IOUtils.copy(errorData, errorBucket);
+
+            try {
+                process.waitFor();
+                final String errorStr = errorBucket.toString();
+                if (errorStr != null && errorStr.length() > 0) {
+                    throw new ProcessorException(errorStr);
+                }
+                final ByteArrayInputStream bais = new ByteArrayInputStream(
+                        outputBucket.toByteArray());
+                BufferedImage image = new PNMReader().open(bais);
+                image = ProcessorUtil.scaleImageWithG2d(image, params.getSize());
+                image = ProcessorUtil.rotateImage(image, params.getRotation());
+                image = ProcessorUtil.filterImage(image, params.getQuality());
+                ProcessorUtil.outputImage(image, params.getOutputFormat(),
+                        outputStream);
+            } finally {
+                process.getInputStream().close();
+                process.getOutputStream().close();
+                process.getErrorStream().close();
+                process.destroy();
             }
-            final ByteArrayInputStream bais = new ByteArrayInputStream(stdout.toByteArray());
-            //BufferedImage image = new PNMReader().open(bais);
-            //ImageIO.write(image, params.getOutputFormat().getExtension(),
-            //        outputStream);
-            streamHandler.stop();
-        } catch (InterruptedException|ThreadDeath e) {
-            logger.error(e.getMessage(), e);
-            process.destroy();
-            throw e;
-        } finally {
-            process.getInputStream().close();
-            //process.getOutputStream().close();
-            process.getErrorStream().close();
-            process.destroy();
+        } catch (IOException | InterruptedException e) {
+            throw new ProcessorException(e.getMessage(), e);
         }
     }
 
     /**
-     * Gets a kdu_expand command corresponding to the given parameters.
+     * Gets a ProcessBuilder corresponding to the given parameters.
      *
      * @param params
-     * @param input absolute file path of JPEG 2000 image file.
-     * @param output absolute file path of PGM output image
+     * @param fullSize The full size of the source image
      * @return Command string
      */
-    private String getKduCommand(Parameters params, Dimension fullSize,
-                                 String input, String output) {
-        StringBuilder command = new StringBuilder(KDU_EXPAND);
-        if (!input.equals(STDIN)) { // TODO: boolean is inverted
-            command.append(" -no_seek");
-        }
-        //command.append(" -quiet ");
-        command.append(" -i ");
-        command.append(quote(new File(input).getAbsolutePath()));
-        //command.append("/Users/alexd/Sites/iiif-test/orion-hubble-4096.jp2");
-        command.append(" -o ");
-        command.append("/Users/alexd/Desktop/out.tif");
-        //command.append(quote(new File(output).getAbsolutePath()));
+    private ProcessBuilder getProcessBuilder(Parameters params,
+                                             Dimension fullSize) {
+        final List<String> command = new ArrayList<>();
+        command.add(StringUtils.stripEnd(BINARIES_PATH, "/") + File.separator +
+                "kdu_expand");
+        command.add("-quiet");
+        command.add("-i");
+        //command.add(quote(new File(STDIN).getAbsolutePath())); // TODO: fix
+        command.add("/Volumes/Data/alexd/Sites/iiif-test/orion-hubble-4096.jp2");
 
-        Region region = params.getRegion();
+        final Region region = params.getRegion();
         if (!region.isFull()) {
-            double x = region.getX() / fullSize.width;
-            double y = region.getY() / fullSize.height;
-            double width = region.getWidth() / fullSize.width;
-            double height = region.getHeight() / fullSize.height;
-            command.append(" -region ").append(
-                    String.format("\"{%f,%f},{%f,%f}\"", y, x, height, width));
+            final double x = region.getX() / fullSize.width;
+            final double y = region.getY() / fullSize.height;
+            final double width = region.getWidth() / fullSize.width;
+            final double height = region.getHeight() / fullSize.height;
+            command.add("-region");
+            command.add(String.format("{%.7f,%.7f},{%.7f,%.7f}",
+                    y, x, height, width));
         }
-        return command.toString();
+
+        command.add("-o");
+        command.add(quote(new File(STDOUT).getAbsolutePath()));
+
+        return new ProcessBuilder(command);
     }
 
 }
