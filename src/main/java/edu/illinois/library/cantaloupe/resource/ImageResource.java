@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -11,20 +12,24 @@ import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.processor.FileProcessor;
+import edu.illinois.library.cantaloupe.processor.StreamProcessor;
+import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.resolver.FileResolver;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
+import edu.illinois.library.cantaloupe.resolver.StreamResolver;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
 import org.restlet.representation.OutputRepresentation;
-import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
 import org.slf4j.Logger;
@@ -49,6 +54,7 @@ public class ImageResource extends AbstractResource {
      */
     private class ImageRepresentation extends OutputRepresentation {
 
+        File file;
         ImageInputStream inputStream;
         Parameters params;
         SourceFormat sourceFormat;
@@ -67,6 +73,23 @@ public class ImageResource extends AbstractResource {
                                    ImageInputStream inputStream) {
             super(mediaType);
             this.inputStream = inputStream;
+            this.params = params;
+            this.sourceFormat = sourceFormat;
+        }
+
+        /**
+         * Constructor for images from Files.
+         *
+         * @param mediaType
+         * @param sourceFormat
+         * @param params
+         * @param file
+         */
+        public ImageRepresentation(MediaType mediaType,
+                                   SourceFormat sourceFormat,
+                                   Parameters params, File file) {
+            super(mediaType);
+            this.file = file;
             this.params = params;
             this.sourceFormat = sourceFormat;
         }
@@ -101,8 +124,13 @@ public class ImageResource extends AbstractResource {
                 Processor proc = ProcessorFactory.
                         getProcessor(this.sourceFormat);
                 long msec = System.currentTimeMillis();
-                proc.process(this.params, this.sourceFormat,
-                        this.inputStream, outputStream);
+                if (proc instanceof FileProcessor) {
+                    ((FileProcessor) proc).process(this.params,
+                            this.sourceFormat, this.file, outputStream);
+                } else if (proc instanceof StreamProcessor) {
+                    ((StreamProcessor) proc).process(this.params,
+                            this.sourceFormat, this.inputStream, outputStream);
+                }
                 logger.debug("{} processed in {} msec",
                         proc.getClass().getSimpleName(),
                         System.currentTimeMillis() - msec);
@@ -141,9 +169,15 @@ public class ImageResource extends AbstractResource {
         getResponseCacheDirectives().addAll(CACHE_DIRECTIVES);
     }
 
+    /**
+     * Responds to IIIF Image requests.
+     *
+     * @return ImageRepresentation
+     * @throws Exception
+     */
     @Get
-    public Representation doGet() throws Exception {
-        // 1. Assemble the URI parameters into a Parameters object
+    public ImageRepresentation doGet() throws Exception {
+        // Assemble the URI parameters into a Parameters object
         Map<String,Object> attrs = this.getRequest().getAttributes();
         String identifier = Reference.decode((String) attrs.get("identifier"));
         String format = (String) attrs.get("format");
@@ -153,16 +187,33 @@ public class ImageResource extends AbstractResource {
         String quality = (String) attrs.get("quality");
         Parameters params = new Parameters(identifier, region, size, rotation,
                 quality, format);
-        // 2. Get a reference to the source image (this will also cause an
+        // Get a reference to the source image (this will also cause an
         // exception if not found)
         Resolver resolver = ResolverFactory.getResolver();
-        ImageInputStream inputStream = resolver.getInputStream(identifier);
-        // 3. Determine the format of the source image
+        // Determine the format of the source image
         SourceFormat sourceFormat = resolver.getSourceFormat(identifier);
-        // 4. Obtain an instance of the processor assigned to that format in
+        // Obtain an instance of the processor assigned to that format in
         // the config file
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
-        // 5. Find out whether the processor supports that source format by
+
+        File inputFile = null;
+        ImageInputStream inputStream = null;
+        if (resolver instanceof FileResolver) {
+            inputFile = ((FileResolver)resolver).getFile(identifier);
+            inputStream = ((StreamResolver)resolver).
+                    getInputStream(identifier);
+        } else {
+            if (!(proc instanceof StreamProcessor)) {
+                // StreamProcessors require StreamResolvers
+                throw new UnsupportedSourceFormatException(
+                        String.format("%s is not compatible with %s",
+                                proc.getClass().getSimpleName(),
+                                resolver.getClass().getSimpleName()));
+            }
+            inputStream = ((StreamResolver)resolver).
+                    getInputStream(identifier);
+        }
+        // Find out whether the processor supports that source format by
         // asking it whether it offers any output formats for it
         Set availableOutputFormats = proc.getAvailableOutputFormats(sourceFormat);
         if (!availableOutputFormats.contains(params.getOutputFormat())) {
@@ -181,6 +232,11 @@ public class ImageResource extends AbstractResource {
 
         MediaType mediaType = new MediaType(
                 OutputFormat.valueOf(format.toUpperCase()).getMediaType());
+        if (resolver instanceof StreamResolver &&
+                !(proc instanceof StreamProcessor)) {
+            return new ImageRepresentation(mediaType, sourceFormat, params,
+                    inputFile);
+        }
         return new ImageRepresentation(mediaType, sourceFormat, params,
                 inputStream);
     }

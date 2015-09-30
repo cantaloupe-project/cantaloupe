@@ -18,7 +18,7 @@ Home: [https://github.com/medusa-project/cantaloupe]
 
 # Requirements
 
-The only hard requirement is JRE 7+. Particular processors may have additional
+The only hard requirement is Java 7+. Particular processors may have additional
 requirements; see the Processors section below.
 
 # Configuration
@@ -39,9 +39,10 @@ it the following contents, modifying as desired:
 
     # Image processors to use for various source formats. Available values are
     # `ImageIoProcessor`, `GraphicsMagickProcessor`, `ImageMagickProcessor`,
-    # and `JaiProcessor`.
+    # `KakaduProcessor`, and `JaiProcessor`.
     # These extension-specific definitions are optional.
     #processor.jpg = ImageMagickProcessor
+    #processor.jp2 = KakaduProcessor
     #processor.tif = GraphicsMagickProcessor
     # Fall back to this processor for any formats not assigned above.
     processor.fallback = ImageIoProcessor
@@ -51,9 +52,16 @@ it the following contents, modifying as desired:
 
     # Optional; overrides the PATH
     #ImageMagickProcessor.path_to_binaries = /usr/local/bin
-
+    
     # JPEG output quality. Should be a number between 0-1 ending in "f"
     ImageIoProcessor.jpg.quality = 0.7f
+
+    # Absolute path of the folder in which the Kakadu binaries reside.
+    KakaduProcessor.path_to_binaries = /usr/local/bin
+    # Due to a quirk of kdu_expand, you will need to create a symbolic link to
+    # /dev/stdout somewhere called `stdout.ppm`, like this:
+    # `ln -s /dev/stdout /path/to/stdout.ppm`
+    KakaduProcessor.path_to_stdout_symlink = /some/path/to/stdout.ppm
 
     # The resolver that translates the identifier in the URL to an image source.
     # Available values are `FilesystemResolver` and `HttpResolver`.
@@ -82,8 +90,8 @@ it the following contents, modifying as desired:
     HttpResolver.username =
     HttpResolver.password =
 
-    # Customize the response Cache-Control header. This header may be
-    # overridden by proxies. Comment out to disable the Cache-Control header.
+    # Customize the response Cache-Control header. (This may be overridden by
+    # proxies.) Comment out to disable the Cache-Control header.
     cache.client.max_age = 2592000
     cache.client.shared_max_age =
     cache.client.public = true
@@ -124,8 +132,20 @@ To see the image itself, try:
 
 Upgrading is usually just a matter of downloading a new version and running it.
 Sometimes there are backwards-incompatible changes to the configuration file
-structure, though, so check the change log (near the bottom) to see if there is
-anything extra to do.
+structure, though, so check the following upgrade steps.
+
+## 1.0-beta2 to 1.0-beta3
+
+* Rename the `cache` key in the configuration to `cache.server`.
+* Add the `cache.client.*` keys from the sample configuration.
+* Add the `http.auth.basic*` keys from the sample configuration.
+* Add the `KakaduProcessor` keys from the sample configuration.
+
+## 1.0-beta1 to 1.0-beta2
+
+* Add the `cache` and `FilesystemCache.*` keys from the sample configuration.
+* Add the `FilesystemResolver.path_separator` and `HttpResolver.path_separator`
+  keys from the sample configuration.
 
 # Technical Overview
 
@@ -139,15 +159,13 @@ Cantaloupe features a configurable processing pipeline based on:
 ## Resolvers
 
 Resolvers locate a source image based on the identifier in an IIIF URL. In
-Java-speak, they take in an identifier and return an `ImageInputStream` object
-from which the corresponding image can be read by a `Processor`.
+Java-speak, they take in an identifier and return an `ImageInputStream` and/or
+`File` object from which the corresponding image can be read by a `Processor`.
 
 ### FilesystemResolver
 
 FilesystemResolver maps an identifier from an IIIF URL to a filesystem path,
-for retrieving images on a local or attached filesystem. This is theoretically
-the fastest resolver, as it returns a `FileImageInputStream`, which supports
-arbitrary seeking.
+for retrieving images on a local or attached filesystem.
 
 For images with extensions that are missing or unrecognized, this resolver will
 check the "magic number" to determine type, which will add some overhead. It
@@ -225,7 +243,11 @@ are:
 * ImageIoProcessor
 * GraphicsMagickProcessor
 * ImageMagickProcessor
+* KakaduProcessor
 * JaiProcessor (experimental)
+
+All processors can work with FilesystemResolver, and all but KakaduProcessor
+can work with HttpResolver.
 
 In terms of format support, a distinction is made between the concepts of
 source format and output format, and furthermore, available output formats may
@@ -248,7 +270,9 @@ about image formats, and therefore the list of formats supported by this
 processor varies depending on the codec JARs available in the classpath.
 
 ImageIoProcessor buffers entire source images in RAM, and is therefore
-memory-intensive. Large amounts of RAM and fast storage help.
+memory-intensive. Large amounts of RAM and fast storage help. To avoid
+OutOfMemoryErrors, it's a good idea to allow for a very large heap size. (To
+allow 16GB, add the `-Xmx16g` flag to the launch command.)
 
 ### GraphicsMagickProcessor
 
@@ -262,9 +286,6 @@ installed; see [Supported Formats](http://www.graphicsmagick.org/formats.html)).
 
 GraphicsMagickProcessor is a good fallback processor, as it supports a wide
 range of source formats and is generally faster than ImageMagickProcessor.
-
-GraphicsMagickProcessor buffers entire source images in RAM, and is therefore
-memory-intensive. Large amounts of RAM and fast storage help.
 
 *Note: due to a quirk in im4java, ImageMagick has to be installed for this
 processor to work. (The `identify` command is used to get image dimensions.)
@@ -281,19 +302,33 @@ transforms and all IIIF output formats, assuming the necessary delegates are
 installed. It also supports a wide array of source formats.
 
 ImageMagick is not known for being particularly fast or efficient, but it is
-quite usable. Large amounts of RAM and fast storage help. If you can find or
-compile a "Q8" version of ImageMagick, its memory use will be halved.
+generally quite usable. If you can find or compile a "Q8" version of
+ImageMagick, its memory use will be halved.
+
+### KakaduProcessor
+
+KakaduProcessor uses the `kdu_expand` and `kdu_jp2info` binaries -- part of the
+proprietary [Kakadu](http://www.kakadusoftware.com) toolkit -- to efficiently
+process JPEG2000 source images. This processor performs well with even very
+large JP2s.
+
+Although it does support some other operations, `kdu_expand` is mainly a
+decompression tool, and Cantaloupe uses only this aspect of it, doing the rest
+of the IIIF operations (scaling, rotation, etc.) using the Java 2D API.
+
+Kakadu is not free and the binaries are not included with Cantaloupe. It is
+your responsibility to obtain them by legal means and to comply with the terms
+of use.
 
 ### JaiProcessor
 
 Java Advanced Imaging (JAI) is a powerful low-level imaging framework
-developed by Sun Microsystems until around 2006. JaiProcessor uses an updated
-fork called [JAI-EXT](https://github.com/geosolutions-it/jai-ext).
+developed by Sun until around 2006. JaiProcessor uses an updated fork called
+[JAI-EXT](https://github.com/geosolutions-it/jai-ext).
 
 JaiProcessor's main theoretical advantage is the ability to exploit JAI's
 internal tiling engine, which makes it capable of region-of-interest decoding
-with some formats. Unfortunately, JAI is old and buggy and the defects offset
-the advantages.
+with some formats. Unfortunately, JAI is old and buggy.
 
 JaiProcessor can read and write the same formats as ImageIoProcessor.
 
@@ -303,34 +338,35 @@ CTRL+C to prevent your CPU from melting.*
 ### Which Processor Should I Use?
 
 1. Don't use JaiProcessor
-2. For each of the source formats you would like to serve, it's a good idea to
-experiment with different processors, comparing their performance, resource
-usage, and output quality. Benchmark results, if you can contribute them, are
-welcome.
+2. Use KakaduProcessor for JP2s
+3. For all of the rest of the source formats you would like to serve, it's a
+good idea to experiment with different processors, comparing their performance,
+resource usage, and output quality. Benchmark results, if you can contribute
+them, are welcome.
 
-### Ideas for Future Processors
+## Resolver-Processor Compatibility
 
-* KakaduProcessor (using `kdu_expand`)
-* [VipsProcessor](http://www.vips.ecs.soton.ac.uk/index.php?title=VIPS) using
-  JNI
-* [GdalProcessor](http://gdal.org) (see also
-  [ImageIO-Ext](https://github.com/geosolutions-it/imageio-ext))
+| | FilesystemResolver | HttpResolver |
+| --- | --- | --- |
+|GraphicsMagickProcessor | Yes | Yes |
+|ImageIoProcessor | Yes | Yes |
+|ImageMagickProcessor | Yes | Yes |
+|JaiProcessor | Yes | Yes |
+|KakaduProcessor | Yes | NO |
 
 ## Caches
 
 There is currently one cache, FilesystemCache, which caches generated images
-into a filesystem directory. The location of this directory is configurable,
-as is the "time-to-live" of the cached tiles. Expired images are replaced the
-next time they are requested.
+and (parts of) information requests into a filesystem directory. The location
+of this directory is configurable, as is the "time-to-live" of the cache files.
+Expired files are replaced the next time they are requested.
 
 Cantaloupe does not cache entire information response representations -- only
 image dimensions, which are the only expensive part to generate. This means it
-is possible to change variables that might affect the contents of the
+is possible to change other variables that might affect the contents of the
 representation (like processors) without having to flush the cache.
 
 ### Flushing the Cache
-
-Of course, `rm *` works, but there are other options too:
 
 #### Expired Images Only
 
@@ -359,12 +395,6 @@ The HTTP/1.1 `Cache-Control` response header is configurable via the
 (Feel free to add in your own notes, and send a pull request. Controlled
 benchmarks are also welcome.)
 
-## BMP
-
-Probably no one is going to care about this source format. Too bad, because it
-is blazing fast with ImageIoProcessor. Now you can serve your Microsoft Paint
-drawings faster than ever before.
-
 ## JPEG
 
 It should be possible to use TurboJPEG (high-level API over [libjpeg-turbo]
@@ -376,43 +406,44 @@ configuration option). (The author has not tried this.)
 
 ## JPEG2000
 
+KakaduProcessor is, by far, the most efficient processor for this format.
+
 GraphicsMagick can read/write JPEG2000 using JasPer, and ImageMagick using
 OpenJPEG. Both of these are extremely slow.
-
-Cantaloupe bundles the GeoTools [JP2K Plugin]
-(http://docs.geotools.org/latest/userguide/library/coverage/jp2k.html), which
-ought to be able to interface with Kakadu. The author hasn't tested this yet.
 
 Years ago, Sun published [platform-native JAI JPEG2000 accelerator JARs]
 (http://download.java.net/media/jai/builds/release/1_1_3/INSTALL.html) for
 Windows, Linux, and Solaris, which improved performance from dreadful to merely
 poor. It is unknown whether these are still available or whether they would
-still work on modern platforms.
+still work on modern platforms. If so, they ought to work with ImageIoProcessor.
 
 ## TIFF
 
 GraphicsMagickProcessor and ImageMagickProcessor can both handle TIFF if the
 necessary delegate or plugin is installed. (See the landing page, at `/iiif`.)
 
-TIFF is disabled in ImageIoProcessor because it is too buggy.
+TIFF is currently disabled in ImageIoProcessor because it is too buggy.
 
 # Custom Development
 
 ## Custom Resolvers
 
-A custom resolver needs to implement the `e.i.l.cantaloupe.resolver.Resolver`
-interface. Then, to use it, set `resolver` in your properties file to its name.
+A custom resolver needs to implement one or both of the
+`e.i.l.cantaloupe.resolver.FileResolver` or
+`e.i.l.cantaloupe.resolver.StreamResolver`
+interfaces. Then, to use it, set `resolver` in your properties file to its name.
 
 See one of the existing resolvers for examples.
 
 ## Custom Image Processors
 
-Custom processors can be added by implementing the
-`e.i.l.cantaloupe.processor.Processor` interface. See the interface
+Custom processors can be added by implementing one or both of the
+`e.i.l.cantaloupe.processor.FileProcessor` and
+`e.i.l.cantaloupe.processor.StreamProcessor`interfaces. See the interface
 documentation for details and the existing implementations for examples.
 
-Another option would be to add an ImageIO format plugin instead of a custom
-processor, and then use ImageIoProcessor or JaiProcessor with it.
+Another option might be to add an ImageIO format plugin instead of a custom
+processor, and then use ImageIoProcessor with it.
 
 ## Custom Caches
 
@@ -438,17 +469,14 @@ be in the form of `NameOfMyClass.whatever`. They can then be accessed via
 
 ## 1.0-beta3
 
-* `cache` key in the configuration file renamed to `cache.server`.
-* Added client-side caching. To enable, add the `cache.client.*` keys from the
-  sample configuration above.
-* Added HTTP Basic authentication. To enable, add the `http.auth.basic*` keys
-  from the sample configuration above.
+* Added client-side caching.
+* Added HTTP Basic authentication.
+* Added KakaduProcessor.
 * Improved the thread-safety of FilesystemCache.
 
 ## 1.0-beta2
 
-* Added optional server-side caching. To enable, add the `cache` and
-  `FilesystemCache.*` keys from the sample configuration above.
+* Added optional server-side caching.
 * Added configurable path separators in FilesystemResolver and HttpResolver.
 * The application version is displayed on the landing page and in a startup log
   message.

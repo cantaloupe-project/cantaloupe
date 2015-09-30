@@ -45,7 +45,7 @@ import java.util.Set;
 /**
  * Processor using the Java Advanced Imaging (JAI) framework.
  */
-class JaiProcessor implements Processor {
+class JaiProcessor implements StreamProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(JaiProcessor.class);
 
