@@ -72,6 +72,10 @@ public class KakaduProcessorTest extends ProcessorTest {
         expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH);
         expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
         assertEquals(expectedFeatures,
+                instance.getSupportedFeatures(SourceFormat.JP2));
+
+        expectedFeatures = new HashSet<>();
+        assertEquals(expectedFeatures,
                 instance.getSupportedFeatures(SourceFormat.UNKNOWN));
     }
 
@@ -81,6 +85,10 @@ public class KakaduProcessorTest extends ProcessorTest {
         expectedQualities.add(Quality.COLOR);
         expectedQualities.add(Quality.DEFAULT);
         expectedQualities.add(Quality.GRAY);
+        assertEquals(expectedQualities,
+                instance.getSupportedQualities(SourceFormat.JP2));
+
+        expectedQualities = new HashSet<>();
         assertEquals(expectedQualities,
                 instance.getSupportedQualities(SourceFormat.UNKNOWN));
     }

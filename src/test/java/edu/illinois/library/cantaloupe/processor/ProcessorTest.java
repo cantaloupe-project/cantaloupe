@@ -28,6 +28,15 @@ public abstract class ProcessorTest extends TestCase {
 
     protected OutputStream outputStream = new NullOutputStream();
 
+    protected SourceFormat getAnySupportedSourceFormat(Processor processor) {
+        for (SourceFormat sourceFormat : SourceFormat.values()) {
+            if (processor.getAvailableOutputFormats(sourceFormat).size() > 0) {
+                return sourceFormat;
+            }
+        }
+        return null;
+    }
+
     protected File getFixture(String filename) throws IOException {
         File directory = new File(".");
         String cwd = directory.getCanonicalPath();

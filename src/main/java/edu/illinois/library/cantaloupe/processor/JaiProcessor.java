@@ -135,12 +135,21 @@ class JaiProcessor implements StreamProcessor {
         return null;
     }
 
-    public Set<ProcessorFeature> getSupportedFeatures(SourceFormat sourceFormat) {
-        return SUPPORTED_FEATURES;
+    public Set<ProcessorFeature> getSupportedFeatures(
+            final SourceFormat sourceFormat) {
+        Set<ProcessorFeature> features = new HashSet<>();
+        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+            features.addAll(SUPPORTED_FEATURES);
+        }
+        return features;
     }
 
-    public Set<Quality> getSupportedQualities(SourceFormat sourceFormat) {
-        return SUPPORTED_QUALITIES;
+    public Set<Quality> getSupportedQualities(final SourceFormat sourceFormat) {
+        Set<Quality> qualities = new HashSet<>();
+        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+            qualities.addAll(SUPPORTED_QUALITIES);
+        }
+        return qualities;
     }
 
     public void process(Parameters params, SourceFormat sourceFormat,

@@ -76,6 +76,7 @@ class KakaduProcessor implements FileProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(KakaduProcessor.class);
 
+    private static final short MAX_REDUCTION_FACTOR = 5;
     private static final Set<Quality> SUPPORTED_QUALITIES = new HashSet<>();
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
@@ -180,12 +181,21 @@ class KakaduProcessor implements FileProcessor {
         }
     }
 
-    public Set<ProcessorFeature> getSupportedFeatures(SourceFormat sourceFormat) {
-        return SUPPORTED_FEATURES;
+    public Set<ProcessorFeature> getSupportedFeatures(
+            final SourceFormat sourceFormat) {
+        Set<ProcessorFeature> features = new HashSet<>();
+        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+            features.addAll(SUPPORTED_FEATURES);
+        }
+        return features;
     }
 
-    public Set<Quality> getSupportedQualities(SourceFormat sourceFormat) {
-        return SUPPORTED_QUALITIES;
+    public Set<Quality> getSupportedQualities(final SourceFormat sourceFormat) {
+        Set<Quality> qualities = new HashSet<>();
+        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+            qualities.addAll(SUPPORTED_QUALITIES);
+        }
+        return qualities;
     }
 
     public void process(final Parameters params, final SourceFormat sourceFormat,
@@ -317,10 +327,9 @@ class KakaduProcessor implements FileProcessor {
      * @return
      */
     public short getReductionFactor(double reqPercent) {
-        final short maxFactor = 5;
         short factor = 0;
         double nextPct = 0.5f;
-        while (reqPercent <= nextPct && factor < maxFactor) {
+        while (reqPercent <= nextPct && factor < MAX_REDUCTION_FACTOR) {
             nextPct /= 2.0f;
             factor++;
         }
