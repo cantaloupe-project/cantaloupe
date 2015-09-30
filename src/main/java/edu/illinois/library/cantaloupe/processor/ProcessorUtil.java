@@ -28,8 +28,8 @@ import java.util.Set;
  */
 class ProcessorUtil {
 
-    public static BufferedImage cropImage(BufferedImage inputImage,
-                                          Region region) {
+    public static BufferedImage cropImage(final BufferedImage inputImage,
+                                          final Region region) {
         BufferedImage croppedImage;
         if (region.isFull()) {
             croppedImage = inputImage;
@@ -57,13 +57,12 @@ class ProcessorUtil {
             height = (y + requestedHeight > inputImage.getHeight()) ?
                     inputImage.getHeight() - y : requestedHeight;
             croppedImage = inputImage.getSubimage(x, y, width, height);
-            inputImage.flush();
         }
         return croppedImage;
     }
 
-    public static BufferedImage filterImage(BufferedImage inputImage,
-                                            Quality quality) {
+    public static BufferedImage filterImage(final BufferedImage inputImage,
+                                            final Quality quality) {
         BufferedImage filteredImage = inputImage;
         if (quality != Quality.COLOR && quality != Quality.DEFAULT) {
             switch (quality) {
@@ -80,7 +79,6 @@ class ProcessorUtil {
             }
             Graphics2D g2d = filteredImage.createGraphics();
             g2d.drawImage(inputImage, 0, 0, null);
-            inputImage.flush();
         }
         return filteredImage;
     }
@@ -106,42 +104,38 @@ class ProcessorUtil {
      * @param outputStream Stream to which to write the image
      * @throws IOException
      */
-    public static void outputImage(BufferedImage image,
-                                   OutputFormat outputFormat,
-                                   OutputStream outputStream)
+    public static void outputImage(final BufferedImage image,
+                                   final OutputFormat outputFormat,
+                                   final OutputStream outputStream)
             throws IOException {
-        try {
-            switch (outputFormat) {
-                case JPG:
-                    // TurboJpegImageWriter is used automatically if libjpeg-turbo
-                    // is available in java.library.path:
-                    // https://github.com/geosolutions-it/imageio-ext/wiki/TurboJPEG-plugin
-                    float quality = Application.getConfiguration().
-                            getFloat("ImageIoProcessor.jpg.quality", 0.7f);
-                    Iterator iter = ImageIO.getImageWritersByFormatName("jpeg");
-                    ImageWriter writer = (ImageWriter) iter.next();
-                    ImageWriteParam param = writer.getDefaultWriteParam();
-                    param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                    param.setCompressionQuality(quality);
-                    param.setCompressionType("JPEG");
-                    ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
-                    writer.setOutput(os);
-                    IIOImage iioImage = new IIOImage(image, null, null);
-                    writer.write(null, iioImage, param);
-                    writer.dispose();
-                    break;
-                default:
-                    ImageIO.write(image, outputFormat.getExtension(),
-                            outputStream);
-                    break;
-            }
-        } finally {
-            image.flush();
+        switch (outputFormat) {
+            case JPG:
+                // TurboJpegImageWriter is used automatically if libjpeg-turbo
+                // is available in java.library.path:
+                // https://github.com/geosolutions-it/imageio-ext/wiki/TurboJPEG-plugin
+                float quality = Application.getConfiguration().
+                        getFloat("ImageIoProcessor.jpg.quality", 0.7f);
+                Iterator iter = ImageIO.getImageWritersByFormatName("jpeg");
+                ImageWriter writer = (ImageWriter) iter.next();
+                ImageWriteParam param = writer.getDefaultWriteParam();
+                param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                param.setCompressionQuality(quality);
+                param.setCompressionType("JPEG");
+                ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
+                writer.setOutput(os);
+                IIOImage iioImage = new IIOImage(image, null, null);
+                writer.write(null, iioImage, param);
+                writer.dispose();
+                break;
+            default:
+                ImageIO.write(image, outputFormat.getExtension(),
+                        outputStream);
+                break;
         }
     }
 
-    public static BufferedImage rotateImage(BufferedImage inputImage,
-                                            Rotation rotation) {
+    public static BufferedImage rotateImage(final BufferedImage inputImage,
+                                            final Rotation rotation) {
         // do mirroring
         BufferedImage mirroredImage = inputImage;
         if (rotation.shouldMirror()) {
@@ -181,9 +175,7 @@ class ProcessorUtil {
                     RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             g2d.setRenderingHints(hints);
             g2d.drawImage(mirroredImage, tx, null);
-            mirroredImage.flush();
         }
-        inputImage.flush();
         return rotatedImage;
     }
 
@@ -195,7 +187,7 @@ class ProcessorUtil {
      * @return
      */
     public static BufferedImage scaleImageWithAffineTransform(
-            BufferedImage inputImage, Size size) {
+            final BufferedImage inputImage, final Size size) {
         BufferedImage scaledImage;
         if (size.getScaleMode() == Size.ScaleMode.FULL) {
             scaledImage = inputImage;
@@ -229,7 +221,6 @@ class ProcessorUtil {
             AffineTransformOp scaleOp = new AffineTransformOp(at,
                     AffineTransformOp.TYPE_BILINEAR);
             scaledImage = scaleOp.filter(inputImage, scaledImage);
-            inputImage.flush();
         }
         return scaledImage;
     }
@@ -241,8 +232,8 @@ class ProcessorUtil {
      * @param size
      * @return
      */
-    public static BufferedImage scaleImageWithG2d(BufferedImage inputImage,
-                                            Size size) {
+    public static BufferedImage scaleImageWithG2d(final BufferedImage inputImage,
+                                                  final Size size) {
         BufferedImage scaledImage;
         if (size.getScaleMode() == Size.ScaleMode.FULL) {
             scaledImage = inputImage;
@@ -283,7 +274,6 @@ class ProcessorUtil {
             g2d.setRenderingHints(hints);
             g2d.drawImage(inputImage, 0, 0, width, height, null);
             g2d.dispose();
-            inputImage.flush();
         }
         return scaledImage;
     }
