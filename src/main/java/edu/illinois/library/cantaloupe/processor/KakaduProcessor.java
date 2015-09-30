@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.request.Region;
 
+import edu.illinois.library.cantaloupe.request.Size;
 import info.freelibrary.djatoka.io.PNMImage;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +23,8 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -43,6 +46,13 @@ import java.util.Set;
  *     V7.7</a>
  */
 class KakaduProcessor implements FileProcessor {
+
+    /**
+     * Used to return a reduction factor from getProcessBuilder() by reference.
+     */
+    private class ReductionFactor {
+        public short factor = 0;
+    }
 
     private class StreamCopier implements Runnable {
 
@@ -178,8 +188,8 @@ class KakaduProcessor implements FileProcessor {
         return SUPPORTED_QUALITIES;
     }
 
-    public void process(Parameters params, SourceFormat sourceFormat,
-                        File inputFile, OutputStream outputStream)
+    public void process(final Parameters params, final SourceFormat sourceFormat,
+                        final File inputFile, final OutputStream outputStream)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
@@ -190,13 +200,14 @@ class KakaduProcessor implements FileProcessor {
         }
         try {
             final Dimension fullSize = getSize(inputFile, sourceFormat);
+            final ReductionFactor reduction = new ReductionFactor();
             final ProcessBuilder pb = getProcessBuilder(inputFile, params,
-                    fullSize);
+                    fullSize, reduction);
+            //logger.debug("Reduction factor: {}", reduction.factor);
             final Process process = pb.start();
 
             final ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
             final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
-
             DataInputStream stdoutData = new DataInputStream(process.getInputStream());
             DataInputStream errorData = new DataInputStream(process.getErrorStream());
             new Thread(new StreamCopier(stdoutData, outputBucket)).start();
@@ -213,7 +224,7 @@ class KakaduProcessor implements FileProcessor {
                 final ByteArrayInputStream bais = new ByteArrayInputStream(
                         outputBucket.toByteArray());
                 BufferedImage image = new PNMImage(bais).getBufferedImage();
-                image = ProcessorUtil.scaleImageWithG2d(image, params.getSize());
+                image = scaleImageWithG2d(image, params.getSize(), reduction);
                 image = ProcessorUtil.rotateImage(image, params.getRotation());
                 image = ProcessorUtil.filterImage(image, params.getQuality());
                 ProcessorUtil.outputImage(image, params.getOutputFormat(),
@@ -236,10 +247,12 @@ class KakaduProcessor implements FileProcessor {
      * @param inputFile
      * @param params
      * @param fullSize The full size of the source image
+     * @param reduction Modified by reference
      * @return Command string
      */
     private ProcessBuilder getProcessBuilder(File inputFile, Parameters params,
-                                             Dimension fullSize) {
+                                             Dimension fullSize,
+                                             ReductionFactor reduction) {
         final List<String> command = new ArrayList<>();
         command.add(getPath("kdu_expand"));
         command.add("-quiet");
@@ -258,10 +271,118 @@ class KakaduProcessor implements FileProcessor {
                     y, x, height, width));
         }
 
+        // kdu_expand is not capable of arbitrary scaling, but it does offer a
+        // -reduce option which is capable of downscaling by factors of 2,
+        // significantly speeding decompression. We can use it if the scale mode
+        // is ASPECT_FIT_* and either the percent is <=50, or the height/width
+        // are <=50% of full size.
+        final Size size = params.getSize();
+        if (size.getScaleMode() != Size.ScaleMode.FULL) {
+            if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
+                double scale = (double) size.getWidth() /
+                        (double) fullSize.width;
+                reduction.factor = getReductionFactor(scale);
+            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
+                double scale = (double) size.getHeight() /
+                        (double) fullSize.height;
+                reduction.factor = getReductionFactor(scale);
+            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
+                double hScale = (double) size.getWidth() /
+                        (double) fullSize.width;
+                double vScale = (double) size.getHeight() /
+                        (double) fullSize.height;
+                reduction.factor = getReductionFactor(Math.min(hScale, vScale));
+            } else if (size.getPercent() != null) {
+                reduction.factor = getReductionFactor(size.getPercent() / 100.0f);
+            } else {
+                reduction.factor = 0;
+            }
+            if (reduction.factor > 0) {
+                command.add("-reduce");
+                command.add(reduction.factor + "");
+            }
+        }
+
         command.add("-o");
         command.add(quote(getStdoutSymlinkPath()));
 
         return new ProcessBuilder(command);
+    }
+
+    /**
+     * Gets a reduction factor for the kdu_expand -reduce flag. 0 is no
+     * reduction.
+     *
+     * @param reqPercent
+     * @return
+     */
+    public short getReductionFactor(double reqPercent) {
+        final short maxFactor = 5;
+        short factor = 0;
+        double nextPct = 0.5f;
+        while (reqPercent <= nextPct && factor < maxFactor) {
+            nextPct /= 2.0f;
+            factor++;
+        }
+        return factor;
+    }
+
+    /**
+     * Scales an image using Graphics2D, taking an already-applied reduction
+     * factor into account.
+     *
+     * @param inputImage
+     * @param size
+     * @param reductionFactor
+     * @return
+     */
+    private BufferedImage scaleImageWithG2d(final BufferedImage inputImage,
+                                            final Size size,
+                                            final ReductionFactor reductionFactor) {
+        int sourceWidth = inputImage.getWidth();
+        int sourceHeight = inputImage.getHeight();
+
+        BufferedImage scaledImage;
+        if (size.getScaleMode() == Size.ScaleMode.FULL) {
+            scaledImage = inputImage;
+        } else {
+            int width = 0, height = 0;
+            if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
+                width = size.getWidth();
+                height = sourceHeight * width / sourceWidth;
+            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
+                height = size.getHeight();
+                width = sourceWidth * height / sourceHeight;
+            } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
+                width = size.getWidth();
+                height = size.getHeight();
+            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
+                double hScale = (double) size.getWidth() / (double) sourceWidth;
+                double vScale = (double) size.getHeight() / sourceHeight;
+                width = (int) Math.round(sourceWidth *
+                        Math.min(hScale, vScale));
+                height = (int) Math.round(sourceHeight *
+                        Math.min(hScale, vScale));
+            } else if (size.getPercent() != null) {
+                double pct = (size.getPercent() / 100.0);
+                if (reductionFactor.factor > 0) {
+                    pct = (size.getPercent() / 100.0) +
+                            (1 / (double) (reductionFactor.factor + 1));
+                }
+                width = (int) Math.round(sourceWidth * pct);
+                height = (int) Math.round(sourceHeight * pct);
+            }
+            scaledImage = new BufferedImage(width, height,
+                    inputImage.getType());
+            Graphics2D g2d = scaledImage.createGraphics();
+            RenderingHints hints = new RenderingHints(
+                    RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2d.setRenderingHints(hints);
+            g2d.drawImage(inputImage, 0, 0, width, height, null);
+            g2d.dispose();
+        }
+        return scaledImage;
     }
 
 }

@@ -32,6 +32,14 @@ public class KakaduProcessorTest extends ProcessorTest {
                 instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
     }
 
+    public void testGetReductionFactor() {
+        assertEquals(0, instance.getReductionFactor(0.75));
+        assertEquals(1, instance.getReductionFactor(0.5));
+        assertEquals(1, instance.getReductionFactor(0.45));
+        assertEquals(2, instance.getReductionFactor(0.25));
+        assertEquals(2, instance.getReductionFactor(0.2));
+    }
+
     @Override
     public void testGetSize() throws Exception {
         Dimension expectedSize = new Dimension(100, 88);
