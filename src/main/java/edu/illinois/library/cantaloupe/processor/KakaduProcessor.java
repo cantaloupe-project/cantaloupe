@@ -213,17 +213,12 @@ class KakaduProcessor implements FileProcessor {
             final ReductionFactor reduction = new ReductionFactor();
             final ProcessBuilder pb = getProcessBuilder(inputFile, params,
                     fullSize, reduction);
-            //logger.debug("Reduction factor: {}", reduction.factor);
             final Process process = pb.start();
 
             final ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
             final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
-            DataInputStream stdoutData = new DataInputStream(process.getInputStream());
-            DataInputStream errorData = new DataInputStream(process.getErrorStream());
-            new Thread(new StreamCopier(stdoutData, outputBucket)).start();
-            new Thread(new StreamCopier(errorData, errorBucket)).start();
-            //IOUtils.copy(stdoutData, outputBucket);
-            //IOUtils.copy(errorData, errorBucket);
+            new Thread(new StreamCopier(process.getInputStream(), outputBucket)).start();
+            new Thread(new StreamCopier(process.getErrorStream(), errorBucket)).start();
 
             try {
                 process.waitFor();
@@ -323,13 +318,13 @@ class KakaduProcessor implements FileProcessor {
      * Gets a reduction factor for the kdu_expand -reduce flag. 0 is no
      * reduction.
      *
-     * @param reqPercent
+     * @param scalePercent Scale percentage between 0 and 1
      * @return
      */
-    public short getReductionFactor(double reqPercent) {
+    public short getReductionFactor(double scalePercent) {
         short factor = 0;
         double nextPct = 0.5f;
-        while (reqPercent <= nextPct && factor < MAX_REDUCTION_FACTOR) {
+        while (scalePercent <= nextPct && factor < MAX_REDUCTION_FACTOR) {
             nextPct /= 2.0f;
             factor++;
         }
