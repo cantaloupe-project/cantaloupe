@@ -165,6 +165,9 @@ class ImageIoProcessor implements StreamProcessor {
             throws IOException, UnsupportedSourceFormatException {
         BufferedImage image = null;
         switch (sourceFormat) {
+            case BMP:
+                image = ImageIO.read(inputStream);
+                break;
             case TIF:
                 // Why don't we just use ImageIO.read()? Because the
                 // BufferedImages it returns for TIFFs often end up with type
@@ -218,7 +221,8 @@ class ImageIoProcessor implements StreamProcessor {
             default:
                 // Again, why can't we just use ImageIO.read()? Because it
                 // leaks memory in a major way.
-                Iterator<ImageReader> it = ImageIO.getImageReaders(inputStream);
+                Iterator<ImageReader> it = ImageIO.getImageReadersByMIMEType(
+                        sourceFormat.getPreferredMediaType().toString());
                 while (it.hasNext()) {
                     ImageReader reader = it.next();
                     try {
