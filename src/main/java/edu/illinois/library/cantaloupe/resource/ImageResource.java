@@ -123,13 +123,6 @@ public class ImageResource extends AbstractResource {
             try {
                 Processor proc = ProcessorFactory.
                         getProcessor(this.sourceFormat);
-                final Set<OutputFormat> availableOutputFormats =
-                        proc.getAvailableOutputFormats(sourceFormat);
-                if (availableOutputFormats.size() < 1) {
-                    throw new UnsupportedSourceFormatException(sourceFormat);
-                } else if (!availableOutputFormats.contains(params.getOutputFormat())) {
-                    throw new UnsupportedOutputFormatException();
-                }
                 long msec = System.currentTimeMillis();
                 if (proc instanceof FileProcessor) {
                     ((FileProcessor) proc).process(this.params,
@@ -184,7 +177,7 @@ public class ImageResource extends AbstractResource {
      */
     @Get
     public ImageRepresentation doGet() throws Exception {
-        // 1. Assemble the URI parameters into a Parameters object
+        // Assemble the URI parameters into a Parameters object
         Map<String,Object> attrs = this.getRequest().getAttributes();
         String identifier = Reference.decode((String) attrs.get("identifier"));
         String format = (String) attrs.get("format");
@@ -194,12 +187,12 @@ public class ImageResource extends AbstractResource {
         String quality = (String) attrs.get("quality");
         Parameters params = new Parameters(identifier, region, size, rotation,
                 quality, format);
-        // 2. Get a reference to the source image (this will also cause an
+        // Get a reference to the source image (this will also cause an
         // exception if not found)
         Resolver resolver = ResolverFactory.getResolver();
-        // 3. Determine the format of the source image
+        // Determine the format of the source image
         SourceFormat sourceFormat = resolver.getSourceFormat(identifier);
-        // 4. Obtain an instance of the processor assigned to that format in
+        // Obtain an instance of the processor assigned to that format in
         // the config file
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
 
@@ -207,20 +200,20 @@ public class ImageResource extends AbstractResource {
         ImageInputStream inputStream = null;
         if (resolver instanceof FileResolver) {
             inputFile = ((FileResolver)resolver).getFile(identifier);
-        } else if (resolver instanceof StreamResolver) {
-            if (proc instanceof FileProcessor) {
-                // StreamResolvers don't support FileProcessors
+            inputStream = ((StreamResolver)resolver).
+                    getInputStream(identifier);
+        } else {
+            if (!(proc instanceof StreamProcessor)) {
+                // StreamProcessors require StreamResolvers
                 throw new UnsupportedSourceFormatException(
-                        String.format("StreamResolvers (like %s) are " +
-                                        "incompatible with FileProcessors " +
-                                        "(like %s)",
-                                resolver.getClass().getSimpleName(),
-                                proc.getClass().getSimpleName()));
+                        String.format("%s is not compatible with %s",
+                                proc.getClass().getSimpleName(),
+                                resolver.getClass().getSimpleName()));
             }
             inputStream = ((StreamResolver)resolver).
                     getInputStream(identifier);
         }
-        // 5. Find out whether the processor supports that source format by
+        // Find out whether the processor supports that source format by
         // asking it whether it offers any output formats for it
         Set availableOutputFormats = proc.getAvailableOutputFormats(sourceFormat);
         if (!availableOutputFormats.contains(params.getOutputFormat())) {
@@ -239,7 +232,8 @@ public class ImageResource extends AbstractResource {
 
         MediaType mediaType = new MediaType(
                 OutputFormat.valueOf(format.toUpperCase()).getMediaType());
-        if (inputFile != null) {
+        if (resolver instanceof StreamResolver &&
+                !(proc instanceof StreamProcessor)) {
             return new ImageRepresentation(mediaType, sourceFormat, params,
                     inputFile);
         }

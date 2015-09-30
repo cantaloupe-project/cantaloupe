@@ -153,7 +153,9 @@ class ImageIoProcessor implements StreamProcessor {
             throw new ProcessorException(e.getMessage(), e);
         } finally {
             try {
-                inputStream.close();
+                if (inputStream != null) {
+                    inputStream.close();
+                }
             } catch (IOException e) {
                 logger.warn(e.getMessage(), e);
             }
