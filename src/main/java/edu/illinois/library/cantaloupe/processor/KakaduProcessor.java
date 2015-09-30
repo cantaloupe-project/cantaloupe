@@ -89,10 +89,20 @@ class KakaduProcessor implements FileProcessor {
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
     }
 
-    private static String getBinariesPath() {
-        return StringUtils.stripEnd(
-                Application.getConfiguration().getString("KakaduProcessor.path_to_binaries"),
-                File.separator);
+    /**
+     * @param binaryName Name of one of the kdu_* binaries
+     * @return
+     */
+    private static String getPath(String binaryName) {
+        String path = Application.getConfiguration().
+                getString("KakaduProcessor.path_to_binaries");
+        if (path != null) {
+            path = StringUtils.stripEnd(path, File.separator) + File.separator +
+                    binaryName;
+        } else {
+            path = binaryName;
+        }
+        return path;
     }
 
     private static String getStdoutSymlinkPath() {
@@ -133,8 +143,8 @@ class KakaduProcessor implements FileProcessor {
      */
     public Dimension getSize(File inputFile, SourceFormat sourceFormat)
             throws ProcessorException {
-        List<String> command = new ArrayList<>();
-        command.add(getBinariesPath() + File.separator + "kdu_jp2info");
+        final List<String> command = new ArrayList<>();
+        command.add(getPath("kdu_jp2info"));
         command.add("-i");
         command.add(inputFile.getAbsolutePath());
         try {
@@ -231,7 +241,7 @@ class KakaduProcessor implements FileProcessor {
     private ProcessBuilder getProcessBuilder(File inputFile, Parameters params,
                                              Dimension fullSize) {
         final List<String> command = new ArrayList<>();
-        command.add(getBinariesPath() + File.separator + "kdu_expand");
+        command.add(getPath("kdu_expand"));
         command.add("-quiet");
         command.add("-no_alpha");
         command.add("-i");

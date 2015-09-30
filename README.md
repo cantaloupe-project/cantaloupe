@@ -56,7 +56,7 @@ it the following contents, modifying as desired:
     # JPEG output quality. Should be a number between 0-1 ending in "f"
     ImageIoProcessor.jpg.quality = 0.7f
 
-    # Absolute path of the folder in which the Kakadu binaries reside.
+    # Optional; overrides the PATH
     KakaduProcessor.path_to_binaries = /usr/local/bin
     # Due to a quirk of kdu_expand, you will need to create a symbolic link to
     # /dev/stdout somewhere called `stdout.ppm`, like this:
