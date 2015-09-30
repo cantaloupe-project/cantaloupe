@@ -7,7 +7,7 @@ import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.request.Region;
 
-import gov.lanl.adore.djatoka.io.reader.PNMReader;
+import info.freelibrary.djatoka.io.PNMImage;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -202,7 +202,7 @@ class KakaduProcessor implements FileProcessor {
                 }
                 final ByteArrayInputStream bais = new ByteArrayInputStream(
                         outputBucket.toByteArray());
-                BufferedImage image = new PNMReader().open(bais);
+                BufferedImage image = new PNMImage(bais).getBufferedImage();
                 image = ProcessorUtil.scaleImageWithG2d(image, params.getSize());
                 image = ProcessorUtil.rotateImage(image, params.getRotation());
                 image = ProcessorUtil.filterImage(image, params.getQuality());
