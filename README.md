@@ -270,7 +270,9 @@ about image formats, and therefore the list of formats supported by this
 processor varies depending on the codec JARs available in the classpath.
 
 ImageIoProcessor buffers entire source images in RAM, and is therefore
-memory-intensive. Large amounts of RAM and fast storage help.
+memory-intensive. Large amounts of RAM and fast storage help. To avoid
+OutOfMemoryErrors, it's a good idea to allow for a very large heap size. (To
+allow 16GB, add the `-Xmx16g` flag to the launch command.)
 
 ### GraphicsMagickProcessor
 
@@ -284,9 +286,6 @@ installed; see [Supported Formats](http://www.graphicsmagick.org/formats.html)).
 
 GraphicsMagickProcessor is a good fallback processor, as it supports a wide
 range of source formats and is generally faster than ImageMagickProcessor.
-
-GraphicsMagickProcessor buffers entire source images in RAM, and is therefore
-memory-intensive. Large amounts of RAM and fast storage help.
 
 *Note: due to a quirk in im4java, ImageMagick has to be installed for this
 processor to work. (The `identify` command is used to get image dimensions.)
@@ -303,15 +302,15 @@ transforms and all IIIF output formats, assuming the necessary delegates are
 installed. It also supports a wide array of source formats.
 
 ImageMagick is not known for being particularly fast or efficient, but it is
-quite usable. Large amounts of RAM and fast storage help. If you can find or
-compile a "Q8" version of ImageMagick, its memory use will be halved.
+generally quite usable. If you can find or compile a "Q8" version of
+ImageMagick, its memory use will be halved.
 
 ### KakaduProcessor
 
 KakaduProcessor uses the `kdu_expand` and `kdu_jp2info` binaries -- part of the
 proprietary [Kakadu](http://www.kakadusoftware.com) toolkit -- to efficiently
-process JPEG2000 source images. This processor is very fast with even very large
-JP2s.
+process JPEG2000 source images. This processor performs well with even very
+large JP2s.
 
 Although it does support some other operations, `kdu_expand` is mainly a
 decompression tool, and Cantaloupe uses only this aspect of it, doing the rest
@@ -339,7 +338,7 @@ CTRL+C to prevent your CPU from melting.*
 ### Which Processor Should I Use?
 
 1. Don't use JaiProcessor
-2. Use KakaduProcessor for JP2s.
+2. Use KakaduProcessor for JP2s
 3. For all of the rest of the source formats you would like to serve, it's a
 good idea to experiment with different processors, comparing their performance,
 resource usage, and output quality. Benchmark results, if you can contribute
