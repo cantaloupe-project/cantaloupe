@@ -2,16 +2,13 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
-import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.request.Quality;
 
-import javax.imageio.stream.ImageInputStream;
-import java.awt.Dimension;
-import java.io.OutputStream;
 import java.util.Set;
 
 /**
- * Interface to be implemented by all image processors.
+ * Abstract image processor interface. Implementations should implement at
+ * least one of the sub-interfaces.
  */
 public interface Processor {
 
@@ -22,15 +19,6 @@ public interface Processor {
      * empty set if none.
      */
     Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat);
-
-    /**
-     * @param inputStream Source image
-     * @param sourceFormat Format of the source image
-     * @return Size of the source image in pixels.
-     * @throws ProcessorException
-     */
-    Dimension getSize(ImageInputStream inputStream, SourceFormat sourceFormat)
-            throws ProcessorException;
 
     /**
      * @param sourceFormat
@@ -45,22 +33,5 @@ public interface Processor {
      * format.
      */
     Set<Quality> getSupportedQualities(SourceFormat sourceFormat);
-
-    /**
-     * Uses the supplied parameters to process an image from the supplied
-     * ImageInputStream, and writes the result to the given OutputStream.
-     *
-     * @param params Parameters of the output image
-     * @param sourceFormat Format of the source image
-     * @param inputStream Stream from which to read the image. Implementations
-     *                    must close it.
-     * @param outputStream Stream to which to write the image.
-     * @throws UnsupportedOutputFormatException
-     * @throws UnsupportedSourceFormatException
-     * @throws ProcessorException
-     */
-    void process(Parameters params, SourceFormat sourceFormat,
-                 ImageInputStream inputStream, OutputStream outputStream)
-            throws ProcessorException;
 
 }

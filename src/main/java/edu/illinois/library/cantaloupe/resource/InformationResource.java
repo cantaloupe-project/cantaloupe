@@ -15,23 +15,24 @@ import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.ProcessorFeature;
+import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Quality;
+import edu.illinois.library.cantaloupe.resolver.FileResolver;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
+import edu.illinois.library.cantaloupe.resolver.StreamResolver;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
 import org.restlet.representation.StringRepresentation;
-import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
-
-import javax.imageio.stream.ImageInputStream;
 
 /**
  * Handles IIIF information requests.
@@ -59,14 +60,19 @@ public class InformationResource extends AbstractResource {
         getResponseCacheDirectives().addAll(CACHE_DIRECTIVES);
     }
 
+    /**
+     * Responds to IIIF Information requests.
+     *
+     * @return StringRepresentation
+     * @throws Exception
+     */
     @Get("json")
-    public Representation doGet() throws Exception {
+    public StringRepresentation doGet() throws Exception {
         // 1. Assemble the URI parameters into a Parameters object
         Map<String,Object> attrs = this.getRequest().getAttributes();
         String identifier = Reference.decode((String) attrs.get("identifier"));
-        // 2. Obtain a reference to the source image as an ImageInputStream
+        // 2. Get the resolver
         Resolver resolver = ResolverFactory.getResolver();
-        ImageInputStream inputStream = resolver.getInputStream(identifier);
         // 3. Determine the format of the source image
         SourceFormat sourceFormat = resolver.getSourceFormat(identifier);
         // 4. Obtain an instance of the processor assigned to that format in
@@ -74,7 +80,7 @@ public class InformationResource extends AbstractResource {
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
         // 5. Get an ImageInfo instance corresponding to the source image
         ImageInfo imageInfo = getImageInfo(identifier,
-                getSize(identifier, proc, inputStream, sourceFormat),
+                getSize(identifier, proc, resolver, sourceFormat),
                 proc.getSupportedQualities(sourceFormat),
                 proc.getSupportedFeatures(sourceFormat),
                 proc.getAvailableOutputFormats(sourceFormat));
@@ -148,20 +154,68 @@ public class InformationResource extends AbstractResource {
                 "/" + Reference.encode(identifier);
     }
 
+    /**
+     * Gets the size of the image corresponding to the given identifier, first
+     * by checking the cache and then, if necessary, by reading it from the
+     * image and caching the result.
+     *
+     * @param identifier
+     * @param proc
+     * @param resolver
+     * @param sourceFormat
+     * @return
+     * @throws Exception
+     */
     private Dimension getSize(String identifier, Processor proc,
-                              ImageInputStream inputStream,
-                              SourceFormat sourceFormat) throws Exception {
+                              Resolver resolver, SourceFormat sourceFormat)
+            throws Exception {
         Dimension size = null;
         Cache cache = CacheFactory.getInstance();
         if (cache != null) {
             size = cache.getDimension(identifier);
             if (size == null) {
-                size = proc.getSize(inputStream, sourceFormat);
+                size = readSize(identifier, resolver, proc, sourceFormat);
                 cache.putDimension(identifier, size);
             }
         }
         if (size == null) {
-            size = proc.getSize(inputStream, sourceFormat);
+            size = readSize(identifier, resolver, proc, sourceFormat);
+        }
+        return size;
+    }
+
+    /**
+     * Reads the size from the source image.
+     *
+     * @param identifier
+     * @param resolver
+     * @param proc
+     * @param sourceFormat
+     * @return
+     * @throws Exception
+     */
+    private Dimension readSize(String identifier, Resolver resolver,
+                               Processor proc, SourceFormat sourceFormat)
+            throws Exception {
+        Dimension size = null;
+        if (resolver instanceof FileResolver) {
+            if (proc instanceof FileProcessor) {
+                size = ((FileProcessor)proc).getSize(
+                        ((FileResolver) resolver).getFile(identifier),
+                        sourceFormat);
+            } else if (proc instanceof StreamProcessor) {
+                size = ((StreamProcessor)proc).getSize(
+                        ((StreamResolver) resolver).getInputStream(identifier),
+                        sourceFormat);
+            }
+        } else if (resolver instanceof StreamResolver) {
+            if (proc instanceof FileProcessor) {
+                // StreamResolvers don't support FileProcessors
+            } else if (proc instanceof StreamProcessor) {
+                size = ((StreamProcessor)proc).getSize(
+                        ((StreamResolver) resolver).getInputStream(identifier),
+                        sourceFormat);
+            }
         }
         return size;
     }

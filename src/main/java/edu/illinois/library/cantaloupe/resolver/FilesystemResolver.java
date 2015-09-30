@@ -15,7 +15,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 
-class FilesystemResolver implements Resolver {
+class FilesystemResolver implements FileResolver, StreamResolver {
 
     static {
         MimeUtil.registerMimeDetector("eu.medsea.mimeutil.detector.MagicMimeMimeDetector");
@@ -24,8 +24,7 @@ class FilesystemResolver implements Resolver {
     private static Logger logger = LoggerFactory.
             getLogger(FilesystemResolver.class);
 
-    public FileImageInputStream getInputStream(String identifier)
-            throws IOException {
+    public File getFile(String identifier) throws IOException {
         File file = new File(getPathname(identifier));
         if (!file.exists()) {
             String message = "Failed to resolve " + identifier + " to " +
@@ -34,7 +33,12 @@ class FilesystemResolver implements Resolver {
             throw new FileNotFoundException(message);
         }
         logger.debug("Resolved {} to {}", identifier, file.getAbsolutePath());
-        return new FileImageInputStream(file);
+        return file;
+    }
+
+    public FileImageInputStream getInputStream(String identifier)
+            throws IOException {
+        return new FileImageInputStream(getFile(identifier));
     }
 
     public String getPathname(String identifier) {

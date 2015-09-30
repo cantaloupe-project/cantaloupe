@@ -26,6 +26,8 @@ public abstract class ProcessorTest extends TestCase {
         Application.setConfiguration(new BaseConfiguration());
     }
 
+    protected OutputStream outputStream = new NullOutputStream();
+
     protected File getFixture(String filename) throws IOException {
         File directory = new File(".");
         String cwd = directory.getCanonicalPath();
@@ -37,10 +39,19 @@ public abstract class ProcessorTest extends TestCase {
 
     public void testGetSize() throws Exception {
         Dimension expectedSize = new Dimension(594, 522);
-        Dimension actualSize = getProcessor().getSize(
-                new FileImageInputStream(getFixture("escher_lego.jpg")),
-                SourceFormat.JPG);
-        assertEquals(expectedSize, actualSize);
+        if (getProcessor() instanceof StreamProcessor) {
+            StreamProcessor proc = (StreamProcessor) getProcessor();
+            Dimension actualSize = proc.getSize(
+                    new FileImageInputStream(getFixture("escher_lego.jpg")),
+                    SourceFormat.JPG);
+            assertEquals(expectedSize, actualSize);
+        }
+        if (getProcessor() instanceof FileProcessor) {
+            FileProcessor proc = (FileProcessor) getProcessor();
+            Dimension actualSize = proc.getSize(getFixture("escher_lego.jp2"),
+                    SourceFormat.JPG);
+            assertEquals(expectedSize, actualSize);
+        }
     }
 
     public void testProcessWithSupportedSourceFormatsAndNoTransformation() throws Exception {
@@ -48,10 +59,18 @@ public abstract class ProcessorTest extends TestCase {
                 "default", "jpg");
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {
-                ImageInputStream inputStream = new FileImageInputStream(
-                        getFixture(sourceFormat.getPreferredExtension()));
-                OutputStream outputStream = new NullOutputStream();
-                getProcessor().process(params, sourceFormat, inputStream, outputStream);
+                if (getProcessor() instanceof StreamProcessor) {
+                    StreamProcessor proc = (StreamProcessor) getProcessor();
+                    ImageInputStream inputStream = new FileImageInputStream(
+                            getFixture(sourceFormat.getPreferredExtension()));
+                    proc.process(params, sourceFormat, inputStream,
+                            outputStream);
+                }
+                if (getProcessor() instanceof FileProcessor) {
+                    FileProcessor proc = (FileProcessor) getProcessor();
+                    File file = getFixture(sourceFormat.getPreferredExtension());
+                    proc.process(params, sourceFormat, file, outputStream);
+                }
             }
         }
     }
@@ -61,16 +80,31 @@ public abstract class ProcessorTest extends TestCase {
                 "15", "color", "jpg");
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             if (getProcessor().getAvailableOutputFormats(sourceFormat).size() == 0) {
-                try {
-                    ImageInputStream inputStream = new FileImageInputStream(
-                            getFixture(sourceFormat.getPreferredExtension()));
-                    OutputStream outputStream = new NullOutputStream();
-                    getProcessor().process(params, sourceFormat, inputStream,
-                            outputStream);
-                    fail("Expected exception");
-                } catch (UnsupportedSourceFormatException e) {
-                    assertEquals(e.getMessage(), "Unsupported source format: " +
-                            sourceFormat.getPreferredExtension());
+                if (getProcessor() instanceof StreamProcessor) {
+                    try {
+                        StreamProcessor proc = (StreamProcessor) getProcessor();
+                        ImageInputStream inputStream = new FileImageInputStream(
+                                getFixture(sourceFormat.getPreferredExtension()));
+                        proc.process(params, sourceFormat, inputStream,
+                                outputStream);
+                        fail("Expected exception");
+                    } catch (ProcessorException e) {
+                        assertEquals("Unsupported source format: " +
+                                        sourceFormat.getPreferredExtension(),
+                                e.getMessage());
+                    }
+                }
+                if (getProcessor() instanceof FileProcessor) {
+                    try {
+                        FileProcessor proc = (FileProcessor) getProcessor();
+                        File file = getFixture(sourceFormat.getPreferredExtension());
+                        proc.process(params, sourceFormat, file, outputStream);
+                        fail("Expected exception");
+                    } catch (ProcessorException e) {
+                        assertEquals("Unsupported source format: " +
+                                sourceFormat.getPreferredExtension(),
+                                e.getMessage());
+                    }
                 }
             }
         }
@@ -83,11 +117,18 @@ public abstract class ProcessorTest extends TestCase {
                     "default", "jpg");
             for (SourceFormat sourceFormat : SourceFormat.values()) {
                 if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {
-                    ImageInputStream inputStream = new FileImageInputStream(
-                            getFixture(sourceFormat.getPreferredExtension()));
-                    OutputStream outputStream = new NullOutputStream();
-                    getProcessor().process(params, sourceFormat, inputStream,
-                            outputStream);
+                    if (getProcessor() instanceof StreamProcessor) {
+                        StreamProcessor proc = (StreamProcessor) getProcessor();
+                        ImageInputStream inputStream = new FileImageInputStream(
+                                getFixture(sourceFormat.getPreferredExtension()));
+                        proc.process(params, sourceFormat, inputStream,
+                                outputStream);
+                    }
+                    if (getProcessor() instanceof FileProcessor) {
+                        FileProcessor proc = (FileProcessor) getProcessor();
+                        File file = getFixture(sourceFormat.getPreferredExtension());
+                        proc.process(params, sourceFormat, file, outputStream);
+                    }
                 }
             }
         }
@@ -100,11 +141,18 @@ public abstract class ProcessorTest extends TestCase {
                     "default", "jpg");
             for (SourceFormat sourceFormat : SourceFormat.values()) {
                 if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {
-                    ImageInputStream inputStream = new FileImageInputStream(
-                            getFixture(sourceFormat.getPreferredExtension()));
-                    OutputStream outputStream = new NullOutputStream();
-                    getProcessor().process(params, sourceFormat, inputStream,
-                            outputStream);
+                    if (getProcessor() instanceof StreamProcessor) {
+                        StreamProcessor proc = (StreamProcessor) getProcessor();
+                        ImageInputStream inputStream = new FileImageInputStream(
+                                getFixture(sourceFormat.getPreferredExtension()));
+                        proc.process(params, sourceFormat, inputStream,
+                                outputStream);
+                    }
+                    if (getProcessor() instanceof FileProcessor) {
+                        FileProcessor proc = (FileProcessor) getProcessor();
+                        File file = getFixture(sourceFormat.getPreferredExtension());
+                        proc.process(params, sourceFormat, file, outputStream);
+                    }
                 }
             }
         }
@@ -117,11 +165,18 @@ public abstract class ProcessorTest extends TestCase {
                     rotation, "default", "jpg");
             for (SourceFormat sourceFormat : SourceFormat.values()) {
                 if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {
-                    ImageInputStream inputStream = new FileImageInputStream(
-                            getFixture(sourceFormat.getPreferredExtension()));
-                    OutputStream outputStream = new NullOutputStream();
-                    getProcessor().process(params, sourceFormat, inputStream,
-                            outputStream);
+                    if (getProcessor() instanceof StreamProcessor) {
+                        StreamProcessor proc = (StreamProcessor) getProcessor();
+                        ImageInputStream inputStream = new FileImageInputStream(
+                                getFixture(sourceFormat.getPreferredExtension()));
+                        proc.process(params, sourceFormat, inputStream,
+                                outputStream);
+                    }
+                    if (getProcessor() instanceof FileProcessor) {
+                        FileProcessor proc = (FileProcessor) getProcessor();
+                        File file = getFixture(sourceFormat.getPreferredExtension());
+                        proc.process(params, sourceFormat, file, outputStream);
+                    }
                 }
             }
         }
@@ -134,11 +189,18 @@ public abstract class ProcessorTest extends TestCase {
                     "10", quality, "jpg");
             for (SourceFormat sourceFormat : SourceFormat.values()) {
                 if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {
-                    ImageInputStream inputStream = new FileImageInputStream(
-                            getFixture(sourceFormat.getPreferredExtension()));
-                    OutputStream outputStream = new NullOutputStream();
-                    getProcessor().process(params, sourceFormat, inputStream,
-                            outputStream);
+                    if (getProcessor() instanceof StreamProcessor) {
+                        StreamProcessor proc = (StreamProcessor) getProcessor();
+                        ImageInputStream inputStream = new FileImageInputStream(
+                                getFixture(sourceFormat.getPreferredExtension()));
+                        proc.process(params, sourceFormat, inputStream,
+                                outputStream);
+                    }
+                    if (getProcessor() instanceof FileProcessor) {
+                        FileProcessor proc = (FileProcessor) getProcessor();
+                        File file = getFixture(sourceFormat.getPreferredExtension());
+                        proc.process(params, sourceFormat, file, outputStream);
+                    }
                 }
             }
         }
@@ -152,36 +214,18 @@ public abstract class ProcessorTest extends TestCase {
                     "10", "default", outputFormat.getExtension());
             for (SourceFormat sourceFormat : SourceFormat.values()) {
                 if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {
-                    ImageInputStream inputStream = new FileImageInputStream(
-                            getFixture(sourceFormat.getPreferredExtension()));
-                    OutputStream outputStream = new NullOutputStream();
-                    getProcessor().process(params, sourceFormat, inputStream,
-                            outputStream);
-                }
-            }
-        }
-    }
-
-    public void testProcessWithUnsupportedOutputFormats() throws Exception {
-        for (SourceFormat sourceFormat : SourceFormat.values()) {
-            Set<OutputFormat> supportedOutputFormats = getProcessor().
-                    getAvailableOutputFormats(sourceFormat);
-            if (supportedOutputFormats.size() > 0) {
-                for (OutputFormat outputFormat : OutputFormat.values()) {
-                    if (!supportedOutputFormats.contains(outputFormat)) {
-                        Parameters params = new Parameters("bla", "10,10,50,50", "20,20",
-                                "10", "default", outputFormat.getExtension());
+                    if (getProcessor() instanceof StreamProcessor) {
+                        StreamProcessor proc = (StreamProcessor) getProcessor();
                         ImageInputStream inputStream = new FileImageInputStream(
                                 getFixture(sourceFormat.getPreferredExtension()));
-                        OutputStream outputStream = new NullOutputStream();
-                        try {
-                            getProcessor().process(params, sourceFormat,
-                                    inputStream, outputStream);
-                            fail("Expected exception");
-                        } catch (UnsupportedOutputFormatException e) {
-                            assertEquals("Unsupported output format",
-                                    e.getMessage());
-                        }
+                        proc.process(params, sourceFormat, inputStream,
+                                outputStream);
+                    }
+                    if (getProcessor() instanceof FileProcessor) {
+                        FileProcessor proc = (FileProcessor) getProcessor();
+                        File file = getFixture(sourceFormat.getPreferredExtension());
+                        proc.process(params, sourceFormat, file,
+                                outputStream);
                     }
                 }
             }

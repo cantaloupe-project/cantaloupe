@@ -13,9 +13,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
-import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
@@ -37,13 +36,13 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Processor using the kdu_expand tool.
+ * Processor using the Kakadu kdu_expand and kdu_jp2info command-line tools.
  *
  * @see <a href="http://kakadusoftware.com/wp-content/uploads/2014/06/Usage_Examples-v7_7.txt">
  *     Usage Examples for the Demonstration Applications Supplied with Kakadu
  *     V7.7</a>
  */
-class KakaduProcessor implements Processor {
+class KakaduProcessor implements FileProcessor {
 
     private class StreamCopier implements Runnable {
 
@@ -67,13 +66,6 @@ class KakaduProcessor implements Processor {
 
     private static Logger logger = LoggerFactory.getLogger(KakaduProcessor.class);
 
-    private static final String BINARIES_PATH = StringUtils.stripEnd(
-            Application.getConfiguration().getString("KakaduProcessor.path_to_binaries"),
-            File.separator);
-    private static final String STDIN = "/dev/stdin";
-    private static final String STDOUT = StringUtils.stripEnd(
-            Application.getConfiguration().getString("KakaduProcessor.path_to_stdout_symlink"),
-            File.separator);
     private static final Set<Quality> SUPPORTED_QUALITIES = new HashSet<>();
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
@@ -95,6 +87,18 @@ class KakaduProcessor implements Processor {
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_PERCENT);
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH);
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
+    }
+
+    private static String getBinariesPath() {
+        return StringUtils.stripEnd(
+                Application.getConfiguration().getString("KakaduProcessor.path_to_binaries"),
+                File.separator);
+    }
+
+    private static String getStdoutSymlinkPath() {
+        return StringUtils.stripEnd(
+                Application.getConfiguration().getString("KakaduProcessor.path_to_stdout_symlink"),
+                File.separator);
     }
 
     /**
@@ -122,22 +126,18 @@ class KakaduProcessor implements Processor {
      * Gets the size of the given image by parsing the XML output of
      * kdu_jp2info.
      *
-     * @param inputStream Source image
+     * @param inputFile Source image
      * @param sourceFormat Format of the source image
      * @return
      * @throws ProcessorException
      */
-    public Dimension getSize(ImageInputStream inputStream,
-                             SourceFormat sourceFormat)
+    public Dimension getSize(File inputFile, SourceFormat sourceFormat)
             throws ProcessorException {
+        List<String> command = new ArrayList<>();
+        command.add(getBinariesPath() + File.separator + "kdu_jp2info");
+        command.add("-i");
+        command.add(inputFile.getAbsolutePath());
         try {
-            // TODO: use the inputstream
-            List<String> command = new ArrayList<>();
-            command.add(BINARIES_PATH + File.separator + "kdu_jp2info");
-            command.add("-i");
-            //command.add(quote(new File(STDIN).getAbsolutePath()));
-            command.add("/Volumes/Data/alexd/Sites/iiif-test/orion-hubble-4096.jp2");
-
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.redirectErrorStream(true);
             Process process = pb.start();
@@ -152,6 +152,9 @@ class KakaduProcessor implements Processor {
             expr = xpath.compile("//codestream/height");
             int height = (int) Math.round((double) expr.evaluate(doc, XPathConstants.NUMBER));
             return new Dimension(width, height);
+        } catch (SAXException e) {
+            throw new ProcessorException("Failed to parse XML. Command: " +
+                    StringUtils.join(command, " "), e);
         } catch (Exception e) {
             throw new ProcessorException(e.getMessage(), e);
         }
@@ -166,11 +169,19 @@ class KakaduProcessor implements Processor {
     }
 
     public void process(Parameters params, SourceFormat sourceFormat,
-                        ImageInputStream inputStream, OutputStream outputStream)
+                        File inputFile, OutputStream outputStream)
             throws ProcessorException {
+        final Set<OutputFormat> availableOutputFormats =
+                getAvailableOutputFormats(sourceFormat);
+        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
+            throw new UnsupportedSourceFormatException(sourceFormat);
+        } else if (!availableOutputFormats.contains(params.getOutputFormat())) {
+            throw new UnsupportedOutputFormatException();
+        }
         try {
-            final Dimension fullSize = getSize(inputStream, sourceFormat);
-            final ProcessBuilder pb = getProcessBuilder(params, fullSize);
+            final Dimension fullSize = getSize(inputFile, sourceFormat);
+            final ProcessBuilder pb = getProcessBuilder(inputFile, params,
+                    fullSize);
             final Process process = pb.start();
 
             final ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
@@ -211,19 +222,19 @@ class KakaduProcessor implements Processor {
     /**
      * Gets a ProcessBuilder corresponding to the given parameters.
      *
+     * @param inputFile
      * @param params
      * @param fullSize The full size of the source image
      * @return Command string
      */
-    private ProcessBuilder getProcessBuilder(Parameters params,
+    private ProcessBuilder getProcessBuilder(File inputFile, Parameters params,
                                              Dimension fullSize) {
         final List<String> command = new ArrayList<>();
-        command.add(StringUtils.stripEnd(BINARIES_PATH, "/") + File.separator +
-                "kdu_expand");
+        command.add(getBinariesPath() + File.separator + "kdu_expand");
         command.add("-quiet");
+        command.add("-no_alpha");
         command.add("-i");
-        //command.add(quote(new File(STDIN).getAbsolutePath())); // TODO: fix
-        command.add("/Volumes/Data/alexd/Sites/iiif-test/orion-hubble-4096.jp2");
+        command.add(inputFile.getAbsolutePath());
 
         final Region region = params.getRegion();
         if (!region.isFull()) {
@@ -237,7 +248,7 @@ class KakaduProcessor implements Processor {
         }
 
         command.add("-o");
-        command.add(quote(new File(STDOUT).getAbsolutePath()));
+        command.add(quote(getStdoutSymlinkPath()));
 
         return new ProcessBuilder(command);
     }

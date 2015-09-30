@@ -20,7 +20,7 @@ import javax.imageio.stream.ImageInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-class HttpResolver implements Resolver {
+class HttpResolver implements StreamResolver {
 
     private static Logger logger = LoggerFactory.getLogger(HttpResolver.class);
 

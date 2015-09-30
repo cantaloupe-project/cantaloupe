@@ -15,7 +15,7 @@ public class ProcessorFactoryTest extends TestCase {
     }
 
     public void testGetAllProcessors() {
-        assertEquals(4, ProcessorFactory.getAllProcessors().size());
+        assertEquals(5, ProcessorFactory.getAllProcessors().size());
     }
 
     /**

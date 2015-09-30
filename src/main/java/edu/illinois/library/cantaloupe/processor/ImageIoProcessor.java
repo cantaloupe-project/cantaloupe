@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * Processor using the Java ImageIO framework.
  */
-class ImageIoProcessor implements Processor {
+class ImageIoProcessor implements StreamProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(ImageIoProcessor.class);
 
