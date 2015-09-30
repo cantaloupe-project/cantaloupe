@@ -49,21 +49,11 @@
       <groupId>it.geosolutions.imageio-ext</groupId>
       <artifactId>imageio-ext-imagereadmt</artifactId>
       <version>${imageio-ext.version}</version>
-    </dependency><!--
-    <dependency>
-      <groupId>it.geosolutions.imageio-ext</groupId>
-      <artifactId>imageio-ext-kakadu</artifactId>
-      <version>${imageio-ext.version}</version>
     </dependency>
     <dependency>
       <groupId>it.geosolutions.imageio-ext</groupId>
-      <artifactId>imageio-ext-kakadujni</artifactId>
-      <version>5.2.6</version>
-    </dependency>-->
-    <dependency>
-      <groupId>org.geotools</groupId>
-      <artifactId>gt-jp2k</artifactId>
-      <version>${geotools.version}</version>
+      <artifactId>imageio-ext-tiff</artifactId>
+      <version>${imageio-ext.version}</version>
     </dependency>
     <dependency> <!-- https://github.com/geosolutions-it/jai-ext -->
       <groupId>it.geosolutions.jaiext.scale</groupId>
@@ -118,11 +108,6 @@
       <id>geosolutions</id>
       <name>GeoSolutions Repository</name>
       <url>http://maven.geo-solutions.it/</url>
-    </repository>
-    <repository>
-      <id>geotools</id>
-      <name>GeoTools</name>
-      <url>http://download.osgeo.org/webdav/geotools/</url>
     </repository>
     <repository>
       <id>maven-restlet</id>
