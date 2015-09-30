@@ -208,6 +208,7 @@ class KakaduProcessor implements FileProcessor {
                 image = ProcessorUtil.filterImage(image, params.getQuality());
                 ProcessorUtil.outputImage(image, params.getOutputFormat(),
                         outputStream);
+                image.flush();
             } finally {
                 process.getInputStream().close();
                 process.getOutputStream().close();
