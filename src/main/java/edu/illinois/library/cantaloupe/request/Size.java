@@ -70,6 +70,9 @@ public class Size {
         return height;
     }
 
+    /**
+     * @return Float from 0-100
+     */
     public Float getPercent() {
         return percent;
     }
@@ -89,6 +92,10 @@ public class Size {
         this.height = height;
     }
 
+    /**
+     * @param percent Float from 0-100
+     * @throws IllegalArgumentException
+     */
     public void setPercent(Float percent) throws IllegalArgumentException {
         if (percent <= 0) {
             throw new IllegalArgumentException("Percent must be positive");
