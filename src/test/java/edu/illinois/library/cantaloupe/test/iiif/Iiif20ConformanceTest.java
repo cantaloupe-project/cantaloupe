@@ -10,7 +10,6 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
-import org.junit.AfterClass;
 import org.restlet.Client;
 import org.restlet.Context;
 import org.restlet.data.MediaType;
@@ -43,19 +42,7 @@ public class Iiif20ConformanceTest extends TestCase {
 
     private static Client client = new Client(new Context(), Protocol.HTTP);
 
-    /**
-     * Initializes the Restlet application
-     */
-    static { // TODO: why doesn't this code work in a @BeforeClass?
-        try {
-            Application.setConfiguration(getConfiguration());
-            Application.start();
-        } catch (Exception e) {
-            fail("Failed to start the Restlet");
-        }
-    }
-
-    public static BaseConfiguration getConfiguration() {
+    public static BaseConfiguration newConfiguration() {
         BaseConfiguration config = new BaseConfiguration();
         try {
             File directory = new File(".");
@@ -72,14 +59,13 @@ public class Iiif20ConformanceTest extends TestCase {
         return config;
     }
 
-    @AfterClass
-    public void afterClass() throws Exception {
-        Application.stop();
+    public void setUp() throws Exception {
+        Application.setConfiguration(newConfiguration());
+        Application.start();
     }
 
-    public void setUp() {
-        BaseConfiguration config = getConfiguration();
-        Application.setConfiguration(config);
+    public void tearDown() throws Exception {
+        Application.stop();
     }
 
     /**
@@ -112,7 +98,7 @@ public class Iiif20ConformanceTest extends TestCase {
         File directory = new File(".");
         String cwd = directory.getCanonicalPath();
         Path path = Paths.get(cwd, "src", "test");
-        BaseConfiguration config = getConfiguration();
+        BaseConfiguration config = newConfiguration();
         config.setProperty("FilesystemResolver.path_prefix", path + File.separator);
         Application.setConfiguration(config);
 

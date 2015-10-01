@@ -23,7 +23,7 @@ import java.util.jar.Manifest;
 public class Application {
 
     private static Logger logger = LoggerFactory.getLogger(Application.class);
-    private static Component component = new Component();
+    private static Component component;
     private static Configuration config;
 
     static {
@@ -112,6 +112,7 @@ public class Application {
     }
 
     public static void start() throws Exception {
+        component = new Component();
         Integer port = getConfiguration().getInteger("http.port", 8182);
         component.getServers().add(Protocol.HTTP, port);
         component.getDefaultHost().attach("", new ImageServerApplication());
