@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.request.Region;
-
 import edu.illinois.library.cantaloupe.request.Size;
 import info.freelibrary.djatoka.io.PNMImage;
 import org.apache.commons.io.IOUtils;
@@ -28,7 +27,6 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -181,8 +179,7 @@ class KakaduProcessor implements FileProcessor {
         }
     }
 
-    public Set<ProcessorFeature> getSupportedFeatures(
-            final SourceFormat sourceFormat) {
+    public Set<ProcessorFeature> getSupportedFeatures(SourceFormat sourceFormat) {
         Set<ProcessorFeature> features = new HashSet<>();
         if (getAvailableOutputFormats(sourceFormat).size() > 0) {
             features.addAll(SUPPORTED_FEATURES);
@@ -190,7 +187,7 @@ class KakaduProcessor implements FileProcessor {
         return features;
     }
 
-    public Set<Quality> getSupportedQualities(final SourceFormat sourceFormat) {
+    public Set<Quality> getSupportedQualities(SourceFormat sourceFormat) {
         Set<Quality> qualities = new HashSet<>();
         if (getAvailableOutputFormats(sourceFormat).size() > 0) {
             qualities.addAll(SUPPORTED_QUALITIES);
@@ -198,8 +195,8 @@ class KakaduProcessor implements FileProcessor {
         return qualities;
     }
 
-    public void process(final Parameters params, final SourceFormat sourceFormat,
-                        final File inputFile, final OutputStream outputStream)
+    public void process(Parameters params, SourceFormat sourceFormat,
+                        File inputFile, OutputStream outputStream)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
@@ -343,8 +340,8 @@ class KakaduProcessor implements FileProcessor {
     private BufferedImage scaleImageWithG2d(final BufferedImage inputImage,
                                             final Size size,
                                             final ReductionFactor reductionFactor) {
-        int sourceWidth = inputImage.getWidth();
-        int sourceHeight = inputImage.getHeight();
+        final int sourceWidth = inputImage.getWidth();
+        final int sourceHeight = inputImage.getHeight();
 
         BufferedImage scaledImage;
         if (size.getScaleMode() == Size.ScaleMode.FULL) {

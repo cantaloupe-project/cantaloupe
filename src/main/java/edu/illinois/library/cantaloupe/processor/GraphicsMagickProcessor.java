@@ -29,6 +29,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Processor using the GraphicsMagick `gm` command-line tool.
+ */
 class GraphicsMagickProcessor implements StreamProcessor {
 
     private static Logger logger = LoggerFactory.

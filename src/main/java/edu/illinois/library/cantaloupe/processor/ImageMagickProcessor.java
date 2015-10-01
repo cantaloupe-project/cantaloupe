@@ -29,6 +29,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Processor using the ImageMagick `convert` and `identify` command-line tools.
+ */
 class ImageMagickProcessor implements StreamProcessor {
 
     private static Logger logger = LoggerFactory.

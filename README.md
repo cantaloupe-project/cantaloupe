@@ -11,7 +11,7 @@ Home: [https://github.com/medusa-project/cantaloupe]
 * Self-contained
 * Easy to install and get working
 * Pluggable resolvers for filesystem and HTTP sources
-* Pluggable processors to support a wide variety of source image formats
+* Pluggable processors to support a wide variety of source images
 * Lean and efficient with no app server or Servlet stack overhead
 * Configurable caching
 * Optional authentication
@@ -237,14 +237,14 @@ any URL-unsafe characters.)
 ## Processors
 
 Cantaloupe can use different image processors for different source formats.
-Assignments are made in the config file. Currently, the available processors
+(Assignments are made in the config file.) Currently, the available processors
 are:
 
 * ImageIoProcessor
 * GraphicsMagickProcessor
 * ImageMagickProcessor
 * KakaduProcessor
-* JaiProcessor (experimental)
+* JaiProcessor
 
 All processors can work with FilesystemResolver, and all but KakaduProcessor
 can work with HttpResolver.
@@ -287,10 +287,6 @@ installed; see [Supported Formats](http://www.graphicsmagick.org/formats.html)).
 GraphicsMagickProcessor is a good fallback processor, as it supports a wide
 range of source formats and is generally faster than ImageMagickProcessor.
 
-*Note: due to a quirk in im4java, ImageMagick has to be installed for this
-processor to work. (The `identify` command is used to get image dimensions.)
-Eliminating this dependency is on the to-do list.*
-
 ### ImageMagickProcessor
 
 ImageMagickProcessor, like GraphicsMagickProcessor, also uses
@@ -308,9 +304,8 @@ ImageMagick, its memory use will be halved.
 ### KakaduProcessor
 
 KakaduProcessor uses the `kdu_expand` and `kdu_jp2info` binaries -- part of the
-proprietary [Kakadu](http://www.kakadusoftware.com) toolkit -- to efficiently
-process JPEG2000 source images. This processor performs well with even very
-large JP2s.
+[Kakadu](http://www.kakadusoftware.com) toolkit -- to efficiently process
+JPEG2000 source images. This processor performs well even with large JP2s.
 
 Although it does support some other operations, `kdu_expand` is mainly a
 decompression tool, and Cantaloupe uses only this aspect of it, doing the rest
@@ -326,9 +321,9 @@ Java Advanced Imaging (JAI) is a powerful low-level imaging framework
 developed by Sun until around 2006. JaiProcessor uses an updated fork called
 [JAI-EXT](https://github.com/geosolutions-it/jai-ext).
 
-JaiProcessor's main theoretical advantage is the ability to exploit JAI's
+JaiProcessor's main theoretical advantage is its ability to exploit JAI's
 internal tiling engine, which makes it capable of region-of-interest decoding
-with some formats. Unfortunately, JAI is old and buggy.
+with some formats.
 
 JaiProcessor can read and write the same formats as ImageIoProcessor.
 
@@ -353,6 +348,33 @@ them, are welcome.
 |ImageMagickProcessor | Yes | Yes |
 |JaiProcessor | Yes | Yes |
 |KakaduProcessor | Yes | NO |
+
+## A Word About Memory Usage
+
+Consider the case of an image server that is asked to render tiles for a
+4096x4096 pixel source image that, at 24 bits per pixel, totals 50MB in
+decompressed size. Multiple clients are simultaneously requesting numerous
+downscaled tiles to display the initial zoom level. Request handlers do not
+communicate with each other, so each one is loading this large image and
+operating on it independently.
+
+Furthermore, some processors are less efficient, and have to create new images
+internally at each intermediate step in the processing pipeline (cropping,
+scaling, rotating, etc.). Each one occupies precious memory.
+
+It's easy to see where RAM becomes a very major consideration here. It is
+completely normal to see transient spikes of hundreds of MB of memory use on
+the Java heap in response to a single zooming-image-viewer request. The JVM
+will accommodate by increasing the heap size, which typically never shrinks
+during the lifetime of an application. From the operating system's perspective,
+the process is bloating up to multiple gigabytes in size, but there is nothing
+wrong -- most of this is actually unused heap space.
+
+The smaller the available heap space, the larger the source images, and the
+larger the number of simultaneous requests, the greater the likelihood of
+OutOfMemoryErrors. In production, it is highly recommended to use the `-Xmx`
+flag to increase the maximum heap size to the largest amount possible -- for
+example, `-Xmx16g` for 16GB. And, of course, do use caching aggressively.
 
 ## Caches
 
@@ -406,7 +428,7 @@ configuration option). (The author has not tried this.)
 
 ## JPEG2000
 
-KakaduProcessor is, by far, the most efficient processor for this format.
+KakaduProcessor is by far the most efficient processor for this format.
 
 GraphicsMagick can read/write JPEG2000 using JasPer, and ImageMagick using
 OpenJPEG. Both of these are extremely slow.
