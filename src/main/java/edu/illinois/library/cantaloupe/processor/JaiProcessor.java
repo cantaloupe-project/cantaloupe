@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
@@ -94,6 +93,11 @@ class JaiProcessor implements StreamProcessor {
                     if (sourceFormat.getMediaTypes().
                             contains(new MediaType(readerMimeTypes[i].toLowerCase()))) {
                         for (OutputFormat outputFormat : OutputFormat.values()) {
+                            if (outputFormat == OutputFormat.GIF ||
+                                    outputFormat == OutputFormat.JP2) {
+                                // these don't work currently (see outputImage())
+                                continue;
+                            }
                             for (i = 0, length = writerMimeTypes.length; i < length; i++) {
                                 if (outputFormat.getMediaType().equals(writerMimeTypes[i].toLowerCase())) {
                                     outputFormats.add(outputFormat);
