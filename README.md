@@ -21,102 +21,12 @@ Home: [https://github.com/medusa-project/cantaloupe]
 The only hard requirement is Java 7+. Particular processors may have additional
 requirements; see the Processors section below.
 
-# Configuration
-
-Create a file called `cantaloupe.properties` anywhere on disk and paste into
-it the following contents, modifying as desired:
-
-    # TCP port to bind the web server to.
-    http.port = 8182
-    
-    # Uncomment to require HTTP Basic authentication.
-    #http.auth.basic = true
-    #http.auth.basic.username = myself
-    #http.auth.basic.secret = password
-
-    # Helpful in development
-    print_stack_trace_on_error_pages = true
-
-    # Image processors to use for various source formats. Available values are
-    # `ImageIoProcessor`, `GraphicsMagickProcessor`, `ImageMagickProcessor`,
-    # `KakaduProcessor`, and `JaiProcessor`.
-    # These extension-specific definitions are optional.
-    #processor.jpg = ImageMagickProcessor
-    #processor.jp2 = KakaduProcessor
-    #processor.tif = GraphicsMagickProcessor
-    # Fall back to this processor for any formats not assigned above.
-    processor.fallback = ImageIoProcessor
-
-    # Optional; overrides the PATH
-    #GraphicsMagickProcessor.path_to_binaries = /usr/local/bin
-
-    # Optional; overrides the PATH
-    #ImageMagickProcessor.path_to_binaries = /usr/local/bin
-    
-    # JPEG output quality. Should be a number between 0-1 ending in "f"
-    ImageIoProcessor.jpg.quality = 0.7f
-
-    # Optional; overrides the PATH
-    KakaduProcessor.path_to_binaries = /usr/local/bin
-    # Due to a quirk of kdu_expand, you will need to create a symbolic link to
-    # /dev/stdout somewhere called `stdout.ppm`, like this:
-    # `ln -s /dev/stdout /path/to/stdout.ppm`
-    KakaduProcessor.path_to_stdout_symlink = /some/path/to/stdout.ppm
-
-    # The resolver that translates the identifier in the URL to an image source.
-    # Available values are `FilesystemResolver` and `HttpResolver`.
-    resolver = FilesystemResolver
-
-    # Server-side path that will be prefixed to the identifier in the URL.
-    FilesystemResolver.path_prefix = /home/myself/images
-    # Server-side path or extension that will be suffixed to the identifier
-    # in the URL.
-    FilesystemResolver.path_suffix =
-    # Normally, slashes in an identifier must be percent-encoded as "%2F". If
-    # your proxy is incapable of passing these through un-decoded, you can
-    # define an alternate character or character sequence to represent a path
-    # separator. Supply the non-percent-encoded version here, and use the
-    # percent-encoded version in IIIF URLs.
-    #FilesystemResolver.path_separator =
-
-    # URL that will be prefixed to the identifier in the request URL.
-    HttpResolver.url_prefix = http://localhost/images/
-    # Path, extension, query string, etc. that will be suffixed to the
-    # identifier in the request URL.
-    HttpResolver.url_suffix =
-    # See FilesystemResolver.path_separator for an explanation of this.
-    #HttpResolver.path_separator =
-    # Used for HTTP Basic authentication.
-    HttpResolver.username =
-    HttpResolver.password =
-
-    # Customize the response Cache-Control header. (This may be overridden by
-    # proxies.) Comment out to disable the Cache-Control header.
-    cache.client.max_age = 2592000
-    cache.client.shared_max_age =
-    cache.client.public = true
-    cache.client.private = false
-    cache.client.no_cache = false
-    cache.client.no_store = false
-    cache.client.must_revalidate = false
-    cache.client.proxy_revalidate = false
-    cache.client.no_transform = true
-
-    # The only available value is `FilesystemCache`. Comment out or set blank
-    # to disable caching.
-    #cache.server = FilesystemCache
-
-    # If this directory does not exist, it will be created automatically.
-    FilesystemCache.pathname = /var/cache/cantaloupe
-    # Time before a cached image becomes stale and needs to be reloaded. Set to
-    # blank or 0 for "forever"
-    FilesystemCache.ttl_seconds = 2592000 # 1 month
-
-(The above sample contains all available keys.)
-
 # Running
 
-From the command prompt:
+First, copy the file `cantaloupe.properties.sample` in the distribution to
+`cantaloupe.properties` and edit as desired.
+
+Then, from the command prompt:
 
 `$ java -Dcantaloupe.config=/path/to/cantaloupe.properties -jar Cantaloupe-x.x.x.jar`
 
@@ -132,7 +42,7 @@ To see the image itself, try:
 
 Upgrading is usually just a matter of downloading a new version and running it.
 Sometimes there are backwards-incompatible changes to the configuration file
-structure, though, so check the following upgrade steps.
+structure, though, so check below to see if there is anything more to be done.
 
 ## 1.0-beta2 to 1.0-beta3
 
@@ -486,26 +396,6 @@ be in the form of `NameOfMyClass.whatever`. They can then be accessed via
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
-
-# Change Log
-
-## 1.0-beta3
-
-* Added client-side caching.
-* Added HTTP Basic authentication.
-* Added KakaduProcessor.
-* Improved the thread-safety of FilesystemCache.
-
-## 1.0-beta2
-
-* Added optional server-side caching.
-* Added configurable path separators in FilesystemResolver and HttpResolver.
-* The application version is displayed on the landing page and in a startup log
-  message.
-
-## 1.0-beta1
-
-* First version.
 
 # Feedback
 
