@@ -3,6 +3,8 @@
 #
 # Copy this file to `cantaloupe.properties` and edit as desired. Then, launch
 # Cantaloupe with the `-Dcantaloupe.config=cantaloupe.properties` option.
+#
+# Note that backslashes need to be doubled, like this: \\
 #############################################################################
 
 # TCP port to bind the web server to.

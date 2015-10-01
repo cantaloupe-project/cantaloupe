@@ -225,6 +225,9 @@ Kakadu is not free and the binaries are not included with Cantaloupe. It is
 your responsibility to obtain them by legal means and to comply with the terms
 of use.
 
+**Note: KakaduProcessor does not work in Windows, as it requires access to
+`/dev/stdout`.**
+
 ### JaiProcessor
 
 Java Advanced Imaging (JAI) is a powerful low-level imaging framework
