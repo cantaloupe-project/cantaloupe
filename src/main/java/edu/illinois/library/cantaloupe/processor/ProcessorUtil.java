@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.request.Region;
@@ -9,9 +10,12 @@ import edu.illinois.library.cantaloupe.request.Size;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
@@ -83,7 +87,30 @@ class ProcessorUtil {
         return filteredImage;
     }
 
-    public static Set<OutputFormat> imageIoOutputFormats() { // TODO: use this in other processors
+    public static Dimension getSize(ImageInputStream inputStream,
+                                    SourceFormat sourceFormat)
+            throws ProcessorException {
+        // get width & height (without reading the entire image into memory)
+        Iterator<ImageReader> iter = ImageIO.
+                getImageReadersBySuffix(sourceFormat.getPreferredExtension());
+        if (iter.hasNext()) {
+            ImageReader reader = iter.next();
+            int width, height;
+            try {
+                reader.setInput(inputStream);
+                width = reader.getWidth(reader.getMinIndex());
+                height = reader.getHeight(reader.getMinIndex());
+            } catch (IOException e) {
+                throw new ProcessorException(e.getMessage(), e);
+            } finally {
+                reader.dispose();
+            }
+            return new Dimension(width, height);
+        }
+        return null;
+    }
+
+    public static Set<OutputFormat> imageIoOutputFormats() {
         final String[] writerMimeTypes = ImageIO.getWriterMIMETypes();
         Set<OutputFormat> outputFormats = new HashSet<>();
         for (OutputFormat outputFormat : OutputFormat.values()) {

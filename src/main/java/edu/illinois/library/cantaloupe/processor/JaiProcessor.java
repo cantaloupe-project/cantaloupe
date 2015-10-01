@@ -115,24 +115,7 @@ class JaiProcessor implements StreamProcessor {
     public Dimension getSize(ImageInputStream inputStream,
                              SourceFormat sourceFormat)
             throws ProcessorException {
-        // get width & height (without reading the entire image into memory)
-        Iterator<ImageReader> it = ImageIO.
-                getImageReadersBySuffix(sourceFormat.getPreferredExtension());
-        if (it.hasNext()) {
-            ImageReader reader = it.next();
-            int width, height;
-            try {
-                reader.setInput(inputStream);
-                width = reader.getWidth(reader.getMinIndex());
-                height = reader.getHeight(reader.getMinIndex());
-            } catch (IOException e) {
-                throw new ProcessorException(e.getMessage(), e);
-            } finally {
-                reader.dispose();
-            }
-            return new Dimension(width, height);
-        }
-        return null;
+        return ProcessorUtil.getSize(inputStream, sourceFormat);
     }
 
     public Set<ProcessorFeature> getSupportedFeatures(
