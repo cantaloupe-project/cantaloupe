@@ -48,6 +48,7 @@ public class InformationResource extends AbstractResource {
             getCacheDirectives();
 
     static {
+        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.SIZE_BY_WHITELISTED);
         SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.BASE_URI_REDIRECT);
         SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.CANONICAL_LINK_HEADER);
         SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.CORS);
@@ -109,19 +110,28 @@ public class InformationResource extends AbstractResource {
         return rep;
     }
 
-    private ImageInfo getImageInfo(String identifier, Dimension size,
+    private ImageInfo getImageInfo(String identifier, Dimension fullSize,
                                    Set<Quality> qualities,
                                    Set<ProcessorFeature> processorFeatures,
                                    Set<OutputFormat> outputFormats) {
         ImageInfo imageInfo = new ImageInfo();
         imageInfo.setId(getImageUri(identifier));
-        imageInfo.setWidth(size.width);
-        imageInfo.setHeight(size.height);
+        imageInfo.setWidth(fullSize.width);
+        imageInfo.setHeight(fullSize.height);
 
         final String complianceUri = ComplianceLevel.
                 getLevel(SUPPORTED_SERVICE_FEATURES, processorFeatures,
                         qualities, outputFormats).getUri();
         imageInfo.getProfile().add(complianceUri);
+
+        // sizes
+        final short maxReductionFactor = 4;
+        for (double i = 2; i <= Math.pow(2, maxReductionFactor); i = i * 2) {
+            ImageInfo.Size size = new ImageInfo.Size();
+            size.setWidth((int) Math.round(fullSize.width / i));
+            size.setHeight((int) Math.round(fullSize.height / i));
+            imageInfo.getSizes().add(0, size);
+        }
 
         // formats
         Map<String, Set<String>> profileMap = new HashMap<>();
@@ -147,7 +157,7 @@ public class InformationResource extends AbstractResource {
         for (Feature feature : SUPPORTED_SERVICE_FEATURES) {
             featureStrings.add(feature.getName());
         }
-        profileMap.put("features", featureStrings);
+        profileMap.put("supports", featureStrings);
 
         return imageInfo;
     }

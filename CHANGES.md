@@ -5,6 +5,7 @@
 * Added client-side caching.
 * Added HTTP Basic authentication.
 * Added KakaduProcessor.
+* Added a `sizes` key to information responses.
 * Renamed ImageIoProcessor to Java2dProcessor.
 * Improved the thread-safety of FilesystemCache.
 * Source images are streamed directly rather than being re-encoded when the
