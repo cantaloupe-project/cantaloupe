@@ -7,16 +7,16 @@ import edu.illinois.library.cantaloupe.request.Quality;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ImageIoProcessorTest extends ProcessorTest {
+public class Java2dProcessorTest extends ProcessorTest {
 
-    ImageIoProcessor instance = new ImageIoProcessor();
+    Java2dProcessor instance = new Java2dProcessor();
 
     protected Processor getProcessor() {
         return instance;
     }
 
     public void testGetAvailableOutputFormats() {
-        Set<OutputFormat> expectedFormats = ImageIoProcessor.
+        Set<OutputFormat> expectedFormats = Java2dProcessor.
                 getAvailableOutputFormats().get(SourceFormat.JPG);
         assertEquals(expectedFormats,
                 instance.getAvailableOutputFormats(SourceFormat.JPG));

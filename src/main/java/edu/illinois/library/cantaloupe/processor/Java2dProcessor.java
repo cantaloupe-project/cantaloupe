@@ -28,9 +28,9 @@ import java.util.Set;
 /**
  * Processor using the Java ImageIO framework.
  */
-class ImageIoProcessor implements StreamProcessor {
+class Java2dProcessor implements StreamProcessor {
 
-    private static Logger logger = LoggerFactory.getLogger(ImageIoProcessor.class);
+    private static Logger logger = LoggerFactory.getLogger(Java2dProcessor.class);
 
     private static final HashMap<SourceFormat,Set<OutputFormat>> FORMATS =
             getAvailableOutputFormats();
@@ -139,14 +139,6 @@ class ImageIoProcessor implements StreamProcessor {
                     outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
-        } finally {
-            try {
-                if (inputStream != null) {
-                    inputStream.close();
-                }
-            } catch (IOException e) {
-                logger.warn(e.getMessage(), e);
-            }
         }
     }
 
@@ -172,6 +164,7 @@ class ImageIoProcessor implements StreamProcessor {
                 //
                 // The Sun TIFFImageReader suffers from the same issue except it
                 // throws an IllegalArgumentException instead.
+                /*
                 try {
                     Iterator<ImageReader> it = ImageIO.
                             getImageReadersByMIMEType("image/tiff");
@@ -190,10 +183,12 @@ class ImageIoProcessor implements StreamProcessor {
                     }
                 } catch (ArrayIndexOutOfBoundsException e) {
                     logger.error("TIFFImageReader failed to read " + identifier);
-                }
+                }*/
 
-                /* Yet another alternative strategy, commented out pending
-                deeper investigation.
+                // Strategy C. Unfortunately, TIFFImageDecoder suffers from a
+                // similar issue as TIFFImageReader, which is an inability to
+                // decode certain TIFFs properly - they get vertical b&w
+                // stripes. tiffdump doesn't provide any clues.
                 try (InputStream is = new ImageInputStreamWrapper(inputStream)) {
                     ImageDecoder dec = ImageCodec.createImageDecoder("tiff",
                             is, null);
@@ -202,7 +197,7 @@ class ImageIoProcessor implements StreamProcessor {
                             op.getHeight(), BufferedImage.TYPE_INT_RGB);
                     rgbImage.setData(op.getData());
                     image = rgbImage;
-                } */
+                }
                 break;
             default:
                 Iterator<ImageReader> it = ImageIO.getImageReadersByMIMEType(

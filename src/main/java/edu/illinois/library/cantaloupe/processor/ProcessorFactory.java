@@ -14,9 +14,9 @@ public class ProcessorFactory {
         // Processor, but might also not be worth the hassle
         Set<Processor> processors = new HashSet<>();
         processors.add(new GraphicsMagickProcessor());
-        processors.add(new ImageIoProcessor());
         processors.add(new ImageMagickProcessor());
         processors.add(new JaiProcessor());
+        processors.add(new Java2dProcessor());
         processors.add(new KakaduProcessor());
         return processors;
     }

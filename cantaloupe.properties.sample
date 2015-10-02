@@ -54,14 +54,14 @@ HttpResolver.password =
 ###############
 
 # Image processors to use for various source formats. Available values are
-# `ImageIoProcessor`, `GraphicsMagickProcessor`, `ImageMagickProcessor`,
+# `Java2dProcessor`, `GraphicsMagickProcessor`, `ImageMagickProcessor`,
 # `KakaduProcessor`, and `JaiProcessor`.
 # These extension-specific definitions are optional.
 #processor.jpg = ImageMagickProcessor
 #processor.jp2 = KakaduProcessor
 #processor.tif = GraphicsMagickProcessor
 # Fall back to this processor for any formats not assigned above.
-processor.fallback = ImageIoProcessor
+processor.fallback = Java2dProcessor
 
 # Optional; overrides the PATH
 #GraphicsMagickProcessor.path_to_binaries = /usr/local/bin
@@ -70,7 +70,7 @@ processor.fallback = ImageIoProcessor
 #ImageMagickProcessor.path_to_binaries = /usr/local/bin
 
 # JPEG output quality. Should be a number between 0-1 ending in "f"
-ImageIoProcessor.jpg.quality = 0.7f
+Java2dProcessor.jpg.quality = 0.7f
 
 # Optional; overrides the PATH
 KakaduProcessor.path_to_binaries = /usr/local/bin

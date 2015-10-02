@@ -50,6 +50,8 @@ structure, though, so check below to see if there is anything more to be done.
 * Add the `cache.client.*` keys from the sample configuration.
 * Add the `http.auth.basic*` keys from the sample configuration.
 * Add the `KakaduProcessor` keys from the sample configuration.
+* Change any `ImageIoProcessor` references to `Java2dProcessor` in the
+  configuration.
 
 ## 1.0-beta1 to 1.0-beta2
 
@@ -150,7 +152,7 @@ Cantaloupe can use different image processors for different source formats.
 (Assignments are made in the config file.) Currently, the available processors
 are:
 
-* ImageIoProcessor
+* Java2dProcessor
 * GraphicsMagickProcessor
 * ImageMagickProcessor
 * KakaduProcessor
@@ -169,17 +171,17 @@ landing page, at `/iiif`. A list of output formats supported *for a given
 source format* is contained within the response to an information request
 (`/iiif/{identifier}/info.json`).
 
-### ImageIoProcessor
+### Java2dProcessor
 
-ImageIoProcessor uses the Java ImageIO framework to load and process images in
-a native-Java way. This is a good processor to get started with as it has no
-external dependencies and works out-of-the-jar.
+Java2dProcessor uses the Java ImageIO framework and Java2D API to load and
+process images in a native-Java way. This is a good processor to get started
+with as it has no external dependencies and works out-of-the-jar.
 
 ImageIO, as its name implies, is simply an I/O interface that does not care 
 about image formats, and therefore the list of formats supported by this
 processor varies depending on the codec JARs available in the classpath.
 
-ImageIoProcessor buffers entire source images in RAM, and is therefore
+Java2dProcessor buffers entire source images in RAM, and is therefore
 memory-intensive. Large amounts of RAM and fast storage help. To avoid
 OutOfMemoryErrors, it's a good idea to allow for a very large heap size. (To
 allow 16GB, add the `-Xmx16g` flag to the launch command.)
@@ -195,7 +197,9 @@ transforms and all IIIF output formats (assuming the necessary libraries are
 installed; see [Supported Formats](http://www.graphicsmagick.org/formats.html)).
 
 GraphicsMagickProcessor is a good fallback processor, as it supports a wide
-range of source formats and is generally faster than ImageMagickProcessor.
+range of source formats and is generally faster than ImageMagickProcessor. If
+you can find or compile a "Q8" version of GraphicsMagick, its memory use will
+be halved.
 
 ### ImageMagickProcessor
 
@@ -218,8 +222,9 @@ KakaduProcessor uses the `kdu_expand` and `kdu_jp2info` binaries -- part of the
 JPEG2000 source images. This processor performs well even with large JP2s.
 
 Although it does support some other operations, `kdu_expand` is mainly a
-decompression tool, and Cantaloupe uses only this aspect of it, doing the rest
-of the IIIF operations (scaling, rotation, etc.) using the Java 2D API.
+decompression tool. Cantaloupe uses only its cropping and level-reduction
+features and performs the rest of the IIIF operations (scaling, rotation, etc.)
+using either the Java 2D or JAI APIs (configurable).
 
 Kakadu is not free and the binaries are not included with Cantaloupe. It is
 your responsibility to obtain them by legal means and to comply with the terms
@@ -234,12 +239,13 @@ Java Advanced Imaging (JAI) is a powerful low-level imaging framework
 developed by Sun until around 2006. JaiProcessor uses an updated fork called
 [JAI-EXT](https://github.com/geosolutions-it/jai-ext).
 
-JAI supposedly offers several advantages over Java2D. First, it has a more
-efficient rendering pipeline that should reduce memory usage. Second, it is
-capable of region-of-interest decoding with some formats. Whether these
-advantages really exist, or are merely theoretical, is an open question.
+JAI supposedly offers several theoretical advantages over Java2D. First, it has
+a more efficient rendering pipeline that should reduce memory usage. Second, it
+is capable of region-of-interest decoding with some formats. Whether these
+advantages play out in reality is an open question; the author's own informal
+profiling seems to indicate maybe not.
 
-JaiProcessor can read and write the same formats as ImageIoProcessor.
+JaiProcessor can read and write the same formats as Java2dProcessor.
 
 Years ago, Sun published [platform-native accelerator JARs]
 (http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-java-client-419417.html)
@@ -249,10 +255,10 @@ Windows, Linux, and Solaris, which improved JAI's performance. It is unknown
 whether these still work on modern platforms, but perhaps they are something to
 try.
 
-(If mediaLib is not installed, an error message will be generated, saying,
+(If mediaLib is not installed, an error message will be generated saying,
 "Could not find mediaLib accelerator wrapper classes. Continuing in pure Java
 mode." This is harmless, but can be suppressed anyway by launching Cantaloupe
-with the `-Dcom.sun.media.jai.disableMediaLib=true` option.
+with the `-Dcom.sun.media.jai.disableMediaLib=true` option.)
 
 ### Which Processor Should I Use?
 
@@ -267,7 +273,7 @@ them, are welcome.
 | | FilesystemResolver | HttpResolver |
 | --- | --- | --- |
 |GraphicsMagickProcessor | Yes | Yes |
-|ImageIoProcessor | Yes | Yes |
+|Java2dProcessor | Yes | Yes |
 |ImageMagickProcessor | Yes | Yes |
 |JaiProcessor | Yes | Yes |
 |KakaduProcessor | Yes | NO |
@@ -281,23 +287,23 @@ downscaled tiles to display the initial zoom level. Request handlers do not
 communicate with each other, so each one is loading this large image and
 operating on it independently.
 
-Furthermore, some processors are less efficient, and have to create new images
-internally at each intermediate step in the processing pipeline (cropping,
-scaling, rotating, etc.). Each one occupies precious memory.
+Furthermore, some processors are less efficient in that they have to create
+new images internally at each intermediate step in the processing pipeline
+(cropping, scaling, rotating, etc.). Each one of these occupies precious
+memory.
 
 It's easy to see where RAM becomes a very major consideration here. It is
-completely normal to see transient spikes of hundreds of MB of memory use on
-the Java heap in response to a single zooming-image-viewer request. The JVM
-will accommodate by increasing the heap size, which typically never shrinks
-during the lifetime of an application. From the operating system's perspective,
-the process is bloating up to multiple gigabytes in size, but there is nothing
-wrong -- most of this is actually unused heap space.
+completely normal to see transient spikes of hundreds of megabytes of memory
+use on the Java heap in response to a single zooming-image-viewer request. The
+JVM will accommodate by increasing the heap size. From the operating system's
+perspective, the process is bloating up to multiple gigabytes in size, but
+there is nothing wrong -- most of this is actually unused heap space.
 
 The smaller the available heap space, the larger the source images, and the
 larger the number of simultaneous requests, the greater the likelihood of
 OutOfMemoryErrors. In production, it is highly recommended to use the `-Xmx`
 flag to increase the maximum heap size to the largest amount possible -- for
-example, `-Xmx16g` for 16GB. And, of course, do use caching aggressively.
+example, `-Xmx16g` for 16GB. And, of course, use caching liberally.
 
 ## Caches
 
@@ -343,7 +349,7 @@ benchmarks are also welcome.)
 ## JPEG
 
 It should be possible to use TurboJPEG (high-level API over [libjpeg-turbo]
-(http://www.libjpeg-turbo.org)) with ImageIoProcessor to hardware-accelerate
+(http://www.libjpeg-turbo.org)) with Java2dProcessor to hardware-accelerate
 JPEG coding. To do so, include the [TurboJPEG plugin JAR]
 (https://github.com/geosolutions-it/imageio-ext/wiki/TurboJPEG-plugin) in your
 classpath, and compile libjpeg-turbo with Java support (using the `--with-java`
@@ -356,12 +362,15 @@ KakaduProcessor is by far the most efficient processor for this format.
 GraphicsMagick can read/write JPEG2000 using JasPer, and ImageMagick using
 OpenJPEG. Both of these are extremely slow.
 
-See the JaiProcessor section for other notes on this format.
+See the JaiProcessor section for notes on the mediaLib accelerator.
 
 ## TIFF
 
 GraphicsMagickProcessor and ImageMagickProcessor can both handle TIFF if the
 necessary delegate or plugin is installed. (See the landing page, at `/iiif`.)
+
+Java2dProcessor is known to have issues with certain TIFFs; investigation
+pending.
 
 # Custom Development
 
@@ -382,7 +391,7 @@ Custom processors can be added by implementing one or both of the
 documentation for details and the existing implementations for examples.
 
 Another option might be to add an ImageIO format plugin instead of a custom
-processor, and then use ImageIoProcessor with it.
+processor, and then use Java2dProcessor with it.
 
 ## Custom Caches
 

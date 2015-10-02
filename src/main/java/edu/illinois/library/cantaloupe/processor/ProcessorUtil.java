@@ -34,7 +34,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * A collection of helper methods for working with BufferedImages.
+ * A collection of helper methods that processors can use.
  */
 class ProcessorUtil {
 
@@ -172,7 +172,7 @@ class ProcessorUtil {
                 // is available in java.library.path:
                 // https://github.com/geosolutions-it/imageio-ext/wiki/TurboJPEG-plugin
                 float quality = Application.getConfiguration().
-                        getFloat("ImageIoProcessor.jpg.quality", 0.7f);
+                        getFloat("Java2dProcessor.jpg.quality", 0.7f);
                 Iterator iter = ImageIO.getImageWritersByFormatName("jpeg");
                 ImageWriter writer = (ImageWriter) iter.next();
                 ImageWriteParam param = writer.getDefaultWriteParam();

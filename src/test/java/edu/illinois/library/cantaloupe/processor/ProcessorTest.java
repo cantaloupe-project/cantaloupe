@@ -24,6 +24,7 @@ public abstract class ProcessorTest extends TestCase {
 
     static {
         Application.setConfiguration(new BaseConfiguration());
+        System.setProperty("com.sun.media.jai.disableMediaLib", "true");
     }
 
     protected OutputStream outputStream = new NullOutputStream();

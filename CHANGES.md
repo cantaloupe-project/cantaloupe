@@ -5,10 +5,9 @@
 * Added client-side caching.
 * Added HTTP Basic authentication.
 * Added KakaduProcessor.
+* Renamed ImageIoProcessor to Java2dProcessor.
 * Improved the thread-safety of FilesystemCache.
 * Cantaloupe is now distributed as a .zip archive.
-* Disabled GIF and JP2 output in JaiProcessor.
-* Disabled support for TIFF source images in ImageIoProcessor.
 
 ## 1.0-beta2
 
