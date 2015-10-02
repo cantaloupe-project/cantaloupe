@@ -4,7 +4,6 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
 import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
-import org.junit.AfterClass;
 import org.restlet.Client;
 import org.restlet.Context;
 import org.restlet.data.Protocol;
@@ -40,11 +39,11 @@ public abstract class ResourceTest extends TestCase {
 
     public void setUp() throws Exception {
         Application.setConfiguration(newConfiguration());
-        Application.start();
+        Application.startServer();
     }
 
     public void tearDown() throws Exception {
-        Application.stop();
+        Application.stopServer();
     }
 
     protected ClientResource getClientForUriPath(String path) {

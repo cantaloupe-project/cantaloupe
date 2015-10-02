@@ -61,11 +61,11 @@ public class Iiif20ConformanceTest extends TestCase {
 
     public void setUp() throws Exception {
         Application.setConfiguration(newConfiguration());
-        Application.start();
+        Application.startServer();
     }
 
     public void tearDown() throws Exception {
-        Application.stop();
+        Application.stopServer();
     }
 
     /**

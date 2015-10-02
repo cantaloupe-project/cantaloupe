@@ -49,7 +49,7 @@ public class Application {
         } else if (System.getProperty("cantaloupe.cache.flush_expired") != null) {
             CacheFactory.getInstance().flushExpired();
         } else {
-            start();
+            startServer();
         }
     }
 
@@ -111,7 +111,8 @@ public class Application {
         return versionStr;
     }
 
-    public static void start() throws Exception {
+    public static void startServer() throws Exception {
+        stopServer();
         component = new Component();
         Integer port = getConfiguration().getInteger("http.port", 8182);
         component.getServers().add(Protocol.HTTP, port);
@@ -119,8 +120,11 @@ public class Application {
         component.start();
     }
 
-    public static void stop() throws Exception {
-        component.stop();
+    public static void stopServer() throws Exception {
+        if (component != null) {
+            component.stop();
+            component = null;
+        }
     }
 
 }
