@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -8,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.sun.media.imageioimpl.plugins.jpeg2000.ImageInputStreamWrapper;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
@@ -120,19 +122,34 @@ public class ImageResource extends AbstractResource {
 
         private void doWrite(OutputStream outputStream) throws IOException {
             try {
-                Processor proc = ProcessorFactory.
-                        getProcessor(this.sourceFormat);
                 long msec = System.currentTimeMillis();
-                if (proc instanceof FileProcessor) {
-                    ((FileProcessor) proc).process(this.params,
-                            this.sourceFormat, this.file, outputStream);
-                } else if (proc instanceof StreamProcessor) {
-                    ((StreamProcessor) proc).process(this.params,
-                            this.sourceFormat, this.inputStream, outputStream);
+                // if the parameters request an unmodified source image, it can
+                // be streamed right through
+                if (this.params.isUnmodified()) {
+                    if (this.file != null) {
+                        IOUtils.copy(new FileInputStream(this.file),
+                                outputStream);
+                    } else {
+                        IOUtils.copy(
+                                new ImageInputStreamWrapper(this.inputStream),
+                                outputStream);
+                    }
+                    logger.debug("Streamed with no processing in {} msec",
+                            System.currentTimeMillis() - msec);
+                } else {
+                    Processor proc = ProcessorFactory.
+                            getProcessor(this.sourceFormat);
+                    if (proc instanceof FileProcessor) {
+                        ((FileProcessor) proc).process(this.params,
+                                this.sourceFormat, this.file, outputStream);
+                    } else if (proc instanceof StreamProcessor) {
+                        ((StreamProcessor) proc).process(this.params,
+                                this.sourceFormat, this.inputStream, outputStream);
+                    }
+                    logger.debug("{} processed in {} msec",
+                            proc.getClass().getSimpleName(),
+                            System.currentTimeMillis() - msec);
                 }
-                logger.debug("{} processed in {} msec",
-                        proc.getClass().getSimpleName(),
-                        System.currentTimeMillis() - msec);
             } catch (Exception e) {
                 throw new IOException(e);
             } /*finally {

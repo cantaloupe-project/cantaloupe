@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.request;
 
+import edu.illinois.library.cantaloupe.image.SourceFormat;
+
 /**
  * Encapsulates the "format" component of an IIIF request URI.
  *
@@ -29,6 +31,14 @@ public enum OutputFormat {
 
     public String getMediaType() {
         return this.mediaType;
+    }
+
+    /**
+     * @param sourceFormat
+     * @return Whether the instance is equal to the given source format.
+     */
+    public boolean isEqual(SourceFormat sourceFormat) {
+        return sourceFormat.getExtensions().contains(this.getExtension());
     }
 
     /**

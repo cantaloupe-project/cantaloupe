@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.request;
 
+import edu.illinois.library.cantaloupe.image.SourceFormat;
+
 /**
  * Encapsulates the parameters of an IIIF request.
  *
@@ -61,6 +63,24 @@ public class Parameters implements Comparable<Parameters> {
 
     public Size getSize() {
         return size;
+    }
+
+    /**
+     * @return Whether the parameters are effectively requesting the unmodified
+     * source image, i.e. whether they specify full region, full scale, 0
+     * rotation, no mirroring, default or color quality, and the same output
+     * format as the source format.
+     */
+    public boolean isUnmodified() {
+        return this.getRegion().isFull() &&
+                this.getSize().getScaleMode() == Size.ScaleMode.FULL &&
+                this.getRotation().getDegrees() == 0 &&
+                !(this.getRotation().shouldMirror() &&
+                        this.getRotation().getDegrees() != 0) &&
+                (this.getQuality().equals(Quality.DEFAULT) ||
+                        this.getQuality().equals(Quality.COLOR)) &&
+                this.getOutputFormat().isEqual(
+                        SourceFormat.getSourceFormat(this.getIdentifier()));
     }
 
     /**

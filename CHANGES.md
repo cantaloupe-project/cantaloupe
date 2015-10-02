@@ -7,6 +7,8 @@
 * Added KakaduProcessor.
 * Renamed ImageIoProcessor to Java2dProcessor.
 * Improved the thread-safety of FilesystemCache.
+* Source images are streamed directly rather than being re-encoded when the
+  IIIF parameters request a full-size, unmodified image.
 * Cantaloupe is now distributed as a .zip archive.
 
 ## 1.0-beta2

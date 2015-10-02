@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.request;
 
+import edu.illinois.library.cantaloupe.image.SourceFormat;
 import junit.framework.TestCase;
 
 public class OutputFormatTest extends TestCase {
@@ -22,6 +23,18 @@ public class OutputFormatTest extends TestCase {
         assertEquals("png", OutputFormat.PNG.getExtension());
         assertEquals("tif", OutputFormat.TIF.getExtension());
         assertEquals("webp", OutputFormat.WEBP.getExtension());
+    }
+
+    public void testIsEqual() {
+        assertTrue(OutputFormat.GIF.isEqual(SourceFormat.GIF));
+        assertTrue(OutputFormat.JP2.isEqual(SourceFormat.JP2));
+        assertTrue(OutputFormat.JPG.isEqual(SourceFormat.JPG));
+        assertTrue(OutputFormat.PDF.isEqual(SourceFormat.PDF));
+        assertTrue(OutputFormat.PNG.isEqual(SourceFormat.PNG));
+        assertTrue(OutputFormat.TIF.isEqual(SourceFormat.TIF));
+        assertTrue(OutputFormat.WEBP.isEqual(SourceFormat.WEBP));
+        assertFalse(OutputFormat.GIF.isEqual(SourceFormat.UNKNOWN));
+        assertFalse(OutputFormat.GIF.isEqual(SourceFormat.JPG));
     }
 
     public void testMediaTypes() {
