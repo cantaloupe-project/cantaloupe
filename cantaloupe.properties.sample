@@ -19,36 +19,6 @@ http.port = 8182
 print_stack_trace_on_error_pages = true
 
 ###############
-# PROCESSORS
-###############
-
-# Image processors to use for various source formats. Available values are
-# `ImageIoProcessor`, `GraphicsMagickProcessor`, `ImageMagickProcessor`,
-# `KakaduProcessor`, and `JaiProcessor`.
-# These extension-specific definitions are optional.
-#processor.jpg = ImageMagickProcessor
-#processor.jp2 = KakaduProcessor
-#processor.tif = GraphicsMagickProcessor
-# Fall back to this processor for any formats not assigned above.
-processor.fallback = ImageIoProcessor
-
-# Optional; overrides the PATH
-#GraphicsMagickProcessor.path_to_binaries = /usr/local/bin
-
-# Optional; overrides the PATH
-#ImageMagickProcessor.path_to_binaries = /usr/local/bin
-
-# JPEG output quality. Should be a number between 0-1 ending in "f"
-ImageIoProcessor.jpg.quality = 0.7f
-
-# Optional; overrides the PATH
-KakaduProcessor.path_to_binaries = /usr/local/bin
-# Due to a quirk of kdu_expand, you will need to create a symbolic link to
-# /dev/stdout somewhere called `stdout.ppm`, like this:
-# `ln -s /dev/stdout /path/to/stdout.ppm`
-KakaduProcessor.path_to_stdout_symlink = /some/path/to/stdout.ppm
-
-###############
 # RESOLVERS
 ###############
 
@@ -78,6 +48,38 @@ HttpResolver.url_suffix =
 # Used for HTTP Basic authentication.
 HttpResolver.username =
 HttpResolver.password =
+
+###############
+# PROCESSORS
+###############
+
+# Image processors to use for various source formats. Available values are
+# `ImageIoProcessor`, `GraphicsMagickProcessor`, `ImageMagickProcessor`,
+# `KakaduProcessor`, and `JaiProcessor`.
+# These extension-specific definitions are optional.
+#processor.jpg = ImageMagickProcessor
+#processor.jp2 = KakaduProcessor
+#processor.tif = GraphicsMagickProcessor
+# Fall back to this processor for any formats not assigned above.
+processor.fallback = ImageIoProcessor
+
+# Optional; overrides the PATH
+#GraphicsMagickProcessor.path_to_binaries = /usr/local/bin
+
+# Optional; overrides the PATH
+#ImageMagickProcessor.path_to_binaries = /usr/local/bin
+
+# JPEG output quality. Should be a number between 0-1 ending in "f"
+ImageIoProcessor.jpg.quality = 0.7f
+
+# Optional; overrides the PATH
+KakaduProcessor.path_to_binaries = /usr/local/bin
+# Due to a quirk of kdu_expand, you will need to create a symbolic link to
+# /dev/stdout somewhere called `stdout.ppm`, like this:
+# `ln -s /dev/stdout /path/to/stdout.ppm`
+KakaduProcessor.path_to_stdout_symlink = /some/path/to/stdout.ppm
+# Available values are `jai` and `java2d`.
+KakaduProcessor.post_processor = java2d
 
 ###############
 # CACHING

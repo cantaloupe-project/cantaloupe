@@ -15,6 +15,11 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import javax.imageio.ImageIO;
+import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderedOp;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
@@ -25,6 +30,7 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.awt.image.renderable.ParameterBlock;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -44,6 +50,10 @@ import java.util.Set;
  *     V7.7</a>
  */
 class KakaduProcessor implements FileProcessor {
+
+    private enum PostProcessor {
+        JAI, JAVA2D
+    }
 
     /**
      * Used to return a reduction factor from getProcessBuilder() by reference.
@@ -78,6 +88,7 @@ class KakaduProcessor implements FileProcessor {
     private static final Set<Quality> SUPPORTED_QUALITIES = new HashSet<>();
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
+    private static PostProcessor postProcessor;
 
     static {
         SUPPORTED_QUALITIES.add(Quality.BITONAL);
@@ -96,6 +107,14 @@ class KakaduProcessor implements FileProcessor {
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_PERCENT);
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH);
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
+
+        if (Application.getConfiguration().
+                getString("KakaduProcessor.post_processor", "java2d").
+                toLowerCase().equals("jai")) {
+            postProcessor = PostProcessor.JAI;
+        } else {
+            postProcessor = PostProcessor.JAVA2D;
+        }
     }
 
     /**
@@ -225,13 +244,25 @@ class KakaduProcessor implements FileProcessor {
                 }
                 final ByteArrayInputStream bais = new ByteArrayInputStream(
                         outputBucket.toByteArray());
-                BufferedImage image = new PNMImage(bais).getBufferedImage();
-                image = scaleImageWithG2d(image, params.getSize(), reduction);
-                image = ProcessorUtil.rotateImage(image, params.getRotation());
-                image = ProcessorUtil.filterImage(image, params.getQuality());
-                ProcessorUtil.outputImage(image, params.getOutputFormat(),
-                        outputStream);
-                image.flush();
+                if (postProcessor == PostProcessor.JAI) {
+                    logger.debug("Post-processing using JAI");
+                    PlanarImage image = PlanarImage.wrapRenderedImage(
+                            new PNMImage(bais).getBufferedImage());
+                    RenderedOp op = scaleImage(image, params.getSize(), reduction);
+                    op = ProcessorUtil.rotateImage(op, params.getRotation());
+                    op = ProcessorUtil.filterImage(op, params.getQuality());
+                    ImageIO.write(op, params.getOutputFormat().getExtension(),
+                            outputStream);
+                } else {
+                    logger.debug("Post-processing using Java2D");
+                    BufferedImage image = new PNMImage(bais).getBufferedImage();
+                    image = scaleImageWithG2d(image, params.getSize(), reduction);
+                    image = ProcessorUtil.rotateImage(image, params.getRotation());
+                    image = ProcessorUtil.filterImage(image, params.getQuality());
+                    ProcessorUtil.outputImage(image, params.getOutputFormat(),
+                            outputStream);
+                    image.flush();
+                }
             } finally {
                 process.getInputStream().close();
                 process.getOutputStream().close();
@@ -313,7 +344,7 @@ class KakaduProcessor implements FileProcessor {
 
     /**
      * Gets a reduction factor for the kdu_expand -reduce flag. 0 is no
-     * reduction.
+     * reduction. Scale corresponding to the reduction factor is 1^(2/rf).
      *
      * @param scalePercent Scale percentage between 0 and 1
      * @return
@@ -329,6 +360,63 @@ class KakaduProcessor implements FileProcessor {
     }
 
     /**
+     * Scales an image using JAI, taking an already-applied reduction factor
+     * into account.
+     *
+     * @param inputImage
+     * @param size
+     * @param reductionFactor
+     * @return
+     */
+    private RenderedOp scaleImage(PlanarImage inputImage, Size size,
+                                  ReductionFactor reductionFactor) {
+        RenderedOp scaledImage;
+        if (size.getScaleMode() == Size.ScaleMode.FULL) {
+            ParameterBlock pb = new ParameterBlock();
+            pb.addSource(inputImage);
+            pb.add(1.0f);
+            pb.add(1.0f);
+            pb.add(0.0f);
+            pb.add(0.0f);
+            pb.add(Interpolation.getInstance(Interpolation.INTERP_NEAREST));
+            scaledImage = JAI.create("scale", pb);
+        } else {
+            final double sourceWidth = inputImage.getWidth();
+            final double sourceHeight = inputImage.getHeight();
+            double xScale = 1.0f;
+            double yScale = 1.0f;
+            if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
+                xScale = yScale = size.getWidth() / sourceWidth;
+            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
+                xScale = yScale = size.getHeight() / sourceHeight;
+            } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
+                xScale = size.getWidth() / sourceWidth;
+                yScale = size.getHeight() / sourceHeight;
+            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
+                double hScale = size.getWidth() / sourceWidth;
+                double vScale = size.getHeight() / sourceHeight;
+                xScale = sourceWidth * Math.min(hScale, vScale);
+                yScale = sourceHeight * Math.min(hScale, vScale);
+            } else if (size.getPercent() != null) {
+                xScale = size.getPercent() / 100.0f;
+                if (reductionFactor.factor > 0) {
+                    xScale += (1 / (double) (reductionFactor.factor + 1));
+                }
+                yScale = xScale;
+            }
+            ParameterBlock pb = new ParameterBlock();
+            pb.addSource(inputImage);
+            pb.add((float) xScale);
+            pb.add((float) yScale);
+            pb.add(0.0f);
+            pb.add(0.0f);
+            pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
+            scaledImage = JAI.create("scale", pb);
+        }
+        return scaledImage;
+    }
+
+    /**
      * Scales an image using Graphics2D, taking an already-applied reduction
      * factor into account.
      *
@@ -337,16 +425,14 @@ class KakaduProcessor implements FileProcessor {
      * @param reductionFactor
      * @return
      */
-    private BufferedImage scaleImageWithG2d(final BufferedImage inputImage,
-                                            final Size size,
-                                            final ReductionFactor reductionFactor) {
-        final int sourceWidth = inputImage.getWidth();
-        final int sourceHeight = inputImage.getHeight();
-
+    private BufferedImage scaleImageWithG2d(BufferedImage inputImage, Size size,
+                                            ReductionFactor reductionFactor) {
         BufferedImage scaledImage;
         if (size.getScaleMode() == Size.ScaleMode.FULL) {
             scaledImage = inputImage;
         } else {
+            final int sourceWidth = inputImage.getWidth();
+            final int sourceHeight = inputImage.getHeight();
             int width = 0, height = 0;
             if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
                 width = size.getWidth();
@@ -365,10 +451,9 @@ class KakaduProcessor implements FileProcessor {
                 height = (int) Math.round(sourceHeight *
                         Math.min(hScale, vScale));
             } else if (size.getPercent() != null) {
-                double pct = (size.getPercent() / 100.0);
+                double pct = size.getPercent() / 100.0f;
                 if (reductionFactor.factor > 0) {
-                    pct = (size.getPercent() / 100.0) +
-                            (1 / (double) (reductionFactor.factor + 1));
+                    pct += (1 / (double) (reductionFactor.factor + 1));
                 }
                 width = (int) Math.round(sourceWidth * pct);
                 height = (int) Math.round(sourceHeight * pct);

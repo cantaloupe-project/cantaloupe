@@ -225,8 +225,8 @@ Kakadu is not free and the binaries are not included with Cantaloupe. It is
 your responsibility to obtain them by legal means and to comply with the terms
 of use.
 
-**Note: KakaduProcessor does not work in Windows, as it requires access to
-`/dev/stdout`.**
+*Note: KakaduProcessor does not work in Windows, as it requires access to
+`/dev/stdout`.*
 
 ### JaiProcessor
 
@@ -234,20 +234,30 @@ Java Advanced Imaging (JAI) is a powerful low-level imaging framework
 developed by Sun until around 2006. JaiProcessor uses an updated fork called
 [JAI-EXT](https://github.com/geosolutions-it/jai-ext).
 
-JaiProcessor's main theoretical advantage is its ability to exploit JAI's
-internal tiling engine, which makes it capable of region-of-interest decoding
-with some formats.
+JAI supposedly offers several advantages over Java2D. First, it has a more
+efficient rendering pipeline that should reduce memory usage. Second, it is
+capable of region-of-interest decoding with some formats. Whether these
+advantages really exist, or are merely theoretical, is an open question.
 
 JaiProcessor can read and write the same formats as ImageIoProcessor.
 
-*Note: JaiProcessor is very much experimental at this time. Stand by with
-CTRL+C to prevent your CPU from melting.*
+Years ago, Sun published [platform-native accelerator JARs]
+(http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-java-client-419417.html)
+called [mediaLib]
+(http://www.oracle.com/technetwork/java/install-1-1-2-135866.html) for
+Windows, Linux, and Solaris, which improved JAI's performance. It is unknown
+whether these still work on modern platforms, but perhaps they are something to
+try.
+
+(If mediaLib is not installed, an error message will be generated, saying,
+"Could not find mediaLib accelerator wrapper classes. Continuing in pure Java
+mode." This is harmless, but can be suppressed anyway by launching Cantaloupe
+with the `-Dcom.sun.media.jai.disableMediaLib=true` option.
 
 ### Which Processor Should I Use?
 
-1. Don't use JaiProcessor
-2. Use KakaduProcessor for JP2s
-3. For all of the rest of the source formats you would like to serve, it's a
+1. Use KakaduProcessor for JP2s
+2. For all of the rest of the source formats you would like to serve, it's a
 good idea to experiment with different processors, comparing their performance,
 resource usage, and output quality. Benchmark results, if you can contribute
 them, are welcome.
@@ -346,11 +356,7 @@ KakaduProcessor is by far the most efficient processor for this format.
 GraphicsMagick can read/write JPEG2000 using JasPer, and ImageMagick using
 OpenJPEG. Both of these are extremely slow.
 
-Years ago, Sun published [platform-native JAI JPEG2000 accelerator JARs]
-(http://download.java.net/media/jai/builds/release/1_1_3/INSTALL.html) for
-Windows, Linux, and Solaris, which improved performance from dreadful to merely
-poor. It is unknown whether these are still available or whether they would
-still work on modern platforms. If so, they ought to work with ImageIoProcessor.
+See the JaiProcessor section for other notes on this format.
 
 ## TIFF
 
