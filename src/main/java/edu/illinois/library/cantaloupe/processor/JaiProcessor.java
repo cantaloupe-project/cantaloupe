@@ -1,5 +1,10 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
+import com.sun.media.jai.codec.ImageCodec;
+import com.sun.media.jai.codec.ImageEncoder;
+import com.sun.media.jai.codec.JPEGEncodeParam;
+import com.sun.media.jai.codecimpl.TIFFImageEncoder;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
@@ -10,8 +15,12 @@ import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
 import javax.media.jai.ParameterBlockJAI;
@@ -23,6 +32,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -77,6 +87,11 @@ class JaiProcessor implements StreamProcessor {
                     if (sourceFormat.getMediaTypes().
                             contains(new MediaType(readerMimeTypes[i].toLowerCase()))) {
                         for (OutputFormat outputFormat : OutputFormat.values()) {
+                            if (outputFormat == OutputFormat.GIF ||
+                                    outputFormat == OutputFormat.JP2) {
+                                // these currently don't work (see outputImage())
+                                continue;
+                            }
                             for (i = 0, length = writerMimeTypes.length; i < length; i++) {
                                 if (outputFormat.getMediaType().equals(writerMimeTypes[i].toLowerCase())) {
                                     outputFormats.add(outputFormat);
@@ -134,8 +149,7 @@ class JaiProcessor implements StreamProcessor {
             image = ProcessorUtil.scaleImage(image, params.getSize());
             image = ProcessorUtil.rotateImage(image, params.getRotation());
             image = ProcessorUtil.filterImage(image, params.getQuality());
-            ImageIO.write(image, params.getOutputFormat().getExtension(),
-                    outputStream);
+            outputImage(image, params.getOutputFormat(), outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         } finally {
@@ -189,6 +203,71 @@ class JaiProcessor implements StreamProcessor {
             croppedImage = JAI.create("crop", pb);
         }
         return croppedImage;
+    }
+
+    private void outputImage(RenderedOp image, OutputFormat format,
+                             OutputStream outputStream) throws IOException {
+        switch (format) {
+            case GIF:
+                // TODO: this and ImageIO.write() frequently don't work
+                Iterator writers = ImageIO.getImageWritersByFormatName("GIF");
+                if (writers.hasNext()) {
+                    // GIFWriter can't deal with a non-0,0 origin
+                    ParameterBlock pb = new ParameterBlock();
+                    pb.addSource(image);
+                    pb.add((float) -image.getMinX());
+                    pb.add((float) -image.getMinY());
+                    image = JAI.create("translate", pb);
+
+                    ImageWriter writer = (ImageWriter) writers.next();
+                    ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
+                    writer.setOutput(os);
+                    writer.write(image);
+                }
+                break;
+            case JP2:
+                // TODO: neither this nor ImageIO.write() seem to write anything
+                writers = ImageIO.getImageWritersByFormatName("JPEG2000");
+                if (writers.hasNext()) {
+                    ImageWriter writer = (ImageWriter) writers.next();
+                    IIOImage iioImage = new IIOImage(image, null, null);
+                    J2KImageWriteParam j2Param = new J2KImageWriteParam();
+                    j2Param.setLossless(false);
+                    j2Param.setEncodingRate(Double.MAX_VALUE);
+                    j2Param.setCodeBlockSize(new int[]{128, 8});
+                    j2Param.setTilingMode(ImageWriteParam.MODE_DISABLED);
+                    j2Param.setProgressionType("res");
+                    ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
+                    writer.setOutput(os);
+                    writer.write(null, iioImage, j2Param);
+                }
+                break;
+            case JPG:
+                // JPEGImageEncoder seems to be slightly more efficient than
+                // ImageIO.write()
+                JPEGEncodeParam jParam = new JPEGEncodeParam();
+                ImageEncoder encoder = ImageCodec.createImageEncoder("JPEG",
+                        outputStream, jParam);
+                encoder.encode(image);
+                break;
+            case PNG:
+                // ImageIO.write() seems to be more efficient than
+                // PNGImageEncoder
+                ImageIO.write(image, format.getExtension(), outputStream);
+                /* PNGEncodeParam pngParam = new PNGEncodeParam.RGB();
+                ImageEncoder pngEncoder = ImageCodec.createImageEncoder("PNG",
+                        outputStream, pngParam);
+                pngEncoder.encode(image); */
+                break;
+            case TIF:
+                // TIFFImageEncoder seems to be more efficient than
+                // ImageIO.write();
+                ImageEncoder tiffEnc = new TIFFImageEncoder(outputStream,
+                        null);
+                tiffEnc.encode(image);
+                break;
+        }
+
     }
 
 }
