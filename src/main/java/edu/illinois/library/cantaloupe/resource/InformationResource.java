@@ -126,10 +126,14 @@ public class InformationResource extends AbstractResource {
 
         // sizes
         final short maxReductionFactor = 4;
-        for (double i = 2; i <= Math.pow(2, maxReductionFactor); i = i * 2) {
-            ImageInfo.Size size = new ImageInfo.Size();
-            size.setWidth((int) Math.round(fullSize.width / i));
-            size.setHeight((int) Math.round(fullSize.height / i));
+        final short minSize = 256;
+        for (double i = 2; i <= Math.pow(2, maxReductionFactor); i *= 2) {
+            final int width = (int) Math.round(fullSize.width / i);
+            final int height = (int) Math.round(fullSize.height / i);
+            if (width < minSize || height < minSize) {
+                break;
+            }
+            ImageInfo.Size size = new ImageInfo.Size(width, height);
             imageInfo.getSizes().add(0, size);
         }
 

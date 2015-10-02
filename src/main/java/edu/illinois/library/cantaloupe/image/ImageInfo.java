@@ -27,6 +27,14 @@ public class ImageInfo {
         private Integer height;
         private Integer width;
 
+        public Size() {
+        }
+
+        public Size(Integer width, Integer height) {
+            this.setWidth(width);
+            this.setHeight(height);
+        }
+
         public Integer getHeight() {
             return height;
         }
