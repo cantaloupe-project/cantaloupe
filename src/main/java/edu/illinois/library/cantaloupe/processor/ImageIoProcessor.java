@@ -68,11 +68,6 @@ class ImageIoProcessor implements StreamProcessor {
         final HashMap<SourceFormat,Set<OutputFormat>> map =
                 new HashMap<>();
         for (SourceFormat sourceFormat : SourceFormat.values()) {
-            if (sourceFormat.equals(SourceFormat.TIF)) {
-                // TIFF is currently disabled because it is too problematic
-                // (see inline commentary in loadImage())
-                continue;
-            }
             Set<OutputFormat> outputFormats = new HashSet<>();
             for (int i = 0, length = readerMimeTypes.length; i < length; i++) {
                 if (sourceFormat.getMediaTypes().
@@ -134,7 +129,8 @@ class ImageIoProcessor implements StreamProcessor {
         }
 
         try {
-            BufferedImage image = loadImage(inputStream, sourceFormat);
+            BufferedImage image = loadImage(inputStream, sourceFormat,
+                    params.getIdentifier());
             image = ProcessorUtil.cropImage(image, params.getRegion());
             image = ProcessorUtil.scaleImageWithG2d(image, params.getSize());
             image = ProcessorUtil.rotateImage(image, params.getRotation());
@@ -155,7 +151,8 @@ class ImageIoProcessor implements StreamProcessor {
     }
 
     private BufferedImage loadImage(ImageInputStream inputStream,
-                                    SourceFormat sourceFormat)
+                                    SourceFormat sourceFormat,
+                                    String identifier)
             throws IOException, UnsupportedSourceFormatException {
         BufferedImage image = null;
         switch (sourceFormat) {
@@ -163,21 +160,19 @@ class ImageIoProcessor implements StreamProcessor {
                 image = ImageIO.read(inputStream);
                 break;
             case TIF:
-                // Why don't we just use ImageIO.read()? Because the
-                // BufferedImages it returns for TIFFs often end up with type
-                // TYPE_CUSTOM, which causes many subsequent operations to fail.
+                // We can't use ImageIO.read() because the BufferedImages it
+                // returns for TIFFs are often set to type TYPE_CUSTOM, which
+                // causes many subsequent operations to fail.
                 //
-                // Here is strategy B: the geosolutions.it TIFFImageReader.
+                // Strategy B is the geosolutions.it TIFFImageReader.
                 // Unfortunately, this reader throws an
                 // ArrayIndexOutOfBoundsException when a TIFF file contains a
                 // tag value > 6. (To inspect tag values, run
-                // $ tiffdump <file>.) But, it might be more memory-efficient
-                // than strategy C, below, when it works.
+                // $ tiffdump <file>.)
                 //
                 // The Sun TIFFImageReader suffers from the same issue except it
                 // throws an IllegalArgumentException instead.
                 try {
-                    inputStream.mark();
                     Iterator<ImageReader> it = ImageIO.
                             getImageReadersByMIMEType("image/tiff");
                     while (it.hasNext()) {
@@ -194,27 +189,22 @@ class ImageIoProcessor implements StreamProcessor {
                         }
                     }
                 } catch (ArrayIndexOutOfBoundsException e) {
-                    // ImageDecoder is our strategy C. It eats RAM like candy
-                    // and never frees it, so it is basically unusable, but
-                    // this will at least enable us to crank out a few images
-                    // before collapsing.
-                    logger.warn("Falling back to TIFF decode strategy B (get " +
-                            "ready for an OutOfMemoryError!)");
-                    inputStream.reset();
-                    try (InputStream is = new ImageInputStreamWrapper(inputStream)) {
-                        ImageDecoder dec = ImageCodec.createImageDecoder("tiff",
-                                is, null);
-                        RenderedImage op = dec.decodeAsRenderedImage();
-                        BufferedImage rgbImage = new BufferedImage(op.getWidth(),
-                                op.getHeight(), BufferedImage.TYPE_INT_RGB);
-                        rgbImage.setData(op.getData());
-                        image = rgbImage;
-                    }
+                    logger.error("TIFFImageReader failed to read " + identifier);
                 }
+
+                /* Yet another alternative strategy, commented out pending
+                deeper investigation.
+                try (InputStream is = new ImageInputStreamWrapper(inputStream)) {
+                    ImageDecoder dec = ImageCodec.createImageDecoder("tiff",
+                            is, null);
+                    RenderedImage op = dec.decodeAsRenderedImage();
+                    BufferedImage rgbImage = new BufferedImage(op.getWidth(),
+                            op.getHeight(), BufferedImage.TYPE_INT_RGB);
+                    rgbImage.setData(op.getData());
+                    image = rgbImage;
+                } */
                 break;
             default:
-                // Again, why can't we just use ImageIO.read()? Because it
-                // leaks memory in a major way.
                 Iterator<ImageReader> it = ImageIO.getImageReadersByMIMEType(
                         sourceFormat.getPreferredMediaType().toString());
                 while (it.hasNext()) {
@@ -232,7 +222,7 @@ class ImageIoProcessor implements StreamProcessor {
                 // TYPE_CUSTOM won't work with various operations, so copy into a
                 // new image of the correct type. (This is extremely expensive)
                 if (image.getType() == BufferedImage.TYPE_CUSTOM) {
-                    logger.debug("Redrawing image of TYPE_CUSTOM into a new image of TYPE_INT_RGB: {}",
+                    logger.warn("Redrawing image of TYPE_CUSTOM into a new image of TYPE_INT_RGB: {}",
                             image.toString());
                     BufferedImage rgbImage = new BufferedImage(image.getWidth(),
                             image.getHeight(), BufferedImage.TYPE_INT_RGB);
