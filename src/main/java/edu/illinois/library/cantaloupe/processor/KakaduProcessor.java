@@ -112,8 +112,10 @@ class KakaduProcessor implements FileProcessor {
                 getString("KakaduProcessor.post_processor", "java2d").
                 toLowerCase().equals("jai")) {
             postProcessor = PostProcessor.JAI;
+            logger.debug("Post-processing using JAI");
         } else {
             postProcessor = PostProcessor.JAVA2D;
+            logger.debug("Post-processing using Java2D");
         }
     }
 
@@ -245,7 +247,6 @@ class KakaduProcessor implements FileProcessor {
                 final ByteArrayInputStream bais = new ByteArrayInputStream(
                         outputBucket.toByteArray());
                 if (postProcessor == PostProcessor.JAI) {
-                    logger.debug("Post-processing using JAI");
                     PlanarImage image = PlanarImage.wrapRenderedImage(
                             new PNMImage(bais).getBufferedImage());
                     RenderedOp op = scaleImage(image, params.getSize(), reduction);
@@ -254,7 +255,6 @@ class KakaduProcessor implements FileProcessor {
                     ImageIO.write(op, params.getOutputFormat().getExtension(),
                             outputStream);
                 } else {
-                    logger.debug("Post-processing using Java2D");
                     BufferedImage image = new PNMImage(bais).getBufferedImage();
                     image = scaleImageWithG2d(image, params.getSize(), reduction);
                     image = ProcessorUtil.rotateImage(image, params.getRotation());
@@ -308,7 +308,7 @@ class KakaduProcessor implements FileProcessor {
         // -reduce option which is capable of downscaling by factors of 2,
         // significantly speeding decompression. We can use it if the scale mode
         // is ASPECT_FIT_* and either the percent is <=50, or the height/width
-        // are <=50% of full size.
+        // are <=50% of full size. The smaller the scale, the bigger the win.
         final Size size = params.getSize();
         if (size.getScaleMode() != Size.ScaleMode.FULL) {
             if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
