@@ -28,8 +28,10 @@ public interface FileProcessor extends Processor {
      *
      * @param params Parameters of the output image
      * @param sourceFormat Format of the source image
-     * @param inputFile File from which to read the image.
-     * @param outputStream Stream to which to write the image.
+     * @param inputFile File from which to read the image. Implementations
+     *                  should not close it.
+     * @param outputStream Stream to which to write the image. Implementations
+     *                     should not close it.
      * @throws UnsupportedOutputFormatException
      * @throws UnsupportedSourceFormatException
      * @throws ProcessorException

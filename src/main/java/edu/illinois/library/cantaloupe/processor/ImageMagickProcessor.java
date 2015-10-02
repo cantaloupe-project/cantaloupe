@@ -220,12 +220,6 @@ class ImageMagickProcessor implements StreamProcessor {
             convert.run(op);
         } catch (IOException|IM4JavaException|InterruptedException e) {
             throw new ProcessorException(e.getMessage(), e);
-        } finally {
-            try {
-                inputStream.close();
-            } catch (IOException e) {
-                logger.warn(e.getMessage(), e);
-            }
         }
     }
 

@@ -223,12 +223,6 @@ class GraphicsMagickProcessor implements StreamProcessor {
             convert.run(op);
         } catch (InterruptedException|IM4JavaException|IOException e) {
             throw new ProcessorException(e.getMessage(), e);
-        } finally {
-            try {
-                inputStream.close();
-            } catch (IOException e) {
-                logger.warn(e.getMessage(), e);
-            }
         }
     }
 

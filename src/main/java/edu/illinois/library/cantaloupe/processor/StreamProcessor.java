@@ -29,8 +29,9 @@ public interface StreamProcessor extends Processor {
      * @param params Parameters of the output image
      * @param sourceFormat Format of the source image
      * @param inputStream Stream from which to read the image. Implementations
-     *                    must close it.
-     * @param outputStream Stream to which to write the image.
+     *                    should not close it.
+     * @param outputStream Stream to which to write the image. Implementations
+     *                     should not close it.
      * @throws UnsupportedOutputFormatException
      * @throws UnsupportedSourceFormatException
      * @throws ProcessorException

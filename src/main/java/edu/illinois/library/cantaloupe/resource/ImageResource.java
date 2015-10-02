@@ -135,7 +135,16 @@ public class ImageResource extends AbstractResource {
                         System.currentTimeMillis() - msec);
             } catch (Exception e) {
                 throw new IOException(e);
-            }
+            } /*finally {
+                TODO: doesn't work with Java2dProcessor.process()
+                try {
+                    if (this.inputStream != null) {
+                        this.inputStream.close();
+                    }
+                } catch (IOException e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }*/
         }
 
         /**
