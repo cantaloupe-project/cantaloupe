@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe;
 
-import com.sun.istack.internal.NotNull;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import org.apache.commons.configuration.Configuration;
@@ -74,7 +73,6 @@ public class Application {
     /**
      * @return The application-wide Configuration object.
      */
-    @NotNull
     public static Configuration getConfiguration() {
         if (config == null) {
             try {
@@ -108,7 +106,6 @@ public class Application {
      * @return The application version from manifest.mf, or a string like
      * "Non-Release" if running from a jar.
      */
-    @NotNull
     public static String getVersion() {
         String versionStr = "Non-Release";
         Class clazz = Application.class;

@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import com.sun.istack.internal.NotNull;
 import edu.illinois.library.cantaloupe.Feature;
 import edu.illinois.library.cantaloupe.processor.ProcessorFeature;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
@@ -86,7 +85,6 @@ enum ComplianceLevel {
         this.uri = uri;
     }
 
-    @NotNull
     public String getUri() {
         return this.uri;
     }
