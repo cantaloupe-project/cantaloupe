@@ -266,30 +266,29 @@ class ProcessorUtil {
         if (size.getScaleMode() == Size.ScaleMode.FULL) {
             scaledImage = inputImage;
         } else {
-            float xScale = 1.0f;
-            float yScale = 1.0f;
+            final double sourceWidth = inputImage.getWidth();
+            final double sourceHeight = inputImage.getHeight();
+            double xScale = 1.0f;
+            double yScale = 1.0f;
             if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
-                xScale = (float) size.getWidth() / inputImage.getWidth();
-                yScale = xScale;
+                xScale = yScale = size.getWidth() / sourceWidth;
             } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
-                yScale = (float) size.getHeight() / inputImage.getHeight();
-                xScale = yScale;
+                xScale = yScale = size.getHeight() / sourceHeight;
             } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
-                xScale = (float) size.getWidth() / inputImage.getWidth();
-                yScale = (float) size.getHeight() / inputImage.getHeight();
+                xScale = size.getWidth() / sourceWidth;
+                yScale = size.getHeight() / sourceHeight;
             } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
-                double hScale = (float) size.getWidth() / inputImage.getWidth();
-                double vScale = (float) size.getHeight() / inputImage.getHeight();
-                xScale = (float) (inputImage.getWidth() * Math.min(hScale, vScale));
-                yScale = (float) (inputImage.getHeight() * Math.min(hScale, vScale));
+                double hScale = size.getWidth() / sourceWidth;
+                double vScale = size.getHeight() / sourceHeight;
+                xScale = (sourceWidth * Math.min(hScale, vScale));
+                yScale = (sourceHeight * Math.min(hScale, vScale));
             } else if (size.getPercent() != null) {
-                xScale = size.getPercent() / 100.0f;
-                yScale = xScale;
+                xScale = yScale = size.getPercent() / 100.0f;
             }
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(inputImage);
-            pb.add(xScale);
-            pb.add(yScale);
+            pb.add((float) xScale);
+            pb.add((float) yScale);
             pb.add(0.0f);
             pb.add(0.0f);
             pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
