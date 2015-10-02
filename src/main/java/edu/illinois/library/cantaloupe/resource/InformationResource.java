@@ -111,14 +111,17 @@ public class InformationResource extends AbstractResource {
 
     private ImageInfo getImageInfo(String identifier, Dimension size,
                                    Set<Quality> qualities,
-                                   Set<ProcessorFeature> features,
+                                   Set<ProcessorFeature> processorFeatures,
                                    Set<OutputFormat> outputFormats) {
         ImageInfo imageInfo = new ImageInfo();
         imageInfo.setId(getImageUri(identifier));
         imageInfo.setWidth(size.width);
         imageInfo.setHeight(size.height);
 
-        imageInfo.getProfile().add("http://iiif.io/api/image/2/level2.json"); // TODO: automatically determine this
+        final String complianceUri = ComplianceLevel.
+                getLevel(SUPPORTED_SERVICE_FEATURES, processorFeatures,
+                        qualities, outputFormats).getUri();
+        imageInfo.getProfile().add(complianceUri);
 
         // formats
         Map<String, Set<String>> profileMap = new HashMap<>();
@@ -138,7 +141,7 @@ public class InformationResource extends AbstractResource {
 
         // supports
         Set<String> featureStrings = new HashSet<>();
-        for (Feature feature : features) {
+        for (Feature feature : processorFeatures) {
             featureStrings.add(feature.getName());
         }
         for (Feature feature : SUPPORTED_SERVICE_FEATURES) {
