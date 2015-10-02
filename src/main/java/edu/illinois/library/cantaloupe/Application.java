@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe;
 
+import com.sun.istack.internal.NotNull;
+import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -37,17 +39,33 @@ public class Application {
         Velocity.init();
     }
 
-    public static void main(String[] args) throws Exception {
-        String version = getVersion();
-        if (version == null) {
-            version = "(unknown version)";
+    private static void flushCacheAtLaunch() throws IOException {
+        Cache cache = CacheFactory.getInstance();
+        if (cache != null) {
+            cache.flush();
+        } else {
+            System.out.println("Cache is not specified or is improperly configured.");
+            System.exit(-1);
         }
-        logger.info("Starting Cantaloupe {}", version);
+    }
+
+    private static void flushExpiredFromCacheAtLaunch() throws IOException {
+        Cache cache = CacheFactory.getInstance();
+        if (cache != null) {
+            cache.flushExpired();
+        } else {
+            System.out.println("Cache is not specified or is improperly configured.");
+            System.exit(-1);
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        logger.info("Starting Cantaloupe {}", getVersion());
 
         if (System.getProperty("cantaloupe.cache.flush") != null) {
-            CacheFactory.getInstance().flush();
+            flushCacheAtLaunch();
         } else if (System.getProperty("cantaloupe.cache.flush_expired") != null) {
-            CacheFactory.getInstance().flushExpired();
+            flushExpiredFromCacheAtLaunch();
         } else {
             startServer();
         }
@@ -56,6 +74,7 @@ public class Application {
     /**
      * @return The application-wide Configuration object.
      */
+    @NotNull
     public static Configuration getConfiguration() {
         if (config == null) {
             try {
@@ -89,6 +108,7 @@ public class Application {
      * @return The application version from manifest.mf, or a string like
      * "Non-Release" if running from a jar.
      */
+    @NotNull
     public static String getVersion() {
         String versionStr = "Non-Release";
         Class clazz = Application.class;
