@@ -115,19 +115,22 @@ class FilesystemCache implements Cache {
             final String imagePathname = getImagePathname();
             final String infoPathname = getInfoPathname();
             if (imagePathname != null && infoPathname != null) {
-                final File imageDir = new File(imagePathname);
                 long imageCount = 0;
-                for (File file : imageDir.listFiles()) {
-                    if (file.isFile() && file.delete()) {
-                        imageCount++;
+                final File imageDir = new File(imagePathname);
+                if (imageDir.isDirectory()) {
+                    for (File file : imageDir.listFiles()) {
+                        if (file.isFile() && file.delete()) {
+                            imageCount++;
+                        }
                     }
                 }
-
-                final File infoDir = new File(infoPathname);
                 long infoCount = 0;
-                for (File file : infoDir.listFiles()) {
-                    if (file.isFile() && file.delete()) {
-                        infoCount++;
+                final File infoDir = new File(infoPathname);
+                if (infoDir.isDirectory()) {
+                    for (File file : infoDir.listFiles()) {
+                        if (file.isFile() && file.delete()) {
+                            infoCount++;
+                        }
                     }
                 }
                 logger.info("Flushed {} images and {} dimensions", imageCount,
@@ -183,19 +186,22 @@ class FilesystemCache implements Cache {
             final String imagePathname = getImagePathname();
             final String infoPathname = getInfoPathname();
             if (imagePathname != null && infoPathname != null) {
-                final File imageDir = new File(imagePathname);
                 long imageCount = 0;
-                for (File file : imageDir.listFiles()) {
-                    if (file.isFile() && isExpired(file) && file.delete()) {
-                        imageCount++;
+                final File imageDir = new File(imagePathname);
+                if (imageDir.isDirectory()) {
+                    for (File file : imageDir.listFiles()) {
+                        if (file.isFile() && isExpired(file) && file.delete()) {
+                            imageCount++;
+                        }
                     }
                 }
-
-                final File infoDir = new File(infoPathname);
                 long infoCount = 0;
-                for (File file : infoDir.listFiles()) {
-                    if (file.isFile() && isExpired(file) && file.delete()) {
-                        infoCount++;
+                final File infoDir = new File(infoPathname);
+                if (infoDir.isDirectory()) {
+                    for (File file : infoDir.listFiles()) {
+                        if (file.isFile() && isExpired(file) && file.delete()) {
+                            infoCount++;
+                        }
                     }
                 }
                 logger.info("Flushed {} expired images and {} expired dimensions",
