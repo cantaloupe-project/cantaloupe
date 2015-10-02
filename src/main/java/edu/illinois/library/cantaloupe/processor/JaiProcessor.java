@@ -93,11 +93,6 @@ class JaiProcessor implements StreamProcessor {
                     if (sourceFormat.getMediaTypes().
                             contains(new MediaType(readerMimeTypes[i].toLowerCase()))) {
                         for (OutputFormat outputFormat : OutputFormat.values()) {
-                            if (outputFormat == OutputFormat.GIF ||
-                                    outputFormat == OutputFormat.JP2) {
-                                // these don't work currently (see outputImage())
-                                continue;
-                            }
                             for (i = 0, length = writerMimeTypes.length; i < length; i++) {
                                 if (outputFormat.getMediaType().equals(writerMimeTypes[i].toLowerCase())) {
                                     outputFormats.add(outputFormat);
@@ -298,60 +293,7 @@ class JaiProcessor implements StreamProcessor {
 
     private void outputImage(RenderedOp image, OutputFormat format,
                              OutputStream outputStream) throws IOException {
-        switch (format) {
-            case GIF:
-                Iterator writers = ImageIO.getImageWritersByFormatName("GIF");
-                if (writers.hasNext()) {
-                    // GIFWriter can't deal with a non-0,0 origin
-                    ParameterBlock pb = new ParameterBlock();
-                    pb.addSource(image);
-                    pb.add((float) -image.getMinX());
-                    pb.add((float) -image.getMinY());
-                    image = JAI.create("translate", pb);
-
-                    ImageWriter writer = (ImageWriter) writers.next();
-                    ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
-                    writer.setOutput(os);
-                    // TODO: this doesn't seem to write anything
-                    writer.write(image);
-                }
-                break;
-            case JP2:
-                writers = ImageIO.getImageWritersByFormatName("JPEG2000");
-                if (writers.hasNext()) {
-                    ImageWriter writer = (ImageWriter) writers.next();
-                    IIOImage iioImage = new IIOImage(image, null, null);
-                    J2KImageWriteParam j2Param = new J2KImageWriteParam();
-                    j2Param.setLossless(false);
-                    j2Param.setEncodingRate(Double.MAX_VALUE);
-                    j2Param.setCodeBlockSize(new int[]{128, 8});
-                    j2Param.setTilingMode(ImageWriteParam.MODE_DISABLED);
-                    j2Param.setProgressionType("res");
-                    ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
-                    writer.setOutput(os);
-                    // TODO: this doesn't seem to write anything
-                    writer.write(null, iioImage, j2Param);
-                }
-                break;
-            case JPG:
-                JPEGEncodeParam jParam = new JPEGEncodeParam();
-                ImageEncoder encoder = ImageCodec.createImageEncoder("JPEG",
-                        outputStream, jParam);
-                encoder.encode(image);
-                break;
-            case PNG:
-                PNGEncodeParam pngParam = new PNGEncodeParam.RGB();
-                ImageEncoder pngEncoder = ImageCodec.createImageEncoder("PNG",
-                        outputStream, pngParam);
-                pngEncoder.encode(image);
-                break;
-            case TIF:
-                TIFFImageEncoder tiffEnc = new TIFFImageEncoder(outputStream,
-                        null);
-                tiffEnc.encode(image);
-                break;
-        }
-
+        ImageIO.write(image, format.getExtension(), outputStream);
     }
 
 }

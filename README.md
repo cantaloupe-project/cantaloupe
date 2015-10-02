@@ -357,8 +357,6 @@ still work on modern platforms. If so, they ought to work with ImageIoProcessor.
 GraphicsMagickProcessor and ImageMagickProcessor can both handle TIFF if the
 necessary delegate or plugin is installed. (See the landing page, at `/iiif`.)
 
-ImageIoProcessor has some issues with TIFF.
-
 # Custom Development
 
 ## Custom Resolvers
