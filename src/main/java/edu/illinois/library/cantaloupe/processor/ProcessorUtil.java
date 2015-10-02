@@ -15,12 +15,18 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
+import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
+import javax.media.jai.OpImage;
+import javax.media.jai.RenderedOp;
+import javax.media.jai.operator.TransposeDescriptor;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashSet;
@@ -83,6 +89,31 @@ class ProcessorUtil {
             }
             Graphics2D g2d = filteredImage.createGraphics();
             g2d.drawImage(inputImage, 0, 0, null);
+        }
+        return filteredImage;
+    }
+
+    public static RenderedOp filterImage(RenderedOp inputImage, Quality quality) {
+        RenderedOp filteredImage = inputImage;
+        if (quality != Quality.COLOR && quality != Quality.DEFAULT) {
+            // convert to grayscale
+            ParameterBlock pb = new ParameterBlock();
+            pb.addSource(inputImage);
+            double[][] matrixRgb = { { 0.114, 0.587, 0.299, 0 } };
+            double[][] matrixRgba = { { 0.114, 0.587, 0.299, 0, 0 } };
+            if (OpImage.getExpandedNumBands(inputImage.getSampleModel(),
+                    inputImage.getColorModel()) == 4) {
+                pb.add(matrixRgba);
+            } else {
+                pb.add(matrixRgb);
+            }
+            filteredImage = JAI.create("bandcombine", pb, null);
+            if (quality == Quality.BITONAL) {
+                pb = new ParameterBlock();
+                pb.addSource(filteredImage);
+                pb.add(1.0 * 128);
+                filteredImage = JAI.create("binarize", pb);
+            }
         }
         return filteredImage;
     }
@@ -161,6 +192,30 @@ class ProcessorUtil {
         }
     }
 
+    public static RenderedOp rotateImage(RenderedOp inputImage,
+                                         Rotation rotation) {
+        // do mirroring
+        RenderedOp mirroredImage = inputImage;
+        if (rotation.shouldMirror()) {
+            ParameterBlock pb = new ParameterBlock();
+            pb.addSource(inputImage);
+            pb.add(TransposeDescriptor.FLIP_HORIZONTAL);
+            mirroredImage = JAI.create("transpose", pb);
+        }
+        // do rotation
+        RenderedOp rotatedImage = mirroredImage;
+        if (rotation.getDegrees() > 0) {
+            ParameterBlock pb = new ParameterBlock();
+            pb.addSource(rotatedImage);
+            pb.add(mirroredImage.getWidth() / 2.0f);
+            pb.add(mirroredImage.getHeight() / 2.0f);
+            pb.add((float) Math.toRadians(rotation.getDegrees()));
+            pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
+            rotatedImage = JAI.create("rotate", pb);
+        }
+        return rotatedImage;
+    }
+
     public static BufferedImage rotateImage(final BufferedImage inputImage,
                                             final Rotation rotation) {
         // do mirroring
@@ -204,6 +259,43 @@ class ProcessorUtil {
             g2d.drawImage(mirroredImage, tx, null);
         }
         return rotatedImage;
+    }
+
+    public static RenderedOp scaleImage(RenderedOp inputImage, Size size) {
+        RenderedOp scaledImage;
+        if (size.getScaleMode() == Size.ScaleMode.FULL) {
+            scaledImage = inputImage;
+        } else {
+            float xScale = 1.0f;
+            float yScale = 1.0f;
+            if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
+                xScale = (float) size.getWidth() / inputImage.getWidth();
+                yScale = xScale;
+            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
+                yScale = (float) size.getHeight() / inputImage.getHeight();
+                xScale = yScale;
+            } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
+                xScale = (float) size.getWidth() / inputImage.getWidth();
+                yScale = (float) size.getHeight() / inputImage.getHeight();
+            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
+                double hScale = (float) size.getWidth() / inputImage.getWidth();
+                double vScale = (float) size.getHeight() / inputImage.getHeight();
+                xScale = (float) (inputImage.getWidth() * Math.min(hScale, vScale));
+                yScale = (float) (inputImage.getHeight() * Math.min(hScale, vScale));
+            } else if (size.getPercent() != null) {
+                xScale = size.getPercent() / 100.0f;
+                yScale = xScale;
+            }
+            ParameterBlock pb = new ParameterBlock();
+            pb.addSource(inputImage);
+            pb.add(xScale);
+            pb.add(yScale);
+            pb.add(0.0f);
+            pb.add(0.0f);
+            pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
+            scaledImage = JAI.create("scale", pb);
+        }
+        return scaledImage;
     }
 
     /**

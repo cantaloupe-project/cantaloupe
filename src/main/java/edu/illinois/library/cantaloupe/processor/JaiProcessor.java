@@ -1,36 +1,21 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
-import com.sun.media.jai.codec.ImageCodec;
-import com.sun.media.jai.codec.ImageEncoder;
-import com.sun.media.jai.codec.JPEGEncodeParam;
-import com.sun.media.jai.codec.PNGEncodeParam;
-import com.sun.media.jai.codecimpl.TIFFImageEncoder;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.request.Region;
-import edu.illinois.library.cantaloupe.request.Rotation;
-import edu.illinois.library.cantaloupe.request.Size;
 import it.geosolutions.jaiext.JAIExt;
 import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.ImageLayout;
-import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
-import javax.media.jai.OpImage;
 import javax.media.jai.ParameterBlockJAI;
 import javax.media.jai.RenderedOp;
-import javax.media.jai.operator.TransposeDescriptor;
 import java.awt.Dimension;
 import java.awt.RenderingHints;
 import java.awt.image.renderable.ParameterBlock;
@@ -38,7 +23,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -147,17 +131,18 @@ class JaiProcessor implements StreamProcessor {
 
         try {
             RenderedOp image = loadRegion(inputStream, params.getRegion());
-            image = scaleImage(image, params.getSize());
-            image = rotateImage(image, params.getRotation());
-            image = filterImage(image, params.getQuality());
-            outputImage(image, params.getOutputFormat(), outputStream);
+            image = ProcessorUtil.scaleImage(image, params.getSize());
+            image = ProcessorUtil.rotateImage(image, params.getRotation());
+            image = ProcessorUtil.filterImage(image, params.getQuality());
+            ImageIO.write(image, params.getOutputFormat().getExtension(),
+                    outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         } finally {
             try {
                 inputStream.close();
             } catch (IOException e) {
-                logger.warn(e.getMessage(), e);
+                logger.error(e.getMessage(), e);
             }
         }
     }
@@ -204,96 +189,6 @@ class JaiProcessor implements StreamProcessor {
             croppedImage = JAI.create("crop", pb);
         }
         return croppedImage;
-    }
-
-    private RenderedOp scaleImage(RenderedOp inputImage, Size size) {
-        RenderedOp scaledImage;
-        if (size.getScaleMode() == Size.ScaleMode.FULL) {
-            scaledImage = inputImage;
-        } else {
-            float xScale = 1.0f;
-            float yScale = 1.0f;
-            if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
-                xScale = (float) size.getWidth() / inputImage.getWidth();
-                yScale = xScale;
-            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
-                yScale = (float) size.getHeight() / inputImage.getHeight();
-                xScale = yScale;
-            } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
-                xScale = (float) size.getWidth() / inputImage.getWidth();
-                yScale = (float) size.getHeight() / inputImage.getHeight();
-            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
-                double hScale = (float) size.getWidth() / inputImage.getWidth();
-                double vScale = (float) size.getHeight() / inputImage.getHeight();
-                xScale = (float) (inputImage.getWidth() * Math.min(hScale, vScale));
-                yScale = (float) (inputImage.getHeight() * Math.min(hScale, vScale));
-            } else if (size.getPercent() != null) {
-                xScale = size.getPercent() / 100.0f;
-                yScale = xScale;
-            }
-            ParameterBlock pb = new ParameterBlock();
-            pb.addSource(inputImage);
-            pb.add(xScale);
-            pb.add(yScale);
-            pb.add(0.0f);
-            pb.add(0.0f);
-            pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
-            scaledImage = JAI.create("scale", pb);
-        }
-        return scaledImage;
-    }
-
-    private RenderedOp rotateImage(RenderedOp inputImage, Rotation rotation) {
-        // do mirroring
-        RenderedOp mirroredImage = inputImage;
-        if (rotation.shouldMirror()) {
-            ParameterBlock pb = new ParameterBlock();
-            pb.addSource(inputImage);
-            pb.add(TransposeDescriptor.FLIP_HORIZONTAL);
-            mirroredImage = JAI.create("transpose", pb);
-        }
-        // do rotation
-        RenderedOp rotatedImage = mirroredImage;
-        if (rotation.getDegrees() > 0) {
-            ParameterBlock pb = new ParameterBlock();
-            pb.addSource(rotatedImage);
-            pb.add(mirroredImage.getWidth() / 2.0f);
-            pb.add(mirroredImage.getHeight() / 2.0f);
-            pb.add((float) Math.toRadians(rotation.getDegrees()));
-            pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
-            rotatedImage = JAI.create("rotate", pb);
-        }
-        return rotatedImage;
-    }
-
-    private RenderedOp filterImage(RenderedOp inputImage, Quality quality) {
-        RenderedOp filteredImage = inputImage;
-        if (quality != Quality.COLOR && quality != Quality.DEFAULT) {
-            // convert to grayscale
-            ParameterBlock pb = new ParameterBlock();
-            pb.addSource(inputImage);
-            double[][] matrixRgb = { { 0.114, 0.587, 0.299, 0 } };
-            double[][] matrixRgba = { { 0.114, 0.587, 0.299, 0, 0 } };
-            if (OpImage.getExpandedNumBands(inputImage.getSampleModel(),
-                    inputImage.getColorModel()) == 4) {
-                pb.add(matrixRgba);
-            } else {
-                pb.add(matrixRgb);
-            }
-            filteredImage = JAI.create("bandcombine", pb, null);
-            if (quality == Quality.BITONAL) {
-                 pb = new ParameterBlock();
-                 pb.addSource(filteredImage);
-                 pb.add(1.0 * 128);
-                 filteredImage = JAI.create("binarize", pb);
-            }
-        }
-        return filteredImage;
-    }
-
-    private void outputImage(RenderedOp image, OutputFormat format,
-                             OutputStream outputStream) throws IOException {
-        ImageIO.write(image, format.getExtension(), outputStream);
     }
 
 }
