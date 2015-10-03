@@ -139,10 +139,10 @@ public class ImageResource extends AbstractResource {
                 } else {
                     Processor proc = ProcessorFactory.
                             getProcessor(this.sourceFormat);
-                    if (proc instanceof FileProcessor) {
+                    if (this.file != null) {
                         ((FileProcessor) proc).process(this.params,
                                 this.sourceFormat, this.file, outputStream);
-                    } else if (proc instanceof StreamProcessor) {
+                    } else if (this.inputStream != null) {
                         ((StreamProcessor) proc).process(this.params,
                                 this.sourceFormat, this.inputStream, outputStream);
                     }
