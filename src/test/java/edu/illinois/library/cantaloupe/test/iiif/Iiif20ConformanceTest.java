@@ -16,9 +16,12 @@ import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.data.Status;
+import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -117,6 +120,11 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        Representation rep = client.getResponseEntity();
+        BufferedImage image = ImageIO.read(rep.getStream());
+        assertEquals(594, image.getWidth());
+        assertEquals(522, image.getHeight());
     }
 
     /**
@@ -128,6 +136,11 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/20,20,100,100/full/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        Representation rep = client.getResponseEntity();
+        BufferedImage image = ImageIO.read(rep.getStream());
+        assertEquals(100, image.getWidth());
+        assertEquals(100, image.getHeight());
     }
 
     /**
@@ -136,13 +149,25 @@ public class Iiif20ConformanceTest extends TestCase {
      * @throws IOException
      */
     public void testPercentageRegion() throws IOException {
+        // with ints
         ClientResource client = getClientForUriPath("/" + IMAGE + "/pct:20,20,50,50/full/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 
+        Representation rep = client.getResponseEntity();
+        BufferedImage image = ImageIO.read(rep.getStream());
+        assertEquals(297, image.getWidth());
+        assertEquals(261, image.getHeight());
+
+        // with floats
         client = getClientForUriPath("/" + IMAGE + "/pct:20.2,20.6,50.2,50.6/full/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        rep = client.getResponseEntity();
+        image = ImageIO.read(rep.getStream());
+        assertEquals(298, image.getWidth());
+        assertEquals(264, image.getHeight());
     }
 
     /**
@@ -157,6 +182,11 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/0,0,99999,99999/full/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        Representation rep = client.getResponseEntity();
+        BufferedImage image = ImageIO.read(rep.getStream());
+        assertEquals(594, image.getWidth());
+        assertEquals(522, image.getHeight());
     }
 
     /**
@@ -177,9 +207,9 @@ public class Iiif20ConformanceTest extends TestCase {
         }
 
         // We are not going to assert a 400 for "region entirely outside the
-        // bounds of the reported dimensions" because it would require the
-        // processor to get the dimensions of the source image before doing
-        // anything, which is expensive.
+        // bounds of the reported dimensions" because it would require
+        // ImageResource.doGet() to get the dimensions of the source image
+        // (before any processing), which is unnecessarily expensive.
         /*
         // x/y out of bounds
         client = getClientForUriPath("/" + IMAGE + "/99999,99999,50,50/full/0/default.jpg");
@@ -201,6 +231,11 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        Representation rep = client.getResponseEntity();
+        BufferedImage image = ImageIO.read(rep.getStream());
+        assertEquals(594, image.getWidth());
+        assertEquals(522, image.getHeight());
     }
 
     /**
@@ -214,6 +249,11 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/50,/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        Representation rep = client.getResponseEntity();
+        BufferedImage image = ImageIO.read(rep.getStream());
+        assertEquals(50, image.getWidth());
+        assertEquals(43, image.getHeight());
     }
 
     /**
@@ -227,6 +267,11 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/,50/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        Representation rep = client.getResponseEntity();
+        BufferedImage image = ImageIO.read(rep.getStream());
+        assertEquals(56, image.getWidth());
+        assertEquals(50, image.getHeight());
     }
 
     /**
@@ -240,6 +285,11 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/pct:50/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        Representation rep = client.getResponseEntity();
+        BufferedImage image = ImageIO.read(rep.getStream());
+        assertEquals(297, image.getWidth());
+        assertEquals(261, image.getHeight());
     }
 
     /**
@@ -253,6 +303,11 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/50,50/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        Representation rep = client.getResponseEntity();
+        BufferedImage image = ImageIO.read(rep.getStream());
+        assertEquals(50, image.getWidth());
+        assertEquals(50, image.getHeight());
     }
 
     /**
@@ -266,7 +321,12 @@ public class Iiif20ConformanceTest extends TestCase {
      * @throws IOException
      */
     public void testSizeScaledToFitInside() throws IOException {
-        // TODO: write this
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/20,20/0/default.jpg");
+        client.get();
+        Representation rep = client.getResponseEntity();
+        BufferedImage image = ImageIO.read(rep.getStream());
+        assertEquals(20, image.getWidth());
+        assertEquals(20, image.getHeight());
     }
 
     /**
