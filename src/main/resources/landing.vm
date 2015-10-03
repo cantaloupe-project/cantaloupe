@@ -3,20 +3,28 @@
     <head>
         #parse("head_common.vm")
 
-        <title>Cantaloupe Image Server</title>
+        <title>&#127816; Cantaloupe Image Server</title>
         <style type="text/css">
             body {
                 font-size: 1.5em;
             }
             h1 {
                 margin-bottom: 0.8em;
+                margin-top: 0.9em;
+            }
+            img {
+                margin: 1em 1.2em 1em 0em;
             }
         </style>
     </head>
 
     <body>
         <div class="container-fluid">
-            <h1>&#127816; Cantaloupe Image Server <small>$version</small></h1>
+            <div class="clearfix">
+                <img src="/static/cantaloupe.jpg" alt="Cantaloupe icon"
+                     width="154" height="82" style="float:left">
+                <h1>Cantaloupe Image Server <small>$version</small></h1>
+            </div>
 
             <div class="row">
                 <div class="col-sm-5">
