@@ -3,6 +3,8 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.Application;
 import org.apache.commons.configuration.Configuration;
 import org.restlet.data.CacheDirective;
+import org.restlet.data.ChallengeResponse;
+import org.restlet.data.ChallengeScheme;
 import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
@@ -16,6 +18,42 @@ import java.util.Map;
  * Functional test of the non-IIIF features of ImageResource.
  */
 public class ImageResourceTest extends ResourceTest {
+
+    public void testBasicAuth() throws Exception {
+        final String username = "user";
+        final String secret = "secret";
+        Application.stopServer();
+        Configuration config = Application.getConfiguration();
+        config.setProperty("http.auth.basic", "true");
+        config.setProperty("http.auth.basic.username", username);
+        config.setProperty("http.auth.basic.secret", secret);
+        Application.startServer();
+
+        // no credentials
+        ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_UNAUTHORIZED, client.getStatus());
+        }
+
+        // invalid credentials
+        client.setChallengeResponse(
+                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, "invalid", "invalid"));
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_UNAUTHORIZED, client.getStatus());
+        }
+
+        // valid credentials
+        client.setChallengeResponse(
+                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, username, secret));
+        client.get();
+        assertEquals(Status.SUCCESS_OK, client.getStatus());
+    }
 
     public void testCacheHeaders() {
         Configuration config = Application.getConfiguration();

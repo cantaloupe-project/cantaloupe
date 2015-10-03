@@ -58,16 +58,4 @@ public abstract class ResourceTest extends TestCase {
                 ImageServerApplication.BASE_IIIF_PATH;
     }
 
-    public void testBasicAuth() {
-        /* TODO: write this
-        Configuration config = Application.getConfiguration();
-        config.setProperty("http.auth.basic", "true");
-        config.setProperty("http.auth.basic.username", "user");
-        config.setProperty("http.auth.basic.secret", "pass");
-
-        ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
-        client.get();
-        */
-    }
-
 }
