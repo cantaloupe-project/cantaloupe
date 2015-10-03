@@ -3,22 +3,10 @@
     <head>
         #parse("head_common.vm")
 
-        <title>&#127816; Cantaloupe Image Server</title>
-        <style type="text/css">
-            body {
-                font-size: 1.5em;
-            }
-            h1 {
-                margin-bottom: 0.8em;
-                margin-top: 0.9em;
-            }
-            img {
-                margin: 1em 1.2em 1em 0em;
-            }
-        </style>
+        <title>Cantaloupe Image Server</title>
     </head>
 
-    <body>
+    <body id="cantaloupe-landing">
         <div class="container-fluid">
             <div class="clearfix">
                 <img src="/static/cantaloupe.jpg" alt="Cantaloupe icon"
@@ -37,7 +25,8 @@
                 <div class="col-sm-7">
                     <h3>Effective Source Format Assignments</h3>
 
-                    <table class="table table-condensed table-bordered">
+                    <table class="table table-condensed table-bordered"
+                           id="cantaloupe-source-format-assignments">
                         #foreach ($sourceFormat in $processorAssignments.keySet())
                             <tr>
                                 <td style="width:10%">$sourceFormat.getName()</td>
