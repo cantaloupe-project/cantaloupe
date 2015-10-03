@@ -17,6 +17,7 @@ import org.restlet.data.Status;
 import org.restlet.engine.application.CorsFilter;
 import org.restlet.ext.velocity.TemplateRepresentation;
 import org.restlet.representation.Representation;
+import org.restlet.resource.Directory;
 import org.restlet.routing.Redirector;
 import org.restlet.routing.Router;
 import org.restlet.routing.Template;
@@ -175,6 +176,15 @@ public class ImageServerApplication extends Application {
         } catch (NoSuchElementException e) {
             logger.info("HTTP Basic authentication disabled.");
         }
+
+        // Hook up the static file server (for CSS & images)
+        final Directory dir = new Directory(
+                getContext(), "clap://resources/public_html/");
+        dir.setDeeplyAccessible(true);
+        dir.setListingAllowed(false);
+        dir.setNegotiatingContent(false);
+        router.attach("/static", dir);
+
         return corsFilter;
     }
 

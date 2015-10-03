@@ -133,6 +133,7 @@ public class Application {
         component = new Component();
         Integer port = getConfiguration().getInteger("http.port", 8182);
         component.getServers().add(Protocol.HTTP, port);
+        component.getClients().add(Protocol.CLAP);
         component.getDefaultHost().attach("", new ImageServerApplication());
         component.start();
     }
