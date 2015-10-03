@@ -323,19 +323,23 @@ class KakaduProcessor implements FileProcessor {
             if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
                 double scale = (double) size.getWidth() /
                         (double) fullSize.width;
-                reduction.factor = getReductionFactor(scale);
+                reduction.factor = ProcessorUtil.getReductionFactor(scale,
+                        MAX_REDUCTION_FACTOR);
             } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
                 double scale = (double) size.getHeight() /
                         (double) fullSize.height;
-                reduction.factor = getReductionFactor(scale);
+                reduction.factor = ProcessorUtil.getReductionFactor(scale,
+                        MAX_REDUCTION_FACTOR);
             } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
                 double hScale = (double) size.getWidth() /
                         (double) fullSize.width;
                 double vScale = (double) size.getHeight() /
                         (double) fullSize.height;
-                reduction.factor = getReductionFactor(Math.min(hScale, vScale));
+                reduction.factor = ProcessorUtil.getReductionFactor(
+                        Math.min(hScale, vScale), MAX_REDUCTION_FACTOR);
             } else if (size.getPercent() != null) {
-                reduction.factor = getReductionFactor(size.getPercent() / 100.0f);
+                reduction.factor = ProcessorUtil.getReductionFactor(
+                        size.getPercent() / 100.0f, MAX_REDUCTION_FACTOR);
             } else {
                 reduction.factor = 0;
             }
@@ -349,23 +353,6 @@ class KakaduProcessor implements FileProcessor {
         command.add(quote(getStdoutSymlinkPath()));
 
         return new ProcessBuilder(command);
-    }
-
-    /**
-     * Gets a reduction factor for the kdu_expand -reduce flag. 0 is no
-     * reduction. Scale corresponding to the reduction factor is 1^(2/rf).
-     *
-     * @param scalePercent Scale percentage between 0 and 1
-     * @return
-     */
-    public short getReductionFactor(double scalePercent) {
-        short factor = 0;
-        double nextPct = 0.5f;
-        while (scalePercent <= nextPct && factor < MAX_REDUCTION_FACTOR) {
-            nextPct /= 2.0f;
-            factor++;
-        }
-        return factor;
     }
 
     /**

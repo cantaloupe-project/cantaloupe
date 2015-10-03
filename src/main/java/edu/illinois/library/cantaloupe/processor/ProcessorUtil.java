@@ -118,6 +118,23 @@ class ProcessorUtil {
         return filteredImage;
     }
 
+    /**
+     * Gets a reduction factor where the corresponding scale is 1^(2/rf).
+     *
+     * @param scalePercent Scale percentage between 0 and 1
+     * @param maxFactor
+     * @return
+     */
+    public static short getReductionFactor(double scalePercent, int maxFactor) {
+        short factor = 0;
+        double nextPct = 0.5f;
+        while (scalePercent <= nextPct && factor < maxFactor) {
+            nextPct /= 2.0f;
+            factor++;
+        }
+        return factor;
+    }
+
     public static Dimension getSize(ImageInputStream inputStream,
                                     SourceFormat sourceFormat)
             throws ProcessorException {
