@@ -121,13 +121,16 @@ abstract class ProcessorUtil {
     }
 
     /**
-     * Gets a reduction factor where the corresponding scale is 1^(2/rf).
+     * Gets a reduction factor where the corresponding scale is 1/(2^rf).
      *
      * @param scalePercent Scale percentage between 0 and 1
-     * @param maxFactor
+     * @param maxFactor 0 for no max
      * @return
      */
     public static short getReductionFactor(double scalePercent, int maxFactor) {
+        if (maxFactor == 0) {
+            maxFactor = 999999;
+        }
         short factor = 0;
         double nextPct = 0.5f;
         while (scalePercent <= nextPct && factor < maxFactor) {
@@ -137,10 +140,30 @@ abstract class ProcessorUtil {
         return factor;
     }
 
+    /**
+     * @param reductionFactor Reduction factor (0 for no reduction)
+     * @return Scale corresponding to the given reduction factor (1/(2^rf)).
+     */
+    public static double getScale(int reductionFactor) {
+        double scale = 1f;
+        for (int i = 0; i < reductionFactor; i++) {
+            scale /= 2;
+        }
+        return scale;
+    }
+
+    /**
+     * Efficiently reads the width & height of an image without reading the
+     * entire image into memory.
+     *
+     * @param inputStream
+     * @param sourceFormat
+     * @return Dimensions in pixels
+     * @throws ProcessorException
+     */
     public static Dimension getSize(ImageInputStream inputStream,
                                     SourceFormat sourceFormat)
             throws ProcessorException {
-        // get width & height (without reading the entire image into memory)
         Iterator<ImageReader> iter = ImageIO.
                 getImageReadersBySuffix(sourceFormat.getPreferredExtension());
         if (iter.hasNext()) {
