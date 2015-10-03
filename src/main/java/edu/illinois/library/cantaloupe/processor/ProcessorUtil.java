@@ -18,6 +18,7 @@ import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
 import javax.media.jai.OpImage;
+import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.TransposeDescriptor;
 import java.awt.Dimension;
@@ -34,9 +35,9 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * A collection of helper methods that processors can use.
+ * A collection of helper methods.
  */
-class ProcessorUtil {
+abstract class ProcessorUtil {
 
     public static BufferedImage cropImage(final BufferedImage inputImage,
                                           final Region region) {
@@ -93,7 +94,8 @@ class ProcessorUtil {
         return filteredImage;
     }
 
-    public static RenderedOp filterImage(RenderedOp inputImage, Quality quality) {
+    public static RenderedOp filterImage(RenderedOp inputImage,
+                                         Quality quality) {
         RenderedOp filteredImage = inputImage;
         if (quality != Quality.COLOR && quality != Quality.DEFAULT) {
             // convert to grayscale
@@ -179,9 +181,9 @@ class ProcessorUtil {
      * @param outputStream Stream to which to write the image
      * @throws IOException
      */
-    public static void outputImage(final BufferedImage image,
-                                   final OutputFormat outputFormat,
-                                   final OutputStream outputStream)
+    public static void outputImage(BufferedImage image,
+                                   OutputFormat outputFormat,
+                                   OutputStream outputStream)
             throws IOException {
         switch (outputFormat) {
             case JPG:
@@ -233,8 +235,8 @@ class ProcessorUtil {
         return rotatedImage;
     }
 
-    public static BufferedImage rotateImage(final BufferedImage inputImage,
-                                            final Rotation rotation) {
+    public static BufferedImage rotateImage(BufferedImage inputImage,
+                                            Rotation rotation) {
         // do mirroring
         BufferedImage mirroredImage = inputImage;
         if (rotation.shouldMirror()) {
@@ -315,6 +317,66 @@ class ProcessorUtil {
     }
 
     /**
+     * Scales an image using JAI, taking an already-applied reduction factor
+     * into account. In other words, the dimensions of the input image have
+     * already been halved rf times but the given size is relative to the
+     * full-sized image.
+     *
+     * @param inputImage The input image
+     * @param size Requested size ignoring any reduction factor
+     * @param reductionFactor Reduction factor that has already been applied to
+     *                        <code>inputImage</code>
+     * @return Scaled image
+     */
+    public static RenderedOp scaleImage(PlanarImage inputImage, Size size,
+                                        int reductionFactor) {
+        RenderedOp scaledImage;
+        if (size.getScaleMode() == Size.ScaleMode.FULL) {
+            ParameterBlock pb = new ParameterBlock();
+            pb.addSource(inputImage);
+            pb.add(1.0f);
+            pb.add(1.0f);
+            pb.add(0.0f);
+            pb.add(0.0f);
+            pb.add(Interpolation.getInstance(Interpolation.INTERP_NEAREST));
+            scaledImage = JAI.create("scale", pb);
+        } else {
+            final double sourceWidth = inputImage.getWidth();
+            final double sourceHeight = inputImage.getHeight();
+            double xScale = 1.0f;
+            double yScale = 1.0f;
+            if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
+                xScale = yScale = size.getWidth() / sourceWidth;
+            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
+                xScale = yScale = size.getHeight() / sourceHeight;
+            } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
+                xScale = size.getWidth() / sourceWidth;
+                yScale = size.getHeight() / sourceHeight;
+            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
+                double hScale = size.getWidth() / sourceWidth;
+                double vScale = size.getHeight() / sourceHeight;
+                xScale = sourceWidth * Math.min(hScale, vScale);
+                yScale = sourceHeight * Math.min(hScale, vScale);
+            } else if (size.getPercent() != null) {
+                xScale = size.getPercent() / 100.0f;
+                if (reductionFactor > 0) {
+                    xScale += (1 / (double) (reductionFactor + 1));
+                }
+                yScale = xScale;
+            }
+            ParameterBlock pb = new ParameterBlock();
+            pb.addSource(inputImage);
+            pb.add((float) xScale);
+            pb.add((float) yScale);
+            pb.add(0.0f);
+            pb.add(0.0f);
+            pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
+            scaledImage = JAI.create("scale", pb);
+        }
+        return scaledImage;
+    }
+
+    /**
      * Scales an image using an AffineTransform.
      *
      * @param inputImage
@@ -322,7 +384,7 @@ class ProcessorUtil {
      * @return
      */
     public static BufferedImage scaleImageWithAffineTransform(
-            final BufferedImage inputImage, final Size size) {
+            BufferedImage inputImage, Size size) {
         BufferedImage scaledImage;
         if (size.getScaleMode() == Size.ScaleMode.FULL) {
             scaledImage = inputImage;
@@ -367,8 +429,8 @@ class ProcessorUtil {
      * @param size
      * @return
      */
-    public static BufferedImage scaleImageWithG2d(final BufferedImage inputImage,
-                                                  final Size size) {
+    public static BufferedImage scaleImageWithG2d(BufferedImage inputImage,
+                                                  Size size) {
         BufferedImage scaledImage;
         if (size.getScaleMode() == Size.ScaleMode.FULL) {
             scaledImage = inputImage;
@@ -399,6 +461,65 @@ class ProcessorUtil {
                         (size.getPercent() / 100.0));
                 height = (int) Math.round(inputImage.getHeight() *
                         (size.getPercent() / 100.0));
+            }
+            scaledImage = new BufferedImage(width, height,
+                    inputImage.getType());
+            Graphics2D g2d = scaledImage.createGraphics();
+            RenderingHints hints = new RenderingHints(
+                    RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2d.setRenderingHints(hints);
+            g2d.drawImage(inputImage, 0, 0, width, height, null);
+            g2d.dispose();
+        }
+        return scaledImage;
+    }
+
+    /**
+     * Scales an image using Graphics2D, taking an already-applied reduction
+     * factor into account. In other words, the dimensions of the input image
+     * have already been halved rf times but the given size is relative to the
+     * full-sized image.
+     *
+     * @param inputImage The input image
+     * @param size Requested size ignoring any reduction factor
+     * @param reductionFactor Reduction factor that has already been applied to
+     *                        <code>inputImage</code>
+     * @return Scaled image
+     */
+    public static BufferedImage scaleImageWithG2d(BufferedImage inputImage,
+                                                  Size size,
+                                                  int reductionFactor) {
+        BufferedImage scaledImage;
+        if (size.getScaleMode() == Size.ScaleMode.FULL) {
+            scaledImage = inputImage;
+        } else {
+            final int sourceWidth = inputImage.getWidth();
+            final int sourceHeight = inputImage.getHeight();
+            int width = 0, height = 0;
+            if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
+                width = size.getWidth();
+                height = sourceHeight * width / sourceWidth;
+            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
+                height = size.getHeight();
+                width = sourceWidth * height / sourceHeight;
+            } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
+                width = size.getWidth();
+                height = size.getHeight();
+            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
+                double hScale = (double) size.getWidth() / (double) sourceWidth;
+                double vScale = (double) size.getHeight() / sourceHeight;
+                width = (int) Math.round(sourceWidth *
+                        Math.min(hScale, vScale));
+                height = (int) Math.round(sourceHeight *
+                        Math.min(hScale, vScale));
+            } else if (size.getPercent() != null) {
+                double pct = size.getPercent() / 100.0f;
+                if (reductionFactor > 0) {
+                    pct += (1 / (double) (reductionFactor + 1));
+                }
+                width = (int) Math.round(sourceWidth * pct);
+                height = (int) Math.round(sourceHeight * pct);
             }
             scaledImage = new BufferedImage(width, height,
                     inputImage.getType());

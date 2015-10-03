@@ -253,14 +253,16 @@ class KakaduProcessor implements FileProcessor {
                 if (postProcessor == PostProcessor.JAI) {
                     PlanarImage image = PlanarImage.wrapRenderedImage(
                             new PNMImage(bais).getBufferedImage());
-                    RenderedOp op = scaleImage(image, params.getSize(), reduction);
+                    RenderedOp op = ProcessorUtil.scaleImage(image,
+                            params.getSize(), reduction.factor);
                     op = ProcessorUtil.rotateImage(op, params.getRotation());
                     op = ProcessorUtil.filterImage(op, params.getQuality());
                     ImageIO.write(op, params.getOutputFormat().getExtension(),
                             outputStream);
                 } else {
                     BufferedImage image = new PNMImage(bais).getBufferedImage();
-                    image = scaleImageWithG2d(image, params.getSize(), reduction);
+                    image = ProcessorUtil.scaleImageWithG2d(image,
+                            params.getSize(), reduction.factor);
                     image = ProcessorUtil.rotateImage(image, params.getRotation());
                     image = ProcessorUtil.filterImage(image, params.getQuality());
                     ProcessorUtil.outputImage(image, params.getOutputFormat(),
@@ -353,118 +355,6 @@ class KakaduProcessor implements FileProcessor {
         command.add(quote(getStdoutSymlinkPath()));
 
         return new ProcessBuilder(command);
-    }
-
-    /**
-     * Scales an image using JAI, taking an already-applied reduction factor
-     * into account.
-     *
-     * @param inputImage
-     * @param size
-     * @param reductionFactor
-     * @return
-     */
-    private RenderedOp scaleImage(PlanarImage inputImage, Size size,
-                                  ReductionFactor reductionFactor) {
-        RenderedOp scaledImage;
-        if (size.getScaleMode() == Size.ScaleMode.FULL) {
-            ParameterBlock pb = new ParameterBlock();
-            pb.addSource(inputImage);
-            pb.add(1.0f);
-            pb.add(1.0f);
-            pb.add(0.0f);
-            pb.add(0.0f);
-            pb.add(Interpolation.getInstance(Interpolation.INTERP_NEAREST));
-            scaledImage = JAI.create("scale", pb);
-        } else {
-            final double sourceWidth = inputImage.getWidth();
-            final double sourceHeight = inputImage.getHeight();
-            double xScale = 1.0f;
-            double yScale = 1.0f;
-            if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
-                xScale = yScale = size.getWidth() / sourceWidth;
-            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
-                xScale = yScale = size.getHeight() / sourceHeight;
-            } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
-                xScale = size.getWidth() / sourceWidth;
-                yScale = size.getHeight() / sourceHeight;
-            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
-                double hScale = size.getWidth() / sourceWidth;
-                double vScale = size.getHeight() / sourceHeight;
-                xScale = sourceWidth * Math.min(hScale, vScale);
-                yScale = sourceHeight * Math.min(hScale, vScale);
-            } else if (size.getPercent() != null) {
-                xScale = size.getPercent() / 100.0f;
-                if (reductionFactor.factor > 0) {
-                    xScale += (1 / (double) (reductionFactor.factor + 1));
-                }
-                yScale = xScale;
-            }
-            ParameterBlock pb = new ParameterBlock();
-            pb.addSource(inputImage);
-            pb.add((float) xScale);
-            pb.add((float) yScale);
-            pb.add(0.0f);
-            pb.add(0.0f);
-            pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
-            scaledImage = JAI.create("scale", pb);
-        }
-        return scaledImage;
-    }
-
-    /**
-     * Scales an image using Graphics2D, taking an already-applied reduction
-     * factor into account.
-     *
-     * @param inputImage
-     * @param size
-     * @param reductionFactor
-     * @return
-     */
-    private BufferedImage scaleImageWithG2d(BufferedImage inputImage, Size size,
-                                            ReductionFactor reductionFactor) {
-        BufferedImage scaledImage;
-        if (size.getScaleMode() == Size.ScaleMode.FULL) {
-            scaledImage = inputImage;
-        } else {
-            final int sourceWidth = inputImage.getWidth();
-            final int sourceHeight = inputImage.getHeight();
-            int width = 0, height = 0;
-            if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
-                width = size.getWidth();
-                height = sourceHeight * width / sourceWidth;
-            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
-                height = size.getHeight();
-                width = sourceWidth * height / sourceHeight;
-            } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
-                width = size.getWidth();
-                height = size.getHeight();
-            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
-                double hScale = (double) size.getWidth() / (double) sourceWidth;
-                double vScale = (double) size.getHeight() / sourceHeight;
-                width = (int) Math.round(sourceWidth *
-                        Math.min(hScale, vScale));
-                height = (int) Math.round(sourceHeight *
-                        Math.min(hScale, vScale));
-            } else if (size.getPercent() != null) {
-                double pct = size.getPercent() / 100.0f;
-                if (reductionFactor.factor > 0) {
-                    pct += (1 / (double) (reductionFactor.factor + 1));
-                }
-                width = (int) Math.round(sourceWidth * pct);
-                height = (int) Math.round(sourceHeight * pct);
-            }
-            scaledImage = new BufferedImage(width, height,
-                    inputImage.getType());
-            Graphics2D g2d = scaledImage.createGraphics();
-            RenderingHints hints = new RenderingHints(
-                    RenderingHints.KEY_INTERPOLATION,
-                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-            g2d.setRenderingHints(hints);
-            g2d.drawImage(inputImage, 0, 0, width, height, null);
-            g2d.dispose();
-        }
-        return scaledImage;
     }
 
 }
