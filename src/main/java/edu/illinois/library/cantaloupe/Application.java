@@ -9,7 +9,9 @@ import org.apache.velocity.app.Velocity;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.restlet.Component;
+import org.restlet.Request;
 import org.restlet.data.Protocol;
+import org.restlet.service.LogService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +24,20 @@ import java.util.jar.Manifest;
  * Main application class.
  */
 public class Application {
+
+    /**
+     * Filters HTTP log messages for the Restlet component.
+     */
+    private static class HttpLogService extends LogService {
+
+        @Override
+        public boolean isLoggable(Request request) {
+            // exclude requests to /static from the log
+            final String path = ImageServerApplication.STATIC_ROOT_PATH;
+            return !request.getResourceRef().getPath().startsWith(path);
+        }
+
+    }
 
     private static Logger logger = LoggerFactory.getLogger(Application.class);
     private static Component component;
@@ -135,6 +151,7 @@ public class Application {
         component.getServers().add(Protocol.HTTP, port);
         component.getClients().add(Protocol.CLAP);
         component.getDefaultHost().attach("", new ImageServerApplication());
+        component.setLogService(new HttpLogService());
         component.start();
     }
 

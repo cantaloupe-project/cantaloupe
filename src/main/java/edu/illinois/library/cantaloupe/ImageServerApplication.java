@@ -40,6 +40,7 @@ import java.util.NoSuchElementException;
 public class ImageServerApplication extends Application {
 
     public static final String BASE_IIIF_PATH = "/iiif";
+    public static final String STATIC_ROOT_PATH = "/static";
 
     /**
      * Overrides the built-in Restlet status pages. Converts the following
@@ -183,7 +184,7 @@ public class ImageServerApplication extends Application {
         dir.setDeeplyAccessible(true);
         dir.setListingAllowed(false);
         dir.setNegotiatingContent(false);
-        router.attach("/static", dir);
+        router.attach(STATIC_ROOT_PATH, dir);
 
         return corsFilter;
     }

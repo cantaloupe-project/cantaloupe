@@ -7,9 +7,8 @@ Home: [https://github.com/medusa-project/cantaloupe]
 
 # Features
 
-* Simple
+* Easy to get working
 * Self-contained
-* Easy to install and get working
 * Pluggable resolvers for filesystem and HTTP sources
 * Pluggable processors to support a wide variety of source images
 * Lean and efficient with no app server or Servlet stack overhead
@@ -30,19 +29,18 @@ Then, from the command prompt:
 
 `$ java -Dcantaloupe.config=/path/to/cantaloupe.properties -jar Cantaloupe-x.x.x.jar`
 
-It is now ready for use at: `http://localhost:{http.port}/iiif`
+It is now running at: `http://localhost:{http.port}/iiif`
 
-To see information about an image, visit:
-`http://localhost:{http.port}/iiif/{image filename}/info.json`
-
-To see the image itself, try:
-`http://localhost:{http.port}/iiif/{image filename}/full/full/0/default.jpg`
+Told you it was easy to get working. But, keep reading, as this document
+contains a lot of useful information.
 
 # Upgrading
 
 Upgrading is usually just a matter of downloading a new version and running it.
-Sometimes there are backwards-incompatible changes to the configuration file
-structure, though, so check below to see if there is anything more to be done.
+Since instances are self-contained, new versions can run happily alongside
+existing ones, with each using its own config file. Sometimes there are
+backwards-incompatible changes to the configuration file structure, though, so
+check below to see if there is anything more to be done.
 
 ## 1.0-beta2 to 1.0-beta3
 
@@ -182,9 +180,7 @@ about image formats, and therefore the list of formats supported by this
 processor varies depending on the codec JARs available in the classpath.
 
 Java2dProcessor buffers entire source images in RAM, and is therefore
-memory-intensive. Large amounts of RAM and fast storage help. To avoid
-OutOfMemoryErrors, it's a good idea to allow for a very large heap size. (To
-allow 16GB, add the `-Xmx16g` flag to the launch command.)
+memory-intensive. Large amounts of RAM and fast storage help.
 
 ### GraphicsMagickProcessor
 
@@ -197,9 +193,9 @@ transforms and all IIIF output formats (assuming the necessary libraries are
 installed; see [Supported Formats](http://www.graphicsmagick.org/formats.html)).
 
 GraphicsMagickProcessor is a good fallback processor, as it supports a wide
-range of source formats and is generally faster than ImageMagickProcessor. If
-you can find or compile a "Q8" version of GraphicsMagick, its memory use will
-be halved.
+range of source formats and is generally faster than ImageMagickProcessor. It
+is highly recommended to find or compile a "Q8" version of GraphicsMagick, as
+its memory use will be halved.
 
 ### ImageMagickProcessor
 
@@ -212,19 +208,20 @@ transforms and all IIIF output formats, assuming the necessary delegates are
 installed. It also supports a wide array of source formats.
 
 ImageMagick is not known for being particularly fast or efficient, but it is
-generally quite usable. If you can find or compile a "Q8" version of
-ImageMagick, its memory use will be halved.
+generally quite usable. It is highly recommended to find or compile a "Q8"
+version of ImageMagick, as its memory use will be halved.
 
 ### KakaduProcessor
 
 KakaduProcessor uses the `kdu_expand` and `kdu_jp2info` binaries -- part of the
-[Kakadu](http://www.kakadusoftware.com) toolkit -- to efficiently process
-JPEG2000 source images. This processor performs well even with large JP2s.
+[Kakadu](http://www.kakadusoftware.com) toolkit -- to efficiently extract
+regions of JPEG2000 source images. This processor performs well even with
+large JP2s.
 
 Although it does support some other operations, `kdu_expand` is mainly a
 decompression tool. Cantaloupe uses only its cropping and level-reduction
-features and performs the rest of the IIIF operations (scaling, rotation, etc.)
-using either the Java 2D or JAI APIs (configurable).
+features and performs the rest of the IIIF operations (differential scaling,
+rotation, etc.) using either the Java 2D or JAI APIs (configurable).
 
 Kakadu is not free and the binaries are not included with Cantaloupe. It is
 your responsibility to obtain them by legal means and to comply with the terms
@@ -235,15 +232,15 @@ of use.
 
 ### JaiProcessor
 
-Java Advanced Imaging (JAI) is a powerful low-level imaging framework
+Java Advanced Imaging (JAI) is a sophisticated image processing library
 developed by Sun until around 2006. JaiProcessor uses an updated fork called
 [JAI-EXT](https://github.com/geosolutions-it/jai-ext).
 
-JAI supposedly offers several theoretical advantages over Java2D. First, it has
-a more efficient rendering pipeline that should reduce memory usage. Second, it
-is capable of region-of-interest decoding with some formats. Whether these
-advantages play out in reality is an open question; the author's own informal
-profiling seems to indicate maybe not.
+JAI offers several theoretical advantages over Java2D for this application: a
+more efficient rendering pipeline that should reduce memory usage, and
+capability of region-of-interest decoding with some formats. Whether these
+advantages play out in reality is an open question; the author's own profiling
+seems to indicate maybe not.
 
 JaiProcessor can read and write the same formats as Java2dProcessor.
 
@@ -255,10 +252,10 @@ Windows, Linux, and Solaris, which improved JAI's performance. It is unknown
 whether these still work on modern platforms, but perhaps they are something to
 try.
 
-(If mediaLib is not installed, an error message will be generated saying,
+*Note: if mediaLib is not installed, an error message will be generated saying,
 "Could not find mediaLib accelerator wrapper classes. Continuing in pure Java
 mode." This is harmless, but can be suppressed anyway by launching Cantaloupe
-with the `-Dcom.sun.media.jai.disableMediaLib=true` option.)
+with the `-Dcom.sun.media.jai.disableMediaLib=true` option.*
 
 ### Which Processor Should I Use?
 
@@ -283,27 +280,26 @@ them, are welcome.
 Consider the case of an image server that is asked to render tiles for a
 4096x4096 pixel source image that, at 24 bits per pixel, totals 50MB in
 decompressed size. Multiple clients are simultaneously requesting numerous
-downscaled tiles to display the initial zoom level. Request handlers do not
-communicate with each other, so each one is loading this large image and
-operating on it independently.
+downscaled tiles. Request handlers do not communicate with each other, so each
+one is loading this large image and operating on it independently.
 
-Furthermore, some processors are less efficient in that they have to create
+Furthermore, some processors are inefficient in that they have to create
 new images internally at each intermediate step in the processing pipeline
-(cropping, scaling, rotating, etc.). Each one of these occupies precious
-memory.
+(cropping, scaling, rotating, etc.), and each one occupies precious memory.
 
 It's easy to see where RAM becomes a very major consideration here. It is
 completely normal to see transient spikes of hundreds of megabytes of memory
 use on the Java heap in response to a single zooming-image-viewer request. The
-JVM will accommodate by increasing the heap size. From the operating system's
-perspective, the process is bloating up to multiple gigabytes in size, but
-there is nothing wrong -- most of this is actually unused heap space.
+JVM will accommodate by dynamically increasing the heap size. From the
+operating system's perspective, the process is bloating up to multiple
+gigabytes in size, but there is nothing wrong -- most of this is actually
+unused heap space.
 
 The smaller the available heap space, the larger the source images, and the
 larger the number of simultaneous requests, the greater the likelihood of
 OutOfMemoryErrors. In production, it is highly recommended to use the `-Xmx`
 flag to increase the maximum heap size to the largest amount possible -- for
-example, `-Xmx16g` for 16GB. And, of course, use caching liberally.
+example, `-Xmx16g` for 16GB. And, by all means, use caching liberally.
 
 ## Caches
 
@@ -343,9 +339,6 @@ The HTTP/1.1 `Cache-Control` response header is configurable via the
 
 # Notes on Source Formats
 
-(Feel free to add in your own notes, and send a pull request. Controlled
-benchmarks are also welcome.)
-
 ## JPEG
 
 It should be possible to use TurboJPEG (high-level API over [libjpeg-turbo]
@@ -374,36 +367,32 @@ pending.
 
 # Custom Development
 
+Cantaloupe is a simple Maven project that should open easily in any Java IDE.
+
 ## Custom Resolvers
 
-A custom resolver needs to implement one or both of the
-`e.i.l.cantaloupe.resolver.FileResolver` or
-`e.i.l.cantaloupe.resolver.StreamResolver`
-interfaces. Then, to use it, set `resolver` in your properties file to its name.
+A resolver is a class that implements the
+`e.i.l.cantaloupe.resolver.FileResolver` and/or
+`e.i.l.cantaloupe.resolver.StreamResolver` interfaces. Then, to use it, set
+`resolver` in your properties file to its name.
 
 See one of the existing resolvers for examples.
 
 ## Custom Image Processors
 
-Custom processors can be added by implementing one or both of the
-`e.i.l.cantaloupe.processor.FileProcessor` and
+A processor is a class that implements the
+`e.i.l.cantaloupe.processor.FileProcessor` and/or
 `e.i.l.cantaloupe.processor.StreamProcessor`interfaces. See the interface
 documentation for details and the existing implementations for examples.
 
 Another option might be to add an ImageIO format plugin instead of a custom
-processor, and then use Java2dProcessor with it.
+processor, and then use Java2dProcessor or JaiProcessor with it.
 
 ## Custom Caches
 
-Custom caches can be added by implementing the `e.i.l.cantaloupe.cache.Cache`
+A cache is a class that implements the `e.i.l.cantaloupe.cache.Cache`
 interface. See the interface documentation for details and the existing
 implementations for examples.
-
-## Custom Configuration
-
-Feel free to add new configuration keys to the properties file. They should
-be in the form of `NameOfMyClass.whatever`. They can then be accessed via
-`e.i.l.cantaloupe.Application.getConfiguration()`.
 
 ## Contributing Code
 
