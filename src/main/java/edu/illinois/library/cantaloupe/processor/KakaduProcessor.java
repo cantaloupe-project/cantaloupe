@@ -226,6 +226,9 @@ class KakaduProcessor implements FileProcessor {
         } else if (!availableOutputFormats.contains(params.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
+
+        final ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
+        final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
             final Dimension fullSize = getSize(inputFile, sourceFormat);
             final ReductionFactor reduction = new ReductionFactor();
@@ -233,16 +236,17 @@ class KakaduProcessor implements FileProcessor {
                     fullSize, reduction);
             final Process process = pb.start();
 
-            final ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
-            final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
             new Thread(new StreamCopier(process.getInputStream(), outputBucket)).start();
             new Thread(new StreamCopier(process.getErrorStream(), errorBucket)).start();
 
             try {
-                process.waitFor();
-                final String errorStr = errorBucket.toString();
-                if (errorStr != null && errorStr.length() > 0) {
-                    throw new ProcessorException(errorStr);
+                int code = process.waitFor();
+                if (code != 0) {
+                    logger.warn("kdu_expand returned with code " + code);
+                    final String errorStr = errorBucket.toString();
+                    if (errorStr != null && errorStr.length() > 0) {
+                        throw new ProcessorException(errorStr);
+                    }
                 }
                 final ByteArrayInputStream bais = new ByteArrayInputStream(
                         outputBucket.toByteArray());
@@ -270,7 +274,12 @@ class KakaduProcessor implements FileProcessor {
                 process.destroy();
             }
         } catch (IOException | InterruptedException e) {
-            throw new ProcessorException(e.getMessage(), e);
+            String msg = e.getMessage();
+            final String errorStr = errorBucket.toString();
+            if (errorStr != null && errorStr.length() > 0) {
+                msg += " (command output: " + msg + ")";
+            }
+            throw new ProcessorException(msg, e);
         }
     }
 
