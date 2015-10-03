@@ -134,6 +134,11 @@ public class ImageServerApplication extends Application {
                 Redirector.MODE_CLIENT_SEE_OTHER);
         router.attach(BASE_IIIF_PATH + "/{identifier}", redirector);
 
+        // Redirect / to BASE_IIIF_PATH
+        redirector = new Redirector(getContext(), BASE_IIIF_PATH,
+                Redirector.MODE_CLIENT_PERMANENT);
+        router.attach("/", redirector);
+
         // 2.1 Image Request
         router.attach(BASE_IIIF_PATH + "/{identifier}/{region}/{size}/{rotation}/{quality}.{format}",
                 ImageResource.class);
@@ -145,11 +150,6 @@ public class ImageServerApplication extends Application {
         // landing page
         router.attach(BASE_IIIF_PATH, LandingResource.class);
         router.attach("/", LandingResource.class);
-
-        // Redirect / to BASE_IIIF_PATH
-        redirector = new Redirector(getContext(), BASE_IIIF_PATH,
-                Redirector.MODE_CLIENT_PERMANENT);
-        router.attach("/", redirector);
 
         // Hook up HTTP Basic authentication
         try {

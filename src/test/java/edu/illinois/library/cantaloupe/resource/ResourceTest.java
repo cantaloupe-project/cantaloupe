@@ -16,9 +16,9 @@ import java.nio.file.Paths;
 
 public abstract class ResourceTest extends TestCase {
 
-    private static final Integer PORT = 34852;
+    protected static final Integer PORT = 34852;
 
-    private static Client client = new Client(new Context(), Protocol.HTTP);
+    protected static Client client = new Client(new Context(), Protocol.HTTP);
 
     public static BaseConfiguration newConfiguration() {
         BaseConfiguration config = new BaseConfiguration();
