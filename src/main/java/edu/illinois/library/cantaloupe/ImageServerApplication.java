@@ -139,6 +139,11 @@ public class ImageServerApplication extends Application {
                 Redirector.MODE_CLIENT_PERMANENT);
         router.attach("/", redirector);
 
+        // Redirect BASE_IIIF_PATH/ to BASE_IIIF_PATH
+        redirector = new Redirector(getContext(), BASE_IIIF_PATH,
+                Redirector.MODE_CLIENT_PERMANENT);
+        router.attach(BASE_IIIF_PATH + "/", redirector);
+
         // 2.1 Image Request
         router.attach(BASE_IIIF_PATH + "/{identifier}/{region}/{size}/{rotation}/{quality}.{format}",
                 ImageResource.class);

@@ -31,4 +31,15 @@ public class RootResourceTest extends ResourceTest {
         assertEquals(getBaseUri(), resource.getLocationRef().toString());
     }
 
+    public void testIiifUriWithSlashRedirectsToIiifUri() {
+        Reference url = new Reference(getBaseUri() + "/");
+        ClientResource resource = new ClientResource(url);
+        resource.setNext(client);
+        resource.setFollowingRedirects(false);
+        resource.get();
+
+        assertEquals(Status.REDIRECTION_PERMANENT, resource.getStatus());
+        assertEquals(getBaseUri(), resource.getLocationRef().toString());
+    }
+
 }
