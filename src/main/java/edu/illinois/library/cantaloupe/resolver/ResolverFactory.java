@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
 
-public class ResolverFactory {
+public abstract class ResolverFactory {
 
     /**
      * @return The current resolver based on the <code>resolver</code> setting

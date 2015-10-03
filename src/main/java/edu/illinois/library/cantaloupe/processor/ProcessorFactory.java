@@ -7,7 +7,7 @@ import org.apache.commons.configuration.Configuration;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ProcessorFactory {
+public abstract class ProcessorFactory {
 
     public static Set<Processor> getAllProcessors() {
         // might be preferable to scan the package for classes implementing

@@ -4,7 +4,7 @@ import edu.illinois.library.cantaloupe.Application;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CacheFactory {
+public abstract class CacheFactory {
 
     private static Logger logger = LoggerFactory.getLogger(CacheFactory.class);
 
