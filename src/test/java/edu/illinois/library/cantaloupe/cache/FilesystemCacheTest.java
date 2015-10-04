@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.request.Parameters;
 import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.io.FileUtils;
+import org.restlet.data.Reference;
 
 import java.awt.Dimension;
 import java.io.File;
@@ -160,8 +161,8 @@ public class FilesystemCacheTest extends TestCase {
         String rotation = "!10";
         String quality = "color";
         String format = "tif";
-        Parameters params = new Parameters(identifier, region, size, rotation,
-                quality, format);
+        Parameters params = new Parameters(Reference.encode(identifier),
+                region, size, rotation, quality, format);
         final String search = "[^A-Za-z0-9._-]";
         final String replacement = "_";
         String expected = String.format("%s%simage%s%s_%s_%s_%s_%s.%s", pathname,

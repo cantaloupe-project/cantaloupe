@@ -11,13 +11,13 @@ import java.io.IOException;
 
 public class HttpResolverTest extends TestCase {
 
-    private static final Identifier IMAGE = new Identifier("google.jpg");
+    private static final Identifier IMAGE = new Identifier("14405804_o1.jpg");
     HttpResolver instance;
 
     public void setUp() throws IOException {
         BaseConfiguration config = new BaseConfiguration();
         config.setProperty("HttpResolver.url_prefix",
-                "https://web.archive.org/web/19990117032727/http://www.google.com/");
+                "https://ia601502.us.archive.org/4/items/14405804O1_201507/");
         Application.setConfiguration(config);
 
         instance = new HttpResolver();

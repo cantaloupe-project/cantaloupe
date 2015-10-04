@@ -47,10 +47,10 @@ class HttpResolver implements StreamResolver {
         try {
             return ImageIO.createImageInputStream(resource.get().getStream());
         } catch (ResourceException e) {
-            if (e.getStatus() == Status.CLIENT_ERROR_NOT_FOUND ||
-                    e.getStatus() == Status.CLIENT_ERROR_GONE) {
+            if (e.getStatus().equals(Status.CLIENT_ERROR_NOT_FOUND) ||
+                    e.getStatus().equals(Status.CLIENT_ERROR_GONE)) {
                 throw new FileNotFoundException(e.getMessage());
-            } else if (e.getStatus() == Status.CLIENT_ERROR_FORBIDDEN) {
+            } else if (e.getStatus().equals(Status.CLIENT_ERROR_FORBIDDEN)) {
                 throw new AccessDeniedException(e.getMessage());
             } else {
                 throw new IOException(e.getMessage());
