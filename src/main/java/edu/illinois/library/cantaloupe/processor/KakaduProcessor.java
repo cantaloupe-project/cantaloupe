@@ -16,8 +16,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import javax.imageio.ImageIO;
-import javax.media.jai.Interpolation;
-import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
 import javax.xml.parsers.DocumentBuilder;
@@ -27,10 +25,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.awt.image.renderable.ParameterBlock;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -59,7 +54,7 @@ class KakaduProcessor implements FileProcessor {
      * Used to return a reduction factor from getProcessBuilder() by reference.
      */
     private class ReductionFactor {
-        public short factor = 0;
+        public int factor = 0;
     }
 
     private class StreamCopier implements Runnable {

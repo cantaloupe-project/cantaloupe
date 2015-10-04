@@ -127,7 +127,7 @@ abstract class ProcessorUtil {
      * @param maxFactor 0 for no max
      * @return
      */
-    public static short getReductionFactor(double scalePercent, int maxFactor) {
+    public static int getReductionFactor(double scalePercent, int maxFactor) {
         if (maxFactor == 0) {
             maxFactor = 999999;
         }
