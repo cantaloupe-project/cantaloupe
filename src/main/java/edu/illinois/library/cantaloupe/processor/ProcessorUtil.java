@@ -605,8 +605,8 @@ abstract class ProcessorUtil {
                 height = (int) Math.round(sourceHeight *
                         Math.min(hScale, vScale));
             } else if (size.getPercent() != null) {
-                double pct = getScale(reductionFactor) /
-                        (size.getPercent() / 100.0f);
+                double rfScale = getScale(reductionFactor);
+                double pct = 1f + (size.getPercent() / 100.0f) - rfScale;
                 width = (int) Math.round(sourceWidth * pct);
                 height = (int) Math.round(sourceHeight * pct);
             }
