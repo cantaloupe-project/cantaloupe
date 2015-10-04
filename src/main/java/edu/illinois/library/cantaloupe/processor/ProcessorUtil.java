@@ -39,8 +39,31 @@ import java.util.Set;
  */
 abstract class ProcessorUtil {
 
-    public static BufferedImage cropImage(final BufferedImage inputImage,
-                                          final Region region) {
+    /**
+     * <p>BufferedImages with a type of <code>TYPE_CUSTOM</code> won't work
+     * with various operations, so this method copies them into a new image of
+     * type RGB.</p>
+     *
+     * <p>This is extremely expensive and should be avoided if possible.</p>
+     *
+     * @param inImage Image to convert
+     * @return A new BufferedImage of type RGB, or the input image if it
+     * already is RGB
+     */
+    public static BufferedImage convertToRgb(BufferedImage inImage) {
+        BufferedImage outImage = inImage;
+        if (inImage.getType() == BufferedImage.TYPE_CUSTOM) {
+            outImage = new BufferedImage(inImage.getWidth(),
+                    inImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = outImage.createGraphics();
+            g.drawImage(inImage, 0, 0, null);
+            g.dispose();
+        }
+        return outImage;
+    }
+
+    public static BufferedImage cropImage(BufferedImage inputImage,
+                                          Region region) {
         BufferedImage croppedImage;
         if (region.isFull()) {
             croppedImage = inputImage;
@@ -72,8 +95,56 @@ abstract class ProcessorUtil {
         return croppedImage;
     }
 
-    public static BufferedImage filterImage(final BufferedImage inputImage,
-                                            final Quality quality) {
+    /**
+     * Crops the given image taking into account a reduction factor (rf). In
+     * other words, the dimensions of the input image have already been halved
+     * rf times but the given region is relative to the full-sized image.
+     *
+     * @param inputImage
+     * @param region
+     * @param reductionFactor
+     * @return
+     */
+    public static BufferedImage cropImage(BufferedImage inputImage,
+                                          Region region, int reductionFactor) {
+        BufferedImage croppedImage;
+        if (region.isFull()) {
+            croppedImage = inputImage;
+        } else {
+            final double scale = getScale(reductionFactor);
+            final double regionX = region.getX() * scale;
+            final double regionY = region.getY() * scale;
+            final double regionWidth = region.getWidth() * scale;
+            final double regionHeight = region.getHeight() * scale;
+
+            int x, y, requestedWidth, requestedHeight, croppedWidth,
+                    croppedHeight;
+            if (region.isPercent()) {
+                x = (int) Math.round((regionX / 100.0) * inputImage.getWidth());
+                y = (int) Math.round((regionY / 100.0) * inputImage.getHeight());
+                requestedWidth = (int) Math.round((regionWidth / 100.0) *
+                        inputImage.getWidth());
+                requestedHeight = (int) Math.round((regionHeight / 100.0) *
+                        inputImage.getHeight());
+            } else {
+                x = (int) Math.round(regionX);
+                y = (int) Math.round(regionY);
+                requestedWidth = (int) Math.round(regionWidth);
+                requestedHeight = (int) Math.round(regionHeight);
+            }
+            // BufferedImage.getSubimage() will protest if asked for more
+            // width/height than is available
+            croppedWidth = (x + requestedWidth > inputImage.getWidth()) ?
+                    inputImage.getWidth() - x : requestedWidth;
+            croppedHeight = (y + requestedHeight > inputImage.getHeight()) ?
+                    inputImage.getHeight() - y : requestedHeight;
+            croppedImage = inputImage.getSubimage(x, y, croppedWidth, croppedHeight);
+        }
+        return croppedImage;
+    }
+
+    public static BufferedImage filterImage(BufferedImage inputImage,
+                                            Quality quality) {
         BufferedImage filteredImage = inputImage;
         if (quality != Quality.COLOR && quality != Quality.DEFAULT) {
             switch (quality) {
