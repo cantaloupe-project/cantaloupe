@@ -10,11 +10,13 @@ import java.io.IOException;
 
 public class HttpResolverTest extends TestCase {
 
+    private static final Identifier IMAGE = new Identifier("google.jpg");
     HttpResolver instance;
 
     public void setUp() throws IOException {
         BaseConfiguration config = new BaseConfiguration();
-        config.setProperty("HttpResolver.url_prefix", "http://localhost/");
+        config.setProperty("HttpResolver.url_prefix",
+                "https://web.archive.org/web/19990117032727/http://www.google.com/");
         Application.setConfiguration(config);
 
         instance = new HttpResolver();
@@ -27,7 +29,12 @@ public class HttpResolverTest extends TestCase {
         } catch (IOException e) {
             // pass
         }
-        // TODO: test against a real server
+
+        try {
+            assertNotNull(instance.getInputStream(IMAGE));
+        } catch (IOException e) {
+            fail();
+        }
     }
 
     public void testGetSourceFormat() {
