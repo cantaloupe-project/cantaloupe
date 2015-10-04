@@ -178,7 +178,12 @@ class Java2dProcessor implements StreamProcessor {
                 }
                 break;
         }
-        return ProcessorUtil.convertToRgb(image);
+        BufferedImage rgbImage = ProcessorUtil.convertToRgb(image);
+        if (rgbImage != image) {
+            logger.warn("Converting {} to RGB (this is very expensive)",
+                    params.getIdentifier());
+        }
+        return rgbImage;
     }
 
     private BufferedImage loadTiff(ImageInputStream inputStream,
@@ -189,16 +194,16 @@ class Java2dProcessor implements StreamProcessor {
         // We can't use ImageIO.read() for two reasons: 1) the BufferedImages
         // it returns for TIFFs are often set to type TYPE_CUSTOM, which
         // causes many subsequent operations to fail; and 2) it doesn't allow
-        // access to pyramidal TIFF images.
+        // access to pyramidal TIFF sub-images.
         //
         // Strategy B is it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.
-        // Unfortunately, this reader throws an
+        // This reader has several issues. First, it sometimes sets
+        // BufferedImages to TYPE_CUSTOM as well. Second, it throws an
         // ArrayIndexOutOfBoundsException when a TIFF file contains a
         // tag value > 6. (To inspect tag values, run
-        // $ tiffdump <file>.)
-        //
-        // The Sun TIFFImageReader suffers from the same issue except it
-        // throws an IllegalArgumentException instead.
+        // $ tiffdump <file>.) (The Sun TIFFImageReader suffers from the same
+        // issue except it throws an IllegalArgumentException instead.)
+        // Finally, it renders some TIFFs with improper colors.
         try {
             Iterator<ImageReader> it = ImageIO.
                     getImageReadersByMIMEType("image/tiff");
