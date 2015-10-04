@@ -5,7 +5,7 @@ import edu.illinois.library.cantaloupe.request.Identifier;
 
 /**
  * Locates and provides access to a source image. This is an abstract interface;
- * implementations should implement at least one of the sub-interfaces.
+ * implementations must implement at least one of the sub-interfaces.
  */
 public interface Resolver {
 
