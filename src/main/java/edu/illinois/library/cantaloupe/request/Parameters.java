@@ -71,7 +71,7 @@ public class Parameters implements Comparable<Parameters> {
      * rotation, no mirroring, default or color quality, and the same output
      * format as the source format.
      */
-    public boolean isUnmodified() {
+    public boolean isRequestingUnmodifiedSource() {
         return this.getRegion().isFull() &&
                 this.getSize().getScaleMode() == Size.ScaleMode.FULL &&
                 this.getRotation().getDegrees() == 0 &&

@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.resource;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,7 +29,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.MediaType;
-import org.restlet.data.Reference;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
@@ -126,7 +124,7 @@ public class ImageResource extends AbstractResource {
                 long msec = System.currentTimeMillis();
                 // if the parameters request an unmodified source image, it can
                 // be streamed right through
-                if (this.params.isUnmodified()) {
+                if (this.params.isRequestingUnmodifiedSource()) {
                     if (this.file != null) {
                         IOUtils.copy(new FileInputStream(this.file),
                                 outputStream);

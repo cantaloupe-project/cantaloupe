@@ -14,35 +14,35 @@ public class ParametersTest extends TestCase {
     public void testIsUnmodified() {
         parameters = new Parameters("identifier", "full", "full", "0",
                 "default", "jpg");
-        assertFalse(parameters.isUnmodified());
+        assertFalse(parameters.isRequestingUnmodifiedSource());
 
         parameters = new Parameters("identifier.jpg", "full", "full", "0",
                 "default", "jpg");
-        assertTrue(parameters.isUnmodified());
+        assertTrue(parameters.isRequestingUnmodifiedSource());
 
         parameters = new Parameters("identifier.gif", "full", "full", "0",
                 "default", "gif");
-        assertTrue(parameters.isUnmodified());
+        assertTrue(parameters.isRequestingUnmodifiedSource());
 
         parameters = new Parameters("identifier.gif", "30,30,30,30", "full", "0",
                 "default", "gif");
-        assertFalse(parameters.isUnmodified());
+        assertFalse(parameters.isRequestingUnmodifiedSource());
 
         parameters = new Parameters("identifier.gif", "full", "pct:50", "0",
                 "default", "gif");
-        assertFalse(parameters.isUnmodified());
+        assertFalse(parameters.isRequestingUnmodifiedSource());
 
         parameters = new Parameters("identifier.gif", "full", "full", "2",
                 "default", "gif");
-        assertFalse(parameters.isUnmodified());
+        assertFalse(parameters.isRequestingUnmodifiedSource());
 
         parameters = new Parameters("identifier.gif", "full", "full", "!0",
                 "default", "gif");
-        assertTrue(parameters.isUnmodified());
+        assertTrue(parameters.isRequestingUnmodifiedSource());
 
         parameters = new Parameters("identifier.gif", "full", "full", "0",
                 "color", "gif");
-        assertTrue(parameters.isUnmodified());
+        assertTrue(parameters.isRequestingUnmodifiedSource());
     }
 
     public void testToString() {
