@@ -32,7 +32,7 @@ public class HttpResolverTest extends TestCase {
         }
         // missing image
         try {
-            assertNull(instance.getInputStream(new Identifier("bogus")));
+            instance.getInputStream(new Identifier("bogus"));
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
@@ -43,13 +43,20 @@ public class HttpResolverTest extends TestCase {
         // TODO: write this
     }
 
-    public void testGetSourceFormat() {
-        assertEquals(SourceFormat.JPG,
-                instance.getSourceFormat(new Identifier("image.jpg")));
-        assertEquals(SourceFormat.UNKNOWN,
-                instance.getSourceFormat(new Identifier("image.bogus")));
-        assertEquals(SourceFormat.UNKNOWN,
-                instance.getSourceFormat(new Identifier("image")));
+    public void testGetSourceFormat() throws IOException {
+        assertEquals(SourceFormat.JPG, instance.getSourceFormat(IMAGE));
+        try {
+            instance.getSourceFormat(new Identifier("image.bogus"));
+            fail("Expected exception");
+        } catch (IOException e) {
+            // pass
+        }
+        try {
+            instance.getSourceFormat(new Identifier("image"));
+            fail("Expected exception");
+        } catch (IOException e) {
+            // pass
+        }
     }
 
     public void testGetUrl() {

@@ -58,17 +58,13 @@ class HttpResolver implements StreamResolver {
         }
     }
 
-    /**
-     * Returns the format of the image corresponding to the given identifier.
-     *
-     * @param identifier IIIF identifier.
-     * @return A source format, or <code>SourceFormat.UNKNOWN</code> if unknown.
-     */
-    public SourceFormat getSourceFormat(Identifier identifier) {
+    public SourceFormat getSourceFormat(Identifier identifier)
+            throws IOException {
         SourceFormat format = getSourceFormatFromIdentifier(identifier);
         if (format == SourceFormat.UNKNOWN) {
             format = getSourceFormatFromServer(identifier);
         }
+        getInputStream(identifier); // throws IOException if not found etc.
         return format;
     }
 

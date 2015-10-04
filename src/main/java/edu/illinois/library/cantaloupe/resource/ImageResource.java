@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -219,6 +220,9 @@ public class ImageResource extends AbstractResource {
         // Determine the format of the source image
         SourceFormat sourceFormat = resolver.
                 getSourceFormat(params.getIdentifier());
+        if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
+            throw new UnsupportedSourceFormatException();
+        }
         // Obtain an instance of the processor assigned to that format in
         // the config file
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);

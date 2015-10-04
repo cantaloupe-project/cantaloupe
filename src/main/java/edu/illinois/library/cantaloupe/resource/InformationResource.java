@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import java.awt.Dimension;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +21,7 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.ProcessorFeature;
 import edu.illinois.library.cantaloupe.processor.StreamProcessor;
+import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.request.Identifier;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Quality;
@@ -78,6 +80,9 @@ public class InformationResource extends AbstractResource {
         Resolver resolver = ResolverFactory.getResolver();
         // 3. Determine the format of the source image
         SourceFormat sourceFormat = resolver.getSourceFormat(identifier);
+        if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
+            throw new UnsupportedSourceFormatException();
+        }
         // 4. Obtain an instance of the processor assigned to that format in
         // the config file
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);

@@ -88,6 +88,16 @@ public class ImageResourceTest extends ResourceTest {
         }
     }
 
+    public void testNotFound() throws IOException {
+        ClientResource client = getClientForUriPath("/invalid/info.json");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_NOT_FOUND, client.getStatus());
+        }
+    }
+
     public void testUnavailableSourceFormat() throws IOException {
         ClientResource client = getClientForUriPath("/text.txt/full/full/0/default.jpg");
         try {

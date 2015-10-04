@@ -39,7 +39,7 @@ public class FilesystemResolverTest extends TestCase {
         }
         // missing file
         try {
-            assertNull(instance.getFile(new Identifier("bogus")));
+            instance.getFile(new Identifier("bogus"));
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
@@ -93,7 +93,7 @@ public class FilesystemResolverTest extends TestCase {
         assertEquals("\\id", instance.getSanitizedIdentifier("\\..\\id", "\\"));
     }
 
-    public void testGetSourceFormatWithExtensions() {
+    public void testGetSourceFormatWithExtensions() throws IOException {
         assertEquals(SourceFormat.BMP,
                 instance.getSourceFormat(new Identifier("bla.bmp")));
         assertEquals(SourceFormat.GIF,
@@ -106,11 +106,16 @@ public class FilesystemResolverTest extends TestCase {
                 instance.getSourceFormat(new Identifier("bla.png")));
         assertEquals(SourceFormat.TIF,
                 instance.getSourceFormat(new Identifier("bla.tif")));
-        assertEquals(SourceFormat.UNKNOWN,
-                instance.getSourceFormat(new Identifier("bla.bogus")));
+        try {
+            assertEquals(SourceFormat.UNKNOWN,
+                    instance.getSourceFormat(new Identifier("bla.bogus")));
+            fail("Expected exception");
+        } catch (FileNotFoundException e) {
+            // pass
+        }
     }
 
-    public void testGetSourceFormatByDetection() {
+    public void testGetSourceFormatByDetection() throws IOException {
         assertEquals(SourceFormat.BMP,
                 instance.getSourceFormat(new Identifier("bmp")));
         assertEquals(SourceFormat.GIF,

@@ -28,17 +28,13 @@ class FilesystemResolver implements FileResolver, StreamResolver {
 
     public File getFile(Identifier identifier) throws IOException {
         File file = new File(getPathname(identifier));
-        if (!file.exists()) {
-            String message = "Failed to resolve " + identifier + " to " +
-                    file.getAbsolutePath();
-            logger.warn(message);
-            throw new FileNotFoundException(message);
-        } else if (!file.canRead()) {
-            String message = "File is not readable: " + file.getAbsolutePath();
-            logger.warn(message);
-            throw new AccessDeniedException(message);
+        try {
+            checkAccess(file, identifier);
+            logger.debug("Resolved {} to {}", identifier, file.getAbsolutePath());
+        } catch (IOException e) {
+            logger.warn(e.getMessage(), e);
+            throw e;
         }
-        logger.debug("Resolved {} to {}", identifier, file.getAbsolutePath());
         return file;
     }
 
@@ -89,15 +85,12 @@ class FilesystemResolver implements FileResolver, StreamResolver {
         return identifier;
     }
 
-    /**
-     * Returns the format of the image corresponding to the given identifier.
-     *
-     * @param identifier IIIF identifier.
-     * @return A source format, or <code>SourceFormat.UNKNOWN</code> if unknown.
-     */
-    public SourceFormat getSourceFormat(Identifier identifier) {
+    public SourceFormat getSourceFormat(Identifier identifier)
+            throws IOException {
         SourceFormat sourceFormat = getSourceFormatFromIdentifier(identifier);
-        if (sourceFormat == SourceFormat.UNKNOWN) {
+        if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
+            File file = new File(getPathname(identifier));
+            checkAccess(file, identifier);
             sourceFormat = getDetectedSourceFormat(identifier);
         }
         return sourceFormat;
@@ -132,6 +125,17 @@ class FilesystemResolver implements FileResolver, StreamResolver {
                     getSourceFormat(new MediaType(detectedType));
         }
         return sourceFormat;
+    }
+
+    private void checkAccess(File file, Identifier identifier)
+            throws IOException {
+        if (!file.exists()) {
+            throw new FileNotFoundException("Failed to resolve " +
+                    identifier + " to " + file.getAbsolutePath());
+        } else if (!file.canRead()) {
+            throw new AccessDeniedException("File is not readable: " +
+                    file.getAbsolutePath());
+        }
     }
 
 }
