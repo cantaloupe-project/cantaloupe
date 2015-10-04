@@ -64,35 +64,7 @@ abstract class ProcessorUtil {
 
     public static BufferedImage cropImage(BufferedImage inputImage,
                                           Region region) {
-        BufferedImage croppedImage;
-        if (region.isFull()) {
-            croppedImage = inputImage;
-        } else {
-            int x, y, requestedWidth, requestedHeight, width, height;
-            if (region.isPercent()) {
-                x = (int) Math.round((region.getX() / 100.0) *
-                        inputImage.getWidth());
-                y = (int) Math.round((region.getY() / 100.0) *
-                        inputImage.getHeight());
-                requestedWidth = (int) Math.round((region.getWidth() / 100.0) *
-                        inputImage.getWidth());
-                requestedHeight = (int) Math.round((region.getHeight() / 100.0) *
-                        inputImage.getHeight());
-            } else {
-                x = Math.round(region.getX());
-                y = Math.round(region.getY());
-                requestedWidth = Math.round(region.getWidth());
-                requestedHeight = Math.round(region.getHeight());
-            }
-            // BufferedImage.getSubimage() will protest if asked for more
-            // width/height than is available
-            width = (x + requestedWidth > inputImage.getWidth()) ?
-                    inputImage.getWidth() - x : requestedWidth;
-            height = (y + requestedHeight > inputImage.getHeight()) ?
-                    inputImage.getHeight() - y : requestedHeight;
-            croppedImage = inputImage.getSubimage(x, y, width, height);
-        }
-        return croppedImage;
+        return cropImage(inputImage, region, 0);
     }
 
     /**
@@ -522,48 +494,7 @@ abstract class ProcessorUtil {
      */
     public static BufferedImage scaleImageWithG2d(BufferedImage inputImage,
                                                   Size size) {
-        BufferedImage scaledImage;
-        if (size.getScaleMode() == Size.ScaleMode.FULL) {
-            scaledImage = inputImage;
-        } else {
-            int width = 0, height = 0;
-            if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
-                width = size.getWidth();
-                height = inputImage.getHeight() * width /
-                        inputImage.getWidth();
-            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
-                height = size.getHeight();
-                width = inputImage.getWidth() * height /
-                        inputImage.getHeight();
-            } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
-                width = size.getWidth();
-                height = size.getHeight();
-            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
-                double hScale = (double) size.getWidth() /
-                        (double) inputImage.getWidth();
-                double vScale = (double) size.getHeight() /
-                        (double) inputImage.getHeight();
-                width = (int) Math.round(inputImage.getWidth() *
-                        Math.min(hScale, vScale));
-                height = (int) Math.round(inputImage.getHeight() *
-                        Math.min(hScale, vScale));
-            } else if (size.getPercent() != null) {
-                width = (int) Math.round(inputImage.getWidth() *
-                        (size.getPercent() / 100.0));
-                height = (int) Math.round(inputImage.getHeight() *
-                        (size.getPercent() / 100.0));
-            }
-            scaledImage = new BufferedImage(width, height,
-                    inputImage.getType());
-            Graphics2D g2d = scaledImage.createGraphics();
-            RenderingHints hints = new RenderingHints(
-                    RenderingHints.KEY_INTERPOLATION,
-                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-            g2d.setRenderingHints(hints);
-            g2d.drawImage(inputImage, 0, 0, width, height, null);
-            g2d.dispose();
-        }
-        return scaledImage;
+        return scaleImageWithG2d(inputImage, size, 0);
     }
 
     /**
