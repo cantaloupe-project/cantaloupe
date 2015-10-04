@@ -63,6 +63,7 @@ public abstract class AbstractResource extends ServerResource {
     protected void doInit() throws ResourceException {
         super.doInit();
         // override the Server header
+        // TODO: this doesn't affect redirecting responses
         this.getServerInfo().setAgent("Cantaloupe/" + Application.getVersion());
     }
 

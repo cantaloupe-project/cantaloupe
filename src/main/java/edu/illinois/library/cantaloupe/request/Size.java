@@ -73,7 +73,7 @@ public class Size {
     /**
      * @return Float from 0-100
      */
-    public Float getPercent() {
+    public Float getPercent() { // TODO: use 0-1
         return percent;
     }
 
@@ -96,7 +96,7 @@ public class Size {
      * @param percent Float from 0-100
      * @throws IllegalArgumentException
      */
-    public void setPercent(Float percent) throws IllegalArgumentException {
+    public void setPercent(Float percent) throws IllegalArgumentException { // TODO: use 0-1
         if (percent <= 0) {
             throw new IllegalArgumentException("Percent must be positive");
         }
