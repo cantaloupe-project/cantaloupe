@@ -381,11 +381,8 @@ abstract class ProcessorUtil {
                 xScale = sourceWidth * Math.min(hScale, vScale);
                 yScale = sourceHeight * Math.min(hScale, vScale);
             } else if (size.getPercent() != null) {
-                xScale = size.getPercent() / 100.0f;
-                if (reductionFactor > 0) {
-                    xScale += (1 / (double) (reductionFactor + 1));
-                }
-                yScale = xScale;
+                xScale = yScale = getScale(reductionFactor) /
+                        (size.getPercent() / 100.0f);
             }
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(inputImage);
@@ -537,10 +534,8 @@ abstract class ProcessorUtil {
                 height = (int) Math.round(sourceHeight *
                         Math.min(hScale, vScale));
             } else if (size.getPercent() != null) {
-                double pct = size.getPercent() / 100.0f;
-                if (reductionFactor > 0) {
-                    pct += (1 / (double) (reductionFactor + 1));
-                }
+                double pct = getScale(reductionFactor) /
+                        (size.getPercent() / 100.0f);
                 width = (int) Math.round(sourceWidth * pct);
                 height = (int) Math.round(sourceHeight * pct);
             }
