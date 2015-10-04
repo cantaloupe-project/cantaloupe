@@ -1,11 +1,10 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import com.sun.media.jai.codec.ImageCodec;
-import com.sun.media.jai.codec.ImageDecoder;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.request.Quality;
+import edu.illinois.library.cantaloupe.request.Size;
 import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,11 +13,8 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,9 +22,16 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * Processor using the Java ImageIO framework.
+ * Processor using the Java2D framework.
  */
 class Java2dProcessor implements StreamProcessor {
+
+    /**
+     * Used to return a reduction factor from loadTiff() by reference.
+     */
+    private class ReductionFactor {
+        public int factor = 0;
+    }
 
     private static Logger logger = LoggerFactory.getLogger(Java2dProcessor.class);
 
@@ -129,10 +132,13 @@ class Java2dProcessor implements StreamProcessor {
         }
 
         try {
-            BufferedImage image = loadImage(inputStream, sourceFormat,
-                    params.getIdentifier());
-            image = ProcessorUtil.cropImage(image, params.getRegion());
-            image = ProcessorUtil.scaleImageWithG2d(image, params.getSize());
+            ReductionFactor reductionFactor = new ReductionFactor();
+            BufferedImage image = loadImage(inputStream, sourceFormat, params,
+                    reductionFactor);
+            image = ProcessorUtil.cropImage(image, params.getRegion(),
+                    reductionFactor.factor);
+            image = ProcessorUtil.scaleImageWithG2d(image, params.getSize(),
+                    reductionFactor.factor);
             image = ProcessorUtil.rotateImage(image, params.getRotation());
             image = ProcessorUtil.filterImage(image, params.getQuality());
             ProcessorUtil.outputImage(image, params.getOutputFormat(),
@@ -144,7 +150,8 @@ class Java2dProcessor implements StreamProcessor {
 
     private BufferedImage loadImage(ImageInputStream inputStream,
                                     SourceFormat sourceFormat,
-                                    String identifier)
+                                    Parameters params,
+                                    ReductionFactor reductionFactor)
             throws IOException, UnsupportedSourceFormatException {
         BufferedImage image = null;
         switch (sourceFormat) {
@@ -152,52 +159,7 @@ class Java2dProcessor implements StreamProcessor {
                 image = ImageIO.read(inputStream);
                 break;
             case TIF:
-                // We can't use ImageIO.read() because the BufferedImages it
-                // returns for TIFFs are often set to type TYPE_CUSTOM, which
-                // causes many subsequent operations to fail.
-                //
-                // Strategy B is the geosolutions.it TIFFImageReader.
-                // Unfortunately, this reader throws an
-                // ArrayIndexOutOfBoundsException when a TIFF file contains a
-                // tag value > 6. (To inspect tag values, run
-                // $ tiffdump <file>.)
-                //
-                // The Sun TIFFImageReader suffers from the same issue except it
-                // throws an IllegalArgumentException instead.
-                /*
-                try {
-                    Iterator<ImageReader> it = ImageIO.
-                            getImageReadersByMIMEType("image/tiff");
-                    while (it.hasNext()) {
-                        ImageReader reader = it.next();
-                        if (!(reader instanceof it.geosolutions.imageioimpl.
-                                plugins.tiff.TIFFImageReader)) {
-                            continue;
-                        }
-                        try {
-                            reader.setInput(inputStream);
-                            image = reader.read(0);
-                        } finally {
-                            reader.dispose();
-                        }
-                    }
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    logger.error("TIFFImageReader failed to read " + identifier);
-                }*/
-
-                // Strategy C. Unfortunately, TIFFImageDecoder suffers from a
-                // similar issue as TIFFImageReader, which is an inability to
-                // decode certain TIFFs properly - they get vertical b&w
-                // stripes. tiffdump doesn't provide any clues.
-                try (InputStream is = new ImageInputStreamWrapper(inputStream)) {
-                    ImageDecoder dec = ImageCodec.createImageDecoder("tiff",
-                            is, null);
-                    RenderedImage op = dec.decodeAsRenderedImage();
-                    BufferedImage rgbImage = new BufferedImage(op.getWidth(),
-                            op.getHeight(), BufferedImage.TYPE_INT_RGB);
-                    rgbImage.setData(op.getData());
-                    image = rgbImage;
-                }
+                image = loadTiff(inputStream, params, reductionFactor);
                 break;
             default:
                 Iterator<ImageReader> it = ImageIO.getImageReadersByMIMEType(
@@ -214,21 +176,129 @@ class Java2dProcessor implements StreamProcessor {
                 if (image == null) {
                     throw new UnsupportedSourceFormatException(sourceFormat);
                 }
-                // TYPE_CUSTOM won't work with various operations, so copy into a
-                // new image of the correct type. (This is extremely expensive)
-                if (image.getType() == BufferedImage.TYPE_CUSTOM) {
-                    logger.warn("Redrawing image of TYPE_CUSTOM into a new image of TYPE_INT_RGB: {}",
-                            image.toString());
-                    BufferedImage rgbImage = new BufferedImage(image.getWidth(),
-                            image.getHeight(), BufferedImage.TYPE_INT_RGB);
-                    Graphics2D g = rgbImage.createGraphics();
-                    g.drawImage(image, 0, 0, null);
-                    g.dispose();
-                    image = rgbImage;
-                }
                 break;
         }
+        return ProcessorUtil.convertToRgb(image);
+    }
+
+    private BufferedImage loadTiff(ImageInputStream inputStream,
+                                   Parameters params,
+                                   ReductionFactor reductionFactor)
+            throws IOException {
+        BufferedImage image = null;
+        // We can't use ImageIO.read() for two reasons: 1) the BufferedImages
+        // it returns for TIFFs are often set to type TYPE_CUSTOM, which
+        // causes many subsequent operations to fail; and 2) it doesn't allow
+        // access to pyramidal TIFF images.
+        //
+        // Strategy B is it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.
+        // Unfortunately, this reader throws an
+        // ArrayIndexOutOfBoundsException when a TIFF file contains a
+        // tag value > 6. (To inspect tag values, run
+        // $ tiffdump <file>.)
+        //
+        // The Sun TIFFImageReader suffers from the same issue except it
+        // throws an IllegalArgumentException instead.
+        try {
+            Iterator<ImageReader> it = ImageIO.
+                    getImageReadersByMIMEType("image/tiff");
+            while (it.hasNext()) {
+                ImageReader reader = it.next();
+                if (!(reader instanceof it.geosolutions.imageioimpl.
+                        plugins.tiff.TIFFImageReader)) {
+                    continue;
+                }
+                try {
+                    reader.setInput(inputStream);
+                    image = getSmallestFittingImage(reader, params.getSize(),
+                            reductionFactor);
+                } finally {
+                    reader.dispose();
+                }
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            logger.error("TIFFImageReader failed to read {}",
+                    params.getIdentifier());
+        }
+
+        /*
+        // Strategy C: the JAI TIFFImageDecoder. Unfortunately, it suffers from
+        // a similar issue as TIFFImageReader, which is an inability to
+        // decode certain TIFFs properly - they get vertical B&W
+        // stripes. tiffdump doesn't provide any clues.
+        try (InputStream is = new ImageInputStreamWrapper(inputStream)) {
+            ImageDecoder dec = ImageCodec.createImageDecoder("tiff",
+                    is, null);
+            RenderedImage op = dec.decodeAsRenderedImage();
+            BufferedImage rgbImage = new BufferedImage(op.getWidth(),
+                    op.getHeight(), BufferedImage.TYPE_INT_RGB);
+            rgbImage.setData(op.getData());
+            image = rgbImage;
+        }*/
         return image;
+    }
+
+    /**
+     * Returns the smallest image fitting the requested size from the given
+     * reader. Useful for e.g. pyramidal TIFF.
+     *
+     * @param reader ImageReader with input source already set
+     * @param size Requested size
+     * @param rf Set by reference
+     * @return
+     * @throws IOException
+     */
+    private BufferedImage getSmallestFittingImage(ImageReader reader, Size size,
+                                                  ReductionFactor rf)
+            throws IOException {
+        BufferedImage bestImage = reader.read(0);
+        if (size.getScaleMode() != Size.ScaleMode.FULL) {
+            // pyramidal TIFFs will have > 1 image, each half the dimensions of
+            // the next larger
+            int numImages = reader.getNumImages(true);
+            if (numImages > 1) {
+                logger.debug("Detected pyramidal TIFF with {} levels",
+                        numImages);
+                // one or the other may be null
+                Integer requestedWidth, requestedHeight;
+                if (size.getPercent() != null) {
+                    requestedWidth = Math.round(bestImage.getWidth() *
+                            (size.getPercent() / 100f));
+                    requestedHeight = Math.round(bestImage.getHeight() *
+                            (size.getPercent() / 100f));
+                } else {
+                    requestedWidth = size.getWidth();
+                    requestedHeight = size.getHeight();
+                }
+
+                // loop through the tiles from smallest to largest to find the
+                // first one that fits the requested scale
+                for (int i = numImages - 1; i >= 0; i--) {
+                    final BufferedImage tile = reader.read(i);
+                    boolean fits = false;
+                    if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH &&
+                            requestedWidth <= tile.getWidth()) {
+                        fits = true;
+                    } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT &&
+                                    requestedHeight <= tile.getHeight()) {
+                        fits = true;
+                    } else if (requestedWidth <= tile.getWidth() &&
+                                    requestedHeight <= tile.getHeight()) {
+                        fits = true;
+                    }
+                    if (fits) {
+                        double tileScale = (double) tile.getWidth() /
+                                (double) bestImage.getWidth();
+                        rf.factor = ProcessorUtil.getReductionFactor(tileScale, 0);
+                        logger.debug("Using a {}x{} source tile ({}x reduction factor)",
+                                tile.getWidth(), tile.getHeight(), rf.factor);
+                        bestImage = tile;
+                        break;
+                    }
+                }
+            }
+        }
+        return bestImage;
     }
 
 }

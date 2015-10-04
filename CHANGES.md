@@ -7,6 +7,7 @@
 * Added KakaduProcessor.
 * Added a `sizes` key to information responses.
 * Renamed ImageIoProcessor to Java2dProcessor.
+* Java2dProcessor supports pyramidal TIFF.
 * Improved the thread-safety of FilesystemCache.
 * Source images are streamed directly rather than being re-encoded when the
   IIIF parameters request a full-size, unmodified image.
@@ -14,7 +15,7 @@
 
 ## 1.0-beta2
 
-* Added optional server-side caching.
+* Added optional server-side caching via FilesystemCache.
 * Added configurable path separators in FilesystemResolver and HttpResolver.
 * The application version is displayed on the landing page and in a startup log
   message.

@@ -365,6 +365,15 @@ necessary delegate or plugin is installed. (See the landing page, at `/iiif`.)
 Java2dProcessor is known to have issues with certain TIFFs; investigation
 pending.
 
+### Pyramidal TIFF
+
+Java2dProcessor supports pyramidal TIFF, which is to say that it actually does
+read the embedded sub-images and chooses the most efficient fit for the
+requested scale.
+
+All other processors that support TIFF will read pyramidal TIFFs as ordinary
+TIFFs.
+
 # Custom Development
 
 Cantaloupe is a simple Maven project that should open easily in any Java IDE.
