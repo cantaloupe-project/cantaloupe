@@ -79,6 +79,15 @@ public class FilesystemResolverTest extends TestCase {
                 instance.getPathname(new Identifier("1" + separator + "2" + separator + "3")));
     }
 
+    public void testGetSanitizedIdentifier() {
+        // test using / as file separator
+        assertEquals("id/", instance.getSanitizedIdentifier("id/../", "/"));
+        assertEquals("/id", instance.getSanitizedIdentifier("/../id", "/"));
+        // test using \ as file separator
+        assertEquals("id\\", instance.getSanitizedIdentifier("id\\..\\", "\\"));
+        assertEquals("\\id", instance.getSanitizedIdentifier("\\..\\id", "\\"));
+    }
+
     public void testGetSourceFormatWithExtensions() {
         assertEquals(SourceFormat.BMP,
                 instance.getSourceFormat(new Identifier("bla.bmp")));

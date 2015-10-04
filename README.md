@@ -85,13 +85,16 @@ is therefore slightly more efficient to serve images with extensions.
 
 The `FilesystemResolver.path_prefix` and `path_suffix` configuration options
 are optional and intended to make URLs shorter, more stable, and hide
-potentially sensitive information. For example, with these options set as such:
+sensitive information. For example, with these options set as such:
 
     FilesystemResolver.path_prefix = /usr/local/images/
     FilesystemResolver.path_suffix =
 
 An identifier of `image.jpg` in the URL will resolve to
 `/usr/local/images/image.jpg`.
+
+*Note: it is dangerous to **not** use `path_prefix` on a public-facing server.
+The shallower the path, the more information that is potentially exposed.*
 
 #### Path Separator
 
@@ -105,6 +108,10 @@ the `FilesystemResolver.path_separator` configuration option will enable you to
 use an alternate string as a path separator in an identifier. (Be sure to
 supply the non-percent-encoded string, and then percent-encode it in URLs if it
 contains any URL-unsafe characters.)
+
+To prevent arbitrary directory traversal, FilesystemResolver will strip out
+`..{path separator}` and `{path separator}..` from identifiers before resolving
+the path.
 
 ### HttpResolver
 
@@ -122,8 +129,8 @@ returned.
 #### Prefix and Suffix
 
 The `HttpResolver.url_prefix` and `url_suffix` configuration options are
-optional and intended to make URLs shorter, more stable, and hide potentially
-sensitive information. For example, with these options set as such:
+optional and intended to make URLs shorter, more stable, and hide sensitive
+information. For example, with these options set as such:
 
     HttpResolver.url_prefix = http://example.org/images/
     HttpResolver.url_suffix =

@@ -64,7 +64,25 @@ class FilesystemResolver implements FileResolver, StreamResolver {
         if (!separator.equals(File.separator)) {
             idStr = StringUtils.replace(idStr, separator, File.separator);
         }
+
+        idStr = getSanitizedIdentifier(idStr, File.separator);
+
         return prefix + idStr + suffix;
+    }
+
+    /**
+     * Filters out "fileseparator.." and "..fileseparator" to prevent arbitrary
+     * directory traversal.
+     *
+     * @param identifier IIIF identifier
+     * @param fileSeparator The return value of <code>File.separator</code>
+     * @return Sanitized identifier
+     */
+    public String getSanitizedIdentifier(String identifier,
+                                         String fileSeparator) {
+        identifier = StringUtils.replace(identifier, fileSeparator + "..", "");
+        identifier = StringUtils.replace(identifier, ".." + fileSeparator, "");
+        return identifier;
     }
 
     /**
