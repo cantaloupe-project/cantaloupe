@@ -59,9 +59,8 @@ class FilesystemResolver implements FileResolver, StreamResolver {
         // identifiers. But some web servers have issues dealing with the
         // encoded slash (%2F). FilesystemResolver.path_separator enables the
         // use of an alternate string as a path separator.
-        String separator = config.getString("FilesystemResolver.path_separator",
-                File.separator);
-        if (!separator.equals(File.separator)) {
+        String separator = config.getString("FilesystemResolver.path_separator");
+        if (separator != null && separator.length() > 0) {
             idStr = StringUtils.replace(idStr, separator, File.separator);
         }
 
