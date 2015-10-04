@@ -205,7 +205,7 @@ public class ImageResource extends AbstractResource {
     public ImageRepresentation doGet() throws Exception {
         // Assemble the URI parameters into a Parameters object
         Map<String,Object> attrs = this.getRequest().getAttributes();
-        String identifier = Reference.decode((String) attrs.get("identifier"));
+        String identifier = (String) attrs.get("identifier");
         String format = (String) attrs.get("format");
         String region = (String) attrs.get("region");
         String size = (String) attrs.get("size");
@@ -217,7 +217,8 @@ public class ImageResource extends AbstractResource {
         // exception if not found)
         Resolver resolver = ResolverFactory.getResolver();
         // Determine the format of the source image
-        SourceFormat sourceFormat = resolver.getSourceFormat(identifier);
+        SourceFormat sourceFormat = resolver.
+                getSourceFormat(params.getIdentifier());
         // Obtain an instance of the processor assigned to that format in
         // the config file
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
@@ -225,9 +226,9 @@ public class ImageResource extends AbstractResource {
         File inputFile = null;
         ImageInputStream inputStream = null;
         if (resolver instanceof FileResolver) {
-            inputFile = ((FileResolver)resolver).getFile(identifier);
+            inputFile = ((FileResolver)resolver).getFile(params.getIdentifier());
             inputStream = ((StreamResolver)resolver).
-                    getInputStream(identifier);
+                    getInputStream(params.getIdentifier());
         } else {
             if (!(proc instanceof StreamProcessor)) {
                 // StreamProcessors require StreamResolvers
@@ -237,7 +238,7 @@ public class ImageResource extends AbstractResource {
                                 resolver.getClass().getSimpleName()));
             }
             inputStream = ((StreamResolver)resolver).
-                    getInputStream(identifier);
+                    getInputStream(params.getIdentifier());
         }
         // Find out whether the processor supports that source format by
         // asking it whether it offers any output formats for it

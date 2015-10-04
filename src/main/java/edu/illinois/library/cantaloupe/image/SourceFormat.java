@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.image;
 
+import edu.illinois.library.cantaloupe.request.Identifier;
 import org.restlet.data.MediaType;
 
 import java.util.ArrayList;
@@ -28,11 +29,11 @@ public enum SourceFormat {
      * @param identifier IIIF identifier.
      * @return The source format corresponding to the given identifier.
      */
-    public static SourceFormat getSourceFormat(String identifier) {
+    public static SourceFormat getSourceFormat(Identifier identifier) {
         String extension = null;
-        int i = identifier.lastIndexOf('.');
+        int i = identifier.getValue().lastIndexOf('.');
         if (i > 0) {
-            extension = identifier.substring(i + 1);
+            extension = identifier.getValue().substring(i + 1);
         }
         if (extension != null) {
             for (SourceFormat enumValue : SourceFormat.values()) {
@@ -63,7 +64,7 @@ public enum SourceFormat {
     }
 
     public List<String> getExtensions() {
-        List<String> extensions = new ArrayList<String>();
+        List<String> extensions = new ArrayList<>();
         // the first extension will be the preferred extension
         if (this.id.equals("bmp")) {
             extensions.add("bmp");
@@ -91,7 +92,7 @@ public enum SourceFormat {
     }
 
     public List<MediaType> getMediaTypes() {
-        List<MediaType> types = new ArrayList<MediaType>();
+        List<MediaType> types = new ArrayList<>();
         // the first type will be the preferred extension
         if (this.id.equals("bmp")) {
             types.add(new MediaType("image/bmp"));

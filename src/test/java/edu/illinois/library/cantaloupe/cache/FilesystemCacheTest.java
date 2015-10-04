@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.cache;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.request.Identifier;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
@@ -89,7 +90,7 @@ public class FilesystemCacheTest extends TestCase {
     }
 
     public void testGetDimensionWithZeroTtl() throws Exception {
-        String identifier = "test";
+        Identifier identifier = new Identifier("test");
         File file = new File(infoPath + File.separator + identifier + ".json");
         FileUtils.writeStringToFile(file, "50x50");
 
@@ -103,7 +104,7 @@ public class FilesystemCacheTest extends TestCase {
 
     public void testGetDimensionWithNonZeroTtl() throws Exception {
         Application.getConfiguration().setProperty("FilesystemCache.ttl_seconds", 1);
-        String identifier = "test";
+        Identifier identifier = new Identifier("test");
         File file = new File(infoPath + File.separator + identifier + ".json");
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = new ImageInfo();
@@ -175,7 +176,7 @@ public class FilesystemCacheTest extends TestCase {
     }
 
     public void testPutDimension() throws IOException {
-        String identifier = "cats";
+        Identifier identifier = new Identifier("cats");
         Dimension dimension = new Dimension(52, 52);
         instance.putDimension(identifier, dimension);
         assertEquals(dimension, instance.getDimension(identifier));

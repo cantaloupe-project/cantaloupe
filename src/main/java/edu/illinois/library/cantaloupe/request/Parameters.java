@@ -11,7 +11,7 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 public class Parameters implements Comparable<Parameters> {
 
     private OutputFormat outputFormat;
-    private String identifier;
+    private Identifier identifier;
     private Quality quality;
     private Region region;
     private Rotation rotation;
@@ -27,7 +27,7 @@ public class Parameters implements Comparable<Parameters> {
      */
     public Parameters(String identifier, String region, String size,
                       String rotation, String quality, String format) {
-        this.identifier = identifier;
+        this.identifier = Identifier.fromUri(identifier);
         this.outputFormat = OutputFormat.valueOf(format.toUpperCase());
         this.quality = Quality.valueOf(quality.toUpperCase());
         this.region = Region.fromUri(region);
@@ -45,7 +45,7 @@ public class Parameters implements Comparable<Parameters> {
         return outputFormat;
     }
 
-    public String getIdentifier() {
+    public Identifier getIdentifier() {
         return identifier;
     }
 

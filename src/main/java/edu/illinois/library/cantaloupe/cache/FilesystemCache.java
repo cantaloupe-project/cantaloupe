@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.cache;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.request.Identifier;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -41,10 +42,10 @@ class FilesystemCache implements Cache {
     private boolean flushingInProgress = false;
 
     /** Set of identifiers for which info files are currently being read. */
-    private final Set<String> infosBeingRead = new ConcurrentSkipListSet<>();
+    private final Set<Identifier> infosBeingRead = new ConcurrentSkipListSet<>();
 
     /** Set of identifiers for which info files are currently being written. */
-    private final Set<String> infosBeingWritten = new ConcurrentSkipListSet<>();
+    private final Set<Identifier> infosBeingWritten = new ConcurrentSkipListSet<>();
 
     /** Set of Parameters for which image files are currently being flushed by
      * flush(Parameters). */
@@ -214,7 +215,7 @@ class FilesystemCache implements Cache {
         }
     }
 
-    public Dimension getDimension(String identifier) throws IOException {
+    public Dimension getDimension(Identifier identifier) throws IOException {
         synchronized (lock2) {
             while (infosBeingWritten.contains(identifier)) {
                 try {
@@ -291,7 +292,7 @@ class FilesystemCache implements Cache {
             final String pathname = String.format("%s%s%s_%s_%s_%s_%s.%s",
                     StringUtils.stripEnd(cachePathname, File.separator),
                     File.separator,
-                    params.getIdentifier().replaceAll(FILENAME_CHARACTERS, "_"),
+                    params.getIdentifier().toString().replaceAll(FILENAME_CHARACTERS, "_"),
                     params.getRegion().toString().replaceAll(FILENAME_CHARACTERS, "_"),
                     params.getSize().toString().replaceAll(FILENAME_CHARACTERS, "_"),
                     params.getRotation().toString().replaceAll(FILENAME_CHARACTERS, "_"),
@@ -307,20 +308,20 @@ class FilesystemCache implements Cache {
      * @return File corresponding to the given parameters, or null if
      * <code>FilesystemCache.pathname</code> is not set in the configuration.
      */
-    public File getCachedInfoFile(String identifier) {
+    public File getCachedInfoFile(Identifier identifier) {
         final String cachePathname = getInfoPathname();
         if (cachePathname != null) {
             final String pathname =
                     StringUtils.stripEnd(cachePathname, File.separator) +
                     File.separator +
-                    identifier.replaceAll(FILENAME_CHARACTERS, "_") +
+                    identifier.toString().replaceAll(FILENAME_CHARACTERS, "_") +
                     INFO_EXTENSION;
             return new File(pathname);
         }
         return null;
     }
 
-    public void putDimension(String identifier, Dimension dimension)
+    public void putDimension(Identifier identifier, Dimension dimension)
             throws IOException {
         synchronized (lock3) {
             while (infosBeingWritten.contains(identifier) ||

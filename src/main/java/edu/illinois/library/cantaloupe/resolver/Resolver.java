@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.request.Identifier;
 
 /**
  * Locates and provides access to a source image. This is an abstract interface;
@@ -14,6 +15,6 @@ public interface Resolver {
      * given identifier, or <code>SourceFormat.UNKNOWN</code> if unknown.
      * Never null.
      */
-    SourceFormat getSourceFormat(String identifier);
+    SourceFormat getSourceFormat(Identifier identifier);
 
 }

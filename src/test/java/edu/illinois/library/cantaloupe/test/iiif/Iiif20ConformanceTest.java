@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.request.Identifier;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
@@ -40,7 +41,7 @@ import java.nio.file.Paths;
  */
 public class Iiif20ConformanceTest extends TestCase {
 
-    private static final String IMAGE = "escher_lego.jpg";
+    private static final Identifier IMAGE = new Identifier("escher_lego.jpg");
     private static final Integer PORT = 34852;
 
     private static Client client = new Client(new Context(), Protocol.HTTP);

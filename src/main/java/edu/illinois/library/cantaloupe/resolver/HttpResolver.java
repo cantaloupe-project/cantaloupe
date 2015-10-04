@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.request.Identifier;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.Client;
@@ -26,7 +27,7 @@ class HttpResolver implements StreamResolver {
 
     private static Client client = new Client(new Context(), Protocol.HTTP);
 
-    public ImageInputStream getInputStream(String identifier)
+    public ImageInputStream getInputStream(Identifier identifier)
             throws IOException {
         Configuration config = Application.getConfiguration();
         Reference url = getUrl(identifier);
@@ -54,7 +55,7 @@ class HttpResolver implements StreamResolver {
      * @param identifier IIIF identifier.
      * @return A source format, or <code>SourceFormat.UNKNOWN</code> if unknown.
      */
-    public SourceFormat getSourceFormat(String identifier) {
+    public SourceFormat getSourceFormat(Identifier identifier) {
         SourceFormat format = getSourceFormatFromIdentifier(identifier);
         if (format == SourceFormat.UNKNOWN) {
             format = getSourceFormatFromServer(identifier);
@@ -62,7 +63,7 @@ class HttpResolver implements StreamResolver {
         return format;
     }
 
-    public Reference getUrl(String identifier) {
+    public Reference getUrl(Identifier identifier) {
         Configuration config = Application.getConfiguration();
         String prefix = config.getString("HttpResolver.url_prefix");
         if (prefix == null) {
@@ -72,30 +73,33 @@ class HttpResolver implements StreamResolver {
         if (suffix == null) {
             suffix = "";
         }
+
+        String idStr = identifier.toString();
+
         // The Image API 2.0 spec mandates the use of percent-encoded
         // identifiers. But some web servers have issues dealing with the
         // encoded slash (%2F). FilesystemResolver.path_separator enables the
         // use of an alternate string as a path separator.
         String separator = config.getString("HttpResolver.path_separator", "/");
         if (!separator.equals("/")) {
-            identifier = StringUtils.replace(identifier, separator, "/");
+            idStr = StringUtils.replace(idStr, separator, "/");
         }
-        return new Reference(prefix + identifier + suffix);
+        return new Reference(prefix + idStr + suffix);
     }
 
     /**
      * @param identifier
      * @return A source format, or <code>SourceFormat.UNKNOWN</code> if unknown.
      */
-    private SourceFormat getSourceFormatFromIdentifier(String identifier) {
+    private SourceFormat getSourceFormatFromIdentifier(Identifier identifier) {
         // try to get the source format based on a filename extension in the
         // identifier
-        identifier = identifier.toLowerCase();
+        String idStr = identifier.toString().toLowerCase();
         String extension = null;
         SourceFormat sourceFormat = SourceFormat.UNKNOWN;
-        int i = identifier.lastIndexOf('.');
+        int i = idStr.lastIndexOf('.');
         if (i > 0) {
-            extension = identifier.substring(i + 1);
+            extension = idStr.substring(i + 1);
         }
         if (extension != null) {
             for (SourceFormat enumValue : SourceFormat.values()) {
@@ -115,7 +119,7 @@ class HttpResolver implements StreamResolver {
      * @param identifier
      * @return A source format, or <code>SourceFormat.UNKNOWN</code> if unknown.
      */
-    private SourceFormat getSourceFormatFromServer(String identifier) {
+    private SourceFormat getSourceFormatFromServer(Identifier identifier) {
         SourceFormat sourceFormat = SourceFormat.UNKNOWN;
         String contentType = "";
         Reference url = getUrl(identifier);

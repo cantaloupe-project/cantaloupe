@@ -20,6 +20,7 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.ProcessorFeature;
 import edu.illinois.library.cantaloupe.processor.StreamProcessor;
+import edu.illinois.library.cantaloupe.request.Identifier;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.resolver.FileResolver;
@@ -71,7 +72,8 @@ public class InformationResource extends AbstractResource {
     public StringRepresentation doGet() throws Exception {
         // 1. Assemble the URI parameters into a Parameters object
         Map<String,Object> attrs = this.getRequest().getAttributes();
-        String identifier = Reference.decode((String) attrs.get("identifier"));
+        Identifier identifier = Identifier.
+                fromUri((String) attrs.get("identifier"));
         // 2. Get the resolver
         Resolver resolver = ResolverFactory.getResolver();
         // 3. Determine the format of the source image
@@ -110,7 +112,7 @@ public class InformationResource extends AbstractResource {
         return rep;
     }
 
-    private ImageInfo getImageInfo(String identifier, Dimension fullSize,
+    private ImageInfo getImageInfo(Identifier identifier, Dimension fullSize,
                                    Set<Quality> qualities,
                                    Set<ProcessorFeature> processorFeatures,
                                    Set<OutputFormat> outputFormats) {
@@ -166,9 +168,9 @@ public class InformationResource extends AbstractResource {
         return imageInfo;
     }
 
-    private String getImageUri(String identifier) {
+    private String getImageUri(Identifier identifier) {
         return this.getRootRef() + ImageServerApplication.BASE_IIIF_PATH +
-                "/" + Reference.encode(identifier);
+                "/" + Reference.encode(identifier.toString());
     }
 
     /**
@@ -183,7 +185,7 @@ public class InformationResource extends AbstractResource {
      * @return
      * @throws Exception
      */
-    private Dimension getSize(String identifier, Processor proc,
+    private Dimension getSize(Identifier identifier, Processor proc,
                               Resolver resolver, SourceFormat sourceFormat)
             throws Exception {
         Dimension size = null;
@@ -211,7 +213,7 @@ public class InformationResource extends AbstractResource {
      * @return
      * @throws Exception
      */
-    private Dimension readSize(String identifier, Resolver resolver,
+    private Dimension readSize(Identifier identifier, Resolver resolver,
                                Processor proc, SourceFormat sourceFormat)
             throws Exception {
         Dimension size = null;

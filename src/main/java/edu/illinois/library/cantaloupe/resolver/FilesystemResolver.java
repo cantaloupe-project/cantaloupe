@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.request.Identifier;
 import eu.medsea.mimeutil.MimeUtil;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.StringUtils;
@@ -24,7 +25,7 @@ class FilesystemResolver implements FileResolver, StreamResolver {
     private static Logger logger = LoggerFactory.
             getLogger(FilesystemResolver.class);
 
-    public File getFile(String identifier) throws IOException {
+    public File getFile(Identifier identifier) throws IOException {
         File file = new File(getPathname(identifier));
         if (!file.exists()) {
             String message = "Failed to resolve " + identifier + " to " +
@@ -36,12 +37,12 @@ class FilesystemResolver implements FileResolver, StreamResolver {
         return file;
     }
 
-    public FileImageInputStream getInputStream(String identifier)
+    public FileImageInputStream getInputStream(Identifier identifier)
             throws IOException {
         return new FileImageInputStream(getFile(identifier));
     }
 
-    public String getPathname(String identifier) {
+    public String getPathname(Identifier identifier) {
         Configuration config = Application.getConfiguration();
         String prefix = config.getString("FilesystemResolver.path_prefix");
         if (prefix == null) {
@@ -51,6 +52,9 @@ class FilesystemResolver implements FileResolver, StreamResolver {
         if (suffix == null) {
             suffix = "";
         }
+
+        String idStr = identifier.toString();
+
         // The Image API 2.0 spec mandates the use of percent-encoded
         // identifiers. But some web servers have issues dealing with the
         // encoded slash (%2F). FilesystemResolver.path_separator enables the
@@ -58,10 +62,9 @@ class FilesystemResolver implements FileResolver, StreamResolver {
         String separator = config.getString("FilesystemResolver.path_separator",
                 File.separator);
         if (!separator.equals(File.separator)) {
-            identifier = StringUtils.replace(identifier, separator,
-                    File.separator);
+            idStr = StringUtils.replace(idStr, separator, File.separator);
         }
-        return prefix + identifier + suffix;
+        return prefix + idStr + suffix;
     }
 
     /**
@@ -70,7 +73,7 @@ class FilesystemResolver implements FileResolver, StreamResolver {
      * @param identifier IIIF identifier.
      * @return A source format, or <code>SourceFormat.UNKNOWN</code> if unknown.
      */
-    public SourceFormat getSourceFormat(String identifier) {
+    public SourceFormat getSourceFormat(Identifier identifier) {
         SourceFormat sourceFormat = getSourceFormatFromIdentifier(identifier);
         if (sourceFormat == SourceFormat.UNKNOWN) {
             sourceFormat = getDetectedSourceFormat(identifier);
@@ -78,13 +81,13 @@ class FilesystemResolver implements FileResolver, StreamResolver {
         return sourceFormat;
     }
 
-    private SourceFormat getSourceFormatFromIdentifier(String identifier) {
-        identifier = identifier.toLowerCase();
+    private SourceFormat getSourceFormatFromIdentifier(Identifier identifier) {
+        String idStr = identifier.toString().toLowerCase();
         String extension = null;
         SourceFormat sourceFormat = SourceFormat.UNKNOWN;
-        int i = identifier.lastIndexOf('.');
+        int i = idStr.lastIndexOf('.');
         if (i > 0) {
-            extension = identifier.substring(i + 1);
+            extension = idStr.substring(i + 1);
         }
         if (extension != null) {
             for (SourceFormat enumValue : SourceFormat.values()) {
@@ -97,7 +100,7 @@ class FilesystemResolver implements FileResolver, StreamResolver {
         return sourceFormat;
     }
 
-    private SourceFormat getDetectedSourceFormat(String identifier) {
+    private SourceFormat getDetectedSourceFormat(Identifier identifier) {
         SourceFormat sourceFormat = SourceFormat.UNKNOWN;
         String pathname = getPathname(identifier);
         Collection<?> detectedTypes = MimeUtil.getMimeTypes(pathname);
