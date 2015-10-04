@@ -260,7 +260,7 @@ class KakaduProcessor implements FileProcessor {
                             params.getSize(), reduction.factor);
                     image = ProcessorUtil.rotateImage(image, params.getRotation());
                     image = ProcessorUtil.filterImage(image, params.getQuality());
-                    ProcessorUtil.outputImage(image, params.getOutputFormat(),
+                    ProcessorUtil.writeImage(image, params.getOutputFormat(),
                             outputStream);
                     image.flush();
                 }
