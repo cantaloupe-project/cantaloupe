@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 
 public class FilesystemResolverTest extends TestCase {
 
-    private static final Identifier FILE = new Identifier("escher_lego.jpg");
+    private static final Identifier IDENTIFIER = new Identifier("escher_lego.jpg");
 
     FilesystemResolver instance;
 
@@ -31,23 +31,28 @@ public class FilesystemResolverTest extends TestCase {
     }
 
     public void testGetFile() throws Exception {
+        // present, readable file
         try {
-            assertNotNull(instance.getFile(FILE));
+            assertNotNull(instance.getFile(IDENTIFIER));
         } catch (FileNotFoundException e) {
             fail();
         }
-
+        // missing file
         try {
             assertNull(instance.getFile(new Identifier("bogus")));
-            fail();
+            fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
+        } catch (IOException e) {
+            fail("Expected FileNotFoundException");
         }
+        // present, unreadable file
+        // TODO: write this
     }
 
     public void testGetInputStream() throws Exception {
         try {
-            assertNotNull(instance.getInputStream(FILE));
+            assertNotNull(instance.getInputStream(IDENTIFIER));
         } catch (FileNotFoundException e) {
             fail();
         }

@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.request.Identifier;
 import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class HttpResolverTest extends TestCase {
@@ -23,18 +24,23 @@ public class HttpResolverTest extends TestCase {
     }
 
     public void testGetInputStream() {
-        try {
-            assertNull(instance.getInputStream(new Identifier("bogus")));
-            fail("Expected exception");
-        } catch (IOException e) {
-            // pass
-        }
-
+        // present, readable image
         try {
             assertNotNull(instance.getInputStream(IMAGE));
         } catch (IOException e) {
             fail();
         }
+        // missing image
+        try {
+            assertNull(instance.getInputStream(new Identifier("bogus")));
+            fail("Expected exception");
+        } catch (FileNotFoundException e) {
+            // pass
+        } catch (IOException e) {
+            fail("Expected FileNotFoundException");
+        }
+        // present, unreadable image
+        // TODO: write this
     }
 
     public void testGetSourceFormat() {

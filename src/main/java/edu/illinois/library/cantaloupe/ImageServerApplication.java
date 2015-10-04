@@ -31,6 +31,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.AccessDeniedException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -100,6 +101,8 @@ public class ImageServerApplication extends Application {
                 status = new Status(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE, t);
             } else if (cause instanceof FileNotFoundException) {
                 status = new Status(Status.CLIENT_ERROR_NOT_FOUND, t);
+            } else if (cause instanceof AccessDeniedException) {
+                status = new Status(Status.CLIENT_ERROR_FORBIDDEN, t);
             } else {
                 status = new Status(Status.SERVER_ERROR_INTERNAL, t);
             }

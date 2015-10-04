@@ -14,8 +14,11 @@ public interface FileResolver extends Resolver {
     /**
      * @param identifier IIIF identifier.
      * @return File referencing the source image; never null.
-     * @throws IOException if the image corresponding to the given identifier
-     * does not exist.
+     * @throws FileNotFoundException if the image corresponding to the given
+     * identifier does not exist
+     * @throws AccessDeniedException if the image corresponding to the given
+     * identifier is not readable
+     * @throws IOException if there is some other issue accessing the image
      */
     File getFile(Identifier identifier) throws IOException;
 

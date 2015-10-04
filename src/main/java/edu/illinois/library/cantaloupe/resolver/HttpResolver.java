@@ -11,6 +11,7 @@ import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
+import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 import org.slf4j.Logger;
@@ -20,6 +21,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 
 class HttpResolver implements StreamResolver {
 
@@ -45,7 +47,14 @@ class HttpResolver implements StreamResolver {
         try {
             return ImageIO.createImageInputStream(resource.get().getStream());
         } catch (ResourceException e) {
-            throw new FileNotFoundException(e.getMessage());
+            if (e.getStatus() == Status.CLIENT_ERROR_NOT_FOUND ||
+                    e.getStatus() == Status.CLIENT_ERROR_GONE) {
+                throw new FileNotFoundException(e.getMessage());
+            } else if (e.getStatus() == Status.CLIENT_ERROR_FORBIDDEN) {
+                throw new AccessDeniedException(e.getMessage());
+            } else {
+                throw new IOException(e.getMessage());
+            }
         }
     }
 

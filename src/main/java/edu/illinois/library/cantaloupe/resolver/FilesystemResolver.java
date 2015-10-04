@@ -14,6 +14,7 @@ import javax.imageio.stream.FileImageInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.util.Collection;
 
 class FilesystemResolver implements FileResolver, StreamResolver {
@@ -32,6 +33,10 @@ class FilesystemResolver implements FileResolver, StreamResolver {
                     file.getAbsolutePath();
             logger.warn(message);
             throw new FileNotFoundException(message);
+        } else if (!file.canRead()) {
+            String message = "File is not readable: " + file.getAbsolutePath();
+            logger.warn(message);
+            throw new AccessDeniedException(message);
         }
         logger.debug("Resolved {} to {}", identifier, file.getAbsolutePath());
         return file;

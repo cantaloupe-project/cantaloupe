@@ -14,8 +14,11 @@ public interface StreamResolver extends Resolver {
     /**
      * @param identifier IIIF identifier.
      * @return Stream for reading the source image; never null.
-     * @throws IOException if the image corresponding to the given identifier
-     * does not exist.
+     * @throws FileNotFoundException if the image corresponding to the given
+     * identifier does not exist
+     * @throws AccessDeniedException if the image corresponding to the given
+     * identifier is not readable
+     * @throws IOException if there is some other issue accessing the image
      */
     ImageInputStream getInputStream(Identifier identifier) throws IOException;
 
