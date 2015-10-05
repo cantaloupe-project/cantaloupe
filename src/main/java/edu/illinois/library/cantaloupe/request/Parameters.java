@@ -72,8 +72,10 @@ public class Parameters implements Comparable<Parameters> {
      * format as the source format.
      */
     public boolean isRequestingUnmodifiedSource() {
-        return this.getRegion().isFull() &&
-                this.getSize().getScaleMode() == Size.ScaleMode.FULL &&
+        final Size size = this.getSize();
+        final boolean isFullSize = (size.getScaleMode() == Size.ScaleMode.FULL) ||
+                (size.getPercent() != null && Math.abs(size.getPercent() - 100f) < 0.000001f);
+        return this.getRegion().isFull() && isFullSize &&
                 this.getRotation().getDegrees() == 0 &&
                 !(this.getRotation().shouldMirror() &&
                         this.getRotation().getDegrees() != 0) &&

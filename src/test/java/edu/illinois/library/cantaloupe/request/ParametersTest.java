@@ -28,6 +28,10 @@ public class ParametersTest extends TestCase {
                 "default", "gif");
         assertFalse(parameters.isRequestingUnmodifiedSource());
 
+        parameters = new Parameters("identifier.gif", "full", "pct:100", "0",
+                "default", "gif");
+        assertTrue(parameters.isRequestingUnmodifiedSource());
+
         parameters = new Parameters("identifier.gif", "full", "pct:50", "0",
                 "default", "gif");
         assertFalse(parameters.isRequestingUnmodifiedSource());
