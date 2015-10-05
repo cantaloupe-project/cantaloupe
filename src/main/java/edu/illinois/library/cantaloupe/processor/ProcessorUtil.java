@@ -137,6 +137,7 @@ abstract class ProcessorUtil {
         return filteredImage;
     }
 
+    @SuppressWarnings({"deprecation"}) // really, JAI itself is basically deprecated
     public static RenderedOp filterImage(RenderedOp inImage,
                                          Quality quality) {
         RenderedOp filteredImage = inImage;
@@ -386,8 +387,9 @@ abstract class ProcessorUtil {
                 xScale = sourceWidth * Math.min(hScale, vScale);
                 yScale = sourceHeight * Math.min(hScale, vScale);
             } else if (size.getPercent() != null) {
-                xScale = yScale = getScale(reductionFactor) /
-                        (size.getPercent() / 100.0f);
+                double reqScale = size.getPercent() / 100.0f;
+                int reqRf = getReductionFactor(reqScale, 0);
+                xScale = yScale = getScale(reqRf - reductionFactor);
             }
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
@@ -498,8 +500,9 @@ abstract class ProcessorUtil {
                 height = (int) Math.round(sourceHeight *
                         Math.min(hScale, vScale));
             } else if (size.getPercent() != null) {
-                double rfScale = getScale(reductionFactor);
-                double pct = 1f + (size.getPercent() / 100.0f) - rfScale;
+                double reqScale = size.getPercent() / 100.0f;
+                int reqRf = getReductionFactor(reqScale, 0);
+                double pct = getScale(reqRf - reductionFactor);
                 width = (int) Math.round(sourceWidth * pct);
                 height = (int) Math.round(sourceHeight * pct);
             }
