@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.request.Quality;
+import edu.illinois.library.cantaloupe.request.Region;
 import edu.illinois.library.cantaloupe.request.Size;
 import org.restlet.data.MediaType;
 import org.slf4j.Logger;
@@ -13,6 +14,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -215,8 +217,8 @@ class Java2dProcessor implements StreamProcessor {
                 }
                 try {
                     reader.setInput(inputStream);
-                    image = getSmallestFittingImage(reader, params.getSize(),
-                            reductionFactor);
+                    image = getSmallestUsableImage(reader, params.getRegion(),
+                            params.getSize(), reductionFactor);
                 } finally {
                     reader.dispose();
                 }
@@ -248,52 +250,56 @@ class Java2dProcessor implements StreamProcessor {
      * reader. Useful for e.g. pyramidal TIFF.
      *
      * @param reader ImageReader with input source already set
+     * @param region Requested region
      * @param size Requested size
      * @param rf Set by reference
      * @return
      * @throws IOException
      */
-    private BufferedImage getSmallestFittingImage(ImageReader reader, Size size,
-                                                  ReductionFactor rf)
+    private BufferedImage getSmallestUsableImage(ImageReader reader,
+                                                 Region region, Size size,
+                                                 ReductionFactor rf)
             throws IOException {
         BufferedImage bestImage = reader.read(0);
         if (size.getScaleMode() != Size.ScaleMode.FULL) {
-            // pyramidal TIFFs will have > 1 image, each half the dimensions of
-            // the next larger
-            int numImages = reader.getNumImages(true);
+            // Pyramidal TIFFs will have > 1 image, each half the dimensions of
+            // the next larger. The "true" parameter tells getNumImages() to
+            // scan for images, which seems to be necessary for at least some
+            // files, but is expensive.
+            int numImages = reader.getNumImages(false);
+            if (numImages == -1) {
+                numImages = reader.getNumImages(true);
+            }
             if (numImages > 1) {
                 logger.debug("Detected pyramidal TIFF with {} levels",
                         numImages);
-                // one or the other may be null
-                Integer requestedWidth, requestedHeight;
-                if (size.getPercent() != null) {
-                    requestedWidth = Math.round(bestImage.getWidth() *
-                            (size.getPercent() / 100f));
-                    requestedHeight = Math.round(bestImage.getHeight() *
-                            (size.getPercent() / 100f));
-                } else {
-                    requestedWidth = size.getWidth();
-                    requestedHeight = size.getHeight();
-                }
+                final Dimension fullSize = new Dimension(bestImage.getWidth(),
+                        bestImage.getHeight());
+                final Rectangle regionRect = region.getRectangle(fullSize);
 
                 // loop through the tiles from smallest to largest to find the
                 // first one that fits the requested scale
                 for (int i = numImages - 1; i >= 0; i--) {
                     final BufferedImage tile = reader.read(i);
+                    final double tileScale = (double) tile.getWidth() /
+                            (double) fullSize.width;
                     boolean fits = false;
-                    if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH &&
-                            requestedWidth <= tile.getWidth()) {
-                        fits = true;
-                    } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT &&
-                                    requestedHeight <= tile.getHeight()) {
-                        fits = true;
-                    } else if (requestedWidth <= tile.getWidth() &&
-                                    requestedHeight <= tile.getHeight()) {
-                        fits = true;
+                    if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
+                        fits = (size.getWidth() / (float) regionRect.width <= tileScale);
+                    } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
+                        fits = (size.getHeight() / (float) regionRect.height <= tileScale);
+                    } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
+                        fits = (size.getWidth() / (float) regionRect.width <= tileScale &&
+                                size.getHeight() / (float) regionRect.height <= tileScale);
+                    } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
+                        fits = (size.getWidth() / (float) regionRect.width <= tileScale &&
+                                size.getHeight() / (float) regionRect.height <= tileScale);
+                    } else if (size.getPercent() != null) {
+                        float pct = (size.getPercent() / 100f);
+                        fits = ((pct * fullSize.width) / (float) regionRect.width <= tileScale &&
+                                (pct * fullSize.height) / (float) regionRect.height <= tileScale);
                     }
                     if (fits) {
-                        double tileScale = (double) tile.getWidth() /
-                                (double) bestImage.getWidth();
                         rf.factor = ProcessorUtil.getReductionFactor(tileScale, 0);
                         logger.debug("Using a {}x{} source tile ({}x reduction factor)",
                                 tile.getWidth(), tile.getHeight(), rf.factor);
