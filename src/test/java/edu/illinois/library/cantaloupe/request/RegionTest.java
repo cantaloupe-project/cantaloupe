@@ -2,6 +2,9 @@ package edu.illinois.library.cantaloupe.request;
 
 import junit.framework.TestCase;
 
+import java.awt.Dimension;
+import java.awt.Rectangle;
+
 public class RegionTest extends TestCase {
 
     private Region region;
@@ -68,6 +71,19 @@ public class RegionTest extends TestCase {
         } catch (IllegalArgumentException e) {
             assertEquals("Height must be a positive integer", e.getMessage());
         }
+    }
+
+    public void testGetRectangle() {
+        Dimension fullSize = new Dimension(200, 200);
+        // full
+        Region region = Region.fromUri("full");
+        assertEquals(new Rectangle(0, 0, 200, 200), region.getRectangle(fullSize));
+        // pixels
+        region = Region.fromUri("20,20,50,50");
+        assertEquals(new Rectangle(20, 20, 50, 50), region.getRectangle(fullSize));
+        // percentage
+        region = Region.fromUri("pct:20,20,50,50");
+        assertEquals(new Rectangle(40, 40, 100, 100), region.getRectangle(fullSize));
     }
 
     /* height */

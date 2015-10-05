@@ -2,6 +2,9 @@ package edu.illinois.library.cantaloupe.request;
 
 import edu.illinois.library.cantaloupe.util.NumberUtil;
 
+import java.awt.Dimension;
+import java.awt.Rectangle;
+
 /**
  * Encapsulates the "region" component of an IIIF request URI.
  *
@@ -9,12 +12,12 @@ import edu.illinois.library.cantaloupe.util.NumberUtil;
  */
 public class Region {
 
-    private Float height = new Float(0.0);
+    private Float height = 0.0f;
     private boolean isFull = false;
     private boolean isPercent = false;
-    private Float width = new Float(0.0);
-    private Float x = new Float(0.0);
-    private Float y = new Float(0.0);
+    private Float width = 0.0f;
+    private Float x = 0.0f;
+    private Float y = 0.0f;
 
     /**
      * @param uriRegion The "region" component of an IIIF URI.
@@ -53,6 +56,32 @@ public class Region {
 
     public Float getHeight() {
         return height;
+    }
+
+    /**
+     * @param fullSize Full-sized image dimensions.
+     * @return Region coordinates relative to the given full-sized image
+     * dimensions.
+     */
+    public Rectangle getRectangle(Dimension fullSize) {
+        int x, y, width, height;
+        if (this.isFull()) {
+            x = 0;
+            y = 0;
+            width = fullSize.width;
+            height = fullSize.height;
+        } else if (this.isPercent()) {
+            x = Math.round((this.getX() / 100f) * fullSize.width);
+            y = Math.round((this.getY() / 100f) * fullSize.height);
+            width = Math.round((this.getWidth() / 100f) * fullSize.width);
+            height = Math.round((this.getHeight() / 100f) * fullSize.height);
+        } else {
+            x = Math.round(this.getX());
+            y = Math.round(this.getY());
+            width = Math.round(this.getWidth());
+            height = Math.round(this.getHeight());
+        }
+        return new Rectangle(x, y, width, height);
     }
 
     public Float getWidth() {
