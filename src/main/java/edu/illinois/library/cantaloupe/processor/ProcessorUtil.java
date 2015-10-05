@@ -543,7 +543,7 @@ abstract class ProcessorUtil {
                     ImageWriteParam param = writer.getDefaultWriteParam();
                     param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
                     param.setCompressionQuality(Application.getConfiguration().
-                            getFloat("Java2dProcessor.jpg.quality", 0.7f));
+                            getFloat(Java2dProcessor.CONFIG_KEY_JPG_QUALITY, 0.7f));
                     param.setCompressionType("JPEG");
                     ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
                     writer.setOutput(os);

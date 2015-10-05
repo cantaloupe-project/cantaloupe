@@ -1,5 +1,8 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import com.sun.media.jai.codec.ImageCodec;
+import com.sun.media.jai.codec.ImageDecoder;
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
@@ -17,7 +20,9 @@ import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,6 +42,9 @@ class Java2dProcessor implements StreamProcessor {
     }
 
     private static Logger logger = LoggerFactory.getLogger(Java2dProcessor.class);
+
+    public static final String CONFIG_KEY_JPG_QUALITY = "Java2dProcessor.jpg.quality";
+    public static final String CONFIG_KEY_TIF_READER = "Java2dProcessor.tif.reader";
 
     private static final HashMap<SourceFormat,Set<OutputFormat>> FORMATS =
             getAvailableOutputFormats();
@@ -155,14 +163,21 @@ class Java2dProcessor implements StreamProcessor {
                                     SourceFormat sourceFormat,
                                     Parameters params,
                                     ReductionFactor reductionFactor)
-            throws IOException, UnsupportedSourceFormatException {
+            throws IOException, UnsupportedSourceFormatException { // TODO: move this to ProcessorUtil
         BufferedImage image = null;
         switch (sourceFormat) {
             case BMP:
                 image = ImageIO.read(inputStream);
                 break;
             case TIF:
-                image = loadTiff(inputStream, params, reductionFactor);
+                String tiffReader = Application.getConfiguration().
+                        getString(CONFIG_KEY_TIF_READER, "TIFFImageReader");
+                if (tiffReader.equals("TIFFImageReader")) {
+                    image = loadUsingTiffImageReader(inputStream, params,
+                            reductionFactor);
+                } else {
+                    image = loadUsingTiffImageDecoder(inputStream);
+                }
                 break;
             default:
                 Iterator<ImageReader> it = ImageIO.getImageReadersByMIMEType(
@@ -189,30 +204,48 @@ class Java2dProcessor implements StreamProcessor {
         return rgbImage;
     }
 
-    private BufferedImage loadTiff(ImageInputStream inputStream,
-                                   Parameters params,
-                                   ReductionFactor reductionFactor)
-            throws IOException {
+    /**
+     * <p>Uses TIFFImageReader to load a TIFF from an ImageInputStream.</p>
+     *
+     * <p>The TIFFImageReader class currently being used,
+     * it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader, has several
+     * issues:</p>
+     *
+     * <ul>
+     *     <li>It sometimes sets BufferedImages to <code>TYPE_CUSTOM</code>,
+     *     which necessitates an expensive redraw into a new BufferedImage of
+     *     <code>TYPE_RGB</code>.</li>
+     *     <li>It throws an ArrayIndexOutOfBoundsException when a TIFF file
+     *     contains a tag value greater than 6. (To inspect tag values, run
+     *     <code>$ tiffdump &lt;file&gt;</code>.) (The Sun TIFFImageReader
+     *     suffers from the same issue except it throws an
+     *     IllegalArgumentException instead.)</li>
+     *     <li>It renders some TIFFs with improper colors.</li>
+     * </ul>
+     *
+     * <p>Most of these are probably fixable with some clever workarounds.</p>
+     *
+     * <p><code>ImageIO.read()</code> would be an alternative, but it is not
+     * usable because it also suffers from the <code>TYPE_CUSTOM</code> issue.
+     * Also, it doesn't allow access to pyramidal TIFF sub-images, and just
+     * generally doesn't provide any control over the reading process.</p>
+     *
+     * @param inputStream
+     * @param params
+     * @param reductionFactor
+     * @return
+     * @throws IOException
+     * @see https://github.com/geosolutions-it/imageio-ext/blob/master/plugin/tiff/src/main/java/it/geosolutions/imageioimpl/plugins/tiff/TIFFImageReader.java
+     */
+    private BufferedImage loadUsingTiffImageReader(
+            ImageInputStream inputStream, Parameters params,
+            ReductionFactor reductionFactor) throws IOException {
         BufferedImage image = null;
-        // We can't use ImageIO.read() for two reasons: 1) the BufferedImages
-        // it returns for TIFFs are often set to type TYPE_CUSTOM, which
-        // causes many subsequent operations to fail; and 2) it doesn't allow
-        // access to pyramidal TIFF sub-images.
-        //
-        // Strategy B is it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.
-        // This reader has several issues. First, it sometimes sets
-        // BufferedImages to TYPE_CUSTOM as well. Second, it throws an
-        // ArrayIndexOutOfBoundsException when a TIFF file contains a
-        // tag value > 6. (To inspect tag values, run
-        // $ tiffdump <file>.) (The Sun TIFFImageReader suffers from the same
-        // issue except it throws an IllegalArgumentException instead.)
-        // Finally, it renders some TIFFs with improper colors.
         try {
             Iterator<ImageReader> it = ImageIO.
                     getImageReadersByMIMEType("image/tiff");
             while (it.hasNext()) {
                 ImageReader reader = it.next();
-                // https://github.com/geosolutions-it/imageio-ext/blob/master/plugin/tiff/src/main/java/it/geosolutions/imageioimpl/plugins/tiff/TIFFImageReader.java
                 if (reader instanceof it.geosolutions.imageioimpl.
                         plugins.tiff.TIFFImageReader) {
                     try {
@@ -230,21 +263,28 @@ class Java2dProcessor implements StreamProcessor {
                     params.getIdentifier());
             throw e;
         }
+        return image;
+    }
 
-        /*
-        // Strategy C: the JAI TIFFImageDecoder. Unfortunately, it suffers from
-        // a similar issue as TIFFImageReader, which is an inability to
-        // decode certain TIFFs properly - they get vertical B&W
-        // stripes. tiffdump doesn't provide any clues.
+    /**
+     * Loads a TIFF image using JAI TIFFImageDecoder. Currently not optimized
+     * for pyramidal TIFFs.
+     *
+     * @param inputStream
+     * @return
+     * @throws IOException
+     */
+    private BufferedImage loadUsingTiffImageDecoder(
+            ImageInputStream inputStream) throws IOException {
+        BufferedImage image;
         try (InputStream is = new ImageInputStreamWrapper(inputStream)) {
-            ImageDecoder dec = ImageCodec.createImageDecoder("tiff",
-                    is, null);
+            ImageDecoder dec = ImageCodec.createImageDecoder("tiff", is, null);
             RenderedImage op = dec.decodeAsRenderedImage();
             BufferedImage rgbImage = new BufferedImage(op.getWidth(),
                     op.getHeight(), BufferedImage.TYPE_INT_RGB);
             rgbImage.setData(op.getData());
             image = rgbImage;
-        }*/
+        }
         return image;
     }
 

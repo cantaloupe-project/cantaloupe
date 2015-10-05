@@ -26,6 +26,9 @@ print_stack_trace_on_error_pages = true
 # Available values are `FilesystemResolver` and `HttpResolver`.
 resolver = FilesystemResolver
 
+###
+# FilesystemResolver
+###
 # Server-side path that will be prefixed to the identifier in the URL.
 FilesystemResolver.path_prefix = /home/myself/images
 # Server-side path or extension that will be suffixed to the identifier
@@ -38,6 +41,9 @@ FilesystemResolver.path_suffix =
 # percent-encoded version in IIIF URLs.
 #FilesystemResolver.path_separator =
 
+###
+# HttpResolver
+###
 # URL that will be prefixed to the identifier in the request URL.
 HttpResolver.url_prefix = http://localhost/images/
 # Path, extension, query string, etc. that will be suffixed to the
@@ -63,15 +69,31 @@ HttpResolver.password =
 # Fall back to this processor for any formats not assigned above.
 processor.fallback = Java2dProcessor
 
+###
+# GraphicsMagickProcessor
+###
 # Optional; overrides the PATH
 #GraphicsMagickProcessor.path_to_binaries = /usr/local/bin
 
+###
+# ImageMagickProcessor
+###
 # Optional; overrides the PATH
 #ImageMagickProcessor.path_to_binaries = /usr/local/bin
 
+###
+# Java2dProcessor
+###
 # JPEG output quality. Should be a number between 0-1 ending in "f"
 Java2dProcessor.jpg.quality = 0.7f
+# Available values are `TIFFImageReader` and `TIFFImageDecoder`.
+# TIFFImageReader is optimized for pyramidal TIFFs, but TIFFImageDecoder may be
+# faster. Experiment with both.
+Java2dProcessor.tif.reader = TIFFImageReader
 
+###
+# KakaduProcessor
+###
 # Optional; overrides the PATH
 KakaduProcessor.path_to_binaries = /usr/local/bin
 # Due to a quirk of kdu_expand, you will need to create a symbolic link to
@@ -101,6 +123,9 @@ cache.client.no_transform = true
 # to disable caching.
 #cache.server = FilesystemCache
 
+###
+# FilesystemCache
+###
 # If this directory does not exist, it will be created automatically.
 FilesystemCache.pathname = /var/cache/cantaloupe
 # Time before a cached image becomes stale and needs to be reloaded. Set to

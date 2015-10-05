@@ -50,6 +50,7 @@ check below to see if there is anything more to be done.
 * Add the `KakaduProcessor` keys from the sample configuration.
 * Change any `ImageIoProcessor` references to `Java2dProcessor` in the
   configuration.
+* Add the `Java2dProcessor.tif.reader` key from the sample configuration.
 
 ## 1.0-beta1 to 1.0-beta2
 
