@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.request.Size;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
@@ -536,20 +537,44 @@ abstract class ProcessorUtil {
                 // TurboJpegImageWriter is used automatically if libjpeg-turbo
                 // is available in java.library.path:
                 // https://github.com/geosolutions-it/imageio-ext/wiki/TurboJPEG-plugin
-                float quality = Application.getConfiguration().
-                        getFloat("Java2dProcessor.jpg.quality", 0.7f);
                 Iterator iter = ImageIO.getImageWritersByFormatName("jpeg");
                 ImageWriter writer = (ImageWriter) iter.next();
-                ImageWriteParam param = writer.getDefaultWriteParam();
-                param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                param.setCompressionQuality(quality);
-                param.setCompressionType("JPEG");
-                ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
-                writer.setOutput(os);
-                IIOImage iioImage = new IIOImage(image, null, null);
-                writer.write(null, iioImage, param);
-                writer.dispose();
+                try {
+                    ImageWriteParam param = writer.getDefaultWriteParam();
+                    param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                    param.setCompressionQuality(Application.getConfiguration().
+                            getFloat("Java2dProcessor.jpg.quality", 0.7f));
+                    param.setCompressionType("JPEG");
+                    ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
+                    writer.setOutput(os);
+                    IIOImage iioImage = new IIOImage(image, null, null);
+                    writer.write(null, iioImage, param);
+                } finally {
+                    writer.dispose();
+                }
                 break;
+          /*  case TIF: TODO: this doesn't write anything
+                Iterator<ImageWriter> it = ImageIO.
+                        getImageWritersByMIMEType("image/tiff");
+                while (it.hasNext()) {
+                    writer = it.next();
+                    if (writer instanceof it.geosolutions.imageioimpl.
+                            plugins.tiff.TIFFImageWriter) {
+                        try {
+                            ImageWriteParam param = writer.getDefaultWriteParam();
+                            param.setDestinationType(ImageTypeSpecifier.
+                                    createFromBufferedImageType(BufferedImage.TYPE_INT_RGB));
+                            ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
+                            writer.setOutput(os);
+                            IIOImage iioImage = new IIOImage(image, null, null);
+                            writer.write(null, iioImage, param);
+                        } finally {
+                            writer.dispose();
+                        }
+                        break;
+                    }
+                }
+                break; */
             default:
                 ImageIO.write(image, outputFormat.getExtension(),
                         outputStream);

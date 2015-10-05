@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
@@ -211,21 +212,23 @@ class Java2dProcessor implements StreamProcessor {
                     getImageReadersByMIMEType("image/tiff");
             while (it.hasNext()) {
                 ImageReader reader = it.next();
-                if (!(reader instanceof it.geosolutions.imageioimpl.
-                        plugins.tiff.TIFFImageReader)) {
-                    continue;
-                }
-                try {
-                    reader.setInput(inputStream);
-                    image = getSmallestUsableImage(reader, params.getRegion(),
-                            params.getSize(), reductionFactor);
-                } finally {
-                    reader.dispose();
+                // https://github.com/geosolutions-it/imageio-ext/blob/master/plugin/tiff/src/main/java/it/geosolutions/imageioimpl/plugins/tiff/TIFFImageReader.java
+                if (reader instanceof it.geosolutions.imageioimpl.
+                        plugins.tiff.TIFFImageReader) {
+                    try {
+                        reader.setInput(inputStream);
+                        image = getSmallestUsableImage(reader, params.getRegion(),
+                                params.getSize(), reductionFactor);
+                    } finally {
+                        reader.dispose();
+                    }
+                    break;
                 }
             }
         } catch (ArrayIndexOutOfBoundsException e) {
             logger.error("TIFFImageReader failed to read {}",
                     params.getIdentifier());
+            throw e;
         }
 
         /*
@@ -260,7 +263,11 @@ class Java2dProcessor implements StreamProcessor {
                                                  Region region, Size size,
                                                  ReductionFactor rf)
             throws IOException {
-        BufferedImage bestImage = reader.read(0);
+        ImageReadParam param = reader.getDefaultReadParam();
+        // TODO: why doesn't this work?
+        //param.setDestinationType(ImageTypeSpecifier.
+        //        createFromBufferedImageType(BufferedImage.TYPE_INT_RGB));
+        BufferedImage bestImage = reader.read(0, param);
         if (size.getScaleMode() != Size.ScaleMode.FULL) {
             // Pyramidal TIFFs will have > 1 image, each half the dimensions of
             // the next larger. The "true" parameter tells getNumImages() to
