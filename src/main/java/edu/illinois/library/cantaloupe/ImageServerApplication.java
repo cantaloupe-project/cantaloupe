@@ -87,10 +87,26 @@ public class ImageServerApplication extends Application {
                     MediaType.TEXT_HTML);
         }
 
+        /**
+         * Deprecated and replaced by <code>toStatus()</code>, but that doesn't
+         * get called due to a bug in Restlet as of version 2.3.5.
+         *
+         * @param t
+         * @param request
+         * @param response
+         * @return
+         * @see https://github.com/restlet/restlet-framework-java/issues/1156#issuecomment-145449634
+         */
         @Override
-        // TODO: docs say to replace this with toStatus() but that doesn't get called
+        @SuppressWarnings({"deprecation"})
         public Status getStatus(Throwable t, Request request,
                                 Response response) {
+            return toStatus(t, request, response);
+        }
+
+        @Override
+        public Status toStatus(Throwable t, Request request,
+                               Response response) {
             Status status;
             Throwable cause = t.getCause();
             if (cause instanceof IllegalArgumentException ||
