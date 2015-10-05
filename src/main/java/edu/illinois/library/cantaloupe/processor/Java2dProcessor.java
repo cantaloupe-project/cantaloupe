@@ -1,0 +1,362 @@
+package edu.illinois.library.cantaloupe.processor;
+
+import com.sun.media.jai.codec.ImageCodec;
+import com.sun.media.jai.codec.ImageDecoder;
+import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.request.OutputFormat;
+import edu.illinois.library.cantaloupe.request.Parameters;
+import edu.illinois.library.cantaloupe.request.Quality;
+import edu.illinois.library.cantaloupe.request.Region;
+import edu.illinois.library.cantaloupe.request.Size;
+import org.restlet.data.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
+/**
+ * Processor using the Java2D framework.
+ */
+class Java2dProcessor implements StreamProcessor {
+
+    /**
+     * Used to return a reduction factor from loadTiff() by reference.
+     */
+    private class ReductionFactor {
+        public int factor = 0;
+    }
+
+    private static Logger logger = LoggerFactory.getLogger(Java2dProcessor.class);
+
+    public static final String CONFIG_KEY_JPG_QUALITY = "Java2dProcessor.jpg.quality";
+    public static final String CONFIG_KEY_TIF_READER = "Java2dProcessor.tif.reader";
+
+    private static final HashMap<SourceFormat,Set<OutputFormat>> FORMATS =
+            getAvailableOutputFormats();
+    private static final Set<Quality> SUPPORTED_QUALITIES = new HashSet<>();
+    private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
+            new HashSet<>();
+
+    static {
+        SUPPORTED_QUALITIES.add(Quality.BITONAL);
+        SUPPORTED_QUALITIES.add(Quality.COLOR);
+        SUPPORTED_QUALITIES.add(Quality.DEFAULT);
+        SUPPORTED_QUALITIES.add(Quality.GRAY);
+
+        SUPPORTED_FEATURES.add(ProcessorFeature.MIRRORING);
+        SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PERCENT);
+        SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PIXELS);
+        SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_ARBITRARY);
+        SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_BY_90S);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_ABOVE_FULL);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_HEIGHT);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_PERCENT);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH);
+        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
+    }
+
+    /**
+     * @return Map of available output formats for all known source formats,
+     * based on information reported by the ImageIO library.
+     */
+    public static HashMap<SourceFormat, Set<OutputFormat>>
+    getAvailableOutputFormats() {
+        final String[] readerMimeTypes = ImageIO.getReaderMIMETypes();
+        final String[] writerMimeTypes = ImageIO.getWriterMIMETypes();
+        final HashMap<SourceFormat,Set<OutputFormat>> map =
+                new HashMap<>();
+        for (SourceFormat sourceFormat : SourceFormat.values()) {
+            Set<OutputFormat> outputFormats = new HashSet<>();
+            for (int i = 0, length = readerMimeTypes.length; i < length; i++) {
+                if (sourceFormat.getMediaTypes().
+                        contains(new MediaType(readerMimeTypes[i].toLowerCase()))) {
+                    for (OutputFormat outputFormat : OutputFormat.values()) {
+                        for (i = 0, length = writerMimeTypes.length; i < length; i++) {
+                            if (outputFormat.getMediaType().equals(writerMimeTypes[i].toLowerCase())) {
+                                outputFormats.add(outputFormat);
+                            }
+                        }
+                    }
+                }
+            }
+            map.put(sourceFormat, outputFormats);
+        }
+        return map;
+    }
+
+    public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
+        Set<OutputFormat> formats = FORMATS.get(sourceFormat);
+        if (formats == null) {
+            formats = new HashSet<>();
+        }
+        return formats;
+    }
+
+    public Dimension getSize(ImageInputStream inputStream,
+                             SourceFormat sourceFormat)
+            throws ProcessorException {
+        return ProcessorUtil.getSize(inputStream, sourceFormat);
+    }
+
+    public Set<ProcessorFeature> getSupportedFeatures(
+            final SourceFormat sourceFormat) {
+        Set<ProcessorFeature> features = new HashSet<>();
+        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+            features.addAll(SUPPORTED_FEATURES);
+        }
+        return features;
+    }
+
+    public Set<Quality> getSupportedQualities(final SourceFormat sourceFormat) {
+        Set<Quality> qualities = new HashSet<>();
+        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+            qualities.addAll(SUPPORTED_QUALITIES);
+        }
+        return qualities;
+    }
+
+    public void process(Parameters params, SourceFormat sourceFormat,
+                        ImageInputStream inputStream, OutputStream outputStream)
+            throws ProcessorException {
+        final Set<OutputFormat> availableOutputFormats =
+                getAvailableOutputFormats(sourceFormat);
+        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
+            throw new UnsupportedSourceFormatException(sourceFormat);
+        } else if (!availableOutputFormats.contains(params.getOutputFormat())) {
+            throw new UnsupportedOutputFormatException();
+        }
+
+        try {
+            ReductionFactor reductionFactor = new ReductionFactor();
+            BufferedImage image = loadImage(inputStream, sourceFormat, params,
+                    reductionFactor);
+            image = ProcessorUtil.cropImage(image, params.getRegion(),
+                    reductionFactor.factor);
+            image = ProcessorUtil.scaleImageWithG2d(image, params.getSize(),
+                    reductionFactor.factor);
+            image = ProcessorUtil.rotateImage(image, params.getRotation());
+            image = ProcessorUtil.filterImage(image, params.getQuality());
+            ProcessorUtil.writeImage(image, params.getOutputFormat(),
+                    outputStream);
+        } catch (IOException e) {
+            throw new ProcessorException(e.getMessage(), e);
+        }
+    }
+
+    private BufferedImage loadImage(ImageInputStream inputStream,
+                                    SourceFormat sourceFormat,
+                                    Parameters params,
+                                    ReductionFactor reductionFactor)
+            throws IOException, UnsupportedSourceFormatException { // TODO: move this to ProcessorUtil
+        BufferedImage image = null;
+        switch (sourceFormat) {
+            case BMP:
+                image = ImageIO.read(inputStream);
+                break;
+            case TIF:
+                String tiffReader = Application.getConfiguration().
+                        getString(CONFIG_KEY_TIF_READER, "TIFFImageReader");
+                if (tiffReader.equals("TIFFImageReader")) {
+                    image = loadUsingTiffImageReader(inputStream, params,
+                            reductionFactor);
+                } else {
+                    image = loadUsingTiffImageDecoder(inputStream);
+                }
+                break;
+            default:
+                Iterator<ImageReader> it = ImageIO.getImageReadersByMIMEType(
+                        sourceFormat.getPreferredMediaType().toString());
+                while (it.hasNext()) {
+                    ImageReader reader = it.next();
+                    try {
+                        reader.setInput(inputStream);
+                        image = reader.read(0);
+                    } finally {
+                        reader.dispose();
+                    }
+                }
+                if (image == null) {
+                    throw new UnsupportedSourceFormatException(sourceFormat);
+                }
+                break;
+        }
+        BufferedImage rgbImage = ProcessorUtil.convertToRgb(image);
+        if (rgbImage != image) {
+            logger.warn("Converting {} to RGB (this is very expensive)",
+                    params.getIdentifier());
+        }
+        return rgbImage;
+    }
+
+    /**
+     * <p>Uses TIFFImageReader to load a TIFF from an ImageInputStream.</p>
+     *
+     * <p>The TIFFImageReader class currently being used,
+     * it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader, has several
+     * issues:</p>
+     *
+     * <ul>
+     *     <li>It sometimes sets BufferedImages to <code>TYPE_CUSTOM</code>,
+     *     which necessitates an expensive redraw into a new BufferedImage of
+     *     <code>TYPE_RGB</code>.</li>
+     *     <li>It throws an ArrayIndexOutOfBoundsException when a TIFF file
+     *     contains a tag value greater than 6. (To inspect tag values, run
+     *     <code>$ tiffdump &lt;file&gt;</code>.) (The Sun TIFFImageReader
+     *     suffers from the same issue except it throws an
+     *     IllegalArgumentException instead.)</li>
+     *     <li>It renders some TIFFs with improper colors.</li>
+     * </ul>
+     *
+     * <p>Most of these are probably fixable with some clever workarounds.</p>
+     *
+     * <p><code>ImageIO.read()</code> would be an alternative, but it is not
+     * usable because it also suffers from the <code>TYPE_CUSTOM</code> issue.
+     * Also, it doesn't allow access to pyramidal TIFF sub-images, and just
+     * generally doesn't provide any control over the reading process.</p>
+     *
+     * @param inputStream
+     * @param params
+     * @param reductionFactor
+     * @return
+     * @throws IOException
+     * @see https://github.com/geosolutions-it/imageio-ext/blob/master/plugin/tiff/src/main/java/it/geosolutions/imageioimpl/plugins/tiff/TIFFImageReader.java
+     */
+    private BufferedImage loadUsingTiffImageReader(
+            ImageInputStream inputStream, Parameters params,
+            ReductionFactor reductionFactor) throws IOException {
+        BufferedImage image = null;
+        try {
+            Iterator<ImageReader> it = ImageIO.
+                    getImageReadersByMIMEType("image/tiff");
+            while (it.hasNext()) {
+                ImageReader reader = it.next();
+                if (reader instanceof it.geosolutions.imageioimpl.
+                        plugins.tiff.TIFFImageReader) {
+                    try {
+                        reader.setInput(inputStream);
+                        image = getSmallestUsableImage(reader, params.getRegion(),
+                                params.getSize(), reductionFactor);
+                    } finally {
+                        reader.dispose();
+                    }
+                    break;
+                }
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            logger.error("TIFFImageReader failed to read {}",
+                    params.getIdentifier());
+            throw e;
+        }
+        return image;
+    }
+
+    /**
+     * Loads a TIFF image using JAI TIFFImageDecoder. Currently not optimized
+     * for pyramidal TIFFs.
+     *
+     * @param inputStream
+     * @return
+     * @throws IOException
+     */
+    private BufferedImage loadUsingTiffImageDecoder(
+            ImageInputStream inputStream) throws IOException {
+        BufferedImage image;
+        try (InputStream is = new ImageInputStreamWrapper(inputStream)) {
+            ImageDecoder dec = ImageCodec.createImageDecoder("tiff", is, null);
+            RenderedImage op = dec.decodeAsRenderedImage();
+            BufferedImage rgbImage = new BufferedImage(op.getWidth(),
+                    op.getHeight(), BufferedImage.TYPE_INT_RGB);
+            rgbImage.setData(op.getData());
+            image = rgbImage;
+        }
+        return image;
+    }
+
+    /**
+     * Returns the smallest image fitting the requested size from the given
+     * reader. Useful for e.g. pyramidal TIFF.
+     *
+     * @param reader ImageReader with input source already set
+     * @param region Requested region
+     * @param size Requested size
+     * @param rf Set by reference
+     * @return
+     * @throws IOException
+     */
+    private BufferedImage getSmallestUsableImage(ImageReader reader,
+                                                 Region region, Size size,
+                                                 ReductionFactor rf)
+            throws IOException {
+        ImageReadParam param = reader.getDefaultReadParam();
+        // TODO: why doesn't this work?
+        //param.setDestinationType(ImageTypeSpecifier.
+        //        createFromBufferedImageType(BufferedImage.TYPE_INT_RGB));
+        BufferedImage bestImage = reader.read(0, param);
+        if (size.getScaleMode() != Size.ScaleMode.FULL) {
+            // Pyramidal TIFFs will have > 1 image, each half the dimensions of
+            // the next larger. The "true" parameter tells getNumImages() to
+            // scan for images, which seems to be necessary for at least some
+            // files, but is expensive.
+            int numImages = reader.getNumImages(false);
+            if (numImages == -1) {
+                numImages = reader.getNumImages(true);
+            }
+            if (numImages > 1) {
+                logger.debug("Detected pyramidal TIFF with {} levels",
+                        numImages);
+                final Dimension fullSize = new Dimension(bestImage.getWidth(),
+                        bestImage.getHeight());
+                final Rectangle regionRect = region.getRectangle(fullSize);
+
+                // loop through the tiles from smallest to largest to find the
+                // first one that fits the requested scale
+                for (int i = numImages - 1; i >= 0; i--) {
+                    final BufferedImage tile = reader.read(i);
+                    final double tileScale = (double) tile.getWidth() /
+                            (double) fullSize.width;
+                    boolean fits = false;
+                    if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
+                        fits = (size.getWidth() / (float) regionRect.width <= tileScale);
+                    } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
+                        fits = (size.getHeight() / (float) regionRect.height <= tileScale);
+                    } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
+                        fits = (size.getWidth() / (float) regionRect.width <= tileScale &&
+                                size.getHeight() / (float) regionRect.height <= tileScale);
+                    } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
+                        fits = (size.getWidth() / (float) regionRect.width <= tileScale &&
+                                size.getHeight() / (float) regionRect.height <= tileScale);
+                    } else if (size.getPercent() != null) {
+                        float pct = (size.getPercent() / 100f);
+                        fits = ((pct * fullSize.width) / (float) regionRect.width <= tileScale &&
+                                (pct * fullSize.height) / (float) regionRect.height <= tileScale);
+                    }
+                    if (fits) {
+                        rf.factor = ProcessorUtil.getReductionFactor(tileScale, 0);
+                        logger.debug("Using a {}x{} source tile ({}x reduction factor)",
+                                tile.getWidth(), tile.getHeight(), rf.factor);
+                        bestImage = tile;
+                        break;
+                    }
+                }
+            }
+        }
+        return bestImage;
+    }
+
+}

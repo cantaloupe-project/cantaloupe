@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import edu.illinois.library.cantaloupe.request.Identifier;
 import edu.illinois.library.cantaloupe.request.Parameters;
 
 import java.awt.Dimension;
@@ -7,10 +8,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * Interface to be implemented by all caches. Instances will be shared
+ * Singletons.
+ */
 public interface Cache {
 
     /**
-     * Deletes the entire cache contents.
+     * Deletes the entire cache contents. Must be thread-safe.
      *
      * @throws Exception
      */
@@ -47,7 +52,7 @@ public interface Cache {
      * @return Dimension corresponding to the given identifier, or null if a
      * non-expired dimension exists in the cache.
      */
-    Dimension getDimension(String identifier) throws IOException;
+    Dimension getDimension(Identifier identifier) throws IOException;
 
     /**
      * @param params IIIF request parameters
@@ -63,6 +68,6 @@ public interface Cache {
      * @param identifier IIIF identifier
      * @param size Dimension containing width and height in pixels.
      */
-    void putDimension(String identifier, Dimension size) throws IOException;
+    void putDimension(Identifier identifier, Dimension size) throws IOException;
 
 }

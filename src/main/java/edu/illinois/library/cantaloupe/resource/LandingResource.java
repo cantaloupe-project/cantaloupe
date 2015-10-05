@@ -11,10 +11,12 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import org.apache.velocity.Template;
 import org.apache.velocity.app.Velocity;
+import org.restlet.data.CacheDirective;
 import org.restlet.data.MediaType;
 import org.restlet.ext.velocity.TemplateRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
+import org.restlet.resource.ResourceException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,6 +43,14 @@ public class LandingResource extends AbstractResource {
             return o1.getPreferredExtension().
                     compareTo(o2.getPreferredExtension());
         }
+    }
+
+    @Override
+    protected void doInit() throws ResourceException {
+        super.doInit();
+        // add a "Cache-Control: no-cache" header because this page contains
+        // dynamic information pertaining to the function of the application
+        getResponseCacheDirectives().add(CacheDirective.noCache());
     }
 
     @Get
@@ -71,7 +81,7 @@ public class LandingResource extends AbstractResource {
         // cache name
         String cacheStr = "None";
         try {
-            Cache cache = CacheFactory.getCache();
+            Cache cache = CacheFactory.getInstance();
             if (cache != null) {
                 cacheStr = cache.getClass().getSimpleName();
             }

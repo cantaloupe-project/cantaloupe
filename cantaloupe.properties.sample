@@ -1,0 +1,133 @@
+#############################################################################
+# Sample Cantaloupe configuration file
+#
+# Copy this file to `cantaloupe.properties` and edit as desired. Then, launch
+# Cantaloupe with the `-Dcantaloupe.config=cantaloupe.properties` option.
+#
+# Note that backslashes need to be doubled, like this: \\
+#############################################################################
+
+# TCP port to bind the web server to.
+http.port = 8182
+
+# Uncomment to require HTTP Basic authentication.
+#http.auth.basic = true
+#http.auth.basic.username = myself
+#http.auth.basic.secret = password
+
+# Helpful in development
+print_stack_trace_on_error_pages = true
+
+###############
+# RESOLVERS
+###############
+
+# The resolver that translates the identifier in the URL to an image source.
+# Available values are `FilesystemResolver` and `HttpResolver`.
+resolver = FilesystemResolver
+
+###
+# FilesystemResolver
+###
+# Server-side path that will be prefixed to the identifier in the URL.
+FilesystemResolver.path_prefix = /home/myself/images
+# Server-side path or extension that will be suffixed to the identifier
+# in the URL.
+FilesystemResolver.path_suffix =
+# Normally, slashes in an identifier must be percent-encoded as "%2F". If
+# your proxy is incapable of passing these through un-decoded, you can
+# define an alternate character or character sequence to represent a path
+# separator. Supply the non-percent-encoded version here, and use the
+# percent-encoded version in IIIF URLs.
+#FilesystemResolver.path_separator =
+
+###
+# HttpResolver
+###
+# URL that will be prefixed to the identifier in the request URL.
+HttpResolver.url_prefix = http://localhost/images/
+# Path, extension, query string, etc. that will be suffixed to the
+# identifier in the request URL.
+HttpResolver.url_suffix =
+# See FilesystemResolver.path_separator for an explanation of this.
+#HttpResolver.path_separator =
+# Used for HTTP Basic authentication.
+HttpResolver.username =
+HttpResolver.password =
+
+###############
+# PROCESSORS
+###############
+
+# Image processors to use for various source formats. Available values are
+# `Java2dProcessor`, `GraphicsMagickProcessor`, `ImageMagickProcessor`,
+# `KakaduProcessor`, and `JaiProcessor`.
+# These extension-specific definitions are optional.
+#processor.jpg = ImageMagickProcessor
+#processor.jp2 = KakaduProcessor
+#processor.tif = GraphicsMagickProcessor
+# Fall back to this processor for any formats not assigned above.
+processor.fallback = Java2dProcessor
+
+###
+# GraphicsMagickProcessor
+###
+# Optional; overrides the PATH
+#GraphicsMagickProcessor.path_to_binaries = /usr/local/bin
+
+###
+# ImageMagickProcessor
+###
+# Optional; overrides the PATH
+#ImageMagickProcessor.path_to_binaries = /usr/local/bin
+
+###
+# Java2dProcessor
+###
+# JPEG output quality. Should be a number between 0-1 ending in "f"
+Java2dProcessor.jpg.quality = 0.7f
+# Available values are `TIFFImageReader` and `TIFFImageDecoder`.
+# TIFFImageReader is optimized for pyramidal TIFFs, but TIFFImageDecoder may be
+# faster. Experiment with both.
+Java2dProcessor.tif.reader = TIFFImageReader
+
+###
+# KakaduProcessor
+###
+# Optional; overrides the PATH
+KakaduProcessor.path_to_binaries = /usr/local/bin
+# Due to a quirk of kdu_expand, you will need to create a symbolic link to
+# /dev/stdout somewhere called `stdout.ppm`, like this:
+# `ln -s /dev/stdout /path/to/stdout.ppm`
+KakaduProcessor.path_to_stdout_symlink = /some/path/to/stdout.ppm
+# Available values are `jai` and `java2d`.
+KakaduProcessor.post_processor = java2d
+
+###############
+# CACHING
+###############
+
+# Customize the response Cache-Control header. (This may be overridden by
+# proxies.) Comment out to disable the Cache-Control header.
+cache.client.max_age = 2592000
+cache.client.shared_max_age =
+cache.client.public = true
+cache.client.private = false
+cache.client.no_cache = false
+cache.client.no_store = false
+cache.client.must_revalidate = false
+cache.client.proxy_revalidate = false
+cache.client.no_transform = true
+
+# The only available value is `FilesystemCache`. Comment out or set blank
+# to disable caching.
+#cache.server = FilesystemCache
+
+###
+# FilesystemCache
+###
+# If this directory does not exist, it will be created automatically.
+FilesystemCache.pathname = /var/cache/cantaloupe
+# Time before a cached image becomes stale and needs to be reloaded. Set to
+# blank or 0 for "forever"
+FilesystemCache.ttl_seconds = 2592000 # 1 month

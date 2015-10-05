@@ -15,7 +15,7 @@ public class ProcessorFactoryTest extends TestCase {
     }
 
     public void testGetAllProcessors() {
-        assertEquals(4, ProcessorFactory.getAllProcessors().size());
+        assertEquals(5, ProcessorFactory.getAllProcessors().size());
     }
 
     /**
@@ -34,7 +34,7 @@ public class ProcessorFactoryTest extends TestCase {
      * Assert that we get GraphicsMagickProcessor for JPEGs when:
      *
      * <code>
-     * processor.webp = ImageIoProcessor
+     * processor.webp = Java2dProcessor
      * processor.fallback = GraphicsMagickProcessor
      * </code>
      *
@@ -42,7 +42,7 @@ public class ProcessorFactoryTest extends TestCase {
      */
     public void testGetProcessorWithUnsupportedAssignedFormat() throws Exception {
         Application.getConfiguration().
-                setProperty("processor.webp", "ImageIoProcessor");
+                setProperty("processor.webp", "Java2dProcessor");
         Application.getConfiguration().
                 setProperty("processor.fallback", "GraphicsMagickProcessor");
         try {
@@ -50,20 +50,20 @@ public class ProcessorFactoryTest extends TestCase {
             fail("Expected exception");
         } catch (UnsupportedSourceFormatException e) {
             assertEquals(e.getMessage(),
-                    "Processor assigned to webp, ImageIoProcessor, does not support the webp format");
+                    "Processor assigned to webp, Java2dProcessor, does not support the webp format");
         }
     }
 
     /**
-     * Assert that we get ImageIoProcessor for JPEGs when
-     * <code>processor.fallback = ImageIoProcessor</code>
+     * Assert that we get Java2dProcessor for JPEGs when
+     * <code>processor.fallback = Java2dProcessor</code>
      *
      * @throws Exception
      */
     public void testGetProcessorWithFormatSupportedByFallback() throws Exception {
         Application.getConfiguration().
-                setProperty("processor.fallback", "ImageIoProcessor");
-        assertTrue(ProcessorFactory.getProcessor(SourceFormat.JPG) instanceof ImageIoProcessor);
+                setProperty("processor.fallback", "Java2dProcessor");
+        assertTrue(ProcessorFactory.getProcessor(SourceFormat.JPG) instanceof Java2dProcessor);
     }
 
     /**
@@ -75,13 +75,13 @@ public class ProcessorFactoryTest extends TestCase {
      */
     public void testGetProcessorWithFormatUnsupportedByFallback() throws Exception {
         Application.getConfiguration().
-                setProperty("processor.fallback", "ImageIoProcessor");
+                setProperty("processor.fallback", "Java2dProcessor");
         try {
             ProcessorFactory.getProcessor(SourceFormat.WEBP);
             fail("Expected exception");
         } catch (UnsupportedSourceFormatException e) {
             assertEquals(e.getMessage(), "No processor assigned to this format " +
-                    "(webp), and fallback ImageIoProcessor does not support it either");
+                    "(webp), and fallback Java2dProcessor does not support it either");
         }
     }
 

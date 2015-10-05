@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.request.Identifier;
 import eu.medsea.mimeutil.MimeUtil;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.StringUtils;
@@ -13,9 +14,10 @@ import javax.imageio.stream.FileImageInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.util.Collection;
 
-class FilesystemResolver implements Resolver {
+class FilesystemResolver implements FileResolver, StreamResolver {
 
     static {
         MimeUtil.registerMimeDetector("eu.medsea.mimeutil.detector.MagicMimeMimeDetector");
@@ -24,20 +26,24 @@ class FilesystemResolver implements Resolver {
     private static Logger logger = LoggerFactory.
             getLogger(FilesystemResolver.class);
 
-    public FileImageInputStream getInputStream(String identifier)
-            throws IOException {
+    public File getFile(Identifier identifier) throws IOException {
         File file = new File(getPathname(identifier));
-        if (!file.exists()) {
-            String message = "Failed to resolve " + identifier + " to " +
-                    file.getAbsolutePath();
-            logger.warn(message);
-            throw new FileNotFoundException(message);
+        try {
+            checkAccess(file, identifier);
+            logger.debug("Resolved {} to {}", identifier, file.getAbsolutePath());
+        } catch (IOException e) {
+            logger.warn(e.getMessage(), e);
+            throw e;
         }
-        logger.debug("Resolved {} to {}", identifier, file.getAbsolutePath());
-        return new FileImageInputStream(file);
+        return file;
     }
 
-    public String getPathname(String identifier) {
+    public FileImageInputStream getInputStream(Identifier identifier)
+            throws IOException {
+        return new FileImageInputStream(getFile(identifier));
+    }
+
+    public String getPathname(Identifier identifier) {
         Configuration config = Application.getConfiguration();
         String prefix = config.getString("FilesystemResolver.path_prefix");
         if (prefix == null) {
@@ -47,40 +53,56 @@ class FilesystemResolver implements Resolver {
         if (suffix == null) {
             suffix = "";
         }
+
+        String idStr = identifier.toString();
+
         // The Image API 2.0 spec mandates the use of percent-encoded
         // identifiers. But some web servers have issues dealing with the
         // encoded slash (%2F). FilesystemResolver.path_separator enables the
         // use of an alternate string as a path separator.
-        String separator = config.getString("FilesystemResolver.path_separator",
-                File.separator);
-        if (!separator.equals(File.separator)) {
-            identifier = StringUtils.replace(identifier, separator,
-                    File.separator);
+        String separator = config.getString("FilesystemResolver.path_separator");
+        if (separator != null && separator.length() > 0) {
+            idStr = StringUtils.replace(idStr, separator, File.separator);
         }
-        return prefix + identifier + suffix;
+
+        idStr = getSanitizedIdentifier(idStr, File.separator);
+
+        return prefix + idStr + suffix;
     }
 
     /**
-     * Returns the format of the image corresponding to the given identifier.
+     * Filters out "fileseparator.." and "..fileseparator" to prevent arbitrary
+     * directory traversal.
      *
-     * @param identifier IIIF identifier.
-     * @return A source format, or <code>SourceFormat.UNKNOWN</code> if unknown.
+     * @param identifier IIIF identifier
+     * @param fileSeparator The return value of <code>File.separator</code>
+     * @return Sanitized identifier
      */
-    public SourceFormat getSourceFormat(String identifier) {
+    public String getSanitizedIdentifier(String identifier,
+                                         String fileSeparator) {
+        identifier = StringUtils.replace(identifier, fileSeparator + "..", "");
+        identifier = StringUtils.replace(identifier, ".." + fileSeparator, "");
+        return identifier;
+    }
+
+    public SourceFormat getSourceFormat(Identifier identifier)
+            throws IOException {
         SourceFormat sourceFormat = getSourceFormatFromIdentifier(identifier);
-        if (sourceFormat == SourceFormat.UNKNOWN) {
+        if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
+            File file = new File(getPathname(identifier));
+            checkAccess(file, identifier);
             sourceFormat = getDetectedSourceFormat(identifier);
         }
         return sourceFormat;
     }
 
-    private SourceFormat getSourceFormatFromIdentifier(String identifier) {
-        identifier = identifier.toLowerCase();
+    private SourceFormat getSourceFormatFromIdentifier(Identifier identifier) {
+        String idStr = identifier.toString().toLowerCase();
         String extension = null;
         SourceFormat sourceFormat = SourceFormat.UNKNOWN;
-        int i = identifier.lastIndexOf('.');
+        int i = idStr.lastIndexOf('.');
         if (i > 0) {
-            extension = identifier.substring(i + 1);
+            extension = idStr.substring(i + 1);
         }
         if (extension != null) {
             for (SourceFormat enumValue : SourceFormat.values()) {
@@ -93,7 +115,7 @@ class FilesystemResolver implements Resolver {
         return sourceFormat;
     }
 
-    private SourceFormat getDetectedSourceFormat(String identifier) {
+    private SourceFormat getDetectedSourceFormat(Identifier identifier) {
         SourceFormat sourceFormat = SourceFormat.UNKNOWN;
         String pathname = getPathname(identifier);
         Collection<?> detectedTypes = MimeUtil.getMimeTypes(pathname);
@@ -103,6 +125,17 @@ class FilesystemResolver implements Resolver {
                     getSourceFormat(new MediaType(detectedType));
         }
         return sourceFormat;
+    }
+
+    private void checkAccess(File file, Identifier identifier)
+            throws IOException {
+        if (!file.exists()) {
+            throw new FileNotFoundException("Failed to resolve " +
+                    identifier + " to " + file.getAbsolutePath());
+        } else if (!file.canRead()) {
+            throw new AccessDeniedException("File is not readable: " +
+                    file.getAbsolutePath());
+        }
     }
 
 }

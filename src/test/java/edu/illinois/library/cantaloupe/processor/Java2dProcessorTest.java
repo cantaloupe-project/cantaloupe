@@ -7,29 +7,29 @@ import edu.illinois.library.cantaloupe.request.Quality;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ImageIoProcessorTest extends ProcessorTest {
+public class Java2dProcessorTest extends ProcessorTest {
 
-    ImageIoProcessor instance = new ImageIoProcessor();
+    Java2dProcessor instance = new Java2dProcessor();
 
     protected Processor getProcessor() {
         return instance;
     }
 
     public void testGetAvailableOutputFormats() {
-        Set<OutputFormat> expectedFormats = ImageIoProcessor.
+        Set<OutputFormat> expectedFormats = Java2dProcessor.
                 getAvailableOutputFormats().get(SourceFormat.JPG);
         assertEquals(expectedFormats,
                 instance.getAvailableOutputFormats(SourceFormat.JPG));
     }
 
     public void testGetAvailableOutputFormatsForUnsupportedSourceFormat() {
-        Set<OutputFormat> expectedFormats = new HashSet<OutputFormat>();
+        Set<OutputFormat> expectedFormats = new HashSet<>();
         assertEquals(expectedFormats,
                 instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
     }
 
     public void testGetSupportedFeatures() {
-        Set<ProcessorFeature> expectedFeatures = new HashSet<ProcessorFeature>();
+        Set<ProcessorFeature> expectedFeatures = new HashSet<>();
         expectedFeatures.add(ProcessorFeature.MIRRORING);
         expectedFeatures.add(ProcessorFeature.REGION_BY_PERCENT);
         expectedFeatures.add(ProcessorFeature.REGION_BY_PIXELS);
@@ -42,15 +42,23 @@ public class ImageIoProcessorTest extends ProcessorTest {
         expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH);
         expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
         assertEquals(expectedFeatures,
+                instance.getSupportedFeatures(getAnySupportedSourceFormat(instance)));
+
+        expectedFeatures = new HashSet<>();
+        assertEquals(expectedFeatures,
                 instance.getSupportedFeatures(SourceFormat.UNKNOWN));
     }
 
     public void testGetSupportedQualities() {
-        Set<Quality> expectedQualities = new HashSet<Quality>();
+        Set<Quality> expectedQualities = new HashSet<>();
         expectedQualities.add(Quality.BITONAL);
         expectedQualities.add(Quality.COLOR);
         expectedQualities.add(Quality.DEFAULT);
         expectedQualities.add(Quality.GRAY);
+        assertEquals(expectedQualities,
+                instance.getSupportedQualities(getAnySupportedSourceFormat(instance)));
+
+        expectedQualities = new HashSet<>();
         assertEquals(expectedQualities,
                 instance.getSupportedQualities(SourceFormat.UNKNOWN));
     }

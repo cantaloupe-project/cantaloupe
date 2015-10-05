@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe;
 
+import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -8,7 +9,9 @@ import org.apache.velocity.app.Velocity;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.restlet.Component;
+import org.restlet.Request;
 import org.restlet.data.Protocol;
+import org.restlet.service.LogService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,8 +25,22 @@ import java.util.jar.Manifest;
  */
 public class Application {
 
+    /**
+     * Filters HTTP log messages for the Restlet component.
+     */
+    private static class HttpLogService extends LogService {
+
+        @Override
+        public boolean isLoggable(Request request) {
+            // exclude requests to /static from the log
+            final String path = ImageServerApplication.STATIC_ROOT_PATH;
+            return !request.getResourceRef().getPath().startsWith(path);
+        }
+
+    }
+
     private static Logger logger = LoggerFactory.getLogger(Application.class);
-    private static Component component = new Component();
+    private static Component component;
     private static Configuration config;
 
     static {
@@ -37,19 +54,35 @@ public class Application {
         Velocity.init();
     }
 
-    public static void main(String[] args) throws Exception {
-        String version = getVersion();
-        if (version == null) {
-            version = "(unknown version)";
+    private static void flushCacheAtLaunch() throws IOException {
+        Cache cache = CacheFactory.getInstance();
+        if (cache != null) {
+            cache.flush();
+        } else {
+            System.out.println("Cache is not specified or is improperly configured.");
+            System.exit(-1);
         }
-        logger.info("Starting Cantaloupe {}", version);
+    }
+
+    private static void flushExpiredFromCacheAtLaunch() throws IOException {
+        Cache cache = CacheFactory.getInstance();
+        if (cache != null) {
+            cache.flushExpired();
+        } else {
+            System.out.println("Cache is not specified or is improperly configured.");
+            System.exit(-1);
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        logger.info("Starting Cantaloupe {}", getVersion());
 
         if (System.getProperty("cantaloupe.cache.flush") != null) {
-            CacheFactory.getCache().flush();
+            flushCacheAtLaunch();
         } else if (System.getProperty("cantaloupe.cache.flush_expired") != null) {
-            CacheFactory.getCache().flushExpired();
+            flushExpiredFromCacheAtLaunch();
         } else {
-            start();
+            startServer();
         }
     }
 
@@ -86,10 +119,11 @@ public class Application {
     }
 
     /**
-     * @return The application version from manifest.mf, or null if not running
-     * from a jar.
+     * @return The application version from manifest.mf, or a string like
+     * "Non-Release" if running from a jar.
      */
     public static String getVersion() {
+        String versionStr = "Non-Release";
         Class clazz = Application.class;
         String className = clazz.getSimpleName() + ".class";
         String classPath = clazz.getResource(className).toString();
@@ -99,23 +133,33 @@ public class Application {
             try {
                 Manifest manifest = new Manifest(new URL(manifestPath).openStream());
                 Attributes attr = manifest.getMainAttributes();
-                return attr.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
+                String version = attr.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
+                if (version != null) {
+                    versionStr = version;
+                }
             } catch (IOException e) {
                 // noop
             }
         }
-        return null;
+        return versionStr;
     }
 
-    public static void start() throws Exception {
+    public static void startServer() throws Exception {
+        stopServer();
+        component = new Component();
         Integer port = getConfiguration().getInteger("http.port", 8182);
         component.getServers().add(Protocol.HTTP, port);
+        component.getClients().add(Protocol.CLAP);
         component.getDefaultHost().attach("", new ImageServerApplication());
+        component.setLogService(new HttpLogService());
         component.start();
     }
 
-    public static void stop() throws Exception {
-        component.stop();
+    public static void stopServer() throws Exception {
+        if (component != null) {
+            component.stop();
+            component = null;
+        }
     }
 
 }

@@ -1,27 +1,26 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.request.Identifier;
 
-import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 
 /**
- * Locates and provides stream access to a source image.
+ * Locates and provides access to a source image. This is an abstract interface;
+ * implementations must implement at least one of the sub-interfaces.
  */
 public interface Resolver {
 
     /**
      * @param identifier IIIF identifier.
-     * @return Stream for reading the source image; never null.
-     */
-    ImageInputStream getInputStream(String identifier) throws IOException;
-
-    /**
-     * @param identifier IIIF identifier.
      * @return The expected source format of the image corresponding with the
-     * given identifier, or <code>SourceFormat.UNKNOWN</code> if unknown.
-     * Never null.
+     * given identifier; never <code>SourceFormat.UNKNOWN</code>.
+     * @throws FileNotFoundException if an image corresponding to the given
+     * identifier does not exist
+     * @throws AccessDeniedException if an image corresponding to the given
+     * identifier is not readable
+     * @throws IOException if there is some other issue accessing the image
      */
-    SourceFormat getSourceFormat(String identifier);
+    SourceFormat getSourceFormat(Identifier identifier) throws IOException;
 
 }

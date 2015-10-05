@@ -4,30 +4,25 @@ import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
 import com.sun.media.jai.codec.ImageCodec;
 import com.sun.media.jai.codec.ImageEncoder;
 import com.sun.media.jai.codec.JPEGEncodeParam;
-import com.sun.media.jai.codec.PNGEncodeParam;
 import com.sun.media.jai.codecimpl.TIFFImageEncoder;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.request.Region;
-import edu.illinois.library.cantaloupe.request.Rotation;
-import edu.illinois.library.cantaloupe.request.Size;
 import it.geosolutions.jaiext.JAIExt;
 import org.restlet.data.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.ImageLayout;
-import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
-import javax.media.jai.OpImage;
-import javax.media.jai.operator.TransposeDescriptor;
 import javax.media.jai.ParameterBlockJAI;
 import javax.media.jai.RenderedOp;
 import java.awt.Dimension;
@@ -43,12 +38,14 @@ import java.util.Set;
 /**
  * Processor using the Java Advanced Imaging (JAI) framework.
  */
-class JaiProcessor implements Processor {
+class JaiProcessor implements StreamProcessor {
+
+    private static Logger logger = LoggerFactory.getLogger(JaiProcessor.class);
 
     private static final int JAI_TILE_SIZE = 512;
-    private static final Set<Quality> SUPPORTED_QUALITIES = new HashSet<Quality>();
+    private static final Set<Quality> SUPPORTED_QUALITIES = new HashSet<>();
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
-            new HashSet<ProcessorFeature>();
+            new HashSet<>();
 
     private static HashMap<SourceFormat,Set<OutputFormat>> formatsMap;
 
@@ -82,14 +79,19 @@ class JaiProcessor implements Processor {
         if (formatsMap == null) {
             final String[] readerMimeTypes = ImageIO.getReaderMIMETypes();
             final String[] writerMimeTypes = ImageIO.getWriterMIMETypes();
-            formatsMap = new HashMap<SourceFormat, Set<OutputFormat>>();
+            formatsMap = new HashMap<>();
             for (SourceFormat sourceFormat : SourceFormat.values()) {
-                Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
+                Set<OutputFormat> outputFormats = new HashSet<>();
 
                 for (int i = 0, length = readerMimeTypes.length; i < length; i++) {
                     if (sourceFormat.getMediaTypes().
                             contains(new MediaType(readerMimeTypes[i].toLowerCase()))) {
                         for (OutputFormat outputFormat : OutputFormat.values()) {
+                            if (outputFormat == OutputFormat.GIF ||
+                                    outputFormat == OutputFormat.JP2) {
+                                // these currently don't work (see outputImage())
+                                continue;
+                            }
                             for (i = 0, length = writerMimeTypes.length; i < length; i++) {
                                 if (outputFormat.getMediaType().equals(writerMimeTypes[i].toLowerCase())) {
                                     outputFormats.add(outputFormat);
@@ -109,49 +111,48 @@ class JaiProcessor implements Processor {
     }
 
     public Dimension getSize(ImageInputStream inputStream,
-                             SourceFormat sourceFormat) throws Exception {
-        // get width & height (without reading the entire image into memory)
-        Iterator<ImageReader> iter = ImageIO.
-                getImageReadersBySuffix(sourceFormat.getPreferredExtension());
-        if (iter.hasNext()) {
-            ImageReader reader = iter.next();
-            int width, height;
-            try {
-                reader.setInput(inputStream);
-                width = reader.getWidth(reader.getMinIndex());
-                height = reader.getHeight(reader.getMinIndex());
-            } finally {
-                reader.dispose();
-            }
-            return new Dimension(width, height);
+                             SourceFormat sourceFormat)
+            throws ProcessorException {
+        return ProcessorUtil.getSize(inputStream, sourceFormat);
+    }
+
+    public Set<ProcessorFeature> getSupportedFeatures(
+            final SourceFormat sourceFormat) {
+        Set<ProcessorFeature> features = new HashSet<>();
+        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+            features.addAll(SUPPORTED_FEATURES);
         }
-        return null;
+        return features;
     }
 
-    public Set<ProcessorFeature> getSupportedFeatures(SourceFormat sourceFormat) {
-        return SUPPORTED_FEATURES;
-    }
-
-    public Set<Quality> getSupportedQualities(SourceFormat sourceFormat) {
-        return SUPPORTED_QUALITIES;
+    public Set<Quality> getSupportedQualities(final SourceFormat sourceFormat) {
+        Set<Quality> qualities = new HashSet<>();
+        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+            qualities.addAll(SUPPORTED_QUALITIES);
+        }
+        return qualities;
     }
 
     public void process(Parameters params, SourceFormat sourceFormat,
                         ImageInputStream inputStream, OutputStream outputStream)
-            throws Exception {
+            throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
-            throw new UnsupportedSourceFormatException();
+            throw new UnsupportedSourceFormatException(sourceFormat);
         } else if (!availableOutputFormats.contains(params.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
 
-        RenderedOp image = loadRegion(inputStream, params.getRegion());
-        image = scaleImage(image, params.getSize());
-        image = rotateImage(image, params.getRotation());
-        image = filterImage(image, params.getQuality());
-        outputImage(image, params.getOutputFormat(), outputStream);
+        try {
+            RenderedOp image = loadRegion(inputStream, params.getRegion());
+            image = ProcessorUtil.scaleImage(image, params.getSize());
+            image = ProcessorUtil.rotateImage(image, params.getRotation());
+            image = ProcessorUtil.filterImage(image, params.getQuality());
+            outputImage(image, params.getOutputFormat(), outputStream);
+        } catch (IOException e) {
+            throw new ProcessorException(e.getMessage(), e);
+        }
     }
 
     private RenderedOp loadRegion(ImageInputStream inputStream, Region region) {
@@ -198,95 +199,11 @@ class JaiProcessor implements Processor {
         return croppedImage;
     }
 
-    private RenderedOp scaleImage(RenderedOp inputImage, Size size) {
-        RenderedOp scaledImage;
-        if (size.getScaleMode() == Size.ScaleMode.FULL) {
-            scaledImage = inputImage;
-        } else {
-            float xScale = 1.0f;
-            float yScale = 1.0f;
-            if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
-                xScale = (float) size.getWidth() / inputImage.getWidth();
-                yScale = xScale;
-            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
-                yScale = (float) size.getHeight() / inputImage.getHeight();
-                xScale = yScale;
-            } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
-                xScale = (float) size.getWidth() / inputImage.getWidth();
-                yScale = (float) size.getHeight() / inputImage.getHeight();
-            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
-                double hScale = (float) size.getWidth() / inputImage.getWidth();
-                double vScale = (float) size.getHeight() / inputImage.getHeight();
-                xScale = (float) (inputImage.getWidth() * Math.min(hScale, vScale));
-                yScale = (float) (inputImage.getHeight() * Math.min(hScale, vScale));
-            } else if (size.getPercent() != null) {
-                xScale = size.getPercent() / 100.0f;
-                yScale = xScale;
-            }
-            ParameterBlock pb = new ParameterBlock();
-            pb.addSource(inputImage);
-            pb.add(xScale);
-            pb.add(yScale);
-            pb.add(0.0f);
-            pb.add(0.0f);
-            pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
-            scaledImage = JAI.create("scale", pb);
-        }
-        return scaledImage;
-    }
-
-    private RenderedOp rotateImage(RenderedOp inputImage, Rotation rotation) {
-        // do mirroring
-        RenderedOp mirroredImage = inputImage;
-        if (rotation.shouldMirror()) {
-            ParameterBlock pb = new ParameterBlock();
-            pb.addSource(inputImage);
-            pb.add(TransposeDescriptor.FLIP_HORIZONTAL);
-            mirroredImage = JAI.create("transpose", pb);
-        }
-        // do rotation
-        RenderedOp rotatedImage = mirroredImage;
-        if (rotation.getDegrees() > 0) {
-            ParameterBlock pb = new ParameterBlock();
-            pb.addSource(rotatedImage);
-            pb.add(mirroredImage.getWidth() / 2.0f);
-            pb.add(mirroredImage.getHeight() / 2.0f);
-            pb.add((float) Math.toRadians(rotation.getDegrees()));
-            pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
-            rotatedImage = JAI.create("rotate", pb);
-        }
-        return rotatedImage;
-    }
-
-    private RenderedOp filterImage(RenderedOp inputImage, Quality quality) {
-        RenderedOp filteredImage = inputImage;
-        if (quality != Quality.COLOR && quality != Quality.DEFAULT) {
-            // convert to grayscale
-            ParameterBlock pb = new ParameterBlock();
-            pb.addSource(inputImage);
-            double[][] matrixRgb = { { 0.114, 0.587, 0.299, 0 } };
-            double[][] matrixRgba = { { 0.114, 0.587, 0.299, 0, 0 } };
-            if (OpImage.getExpandedNumBands(inputImage.getSampleModel(),
-                    inputImage.getColorModel()) == 4) {
-                pb.add(matrixRgba);
-            } else {
-                pb.add(matrixRgb);
-            }
-            filteredImage = JAI.create("bandcombine", pb, null);
-            if (quality == Quality.BITONAL) {
-                 pb = new ParameterBlock();
-                 pb.addSource(filteredImage);
-                 pb.add(1.0 * 128);
-                 filteredImage = JAI.create("binarize", pb);
-            }
-        }
-        return filteredImage;
-    }
-
     private void outputImage(RenderedOp image, OutputFormat format,
                              OutputStream outputStream) throws IOException {
         switch (format) {
             case GIF:
+                // TODO: this and ImageIO.write() frequently don't work
                 Iterator writers = ImageIO.getImageWritersByFormatName("GIF");
                 if (writers.hasNext()) {
                     // GIFWriter can't deal with a non-0,0 origin
@@ -299,11 +216,11 @@ class JaiProcessor implements Processor {
                     ImageWriter writer = (ImageWriter) writers.next();
                     ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
                     writer.setOutput(os);
-                    // TODO: this doesn't seem to write anything
                     writer.write(image);
                 }
                 break;
             case JP2:
+                // TODO: neither this nor ImageIO.write() seem to write anything
                 writers = ImageIO.getImageWritersByFormatName("JPEG2000");
                 if (writers.hasNext()) {
                     ImageWriter writer = (ImageWriter) writers.next();
@@ -316,24 +233,30 @@ class JaiProcessor implements Processor {
                     j2Param.setProgressionType("res");
                     ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
                     writer.setOutput(os);
-                    // TODO: this doesn't seem to write anything
                     writer.write(null, iioImage, j2Param);
                 }
                 break;
             case JPG:
+                // JPEGImageEncoder seems to be slightly more efficient than
+                // ImageIO.write()
                 JPEGEncodeParam jParam = new JPEGEncodeParam();
                 ImageEncoder encoder = ImageCodec.createImageEncoder("JPEG",
                         outputStream, jParam);
                 encoder.encode(image);
                 break;
             case PNG:
-                PNGEncodeParam pngParam = new PNGEncodeParam.RGB();
+                // ImageIO.write() seems to be more efficient than
+                // PNGImageEncoder
+                ImageIO.write(image, format.getExtension(), outputStream);
+                /* PNGEncodeParam pngParam = new PNGEncodeParam.RGB();
                 ImageEncoder pngEncoder = ImageCodec.createImageEncoder("PNG",
                         outputStream, pngParam);
-                pngEncoder.encode(image);
+                pngEncoder.encode(image); */
                 break;
             case TIF:
-                TIFFImageEncoder tiffEnc = new TIFFImageEncoder(outputStream,
+                // TIFFImageEncoder seems to be more efficient than
+                // ImageIO.write();
+                ImageEncoder tiffEnc = new TIFFImageEncoder(outputStream,
                         null);
                 tiffEnc.encode(image);
                 break;

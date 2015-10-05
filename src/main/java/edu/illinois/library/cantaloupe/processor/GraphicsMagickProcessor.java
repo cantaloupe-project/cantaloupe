@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.request.Rotation;
 import edu.illinois.library.cantaloupe.request.Size;
 import org.apache.commons.configuration.Configuration;
 import org.im4java.core.ConvertCmd;
+import org.im4java.core.IM4JavaException;
 import org.im4java.core.IMOperation;
 import org.im4java.core.Info;
 import org.im4java.core.InfoException;
@@ -28,15 +29,17 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-class GraphicsMagickProcessor implements Processor {
+/**
+ * Processor using the GraphicsMagick `gm` command-line tool.
+ */
+class GraphicsMagickProcessor implements StreamProcessor {
 
     private static Logger logger = LoggerFactory.
             getLogger(GraphicsMagickProcessor.class);
 
-    private static final Set<Quality> SUPPORTED_QUALITIES =
-            new HashSet<Quality>();
+    private static final Set<Quality> SUPPORTED_QUALITIES = new HashSet<>();
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
-            new HashSet<ProcessorFeature>();
+            new HashSet<>();
     // Lazy-initialized by getFormats()
     private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
 
@@ -68,8 +71,8 @@ class GraphicsMagickProcessor implements Processor {
      */
     private static HashMap<SourceFormat, Set<OutputFormat>> getFormats() {
         if (supportedFormats == null) {
-            final Set<SourceFormat> sourceFormats = new HashSet<SourceFormat>();
-            final Set<OutputFormat> outputFormats = new HashSet<OutputFormat>();
+            final Set<SourceFormat> sourceFormats = new HashSet<>();
+            final Set<OutputFormat> outputFormats = new HashSet<>();
             String cmdPath = "gm";
             try {
                 // retrieve the output of the `gm version` command, which contains a
@@ -132,7 +135,7 @@ class GraphicsMagickProcessor implements Processor {
                 logger.error("Failed to execute {}", cmdPath);
             }
 
-            supportedFormats = new HashMap<SourceFormat,Set<OutputFormat>>();
+            supportedFormats = new HashMap<>();
             for (SourceFormat sourceFormat : sourceFormats) {
                 supportedFormats.put(sourceFormat, outputFormats);
             }
@@ -143,39 +146,52 @@ class GraphicsMagickProcessor implements Processor {
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
         Set<OutputFormat> formats = getFormats().get(sourceFormat);
         if (formats == null) {
-            formats = new HashSet<OutputFormat>();
+            formats = new HashSet<>();
         }
         return formats;
     }
 
     public Dimension getSize(ImageInputStream inputStream,
                              SourceFormat sourceFormat)
-            throws InfoException, IOException {
-        inputStream.mark();
-        ImageInputStreamWrapper wrapper = new ImageInputStreamWrapper(inputStream);
-        Info sourceInfo = new Info(sourceFormat.getPreferredExtension() + ":-",
-                wrapper, true);
-        Dimension dimension = new Dimension(sourceInfo.getImageWidth(),
-                sourceInfo.getImageHeight());
-        inputStream.reset();
-        return dimension;
+            throws ProcessorException {
+        try {
+            inputStream.mark();
+            ImageInputStreamWrapper wrapper = new ImageInputStreamWrapper(inputStream);
+            Info sourceInfo = new Info(sourceFormat.getPreferredExtension() + ":-",
+                    wrapper, true);
+            Dimension dimension = new Dimension(sourceInfo.getImageWidth(),
+                    sourceInfo.getImageHeight());
+            inputStream.reset();
+            return dimension;
+        } catch (InfoException|IOException e) {
+            throw new ProcessorException(e.getMessage(), e);
+        }
     }
 
-    public Set<ProcessorFeature> getSupportedFeatures(SourceFormat sourceFormat) {
-        return SUPPORTED_FEATURES;
+    public Set<ProcessorFeature> getSupportedFeatures(
+            final SourceFormat sourceFormat) {
+        Set<ProcessorFeature> features = new HashSet<>();
+        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+            features.addAll(SUPPORTED_FEATURES);
+        }
+        return features;
     }
 
-    public Set<Quality> getSupportedQualities(SourceFormat sourceFormat) {
-        return SUPPORTED_QUALITIES;
+    public Set<Quality> getSupportedQualities(final SourceFormat sourceFormat) {
+        Set<Quality> qualities = new HashSet<>();
+        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+            qualities.addAll(SUPPORTED_QUALITIES);
+        }
+        return qualities;
     }
 
     public void process(Parameters params, SourceFormat sourceFormat,
                         ImageInputStream inputStream, OutputStream outputStream)
-            throws Exception {
+            throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
-            throw new UnsupportedSourceFormatException();
+            throw new UnsupportedSourceFormatException(sourceFormat);
         } else if (!availableOutputFormats.contains(params.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
@@ -183,32 +199,34 @@ class GraphicsMagickProcessor implements Processor {
         this.inputStream = inputStream;
         this.sourceFormat = sourceFormat;
 
-        IMOperation op = new IMOperation();
-        op.addImage(sourceFormat.getPreferredExtension() + ":-"); // read from stdin
-        assembleOperation(op, params);
+        try {
+            IMOperation op = new IMOperation();
+            op.addImage(sourceFormat.getPreferredExtension() + ":-"); // read from stdin
+            assembleOperation(op, params);
 
-        // format transformation
-        op.addImage(params.getOutputFormat().getExtension() + ":-"); // write to stdout
+            // format transformation
+            op.addImage(params.getOutputFormat().getExtension() + ":-"); // write to stdout
 
-        ImageInputStreamWrapper wrapper = new ImageInputStreamWrapper(inputStream);
-        Pipe pipeIn = new Pipe(wrapper, null);
-        Pipe pipeOut = new Pipe(null, outputStream);
+            ImageInputStreamWrapper wrapper = new ImageInputStreamWrapper(inputStream);
+            Pipe pipeIn = new Pipe(wrapper, null);
+            Pipe pipeOut = new Pipe(null, outputStream);
 
-        ConvertCmd convert = new ConvertCmd(true);
+            ConvertCmd convert = new ConvertCmd(true);
 
-        String binaryPath = Application.getConfiguration().
-                getString("GraphicsMagickProcessor.path_to_binaries", "");
-        if (binaryPath.length() > 0) {
-            convert.setSearchPath(binaryPath);
+            String binaryPath = Application.getConfiguration().
+                    getString("GraphicsMagickProcessor.path_to_binaries", "");
+            if (binaryPath.length() > 0) {
+                convert.setSearchPath(binaryPath);
+            }
+            convert.setInputProvider(pipeIn);
+            convert.setOutputConsumer(pipeOut);
+            convert.run(op);
+        } catch (InterruptedException|IM4JavaException|IOException e) {
+            throw new ProcessorException(e.getMessage(), e);
         }
-        convert.setInputProvider(pipeIn);
-        convert.setOutputConsumer(pipeOut);
-        convert.run(op);
-        inputStream.close();
     }
 
-    private void assembleOperation(IMOperation op, Parameters params)
-            throws IOException {
+    private void assembleOperation(IMOperation op, Parameters params) {
         // region transformation
         Region region = params.getRegion();
         if (!region.isFull()) {
@@ -223,7 +241,7 @@ class GraphicsMagickProcessor implements Processor {
                     int width = Math.round(region.getWidth());
                     int height = Math.round(region.getHeight());
                     op.crop(width, height, x, y, "%");
-                } catch (InfoException e) {
+                } catch (ProcessorException e) {
                     logger.debug("Failed to get dimensions for {}",
                             params.getIdentifier());
                 }

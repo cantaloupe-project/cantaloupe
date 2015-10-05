@@ -7,19 +7,22 @@ import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.request.Identifier;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
-import org.junit.AfterClass;
 import org.restlet.Client;
 import org.restlet.Context;
 import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.data.Status;
+import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -38,24 +41,12 @@ import java.nio.file.Paths;
  */
 public class Iiif20ConformanceTest extends TestCase {
 
-    private static final String IMAGE = "escher_lego.jpg";
+    private static final Identifier IMAGE = new Identifier("escher_lego.jpg");
     private static final Integer PORT = 34852;
 
     private static Client client = new Client(new Context(), Protocol.HTTP);
 
-    /**
-     * Initializes the Restlet application
-     */
-    static { // TODO: why doesn't this code work in a @BeforeClass?
-        try {
-            Application.setConfiguration(getConfiguration());
-            Application.start();
-        } catch (Exception e) {
-            fail("Failed to start the Restlet");
-        }
-    }
-
-    public static BaseConfiguration getConfiguration() {
+    public static BaseConfiguration newConfiguration() {
         BaseConfiguration config = new BaseConfiguration();
         try {
             File directory = new File(".");
@@ -63,7 +54,7 @@ public class Iiif20ConformanceTest extends TestCase {
             Path fixturePath = Paths.get(cwd, "src", "test", "resources");
             config.setProperty("print_stack_trace_on_error_pages", false);
             config.setProperty("http.port", PORT);
-            config.setProperty("processor.fallback", "ImageIoProcessor");
+            config.setProperty("processor.fallback", "Java2dProcessor");
             config.setProperty("resolver", "FilesystemResolver");
             config.setProperty("FilesystemResolver.path_prefix", fixturePath + File.separator);
         } catch (Exception e) {
@@ -72,14 +63,13 @@ public class Iiif20ConformanceTest extends TestCase {
         return config;
     }
 
-    @AfterClass
-    public void afterClass() throws Exception {
-        Application.stop();
+    public void setUp() throws Exception {
+        Application.setConfiguration(newConfiguration());
+        Application.startServer();
     }
 
-    public void setUp() {
-        BaseConfiguration config = getConfiguration();
-        Application.setConfiguration(config);
+    public void tearDown() throws Exception {
+        Application.stopServer();
     }
 
     /**
@@ -112,7 +102,7 @@ public class Iiif20ConformanceTest extends TestCase {
         File directory = new File(".");
         String cwd = directory.getCanonicalPath();
         Path path = Paths.get(cwd, "src", "test");
-        BaseConfiguration config = getConfiguration();
+        BaseConfiguration config = newConfiguration();
         config.setProperty("FilesystemResolver.path_prefix", path + File.separator);
         Application.setConfiguration(config);
 
@@ -131,6 +121,11 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        Representation rep = client.getResponseEntity();
+        BufferedImage image = ImageIO.read(rep.getStream());
+        assertEquals(594, image.getWidth());
+        assertEquals(522, image.getHeight());
     }
 
     /**
@@ -142,6 +137,11 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/20,20,100,100/full/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        Representation rep = client.getResponseEntity();
+        BufferedImage image = ImageIO.read(rep.getStream());
+        assertEquals(100, image.getWidth());
+        assertEquals(100, image.getHeight());
     }
 
     /**
@@ -150,13 +150,25 @@ public class Iiif20ConformanceTest extends TestCase {
      * @throws IOException
      */
     public void testPercentageRegion() throws IOException {
+        // with ints
         ClientResource client = getClientForUriPath("/" + IMAGE + "/pct:20,20,50,50/full/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 
+        Representation rep = client.getResponseEntity();
+        BufferedImage image = ImageIO.read(rep.getStream());
+        assertEquals(297, image.getWidth());
+        assertEquals(261, image.getHeight());
+
+        // with floats
         client = getClientForUriPath("/" + IMAGE + "/pct:20.2,20.6,50.2,50.6/full/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        rep = client.getResponseEntity();
+        image = ImageIO.read(rep.getStream());
+        assertEquals(298, image.getWidth());
+        assertEquals(264, image.getHeight());
     }
 
     /**
@@ -171,6 +183,11 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/0,0,99999,99999/full/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        Representation rep = client.getResponseEntity();
+        BufferedImage image = ImageIO.read(rep.getStream());
+        assertEquals(594, image.getWidth());
+        assertEquals(522, image.getHeight());
     }
 
     /**
@@ -191,9 +208,9 @@ public class Iiif20ConformanceTest extends TestCase {
         }
 
         // We are not going to assert a 400 for "region entirely outside the
-        // bounds of the reported dimensions" because it would require the
-        // processor to get the dimensions of the source image before doing
-        // anything, which is expensive.
+        // bounds of the reported dimensions" because it would require
+        // ImageResource.doGet() to get the dimensions of the source image
+        // (before any processing), which is unnecessarily expensive.
         /*
         // x/y out of bounds
         client = getClientForUriPath("/" + IMAGE + "/99999,99999,50,50/full/0/default.jpg");
@@ -215,6 +232,11 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        Representation rep = client.getResponseEntity();
+        BufferedImage image = ImageIO.read(rep.getStream());
+        assertEquals(594, image.getWidth());
+        assertEquals(522, image.getHeight());
     }
 
     /**
@@ -228,6 +250,11 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/50,/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        Representation rep = client.getResponseEntity();
+        BufferedImage image = ImageIO.read(rep.getStream());
+        assertEquals(50, image.getWidth());
+        assertEquals(43, image.getHeight());
     }
 
     /**
@@ -241,6 +268,11 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/,50/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        Representation rep = client.getResponseEntity();
+        BufferedImage image = ImageIO.read(rep.getStream());
+        assertEquals(56, image.getWidth());
+        assertEquals(50, image.getHeight());
     }
 
     /**
@@ -254,6 +286,11 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/pct:50/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        Representation rep = client.getResponseEntity();
+        BufferedImage image = ImageIO.read(rep.getStream());
+        assertEquals(297, image.getWidth());
+        assertEquals(261, image.getHeight());
     }
 
     /**
@@ -267,6 +304,11 @@ public class Iiif20ConformanceTest extends TestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/50,50/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        Representation rep = client.getResponseEntity();
+        BufferedImage image = ImageIO.read(rep.getStream());
+        assertEquals(50, image.getWidth());
+        assertEquals(50, image.getHeight());
     }
 
     /**
@@ -280,7 +322,12 @@ public class Iiif20ConformanceTest extends TestCase {
      * @throws IOException
      */
     public void testSizeScaledToFitInside() throws IOException {
-        // TODO: write this
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/20,20/0/default.jpg");
+        client.get();
+        Representation rep = client.getResponseEntity();
+        BufferedImage image = ImageIO.read(rep.getStream());
+        assertEquals(20, image.getWidth());
+        assertEquals(20, image.getHeight());
     }
 
     /**

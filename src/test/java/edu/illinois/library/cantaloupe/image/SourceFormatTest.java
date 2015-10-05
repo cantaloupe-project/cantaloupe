@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.image;
 
+import edu.illinois.library.cantaloupe.request.Identifier;
 import junit.framework.TestCase;
 import org.restlet.data.MediaType;
 
@@ -31,11 +32,16 @@ public class SourceFormatTest extends TestCase {
     }
 
     public void testGetSourceFormatWithString() {
-        assertEquals(SourceFormat.JP2, SourceFormat.getSourceFormat("bla.jp2"));
-        assertEquals(SourceFormat.JPG, SourceFormat.getSourceFormat("bla.jpeg"));
-        assertEquals(SourceFormat.PDF, SourceFormat.getSourceFormat("bla.pdf"));
-        assertEquals(SourceFormat.TIF, SourceFormat.getSourceFormat("bla.tiff"));
-        assertEquals(SourceFormat.UNKNOWN, SourceFormat.getSourceFormat("bla.bogus"));
+        assertEquals(SourceFormat.JP2,
+                SourceFormat.getSourceFormat(new Identifier("bla.jp2")));
+        assertEquals(SourceFormat.JPG,
+                SourceFormat.getSourceFormat(new Identifier("bla.jpeg")));
+        assertEquals(SourceFormat.PDF,
+                SourceFormat.getSourceFormat(new Identifier("bla.pdf")));
+        assertEquals(SourceFormat.TIF,
+                SourceFormat.getSourceFormat(new Identifier("bla.tiff")));
+        assertEquals(SourceFormat.UNKNOWN,
+                SourceFormat.getSourceFormat(new Identifier("bla.bogus")));
     }
 
     public void testGetExtensions() {
