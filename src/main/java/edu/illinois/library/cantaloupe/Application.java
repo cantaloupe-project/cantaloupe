@@ -83,7 +83,7 @@ public class Application {
         Iterator it = getConfiguration().getKeys();
         while (it.hasNext()) {
             String key = (String) it.next();
-            if (key.startsWith("logging.")) {
+            if (key.startsWith("log.")) {
                 loggerContext.putProperty(key, getConfiguration().getString(key));
             }
         }

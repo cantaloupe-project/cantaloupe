@@ -29,11 +29,14 @@ resolver = FilesystemResolver
 ###
 # FilesystemResolver
 ###
+
 # Server-side path that will be prefixed to the identifier in the URL.
 FilesystemResolver.path_prefix = /home/myself/images
+
 # Server-side path or extension that will be suffixed to the identifier
 # in the URL.
 FilesystemResolver.path_suffix =
+
 # Normally, slashes in an identifier must be percent-encoded as "%2F". If
 # your proxy is incapable of passing these through un-decoded, you can
 # define an alternate character or character sequence to represent a path
@@ -44,13 +47,17 @@ FilesystemResolver.path_suffix =
 ###
 # HttpResolver
 ###
+
 # URL that will be prefixed to the identifier in the request URL.
 HttpResolver.url_prefix = http://localhost/images/
+
 # Path, extension, query string, etc. that will be suffixed to the
 # identifier in the request URL.
 HttpResolver.url_suffix =
+
 # See FilesystemResolver.path_separator for an explanation of this.
 #HttpResolver.path_separator =
+
 # Used for HTTP Basic authentication.
 HttpResolver.username =
 HttpResolver.password =
@@ -62,30 +69,36 @@ HttpResolver.password =
 # Image processors to use for various source formats. Available values are
 # `Java2dProcessor`, `GraphicsMagickProcessor`, `ImageMagickProcessor`,
 # `KakaduProcessor`, and `JaiProcessor`.
+
 # These extension-specific definitions are optional.
 #processor.jpg = ImageMagickProcessor
 #processor.jp2 = KakaduProcessor
 #processor.tif = GraphicsMagickProcessor
+
 # Fall back to this processor for any formats not assigned above.
 processor.fallback = Java2dProcessor
 
 ###
 # GraphicsMagickProcessor
 ###
+
 # Optional; overrides the PATH
 #GraphicsMagickProcessor.path_to_binaries = /usr/local/bin
 
 ###
 # ImageMagickProcessor
 ###
+
 # Optional; overrides the PATH
 #ImageMagickProcessor.path_to_binaries = /usr/local/bin
 
 ###
 # Java2dProcessor
 ###
+
 # JPEG output quality. Should be a number between 0-1 ending in "f"
 Java2dProcessor.jpg.quality = 0.7f
+
 # Available values are `TIFFImageReader` and `TIFFImageDecoder`.
 # TIFFImageReader is optimized for pyramidal TIFFs, but if you notice any
 # issues, try switching.
@@ -94,12 +107,15 @@ Java2dProcessor.tif.reader = TIFFImageReader
 ###
 # KakaduProcessor
 ###
+
 # Optional; overrides the PATH
 KakaduProcessor.path_to_binaries = /usr/local/bin
+
 # Due to a quirk of kdu_expand, you will need to create a symbolic link to
 # /dev/stdout somewhere called `stdout.ppm`, like this:
 # `ln -s /dev/stdout /path/to/stdout.ppm`
 KakaduProcessor.path_to_stdout_symlink = /some/path/to/stdout.ppm
+
 # Available values are `jai` and `java2d`.
 KakaduProcessor.post_processor = java2d
 
@@ -126,8 +142,10 @@ cache.client.no_transform = true
 ###
 # FilesystemCache
 ###
+
 # If this directory does not exist, it will be created automatically.
 FilesystemCache.pathname = /var/cache/cantaloupe
+
 # Time before a cached image becomes stale and needs to be reloaded. Set to
 # blank or 0 for "forever"
 FilesystemCache.ttl_seconds = 2592000 # 1 month
@@ -141,20 +159,33 @@ FilesystemCache.ttl_seconds = 2592000 # 1 month
 ###
 
 # `trace`, `debug`, `info`, `warn`, `error`, `all`, or `off`
-logging.application.level = debug
+log.application.level = debug
 
-logging.application.ConsoleAppender.enabled = true
-logging.application.ConsoleAppender.pattern = %d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+log.application.ConsoleAppender.enabled = true
+log.application.ConsoleAppender.pattern = %d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
 
-logging.application.FileAppender.enabled = false
-logging.application.FileAppender.pathname = /path/to/logs/cantaloupe.log
-logging.application.FileAppender.pattern = %date %level [%thread] %logger{10} [%file:%line] %msg%n
+log.application.FileAppender.enabled = false
+log.application.FileAppender.pathname = /path/to/logs/cantaloupe.log
+log.application.FileAppender.pattern = %date %level [%thread] %logger{10} [%file:%line] %msg%n
+
+log.application.RollingFileAppender.enabled = false
+log.application.RollingFileAppender.pathname = /path/to/logs/cantaloupe.log
+log.application.RollingFileAppender.pattern = %date %level [%thread] %logger{10} [%file:%line] %msg%n
+log.application.RollingFileAppender.policy = TimeBasedRollingPolicy
+log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = cantaloupe-%d{yyyy-MM-dd}.log
+log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30
 
 ###
 # Access Log
 ###
 
-logging.access.ConsoleAppender.enabled = true
+log.access.ConsoleAppender.enabled = true
 
-logging.access.FileAppender.enabled = false
-logging.access.FileAppender.pathname = /path/to/logs/access.log
+log.access.FileAppender.enabled = false
+log.access.FileAppender.pathname = /path/to/logs/access.log
+
+log.access.RollingFileAppender.enabled = false
+log.access.RollingFileAppender.pathname = /path/to/logs/access.log
+log.access.RollingFileAppender.policy = TimeBasedRollingPolicy
+log.access.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = access-%d{yyyy-MM-dd}.log
+log.access.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30
