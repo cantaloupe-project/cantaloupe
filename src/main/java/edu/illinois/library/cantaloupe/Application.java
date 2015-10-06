@@ -44,6 +44,9 @@ public class Application {
     private static Configuration config;
 
     static {
+        System.getProperties().put("org.restlet.engine.loggerFacadeClass",
+                "org.restlet.ext.slf4j.Slf4jLoggerFacade");
+
         Velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
         Velocity.setProperty("classpath.resource.loader.class",
                 ClasspathResourceLoader.class.getName());

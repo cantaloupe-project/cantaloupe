@@ -92,12 +92,17 @@
     </dependency>
     <dependency>
       <groupId>org.restlet.jse</groupId>
-      <artifactId>org.restlet.ext.velocity</artifactId>
+      <artifactId>org.restlet</artifactId>
       <version>${restlet.version}</version>
     </dependency>
     <dependency>
       <groupId>org.restlet.jse</groupId>
-      <artifactId>org.restlet</artifactId>
+      <artifactId>org.restlet.ext.slf4j</artifactId>
+      <version>${restlet.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.restlet.jse</groupId>
+      <artifactId>org.restlet.ext.velocity</artifactId>
       <version>${restlet.version}</version>
     </dependency>
     <dependency>
@@ -110,7 +115,8 @@
       <artifactId>slf4j-api</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
-    <dependency> <!-- intercepts log4j messages from Commons Configuration -->
+    <!-- intercepts log4j messages from Commons Configuration etc. -->
+    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>log4j-over-slf4j</artifactId>
       <version>${slf4j.version}</version>
