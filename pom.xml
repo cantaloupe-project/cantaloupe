@@ -113,7 +113,7 @@
       <exclusions>
         <!-- divert log messages to the log4j-over-slf4j bridge -->
         <exclusion>
-          <groupId>org.log4j</groupId>
+          <groupId>log4j.log4j</groupId>
           <artifactId>log4j</artifactId>
         </exclusion>
       </exclusions>

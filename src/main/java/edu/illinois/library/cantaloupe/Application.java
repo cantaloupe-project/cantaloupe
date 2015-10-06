@@ -7,6 +7,7 @@ import ch.qos.logback.core.util.StatusPrinter;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.logging.AccessLogService;
+import edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -41,6 +42,8 @@ public class Application {
         Velocity.setProperty("classpath.resource.loader.class",
                 ClasspathResourceLoader.class.getName());
         Velocity.setProperty("class.resource.loader.cache", true);
+        Velocity.setProperty("runtime.log.logsystem.class",
+                Slf4jLogChute.class.getCanonicalName());
         Velocity.init();
     }
 

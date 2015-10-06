@@ -98,7 +98,7 @@
     </logger>
     <logger name="eu.medsea.mimeutil" level="INFO" />
     <logger name="org.apache.commons.configuration" level="INFO" />
-    <logger name="org.apache.velocity" level="WARN" />
+    <logger name="edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute" level="INFO" />
     <logger name="org.restlet" level="INFO" />
 
     <root level="${log.application.level}">
