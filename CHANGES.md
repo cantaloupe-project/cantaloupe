@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.0-beta4
+
+* Speed up TIFF decoding in Java2dProcessor.
+
 ## 1.0-beta3
 
 * Added client-side caching.

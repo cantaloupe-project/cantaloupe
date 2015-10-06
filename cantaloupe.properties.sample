@@ -87,8 +87,8 @@ processor.fallback = Java2dProcessor
 # JPEG output quality. Should be a number between 0-1 ending in "f"
 Java2dProcessor.jpg.quality = 0.7f
 # Available values are `TIFFImageReader` and `TIFFImageDecoder`.
-# TIFFImageReader is optimized for pyramidal TIFFs, but TIFFImageDecoder may be
-# faster. Experiment with both.
+# TIFFImageReader is optimized for pyramidal TIFFs, but if you notice any
+# issues, try switching.
 Java2dProcessor.tif.reader = TIFFImageReader
 
 ###

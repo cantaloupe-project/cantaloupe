@@ -163,7 +163,7 @@ class Java2dProcessor implements StreamProcessor {
                                     SourceFormat sourceFormat,
                                     Parameters params,
                                     ReductionFactor reductionFactor)
-            throws IOException, UnsupportedSourceFormatException { // TODO: move this to ProcessorUtil
+            throws IOException, ProcessorException { // TODO: move this to ProcessorUtil
         BufferedImage image = null;
         switch (sourceFormat) {
             case BMP:
@@ -214,7 +214,9 @@ class Java2dProcessor implements StreamProcessor {
      * <ul>
      *     <li>It sometimes sets BufferedImages to <code>TYPE_CUSTOM</code>,
      *     which necessitates an expensive redraw into a new BufferedImage of
-     *     <code>TYPE_RGB</code>.</li>
+     *     <code>TYPE_RGB</code>. Though, we seem to be able to work around
+     *     this (see inline commentary in
+     *     <code>getSmallestUsableImage()</code>).</li>
      *     <li>It throws an ArrayIndexOutOfBoundsException when a TIFF file
      *     contains a tag value greater than 6. (To inspect tag values, run
      *     <code>$ tiffdump &lt;file&gt;</code>.) (The Sun TIFFImageReader
@@ -235,11 +237,13 @@ class Java2dProcessor implements StreamProcessor {
      * @param reductionFactor
      * @return
      * @throws IOException
+     * @throws ProcessorException
      * @see https://github.com/geosolutions-it/imageio-ext/blob/master/plugin/tiff/src/main/java/it/geosolutions/imageioimpl/plugins/tiff/TIFFImageReader.java
      */
     private BufferedImage loadUsingTiffImageReader(
             ImageInputStream inputStream, Parameters params,
-            ReductionFactor reductionFactor) throws IOException {
+            ReductionFactor reductionFactor) throws IOException,
+            ProcessorException {
         BufferedImage image = null;
         try {
             Iterator<ImageReader> it = ImageIO.
@@ -249,9 +253,14 @@ class Java2dProcessor implements StreamProcessor {
                 if (reader instanceof it.geosolutions.imageioimpl.
                         plugins.tiff.TIFFImageReader) {
                     try {
+                        inputStream.mark();
+                        Dimension size = getSize(inputStream, SourceFormat.TIF);
+                        inputStream.reset();
+
                         reader.setInput(inputStream);
-                        image = getSmallestUsableImage(reader, params.getRegion(),
-                                params.getSize(), reductionFactor);
+                        image = getSmallestUsableImage(reader, size,
+                                params.getRegion(), params.getSize(),
+                                reductionFactor);
                     } finally {
                         reader.dispose();
                     }
@@ -293,6 +302,7 @@ class Java2dProcessor implements StreamProcessor {
      * reader. Useful for e.g. pyramidal TIFF.
      *
      * @param reader ImageReader with input source already set
+     * @param fullSize
      * @param region Requested region
      * @param size Requested size
      * @param rf Set by reference
@@ -300,19 +310,31 @@ class Java2dProcessor implements StreamProcessor {
      * @throws IOException
      */
     private BufferedImage getSmallestUsableImage(ImageReader reader,
+                                                 Dimension fullSize,
                                                  Region region, Size size,
                                                  ReductionFactor rf)
             throws IOException {
+        // The goal here is to get a BufferedImage of TYPE_INT_RGB rather
+        // than TYPE_CUSTOM, which would need to be redrawn into a new
+        // BufferedImage of TYPE_INT_RGB at huge expense. For an explanation of
+        // this strategy:
+        // https://lists.apple.com/archives/java-dev/2005/Apr/msg00456.html
         ImageReadParam param = reader.getDefaultReadParam();
-        // TODO: why doesn't this work?
-        //param.setDestinationType(ImageTypeSpecifier.
+        BufferedImage bestImage = new BufferedImage(fullSize.width,
+                fullSize.height, BufferedImage.TYPE_INT_RGB);
+        param.setDestination(bestImage);
+        // An alternative would apparently be to use setDestinationType() and
+        // then allow ImageReader.read() to create the BufferedImage itself.
+        // But, that results in, "Destination type from ImageReadParam does not
+        // match!" during writing.
+        // param.setDestinationType(ImageTypeSpecifier.
         //        createFromBufferedImageType(BufferedImage.TYPE_INT_RGB));
-        BufferedImage bestImage = reader.read(0, param);
+        reader.read(0, param);
         if (size.getScaleMode() != Size.ScaleMode.FULL) {
             // Pyramidal TIFFs will have > 1 image, each half the dimensions of
             // the next larger. The "true" parameter tells getNumImages() to
             // scan for images, which seems to be necessary for at least some
-            // files, but is expensive.
+            // files, but is a little bit expensive.
             int numImages = reader.getNumImages(false);
             if (numImages == -1) {
                 numImages = reader.getNumImages(true);
@@ -320,11 +342,9 @@ class Java2dProcessor implements StreamProcessor {
             if (numImages > 1) {
                 logger.debug("Detected pyramidal TIFF with {} levels",
                         numImages);
-                final Dimension fullSize = new Dimension(bestImage.getWidth(),
-                        bestImage.getHeight());
                 final Rectangle regionRect = region.getRectangle(fullSize);
 
-                // loop through the tiles from smallest to largest to find the
+                // Loop through the tiles from smallest to largest to find the
                 // first one that fits the requested scale
                 for (int i = numImages - 1; i >= 0; i--) {
                     final BufferedImage tile = reader.read(i);

@@ -94,8 +94,8 @@ sensitive information. For example, with these options set as such:
 An identifier of `image.jpg` in the URL will resolve to
 `/usr/local/images/image.jpg`.
 
-*Note: it is dangerous to **not** use `path_prefix` on a public-facing server.
-The shallower the path, the more information that is potentially exposed.*
+*Note: it is dangerous to NOT use `path_prefix`. The shallower the path, the
+more of the filesystem that is exposed.*
 
 #### Path Separator
 
