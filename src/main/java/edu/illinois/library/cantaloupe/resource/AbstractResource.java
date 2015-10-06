@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.Application;
 import org.apache.commons.configuration.Configuration;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.Header;
+import org.restlet.data.Reference;
 import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
 import org.restlet.util.Series;
@@ -57,6 +58,19 @@ public abstract class AbstractResource extends ServerResource {
                     "Original error: {}", e.getMessage());
         }
         return directives;
+    }
+
+    /**
+     * @return A root reference usable in public, with a scheme customizable in
+     * the application configuration.
+     */
+    protected Reference getPublicRootRef() {
+        Reference rootRef = getRootRef();
+        if (Application.getConfiguration().getBoolean("generate_https_links")) {
+            rootRef = rootRef.clone();
+            rootRef.setScheme("https");
+        }
+        return rootRef;
     }
 
     @Override

@@ -28,6 +28,7 @@ public abstract class ResourceTest extends TestCase {
             Path fixturePath = Paths.get(cwd, "src", "test", "resources");
             config.setProperty("print_stack_trace_on_error_pages", false);
             config.setProperty("http.port", PORT);
+            config.setProperty("generate_https_links", false);
             config.setProperty("processor.fallback", "Java2dProcessor");
             config.setProperty("resolver", "FilesystemResolver");
             config.setProperty("FilesystemResolver.path_prefix", fixturePath + File.separator);

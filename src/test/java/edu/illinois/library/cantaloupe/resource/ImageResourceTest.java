@@ -5,6 +5,7 @@ import org.apache.commons.configuration.Configuration;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.ChallengeResponse;
 import org.restlet.data.ChallengeScheme;
+import org.restlet.data.Header;
 import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
@@ -86,6 +87,24 @@ public class ImageResourceTest extends ResourceTest {
                 }
             }
         }
+    }
+
+    /**
+     * Tests that the Link header respects the <code>generate_https_links</code>
+     * key in the configuration.
+     */
+    public void testLinkHeader() {
+        Configuration config = Application.getConfiguration();
+        ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
+        config.setProperty("generate_https_links", false);
+        client.get();
+        Header header = client.getResponse().getHeaders().getFirst("Link");
+        assertTrue(header.getValue().startsWith("<http://"));
+
+        config.setProperty("generate_https_links", true);
+        client.get();
+        header = client.getResponse().getHeaders().getFirst("Link");
+        assertTrue(header.getValue().startsWith("<https://"));
     }
 
     public void testNotFound() throws IOException {

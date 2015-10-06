@@ -250,9 +250,8 @@ public class ImageResource extends AbstractResource {
         // 6. All checks made; at this point, we are pretty sure we can fulfill
         // the request
         this.addHeader("Link", String.format("<%s%s/%s>;rel=\"canonical\"",
-                this.getRootRef().toString(),
-                ImageServerApplication.BASE_IIIF_PATH,
-                params.toString()));
+                getPublicRootRef().toString(),
+                ImageServerApplication.BASE_IIIF_PATH, params.toString()));
 
         MediaType mediaType = new MediaType(
                 OutputFormat.valueOf(format.toUpperCase()).getMediaType());

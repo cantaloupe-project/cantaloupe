@@ -45,6 +45,7 @@ check below to see if there is anything more to be done.
 ## 1.0-beta3 to 1.0-beta4
 
 * Add the `logging.*` keys from the sample configuration.
+* Add the `generate_https_links` key from the sample configuration.
 
 ## 1.0-beta2 to 1.0-beta3
 

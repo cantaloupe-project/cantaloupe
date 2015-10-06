@@ -15,6 +15,10 @@ http.port = 8182
 #http.auth.basic.username = myself
 #http.auth.basic.secret = password
 
+# Whether to generate all internal links with `https://` URLs, i.e. for when
+# running behind an HTTPS reverse proxy.
+generate_https_links = false
+
 # Helpful in development
 print_stack_trace_on_error_pages = true
 
