@@ -66,9 +66,13 @@ public abstract class AbstractResource extends ServerResource {
      */
     protected Reference getPublicRootRef() {
         Reference rootRef = getRootRef();
-        if (Application.getConfiguration().getBoolean("generate_https_links")) {
-            rootRef = rootRef.clone();
-            rootRef.setScheme("https");
+        try {
+            if (Application.getConfiguration().getBoolean("generate_https_links")) {
+                rootRef = rootRef.clone();
+                rootRef.setScheme("https");
+            }
+        } catch (NoSuchElementException e) {
+            logger.warn("Config file is missing the generate_https_links key.");
         }
         return rootRef;
     }
