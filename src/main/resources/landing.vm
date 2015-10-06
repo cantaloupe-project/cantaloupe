@@ -15,24 +15,50 @@
             </div>
 
             <div class="row">
-                <div class="col-sm-5">
+                <div class="col-sm-6">
                     <h3>Resolver</h3>
                     <p>$resolverName</p>
-
+                </div>
+                <div class="col-sm-6">
                     <h3>Cache</h3>
                     <p>$cacheName</p>
                 </div>
-                <div class="col-sm-7">
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
                     <h3>Effective Source Format Assignments</h3>
 
                     <table class="table table-condensed table-bordered"
                            id="cantaloupe-source-format-assignments">
                         #foreach ($sourceFormat in $processorAssignments.keySet())
                             <tr>
-                                <td style="width:10%">$sourceFormat.getName()</td>
+                                <td style="width:30%">$sourceFormat.getName()</td>
                                 <td>$processorAssignments.get($sourceFormat)</td>
                             </tr>
                         #end
+                    </table>
+                </div>
+
+                <div class="col-sm-6">
+                    <h3>Memory</h3>
+                    <table class="table table-condensed table-bordered">
+                        <tr>
+                            <td>Used Heap</td>
+                            <td>$usedHeap MB</td>
+                        </tr>
+                        <tr>
+                            <td>Available Heap</td>
+                            <td>$freeHeap MB</td>
+                        </tr>
+                        <tr>
+                            <td>Total Heap</td>
+                            <td>$totalHeap MB</td>
+                        </tr>
+                        <tr>
+                            <td>Max Heap</td>
+                            <td>$maxHeap MB</td>
+                        </tr>
                     </table>
                 </div>
             </div>

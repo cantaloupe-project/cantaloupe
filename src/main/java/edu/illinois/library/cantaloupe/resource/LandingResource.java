@@ -90,6 +90,14 @@ public class LandingResource extends AbstractResource {
         }
         vars.put("cacheName", cacheStr);
 
+        // memory
+        final int mb = 1024 * 1024;
+        Runtime runtime = Runtime.getRuntime();
+        vars.put("usedHeap", (runtime.totalMemory() - runtime.freeMemory()) / mb);
+        vars.put("freeHeap", runtime.freeMemory() / mb);
+        vars.put("totalHeap", runtime.totalMemory() / mb);
+        vars.put("maxHeap", runtime.maxMemory() / mb);
+
         // source format assignments
         Map<SourceFormat,String> assignments = new TreeMap<>();
         for (SourceFormat sourceFormat : SourceFormat.values()) {
