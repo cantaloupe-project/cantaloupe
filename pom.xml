@@ -36,12 +36,6 @@
       <groupId>commons-configuration</groupId>
       <artifactId>commons-configuration</artifactId>
       <version>1.6</version>
-      <exclusions>
-        <exclusion> <!-- divert log messages to the log4j-over-slf4j bridge -->
-          <groupId>org.log4j</groupId>
-          <artifactId>log4j</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
@@ -97,6 +91,11 @@
     </dependency>
     <dependency>
       <groupId>org.restlet.jse</groupId>
+      <artifactId>org.restlet.ext.jackson</artifactId>
+      <version>${restlet.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.restlet.jse</groupId>
       <artifactId>org.restlet.ext.slf4j</artifactId>
       <version>${restlet.version}</version>
     </dependency>
@@ -106,19 +105,14 @@
       <version>${restlet.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.restlet.jse</groupId>
-      <artifactId>org.restlet.ext.jackson</artifactId>
-      <version>${restlet.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
-    <!-- intercepts log4j messages from Commons Configuration etc. -->
+    <!-- intercepts jcl log messages from Commons Configuration etc. -->
     <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>log4j-over-slf4j</artifactId>
+      <artifactId>jcl-over-slf4j</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
   </dependencies>
