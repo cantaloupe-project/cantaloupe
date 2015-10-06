@@ -53,7 +53,7 @@ public abstract class AbstractResource extends ServerResource {
                 directives.add(CacheDirective.noTransform());
             }
         } catch (NoSuchElementException e) {
-            logger.warn("Cache-Control headers are disabled. " +
+            logger.info("Cache-Control headers are disabled. " +
                     "Original error: {}", e.getMessage());
         }
         return directives;
