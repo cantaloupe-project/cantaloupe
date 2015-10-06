@@ -232,8 +232,7 @@ features and performs the rest of the IIIF operations (differential scaling,
 rotation, etc.) using either the Java 2D or JAI APIs (configurable).
 
 Kakadu is not free and the binaries are not included with Cantaloupe. It is
-your responsibility to obtain them by legal means and to comply with the terms
-of use.
+your responsibility to comply with the terms of use.
 
 *Note: KakaduProcessor does not work in Windows, as it requires access to
 `/dev/stdout`.*
@@ -281,7 +280,7 @@ them, are welcome.
 |Java2dProcessor | Yes | Yes |
 |ImageMagickProcessor | Yes | Yes |
 |JaiProcessor | Yes | Yes |
-|KakaduProcessor | Yes | NO |
+|KakaduProcessor | Yes | [NO](https://github.com/medusa-project/cantaloupe/issues/1) |
 
 ## A Word About Memory Usage
 
@@ -293,15 +292,15 @@ one is loading this large image and operating on it independently.
 
 Furthermore, some processors are inefficient in that they have to create
 new images internally at each intermediate step in the processing pipeline
-(cropping, scaling, rotating, etc.), and each one occupies precious memory.
+(cropping, scaling, rotating, etc.). Each one occupies precious memory.
 
-It's easy to see where RAM becomes a very major consideration here. It is
-completely normal to see transient spikes of hundreds of megabytes of memory
-use on the Java heap in response to a single zooming-image-viewer request. The
-JVM will accommodate by dynamically increasing the heap size. From the
-operating system's perspective, the process is bloating up to multiple
-gigabytes in size, but there is nothing wrong -- most of this is actually
-unused heap space.
+It's easy to see where RAM becomes a very major consideration here. With the
+processors that do their work in Java, It is completely normal to see transient
+spikes of hundreds of megabytes of memory use on the Java heap in response to a
+single zooming-image-viewer request. The JVM will accommodate by dynamically
+increasing the heap size. From the operating system's perspective, the process
+is bloating up to multiple gigabytes in size, but there is nothing wrong --
+most of this is actually unused heap space.
 
 The smaller the available heap space, the larger the source images, and the
 larger the number of simultaneous requests, the greater the likelihood of
@@ -376,47 +375,45 @@ pending.
 ### Pyramidal TIFF
 
 Java2dProcessor supports pyramidal TIFF, which is to say that it actually does
-read the embedded sub-images and chooses the most efficient fit for the
-requested scale.
+read the embedded sub-images and chooses the smallest one that can fulfill the
+request.
 
 All other processors that support TIFF will read pyramidal TIFFs as ordinary
 TIFFs.
 
 # Custom Development
 
-Cantaloupe is a simple Maven project that should open easily in any Java IDE.
+Cantaloupe is a standard Maven project that should open up in any Java IDE.
 
 ## Custom Resolvers
 
-A resolver is a class that implements the
-`e.i.l.cantaloupe.resolver.FileResolver` and/or
-`e.i.l.cantaloupe.resolver.StreamResolver` interfaces. Then, to use it, set
+A resolver is a class that implements the `e.i.l.c.resolver.FileResolver`
+and/or `e.i.l.c.resolver.StreamResolver` interfaces. Then, to use it, set
 `resolver` in your properties file to its name.
 
 See one of the existing resolvers for examples.
 
 ## Custom Image Processors
 
-A processor is a class that implements the
-`e.i.l.cantaloupe.processor.FileProcessor` and/or
-`e.i.l.cantaloupe.processor.StreamProcessor`interfaces. See the interface
+A processor is a class that implements the `e.i.l.c.processor.FileProcessor`
+and/or `e.i.l.c.processor.StreamProcessor`interfaces. See the interface
 documentation for details and the existing implementations for examples.
 
 Another option might be to add an ImageIO format plugin instead of a custom
-processor, and then use Java2dProcessor or JaiProcessor with it.
+processor; then it would work with Java2dProcessor or JaiProcessor.
 
 ## Custom Caches
 
-A cache is a class that implements the `e.i.l.cantaloupe.cache.Cache`
-interface. See the interface documentation for details and the existing
-implementations for examples.
+A cache is a class that implements the `e.i.l.c.cache.Cache` interface. See the
+interface documentation for details and the existing implementations for
+examples.
 
 ## Contributing Code
 
 1. Fork it (https://github.com/medusa-project/cantaloupe/fork)
-2. Create your feature branch (`git checkout -b my-new-feature`)
+2. Create your feature branch (`git checkout -b feature/my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
+4. Push to the branch (`git push origin feature/my-new-feature`)
 5. Create a new Pull Request
 
 # Feedback
