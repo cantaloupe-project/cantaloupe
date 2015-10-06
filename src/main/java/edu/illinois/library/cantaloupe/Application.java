@@ -72,33 +72,36 @@ public class Application {
         System.getProperties().put("org.restlet.engine.loggerFacadeClass",
                 "org.restlet.ext.slf4j.Slf4jLoggerFacade");
 
-        // At this point, Logback has already initialized itself, which is a
-        // problem because logback.xml depends on application configuration
-        // options, which have not been loaded yet. So, reset the logger
-        // context...
-        LoggerContext loggerContext = (LoggerContext)
-                LoggerFactory.getILoggerFactory();
-        JoranConfigurator jc = new JoranConfigurator();
-        jc.setContext(loggerContext);
-        loggerContext.reset();
-        // Then copy logging-related configuration key/values into logger
-        // context properties...
-        Iterator it = getConfiguration().getKeys();
-        while (it.hasNext()) {
-            String key = (String) it.next();
-            if (key.startsWith("log.")) {
-                loggerContext.putProperty(key, getConfiguration().getString(key));
+        Configuration appConfig = getConfiguration();
+        if (appConfig != null) {
+            // At this point, Logback has already initialized itself, which is a
+            // problem because logback.xml depends on application configuration
+            // options, which have not been loaded yet. So, reset the logger
+            // context...
+            LoggerContext loggerContext = (LoggerContext)
+                    LoggerFactory.getILoggerFactory();
+            JoranConfigurator jc = new JoranConfigurator();
+            jc.setContext(loggerContext);
+            loggerContext.reset();
+            // Then copy logging-related configuration key/values into logger
+            // context properties...
+            Iterator it = getConfiguration().getKeys();
+            while (it.hasNext()) {
+                String key = (String) it.next();
+                if (key.startsWith("log.")) {
+                    loggerContext.putProperty(key, getConfiguration().getString(key));
+                }
             }
+            // Finally, reload the Logback configuration.
+            try {
+                InputStream stream = Application.class.getClassLoader().
+                        getResourceAsStream("logback.xml");
+                jc.doConfigure(stream);
+            } catch (JoranException je) {
+                je.printStackTrace();
+            }
+            StatusPrinter.printIfErrorsOccured(loggerContext);
         }
-        // Finally, reload the Logback configuration.
-        try {
-            InputStream stream = Application.class.getClassLoader().
-                    getResourceAsStream("logback.xml");
-            jc.doConfigure(stream);
-        } catch (JoranException je) {
-            je.printStackTrace();
-        }
-        StatusPrinter.printIfErrorsOccured(loggerContext);
     }
 
     public static void main(String[] args) throws Exception {
