@@ -2,7 +2,8 @@
 
 ## 1.0-beta4
 
-* Speed up TIFF decoding in Java2dProcessor.
+* Sped up TIFF decoding in Java2dProcessor.
+* Added configurable logging.
 
 ## 1.0-beta3
 
