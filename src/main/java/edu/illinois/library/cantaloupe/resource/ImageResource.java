@@ -225,13 +225,8 @@ public class ImageResource extends AbstractResource {
         // the config file
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
 
-        File inputFile = null;
         ImageInputStream inputStream = null;
-        if (resolver instanceof FileResolver) {
-            inputFile = ((FileResolver)resolver).getFile(params.getIdentifier());
-            inputStream = ((StreamResolver)resolver).
-                    getInputStream(params.getIdentifier());
-        } else {
+        if (!(resolver instanceof FileResolver)) {
             if (!(proc instanceof StreamProcessor)) {
                 // StreamProcessors require StreamResolvers
                 throw new UnsupportedSourceFormatException(
@@ -263,8 +258,14 @@ public class ImageResource extends AbstractResource {
                 OutputFormat.valueOf(format.toUpperCase()).getMediaType());
         if (resolver instanceof StreamResolver &&
                 !(proc instanceof StreamProcessor)) {
+            File inputFile = ((FileResolver)resolver).
+                    getFile(params.getIdentifier());
             return new ImageRepresentation(mediaType, sourceFormat, params,
                     inputFile);
+        }
+        if (inputStream == null) {
+            inputStream = ((StreamResolver)resolver).
+                    getInputStream(params.getIdentifier());
         }
         return new ImageRepresentation(mediaType, sourceFormat, params,
                 inputStream);

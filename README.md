@@ -348,6 +348,12 @@ in the configuration file.
 The HTTP/1.1 `Cache-Control` response header is configurable via the
 `cache.client.*` keys in the configuration file.
 
+# Logging
+
+Logging is configurable via the `log.*` keys in the configuration file. Access
+logs are written in the [W3C Extended Log File Format]
+(http://www.w3.org/TR/WD-logfile.html).
+
 # Notes on Source Formats
 
 ## JPEG
