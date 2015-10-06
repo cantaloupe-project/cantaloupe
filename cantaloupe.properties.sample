@@ -131,3 +131,30 @@ FilesystemCache.pathname = /var/cache/cantaloupe
 # Time before a cached image becomes stale and needs to be reloaded. Set to
 # blank or 0 for "forever"
 FilesystemCache.ttl_seconds = 2592000 # 1 month
+
+###############
+# LOGGING
+###############
+
+###
+# Application Log
+###
+
+# `trace`, `debug`, `info`, `warn`, `error`, `all`, or `off`
+logging.application.level = debug
+
+logging.application.ConsoleAppender.enabled = true
+logging.application.ConsoleAppender.pattern = %d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+
+logging.application.FileAppender.enabled = false
+logging.application.FileAppender.pathname = /path/to/logs/cantaloupe.log
+logging.application.FileAppender.pattern = %date %level [%thread] %logger{10} [%file:%line] %msg%n
+
+###
+# Access Log
+###
+
+logging.access.ConsoleAppender.enabled = true
+
+logging.access.FileAppender.enabled = false
+logging.access.FileAppender.pathname = /path/to/logs/access.log

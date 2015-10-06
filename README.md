@@ -42,6 +42,10 @@ existing ones, with each using its own config file. Sometimes there are
 backwards-incompatible changes to the configuration file structure, though, so
 check below to see if there is anything more to be done.
 
+## 1.0-beta3 to 1.0-beta4
+
+* Add the `logging.*` keys from the sample configuration.
+
 ## 1.0-beta2 to 1.0-beta3
 
 * Rename the `cache` key in the configuration to `cache.server`.

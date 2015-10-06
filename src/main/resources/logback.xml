@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+
+    <appender name="AppConsoleLog" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                ${logging.application.ConsoleAppender.pattern}
+            </pattern>
+        </encoder>
+    </appender>
+
+    <if condition='property("logging.application.FileAppender.enabled").contains("true")'>
+        <then>
+            <appender name="AppFileLog" class="ch.qos.logback.core.FileAppender">
+                <file>${logging.application.FileAppender.pathname}</file>
+                <encoder>
+                    <pattern>${logging.application.FileAppender.pattern}</pattern>
+                </encoder>
+            </appender>
+        </then>
+    </if>
+
+    <appender name="AccessConsoleLog" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="edu.illinois.library.cantaloupe.logging.AccessLogFilter" />
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <if condition='property("logging.access.FileAppender.enabled").contains("true")'>
+        <then>
+            <appender name="AccessFileLog" class="ch.qos.logback.core.FileAppender">
+                <filter class="edu.illinois.library.cantaloupe.logging.AccessLogFilter" />
+                <file>${logging.access.FileAppender.pathname}</file>
+                <encoder>
+                    <pattern>%msg%n</pattern>
+                </encoder>
+            </appender>
+        </then>
+    </if>
+
+    <logger name="edu.illinois.library.cantaloupe.logging.AccessLogService" additivity="false">
+        <if condition='property("logging.access.ConsoleAppender.enabled").contains("true")'>
+            <then>
+                <appender-ref ref="AccessConsoleLog" />
+            </then>
+        </if>
+        <if condition='property("logging.access.FileAppender.enabled").contains("true")'>
+            <then>
+                <appender-ref ref="AccessFileLog" />
+            </then>
+        </if>
+    </logger>
+    <logger name="eu.medsea.mimeutil" level="INFO" />
+    <logger name="org.apache.commons.configuration" level="INFO" />
+    <logger name="org.restlet" level="INFO" />
+
+    <root level="${logging.application.level}">
+        <if condition='property("logging.application.ConsoleAppender.enabled").contains("true")'>
+            <then>
+                <appender-ref ref="AppConsoleLog" />
+            </then>
+        </if>
+        <if condition='property("logging.application.FileAppender.enabled").contains("true")'>
+            <then>
+                <appender-ref ref="AppFileLog" />
+            </then>
+        </if>
+    </root>
+
+</configuration>
