@@ -7,18 +7,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Should contain constants for every source format that anyone could possibly
- * ever want to read.
+ * Should contain constants for every source format that any processor could
+ * possibly consider supporting.
  */
 public enum SourceFormat {
 
+    AVI("avi", "AVI"),
     BMP("bmp", "BMP"),
     GIF("gif", "GIF"),
     JP2("jp2", "JPEG2000"),
     JPG("jpg", "JPEG"),
+    MOV("mov", "MOV"),
+    MP4("mp4", "MPEG-4"),
     PDF("pdf", "PDF"),
     PNG("png", "PNG"),
     TIF("tif", "TIFF"),
+    WEBM("webm", "WebM"),
     WEBP("webp", "WebP"),
     UNKNOWN("unknown", "Unknown");
 
@@ -66,7 +70,9 @@ public enum SourceFormat {
     public List<String> getExtensions() {
         List<String> extensions = new ArrayList<>();
         // the first extension will be the preferred extension
-        if (this.id.equals("bmp")) {
+        if (this.id.equals("avi")) {
+            extensions.add("avi");
+        } else if (this.id.equals("bmp")) {
             extensions.add("bmp");
         } else if (this.id.equals("gif")) {
             extensions.add("gif");
@@ -75,6 +81,10 @@ public enum SourceFormat {
         } else if (this.id.equals("jpg")) {
             extensions.add("jpg");
             extensions.add("jpeg");
+        } else if (this.id.equals("mov")) {
+            extensions.add("mov");
+        } else if (this.id.equals("mp4")) {
+            extensions.add("mp4");
         } else if (this.id.equals("pdf")) {
             extensions.add("pdf");
         } else if (this.id.equals("png")) {
@@ -83,6 +93,8 @@ public enum SourceFormat {
             extensions.add("tif");
             extensions.add("ptif");
             extensions.add("tiff");
+        } else if (this.id.equals("webm")) {
+            extensions.add("webm");
         } else if (this.id.equals("webp")) {
             extensions.add("webp");
         } else if (this.id.equals("unknown")) {
@@ -94,7 +106,11 @@ public enum SourceFormat {
     public List<MediaType> getMediaTypes() {
         List<MediaType> types = new ArrayList<>();
         // the first type will be the preferred extension
-        if (this.id.equals("bmp")) {
+        if (this.id.equals("avi")) {
+            types.add(new MediaType("video/avi"));
+            types.add(new MediaType("video/msvideo"));
+            types.add(new MediaType("video/x-msvideo"));
+        } if (this.id.equals("bmp")) {
             types.add(new MediaType("image/bmp"));
             types.add(new MediaType("image/x-ms-bmp"));
         } else if (this.id.equals("gif")) {
@@ -103,12 +119,19 @@ public enum SourceFormat {
             types.add(new MediaType("image/jp2"));
         } else if (this.id.equals("jpg")) {
             types.add(new MediaType("image/jpeg"));
+        } else if (this.id.equals("mov")) {
+            types.add(new MediaType("video/quicktime"));
+            types.add(new MediaType("video/x-quicktime"));
+        } else if (this.id.equals("mp4")) {
+            types.add(new MediaType("video/mp4"));
         } else if (this.id.equals("pdf")) {
             types.add(new MediaType("application/pdf"));
         } else if (this.id.equals("png")) {
             types.add(new MediaType("image/png"));
         } else if (this.id.equals("tif")) {
             types.add(new MediaType("image/tiff"));
+        } else if (this.id.equals("webm")) {
+            types.add(new MediaType("video/webm"));
         } else if (this.id.equals("webp")) {
             types.add(new MediaType("image/webp"));
         } else if (this.id.equals("unknown")) {

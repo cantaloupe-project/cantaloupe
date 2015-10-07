@@ -78,9 +78,20 @@ HttpResolver.password =
 #processor.jpg = ImageMagickProcessor
 #processor.jp2 = KakaduProcessor
 #processor.tif = GraphicsMagickProcessor
+processor.avi = FfmpegProcessor
+processor.mov = FfmpegProcessor
+processor.mp4 = FfmpegProcessor
+processor.webm = FfmpegProcessor
 
 # Fall back to this processor for any formats not assigned above.
 processor.fallback = Java2dProcessor
+
+###
+# FfmpegProcessor
+###
+
+# Optional; overrides the PATH
+#FfmpegProcessor.path_to_binaries = /usr/local/bin
 
 ###
 # GraphicsMagickProcessor
