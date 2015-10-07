@@ -152,7 +152,7 @@ FilesystemCache.pathname = /var/cache/cantaloupe
 
 # Time before a cached image becomes stale and needs to be reloaded. Set to
 # blank or 0 for "forever"
-FilesystemCache.ttl_seconds = 2592000 # 1 month
+FilesystemCache.ttl_seconds = 2592000
 
 ###############
 # LOGGING
