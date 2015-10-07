@@ -107,10 +107,10 @@ class KakaduProcessor implements FileProcessor {
                 getString("KakaduProcessor.post_processor", "java2d").
                 toLowerCase().equals("jai")) {
             postProcessor = PostProcessor.JAI;
-            logger.debug("Post-processing using JAI");
+            logger.info("Will post-process using JAI");
         } else {
             postProcessor = PostProcessor.JAVA2D;
-            logger.debug("Post-processing using Java2D");
+            logger.info("Will post-process using Java2D");
         }
     }
 
