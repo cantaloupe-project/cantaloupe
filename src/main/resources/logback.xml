@@ -65,6 +65,7 @@
     <if condition='property("log.access.RollingFileAppender.enabled").contains("true")'>
         <then>
             <appender name="AccessRollingFileLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+                <filter class="edu.illinois.library.cantaloupe.logging.AccessLogFilter" />
                 <file>${log.access.RollingFileAppender.pathname}</file>
                 <if condition='property("log.access.RollingFileAppender.policy").contains("TimeBasedRollingPolicy")'>
                     <then>
