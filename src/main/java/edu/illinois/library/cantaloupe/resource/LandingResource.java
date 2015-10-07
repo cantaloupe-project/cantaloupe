@@ -18,6 +18,8 @@ import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -89,6 +91,10 @@ public class LandingResource extends AbstractResource {
             // noop
         }
         vars.put("cacheName", cacheStr);
+
+        // VM arguments
+        RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
+        vars.put("vmArguments", runtimeMxBean.getInputArguments());
 
         // memory
         final int mb = 1024 * 1024;

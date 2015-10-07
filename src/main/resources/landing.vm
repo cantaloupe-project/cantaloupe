@@ -25,6 +25,8 @@
                 </div>
             </div>
 
+            <hr>
+
             <div class="row">
                 <div class="col-sm-6">
                     <h3>Effective Source Format Assignments</h3>
@@ -63,6 +65,8 @@
                 </div>
             </div>
 
+            <hr>
+
             <h3>Supported Source Formats</h3>
 
             <table class="table table-condensed table-bordered">
@@ -83,6 +87,17 @@
                                 #end
                             </td>
                         #end
+                    </tr>
+                #end
+            </table>
+
+            <hr>
+
+            <h3>VM Arguments</h3>
+            <table class="table table-condensed table-bordered">
+                #foreach ($arg in $vmArguments)
+                    <tr>
+                        <td>$arg</td>
                     </tr>
                 #end
             </table>
