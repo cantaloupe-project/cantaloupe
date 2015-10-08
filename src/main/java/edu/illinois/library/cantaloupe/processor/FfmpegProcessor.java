@@ -8,7 +8,6 @@ import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.request.Region;
 import edu.illinois.library.cantaloupe.request.Rotation;
 import edu.illinois.library.cantaloupe.request.Size;
-import info.freelibrary.djatoka.io.PNMImage;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -25,7 +24,6 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import java.awt.Dimension;
 import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -41,10 +39,6 @@ import java.util.Set;
  * Processor using the ffmpeg and ffprobe tools to extract video frames.
  */
 class FfmpegProcessor implements FileProcessor, StreamProcessor {
-
-    private enum PostProcessor {
-        JAI, JAVA2D
-    }
 
     private class StreamCopier implements Runnable {
 
@@ -173,19 +167,20 @@ class FfmpegProcessor implements FileProcessor, StreamProcessor {
         final List<String> command = new ArrayList<>();
         // ffprobe -v quiet -print_format xml -show_streams pipe: < <file>
         command.add(getPath("ffprobe"));
-        //command.add("-v");
-        //command.add("quiet");
+        command.add("-v");
+        command.add("quiet");
         command.add("-print_format");
         command.add("xml");
         command.add("-show_streams");
         command.add("pipe:");
 
-        logger.debug("Executing " + StringUtils.join(command, " "));
         final ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
-            ProcessBuilder pb = new ProcessBuilder(command);
-            Process process = pb.start();
+            final ProcessBuilder pb = new ProcessBuilder(command);
+
+            logger.debug("Executing " + StringUtils.join(pb.command(), " "));
+            final Process process = pb.start();
 
             new Thread(new StreamCopier(process.getInputStream(), outputBucket)).start();
             new Thread(new StreamCopier(process.getErrorStream(), errorBucket)).start();
@@ -366,57 +361,7 @@ class FfmpegProcessor implements FileProcessor, StreamProcessor {
      */
     private ProcessBuilder getProcessBuilder(Parameters params,
                                              Dimension fullSize) {
-        final List<String> command = new ArrayList<>();
-        command.add(getPath("ffmpeg"));
-        command.add("-i");
-        command.add("pipe:");
-        command.add("-nostdin");
-        command.add("-v");
-        command.add("quiet");
-        command.add("-vframes");
-        command.add("1");
-        command.add("-an"); // disable audio
-        command.add("-vf");
-
-        StringBuilder filterStr = new StringBuilder();
-
-        final Region region = params.getRegion();
-        if (!region.isFull()) {
-            Rectangle cropArea = region.getRectangle(fullSize);
-            filterStr.append(String.format("crop=%d:%d:%d:%d", cropArea.width,
-                    cropArea.height, cropArea.x, cropArea.y));
-        }
-
-        /*
-        file i/o
-        ffmpeg -i "My Great Movie.avi" -nostdin -v quiet -vframes 1 -an -vf crop="200:200:0:0",scale="min(320\\, iw):-1" out.jpg
-        stdin
-        ffmpeg -i /dev/stdin -nostdin -v quiet -vframes 1 -an -vf crop="200:200:0:0",scale="min(320\\, iw):-1" out.jpg < My\ Great\ Movie.avi
-        stdout
-        ffmpeg -i "My Great Movie.avi" -nostdin -v quiet -vframes 1 -an -vf crop="200:200:0:0",scale="min(320\\, iw):-1" -f jpg /dev/stdout > out.jpg
-        stdin/stdout
-        ffmpeg -i pipe: -nostdin -v quiet -vframes 1 -an -vf crop="200:200:0:0",scale="min(320\\, iw):-1" -f image2pipe pipe:1 < My\ Great\ Movie.avi > out.jpg
-        */
-        /* TODO: add scaling
-        final Size size = params.getSize();
-        if (size.getScaleMode() != Size.ScaleMode.FULL) {
-            filterStr.append(",");
-            // ffmpeg -i "My Great Movie.avi" -vframes 1 -an -vf crop="200:200:0:0",scale="min(320\\, iw):-1" -y out.jpg
-        } */
-        /* TODO: add rotation
-        final Rotation rotation = params.getRotation();
-        if (rotation.shouldMirror()) {
-        }
-        if (rotation.getDegrees() > 0) {
-        }*/
-
-        command.add(filterStr.toString());
-
-        command.add("-f"); // source or output format depending on position
-        command.add("image2pipe");
-        command.add("pipe:1");
-
-        return new ProcessBuilder(command);
+        return getProcessBuilder(params, fullSize, "pipe:");
     }
 
     /**
@@ -430,27 +375,19 @@ class FfmpegProcessor implements FileProcessor, StreamProcessor {
     private ProcessBuilder getProcessBuilder(Parameters params,
                                              Dimension fullSize,
                                              File inputFile) {
-        final List<String> command = new ArrayList<>();
-        command.add(getPath("ffmpeg"));
-        command.add("-i");
-        command.add(quote(inputFile.getAbsolutePath()));
-        command.add("-nostdin");
-        command.add("-v");
-        command.add("quiet");
-        command.add("-vframes");
-        command.add("1");
-        command.add("-an"); // disable audio
-        command.add("-vf");
+        return getProcessBuilder(params, fullSize,
+                quote(inputFile.getAbsolutePath()));
+    }
 
-        StringBuilder filterStr = new StringBuilder();
-
-        final Region region = params.getRegion();
-        if (!region.isFull()) {
-            Rectangle cropArea = region.getRectangle(fullSize);
-            filterStr.append(String.format("crop=%d:%d:%d:%d", cropArea.width,
-                    cropArea.height, cropArea.x, cropArea.y));
-        }
-
+    /**
+     * @param params
+     * @param fullSize
+     * @param inputArg Either an absolute pathname or <code>pipe:</code>
+     * @return
+     */
+    private ProcessBuilder getProcessBuilder(Parameters params,
+                                             Dimension fullSize,
+                                             String inputArg) {
         /*
         file i/o
         ffmpeg -i "My Great Movie.avi" -nostdin -v quiet -vframes 1 -an -vf crop="200:200:0:0",scale="min(320\\, iw):-1" out.jpg
@@ -461,20 +398,55 @@ class FfmpegProcessor implements FileProcessor, StreamProcessor {
         stdin/stdout
         ffmpeg -i pipe: -nostdin -v quiet -vframes 1 -an -vf crop="200:200:0:0",scale="min(320\\, iw):-1" -f image2pipe pipe:1 < My\ Great\ Movie.avi > out.jpg
         */
-        /* TODO: add scaling
-        final Size size = params.getSize();
-        if (size.getScaleMode() != Size.ScaleMode.FULL) {
-            filterStr.append(",");
-            // ffmpeg -i "My Great Movie.avi" -vframes 1 -an -vf crop="200:200:0:0",scale="min(320\\, iw):-1" -y out.jpg
-        } */
-        /* TODO: add rotation
-        final Rotation rotation = params.getRotation();
-        if (rotation.shouldMirror()) {
-        }
-        if (rotation.getDegrees() > 0) {
-        }*/
+        final List<String> command = new ArrayList<>();
+        command.add(getPath("ffmpeg"));
+        command.add("-i");
+        command.add(inputArg);
+        command.add("-nostdin");
+        //command.add("-v");
+        //command.add("quiet");
+        command.add("-vframes");
+        command.add("1");
+        command.add("-an"); // disable audio
 
-        command.add(filterStr.toString());
+        final Region region = params.getRegion();
+        final Size size = params.getSize();
+        final Rotation rotation = params.getRotation();
+
+        if (!region.isFull() || size.getScaleMode() != Size.ScaleMode.FULL ||
+                rotation.shouldMirror() || rotation.getDegrees() > 0) {
+            command.add("-vf");
+
+            StringBuilder filterStr = new StringBuilder();
+
+            if (!region.isFull()) {
+                Rectangle cropArea = region.getRectangle(fullSize);
+                filterStr.append(String.format("crop=%d:%d:%d:%d", cropArea.width,
+                        cropArea.height, cropArea.x, cropArea.y));
+            }
+            if (size.getScaleMode() != Size.ScaleMode.FULL) {
+                filterStr.append(",");
+                if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
+                    filterStr.append(String.format("scale=min(%d\\, iw):-1",
+                            size.getWidth()));
+                } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
+                    filterStr.append(String.format("scale=min(%d\\, iw):-1",
+                            size.getHeight()));
+                } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
+                    int min = Math.min(size.getWidth(), size.getHeight());
+                    filterStr.append(String.format("scale=min(%d\\, iw):-1", min));
+                } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
+                    // TODO: write this
+                }
+            }
+            if (rotation.shouldMirror()) {
+                // TODO: write this
+            }
+            if (rotation.getDegrees() > 0) {
+                // TODO: write this
+            }
+            command.add(filterStr.toString());
+        }
 
         command.add("-f"); // source or output format depending on position
         command.add("image2pipe");
