@@ -16,7 +16,7 @@ public class ApplicationLogFilter extends Filter<ILoggingEvent> {
     public FilterReply decide(ILoggingEvent event) {
         return (event.getLoggerName().equals("org.restlet") &&
                 event.getLevel().equals(Level.INFO) &&
-                event.getMessage().contains("Starting the internal HTTP client")) ?
+                event.getMessage().contains("ing the internal HTTP client")) ?
                 FilterReply.DENY : FilterReply.NEUTRAL;
     }
 

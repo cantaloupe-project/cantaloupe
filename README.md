@@ -311,7 +311,7 @@ The smaller the available heap space, the larger the source images, and the
 larger the number of simultaneous requests, the greater the likelihood of
 OutOfMemoryErrors. In production, it is highly recommended to use the `-Xmx`
 flag to increase the maximum heap size to the largest amount possible -- for
-example, `-Xmx16g` for 16GB. And, by all means, use caching liberally.
+example, `-Xmx8g` for 8GB. And, by all means, use caching liberally.
 
 ## Caches
 
@@ -324,6 +324,12 @@ Cantaloupe does not cache entire information response representations -- only
 image dimensions, which are the only expensive part to generate. This means it
 is possible to change other variables that might affect the contents of the
 representation (like processors) without having to flush the cache.
+
+Cantaloupe caches response representations only --  not the entire request
+process. Requests are validated and resources are looked up before cached
+responses are returned. This precludes returning a cached resource
+representation when the underlying resource is actually not present, but also
+impacts response times by typically several tens of milliseconds.
 
 ### Flushing the Cache
 
