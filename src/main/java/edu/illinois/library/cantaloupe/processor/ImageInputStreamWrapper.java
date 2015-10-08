@@ -22,6 +22,16 @@ class ImageInputStreamWrapper extends InputStream {
     }
 
     @Override
+    public synchronized void mark(int readlimit) {
+        imageInputStream.mark();
+    }
+
+    @Override
+    public boolean markSupported() {
+        return true;
+    }
+
+    @Override
     public int read() throws IOException {
         return imageInputStream.read();
     }
@@ -34,6 +44,16 @@ class ImageInputStreamWrapper extends InputStream {
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
         return imageInputStream.read(b, off, len);
+    }
+
+    @Override
+    public synchronized void reset() throws IOException {
+        imageInputStream.reset();
+    }
+
+    @Override
+    public long skip(long n) throws IOException {
+        return imageInputStream.skipBytes(n);
     }
 
 }
