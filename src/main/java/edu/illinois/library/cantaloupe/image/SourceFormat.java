@@ -19,6 +19,7 @@ public enum SourceFormat {
     JPG("jpg", "JPEG"),
     MOV("mov", "MOV"),
     MP4("mp4", "MPEG-4"),
+    MPG("mpg", "MPEG"),
     PDF("pdf", "PDF"),
     PNG("png", "PNG"),
     TIF("tif", "TIFF"),
@@ -85,6 +86,8 @@ public enum SourceFormat {
             extensions.add("mov");
         } else if (this.id.equals("mp4")) {
             extensions.add("mp4");
+        } else if (this.id.equals("mpg")) {
+            extensions.add("mpg");
         } else if (this.id.equals("pdf")) {
             extensions.add("pdf");
         } else if (this.id.equals("png")) {
@@ -124,6 +127,8 @@ public enum SourceFormat {
             types.add(new MediaType("video/x-quicktime"));
         } else if (this.id.equals("mp4")) {
             types.add(new MediaType("video/mp4"));
+        } else if (this.id.equals("mpg")) {
+            types.add(new MediaType("video/mpeg"));
         } else if (this.id.equals("pdf")) {
             types.add(new MediaType("application/pdf"));
         } else if (this.id.equals("png")) {
