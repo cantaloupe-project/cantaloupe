@@ -38,11 +38,11 @@ class HttpResolver implements StreamResolver {
         resource.setNext(client);
 
         // set up HTTP Basic authentication
-        String username = config.getString("HttpResolver.username", "");
-        String password = config.getString("HttpResolver.password", "");
-        if (username.length() > 0 && password.length() > 0) {
+        String username = config.getString("HttpResolver.auth.basic.username", "");
+        String secret = config.getString("HttpResolver.auth.basic.secret", "");
+        if (username.length() > 0 && secret.length() > 0) {
             resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC,
-                    username, password);
+                    username, secret);
         }
         try {
             return ImageIO.createImageInputStream(resource.get().getStream());

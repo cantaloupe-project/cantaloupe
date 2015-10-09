@@ -63,8 +63,8 @@ HttpResolver.url_suffix =
 #HttpResolver.path_separator =
 
 # Used for HTTP Basic authentication.
-HttpResolver.username =
-HttpResolver.password =
+HttpResolver.auto.basic.username =
+HttpResolver.auth.basic.secret =
 
 ###############
 # PROCESSORS
