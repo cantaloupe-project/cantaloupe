@@ -38,7 +38,7 @@ import java.util.Set;
 /**
  * Processor using the ffmpeg and ffprobe tools to extract video frames.
  */
-class FfmpegProcessor implements FileProcessor, StreamProcessor {
+class FfmpegProcessor implements FileProcessor {
 
     private class StreamCopier implements Runnable {
 
@@ -421,6 +421,9 @@ class FfmpegProcessor implements FileProcessor, StreamProcessor {
 
             if (!region.isFull()) {
                 Rectangle cropArea = region.getRectangle(fullSize);
+                // ffmpeg will have a cow if given an out-of-bounds crop area
+                cropArea.width = Math.min(cropArea.width, fullSize.width - cropArea.x);
+                cropArea.height = Math.min(cropArea.height, fullSize.height - cropArea.y);
                 filterStr.append(String.format("crop=%d:%d:%d:%d", cropArea.width,
                         cropArea.height, cropArea.x, cropArea.y));
             }
