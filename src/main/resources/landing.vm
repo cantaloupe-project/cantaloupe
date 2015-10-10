@@ -69,10 +69,11 @@
 
             <h3>Supported Source Formats</h3>
 
+            <h4>Image</h4>
             <table class="table table-condensed table-bordered">
                 <tr>
                     <th></th>
-                    #foreach ($sourceFormat in $sourceFormats)
+                    #foreach ($sourceFormat in $imageSourceFormats)
                         <th class="text-center">$sourceFormat.getName()</th>
                     #end
                 </tr>
@@ -80,7 +81,30 @@
                 #foreach ($processor in $processors)
                     <tr>
                         <td>$processor.getClass().getSimpleName()</td>
-                        #foreach ($sourceFormat in $sourceFormats)
+                        #foreach ($sourceFormat in $imageSourceFormats)
+                            <td class="text-center">
+                                #if ($processor.getAvailableOutputFormats($sourceFormat).size() > 0)
+                                    <span class="text-success">&check;</span>
+                                #end
+                            </td>
+                        #end
+                    </tr>
+                #end
+            </table>
+
+            <h4>Video</h4>
+            <table class="table table-condensed table-bordered">
+                <tr>
+                    <th></th>
+                    #foreach ($sourceFormat in $videoSourceFormats)
+                        <th class="text-center">$sourceFormat.getName()</th>
+                    #end
+                </tr>
+
+                #foreach ($processor in $processors)
+                    <tr>
+                        <td>$processor.getClass().getSimpleName()</td>
+                        #foreach ($sourceFormat in $videoSourceFormats)
                             <td class="text-center">
                                 #if ($processor.getAvailableOutputFormats($sourceFormat).size() > 0)
                                     <span class="text-success">&check;</span>
