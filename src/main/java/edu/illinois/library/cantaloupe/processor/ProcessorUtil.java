@@ -567,6 +567,12 @@ abstract class ProcessorUtil {
                     writer.dispose();
                 }
                 break;
+            /*case PNG: // an alternative in case ImageIO.write() ever causes problems
+                writer = ImageIO.getImageWritersByFormatName("png").next();
+                ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
+                writer.setOutput(os);
+                writer.write(image);
+                break;*/
           /*  case TIF: TODO: this doesn't write anything
                 Iterator<ImageWriter> it = ImageIO.
                         getImageWritersByMIMEType("image/tiff");
