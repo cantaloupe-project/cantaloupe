@@ -7,6 +7,8 @@ import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.request.Region;
 import edu.illinois.library.cantaloupe.request.Rotation;
 import edu.illinois.library.cantaloupe.request.Size;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -39,6 +41,8 @@ import java.util.Set;
  * A collection of helper methods.
  */
 abstract class ProcessorUtil {
+
+    private static Logger logger = LoggerFactory.getLogger(ProcessorUtil.class);
 
     /**
      * <p>BufferedImages with a type of <code>TYPE_CUSTOM</code> won't work
@@ -534,6 +538,16 @@ abstract class ProcessorUtil {
             throws IOException {
         switch (outputFormat) {
             case JPG:
+                // JPEG doesn't support alpha, so convert to RGB or else the
+                // client will interpret as CMYK
+                if (image.getColorModel().hasAlpha()) {
+                    logger.warn("Converting RGBA BufferedImage to RGB (this is very expensive)");
+                    BufferedImage rgbImage = new BufferedImage(
+                            image.getWidth(), image.getHeight(),
+                            BufferedImage.TYPE_INT_RGB);
+                    rgbImage.createGraphics().drawImage(image, null, 0, 0);
+                    image = rgbImage;
+                }
                 // TurboJpegImageWriter is used automatically if libjpeg-turbo
                 // is available in java.library.path:
                 // https://github.com/geosolutions-it/imageio-ext/wiki/TurboJPEG-plugin
