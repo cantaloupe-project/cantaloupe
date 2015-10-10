@@ -12,23 +12,28 @@ import java.util.List;
  */
 public enum SourceFormat {
 
-    AVI("avi", "AVI"),
-    BMP("bmp", "BMP"),
-    GIF("gif", "GIF"),
-    JP2("jp2", "JPEG2000"),
-    JPG("jpg", "JPEG"),
-    MOV("mov", "MOV"),
-    MP4("mp4", "MPEG-4"),
-    MPG("mpg", "MPEG"),
-    PDF("pdf", "PDF"),
-    PNG("png", "PNG"),
-    TIF("tif", "TIFF"),
-    WEBM("webm", "WebM"),
-    WEBP("webp", "WebP"),
-    UNKNOWN("unknown", "Unknown");
+    AVI("avi", "AVI", Type.VIDEO),
+    BMP("bmp", "BMP", Type.IMAGE),
+    GIF("gif", "GIF", Type.IMAGE),
+    JP2("jp2", "JPEG2000", Type.IMAGE),
+    JPG("jpg", "JPEG", Type.IMAGE),
+    MOV("mov", "QuickTime", Type.VIDEO),
+    MP4("mp4", "MPEG-4", Type.VIDEO),
+    MPG("mpg", "MPEG", Type.VIDEO),
+    PDF("pdf", "PDF", Type.IMAGE),
+    PNG("png", "PNG", Type.IMAGE),
+    TIF("tif", "TIFF", Type.IMAGE),
+    WEBM("webm", "WebM", Type.VIDEO),
+    WEBP("webp", "WebP", Type.IMAGE),
+    UNKNOWN("unknown", "Unknown", null);
+
+    public enum Type {
+        IMAGE, VIDEO
+    }
 
     private String id;
     private String name;
+    private Type type;
 
     /**
      * @param identifier IIIF identifier.
@@ -63,9 +68,10 @@ public enum SourceFormat {
         return SourceFormat.UNKNOWN;
     }
 
-    SourceFormat(String internalId, String name) {
+    SourceFormat(String internalId, String name, Type type) {
         this.id = internalId;
         this.name = name;
+        this.type = type;
     }
 
     public List<String> getExtensions() {
@@ -158,6 +164,10 @@ public enum SourceFormat {
 
     public MediaType getPreferredMediaType() {
         return this.getMediaTypes().get(0);
+    }
+
+    public Type getType() {
+        return this.type;
     }
 
     /**
