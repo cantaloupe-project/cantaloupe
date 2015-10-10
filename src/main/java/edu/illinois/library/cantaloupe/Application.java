@@ -36,6 +36,10 @@ public class Application {
     private static Configuration config;
 
     static {
+        if (getConfiguration() == null) {
+            System.exit(0);
+        }
+
         initializeLogging();
 
         Velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
@@ -135,7 +139,9 @@ public class Application {
                 propConfig.load(configFilePath);
                 config = propConfig;
             } catch (ConfigurationException e) {
-                logger.error(e.getMessage());
+                // The logger has probably not been initialized yet, as it
+                // depends on a working configuration
+                System.out.println(e.getMessage());
             }
         }
         return config;
