@@ -79,7 +79,7 @@ Cantaloupe features a configurable processing pipeline based on:
 ## Resolvers
 
 Resolvers locate a source image based on the identifier in an IIIF URL. In
-Java-speak, they take in an identifier and return an `ImageInputStream` and/or
+Java-speak, they take in an identifier and return an `InputStream` and/or
 `File` object from which the corresponding image can be read by a `Processor`.
 
 ### FilesystemResolver

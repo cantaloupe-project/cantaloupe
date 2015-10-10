@@ -168,6 +168,9 @@ class KakaduProcessor implements FileProcessor {
      */
     public Dimension getSize(File inputFile, SourceFormat sourceFormat)
             throws ProcessorException {
+        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
+            throw new UnsupportedSourceFormatException(sourceFormat);
+        }
         final List<String> command = new ArrayList<>();
         command.add(getPath("kdu_jp2info"));
         command.add("-i");
@@ -212,8 +215,8 @@ class KakaduProcessor implements FileProcessor {
     }
 
     public void process(Parameters params, SourceFormat sourceFormat,
-                        File inputFile, OutputStream outputStream)
-            throws ProcessorException {
+                        Dimension fullSize, File inputFile,
+                        OutputStream outputStream) throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -225,7 +228,6 @@ class KakaduProcessor implements FileProcessor {
         final ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
-            final Dimension fullSize = getSize(inputFile, sourceFormat);
             final ReductionFactor reduction = new ReductionFactor();
             final ProcessBuilder pb = getProcessBuilder(inputFile, params,
                     fullSize, reduction);

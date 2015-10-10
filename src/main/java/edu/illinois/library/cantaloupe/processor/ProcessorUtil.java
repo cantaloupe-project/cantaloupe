@@ -14,7 +14,6 @@ import javax.imageio.ImageReader;
 import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
@@ -30,6 +29,7 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -206,7 +206,7 @@ abstract class ProcessorUtil {
      * @return Dimensions in pixels
      * @throws ProcessorException
      */
-    public static Dimension getSize(ImageInputStream inputStream,
+    public static Dimension getSize(InputStream inputStream,
                                     SourceFormat sourceFormat)
             throws ProcessorException {
         Iterator<ImageReader> iter = ImageIO.
@@ -215,7 +215,7 @@ abstract class ProcessorUtil {
             ImageReader reader = iter.next();
             int width, height;
             try {
-                reader.setInput(inputStream);
+                reader.setInput(ImageIO.createImageInputStream(inputStream));
                 width = reader.getWidth(reader.getMinIndex());
                 height = reader.getHeight(reader.getMinIndex());
             } catch (IOException e) {

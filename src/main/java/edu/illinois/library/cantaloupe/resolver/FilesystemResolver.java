@@ -10,8 +10,8 @@ import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.stream.FileImageInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
@@ -38,9 +38,9 @@ class FilesystemResolver implements FileResolver, StreamResolver {
         return file;
     }
 
-    public FileImageInputStream getInputStream(Identifier identifier)
+    public FileInputStream getInputStream(Identifier identifier)
             throws IOException {
-        return new FileImageInputStream(getFile(identifier));
+        return new FileInputStream(getFile(identifier));
     }
 
     public String getPathname(Identifier identifier) {

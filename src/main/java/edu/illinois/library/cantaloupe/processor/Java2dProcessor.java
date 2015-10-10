@@ -108,8 +108,7 @@ class Java2dProcessor implements StreamProcessor {
         return formats;
     }
 
-    public Dimension getSize(ImageInputStream inputStream,
-                             SourceFormat sourceFormat)
+    public Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
             throws ProcessorException {
         return ProcessorUtil.getSize(inputStream, sourceFormat);
     }
@@ -132,8 +131,8 @@ class Java2dProcessor implements StreamProcessor {
     }
 
     public void process(Parameters params, SourceFormat sourceFormat,
-                        ImageInputStream inputStream, OutputStream outputStream)
-            throws ProcessorException {
+                        Dimension fullSize, InputStream inputStream,
+                        OutputStream outputStream) throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -145,7 +144,7 @@ class Java2dProcessor implements StreamProcessor {
         try {
             ReductionFactor reductionFactor = new ReductionFactor();
             BufferedImage image = loadImage(inputStream, sourceFormat, params,
-                    reductionFactor);
+                    fullSize, reductionFactor);
             image = ProcessorUtil.cropImage(image, params.getRegion(),
                     reductionFactor.factor);
             image = ProcessorUtil.scaleImageWithG2d(image, params.getSize(),
@@ -159,22 +158,24 @@ class Java2dProcessor implements StreamProcessor {
         }
     }
 
-    private BufferedImage loadImage(ImageInputStream inputStream,
+    private BufferedImage loadImage(InputStream inputStream,
                                     SourceFormat sourceFormat,
                                     Parameters params,
+                                    Dimension fullSize,
                                     ReductionFactor reductionFactor)
             throws IOException, ProcessorException { // TODO: move this to ProcessorUtil
         BufferedImage image = null;
         switch (sourceFormat) {
             case BMP:
-                image = ImageIO.read(inputStream);
+                ImageInputStream iis = ImageIO.createImageInputStream(inputStream);
+                image = ImageIO.read(iis);
                 break;
             case TIF:
                 String tiffReader = Application.getConfiguration().
                         getString(CONFIG_KEY_TIF_READER, "TIFFImageReader");
                 if (tiffReader.equals("TIFFImageReader")) {
                     image = loadUsingTiffImageReader(inputStream, params,
-                            reductionFactor);
+                            fullSize, reductionFactor);
                 } else {
                     image = loadUsingTiffImageDecoder(inputStream);
                 }
@@ -185,7 +186,8 @@ class Java2dProcessor implements StreamProcessor {
                 while (it.hasNext()) {
                     ImageReader reader = it.next();
                     try {
-                        reader.setInput(inputStream);
+                        iis = ImageIO.createImageInputStream(inputStream);
+                        reader.setInput(iis);
                         image = reader.read(0);
                     } finally {
                         reader.dispose();
@@ -205,7 +207,7 @@ class Java2dProcessor implements StreamProcessor {
     }
 
     /**
-     * <p>Uses TIFFImageReader to load a TIFF from an ImageInputStream.</p>
+     * <p>Uses TIFFImageReader to load a TIFF from an InputStream.</p>
      *
      * <p>The TIFFImageReader class currently being used,
      * it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader, has several
@@ -234,6 +236,7 @@ class Java2dProcessor implements StreamProcessor {
      *
      * @param inputStream
      * @param params
+     * @param fullSize
      * @param reductionFactor
      * @return
      * @throws IOException
@@ -241,7 +244,7 @@ class Java2dProcessor implements StreamProcessor {
      * @see https://github.com/geosolutions-it/imageio-ext/blob/master/plugin/tiff/src/main/java/it/geosolutions/imageioimpl/plugins/tiff/TIFFImageReader.java
      */
     private BufferedImage loadUsingTiffImageReader(
-            ImageInputStream inputStream, Parameters params,
+            InputStream inputStream, Parameters params, Dimension fullSize,
             ReductionFactor reductionFactor) throws IOException,
             ProcessorException {
         BufferedImage image = null;
@@ -253,12 +256,9 @@ class Java2dProcessor implements StreamProcessor {
                 if (reader instanceof it.geosolutions.imageioimpl.
                         plugins.tiff.TIFFImageReader) {
                     try {
-                        inputStream.mark();
-                        Dimension size = getSize(inputStream, SourceFormat.TIF);
-                        inputStream.reset();
-
-                        reader.setInput(inputStream);
-                        image = getSmallestUsableImage(reader, size,
+                        ImageInputStream iis = ImageIO.createImageInputStream(inputStream);
+                        reader.setInput(iis);
+                        image = getSmallestUsableImage(reader, fullSize,
                                 params.getRegion(), params.getSize(),
                                 reductionFactor);
                     } finally {
@@ -283,16 +283,19 @@ class Java2dProcessor implements StreamProcessor {
      * @return
      * @throws IOException
      */
-    private BufferedImage loadUsingTiffImageDecoder(
-            ImageInputStream inputStream) throws IOException {
+    private BufferedImage loadUsingTiffImageDecoder(InputStream inputStream)
+            throws IOException {
         BufferedImage image;
-        try (InputStream is = new ImageInputStreamWrapper(inputStream)) {
-            ImageDecoder dec = ImageCodec.createImageDecoder("tiff", is, null);
+        try {
+            ImageDecoder dec = ImageCodec.createImageDecoder("tiff",
+                    inputStream, null);
             RenderedImage op = dec.decodeAsRenderedImage();
             BufferedImage rgbImage = new BufferedImage(op.getWidth(),
                     op.getHeight(), BufferedImage.TYPE_INT_RGB);
             rgbImage.setData(op.getData());
             image = rgbImage;
+        } finally {
+            inputStream.close();
         }
         return image;
     }

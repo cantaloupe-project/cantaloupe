@@ -2,8 +2,8 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.request.Identifier;
 
-import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Interface to be implemented by all resolvers that support access to source
@@ -20,6 +20,6 @@ public interface StreamResolver extends Resolver {
      * identifier is not readable
      * @throws IOException if there is some other issue accessing the image
      */
-    ImageInputStream getInputStream(Identifier identifier) throws IOException;
+    InputStream getInputStream(Identifier identifier) throws IOException;
 
 }
