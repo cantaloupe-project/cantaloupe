@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import javax.imageio.stream.ImageInputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
@@ -38,7 +37,7 @@ import java.util.Set;
 /**
  * Processor using the ffmpeg and ffprobe tools to extract video frames.
  */
-class FfmpegProcessor implements FileProcessor {
+class FfmpegProcessor implements FileProcessor, StreamProcessor {
 
     private class StreamCopier implements Runnable {
 
@@ -54,7 +53,9 @@ class FfmpegProcessor implements FileProcessor {
             try {
                 IOUtils.copy(inputStream, outputStream);
             } catch (IOException e) {
-                logger.error(e.getMessage(), e);
+                if (!e.getMessage().startsWith("Broken pipe")) {
+                    logger.error(e.getMessage(), e);
+                }
             }
         }
 
@@ -162,7 +163,7 @@ class FfmpegProcessor implements FileProcessor {
         }
     }
 
-    public Dimension getSize(ImageInputStream inputStream, SourceFormat sourceFormat)
+    public Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
             throws ProcessorException {
         final List<String> command = new ArrayList<>();
         // ffprobe -v quiet -print_format xml -show_streams pipe: < <file>
@@ -184,14 +185,7 @@ class FfmpegProcessor implements FileProcessor {
 
             new Thread(new StreamCopier(process.getInputStream(), outputBucket)).start();
             new Thread(new StreamCopier(process.getErrorStream(), errorBucket)).start();
-
-            try {
-                IOUtils.copy(new ImageInputStreamWrapper(inputStream), process.getOutputStream());
-            } catch (IOException e) {
-                if (e.getMessage().startsWith("Broken pipe")) {
-                    // this is expected and not a problem
-                }
-            }
+            new StreamCopier(inputStream, process.getOutputStream()).run();
 
             try {
                 int code = process.waitFor();
@@ -244,8 +238,8 @@ class FfmpegProcessor implements FileProcessor {
     }
 
     public void process(Parameters params, SourceFormat sourceFormat,
-                        File inputFile, OutputStream outputStream)
-            throws ProcessorException {
+                        Dimension fullSize, File inputFile,
+                        OutputStream outputStream) throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -257,7 +251,6 @@ class FfmpegProcessor implements FileProcessor {
         final ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
-            final Dimension fullSize = getSize(inputFile, sourceFormat);
             final ProcessBuilder pb = getProcessBuilder(params, fullSize,
                     inputFile);
             final Process process = pb.start();
@@ -294,8 +287,8 @@ class FfmpegProcessor implements FileProcessor {
     }
 
     public void process(Parameters params, SourceFormat sourceFormat,
-                        ImageInputStream inputStream, OutputStream outputStream)
-            throws ProcessorException {
+                        Dimension fullSize, InputStream inputStream,
+                        OutputStream outputStream) throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -304,25 +297,16 @@ class FfmpegProcessor implements FileProcessor {
             throw new UnsupportedOutputFormatException();
         }
 
-        final ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
-            final Dimension fullSize = getSize(inputStream, sourceFormat);
             final ProcessBuilder pb = getProcessBuilder(params, fullSize);
 
             logger.debug("Executing " + StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
-            new Thread(new StreamCopier(process.getInputStream(), outputBucket)).start();
+            new Thread(new StreamCopier(process.getInputStream(), outputStream)).start();
             new Thread(new StreamCopier(process.getErrorStream(), errorBucket)).start();
-
-            try {
-                IOUtils.copy(new ImageInputStreamWrapper(inputStream), process.getOutputStream());
-            } catch (IOException e) {
-                if (e.getMessage().startsWith("Broken pipe")) {
-                    // this is expected and not a problem
-                }
-            }
+            new StreamCopier(inputStream, process.getOutputStream()).run();
 
             try {
                 int code = process.waitFor();
@@ -333,9 +317,6 @@ class FfmpegProcessor implements FileProcessor {
                         throw new ProcessorException(errorStr);
                     }
                 }
-                final ByteArrayInputStream bais = new ByteArrayInputStream(
-                        outputBucket.toByteArray());
-                IOUtils.copy(bais, outputStream);
             } finally {
                 process.getInputStream().close();
                 //process.getOutputStream().close();
@@ -361,7 +342,7 @@ class FfmpegProcessor implements FileProcessor {
      */
     private ProcessBuilder getProcessBuilder(Parameters params,
                                              Dimension fullSize) {
-        return getProcessBuilder(params, fullSize, "pipe:");
+        return getProcessBuilder(params, fullSize, "pipe:0");
     }
 
     /**
@@ -388,16 +369,7 @@ class FfmpegProcessor implements FileProcessor {
     private ProcessBuilder getProcessBuilder(Parameters params,
                                              Dimension fullSize,
                                              String inputArg) {
-        /*
-        file i/o
-        ffmpeg -i "My Great Movie.avi" -nostdin -v quiet -vframes 1 -an -vf crop="200:200:0:0",scale="min(320\\, iw):-1" out.jpg
-        stdin
-        ffmpeg -i /dev/stdin -nostdin -v quiet -vframes 1 -an -vf crop="200:200:0:0",scale="min(320\\, iw):-1" out.jpg < My\ Great\ Movie.avi
-        stdout
-        ffmpeg -i "My Great Movie.avi" -nostdin -v quiet -vframes 1 -an -vf crop="200:200:0:0",scale="min(320\\, iw):-1" -f jpg /dev/stdout > out.jpg
-        stdin/stdout
-        ffmpeg -i pipe: -nostdin -v quiet -vframes 1 -an -vf crop="200:200:0:0",scale="min(320\\, iw):-1" -f image2pipe pipe:1 < My\ Great\ Movie.avi > out.jpg
-        */
+        // ffmpeg -i pipe:0 -nostdin -v quiet -vframes 1 -an -vf [ops] -f image2pipe pipe:1 < video.mpg > out.jpg
         final List<String> command = new ArrayList<>();
         command.add(getPath("ffmpeg"));
         command.add("-i");
