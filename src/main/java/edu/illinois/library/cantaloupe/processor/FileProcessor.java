@@ -26,6 +26,10 @@ public interface FileProcessor extends Processor {
      * Uses the supplied parameters to process an image from the supplied File,
      * and writes the result to the given OutputStream.
      *
+     * <p>Implementations should use the sourceSize parameter and not their
+     * own <code>getSize()</code> method to avoid reusing a potentially
+     * unreusable InputStream.</p>
+     *
      * @param params Parameters of the output image
      * @param sourceFormat Format of the source image
      * @param inputFile File from which to read the image. Implementations
@@ -37,7 +41,7 @@ public interface FileProcessor extends Processor {
      * @throws ProcessorException
      */
     void process(Parameters params, SourceFormat sourceFormat,
-                 File inputFile, OutputStream outputStream)
-            throws ProcessorException;
+                 Dimension sourceSize, File inputFile,
+                 OutputStream outputStream) throws ProcessorException;
 
 }

@@ -63,8 +63,8 @@ HttpResolver.url_suffix =
 #HttpResolver.path_separator =
 
 # Used for HTTP Basic authentication.
-HttpResolver.username =
-HttpResolver.password =
+HttpResolver.auto.basic.username =
+HttpResolver.auth.basic.secret =
 
 ###############
 # PROCESSORS
@@ -187,7 +187,7 @@ log.application.RollingFileAppender.enabled = false
 log.application.RollingFileAppender.pathname = /path/to/logs/cantaloupe.log
 log.application.RollingFileAppender.pattern = %date %level [%thread] %logger{10} [%file:%line] %msg%n
 log.application.RollingFileAppender.policy = TimeBasedRollingPolicy
-log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = cantaloupe-%d{yyyy-MM-dd}.log
+log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/cantaloupe-%d{yyyy-MM-dd}.log
 log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30
 
 ###
@@ -202,5 +202,5 @@ log.access.FileAppender.pathname = /path/to/logs/access.log
 log.access.RollingFileAppender.enabled = false
 log.access.RollingFileAppender.pathname = /path/to/logs/access.log
 log.access.RollingFileAppender.policy = TimeBasedRollingPolicy
-log.access.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = access-%d{yyyy-MM-dd}.log
+log.access.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/access-%d{yyyy-MM-dd}.log
 log.access.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30

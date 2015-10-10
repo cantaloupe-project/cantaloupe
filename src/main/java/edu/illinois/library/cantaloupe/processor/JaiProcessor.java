@@ -19,7 +19,6 @@ import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
@@ -29,6 +28,7 @@ import java.awt.Dimension;
 import java.awt.RenderingHints;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -110,8 +110,7 @@ class JaiProcessor implements StreamProcessor {
         return getFormats().get(sourceFormat);
     }
 
-    public Dimension getSize(ImageInputStream inputStream,
-                             SourceFormat sourceFormat)
+    public Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
             throws ProcessorException {
         return ProcessorUtil.getSize(inputStream, sourceFormat);
     }
@@ -134,8 +133,8 @@ class JaiProcessor implements StreamProcessor {
     }
 
     public void process(Parameters params, SourceFormat sourceFormat,
-                        ImageInputStream inputStream, OutputStream outputStream)
-            throws ProcessorException {
+                        Dimension fullSize, InputStream inputStream,
+                        OutputStream outputStream) throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -155,7 +154,7 @@ class JaiProcessor implements StreamProcessor {
         }
     }
 
-    private RenderedOp loadRegion(ImageInputStream inputStream, Region region) {
+    private RenderedOp loadRegion(InputStream inputStream, Region region) {
         ParameterBlockJAI pbj = new ParameterBlockJAI("ImageRead");
         ImageLayout layout = new ImageLayout();
         layout.setTileWidth(JAI_TILE_SIZE);

@@ -46,6 +46,10 @@ check below to see if there is anything more to be done.
 
 * Add the `logging.*` keys from the sample configuration.
 * Add the `generate_https_links` key from the sample configuration.
+* Rename `HttpResolver.username` to `HttpResolver.auth.basic.username` in the
+  configuration.
+* Rename `HttpResolver.password` to `HttpResolver.auth.basic.secret` in the
+  configuration.
 
 ## 1.0-beta2 to 1.0-beta3
 
@@ -75,7 +79,7 @@ Cantaloupe features a configurable processing pipeline based on:
 ## Resolvers
 
 Resolvers locate a source image based on the identifier in an IIIF URL. In
-Java-speak, they take in an identifier and return an `ImageInputStream` and/or
+Java-speak, they take in an identifier and return an `InputStream` and/or
 `File` object from which the corresponding image can be read by a `Processor`.
 
 ### FilesystemResolver

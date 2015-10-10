@@ -17,10 +17,9 @@ import org.restlet.resource.ResourceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.AccessDeniedException;
 
 class HttpResolver implements StreamResolver {
@@ -29,7 +28,7 @@ class HttpResolver implements StreamResolver {
 
     private static Client client = new Client(new Context(), Protocol.HTTP);
 
-    public ImageInputStream getInputStream(Identifier identifier)
+    public InputStream getInputStream(Identifier identifier)
             throws IOException {
         Configuration config = Application.getConfiguration();
         Reference url = getUrl(identifier);
@@ -38,14 +37,14 @@ class HttpResolver implements StreamResolver {
         resource.setNext(client);
 
         // set up HTTP Basic authentication
-        String username = config.getString("HttpResolver.username", "");
-        String password = config.getString("HttpResolver.password", "");
-        if (username.length() > 0 && password.length() > 0) {
+        String username = config.getString("HttpResolver.auth.basic.username", "");
+        String secret = config.getString("HttpResolver.auth.basic.secret", "");
+        if (username.length() > 0 && secret.length() > 0) {
             resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC,
-                    username, password);
+                    username, secret);
         }
         try {
-            return ImageIO.createImageInputStream(resource.get().getStream());
+            return resource.get().getStream();
         } catch (ResourceException e) {
             if (e.getStatus().equals(Status.CLIENT_ERROR_NOT_FOUND) ||
                     e.getStatus().equals(Status.CLIENT_ERROR_GONE)) {

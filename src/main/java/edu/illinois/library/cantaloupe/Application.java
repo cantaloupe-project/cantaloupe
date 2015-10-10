@@ -36,6 +36,10 @@ public class Application {
     private static Configuration config;
 
     static {
+        if (getConfiguration() == null) {
+            System.exit(0);
+        }
+
         initializeLogging();
 
         Velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
@@ -105,6 +109,8 @@ public class Application {
     }
 
     public static void main(String[] args) throws Exception {
+        logger.info(System.getProperty("java.vm.name") + " / " +
+                System.getProperty("java.vm.info"));
         logger.info("Starting Cantaloupe {}", getVersion());
 
         if (System.getProperty("cantaloupe.cache.flush") != null) {
@@ -135,7 +141,9 @@ public class Application {
                 propConfig.load(configFilePath);
                 config = propConfig;
             } catch (ConfigurationException e) {
-                logger.error(e.getMessage());
+                // The logger has probably not been initialized yet, as it
+                // depends on a working configuration
+                System.out.println(e.getMessage());
             }
         }
         return config;

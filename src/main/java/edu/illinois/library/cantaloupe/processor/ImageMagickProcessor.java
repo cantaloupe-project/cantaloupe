@@ -13,16 +13,15 @@ import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
 import org.im4java.core.IMOperation;
 import org.im4java.core.Info;
-import org.im4java.core.InfoException;
 import org.im4java.process.Pipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -43,7 +42,7 @@ class ImageMagickProcessor implements StreamProcessor {
     // Lazy-initialized by getFormats()
     private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
 
-    private ImageInputStream inputStream;
+    private InputStream inputStream;
     private SourceFormat sourceFormat;
 
     static {
@@ -148,19 +147,18 @@ class ImageMagickProcessor implements StreamProcessor {
         return formats;
     }
 
-    public Dimension getSize(ImageInputStream inputStream,
-                             SourceFormat sourceFormat)
+    public Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
             throws ProcessorException {
+        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
+            throw new UnsupportedSourceFormatException(sourceFormat);
+        }
         try {
-            inputStream.mark();
-            ImageInputStreamWrapper wrapper = new ImageInputStreamWrapper(inputStream);
             Info sourceInfo = new Info(sourceFormat.getPreferredExtension() + ":-",
-                    wrapper, true);
+                    inputStream, true);
             Dimension dimension = new Dimension(sourceInfo.getImageWidth(),
                     sourceInfo.getImageHeight());
-            inputStream.reset();
             return dimension;
-        } catch (InfoException|IOException e) {
+        } catch (IM4JavaException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
     }
@@ -183,8 +181,8 @@ class ImageMagickProcessor implements StreamProcessor {
     }
 
     public void process(Parameters params, SourceFormat sourceFormat,
-                        ImageInputStream inputStream, OutputStream outputStream)
-            throws ProcessorException {
+                        Dimension fullSize, InputStream inputStream,
+                        OutputStream outputStream) throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -199,13 +197,12 @@ class ImageMagickProcessor implements StreamProcessor {
         try {
             IMOperation op = new IMOperation();
             op.addImage(sourceFormat.getPreferredExtension() + ":-"); // read from stdin
-            assembleOperation(op, params);
+            assembleOperation(op, params, fullSize);
 
             // format transformation
             op.addImage(params.getOutputFormat().getExtension() + ":-"); // write to stdout
 
-            ImageInputStreamWrapper wrapper = new ImageInputStreamWrapper(inputStream);
-            Pipe pipeIn = new Pipe(wrapper, null);
+            Pipe pipeIn = new Pipe(inputStream, null);
             Pipe pipeOut = new Pipe(null, outputStream);
 
             ConvertCmd convert = new ConvertCmd();
@@ -223,25 +220,19 @@ class ImageMagickProcessor implements StreamProcessor {
         }
     }
 
-    private void assembleOperation(IMOperation op, Parameters params) {
+    private void assembleOperation(IMOperation op, Parameters params,
+                                   Dimension fullSize) {
         // region transformation
         Region region = params.getRegion();
         if (!region.isFull()) {
             if (region.isPercent()) {
-                try {
-                    // im4java doesn't support cropping x/y by percentage (only
-                    // width/height), so we have to calculate them.
-                    Dimension imageSize = getSize(this.inputStream,
-                            this.sourceFormat);
-                    int x = Math.round(region.getX() / 100.0f * imageSize.width);
-                    int y = Math.round(region.getY() / 100.0f * imageSize.height);
-                    int width = Math.round(region.getWidth());
-                    int height = Math.round(region.getHeight());
-                    op.crop(width, height, x, y, "%");
-                } catch (ProcessorException e) {
-                    logger.debug("Failed to get dimensions for {}",
-                            params.getIdentifier());
-                }
+                // im4java doesn't support cropping x/y by percentage (only
+                // width/height), so we have to calculate them.
+                int x = Math.round(region.getX() / 100.0f * fullSize.width);
+                int y = Math.round(region.getY() / 100.0f * fullSize.height);
+                int width = Math.round(region.getWidth());
+                int height = Math.round(region.getHeight());
+                op.crop(width, height, x, y, "%");
             } else {
                 op.crop(Math.round(region.getWidth()), Math.round(region.getHeight()),
                         Math.round(region.getX()), Math.round(region.getY()));

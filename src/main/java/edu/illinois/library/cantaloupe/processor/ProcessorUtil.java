@@ -7,6 +7,8 @@ import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.request.Region;
 import edu.illinois.library.cantaloupe.request.Rotation;
 import edu.illinois.library.cantaloupe.request.Size;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -14,7 +16,6 @@ import javax.imageio.ImageReader;
 import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
@@ -30,6 +31,7 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -39,6 +41,8 @@ import java.util.Set;
  * A collection of helper methods.
  */
 abstract class ProcessorUtil {
+
+    private static Logger logger = LoggerFactory.getLogger(ProcessorUtil.class);
 
     /**
      * <p>BufferedImages with a type of <code>TYPE_CUSTOM</code> won't work
@@ -206,7 +210,7 @@ abstract class ProcessorUtil {
      * @return Dimensions in pixels
      * @throws ProcessorException
      */
-    public static Dimension getSize(ImageInputStream inputStream,
+    public static Dimension getSize(InputStream inputStream,
                                     SourceFormat sourceFormat)
             throws ProcessorException {
         Iterator<ImageReader> iter = ImageIO.
@@ -215,7 +219,7 @@ abstract class ProcessorUtil {
             ImageReader reader = iter.next();
             int width, height;
             try {
-                reader.setInput(inputStream);
+                reader.setInput(ImageIO.createImageInputStream(inputStream));
                 width = reader.getWidth(reader.getMinIndex());
                 height = reader.getHeight(reader.getMinIndex());
             } catch (IOException e) {
@@ -534,6 +538,16 @@ abstract class ProcessorUtil {
             throws IOException {
         switch (outputFormat) {
             case JPG:
+                // JPEG doesn't support alpha, so convert to RGB or else the
+                // client will interpret as CMYK
+                if (image.getColorModel().hasAlpha()) {
+                    logger.warn("Converting RGBA BufferedImage to RGB (this is very expensive)");
+                    BufferedImage rgbImage = new BufferedImage(
+                            image.getWidth(), image.getHeight(),
+                            BufferedImage.TYPE_INT_RGB);
+                    rgbImage.createGraphics().drawImage(image, null, 0, 0);
+                    image = rgbImage;
+                }
                 // TurboJpegImageWriter is used automatically if libjpeg-turbo
                 // is available in java.library.path:
                 // https://github.com/geosolutions-it/imageio-ext/wiki/TurboJPEG-plugin
@@ -553,6 +567,12 @@ abstract class ProcessorUtil {
                     writer.dispose();
                 }
                 break;
+            /*case PNG: // an alternative in case ImageIO.write() ever causes problems
+                writer = ImageIO.getImageWritersByFormatName("png").next();
+                ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
+                writer.setOutput(os);
+                writer.write(image);
+                break;*/
           /*  case TIF: TODO: this doesn't write anything
                 Iterator<ImageWriter> it = ImageIO.
                         getImageWritersByMIMEType("image/tiff");
