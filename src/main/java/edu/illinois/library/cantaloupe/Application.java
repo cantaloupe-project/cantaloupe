@@ -109,6 +109,8 @@ public class Application {
     }
 
     public static void main(String[] args) throws Exception {
+        logger.info(System.getProperty("java.vm.name") + " / " +
+                System.getProperty("java.vm.info"));
         logger.info("Starting Cantaloupe {}", getVersion());
 
         if (System.getProperty("cantaloupe.cache.flush") != null) {
