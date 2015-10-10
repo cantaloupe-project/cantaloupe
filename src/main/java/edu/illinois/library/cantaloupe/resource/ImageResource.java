@@ -248,9 +248,13 @@ public class ImageResource extends AbstractResource {
         MediaType mediaType = new MediaType(
                 OutputFormat.valueOf(format.toUpperCase()).getMediaType());
 
+        // FileResolver -> StreamProcessor: OK, using FileInputStream
+        // FileResolver -> FileProcessor: OK, using File
+        // StreamResolver -> StreamProcessor: OK, using InputStream
+        // StreamResolver -> FileProcessor: NOPE
         if (!(resolver instanceof FileResolver) &&
                 !(proc instanceof StreamProcessor)) {
-            // StreamProcessors require StreamResolvers
+            // FileProcessors can't work with StreamResolvers
             throw new UnsupportedSourceFormatException(
                     String.format("%s is not compatible with %s",
                             proc.getClass().getSimpleName(),
