@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public abstract class AbstractResource extends ServerResource {
+abstract class AbstractResource extends ServerResource {
 
     private static Logger logger = LoggerFactory.
             getLogger(AbstractResource.class);
