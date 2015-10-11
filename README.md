@@ -11,6 +11,7 @@ Home: [https://github.com/medusa-project/cantaloupe]
 * Self-contained
 * Pluggable resolvers for filesystem and HTTP sources
 * Pluggable processors to support a wide variety of source images
+    * Including video still frames
 * Lean and efficient with no app server or Servlet stack overhead
 * Configurable caching
 * Optional authentication
@@ -46,6 +47,9 @@ check below to see if there is anything more to be done.
 
 * Add the `logging.*` keys from the sample configuration.
 * Add the `generate_https_links` key from the sample configuration.
+* Add the `FfmpegProcessor.path_to_binaries` key from the sample configuration.
+* Add the `processor.*` keys corresponding to various video formats from the
+  sample configuration.
 * Rename `HttpResolver.username` to `HttpResolver.auth.basic.username` in the
   configuration.
 * Rename `HttpResolver.password` to `HttpResolver.auth.basic.secret` in the
@@ -172,6 +176,7 @@ are:
 * ImageMagickProcessor
 * KakaduProcessor
 * JaiProcessor
+* FfmpegProcessor
 
 All processors can work with FilesystemResolver, and all but KakaduProcessor
 can work with HttpResolver.
@@ -273,10 +278,17 @@ try.
 mode." This is harmless, but can be suppressed anyway by launching Cantaloupe
 with the `-Dcom.sun.media.jai.disableMediaLib=true` option.*
 
+### FfmpegProcessor
+
+FfmpegProcessor uses the [ffmpeg](http://www.ffmpeg.org) tool to extract still
+frames from video files. It can be used for video thumbnail generation å la
+YouTube, as well as deep zooming of high-resolution still frames.
+
 ### Which Processor Should I Use?
 
 1. Use KakaduProcessor for JP2s
-2. For all of the rest of the source formats you would like to serve, it's a
+2. Use FfmpegProcessor for videos
+3. For all of the rest of the source formats you would like to serve, it's a
 good idea to experiment with different processors, comparing their performance,
 resource usage, and output quality. Benchmark results, if you can contribute
 them, are welcome.

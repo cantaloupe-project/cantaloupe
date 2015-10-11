@@ -4,6 +4,7 @@
 
 * Sped up TIFF decoding in Java2dProcessor.
 * Added configurable logging.
+* Added FfmpegProcessor.
 * Added a configuration option to generate links using the https scheme.
 
 ## 1.0-beta3

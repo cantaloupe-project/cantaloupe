@@ -35,7 +35,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Processor using the ffmpeg and ffprobe tools to extract video frames.
+ * Processor using the ffmpeg and ffprobe tools to extract video frames. Works
+ * with ffmpeg 2.8 (other versions untested).
  */
 class FfmpegProcessor implements FileProcessor, StreamProcessor {
 
@@ -71,13 +72,13 @@ class FfmpegProcessor implements FileProcessor, StreamProcessor {
         //SUPPORTED_QUALITIES.add(Quality.BITONAL);
         SUPPORTED_QUALITIES.add(Quality.COLOR);
         SUPPORTED_QUALITIES.add(Quality.DEFAULT);
-        //SUPPORTED_QUALITIES.add(Quality.GRAY);
+        SUPPORTED_QUALITIES.add(Quality.GRAY);
 
-        //SUPPORTED_FEATURES.add(ProcessorFeature.MIRRORING);
+        SUPPORTED_FEATURES.add(ProcessorFeature.MIRRORING);
         SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PERCENT);
         SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PIXELS);
         //SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_ARBITRARY);
-        //SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_BY_90S);
+        SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_BY_90S);
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_ABOVE_FULL);
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_HEIGHT);
@@ -117,7 +118,10 @@ class FfmpegProcessor implements FileProcessor, StreamProcessor {
 
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
         Set<OutputFormat> outputFormats = new HashSet<>();
-        outputFormats.add(OutputFormat.JPG);
+        if (sourceFormat.getType() != null &&
+                sourceFormat.getType().equals(SourceFormat.Type.VIDEO)) {
+            outputFormats.add(OutputFormat.JPG);
+        }
         return outputFormats;
     }
 
@@ -131,6 +135,10 @@ class FfmpegProcessor implements FileProcessor, StreamProcessor {
      */
     public Dimension getSize(File inputFile, SourceFormat sourceFormat)
             throws ProcessorException {
+        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
+            throw new UnsupportedSourceFormatException(sourceFormat);
+        }
+
         final List<String> command = new ArrayList<>();
         // ffprobe -v quiet -print_format xml -show_streams <file>
         command.add(getPath("ffprobe"));
@@ -165,6 +173,10 @@ class FfmpegProcessor implements FileProcessor, StreamProcessor {
 
     public Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
             throws ProcessorException {
+        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
+            throw new UnsupportedSourceFormatException(sourceFormat);
+        }
+
         final List<String> command = new ArrayList<>();
         // ffprobe -v quiet -print_format xml -show_streams pipe: < <file>
         command.add(getPath("ffprobe"));
@@ -190,7 +202,7 @@ class FfmpegProcessor implements FileProcessor, StreamProcessor {
             try {
                 int code = process.waitFor();
                 if (code != 0) {
-                    logger.warn("ffmpeg returned with code " + code);
+                    logger.warn("ffprobe returned with code " + code);
                     final String errorStr = errorBucket.toString();
                     if (errorStr != null && errorStr.length() > 0) {
                         throw new ProcessorException(errorStr);
@@ -334,8 +346,6 @@ class FfmpegProcessor implements FileProcessor, StreamProcessor {
     }
 
     /**
-     * Gets a ProcessBuilder corresponding to the given parameters.
-     *
      * @param params
      * @param fullSize The full size of the source image
      * @return Command string
@@ -346,8 +356,6 @@ class FfmpegProcessor implements FileProcessor, StreamProcessor {
     }
 
     /**
-     * Gets a ProcessBuilder corresponding to the given parameters.
-     *
      * @param params
      * @param fullSize The full size of the source image
      * @param inputFile
@@ -384,43 +392,64 @@ class FfmpegProcessor implements FileProcessor, StreamProcessor {
         final Region region = params.getRegion();
         final Size size = params.getSize();
         final Rotation rotation = params.getRotation();
+        final Quality quality = params.getQuality();
 
         if (!region.isFull() || size.getScaleMode() != Size.ScaleMode.FULL ||
-                rotation.shouldMirror() || rotation.getDegrees() > 0) {
-            command.add("-vf");
-
-            StringBuilder filterStr = new StringBuilder();
+                rotation.shouldMirror() || rotation.getDegrees() > 0 ||
+                (quality != Quality.COLOR && quality != Quality.DEFAULT)) {
+            List<String> filters = new ArrayList<>();
 
             if (!region.isFull()) {
                 Rectangle cropArea = region.getRectangle(fullSize);
-                // ffmpeg will have a cow if given an out-of-bounds crop area
+                // ffmpeg will complain if given an out-of-bounds crop area
                 cropArea.width = Math.min(cropArea.width, fullSize.width - cropArea.x);
                 cropArea.height = Math.min(cropArea.height, fullSize.height - cropArea.y);
-                filterStr.append(String.format("crop=%d:%d:%d:%d", cropArea.width,
+                filters.add(String.format("crop=%d:%d:%d:%d", cropArea.width,
                         cropArea.height, cropArea.x, cropArea.y));
             }
             if (size.getScaleMode() != Size.ScaleMode.FULL) {
-                filterStr.append(",");
                 if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
-                    filterStr.append(String.format("scale=min(%d\\, iw):-1",
-                            size.getWidth()));
+                    filters.add(String.format("scale=%d:-1", size.getWidth()));
                 } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
-                    filterStr.append(String.format("scale=min(%d\\, iw):-1",
-                            size.getHeight()));
+                    filters.add(String.format("scale=-1:%d", size.getHeight()));
                 } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
                     int min = Math.min(size.getWidth(), size.getHeight());
-                    filterStr.append(String.format("scale=min(%d\\, iw):-1", min));
+                    filters.add(String.format("scale=min(%d\\, iw):-1", min));
                 } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
-                    // TODO: write this
+                    filters.add(String.format("scale=%d:%d", size.getWidth(),
+                            size.getHeight()));
+                } else if (size.getPercent() != 0) {
+                    int width = Math.round(fullSize.width * (size.getPercent() / 100f));
+                    int height = Math.round(fullSize.height * (size.getPercent() / 100f));
+                    filters.add(String.format("scale=%d:%d", width, height));
                 }
             }
             if (rotation.shouldMirror()) {
-                // TODO: write this
+                filters.add("hflip");
             }
             if (rotation.getDegrees() > 0) {
-                // TODO: write this
+                // 0 = 90CounterClockwise and Vertical Flip (default)
+                // 1 = 90Clockwise
+                // 2 = 90CounterClockwise
+                // 3 = 90Clockwise and Vertical Flip
+                switch (Math.round(rotation.getDegrees())) {
+                    case 90:
+                        filters.add("transpose=1");
+                        break;
+                    case 180:
+                        filters.add("transpose=1");
+                        filters.add("transpose=1");
+                        break;
+                    case 270:
+                        filters.add("transpose=2");
+                        break;
+                }
             }
-            command.add(filterStr.toString());
+            if (quality.equals(Quality.GRAY)) {
+                filters.add("colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3");
+            }
+            command.add("-vf");
+            command.add(StringUtils.join(filters, ","));
         }
 
         command.add("-f"); // source or output format depending on position
