@@ -28,6 +28,7 @@ class FilesystemResolver implements FileResolver, StreamResolver {
     private static Logger logger = LoggerFactory.
             getLogger(FilesystemResolver.class);
 
+    @Override
     public File getFile(Identifier identifier) throws IOException {
         File file = new File(getPathname(identifier));
         try {
@@ -40,6 +41,7 @@ class FilesystemResolver implements FileResolver, StreamResolver {
         return file;
     }
 
+    @Override
     public InputStream getInputStream(Identifier identifier)
             throws IOException {
         return new BufferedInputStream(new FileInputStream(getFile(identifier)));

@@ -28,6 +28,7 @@ class HttpResolver implements StreamResolver {
 
     private static Client client = new Client(new Context(), Protocol.HTTP);
 
+    @Override
     public InputStream getInputStream(Identifier identifier)
             throws IOException {
         Configuration config = Application.getConfiguration();
