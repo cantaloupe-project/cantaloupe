@@ -3,6 +3,8 @@
 # Generates the project website using jekyll and uploads it to GitHub Pages.
 #
 
+require 'fileutils'
+
 # make sure there are no outstanding changes before beginning
 raise 'Outstanding changes' unless
     `git status`.include?('nothing to commit, working directory clean')
