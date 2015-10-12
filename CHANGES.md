@@ -5,6 +5,7 @@
 * Sped up TIFF decoding in Java2dProcessor.
 * Added configurable logging.
 * Added a configuration option to generate links using the https scheme.
+* Added memory and VM arguments information to the landing page.
 
 ## 1.0-beta3
 
