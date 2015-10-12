@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description.
+">
+
+  <link rel="canonical" href="http://yourdomain.com/resolvers.html">
+  <link rel="stylesheet" href="/css/base.css">
+
+  <title>Cantaloupe</title>
+</head>
+
+
+  <body>
+
+    <div class="container-fluid">
+
+      <div class="clearfix">
+        <header>
+  <a href="index.html"><img src="images/cantaloupe.jpg" width="154" height="81"></a>
+  <h1><a href="index.html">Cantaloupe</a>
+    <br>
+    <small>Extensible IIIF Image API 2.0 image server in Java</small>
+  </h1>
+</header>
+
+      </div>
+
+      <div class="row">
+        <div class="col-sm-3">
+          <nav id="toc">
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="index.html#About">About</a></li>
+    <li><a href="index.html#Features">Features</a></li>
+    <li>
+      <a href="getting-started.html">Getting Started</a>
+      <ul>
+        <li><a href="getting-started.html#Requirements">Requirements</a></li>
+        <li><a href="getting-started.html#Configuration">Configuration</a></li>
+        <li><a href="getting-started.html#Running">Running</a></li>
+        <li><a href="getting-started.html#Upgrading">Upgrading</a></li>
+        <li><a href="getting-started.html#Considerations">Considerations</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="resolvers.html">Resolvers</a>
+      <ul>
+        <li><a href="resolvers.html#FilesystemResolver">FilesystemResolver</a></li>
+        <li><a href="resolvesr.html#HttpResolver">HttpResolver</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="processors.html">Processors</a>
+      <ul>
+        <li><a href="processors.html#Java2dProcessor">Java2dProcessor</a></li>
+        <li><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a></li>
+        <li><a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a></li>
+        <li><a href="processors.html#KakaduProcessor">KakaduProcessor</a></li>
+        <li><a href="processors.html#JaiProcessor">JaiProcessor</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="caches.html">Caches</a>
+      <ul>
+        <li><a href="caches.html#FilesystemCache">FilesystemCache</a></li>
+      </ul>
+    </li>
+    <li><a href="access-control.html">Access Control</a></li>
+    <li><a href="client-caching.html">Client-Side Caching</a></li>
+    <li>
+      <a href="logging.html">Logging</a>
+      <ul>
+        <li><a href="logging.html#Application%20Log">Application Log</a></li>
+        <li><a href="logging.html#Access%20Log">Access Log</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="source-formats.html">Source Formats</a>
+      <ul>
+        <li><a href="source-formats.html#JPEG">JPEG</a></li>
+        <li><a href="source-formats.html#JPEG2000">JPEG2000</a></li>
+        <li><a href="source-formats.html#TIFF">TIFF</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="developers.html">Developer's Guide</a>
+      <ul>
+        <li><a href="developers.html#Resolvers">Custom Resolvers</a></li>
+        <li><a href="developers.html#Processors">Custom Processors</a></li>
+        <li><a href="developers.html#Caches">Custom Caches</a></li>
+        <li><a href="developers.html#Contributing">Contributing Code</a></li>
+      </ul>
+    </li>
+    <li><a href="">Feedback</a></li>
+  </ul>
+</nav>
+
+        </div> <!-- .col-sm-3 -->
+
+        <div class="col-sm-9">
+          <h2>Resolvers</h2>
+
+<p>Resolvers locate a source image based on the identifier in an IIIF URL. In Java-speak, they take in an identifier and return an <code>InputStream</code> and/or <code>File</code> object from which the corresponding image can be read by a <a href="processors.html">processor</a>.</p>
+
+<h3 id="FilesystemResolver">FilesystemResolver</h3>
+
+<p>FilesystemResolver maps an identifier from an IIIF URL to a filesystem path, for retrieving images on a local or attached filesystem.</p>
+
+<p>For images with extensions that are missing or unrecognized, this resolver will check the "magic number" to determine type, which will add some overhead. It is therefore slightly more efficient to serve images with extensions.</p>
+
+<h4>Prefix and Suffix</h4>
+
+<p>The <code>FilesystemResolver.path_prefix</code> and <code>path_suffix</code> configuration options are optional and intended to make URLs shorter, more stable, and hide sensitive information. For example, with these options set as such:</p>
+
+<pre>FilesystemResolver.path_prefix = /usr/local/images/
+FilesystemResolver.path_suffix =</pre>
+
+<p>An identifier of <code>image.jpg</code> in the URL will resolve to
+<span class="filename">/usr/local/images/image.jpg</span>.</p>
+
+<p><em>Note: it is dangerous to <strong>not</strong> use <code>path_prefix</code>. The shallower the path, the more of the filesystem that will be exposed.</em></p>
+
+<h4>Path Separator</h4>
+
+<p>The IIIF Image API 2.0 specification mandates that identifiers in URLs be percent-encoded, which changes slashes to <code>%2F</code>. Some reverse-proxy servers automatically decode this into <code>/</code> before passing on the request. This will cause HTTP 404 errors in Cantaloupe.</p>
+
+<p>If you are unable to configure your reverse proxy to stop decoding slashes, the <code>FilesystemResolver.path_separator</code> configuration option will enable you to use an alternate string as a path separator in an identifier. (Be sure to supply the non-percent-encoded string, and then percent-encode it in URLs if it contains any URL-unsafe characters.)</p>
+
+<p>To prevent arbitrary directory traversal, FilesystemResolver will strip out <code>..{path separator}</code> and <code>{path separator}..</code> from identifiers before resolving the path.</p>
+
+<h3 id="HttpResolver">HttpResolver</h3>
+
+<p>HttpResolver maps an identifier from an IIIF URL to an HTTP resource. Image access via HTTP may be slower than via a filesystem, though this varies depending on the relative performance of both, as well as the particular source image format and processor.</p>
+
+<p>It is preferable to use this resolver with source images with recognizable file extensions. For images with an extension that is missing or unrecognizable, it will issue an HTTP HEAD request to the server to check the <code>Content-Type</code> header. If the type cannot be inferred from that, an HTTP 415 response will be returned.</p>
+
+<h4>Prefix and Suffix</h4>
+
+<p>The <code>HttpResolver.url_prefix</code> and <code>url_suffix</code> configuration options are optional and intended to make URLs shorter, more stable, and hide sensitive information. For example, with these options set as such:</p>
+
+<pre>HttpResolver.url_prefix = http://example.org/images/
+HttpResolver.url_suffix =</pre>
+
+<p>An identifier of <code>image.jpg</code> in the URL will resolve to
+<span class="filename">http://example.org/images/image.jpg</span>.
+
+<h4>Path Separator</h4>
+
+<p>The IIIF Image API 2.0 specification mandates that identifiers in URLs be percent-encoded, which changes slashes to <code>%2F</code>. Some proxy servers automatically decode this into <code>/</code> before passing on the request. This will cause HTTP 404 errors in Cantaloupe.
+
+<p>If you are unable to configure your proxy to stop decoding slashes, the <code>HttpResolver.path_separator</code> configuration option will enable you to use an alternate string as a path separator in an identifier. (Be sure to supply the non-percent-encoded string, and then percent-encode it in URLs if it contains any URL-unsafe characters.)</p>
+
+        </div>
+      </div>
+
+      <footer>
+</footer>
+
+
+    </div>
+
+  </body>
+
+</html>
