@@ -3,11 +3,12 @@
 # Generates the project website using jekyll and uploads it to GitHub Pages.
 #
 
-require 'fileutils'
+require 'tmpdir'
 
 # make sure there are no outstanding changes before beginning
 raise 'Outstanding changes' unless
     `git status`.include?('nothing to commit, working directory clean')
+
 begin
   # get the current git branch
   starting_branch = nil
@@ -19,27 +20,28 @@ begin
   end
 
   # generate site in a temp dir
-  tmp_dir = Dir.tmpdir
-  `jekyll build -d #{tmp_dir}`
+  puts Dir.methods.sort
+  Dir.mktmpdir do |tmp_dir|
+    puts "Building site in #{tmp_dir}"
+    `jekyll build -d #{tmp_dir}`
 
-  # switch to gh-pages branch
-  if orphan_exists
-    result = system('git checkout gh-pages')
-  else
-    result = system('git checkout --orphan gh-pages')
+    # switch to gh-pages branch
+    if orphan_exists
+      result = system('git checkout gh-pages')
+    else
+      result = system('git checkout --orphan gh-pages')
+    end
+    raise 'Failed to checkout gh-pages' unless result
+
+    # wipe it clean and copy the docs back into it
+    `git rm -rf .`
+    `cp -r #{File.join(tmp_dir, '_site', '*')} .`
+
+    # commit and push
+    `git add *`
+    `git commit -m 'Update website'`
+    `git push origin gh-pages`
   end
-  raise 'Failed to checkout gh-pages' unless result
-
-  # wipe it clean and copy the docs back into it
-  `git rm -rf .`
-  `cp -r #{File.join(tmp_dir, '_site', '*')} .`
-
-  # commit and push
-  `git add *`
-  `git commit -m 'Update website'`
-  `git push origin gh-pages`
 ensure
-  # cleanup
-  FileUtils.rm_rf(File.join(tmp_dir, '_site'))
   `git checkout #{starting_branch}`
 end
