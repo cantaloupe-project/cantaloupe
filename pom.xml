@@ -6,7 +6,7 @@
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
   <name>Cantaloupe</name>
-  <url>http://maven.apache.org</url>
+  <url>https://github.com/medusa-project/cantaloupe</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -215,7 +215,7 @@
         <configuration>
           <appendAssemblyId>false</appendAssemblyId>
           <descriptors>
-            <descriptor>assembly.xml</descriptor>
+            <descriptor>${basedir}/build/assembly.xml</descriptor>
           </descriptors>
         </configuration>
         <executions>
@@ -224,6 +224,23 @@
             <goals>
               <goal>single</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>exec-maven-plugin</artifactId>
+        <groupId>org.codehaus.mojo</groupId>
+        <version>1.4.0</version>
+        <executions>
+          <execution>
+            <id>Deploy Website</id>
+            <phase>site-deploy</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${basedir}/build/deploy_website.rb</executable>
+            </configuration>
           </execution>
         </executions>
       </plugin>

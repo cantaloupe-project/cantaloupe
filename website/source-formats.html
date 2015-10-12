@@ -1,0 +1,28 @@
+---
+layout: default
+---
+
+<h2>Source Formats</h2>
+
+<h3 id="JPEG">JPEG</h3>
+
+<p>It should be possible to use TurboJPEG (high-level API over <a href="http://www.libjpeg-turbo.org">libjpeg-turbo</a> with Java2dProcessor to hardware-accelerate JPEG coding. To do so, include the <a href="https://github.com/geosolutions-it/imageio-ext/wiki/TurboJPEG-plugin">TurboJPEG plugin JAR</a> in your classpath, and compile libjpeg-turbo with Java support (using the <code>--with-java</code>
+configuration option). (The author has not tried this.)</p>
+
+<h3 id="JPEG2000">JPEG2000</h3>
+
+<p>KakaduProcessor is by far the most efficient processor for this format.</p>
+
+<p>GraphicsMagick can read/write JPEG2000 using JasPer, and ImageMagick using OpenJPEG. Both of these are extremely slow.</p>
+
+<p>See the JaiProcessor section for notes on the mediaLib accelerator.</p>
+
+<h3 id="TIFF">TIFF</h3>
+
+<p>GraphicsMagickProcessor and ImageMagickProcessor can both handle TIFF if the necessary delegate or plugin is installed. (See the landing page, at <span class="filename">/iiif</span>.)</p>
+
+<h4>Pyramidal TIFF</h4>
+
+<p>Java2dProcessor supports pyramidal TIFF, which is to say that it actually does read the embedded sub-images and chooses the smallest one that can fulfill the request.</p>
+
+<p>All other processors that support TIFF will read pyramidal TIFFs as ordinary TIFFs.</p>
