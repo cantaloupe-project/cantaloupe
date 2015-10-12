@@ -234,7 +234,6 @@
         <executions>
           <execution>
             <id>Deploy Website</id>
-            <phase>site-deploy</phase>
             <goals>
               <goal>exec</goal>
             </goals>
