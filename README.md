@@ -3,8 +3,8 @@
 *Extensible [IIIF Image API 2.0](http://iiif.io) image server in Java*
 
 ### The project website is located at:
-**[http://medusa-project.github.io/cantaloupe/]
-(http://medusa-project.github.io/cantaloupe/)**
+**[https://medusa-project.github.io/cantaloupe/]
+(https://medusa-project.github.io/cantaloupe/)**
 
 # License
 
