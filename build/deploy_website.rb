@@ -10,8 +10,8 @@ require 'tmpdir'
 #    `git status`.include?('nothing to commit, working directory clean')
 
 # make sure there are no outstanding changes before beginning
-#raise 'Outstanding changes' unless
-#    `git status`.include?('nothing to commit, working directory clean')
+raise 'Outstanding changes' unless
+    `git status`.include?('nothing to commit, working directory clean')
 
 # get the current git branch
 starting_branch = nil
