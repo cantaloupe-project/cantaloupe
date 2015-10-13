@@ -33,10 +33,11 @@ Dir.mktmpdir('website') do |tmp_dir|
   else
     result = system('git checkout --orphan gh-pages')
   end
-  raise 'Failed to checkout gh-pages' unless result
+  raise 'Failed to checkout gh-pages' unless result == 0
 
   # wipe it clean and copy the docs back into it
   `git rm -rf .`
+  `ls #{tmp_dir}`
   `cp -r #{File.join(tmp_dir, '*')} .`
 
   # commit and push
