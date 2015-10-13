@@ -25,8 +25,10 @@ Dir.mktmpdir('website') do |tmp_dir|
 
   # switch to gh-pages branch
   if orphan_exists
+    puts 'Checking out gh-pages'
     result = system('git checkout gh-pages')
   else
+    puts 'Creating gh-pages'
     result = system('git checkout --orphan gh-pages')
   end
   raise 'Failed to checkout gh-pages' unless result == 0
