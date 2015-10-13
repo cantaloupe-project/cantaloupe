@@ -99,44 +99,54 @@
         <li><a href="developers.html#Contributing">Contributing</a></li>
       </ul>
     </li>
-    <li><a href="">Feedback</a></li>
+    <li><a href="changelog.html">Change Log</a>
   </ul>
 </nav>
 
         </div> <!-- .col-sm-3 -->
 
         <div class="col-sm-9">
-          <h2 id="About">About</h2>
+          <h2>Change Log</h2>
 
-<p>Cantaloupe is an open-source image server developed at the <a href="http://www.library.illinois.edu/">University of Illinois at Urbana-Champaign Library</a>. By combining the basic operations of cropping, scaling, rotation, flipping, color filtering, and format conversion, it can support on-the-fly derivative image generation and deep zooming into high-resolution source images.</p>
-
-<p>The <a href="http://iiif.io/api/image/2.0/">IIIF Image API</a> is an open standard intended to promote interoperability between clients &mdash; like zooming image viewers &mdash; and image servers. Cantaloupe itself and most of its processors meet the highest possible compliance level, and should work with any IIIF-compatible client software, including <a href="https://openseadragon.github.io">OpenSeadragon</a>, Mirador, and so on.</p>
-
-<p>Cantaloupe features a configurable processing pipeline based on:</p>
+<h3>1.0-beta4</h3>
 
 <ul>
-  <li><a href="resolvers.html">Resolvers</a>, that locate source images;</li>
-  <li><a href="processors.html">Processors</a>, that transform them according to the parameters in an image request; and</li>
-  <li><a href="caches.html">Caches</a>, that cache generated images.</li>
+  <li>Sped up TIFF decoding in Java2dProcessor.</li>
+  <li>Added configurable logging.</li>
+  <li>Added a configuration option to generate links using the https scheme.</li>
+  <li>Added memory and VM arguments information to the landing page.</li>
 </ul>
 
-<p>This makes it adaptable, while remaining easy to configure and use.</p>
-
-<h2 id="Features">Features</h2>
+<h3>1.0-beta3</h3>
 
 <ul>
-  <li>Easy to get working</li>
-  <li>Self-contained</li>
-  <li>Pluggable resolvers for filesystem and HTTP sources</li>
-  <li>Pluggable processors to support a wide variety of source image formats, including TIFF and JPEG2000</li>
-  <li>Lean and efficient with no app server or Servlet stack overhead</li>
-  <li>Configurable caching</li>
-  <li>Optional authentication</li>
+  <li>Added client-side caching.</li>
+  <li>Added HTTP Basic authentication.</li>
+  <li>Added KakaduProcessor.</li>
+  <li>Added a <code>sizes</code> key to information responses.</li>
+  <li>Renamed ImageIoProcessor to Java2dProcessor.</li>
+  <li>Java2dProcessor supports pyramidal TIFF.</li>
+  <li>Improved the thread-safety of FilesystemCache.</li>
+  <li>Improved the security of FilesystemResolver.</li>
+  <li>Source images are streamed directly rather than being re-encoded when the
+    IIIF parameters request a full-size, unmodified image.</li>
+  <li>Cantaloupe is now distributed as a .zip archive.</li>
 </ul>
 
-<h2 id="Download">Download</h2>
+<h3>1.0-beta2</h3>
 
-Releases are available from <a href="https://github.com/medusa-project/cantaloupe/releases">GitHub</a>.
+<ul>
+  <li>Added optional server-side caching via FilesystemCache.</li>
+  <li>Added configurable path separators in FilesystemResolver and HttpResolver.</li>
+  <li>The application version is displayed on the landing page and in a startup log
+  message.</li>
+</ul>
+
+<h3>1.0-beta1</h3>
+
+<ul>
+  <li>First version.</li>
+</ul>
 
         </div>
       </div>

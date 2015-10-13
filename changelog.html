@@ -99,39 +99,54 @@
         <li><a href="developers.html#Contributing">Contributing</a></li>
       </ul>
     </li>
-    <li><a href="">Feedback</a></li>
+    <li><a href="changelog.html">Change Log</a>
   </ul>
 </nav>
 
         </div> <!-- .col-sm-3 -->
 
         <div class="col-sm-9">
-          <h2>Source Formats</h2>
+          <h2>Change Log</h2>
 
-Various Cantaloupe processors support several other formats than those listed here; what follows are mainly just notes.</p>
+<h3>1.0-beta4</h3>
 
-<h3 id="JPEG">JPEG</h3>
+<ul>
+  <li>Sped up TIFF decoding in Java2dProcessor.</li>
+  <li>Added configurable logging.</li>
+  <li>Added a configuration option to generate links using the https scheme.</li>
+  <li>Added memory and VM arguments information to the landing page.</li>
+</ul>
 
-<p>It should be possible to use TurboJPEG (high-level API over <a href="http://www.libjpeg-turbo.org">libjpeg-turbo</a> with Java2dProcessor to hardware-accelerate JPEG coding. To do so, include the <a href="https://github.com/geosolutions-it/imageio-ext/wiki/TurboJPEG-plugin">TurboJPEG plugin JAR</a> in your classpath, and compile libjpeg-turbo with Java support (using the <code>--with-java</code>
-configuration option). (The author has not tried this.)</p>
+<h3>1.0-beta3</h3>
 
-<h3 id="JPEG2000">JPEG2000</h3>
+<ul>
+  <li>Added client-side caching.</li>
+  <li>Added HTTP Basic authentication.</li>
+  <li>Added KakaduProcessor.</li>
+  <li>Added a <code>sizes</code> key to information responses.</li>
+  <li>Renamed ImageIoProcessor to Java2dProcessor.</li>
+  <li>Java2dProcessor supports pyramidal TIFF.</li>
+  <li>Improved the thread-safety of FilesystemCache.</li>
+  <li>Improved the security of FilesystemResolver.</li>
+  <li>Source images are streamed directly rather than being re-encoded when the
+    IIIF parameters request a full-size, unmodified image.</li>
+  <li>Cantaloupe is now distributed as a .zip archive.</li>
+</ul>
 
-<p><a href="processors.html#KakaduProcessor">KakaduProcessor</a> is by far the most efficient processor for this format.</p>
+<h3>1.0-beta2</h3>
 
-<p>GraphicsMagick can read/write JPEG2000 using JasPer, and ImageMagick using OpenJPEG. Both of these are extremely slow.</p>
+<ul>
+  <li>Added optional server-side caching via FilesystemCache.</li>
+  <li>Added configurable path separators in FilesystemResolver and HttpResolver.</li>
+  <li>The application version is displayed on the landing page and in a startup log
+  message.</li>
+</ul>
 
-<p>See the <a href="processors.html#JaiProcessor">JaiProcessor</a> section for notes on the mediaLib accelerator.</p>
+<h3>1.0-beta1</h3>
 
-<h3 id="TIFF">TIFF</h3>
-
-<p><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> and <a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a> can both handle TIFF if the necessary delegate or plugin is installed. (See the <a href="getting-started.html#Running">Cantaloupe landing page</a>.)</p>
-
-<h4>Pyramidal TIFF</h4>
-
-<p><a href="processors.html#Java2dProcessor">Java2dProcessor</a> supports pyramidal TIFF, which is to say that it actually does read the embedded sub-images and chooses the smallest one that can fulfill the request.</p>
-
-<p>All other processors that support TIFF will read pyramidal TIFFs as ordinary TIFFs, ignoring the sub-images.</p>
+<ul>
+  <li>First version.</li>
+</ul>
 
         </div>
       </div>
