@@ -6,12 +6,8 @@
 require 'tmpdir'
 
 # make sure there are no outstanding changes before beginning
-#raise 'Outstanding changes' unless
-#    `git status`.include?('nothing to commit, working directory clean')
-
-# make sure there are no outstanding changes before beginning
-#raise 'Outstanding changes' unless
-#    `git status`.include?('nothing to commit, working directory clean')
+raise 'Outstanding changes' unless
+    `git status`.include?('nothing to commit, working directory clean')
 
 # get the current git branch
 starting_branch = nil
@@ -37,7 +33,6 @@ Dir.mktmpdir('website') do |tmp_dir|
 
   # wipe it clean and copy the docs back into it
   `git rm -rf .`
-  `ls #{tmp_dir}`
   `cp -r #{File.join(tmp_dir, '*')} .`
 
   # commit and push
