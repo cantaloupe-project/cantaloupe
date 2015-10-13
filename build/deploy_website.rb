@@ -33,17 +33,17 @@ Dir.mktmpdir('website') do |tmp_dir|
   else
     result = system('git checkout --orphan gh-pages')
   end
-  puts result
   raise 'Failed to checkout gh-pages' unless result
 
   # wipe it clean and copy the docs back into it
   `git rm -rf .`
+  `ls #{tmp_dir}`
   `cp -r #{File.join(tmp_dir, '*')} .`
 
   # commit and push
   `git add *`
   `git commit -m 'Update website'`
-  `git push origin gh-pages`
+  #{}`git push origin gh-pages`
 end
 
 `git checkout #{starting_branch}`
