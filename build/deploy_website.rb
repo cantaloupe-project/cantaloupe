@@ -31,7 +31,6 @@ Dir.mktmpdir('website') do |tmp_dir|
     puts 'Creating gh-pages'
     result = system('git checkout --orphan gh-pages')
   end
-  raise 'Failed to checkout gh-pages' unless result == 0
 
   # wipe it clean and copy the docs back into it
   `git rm -rf .`
