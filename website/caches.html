@@ -4,13 +4,17 @@ layout: default
 
 <h2>Caches</h2>
 
+<p>Caches cache generated images on the server. Caches are pluggable, to enable different caching mechanisms. (Currently, <a href="#FilesystemCache">FilesystemCache</a> is the only implementation.) Expired files are replaced the next time they are requested.</p>
+
+<p>Cantaloupe does not cache entire information response representations &mdash; only image dimensions, which are the only expensive part to generate. This means it is possible to change other variables that might affect the contents of the representation (like processors) without having to flush the cache.</p>
+
+<p>Cantaloupe caches response representations only --  not the entire request process. Requests are validated and resources are looked up before cached responses are returned. This precludes returning a cached resource representation when the underlying resource is actually not present, but also impairs response times by typically several tens of milliseconds.</p>
+
+<p>Currently, requests for full-sized, un-altered source images are not cached, and are instead streamed through with no processing.</p>
+
 <h3 id="FilesystemCache">FilesystemCache</h3>
 
-<p>FilesystemCache caches generated images and (parts of) information requests into a filesystem directory. The location of this directory is configurable, as is the "time-to-live" of the cache files. Expired files are replaced the next time they are requested.</p>
-
-<p>Cantaloupe does not cache entire information response representations &emdash; only image dimensions, which are the only expensive part to generate. This means it is possible to change other variables that might affect the contents of the representation (like processors) without having to flush the cache.</p>
-
-<p>Cantaloupe caches response representations only --  not the entire request process. Requests are validated and resources are looked up before cached responses are returned. This precludes returning a cached resource representation when the underlying resource is actually not present, but also impacts response times by typically several tens of milliseconds.</p>
+<p>FilesystemCache caches generated images and (parts of) information requests into a filesystem directory. The location of this directory is configurable, as is the "time-to-live" of the cache files.</p>
 
 <h3>Flushing the Cache</h3>
 

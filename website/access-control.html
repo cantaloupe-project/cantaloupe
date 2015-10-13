@@ -4,4 +4,10 @@ layout: default
 
 <h2>Access Control</h2>
 
-<p>Cantaloupe supports HTTP Basic authentication via the <code>http.auth.basic*</code> keys in the configuration file.</p>
+<p>Cantaloupe supports HTTP Basic authentication. When enabled, the entire Cantaloupe website will be restricted.</p>
+
+<p>To enable it, set the following keys in the configuration file:</p>
+
+<pre>http.auth.basic = true
+http.auth.basic.username = myself
+http.auth.basic.secret = password</pre>
