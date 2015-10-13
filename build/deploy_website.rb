@@ -25,7 +25,7 @@ end
 # generate site in a temp dir
 Dir.mktmpdir('website') do |tmp_dir|
   puts "Building site in #{tmp_dir}"
-  `jekyll build -d #{tmp_dir}`
+  `jekyll build -s website -d #{tmp_dir}`
 
   # switch to gh-pages branch
   if orphan_exists
