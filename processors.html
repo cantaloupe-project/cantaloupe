@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description.
+">
+
+  <link rel="canonical" href="http://yourdomain.com/processors.html">
+  <link rel="stylesheet" href="/css/base.css">
+
+  <title>Cantaloupe</title>
+</head>
+
+
+  <body>
+
+    <div class="container-fluid">
+
+      <div class="clearfix">
+        <header>
+  <a href="index.html"><img src="images/cantaloupe.jpg" width="154" height="81"></a>
+  <h1><a href="index.html">Cantaloupe</a>
+    <br>
+    <small>Extensible IIIF Image API 2.0 image server in Java</small>
+  </h1>
+</header>
+
+      </div>
+
+      <div class="row">
+        <div class="col-sm-3">
+          <nav id="toc">
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="index.html#About">About</a></li>
+    <li><a href="index.html#Features">Features</a></li>
+    <li>
+      <a href="getting-started.html">Getting Started</a>
+      <ul>
+        <li><a href="getting-started.html#Requirements">Requirements</a></li>
+        <li><a href="getting-started.html#Configuration">Configuration</a></li>
+        <li><a href="getting-started.html#Running">Running</a></li>
+        <li><a href="getting-started.html#Upgrading">Upgrading</a></li>
+        <li><a href="getting-started.html#Considerations">Considerations</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="resolvers.html">Resolvers</a>
+      <ul>
+        <li><a href="resolvers.html#FilesystemResolver">FilesystemResolver</a></li>
+        <li><a href="resolvesr.html#HttpResolver">HttpResolver</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="processors.html">Processors</a>
+      <ul>
+        <li><a href="processors.html#Java2dProcessor">Java2dProcessor</a></li>
+        <li><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a></li>
+        <li><a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a></li>
+        <li><a href="processors.html#KakaduProcessor">KakaduProcessor</a></li>
+        <li><a href="processors.html#JaiProcessor">JaiProcessor</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="caches.html">Caches</a>
+      <ul>
+        <li><a href="caches.html#FilesystemCache">FilesystemCache</a></li>
+      </ul>
+    </li>
+    <li><a href="access-control.html">Access Control</a></li>
+    <li><a href="client-caching.html">Client-Side Caching</a></li>
+    <li>
+      <a href="logging.html">Logging</a>
+      <ul>
+        <li><a href="logging.html#Application%20Log">Application Log</a></li>
+        <li><a href="logging.html#Access%20Log">Access Log</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="source-formats.html">Source Formats</a>
+      <ul>
+        <li><a href="source-formats.html#JPEG">JPEG</a></li>
+        <li><a href="source-formats.html#JPEG2000">JPEG2000</a></li>
+        <li><a href="source-formats.html#TIFF">TIFF</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="developers.html">Developer's Guide</a>
+      <ul>
+        <li><a href="developers.html#Resolvers">Custom Resolvers</a></li>
+        <li><a href="developers.html#Processors">Custom Processors</a></li>
+        <li><a href="developers.html#Caches">Custom Caches</a></li>
+        <li><a href="developers.html#Contributing">Contributing Code</a></li>
+      </ul>
+    </li>
+    <li><a href="">Feedback</a></li>
+  </ul>
+</nav>
+
+        </div> <!-- .col-sm-3 -->
+
+        <div class="col-sm-9">
+          <h2>Processors</h2>
+
+<p>Cantaloupe can use different image processors for different source formats. (Assignments are made in the configuration file.) Different processors have different quality, compatibility, dependency, and performance characteristics. The choice of processors is designed to make it easy to add support for new image formats; add better support for existing image formats via the use of better decoders; and decouple the image server implementation from any one decoder.</p>
+
+<p>Currently, all processors can work with <a href="resolvers.html#FilesystemResolver">FilesystemResolver</a>, and all but <a href="#KakaduProcessor">KakaduProcessor</a> can work with <a href="resolvers.html#HttpResolver">HttpResolver</a>.</p>
+
+<p>In terms of format support, a distinction is made between the concepts of source format and output format, and furthermore, available output formats may differ on a per-platform or per-instance basis depending on the source format.</p>
+
+<p>Supported source formats depend on the processor, and possibly installed
+libraries/delegates, etc., as well. Lists of these are displayed on the
+landing page, at <span class="filename">/iiif</span>. A list of output formats supported <em>for a given source format</em> is contained within the response to an information request (<span class="filename">/iiif/{identifier}/info.json</span>).</p>
+
+<p>For all of the rest of the source formats you would like to serve, it's a good idea to experiment with different processors, comparing their performance, resource usage, and output quality.</p>
+
+<h3 id="Java2dProcessor">Java2dProcessor</h3>
+
+<p>Java2dProcessor uses the Java ImageIO framework and Java 2D API to load and process images in a native-Java way. This is a good processor to get started with as it has no external dependencies and works out-of-the-JAR.</p>
+
+<p>ImageIO, as its name implies, is simply an I/O interface that does not care about image formats, and therefore the list of formats supported by this processor varies depending on the codec JARs available in the classpath.</p>
+
+<p>Java2dProcessor buffers entire source images in RAM, and is therefore
+memory-intensive. (See the section on <a href="getting-started.html#Memory">memory considerations</a>.) Large amounts of RAM and fast storage help.</p>
+
+<h3 id="GraphicsMagickProcessor">GraphicsMagickProcessor</h3>
+
+<p>GraphicsMagickProcessor uses <a href="http://im4java.sourceforge.net">im4java</a> to fork out to the <a href="http://www.graphicsmagick.org">GraphicsMagick</a> executable
+(<span class="filename">gm</span>). As such, GraphicsMagick must be installed.</p>
+
+<p>GraphicsMagick produces high-quality output and supports all of the IIIF transforms and all IIIF output formats (assuming the necessary libraries are installed; see <a href="http://www.graphicsmagick.org/formats.html">Supported Formats</a>).</p>
+
+<p>GraphicsMagickProcessor is a good fallback processor, as it supports a wide range of source formats and is generally faster than <a href="#ImageMagickProcessor">ImageMagickProcessor</a>. It is recommended to find or compile a "Q8" version of GraphicsMagick, as its memory use will be halved.</p>
+
+<h3 id="ImageMagickProcessor">ImageMagickProcessor</h3>
+
+<p>ImageMagickProcessor, like <a href="#GraphicsMagickProcessor">GraphicsMagickProcessor</a>, uses
+<a href="http://im4java.sourceforge.net">im4java</a> to wrap <a href="http://www.imagemagick.org/">ImageMagick</a> commands. As such, ImageMagick must be installed.</p>
+
+<p>ImageMagick produces high-quality output and supports all of the IIIF
+transforms and all IIIF output formats, assuming the necessary delegates are installed. It also supports a wide array of source formats.</p>
+
+<p>ImageMagick is not known for being particularly fast or efficient, but it is generally quite usable. It is recommended to find or compile a "Q8" version of ImageMagick, as its memory use will be halved.</p>
+
+<h3 id="KakaduProcessor">KakaduProcessor</h3>
+
+<p>KakaduProcessor uses the <span class="filename">kdu_expand</span> and <span class="filename">kdu_jp2info</span> binaries &mdash; part of the
+<a href="http://www.kakadusoftware.com">Kakadu</a> SDK &mdash; to efficiently extract regions of JPEG2000 source images. This processor is capable of performing well even with large JP2s.</p>
+
+<p>Although it does support some other operations, <span class="filename">kdu_expand</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. The rest of the IIIF operations (differential scaling, rotation, etc.) are performed using either the Java 2D or JAI APIs (configurable).</p>
+
+<p>Kakadu is not free and the SDK is not included with Cantaloupe.</p>
+
+<p><em>Note 1: KakaduProcessor does not work in Windows, as it requires access to <span class="filename">/dev/stdout</span>.</em></p>
+
+<p><em>Note 2: KakaduProcessor does not work with HttpResolver.</em></p>
+
+<h3 id="JaiProcessor">JaiProcessor</h3>
+
+<p>Java Advanced Imaging (JAI) is a sophisticated image processing library developed by Sun until around 2006. JaiProcessor uses an updated fork called <a href="https://github.com/geosolutions-it/jai-ext">JAI-EXT</a>.</p>
+
+<p>JAI offers several theoretical advantages over Java 2D for this application: a more efficient rendering pipeline that should reduce memory usage, and capability of region-of-interest decoding with some formats. Whether these advantages play out in reality is an open question; the author's own profiling seems to indicate maybe not.</p>
+
+<p>JaiProcessor can read and write the same formats as Java2dProcessor.</p>
+
+<p>Years ago, Sun published <a href="http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-java-client-419417.html">platform-native accelerator JARs</a> called <a href="http://www.oracle.com/technetwork/java/install-1-1-2-135866.html">mediaLib</a> for Windows, Linux, and Solaris, which improved JAI's performance. It is unknown whether these still work on modern platforms, but perhaps they are something to try.</p>
+
+<p><em>Note: if mediaLib is not installed, an error message will be generated saying, "Could not find mediaLib accelerator wrapper classes. Continuing in pure Java mode." This is harmless, but can be suppressed anyway by launching Cantaloupe with the `-Dcom.sun.media.jai.disableMediaLib=true` option.</em></p>
+
+        </div>
+      </div>
+
+      <footer>
+</footer>
+
+
+    </div>
+
+  </body>
+
+</html>
