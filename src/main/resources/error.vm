@@ -6,7 +6,7 @@
         <title>$pageTitle</title>
     </head>
 
-    <body id="cantaloupe-error">
+    <body id="cl-error">
         <div class="container-fluid">
             <h1>$pageTitle</h1>
 
