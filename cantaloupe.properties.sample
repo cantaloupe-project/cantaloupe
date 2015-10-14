@@ -35,7 +35,8 @@ resolver = FilesystemResolver
 ###
 
 # Server-side path that will be prefixed to the identifier in the URL.
-FilesystemResolver.path_prefix = /home/myself/images
+# Trailing slash is important.
+FilesystemResolver.path_prefix = /home/myself/images/
 
 # Server-side path or extension that will be suffixed to the identifier
 # in the URL.
@@ -52,7 +53,8 @@ FilesystemResolver.path_suffix =
 # HttpResolver
 ###
 
-# URL that will be prefixed to the identifier in the request URL.
+# URL that will be prefixed to the identifier in the request URL. Trailing
+# slash is important.
 HttpResolver.url_prefix = http://localhost/images/
 
 # Path, extension, query string, etc. that will be suffixed to the
