@@ -59,7 +59,7 @@ public abstract class ProcessorTest extends TestCase {
         }
         if (getProcessor() instanceof FileProcessor) {
             FileProcessor proc = (FileProcessor) getProcessor();
-            Dimension actualSize = proc.getSize(getFixture("escher_lego.jp2"),
+            Dimension actualSize = proc.getSize(getFixture("escher_lego.jpg"),
                     SourceFormat.JPG);
             assertEquals(expectedSize, actualSize);
         }
