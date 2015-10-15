@@ -14,10 +14,17 @@ public class ApplicationLogFilter extends Filter<ILoggingEvent> {
      * Filters out useless log messages.
      */
     public FilterReply decide(ILoggingEvent event) {
-        return (event.getLoggerName().equals("org.restlet") &&
+        if (event.getLoggerName().equals("org.restlet") &&
                 event.getLevel().equals(Level.INFO) &&
-                event.getMessage().contains("ing the internal HTTP client")) ?
-                FilterReply.DENY : FilterReply.NEUTRAL;
+                event.getMessage().contains("ing the internal HTTP client")) {
+            return FilterReply.DENY;
+        } else if (event.getLoggerName().startsWith("org.restlet") &&
+                event.getLevel().equals(Level.INFO) &&
+                event.getMessage().startsWith("Starting") &&
+                event.getMessage().endsWith("application")) {
+            return FilterReply.DENY;
+        }
+        return FilterReply.NEUTRAL;
     }
 
 }
