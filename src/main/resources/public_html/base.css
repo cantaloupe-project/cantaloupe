@@ -34,6 +34,10 @@ body#cl-landing header img {
     margin: 0em 1.2em 1em 0;
 }
 
+body#cl-landing header a {
+    font-size: 0.8em;
+}
+
 body#cl-landing section {
     border-top: 1px solid #e0e0e0;
     padding: 0.6em 0em 1.1em 0em;
