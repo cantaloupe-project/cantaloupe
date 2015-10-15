@@ -110,8 +110,12 @@ public class Application {
                     "with the -Dcantaloupe.config=/path/to/cantaloupe.properties option.");
             System.exit(0);
         }
+        final int mb = 1024 * 1024;
+        Runtime runtime = Runtime.getRuntime();
         logger.info(System.getProperty("java.vm.name") + " / " +
                 System.getProperty("java.vm.info"));
+        logger.info("Heap total: {}MB; max: {}MB", runtime.totalMemory() / mb,
+                runtime.maxMemory() / mb);
         logger.info("Starting Cantaloupe {}", getVersion());
 
         if (System.getProperty("cantaloupe.cache.flush") != null) {
