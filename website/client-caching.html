@@ -1,0 +1,24 @@
+---
+layout: default
+---
+
+<h2>Client-Side Caching</h2>
+
+<p>The HTTP/1.1 Cache-Control response header is configurable via the
+<code>cache.client.*</code> keys in the configuration file. The default settings look something like this:</p>
+
+<pre>cache.client.max_age = 2592000
+cache.client.shared_max_age =
+cache.client.public = true
+cache.client.private = false
+cache.client.no_cache = false
+cache.client.no_store = false
+cache.client.must_revalidate = false
+cache.client.proxy_revalidate = false
+cache.client.no_transform = true</pre>
+
+<p>These are reasonable defaults that tell clients they can keep cached images for one month (2592000 seconds).</p>
+
+<p>Note that the Cache-Control header must have a particular structure, so not just any combination of the above will work.</p>
+
+<p>To disable the Cache-Control header, simply comment out the <code>cache.client.*</code> lines.</p>

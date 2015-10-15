@@ -149,6 +149,7 @@ class KakaduProcessor implements FileProcessor {
         return path;
     }
 
+    @Override
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
         Set<OutputFormat> outputFormats = new HashSet<>();
         if (sourceFormat == SourceFormat.JP2) {
@@ -166,6 +167,7 @@ class KakaduProcessor implements FileProcessor {
      * @return
      * @throws ProcessorException
      */
+    @Override
     public Dimension getSize(File inputFile, SourceFormat sourceFormat)
             throws ProcessorException {
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -198,6 +200,7 @@ class KakaduProcessor implements FileProcessor {
         }
     }
 
+    @Override
     public Set<ProcessorFeature> getSupportedFeatures(SourceFormat sourceFormat) {
         Set<ProcessorFeature> features = new HashSet<>();
         if (getAvailableOutputFormats(sourceFormat).size() > 0) {
@@ -206,6 +209,7 @@ class KakaduProcessor implements FileProcessor {
         return features;
     }
 
+    @Override
     public Set<Quality> getSupportedQualities(SourceFormat sourceFormat) {
         Set<Quality> qualities = new HashSet<>();
         if (getAvailableOutputFormats(sourceFormat).size() > 0) {
@@ -214,6 +218,7 @@ class KakaduProcessor implements FileProcessor {
         return qualities;
     }
 
+    @Override
     public void process(Parameters params, SourceFormat sourceFormat,
                         Dimension fullSize, File inputFile,
                         OutputStream outputStream) throws ProcessorException {

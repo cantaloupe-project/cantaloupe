@@ -139,6 +139,7 @@ class ImageMagickProcessor implements StreamProcessor {
         return supportedFormats;
     }
 
+    @Override
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
         Set<OutputFormat> formats = getFormats().get(sourceFormat);
         if (formats == null) {
@@ -147,6 +148,7 @@ class ImageMagickProcessor implements StreamProcessor {
         return formats;
     }
 
+    @Override
     public Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
             throws ProcessorException {
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -163,6 +165,7 @@ class ImageMagickProcessor implements StreamProcessor {
         }
     }
 
+    @Override
     public Set<ProcessorFeature> getSupportedFeatures(
             final SourceFormat sourceFormat) {
         Set<ProcessorFeature> features = new HashSet<>();
@@ -172,6 +175,7 @@ class ImageMagickProcessor implements StreamProcessor {
         return features;
     }
 
+    @Override
     public Set<Quality> getSupportedQualities(final SourceFormat sourceFormat) {
         Set<Quality> qualities = new HashSet<>();
         if (getAvailableOutputFormats(sourceFormat).size() > 0) {
@@ -180,6 +184,7 @@ class ImageMagickProcessor implements StreamProcessor {
         return qualities;
     }
 
+    @Override
     public void process(Parameters params, SourceFormat sourceFormat,
                         Dimension fullSize, InputStream inputStream,
                         OutputStream outputStream) throws ProcessorException {

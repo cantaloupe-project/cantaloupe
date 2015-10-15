@@ -261,11 +261,15 @@ public class ImageResource extends AbstractResource {
                             resolver.getClass().getSimpleName()));
         } else if (resolver instanceof FileResolver &&
                 proc instanceof FileProcessor) {
+            logger.debug("Using {} as a FileProcessor",
+                    proc.getClass().getSimpleName());
             File inputFile = ((FileResolver) resolver).
                     getFile(params.getIdentifier());
             return new ImageRepresentation(mediaType, sourceFormat, params,
                     inputFile);
         } else if (resolver instanceof StreamResolver) {
+            logger.debug("Using {} as a StreamProcessor",
+                    proc.getClass().getSimpleName());
             StreamResolver sres = (StreamResolver) resolver;
             if (proc instanceof StreamProcessor) {
                 StreamProcessor sproc = (StreamProcessor) proc;

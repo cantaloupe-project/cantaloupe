@@ -30,6 +30,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.renderable.ParameterBlock;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -118,6 +119,27 @@ abstract class ProcessorUtil {
             croppedImage = inImage.getSubimage(x, y, croppedWidth, croppedHeight);
         }
         return croppedImage;
+    }
+
+    private static Dimension doGetSize(Object input, SourceFormat sourceFormat)
+            throws ProcessorException {
+        Iterator<ImageReader> iter = ImageIO.
+                getImageReadersBySuffix(sourceFormat.getPreferredExtension());
+        if (iter.hasNext()) {
+            ImageReader reader = iter.next();
+            int width, height;
+            try {
+                reader.setInput(ImageIO.createImageInputStream(input));
+                width = reader.getWidth(reader.getMinIndex());
+                height = reader.getHeight(reader.getMinIndex());
+            } catch (IOException e) {
+                throw new ProcessorException(e.getMessage(), e);
+            } finally {
+                reader.dispose();
+            }
+            return new Dimension(width, height);
+        }
+        return null;
     }
 
     public static BufferedImage filterImage(BufferedImage inImage,
@@ -213,23 +235,21 @@ abstract class ProcessorUtil {
     public static Dimension getSize(InputStream inputStream,
                                     SourceFormat sourceFormat)
             throws ProcessorException {
-        Iterator<ImageReader> iter = ImageIO.
-                getImageReadersBySuffix(sourceFormat.getPreferredExtension());
-        if (iter.hasNext()) {
-            ImageReader reader = iter.next();
-            int width, height;
-            try {
-                reader.setInput(ImageIO.createImageInputStream(inputStream));
-                width = reader.getWidth(reader.getMinIndex());
-                height = reader.getHeight(reader.getMinIndex());
-            } catch (IOException e) {
-                throw new ProcessorException(e.getMessage(), e);
-            } finally {
-                reader.dispose();
-            }
-            return new Dimension(width, height);
-        }
-        return null;
+        return doGetSize(inputStream, sourceFormat);
+    }
+
+    /**
+     * Efficiently reads the width & height of an image without reading the
+     * entire image into memory.
+     *
+     * @param inputFile
+     * @param sourceFormat
+     * @return Dimensions in pixels
+     * @throws ProcessorException
+     */
+    public static Dimension getSize(File inputFile, SourceFormat sourceFormat)
+            throws ProcessorException {
+        return doGetSize(inputFile, sourceFormat);
     }
 
     public static Set<OutputFormat> imageIoOutputFormats() {

@@ -92,7 +92,11 @@ public class ProcessorUtilTest extends TestCase {
         assertTrue(Math.abs(ProcessorUtil.getScale(5)) - Math.abs(0.03125f) < fudge);
     }
 
-    public void testGetSize() {
+    public void testGetSizeWithFile() {
+        // TODO: write this
+    }
+
+    public void testGetSizeWithInputStream() {
         // TODO: write this
     }
 

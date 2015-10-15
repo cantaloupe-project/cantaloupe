@@ -36,10 +36,6 @@ public class Application {
     private static Configuration config;
 
     static {
-        if (getConfiguration() == null) {
-            System.exit(0);
-        }
-
         initializeLogging();
 
         Velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
@@ -109,8 +105,17 @@ public class Application {
     }
 
     public static void main(String[] args) throws Exception {
+        if (getConfiguration() == null) {
+            System.out.println("No configuration file specified. Try again " +
+                    "with the -Dcantaloupe.config=/path/to/cantaloupe.properties option.");
+            System.exit(0);
+        }
+        final int mb = 1024 * 1024;
+        Runtime runtime = Runtime.getRuntime();
         logger.info(System.getProperty("java.vm.name") + " / " +
                 System.getProperty("java.vm.info"));
+        logger.info("Heap total: {}MB; max: {}MB", runtime.totalMemory() / mb,
+                runtime.maxMemory() / mb);
         logger.info("Starting Cantaloupe {}", getVersion());
 
         if (System.getProperty("cantaloupe.cache.flush") != null) {
@@ -129,20 +134,16 @@ public class Application {
         if (config == null) {
             try {
                 String configFilePath = System.getProperty("cantaloupe.config");
-                if (configFilePath == null) {
-                    throw new ConfigurationException("No configuration file " +
-                            "specified. Try again with the " +
-                            "-Dcantaloupe.config=/path/to/cantaloupe.properties " +
-                            "option.");
+                if (configFilePath != null) {
+                    configFilePath = configFilePath.replaceFirst("^~",
+                            System.getProperty("user.home"));
+                    PropertiesConfiguration propConfig = new PropertiesConfiguration();
+                    propConfig.load(configFilePath);
+                    config = propConfig;
                 }
-                configFilePath = configFilePath.replaceFirst("^~",
-                        System.getProperty("user.home"));
-                PropertiesConfiguration propConfig = new PropertiesConfiguration();
-                propConfig.load(configFilePath);
-                config = propConfig;
             } catch (ConfigurationException e) {
                 // The logger has probably not been initialized yet, as it
-                // depends on a working configuration
+                // depends on a working configuration.
                 System.out.println(e.getMessage());
             }
         }
