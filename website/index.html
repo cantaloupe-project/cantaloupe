@@ -6,12 +6,12 @@ layout: default
 
 <p>Cantaloupe is an open-source image server developed at the <a href="http://www.library.illinois.edu/">University of Illinois at Urbana-Champaign Library</a>. By combining the basic operations of cropping, scaling, rotation, flipping, color filtering, and format conversion, it can support on-the-fly derivative image generation and deep zooming into high-resolution source images.</p>
 
-<p>The <a href="http://iiif.io/api/image/2.0/">IIIF Image API</a> is an open standard intended to promote interoperability between clients &mdash; like zooming image viewers &mdash; and image servers. Cantaloupe itself and most of its processors meet the highest possible compliance level, and should work with any IIIF-compatible client software, including <a href="https://openseadragon.github.io">OpenSeadragon</a>, Mirador, and so on.</p>
+<p>The <a href="http://iiif.io/api/image/2.0/">IIIF Image API</a> is an open standard intended to promote interoperability between clients &mdash; like zooming image viewers &mdash; and image servers. Cantaloupe itself and most of its processors meet the highest possible compliance level, and should work with any <a href="http://iiif.io/apps-demos.html">IIIF-compatible client software</a>.</p>
 
 <p>Cantaloupe features a configurable processing pipeline based on:</p>
 
 <ul>
-  <li><a href="resolvers.html">Resolvers</a>, that locate source images;</li>
+  <li><a href="resolvers.html">Resolvers</a>, that locate and retrieve source images;</li>
   <li><a href="processors.html">Processors</a>, that transform them according to the parameters in an image request; and</li>
   <li><a href="caches.html">Caches</a>, that cache generated images.</li>
 </ul>
