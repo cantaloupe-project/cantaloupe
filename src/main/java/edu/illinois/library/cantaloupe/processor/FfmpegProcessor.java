@@ -35,10 +35,11 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Processor using the ffmpeg and ffprobe tools to extract video frames. Works
- * with ffmpeg 2.8 (other versions untested).
+ * Processor that uses the ffmpeg command-line tool to extract video frames,
+ * and the ffprobe tool to get video information. Works with ffmpeg 2.8 (other
+ * versions untested).
  */
-class FfmpegProcessor implements FileProcessor, StreamProcessor {
+class FfmpegProcessor implements FileProcessor {
 
     private class StreamCopier implements Runnable {
 
@@ -151,6 +152,7 @@ class FfmpegProcessor implements FileProcessor, StreamProcessor {
         try {
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.redirectErrorStream(true);
+            logger.debug("Executing " + StringUtils.join(pb.command(), " "));
             Process process = pb.start();
 
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -265,6 +267,7 @@ class FfmpegProcessor implements FileProcessor, StreamProcessor {
         try {
             final ProcessBuilder pb = getProcessBuilder(params, fullSize,
                     inputFile);
+            logger.debug("Executing " + StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
             new Thread(new StreamCopier(process.getInputStream(), outputBucket)).start();
@@ -383,8 +386,8 @@ class FfmpegProcessor implements FileProcessor, StreamProcessor {
         command.add("-i");
         command.add(inputArg);
         command.add("-nostdin");
-        //command.add("-v");
-        //command.add("quiet");
+        command.add("-v");
+        command.add("quiet");
         command.add("-vframes");
         command.add("1");
         command.add("-an"); // disable audio
