@@ -192,6 +192,17 @@ FilesystemCache.pathname = /var/cache/cantaloupe
 # blank or 0 for "forever"
 FilesystemCache.ttl_seconds = 2592000
 
+###
+# JdbcCache
+###
+
+JdbcCache.connection_string = jdbc:postgresql://localhost:5432/cantaloupe
+JdbcCache.user = alexd
+JdbcCache.password =
+JdbcCache.image_table = image_cache
+JdbcCache.info_table = info_cache
+JdbcCache.ttl_seconds = 10
+
 ###############
 # LOGGING
 ###############
