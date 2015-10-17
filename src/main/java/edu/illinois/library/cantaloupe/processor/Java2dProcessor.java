@@ -87,6 +87,10 @@ class Java2dProcessor implements StreamProcessor {
                 if (sourceFormat.getMediaTypes().
                         contains(new MediaType(readerMimeTypes[i].toLowerCase()))) {
                     for (OutputFormat outputFormat : OutputFormat.values()) {
+                        // TODO: not working (see inline comment in ProcessorUtil.writeImage())
+                        if (outputFormat.equals(OutputFormat.JP2)) {
+                            continue;
+                        }
                         for (i = 0, length = writerMimeTypes.length; i < length; i++) {
                             if (outputFormat.getMediaType().equals(writerMimeTypes[i].toLowerCase())) {
                                 outputFormats.add(outputFormat);

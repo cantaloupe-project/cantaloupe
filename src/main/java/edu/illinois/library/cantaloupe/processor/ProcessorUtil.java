@@ -616,6 +616,7 @@ abstract class ProcessorUtil {
                 }
                 break; */
             default:
+                // TODO: jp2 doesn't seem to work
                 ImageIO.write(image, outputFormat.getExtension(),
                         outputStream);
                 break;
