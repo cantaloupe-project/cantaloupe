@@ -134,7 +134,7 @@ public class ApplicationTest extends TestCase {
 
         File.createTempFile("bla1", "tmp", imageDir);
         File.createTempFile("bla1", "tmp", infoDir);
-        Thread.sleep(1800);
+        Thread.sleep(2500);
         File.createTempFile("bla2", "tmp", imageDir);
         File.createTempFile("bla2", "tmp", infoDir);
 

@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import java.awt.Dimension;
-import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -174,7 +173,7 @@ public class InformationResource extends AbstractResource {
     }
 
     private String getImageUri(Identifier identifier) {
-        return this.getRootRef() + ImageServerApplication.BASE_IIIF_PATH +
+        return getPublicRootRef() + ImageServerApplication.BASE_IIIF_PATH +
                 "/" + Reference.encode(identifier.toString());
     }
 
@@ -233,9 +232,9 @@ public class InformationResource extends AbstractResource {
                         sourceFormat);
             }
         } else if (resolver instanceof StreamResolver) {
-            if (proc instanceof FileProcessor) {
+            if (!(proc instanceof StreamProcessor)) {
                 // StreamResolvers don't support FileProcessors
-            } else if (proc instanceof StreamProcessor) {
+            } else {
                 size = ((StreamProcessor)proc).getSize(
                         ((StreamResolver) resolver).getInputStream(identifier),
                         sourceFormat);

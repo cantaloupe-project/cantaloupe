@@ -12,14 +12,11 @@ import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.request.Region;
 import it.geosolutions.jaiext.JAIExt;
 import org.restlet.data.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
@@ -28,7 +25,9 @@ import javax.media.jai.RenderedOp;
 import java.awt.Dimension;
 import java.awt.RenderingHints;
 import java.awt.image.renderable.ParameterBlock;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,9 +37,7 @@ import java.util.Set;
 /**
  * Processor using the Java Advanced Imaging (JAI) framework.
  */
-class JaiProcessor implements StreamProcessor {
-
-    private static Logger logger = LoggerFactory.getLogger(JaiProcessor.class);
+class JaiProcessor implements FileProcessor, StreamProcessor {
 
     private static final int JAI_TILE_SIZE = 512;
     private static final Set<Quality> SUPPORTED_QUALITIES = new HashSet<>();
@@ -106,16 +103,24 @@ class JaiProcessor implements StreamProcessor {
         return formatsMap;
     }
 
+    @Override
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
         return getFormats().get(sourceFormat);
     }
 
-    public Dimension getSize(ImageInputStream inputStream,
-                             SourceFormat sourceFormat)
+    @Override
+    public Dimension getSize(File inputFile, SourceFormat sourceFormat)
+            throws ProcessorException {
+        return ProcessorUtil.getSize(inputFile, sourceFormat);
+    }
+
+    @Override
+    public Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
             throws ProcessorException {
         return ProcessorUtil.getSize(inputStream, sourceFormat);
     }
 
+    @Override
     public Set<ProcessorFeature> getSupportedFeatures(
             final SourceFormat sourceFormat) {
         Set<ProcessorFeature> features = new HashSet<>();
@@ -125,6 +130,7 @@ class JaiProcessor implements StreamProcessor {
         return features;
     }
 
+    @Override
     public Set<Quality> getSupportedQualities(final SourceFormat sourceFormat) {
         Set<Quality> qualities = new HashSet<>();
         if (getAvailableOutputFormats(sourceFormat).size() > 0) {
@@ -133,8 +139,22 @@ class JaiProcessor implements StreamProcessor {
         return qualities;
     }
 
+    @Override
     public void process(Parameters params, SourceFormat sourceFormat,
-                        ImageInputStream inputStream, OutputStream outputStream)
+                        Dimension sourceSize, File inputFile,
+                        OutputStream outputStream) throws ProcessorException {
+        doProcess(params, sourceFormat, inputFile, outputStream);
+    }
+
+    @Override
+    public void process(Parameters params, SourceFormat sourceFormat,
+                        Dimension fullSize, InputStream inputStream,
+                        OutputStream outputStream) throws ProcessorException {
+        doProcess(params, sourceFormat, inputStream, outputStream);
+    }
+
+    private void doProcess(Parameters params, SourceFormat sourceFormat,
+                           Object input, OutputStream outputStream)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
@@ -145,7 +165,7 @@ class JaiProcessor implements StreamProcessor {
         }
 
         try {
-            RenderedOp image = loadRegion(inputStream, params.getRegion());
+            RenderedOp image = loadRegion(input, params.getRegion());
             image = ProcessorUtil.scaleImage(image, params.getSize());
             image = ProcessorUtil.rotateImage(image, params.getRotation());
             image = ProcessorUtil.filterImage(image, params.getQuality());
@@ -155,13 +175,13 @@ class JaiProcessor implements StreamProcessor {
         }
     }
 
-    private RenderedOp loadRegion(ImageInputStream inputStream, Region region) {
+    private RenderedOp loadRegion(Object input, Region region) {
         ParameterBlockJAI pbj = new ParameterBlockJAI("ImageRead");
         ImageLayout layout = new ImageLayout();
         layout.setTileWidth(JAI_TILE_SIZE);
         layout.setTileHeight(JAI_TILE_SIZE);
         RenderingHints hints = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, layout);
-        pbj.setParameter("Input", inputStream);
+        pbj.setParameter("Input", input);
         RenderedOp op = JAI.create("ImageRead", pbj, hints);
 
         RenderedOp croppedImage;

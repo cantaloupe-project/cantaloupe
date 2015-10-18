@@ -1,0 +1,41 @@
+---
+layout: default
+---
+
+<h2>Logging</h2>
+
+<p>Cantaloupe maintains two types of logs &mdash; application and access &mdash; which are independently configurable.
+
+<h3 id="Application Log">Application Log</h3>
+
+<pre># `trace`, `debug`, `info`, `warn`, `error`, `all`, or `off`
+log.application.level = debug
+
+log.application.ConsoleAppender.enabled = true
+log.application.ConsoleAppender.pattern = %d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+
+log.application.FileAppender.enabled = false
+log.application.FileAppender.pathname = /path/to/logs/cantaloupe.log
+log.application.FileAppender.pattern = %date %level [%thread] %logger{10} [%file:%line] %msg%n
+
+log.application.RollingFileAppender.enabled = false
+log.application.RollingFileAppender.pathname = /path/to/logs/cantaloupe.log
+log.application.RollingFileAppender.pattern = %date %level [%thread] %logger{10} [%file:%line] %msg%n
+log.application.RollingFileAppender.policy = TimeBasedRollingPolicy
+log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/cantaloupe-%d{yyyy-MM-dd}.log
+log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30</pre>
+
+<h3 id="Access Log">Access Log</h3>
+
+<p>Access logs are written in the <a href="http://www.w3.org/TR/WD-logfile.html">W3C Extended Log File Format</a>.
+
+<pre>log.access.ConsoleAppender.enabled = true
+
+log.access.FileAppender.enabled = false
+log.access.FileAppender.pathname = /path/to/logs/access.log
+
+log.access.RollingFileAppender.enabled = false
+log.access.RollingFileAppender.pathname = /path/to/logs/access.log
+log.access.RollingFileAppender.policy = TimeBasedRollingPolicy
+log.access.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/access-%d{yyyy-MM-dd}.log
+log.access.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30</pre>

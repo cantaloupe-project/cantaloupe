@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.ImageInfo;
 import org.apache.commons.configuration.Configuration;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.Status;
@@ -51,6 +53,28 @@ public class InformationResourceTest extends ResourceTest {
                 }
             }
         }
+    }
+
+    public void testJson() throws IOException {
+        // TODO: this could be a lot more thorough; but the aspects of the JSON
+        // response defined in the Image API spec are tested in
+        // Iiif20ConformanceTest
+
+        // test whether the @id property respects the generate_https_links
+        // setting in the app config
+        ClientResource client = getClientForUriPath("/escher_lego.jpg/info.json");
+        client.get();
+        String json = client.getResponse().getEntityAsText();
+        ObjectMapper mapper = new ObjectMapper();
+        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        assertTrue(info.getId().startsWith("http://"));
+
+        Configuration config = Application.getConfiguration();
+        config.setProperty("generate_https_links", true);
+        client.get();
+        json = client.getResponse().getEntityAsText();
+        info = mapper.readValue(json, ImageInfo.class);
+        assertTrue(info.getId().startsWith("https://"));
     }
 
     public void testNotFound() throws IOException {

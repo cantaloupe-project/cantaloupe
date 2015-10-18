@@ -1,0 +1,46 @@
+---
+layout: default
+---
+
+<h2>Change Log</h2>
+
+<h3>1.0</h3>
+
+<ul>
+  <li>Sped up TIFF decoding in Java2dProcessor.</li>
+  <li>Added configurable logging.</li>
+  <li>Added JdbcResolver.</li>
+  <li>Added a configuration option to generate links using the https scheme.</li>
+  <li>Added memory and VM arguments information to the landing page and startup log.</li>
+</ul>
+
+<h3>1.0-beta3</h3>
+
+<ul>
+  <li>Added client-side caching.</li>
+  <li>Added HTTP Basic authentication.</li>
+  <li>Added KakaduProcessor.</li>
+  <li>Added a <code>sizes</code> key to information responses.</li>
+  <li>Renamed ImageIoProcessor to Java2dProcessor.</li>
+  <li>Java2dProcessor supports pyramidal TIFF.</li>
+  <li>Improved the thread-safety of FilesystemCache.</li>
+  <li>Improved the security of FilesystemResolver.</li>
+  <li>Source images are streamed directly rather than being re-encoded when the
+    IIIF parameters request a full-size, unmodified image.</li>
+  <li>Cantaloupe is now distributed as a .zip archive.</li>
+</ul>
+
+<h3>1.0-beta2</h3>
+
+<ul>
+  <li>Added optional server-side caching via FilesystemCache.</li>
+  <li>Added configurable path separators in FilesystemResolver and HttpResolver.</li>
+  <li>The application version is displayed on the landing page and in a startup log
+  message.</li>
+</ul>
+
+<h3>1.0-beta1</h3>
+
+<ul>
+  <li>First version.</li>
+</ul>

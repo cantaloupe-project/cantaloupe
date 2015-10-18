@@ -1,0 +1,44 @@
+---
+layout: default
+---
+
+<h2>Developer's Guide</h2>
+
+<p>Cantaloupe is a standard Maven project that should open right up in any Java IDE.</p>
+
+<h3 id="Resolvers">Custom Resolvers</h3>
+
+<p>A resolver is a class that implements the <code>e.i.l.c.resolver.FileResolver</code>
+and/or <code>e.i.l.c.resolver.StreamResolver</code> interfaces. Then, to use it, set <code>resolver</code> in your configuration file to its name.</p>
+
+<p>See one of the existing resolvers for examples.</p>
+
+<h3 id="Processors">Custom Image Processors</h3>
+
+<p>A processor is a class that implements the <code>e.i.l.c.processor.FileProcessor</code>
+and/or <code>e.i.l.c.processor.StreamProcessor</code> interfaces. See the interface documentation for details and the existing implementations for examples.</p>
+
+<p>Another option might be to add an ImageIO format plugin instead of a custom processor; then it would work with Java2dProcessor or JaiProcessor.</p>
+
+<h3 id="Caches">Custom Caches</h3>
+
+<p>A cache is a class that implements the <code>e.i.l.c.cache.Cache</code> interface. See the interface documentation for details and the existing implementations for
+examples.</p>
+
+<h3 id="Caches">Javadoc</h3>
+
+<a href="{{site.baseurl}}/javadoc/">Javadoc</a>
+
+<h3 id="Contributing">Contributing</h3>
+
+<p>Ideas, suggestions, feature requests, bug reports, and other kinds of feedback are welcome; <a href="mailto:alexd@illinois.edu">contact the author</a>, or submit an issue or pull request.
+
+<p>The general process for contributing code changes is:</p>
+
+<ol>
+  <li><a href="https://github.com/medusa-project/cantaloupe/fork">Create a fork</a></li>
+  <li>Create a feature branch (<code>git checkout -b feature/my-new-feature</code>)</li>
+  <li>Commit your changes (<code>`git commit -am 'Add some feature'</code>)</li>
+  <li>Push to the branch (<code>git push origin feature/my-new-feature</code>)</li>
+  <li>Create a new Pull Request</li>
+</ol>

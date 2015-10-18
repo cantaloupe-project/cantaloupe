@@ -24,8 +24,6 @@ import org.restlet.routing.Template;
 import org.restlet.security.ChallengeAuthenticator;
 import org.restlet.security.MapVerifier;
 import org.restlet.service.StatusService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -127,9 +125,6 @@ public class ImageServerApplication extends Application {
 
     }
 
-    private static Logger logger = LoggerFactory.
-            getLogger(ImageServerApplication.class);
-
     public ImageServerApplication() {
         super();
         this.setStatusService(new CustomStatusService());
@@ -194,7 +189,7 @@ public class ImageServerApplication extends Application {
                 return authenticator;
             }
         } catch (NoSuchElementException e) {
-            logger.info("HTTP Basic authentication disabled.");
+            getLogger().info("HTTP Basic authentication disabled.");
         }
 
         // Hook up the static file server (for CSS & images)

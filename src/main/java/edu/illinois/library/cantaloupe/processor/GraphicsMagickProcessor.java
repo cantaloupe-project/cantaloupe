@@ -13,16 +13,15 @@ import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
 import org.im4java.core.IMOperation;
 import org.im4java.core.Info;
-import org.im4java.core.InfoException;
 import org.im4java.process.Pipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -30,7 +29,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Processor using the GraphicsMagick `gm` command-line tool.
+ * <p>Processor using the GraphicsMagick <code>gm</code> command-line tool.</p>
+ *
+ * <p>Does not implement <code>FileProcessor</code> because testing indicates
+ * that input streams are significantly faster.</p>
  */
 class GraphicsMagickProcessor implements StreamProcessor {
 
@@ -42,9 +44,6 @@ class GraphicsMagickProcessor implements StreamProcessor {
             new HashSet<>();
     // Lazy-initialized by getFormats()
     private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
-
-    private ImageInputStream inputStream;
-    private SourceFormat sourceFormat;
 
     static {
         SUPPORTED_QUALITIES.add(Quality.BITONAL);
@@ -143,6 +142,7 @@ class GraphicsMagickProcessor implements StreamProcessor {
         return supportedFormats;
     }
 
+    @Override
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
         Set<OutputFormat> formats = getFormats().get(sourceFormat);
         if (formats == null) {
@@ -151,23 +151,19 @@ class GraphicsMagickProcessor implements StreamProcessor {
         return formats;
     }
 
-    public Dimension getSize(ImageInputStream inputStream,
-                             SourceFormat sourceFormat)
+    public Dimension getSize(File file, SourceFormat sourceFormat)
             throws ProcessorException {
-        try {
-            inputStream.mark();
-            ImageInputStreamWrapper wrapper = new ImageInputStreamWrapper(inputStream);
-            Info sourceInfo = new Info(sourceFormat.getPreferredExtension() + ":-",
-                    wrapper, true);
-            Dimension dimension = new Dimension(sourceInfo.getImageWidth(),
-                    sourceInfo.getImageHeight());
-            inputStream.reset();
-            return dimension;
-        } catch (InfoException|IOException e) {
-            throw new ProcessorException(e.getMessage(), e);
-        }
+        return doGetSize(file.getAbsolutePath(), null, sourceFormat);
     }
 
+    @Override
+    public Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
+            throws ProcessorException {
+        return doGetSize(sourceFormat.getPreferredExtension() + ":-",
+                inputStream, sourceFormat);
+    }
+
+    @Override
     public Set<ProcessorFeature> getSupportedFeatures(
             final SourceFormat sourceFormat) {
         Set<ProcessorFeature> features = new HashSet<>();
@@ -177,6 +173,7 @@ class GraphicsMagickProcessor implements StreamProcessor {
         return features;
     }
 
+    @Override
     public Set<Quality> getSupportedQualities(final SourceFormat sourceFormat) {
         Set<Quality> qualities = new HashSet<>();
         if (getAvailableOutputFormats(sourceFormat).size() > 0) {
@@ -186,65 +183,33 @@ class GraphicsMagickProcessor implements StreamProcessor {
     }
 
     public void process(Parameters params, SourceFormat sourceFormat,
-                        ImageInputStream inputStream, OutputStream outputStream)
-            throws ProcessorException {
-        final Set<OutputFormat> availableOutputFormats =
-                getAvailableOutputFormats(sourceFormat);
-        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
-            throw new UnsupportedSourceFormatException(sourceFormat);
-        } else if (!availableOutputFormats.contains(params.getOutputFormat())) {
-            throw new UnsupportedOutputFormatException();
-        }
-
-        this.inputStream = inputStream;
-        this.sourceFormat = sourceFormat;
-
-        try {
-            IMOperation op = new IMOperation();
-            op.addImage(sourceFormat.getPreferredExtension() + ":-"); // read from stdin
-            assembleOperation(op, params);
-
-            // format transformation
-            op.addImage(params.getOutputFormat().getExtension() + ":-"); // write to stdout
-
-            ImageInputStreamWrapper wrapper = new ImageInputStreamWrapper(inputStream);
-            Pipe pipeIn = new Pipe(wrapper, null);
-            Pipe pipeOut = new Pipe(null, outputStream);
-
-            ConvertCmd convert = new ConvertCmd(true);
-
-            String binaryPath = Application.getConfiguration().
-                    getString("GraphicsMagickProcessor.path_to_binaries", "");
-            if (binaryPath.length() > 0) {
-                convert.setSearchPath(binaryPath);
-            }
-            convert.setInputProvider(pipeIn);
-            convert.setOutputConsumer(pipeOut);
-            convert.run(op);
-        } catch (InterruptedException|IM4JavaException|IOException e) {
-            throw new ProcessorException(e.getMessage(), e);
-        }
+                        Dimension fullSize, File file,
+                        OutputStream outputStream) throws ProcessorException {
+        doProcess(file.getAbsolutePath(), null, params, sourceFormat, fullSize,
+                outputStream);
     }
 
-    private void assembleOperation(IMOperation op, Parameters params) {
+    @Override
+    public void process(Parameters params, SourceFormat sourceFormat,
+                        Dimension fullSize, InputStream inputStream,
+                        OutputStream outputStream) throws ProcessorException {
+        doProcess(sourceFormat.getPreferredExtension() + ":-", inputStream,
+                params, sourceFormat, fullSize, outputStream);
+    }
+
+    private void assembleOperation(IMOperation op, Parameters params,
+                                   Dimension fullSize) {
         // region transformation
         Region region = params.getRegion();
         if (!region.isFull()) {
             if (region.isPercent()) {
-                try {
-                    // im4java doesn't support cropping x/y by percentage (only
-                    // width/height), so we have to calculate them.
-                    Dimension imageSize = getSize(this.inputStream,
-                            this.sourceFormat);
-                    int x = Math.round(region.getX() / 100.0f * imageSize.width);
-                    int y = Math.round(region.getY() / 100.0f * imageSize.height);
-                    int width = Math.round(region.getWidth());
-                    int height = Math.round(region.getHeight());
-                    op.crop(width, height, x, y, "%");
-                } catch (ProcessorException e) {
-                    logger.debug("Failed to get dimensions for {}",
-                            params.getIdentifier());
-                }
+                // im4java doesn't support cropping x/y by percentage (only
+                // width/height), so we have to calculate them.
+                int x = Math.round(region.getX() / 100.0f * fullSize.width);
+                int y = Math.round(region.getY() / 100.0f * fullSize.height);
+                int width = Math.round(region.getWidth());
+                int height = Math.round(region.getHeight());
+                op.crop(width, height, x, y, "%");
             } else {
                 op.crop(Math.round(region.getWidth()), Math.round(region.getHeight()),
                         Math.round(region.getX()), Math.round(region.getY()));
@@ -289,6 +254,79 @@ class GraphicsMagickProcessor implements StreamProcessor {
                     op.monochrome();
                     break;
             }
+        }
+    }
+
+    /**
+     * @param inputPath Absolute filename pathname or "-" to use a stream
+     * @param inputStream Can be null
+     * @param sourceFormat
+     * @return
+     * @throws ProcessorException
+     */
+    private Dimension doGetSize(String inputPath, InputStream inputStream,
+                                SourceFormat sourceFormat)
+            throws ProcessorException {
+        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
+            throw new UnsupportedSourceFormatException(sourceFormat);
+        }
+        try {
+            Info sourceInfo;
+            if (inputStream != null) {
+                sourceInfo = new Info(inputPath, inputStream, true);
+            } else {
+                sourceInfo = new Info(inputPath, true);
+            }
+            Dimension dimension = new Dimension(sourceInfo.getImageWidth(),
+                    sourceInfo.getImageHeight());
+            return dimension;
+        } catch (IM4JavaException e) {
+            throw new ProcessorException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * @param inputPath Absolute filename pathname or "-" to use a stream
+     * @param inputStream Can be null
+     * @param params
+     * @param sourceFormat
+     * @param fullSize
+     * @param outputStream Stream to write to
+     * @throws ProcessorException
+     */
+    private void doProcess(String inputPath, InputStream inputStream,
+                          Parameters params, SourceFormat sourceFormat,
+                          Dimension fullSize, OutputStream outputStream)
+            throws ProcessorException {
+        final Set<OutputFormat> availableOutputFormats =
+                getAvailableOutputFormats(sourceFormat);
+        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
+            throw new UnsupportedSourceFormatException(sourceFormat);
+        } else if (!availableOutputFormats.contains(params.getOutputFormat())) {
+            throw new UnsupportedOutputFormatException();
+        }
+
+        try {
+            IMOperation op = new IMOperation();
+            op.addImage(inputPath);
+            assembleOperation(op, params, fullSize);
+
+            op.addImage(params.getOutputFormat().getExtension() + ":-"); // write to stdout
+
+            ConvertCmd convert = new ConvertCmd(true);
+
+            String binaryPath = Application.getConfiguration().
+                    getString("GraphicsMagickProcessor.path_to_binaries", "");
+            if (binaryPath.length() > 0) {
+                convert.setSearchPath(binaryPath);
+            }
+            if (inputStream != null) {
+                convert.setInputProvider(new Pipe(inputStream, null));
+            }
+            convert.setOutputConsumer(new Pipe(null, outputStream));
+            convert.run(op);
+        } catch (InterruptedException | IM4JavaException | IOException e) {
+            throw new ProcessorException(e.getMessage(), e);
         }
     }
 

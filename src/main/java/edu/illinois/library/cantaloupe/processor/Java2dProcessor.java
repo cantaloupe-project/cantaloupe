@@ -87,6 +87,10 @@ class Java2dProcessor implements StreamProcessor {
                 if (sourceFormat.getMediaTypes().
                         contains(new MediaType(readerMimeTypes[i].toLowerCase()))) {
                     for (OutputFormat outputFormat : OutputFormat.values()) {
+                        // TODO: not working (see inline comment in ProcessorUtil.writeImage())
+                        if (outputFormat.equals(OutputFormat.JP2)) {
+                            continue;
+                        }
                         for (i = 0, length = writerMimeTypes.length; i < length; i++) {
                             if (outputFormat.getMediaType().equals(writerMimeTypes[i].toLowerCase())) {
                                 outputFormats.add(outputFormat);
@@ -100,6 +104,7 @@ class Java2dProcessor implements StreamProcessor {
         return map;
     }
 
+    @Override
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
         Set<OutputFormat> formats = FORMATS.get(sourceFormat);
         if (formats == null) {
@@ -108,12 +113,13 @@ class Java2dProcessor implements StreamProcessor {
         return formats;
     }
 
-    public Dimension getSize(ImageInputStream inputStream,
-                             SourceFormat sourceFormat)
+    @Override
+    public Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
             throws ProcessorException {
         return ProcessorUtil.getSize(inputStream, sourceFormat);
     }
 
+    @Override
     public Set<ProcessorFeature> getSupportedFeatures(
             final SourceFormat sourceFormat) {
         Set<ProcessorFeature> features = new HashSet<>();
@@ -123,6 +129,7 @@ class Java2dProcessor implements StreamProcessor {
         return features;
     }
 
+    @Override
     public Set<Quality> getSupportedQualities(final SourceFormat sourceFormat) {
         Set<Quality> qualities = new HashSet<>();
         if (getAvailableOutputFormats(sourceFormat).size() > 0) {
@@ -131,9 +138,10 @@ class Java2dProcessor implements StreamProcessor {
         return qualities;
     }
 
+    @Override
     public void process(Parameters params, SourceFormat sourceFormat,
-                        ImageInputStream inputStream, OutputStream outputStream)
-            throws ProcessorException {
+                        Dimension fullSize, InputStream inputStream,
+                        OutputStream outputStream) throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -145,7 +153,7 @@ class Java2dProcessor implements StreamProcessor {
         try {
             ReductionFactor reductionFactor = new ReductionFactor();
             BufferedImage image = loadImage(inputStream, sourceFormat, params,
-                    reductionFactor);
+                    fullSize, reductionFactor);
             image = ProcessorUtil.cropImage(image, params.getRegion(),
                     reductionFactor.factor);
             image = ProcessorUtil.scaleImageWithG2d(image, params.getSize(),
@@ -159,22 +167,24 @@ class Java2dProcessor implements StreamProcessor {
         }
     }
 
-    private BufferedImage loadImage(ImageInputStream inputStream,
+    private BufferedImage loadImage(InputStream inputStream,
                                     SourceFormat sourceFormat,
                                     Parameters params,
+                                    Dimension fullSize,
                                     ReductionFactor reductionFactor)
-            throws IOException, UnsupportedSourceFormatException { // TODO: move this to ProcessorUtil
+            throws IOException, ProcessorException { // TODO: move this to ProcessorUtil
         BufferedImage image = null;
         switch (sourceFormat) {
             case BMP:
-                image = ImageIO.read(inputStream);
+                ImageInputStream iis = ImageIO.createImageInputStream(inputStream);
+                image = ImageIO.read(iis);
                 break;
             case TIF:
                 String tiffReader = Application.getConfiguration().
                         getString(CONFIG_KEY_TIF_READER, "TIFFImageReader");
                 if (tiffReader.equals("TIFFImageReader")) {
                     image = loadUsingTiffImageReader(inputStream, params,
-                            reductionFactor);
+                            fullSize, reductionFactor);
                 } else {
                     image = loadUsingTiffImageDecoder(inputStream);
                 }
@@ -185,7 +195,8 @@ class Java2dProcessor implements StreamProcessor {
                 while (it.hasNext()) {
                     ImageReader reader = it.next();
                     try {
-                        reader.setInput(inputStream);
+                        iis = ImageIO.createImageInputStream(inputStream);
+                        reader.setInput(iis);
                         image = reader.read(0);
                     } finally {
                         reader.dispose();
@@ -205,7 +216,7 @@ class Java2dProcessor implements StreamProcessor {
     }
 
     /**
-     * <p>Uses TIFFImageReader to load a TIFF from an ImageInputStream.</p>
+     * <p>Uses TIFFImageReader to load a TIFF from an InputStream.</p>
      *
      * <p>The TIFFImageReader class currently being used,
      * it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader, has several
@@ -214,7 +225,9 @@ class Java2dProcessor implements StreamProcessor {
      * <ul>
      *     <li>It sometimes sets BufferedImages to <code>TYPE_CUSTOM</code>,
      *     which necessitates an expensive redraw into a new BufferedImage of
-     *     <code>TYPE_RGB</code>.</li>
+     *     <code>TYPE_RGB</code>. Though, we seem to be able to work around
+     *     this (see inline commentary in
+     *     <code>getSmallestUsableImage()</code>).</li>
      *     <li>It throws an ArrayIndexOutOfBoundsException when a TIFF file
      *     contains a tag value greater than 6. (To inspect tag values, run
      *     <code>$ tiffdump &lt;file&gt;</code>.) (The Sun TIFFImageReader
@@ -232,14 +245,17 @@ class Java2dProcessor implements StreamProcessor {
      *
      * @param inputStream
      * @param params
+     * @param fullSize
      * @param reductionFactor
      * @return
      * @throws IOException
+     * @throws ProcessorException
      * @see https://github.com/geosolutions-it/imageio-ext/blob/master/plugin/tiff/src/main/java/it/geosolutions/imageioimpl/plugins/tiff/TIFFImageReader.java
      */
     private BufferedImage loadUsingTiffImageReader(
-            ImageInputStream inputStream, Parameters params,
-            ReductionFactor reductionFactor) throws IOException {
+            InputStream inputStream, Parameters params, Dimension fullSize,
+            ReductionFactor reductionFactor) throws IOException,
+            ProcessorException {
         BufferedImage image = null;
         try {
             Iterator<ImageReader> it = ImageIO.
@@ -249,9 +265,11 @@ class Java2dProcessor implements StreamProcessor {
                 if (reader instanceof it.geosolutions.imageioimpl.
                         plugins.tiff.TIFFImageReader) {
                     try {
-                        reader.setInput(inputStream);
-                        image = getSmallestUsableImage(reader, params.getRegion(),
-                                params.getSize(), reductionFactor);
+                        ImageInputStream iis = ImageIO.createImageInputStream(inputStream);
+                        reader.setInput(iis);
+                        image = getSmallestUsableImage(reader, fullSize,
+                                params.getRegion(), params.getSize(),
+                                reductionFactor);
                     } finally {
                         reader.dispose();
                     }
@@ -274,16 +292,19 @@ class Java2dProcessor implements StreamProcessor {
      * @return
      * @throws IOException
      */
-    private BufferedImage loadUsingTiffImageDecoder(
-            ImageInputStream inputStream) throws IOException {
+    private BufferedImage loadUsingTiffImageDecoder(InputStream inputStream)
+            throws IOException {
         BufferedImage image;
-        try (InputStream is = new ImageInputStreamWrapper(inputStream)) {
-            ImageDecoder dec = ImageCodec.createImageDecoder("tiff", is, null);
+        try {
+            ImageDecoder dec = ImageCodec.createImageDecoder("tiff",
+                    inputStream, null);
             RenderedImage op = dec.decodeAsRenderedImage();
             BufferedImage rgbImage = new BufferedImage(op.getWidth(),
                     op.getHeight(), BufferedImage.TYPE_INT_RGB);
             rgbImage.setData(op.getData());
             image = rgbImage;
+        } finally {
+            inputStream.close();
         }
         return image;
     }
@@ -293,6 +314,7 @@ class Java2dProcessor implements StreamProcessor {
      * reader. Useful for e.g. pyramidal TIFF.
      *
      * @param reader ImageReader with input source already set
+     * @param fullSize
      * @param region Requested region
      * @param size Requested size
      * @param rf Set by reference
@@ -300,19 +322,31 @@ class Java2dProcessor implements StreamProcessor {
      * @throws IOException
      */
     private BufferedImage getSmallestUsableImage(ImageReader reader,
+                                                 Dimension fullSize,
                                                  Region region, Size size,
                                                  ReductionFactor rf)
             throws IOException {
+        // The goal here is to get a BufferedImage of TYPE_INT_RGB rather
+        // than TYPE_CUSTOM, which would need to be redrawn into a new
+        // BufferedImage of TYPE_INT_RGB at huge expense. For an explanation of
+        // this strategy:
+        // https://lists.apple.com/archives/java-dev/2005/Apr/msg00456.html
         ImageReadParam param = reader.getDefaultReadParam();
-        // TODO: why doesn't this work?
-        //param.setDestinationType(ImageTypeSpecifier.
+        BufferedImage bestImage = new BufferedImage(fullSize.width,
+                fullSize.height, BufferedImage.TYPE_INT_RGB);
+        param.setDestination(bestImage);
+        // An alternative would apparently be to use setDestinationType() and
+        // then allow ImageReader.read() to create the BufferedImage itself.
+        // But, that results in, "Destination type from ImageReadParam does not
+        // match!" during writing.
+        // param.setDestinationType(ImageTypeSpecifier.
         //        createFromBufferedImageType(BufferedImage.TYPE_INT_RGB));
-        BufferedImage bestImage = reader.read(0, param);
+        reader.read(0, param);
         if (size.getScaleMode() != Size.ScaleMode.FULL) {
             // Pyramidal TIFFs will have > 1 image, each half the dimensions of
             // the next larger. The "true" parameter tells getNumImages() to
             // scan for images, which seems to be necessary for at least some
-            // files, but is expensive.
+            // files, but is a little bit expensive.
             int numImages = reader.getNumImages(false);
             if (numImages == -1) {
                 numImages = reader.getNumImages(true);
@@ -320,11 +354,9 @@ class Java2dProcessor implements StreamProcessor {
             if (numImages > 1) {
                 logger.debug("Detected pyramidal TIFF with {} levels",
                         numImages);
-                final Dimension fullSize = new Dimension(bestImage.getWidth(),
-                        bestImage.getHeight());
                 final Rectangle regionRect = region.getRectangle(fullSize);
 
-                // loop through the tiles from smallest to largest to find the
+                // Loop through the tiles from smallest to largest to find the
                 // first one that fits the requested scale
                 for (int i = numImages - 1; i >= 0; i--) {
                     final BufferedImage tile = reader.read(i);

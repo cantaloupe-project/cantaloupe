@@ -7,6 +7,8 @@ import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.request.Region;
 import edu.illinois.library.cantaloupe.request.Rotation;
 import edu.illinois.library.cantaloupe.request.Size;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -14,7 +16,6 @@ import javax.imageio.ImageReader;
 import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
@@ -29,7 +30,9 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.renderable.ParameterBlock;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -39,6 +42,8 @@ import java.util.Set;
  * A collection of helper methods.
  */
 abstract class ProcessorUtil {
+
+    private static Logger logger = LoggerFactory.getLogger(ProcessorUtil.class);
 
     /**
      * <p>BufferedImages with a type of <code>TYPE_CUSTOM</code> won't work
@@ -114,6 +119,27 @@ abstract class ProcessorUtil {
             croppedImage = inImage.getSubimage(x, y, croppedWidth, croppedHeight);
         }
         return croppedImage;
+    }
+
+    private static Dimension doGetSize(Object input, SourceFormat sourceFormat)
+            throws ProcessorException {
+        Iterator<ImageReader> iter = ImageIO.
+                getImageReadersBySuffix(sourceFormat.getPreferredExtension());
+        if (iter.hasNext()) {
+            ImageReader reader = iter.next();
+            int width, height;
+            try {
+                reader.setInput(ImageIO.createImageInputStream(input));
+                width = reader.getWidth(reader.getMinIndex());
+                height = reader.getHeight(reader.getMinIndex());
+            } catch (IOException e) {
+                throw new ProcessorException(e.getMessage(), e);
+            } finally {
+                reader.dispose();
+            }
+            return new Dimension(width, height);
+        }
+        return null;
     }
 
     public static BufferedImage filterImage(BufferedImage inImage,
@@ -206,26 +232,24 @@ abstract class ProcessorUtil {
      * @return Dimensions in pixels
      * @throws ProcessorException
      */
-    public static Dimension getSize(ImageInputStream inputStream,
+    public static Dimension getSize(InputStream inputStream,
                                     SourceFormat sourceFormat)
             throws ProcessorException {
-        Iterator<ImageReader> iter = ImageIO.
-                getImageReadersBySuffix(sourceFormat.getPreferredExtension());
-        if (iter.hasNext()) {
-            ImageReader reader = iter.next();
-            int width, height;
-            try {
-                reader.setInput(inputStream);
-                width = reader.getWidth(reader.getMinIndex());
-                height = reader.getHeight(reader.getMinIndex());
-            } catch (IOException e) {
-                throw new ProcessorException(e.getMessage(), e);
-            } finally {
-                reader.dispose();
-            }
-            return new Dimension(width, height);
-        }
-        return null;
+        return doGetSize(inputStream, sourceFormat);
+    }
+
+    /**
+     * Efficiently reads the width & height of an image without reading the
+     * entire image into memory.
+     *
+     * @param inputFile
+     * @param sourceFormat
+     * @return Dimensions in pixels
+     * @throws ProcessorException
+     */
+    public static Dimension getSize(File inputFile, SourceFormat sourceFormat)
+            throws ProcessorException {
+        return doGetSize(inputFile, sourceFormat);
     }
 
     public static Set<OutputFormat> imageIoOutputFormats() {
@@ -534,6 +558,16 @@ abstract class ProcessorUtil {
             throws IOException {
         switch (outputFormat) {
             case JPG:
+                // JPEG doesn't support alpha, so convert to RGB or else the
+                // client will interpret as CMYK
+                if (image.getColorModel().hasAlpha()) {
+                    logger.warn("Converting RGBA BufferedImage to RGB (this is very expensive)");
+                    BufferedImage rgbImage = new BufferedImage(
+                            image.getWidth(), image.getHeight(),
+                            BufferedImage.TYPE_INT_RGB);
+                    rgbImage.createGraphics().drawImage(image, null, 0, 0);
+                    image = rgbImage;
+                }
                 // TurboJpegImageWriter is used automatically if libjpeg-turbo
                 // is available in java.library.path:
                 // https://github.com/geosolutions-it/imageio-ext/wiki/TurboJPEG-plugin
@@ -553,6 +587,12 @@ abstract class ProcessorUtil {
                     writer.dispose();
                 }
                 break;
+            /*case PNG: // an alternative in case ImageIO.write() ever causes problems
+                writer = ImageIO.getImageWritersByFormatName("png").next();
+                ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
+                writer.setOutput(os);
+                writer.write(image);
+                break;*/
           /*  case TIF: TODO: this doesn't write anything
                 Iterator<ImageWriter> it = ImageIO.
                         getImageWritersByMIMEType("image/tiff");
@@ -576,6 +616,7 @@ abstract class ProcessorUtil {
                 }
                 break; */
             default:
+                // TODO: jp2 doesn't seem to work
                 ImageIO.write(image, outputFormat.getExtension(),
                         outputStream);
                 break;

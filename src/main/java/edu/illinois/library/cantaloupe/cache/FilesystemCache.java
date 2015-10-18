@@ -100,6 +100,7 @@ class FilesystemCache implements Cache {
                 System.currentTimeMillis() - file.lastModified() >= ttlMsec;
     }
 
+    @Override
     public void flush() throws IOException {
         synchronized (lock4) {
             while (flushingInProgress || !paramsBeingFlushed.isEmpty()) {
@@ -144,6 +145,7 @@ class FilesystemCache implements Cache {
         }
     }
 
+    @Override
     public void flush(Parameters params) throws IOException {
         synchronized (lock1) {
             while (flushingInProgress || paramsBeingFlushed.contains(params)) {
@@ -171,6 +173,7 @@ class FilesystemCache implements Cache {
         }
     }
 
+    @Override
     public void flushExpired() throws IOException {
         synchronized (lock4) {
             while (flushingInProgress || !paramsBeingFlushed.isEmpty()) {
@@ -215,6 +218,7 @@ class FilesystemCache implements Cache {
         }
     }
 
+    @Override
     public Dimension getDimension(Identifier identifier) throws IOException {
         synchronized (lock2) {
             while (infosBeingWritten.contains(identifier)) {
@@ -250,6 +254,7 @@ class FilesystemCache implements Cache {
         return null;
     }
 
+    @Override
     public InputStream getImageInputStream(Parameters params) {
         File cacheFile = getCachedImageFile(params);
         if (cacheFile != null && cacheFile.exists()) {
@@ -269,6 +274,7 @@ class FilesystemCache implements Cache {
         return null;
     }
 
+    @Override
     public OutputStream getImageOutputStream(Parameters params)
             throws IOException { // TODO: make this work better concurrently
         if (getImageInputStream(params) == null) {
@@ -321,6 +327,7 @@ class FilesystemCache implements Cache {
         return null;
     }
 
+    @Override
     public void putDimension(Identifier identifier, Dimension dimension)
             throws IOException {
         synchronized (lock3) {
