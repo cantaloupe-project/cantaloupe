@@ -1,0 +1,10 @@
+edu.illinois.library.cantaloupe
+edu.illinois.library.cantaloupe.cache
+edu.illinois.library.cantaloupe.image
+edu.illinois.library.cantaloupe.logging
+edu.illinois.library.cantaloupe.logging.velocity
+edu.illinois.library.cantaloupe.processor
+edu.illinois.library.cantaloupe.request
+edu.illinois.library.cantaloupe.resolver
+edu.illinois.library.cantaloupe.resource
+edu.illinois.library.cantaloupe.util

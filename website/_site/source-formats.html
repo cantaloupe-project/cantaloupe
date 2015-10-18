@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Extensible image server in Java
+">
+
+  <link rel="stylesheet" href="/cantaloupe/css/base.css">
+
+  <title>Cantaloupe</title>
+</head>
+
+
+  <body>
+
+    <div class="container-fluid">
+
+      <div class="clearfix">
+        <header>
+  <a href="/cantaloupe/">
+    <img src="images/cantaloupe.jpg" width="154" height="81">
+  </a>
+  <h1>
+    <a href="/cantaloupe/">Cantaloupe</a>
+    <br>
+    <small>Extensible IIIF Image API 2.0 image server in Java</small>
+  </h1>
+</header>
+
+      </div>
+
+      <div class="row">
+        <div class="col-sm-3">
+          <nav id="toc">
+  <ul>
+    <li><a href="/cantaloupe/">Home</a>
+      <ul>
+        <li><a href="/cantaloupe/#About">About</a></li>
+        <li><a href="/cantaloupe/#Features">Features</a></li>
+        <li><a href="/cantaloupe/#Download">Download</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="getting-started.html">Getting Started</a>
+      <ul>
+        <li><a href="getting-started.html#Requirements">Requirements</a></li>
+        <li><a href="getting-started.html#Configuration">Configuration</a></li>
+        <li><a href="getting-started.html#Running">Running</a></li>
+        <li><a href="getting-started.html#Upgrading">Upgrading</a></li>
+        <li><a href="getting-started.html#Considerations">Considerations</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="resolvers.html">Resolvers</a>
+      <ul>
+        <li><a href="resolvers.html#FilesystemResolver">Filesystem</a></li>
+        <li><a href="resolvers.html#HttpResolver">HTTP</a></li>
+        <li><a href="resolvers.html#JdbcResolver">JDBC</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="processors.html">Processors</a>
+      <ul>
+        <li><a href="processors.html#Java2dProcessor">Java 2D</a></li>
+        <li><a href="processors.html#GraphicsMagickProcessor">GraphicsMagick</a></li>
+        <li><a href="processors.html#ImageMagickProcessor">ImageMagick</a></li>
+        <li><a href="processors.html#KakaduProcessor">Kakadu</a></li>
+        <li><a href="processors.html#JaiProcessor">JAI</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="caches.html">Caches</a>
+      <ul>
+        <li><a href="caches.html#FilesystemCache">Filesystem</a></li>
+      </ul>
+    </li>
+    <li><a href="access-control.html">Access Control</a></li>
+    <li><a href="client-caching.html">Client-Side Caching</a></li>
+    <li>
+      <a href="logging.html">Logging</a>
+      <ul>
+        <li><a href="logging.html#Application%20Log">Application Log</a></li>
+        <li><a href="logging.html#Access%20Log">Access Log</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="source-formats.html">Source Formats</a>
+      <ul>
+        <li><a href="source-formats.html#JPEG">JPEG</a></li>
+        <li><a href="source-formats.html#JPEG2000">JPEG2000</a></li>
+        <li><a href="source-formats.html#TIFF">TIFF</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="developers.html">Developer's Guide</a>
+      <ul>
+        <li><a href="developers.html#Resolvers">Custom Resolvers</a></li>
+        <li><a href="developers.html#Processors">Custom Processors</a></li>
+        <li><a href="developers.html#Caches">Custom Caches</a></li>
+        <li><a href="/cantaloupe/javadoc/">Javadoc</a></li>
+        <li><a href="developers.html#Contributing">Contributing</a></li>
+      </ul>
+    </li>
+    <li><a href="changelog.html">Change Log</a>
+  </ul>
+</nav>
+
+        </div> <!-- .col-sm-3 -->
+
+        <div class="col-sm-9">
+          <h2>Source Formats</h2>
+
+Various Cantaloupe processors support several other formats than those listed here; what follows are mainly just notes.</p>
+
+<h3 id="JPEG">JPEG</h3>
+
+<p>It should be possible to use TurboJPEG (high-level API over <a href="http://www.libjpeg-turbo.org">libjpeg-turbo</a> with Java2dProcessor to hardware-accelerate JPEG coding. To do so, include the <a href="https://github.com/geosolutions-it/imageio-ext/wiki/TurboJPEG-plugin">TurboJPEG plugin JAR</a> in your classpath, and compile libjpeg-turbo with Java support (using the <code>--with-java</code>
+configuration option). (The author has not tried this.)</p>
+
+<h3 id="JPEG2000">JPEG2000</h3>
+
+<p><a href="processors.html#KakaduProcessor">KakaduProcessor</a> is by far the most efficient processor for this format.</p>
+
+<p>GraphicsMagick can read/write JPEG2000 using JasPer, and ImageMagick using OpenJPEG. Both of these are extremely slow.</p>
+
+<p>See the <a href="processors.html#JaiProcessor">JaiProcessor</a> section for notes on the mediaLib accelerator.</p>
+
+<h3 id="TIFF">TIFF</h3>
+
+<p><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> and <a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a> can both handle TIFF if the necessary delegate or plugin is installed. (See the <a href="getting-started.html#Running">Cantaloupe landing page</a>.)</p>
+
+<h4>Pyramidal TIFF</h4>
+
+<p><a href="processors.html#Java2dProcessor">Java2dProcessor</a> supports pyramidal TIFF, which is to say that it actually does read the embedded sub-images and chooses the smallest one that can fulfill the request.</p>
+
+<p>All other processors that support TIFF will read pyramidal TIFFs as ordinary TIFFs, ignoring the sub-images.</p>
+
+        </div>
+      </div>
+
+      <footer>
+</footer>
+
+
+    </div>
+
+  </body>
+
+</html>
