@@ -20,8 +20,11 @@
 
       <div class="clearfix">
         <header>
-  <a href="index.html"><img src="images/cantaloupe.jpg" width="154" height="81"></a>
-  <h1><a href="index.html">Cantaloupe</a>
+  <a href="/cantaloupe/">
+    <img src="images/cantaloupe.jpg" width="154" height="81">
+  </a>
+  <h1>
+    <a href="/cantaloupe/">Cantaloupe</a>
     <br>
     <small>Extensible IIIF Image API 2.0 image server in Java</small>
   </h1>
@@ -33,11 +36,11 @@
         <div class="col-sm-3">
           <nav id="toc">
   <ul>
-    <li><a href="index.html">Home</a>
+    <li><a href="/cantaloupe/">Home</a>
       <ul>
-        <li><a href="index.html#About">About</a></li>
-        <li><a href="index.html#Features">Features</a></li>
-        <li><a href="index.html#Download">Download</a></li>
+        <li><a href="/cantaloupe/#About">About</a></li>
+        <li><a href="/cantaloupe/#Features">Features</a></li>
+        <li><a href="/cantaloupe/#Download">Download</a></li>
       </ul>
     </li>
     <li>
@@ -53,24 +56,25 @@
     <li>
       <a href="resolvers.html">Resolvers</a>
       <ul>
-        <li><a href="resolvers.html#FilesystemResolver">FilesystemResolver</a></li>
-        <li><a href="resolvers.html#HttpResolver">HttpResolver</a></li>
+        <li><a href="resolvers.html#FilesystemResolver">Filesystem</a></li>
+        <li><a href="resolvers.html#HttpResolver">HTTP</a></li>
+        <li><a href="resolvers.html#JdbcResolver">JDBC</a></li>
       </ul>
     </li>
     <li>
       <a href="processors.html">Processors</a>
       <ul>
-        <li><a href="processors.html#Java2dProcessor">Java2dProcessor</a></li>
-        <li><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a></li>
-        <li><a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a></li>
-        <li><a href="processors.html#KakaduProcessor">KakaduProcessor</a></li>
-        <li><a href="processors.html#JaiProcessor">JaiProcessor</a></li>
+        <li><a href="processors.html#Java2dProcessor">Java 2D</a></li>
+        <li><a href="processors.html#GraphicsMagickProcessor">GraphicsMagick</a></li>
+        <li><a href="processors.html#ImageMagickProcessor">ImageMagick</a></li>
+        <li><a href="processors.html#KakaduProcessor">Kakadu</a></li>
+        <li><a href="processors.html#JaiProcessor">JAI</a></li>
       </ul>
     </li>
     <li>
       <a href="caches.html">Caches</a>
       <ul>
-        <li><a href="caches.html#FilesystemCache">FilesystemCache</a></li>
+        <li><a href="caches.html#FilesystemCache">Filesystem</a></li>
       </ul>
     </li>
     <li><a href="access-control.html">Access Control</a></li>
@@ -96,6 +100,7 @@
         <li><a href="developers.html#Resolvers">Custom Resolvers</a></li>
         <li><a href="developers.html#Processors">Custom Processors</a></li>
         <li><a href="developers.html#Caches">Custom Caches</a></li>
+        <li><a href="/cantaloupe/javadoc/">Javadoc</a></li>
         <li><a href="developers.html#Contributing">Contributing</a></li>
       </ul>
     </li>
@@ -123,6 +128,8 @@
 <p><code>$ java -Dcantaloupe.config=/path/to/cantaloupe.properties -jar Cantaloupe-x.x.x.jar</code></p>
 
 <p>Assuming the <code>http.port</code> option has not been changed, it is now running at: <a href="http://localhost:8182/iiif">http://localhost:8182/iiif</a></p>
+
+<p><em>Note: On OS X, a "java" icon will appear in the Dock while Cantaloupe is running. This can be disabled by adding <code>-Djava.awt.headless=true</code> to the command.</em></p>
 
 <h3 id="Upgrading">Upgrading</h3>
 
