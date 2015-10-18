@@ -3,7 +3,9 @@ package edu.illinois.library.cantaloupe.resolver;
 import edu.illinois.library.cantaloupe.request.Identifier;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 
 /**
  * Interface to be implemented by all resolvers that support access to source

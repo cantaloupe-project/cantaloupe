@@ -17,7 +17,7 @@ public interface Cache {
     /**
      * Deletes the entire cache contents. Must be thread-safe.
      *
-     * @throws Exception
+     * @throws IOException
      */
     void flush() throws IOException;
 
@@ -26,14 +26,14 @@ public interface Cache {
      * parameters.
      *
      * @param params
-     * @throws Exception
+     * @throws IOException
      */
     void flush(Parameters params) throws IOException;
 
     /**
      * Deletes expired images and dimensions from the cache.
      *
-     * @throws Exception
+     * @throws IOException
      */
     void flushExpired() throws IOException;
 
