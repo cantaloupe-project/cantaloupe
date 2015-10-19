@@ -49,7 +49,7 @@ public interface Cache {
      * Reads cached dimension information.
      *
      * @param identifier IIIF identifier
-     * @return Dimension corresponding to the given identifier, or null if a
+     * @return Dimension corresponding to the given identifier, or null if no
      * non-expired dimension exists in the cache.
      */
     Dimension getDimension(Identifier identifier) throws IOException;
