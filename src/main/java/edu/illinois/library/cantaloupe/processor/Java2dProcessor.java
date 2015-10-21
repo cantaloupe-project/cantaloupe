@@ -250,7 +250,8 @@ class Java2dProcessor implements StreamProcessor {
      * @return
      * @throws IOException
      * @throws ProcessorException
-     * @see https://github.com/geosolutions-it/imageio-ext/blob/master/plugin/tiff/src/main/java/it/geosolutions/imageioimpl/plugins/tiff/TIFFImageReader.java
+     * @see <a href="https://github.com/geosolutions-it/imageio-ext/blob/master/plugin/tiff/src/main/java/it/geosolutions/imageioimpl/plugins/tiff/TIFFImageReader.java">
+     *     TIFFImageReader source</a>
      */
     private BufferedImage loadUsingTiffImageReader(
             InputStream inputStream, Parameters params, Dimension fullSize,
@@ -262,18 +263,18 @@ class Java2dProcessor implements StreamProcessor {
                     getImageReadersByMIMEType("image/tiff");
             while (it.hasNext()) {
                 ImageReader reader = it.next();
-                if (reader instanceof it.geosolutions.imageioimpl.
-                        plugins.tiff.TIFFImageReader) {
-                    try {
-                        ImageInputStream iis = ImageIO.createImageInputStream(inputStream);
-                        reader.setInput(iis);
-                        image = getSmallestUsableImage(reader, fullSize,
-                                params.getRegion(), params.getSize(),
-                                reductionFactor);
-                    } finally {
-                        reader.dispose();
-                    }
+                // TODO: figure out why it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader
+                // is not found in the packaged jar and remove it from the pom
+                // if not possible to get it working
+                try {
+                    ImageInputStream iis = ImageIO.createImageInputStream(inputStream);
+                    reader.setInput(iis);
+                    image = getSmallestUsableImage(reader, fullSize,
+                            params.getRegion(), params.getSize(),
+                            reductionFactor);
                     break;
+                } finally {
+                    reader.dispose();
                 }
             }
         } catch (ArrayIndexOutOfBoundsException e) {
