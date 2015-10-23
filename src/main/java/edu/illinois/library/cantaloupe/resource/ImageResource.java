@@ -189,13 +189,10 @@ public class ImageResource extends AbstractResource {
 
     private static Logger logger = LoggerFactory.getLogger(ImageResource.class);
 
-    private static final List<CacheDirective> CACHE_DIRECTIVES =
-            getCacheDirectives();
-
     @Override
     protected void doInit() throws ResourceException {
         super.doInit();
-        getResponseCacheDirectives().addAll(CACHE_DIRECTIVES);
+        getResponseCacheDirectives().addAll(getCacheDirectives());
     }
 
     /**

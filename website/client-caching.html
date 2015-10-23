@@ -5,7 +5,11 @@ layout: default
 <h2>Client-Side Caching</h2>
 
 <p>The HTTP/1.1 Cache-Control response header is configurable via the
-<code>cache.client.*</code> keys in the configuration file. The default settings look something like this:</p>
+<code>cache.client.*</code> keys in the configuration file. To enable or disable it, use the <code>cache.client.enabled</code> key:</p>
+
+<pre>cache.client.enabled = true</pre>
+
+<p>The default settings look something like this:</p>
 
 <pre>cache.client.max_age = 2592000
 cache.client.shared_max_age =

@@ -39,6 +39,7 @@ public abstract class ResourceTest extends TestCase {
     }
 
     public void setUp() throws Exception {
+        System.setProperty("java.awt.headless", "true");
         Application.setConfiguration(newConfiguration());
         Application.startServer();
     }

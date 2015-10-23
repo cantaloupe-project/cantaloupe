@@ -165,6 +165,9 @@ KakaduProcessor.post_processor = java2d
 # CACHING
 ###############
 
+# Whether to enable the response Cache-Control header.
+cache.client.enabled = true
+
 # Customize the response Cache-Control header. (This may be overridden by
 # proxies.) Comment out to disable the Cache-Control header.
 cache.client.max_age = 2592000
