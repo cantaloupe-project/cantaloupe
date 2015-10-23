@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.request;
 
-import junit.framework.TestCase;
+import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 
-public class ParametersTest extends TestCase {
+public class ParametersTest extends CantaloupeTestCase {
 
     private Parameters parameters;
 

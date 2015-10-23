@@ -1,10 +1,10 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
-import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
 
 import java.awt.Dimension;
@@ -20,12 +20,10 @@ import java.util.Set;
 /**
  * Contains base tests common to all Processors.
  */
-public abstract class ProcessorTest extends TestCase {
+public abstract class ProcessorTest extends CantaloupeTestCase {
 
     static {
         Application.setConfiguration(new BaseConfiguration());
-        System.setProperty("com.sun.media.jai.disableMediaLib", "true");
-        System.setProperty("java.awt.headless", "true");
     }
 
     protected SourceFormat getAnySupportedSourceFormat(Processor processor) {

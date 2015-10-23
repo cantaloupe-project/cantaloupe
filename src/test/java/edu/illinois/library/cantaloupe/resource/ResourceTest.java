@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
-import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.restlet.Client;
 import org.restlet.Context;
@@ -14,7 +14,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public abstract class ResourceTest extends TestCase {
+public abstract class ResourceTest extends CantaloupeTestCase {
 
     protected static final Integer PORT = 34852;
 
@@ -39,7 +39,6 @@ public abstract class ResourceTest extends TestCase {
     }
 
     public void setUp() throws Exception {
-        System.setProperty("java.awt.headless", "true");
         Application.setConfiguration(newConfiguration());
         Application.startServer();
     }

@@ -2,10 +2,10 @@ package edu.illinois.library.cantaloupe.cache;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.request.Identifier;
 import edu.illinois.library.cantaloupe.request.Parameters;
-import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.restlet.data.Reference;
@@ -17,7 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-public class FilesystemCacheTest extends TestCase {
+public class FilesystemCacheTest extends CantaloupeTestCase {
 
     File fixturePath;
     File imagePath;

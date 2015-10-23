@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import junit.framework.TestCase;
+import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 
-public class ProcessorFeatureTest extends TestCase {
+public class ProcessorFeatureTest extends CantaloupeTestCase {
 
     public void testValues() {
         assertNotNull(ProcessorFeature.valueOf("MIRRORING"));

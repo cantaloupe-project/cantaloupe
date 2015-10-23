@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.request;
 
-import junit.framework.TestCase;
+import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 
-public class RotationTest extends TestCase {
+public class RotationTest extends CantaloupeTestCase {
 
     private Rotation rotation;
 
