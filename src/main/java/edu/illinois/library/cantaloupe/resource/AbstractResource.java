@@ -56,11 +56,11 @@ abstract class AbstractResource extends ServerResource {
                     directives.add(CacheDirective.noTransform());
                 }
             } else {
-                logger.info("Cache-Control headers are disabled. " +
+                logger.debug("Cache-Control headers are disabled. " +
                         "(cache.client.enabled = false)");
             }
         } catch (NoSuchElementException e) {
-            logger.info("Cache-Control headers are invalid: {}",
+            logger.warn("Cache-Control headers are invalid: {}",
                     e.getMessage());
         }
         return directives;
