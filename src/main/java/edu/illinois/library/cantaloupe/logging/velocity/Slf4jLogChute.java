@@ -10,7 +10,8 @@ import org.slf4j.LoggerFactory;
  * Slf4jLogChute class built-in, but it has not been released yet as of
  * 10/2015.
  *
- * @see https://velocity.apache.org/engine/devel/apidocs/index.html?org/apache/velocity/slf4j/Slf4jLogChute.html
+ * @see <a href="https://velocity.apache.org/engine/devel/apidocs/index.html?org/apache/velocity/slf4j/Slf4jLogChute.html">
+ *     Velocity 2.0 javadoc</a>
  */
 public class Slf4jLogChute implements LogChute {
 

@@ -3,7 +3,9 @@ package edu.illinois.library.cantaloupe.resolver;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.Identifier;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 
 /**
  * Locates and provides access to a source image. This is an abstract interface;

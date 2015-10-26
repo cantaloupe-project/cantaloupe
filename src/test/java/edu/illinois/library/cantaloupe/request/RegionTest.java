@@ -1,11 +1,11 @@
 package edu.illinois.library.cantaloupe.request;
 
-import junit.framework.TestCase;
+import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
 
-public class RegionTest extends TestCase {
+public class RegionTest extends CantaloupeTestCase {
 
     private Region region;
 

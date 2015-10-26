@@ -1,9 +1,9 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.Identifier;
-import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
 
 import java.io.File;
@@ -15,7 +15,7 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
-public class JdbcResolverTest extends TestCase {
+public class JdbcResolverTest extends CantaloupeTestCase {
 
     private JdbcResolver instance;
 

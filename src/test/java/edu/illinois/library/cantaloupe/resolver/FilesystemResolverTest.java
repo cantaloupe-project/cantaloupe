@@ -1,9 +1,9 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.Identifier;
-import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
 
 import java.io.File;
@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class FilesystemResolverTest extends TestCase {
+public class FilesystemResolverTest extends CantaloupeTestCase {
 
     private static final Identifier IDENTIFIER = new Identifier("escher_lego.jpg");
 

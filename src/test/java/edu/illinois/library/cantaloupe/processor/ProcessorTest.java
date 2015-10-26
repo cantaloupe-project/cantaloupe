@@ -1,18 +1,18 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
-import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
 
-import java.awt.*;
+import java.awt.Dimension;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
@@ -20,14 +20,11 @@ import java.util.Set;
 /**
  * Contains base tests common to all Processors.
  */
-public abstract class ProcessorTest extends TestCase {
+public abstract class ProcessorTest extends CantaloupeTestCase {
 
     static {
         Application.setConfiguration(new BaseConfiguration());
-        System.setProperty("com.sun.media.jai.disableMediaLib", "true");
     }
-
-    protected OutputStream outputStream = new NullOutputStream();
 
     protected SourceFormat getAnySupportedSourceFormat(Processor processor) {
         for (SourceFormat sourceFormat : SourceFormat.values()) {
@@ -78,8 +75,10 @@ public abstract class ProcessorTest extends TestCase {
                     try {
                         StreamProcessor proc = (StreamProcessor) getProcessor();
                         Dimension size = proc.getSize(sizeInputStream, sourceFormat);
+                        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                         proc.process(params, sourceFormat, size, processInputStream,
                                 outputStream);
+                        assertTrue(outputStream.toByteArray().length > 100);
                     } finally {
                         processInputStream.close();
                         sizeInputStream.close();
@@ -89,7 +88,9 @@ public abstract class ProcessorTest extends TestCase {
                     FileProcessor proc = (FileProcessor) getProcessor();
                     File file = getFixture(sourceFormat.getPreferredExtension());
                     Dimension size = proc.getSize(file, sourceFormat);
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                     proc.process(params, sourceFormat, size, file, outputStream);
+                    assertTrue(outputStream.toByteArray().length > 100);
                 }
             }
         }
@@ -109,7 +110,7 @@ public abstract class ProcessorTest extends TestCase {
                         StreamProcessor proc = (StreamProcessor) getProcessor();
                         Dimension size = proc.getSize(sizeInputStream, sourceFormat);
                         proc.process(params, sourceFormat, size,
-                                processInputStream, outputStream);
+                                processInputStream, new NullOutputStream());
                         fail("Expected exception");
                     } catch (ProcessorException e) {
                         assertEquals("Unsupported source format: " +
@@ -125,7 +126,8 @@ public abstract class ProcessorTest extends TestCase {
                         FileProcessor proc = (FileProcessor) getProcessor();
                         File file = getFixture(sourceFormat.getPreferredExtension());
                         Dimension size = proc.getSize(file, sourceFormat);
-                        proc.process(params, sourceFormat, size, file, outputStream);
+                        proc.process(params, sourceFormat, size, file,
+                                new NullOutputStream());
                         fail("Expected exception");
                     } catch (ProcessorException e) {
                         assertEquals("Unsupported source format: " +
@@ -153,8 +155,10 @@ public abstract class ProcessorTest extends TestCase {
                             StreamProcessor proc = (StreamProcessor) getProcessor();
                             Dimension size = proc.getSize(sizeInputStream,
                                     sourceFormat);
+                            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                             proc.process(params, sourceFormat, size,
                                     processInputStream, outputStream);
+                            assertTrue(outputStream.toByteArray().length > 100);
                         } finally {
                             sizeInputStream.close();
                             processInputStream.close();
@@ -164,7 +168,9 @@ public abstract class ProcessorTest extends TestCase {
                         FileProcessor proc = (FileProcessor) getProcessor();
                         File file = getFixture(sourceFormat.getPreferredExtension());
                         Dimension size = proc.getSize(file, sourceFormat);
+                        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                         proc.process(params, sourceFormat, size, file, outputStream);
+                        assertTrue(outputStream.toByteArray().length > 100);
                     }
                 }
             }
@@ -187,8 +193,10 @@ public abstract class ProcessorTest extends TestCase {
                             StreamProcessor proc = (StreamProcessor) getProcessor();
                             Dimension fullSize = proc.getSize(sizeInputStream,
                                     sourceFormat);
+                            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                             proc.process(params, sourceFormat, fullSize,
                                     processInputStream, outputStream);
+                            assertTrue(outputStream.toByteArray().length > 100);
                         } finally {
                             sizeInputStream.close();
                             processInputStream.close();
@@ -198,7 +206,9 @@ public abstract class ProcessorTest extends TestCase {
                         FileProcessor proc = (FileProcessor) getProcessor();
                         File file = getFixture(sourceFormat.getPreferredExtension());
                         Dimension fullSize = proc.getSize(file, sourceFormat);
+                        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                         proc.process(params, sourceFormat, fullSize, file, outputStream);
+                        assertTrue(outputStream.toByteArray().length > 100);
                     }
                 }
             }
@@ -221,8 +231,10 @@ public abstract class ProcessorTest extends TestCase {
                             StreamProcessor proc = (StreamProcessor) getProcessor();
                             Dimension size = proc.getSize(sizeInputStream,
                                     sourceFormat);
+                            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                             proc.process(params, sourceFormat, size,
                                     processInputStream, outputStream);
+                            assertTrue(outputStream.toByteArray().length > 100);
                         } finally {
                             sizeInputStream.close();
                             processInputStream.close();
@@ -232,7 +244,9 @@ public abstract class ProcessorTest extends TestCase {
                         FileProcessor proc = (FileProcessor) getProcessor();
                         File file = getFixture(sourceFormat.getPreferredExtension());
                         Dimension size = proc.getSize(file, sourceFormat);
+                        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                         proc.process(params, sourceFormat, size, file, outputStream);
+                        assertTrue(outputStream.toByteArray().length > 100);
                     }
                 }
             }
@@ -255,8 +269,10 @@ public abstract class ProcessorTest extends TestCase {
                             StreamProcessor proc = (StreamProcessor) getProcessor();
                             Dimension size = proc.getSize(sizeInputStream,
                                     sourceFormat);
+                            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                             proc.process(params, sourceFormat, size,
                                     processInputStream, outputStream);
+                            assertTrue(outputStream.toByteArray().length > 100);
                         } finally {
                             sizeInputStream.close();
                             processInputStream.close();
@@ -266,7 +282,9 @@ public abstract class ProcessorTest extends TestCase {
                         FileProcessor proc = (FileProcessor) getProcessor();
                         File file = getFixture(sourceFormat.getPreferredExtension());
                         Dimension size = proc.getSize(file, sourceFormat);
+                        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                         proc.process(params, sourceFormat, size, file, outputStream);
+                        assertTrue(outputStream.toByteArray().length > 100);
                     }
                 }
             }
@@ -290,8 +308,11 @@ public abstract class ProcessorTest extends TestCase {
                             StreamProcessor proc = (StreamProcessor) getProcessor();
                             Dimension size = proc.getSize(sizeInputStream,
                                     sourceFormat);
+                            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                             proc.process(params, sourceFormat, size,
                                     processInputStream, outputStream);
+                            System.out.println(outputFormat.getExtension());
+                            assertTrue(outputStream.toByteArray().length > 100);
                         } finally {
                             sizeInputStream.close();
                             processInputStream.close();
@@ -301,8 +322,10 @@ public abstract class ProcessorTest extends TestCase {
                         FileProcessor proc = (FileProcessor) getProcessor();
                         File file = getFixture(sourceFormat.getPreferredExtension());
                         Dimension size = proc.getSize(file, sourceFormat);
+                        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                         proc.process(params, sourceFormat, size, file,
                                 outputStream);
+                        assertTrue(outputStream.toByteArray().length > 100);
                     }
                 }
             }

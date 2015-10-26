@@ -58,7 +58,7 @@ abstract class ProcessorUtil {
      */
     public static BufferedImage convertToRgb(BufferedImage inImage) {
         BufferedImage outImage = inImage;
-        if (inImage.getType() == BufferedImage.TYPE_CUSTOM) {
+        if (inImage != null && inImage.getType() == BufferedImage.TYPE_CUSTOM) {
             outImage = new BufferedImage(inImage.getWidth(),
                     inImage.getHeight(), BufferedImage.TYPE_INT_RGB);
             Graphics2D g = outImage.createGraphics();
@@ -616,6 +616,7 @@ abstract class ProcessorUtil {
                 }
                 break; */
             default:
+                // TODO: jp2 doesn't seem to work
                 ImageIO.write(image, outputFormat.getExtension(),
                         outputStream);
                 break;

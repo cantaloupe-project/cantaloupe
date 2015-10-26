@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe;
 
-import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
@@ -17,7 +16,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class ApplicationTest extends TestCase {
+public class ApplicationTest extends CantaloupeTestCase {
 
     private static final Integer PORT = 34852;
 

@@ -1,10 +1,10 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
-import junit.framework.TestCase;
+import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import org.apache.commons.configuration.BaseConfiguration;
 
-public class ResolverFactoryTest extends TestCase {
+public class ResolverFactoryTest extends CantaloupeTestCase {
 
     public void testGetResolver() throws Exception {
         BaseConfiguration config = new BaseConfiguration();

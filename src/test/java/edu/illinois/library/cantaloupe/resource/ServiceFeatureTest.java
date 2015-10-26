@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import junit.framework.TestCase;
+import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 
-public class ServiceFeatureTest extends TestCase {
+public class ServiceFeatureTest extends CantaloupeTestCase {
 
     public void testValues() {
         assertNotNull(ServiceFeature.valueOf("BASE_URI_REDIRECT"));

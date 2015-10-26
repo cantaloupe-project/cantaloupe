@@ -21,6 +21,7 @@ public class InformationResourceTest extends ResourceTest {
 
     public void testCacheHeaders() {
         Configuration config = Application.getConfiguration();
+        config.setProperty("cache.client.enabled", "true");
         config.setProperty("cache.client.max_age", "1234");
         config.setProperty("cache.client.shared_max_age", "4567");
         config.setProperty("cache.client.public", "false");
