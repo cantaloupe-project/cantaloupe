@@ -8,18 +8,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.sql.Blob;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Calendar;
 
 /**
  * Cache using a database table, storing images as BLOBs and image dimensions
@@ -27,23 +29,81 @@ import java.time.Instant;
  */
 class JdbcCache implements Cache {
 
+    /**
+     * Buffers written image data and flushes it into a database tuple as a
+     * BLOB.
+     */
+    private class JdbcImageOutputStream extends OutputStream {
+
+        private ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        private Parameters params;
+        private Connection connection;
+
+        public JdbcImageOutputStream(Connection conn, Parameters params) {
+            this.connection = conn;
+            this.params = params;
+        }
+
+        @Override
+        public void close() throws IOException {
+            outputStream.close();
+        }
+
+        @Override
+        public void flush() throws IOException {
+            outputStream.flush();
+            try {
+                Configuration config = Application.getConfiguration();
+                String sql = String.format(
+                        "INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
+                        config.getString(IMAGE_TABLE_CONFIG_KEY),
+                        IMAGE_TABLE_PARAMS_COLUMN, IMAGE_TABLE_IMAGE_COLUMN,
+                        IMAGE_TABLE_LAST_MODIFIED_COLUMN);
+                PreparedStatement statement = this.connection.prepareStatement(sql);
+                statement.setString(1, this.params.toString());
+                statement.setBinaryStream(2,
+                        new ByteArrayInputStream(this.outputStream.toByteArray()));
+                statement.setTimestamp(3, now());
+                statement.executeUpdate();
+            } catch (SQLException e) {
+                throw new IOException(e.getMessage(), e);
+            }
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            outputStream.write(b);
+        }
+
+        @Override
+        public void write(byte[] b) throws IOException {
+            outputStream.write(b);
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            outputStream.write(b, off, len);
+        }
+
+    }
+
     private static final Logger logger = LoggerFactory.
             getLogger(JdbcCache.class);
 
-    private static final String IMAGE_TABLE_IMAGE_COLUMN = "image";
-    private static final String IMAGE_TABLE_LAST_MODIFIED_COLUMN = "last_modified";
-    private static final String IMAGE_TABLE_PARAMS_COLUMN = "params";
-    private static final String INFO_TABLE_HEIGHT_COLUMN = "height";
-    private static final String INFO_TABLE_IDENTIFIER_COLUMN = "identifier";
-    private static final String INFO_TABLE_LAST_MODIFIED_COLUMN = "last_modified";
-    private static final String INFO_TABLE_WIDTH_COLUMN = "width";
+    public static final String IMAGE_TABLE_IMAGE_COLUMN = "image";
+    public static final String IMAGE_TABLE_LAST_MODIFIED_COLUMN = "last_modified";
+    public static final String IMAGE_TABLE_PARAMS_COLUMN = "params";
+    public static final String INFO_TABLE_HEIGHT_COLUMN = "height";
+    public static final String INFO_TABLE_IDENTIFIER_COLUMN = "identifier";
+    public static final String INFO_TABLE_LAST_MODIFIED_COLUMN = "last_modified";
+    public static final String INFO_TABLE_WIDTH_COLUMN = "width";
 
-    private static final String CONNECTION_STRING_KEY = "JdbcCache.connection_string";
-    private static final String PASSWORD_KEY = "JdbcCache.password";
-    private static final String IMAGE_TABLE_KEY = "JdbcCache.image_table";
-    private static final String INFO_TABLE_KEY = "JdbcCache.info_table";
-    private static final String TTL_KEY = "JdbcCache.ttl_seconds";
-    private static final String USER_KEY = "JdbcCache.user";
+    public static final String CONNECTION_STRING_CONFIG_KEY = "JdbcCache.connection_string";
+    public static final String PASSWORD_CONFIG_KEY = "JdbcCache.password";
+    public static final String IMAGE_TABLE_CONFIG_KEY = "JdbcCache.image_table";
+    public static final String INFO_TABLE_CONFIG_KEY = "JdbcCache.info_table";
+    public static final String TTL_CONFIG_KEY = "JdbcCache.ttl_seconds";
+    public static final String USER_CONFIG_KEY = "JdbcCache.user";
 
     private static Connection connection;
 
@@ -64,9 +124,9 @@ class JdbcCache implements Cache {
         if (connection == null) {
             Configuration config = Application.getConfiguration();
             final String connectionString = config.
-                    getString(CONNECTION_STRING_KEY, "");
-            final String user = config.getString(USER_KEY, "");
-            final String password = config.getString(PASSWORD_KEY, "");
+                    getString(CONNECTION_STRING_CONFIG_KEY, "");
+            final String user = config.getString(USER_CONFIG_KEY, "");
+            final String password = config.getString(PASSWORD_CONFIG_KEY, "");
             connection = DriverManager.getConnection(connectionString, user,
                     password);
         }
@@ -94,13 +154,13 @@ class JdbcCache implements Cache {
         Configuration config = Application.getConfiguration();
         Connection conn = getConnection();
 
-        final String imageTableName = config.getString(IMAGE_TABLE_KEY);
+        final String imageTableName = config.getString(IMAGE_TABLE_CONFIG_KEY);
         if (imageTableName != null && imageTableName.length() > 0) {
             String sql = "DELETE FROM " + imageTableName;
             PreparedStatement statement = conn.prepareStatement(sql);
             return statement.executeUpdate();
         } else {
-            throw new IOException(IMAGE_TABLE_KEY + " is not set");
+            throw new IOException(IMAGE_TABLE_CONFIG_KEY + " is not set");
         }
     }
 
@@ -113,13 +173,13 @@ class JdbcCache implements Cache {
         Configuration config = Application.getConfiguration();
         Connection conn = getConnection();
 
-        final String infoTableName = config.getString(INFO_TABLE_KEY);
+        final String infoTableName = config.getString(INFO_TABLE_CONFIG_KEY);
         if (infoTableName != null && infoTableName.length() > 0) {
             String sql = "DELETE FROM " + infoTableName;
             PreparedStatement statement = conn.prepareStatement(sql);
             return statement.executeUpdate();
         } else {
-            throw new IOException(INFO_TABLE_KEY + " is not set");
+            throw new IOException(INFO_TABLE_CONFIG_KEY + " is not set");
         }
     }
 
@@ -145,7 +205,7 @@ class JdbcCache implements Cache {
         Configuration config = Application.getConfiguration();
         Connection conn = getConnection();
 
-        final String imageTableName = config.getString(IMAGE_TABLE_KEY);
+        final String imageTableName = config.getString(IMAGE_TABLE_CONFIG_KEY);
         if (imageTableName != null && imageTableName.length() > 0) {
             String sql = String.format("DELETE FROM %s WHERE %s = ?",
                     imageTableName, IMAGE_TABLE_PARAMS_COLUMN);
@@ -153,7 +213,7 @@ class JdbcCache implements Cache {
             statement.setString(1, params.toString());
             return statement.executeUpdate();
         } else {
-            throw new IOException(IMAGE_TABLE_KEY + " is not set");
+            throw new IOException(IMAGE_TABLE_CONFIG_KEY + " is not set");
         }
     }
 
@@ -167,7 +227,7 @@ class JdbcCache implements Cache {
         Configuration config = Application.getConfiguration();
         Connection conn = getConnection();
 
-        final String infoTableName = config.getString(INFO_TABLE_KEY);
+        final String infoTableName = config.getString(INFO_TABLE_CONFIG_KEY);
         if (infoTableName != null && infoTableName.length() > 0) {
             String sql = String.format("DELETE FROM %s WHERE %s = ?",
                     infoTableName, INFO_TABLE_IDENTIFIER_COLUMN);
@@ -175,7 +235,7 @@ class JdbcCache implements Cache {
             statement.setString(1, identifier.toString());
             return statement.executeUpdate();
         } else {
-            throw new IOException(INFO_TABLE_KEY + " is not set");
+            throw new IOException(INFO_TABLE_CONFIG_KEY + " is not set");
         }
     }
 
@@ -195,15 +255,15 @@ class JdbcCache implements Cache {
         Configuration config = Application.getConfiguration();
         Connection conn = getConnection();
 
-        final String imageTableName = config.getString(IMAGE_TABLE_KEY);
+        final String imageTableName = config.getString(IMAGE_TABLE_CONFIG_KEY);
         if (imageTableName != null && imageTableName.length() > 0) {
             String sql = String.format("DELETE FROM %s WHERE %s < ?",
                     imageTableName, IMAGE_TABLE_LAST_MODIFIED_COLUMN);
             PreparedStatement statement = conn.prepareStatement(sql);
-            statement.setDate(1, oldestValidDate());
+            statement.setTimestamp(1, oldestValidDate());
             return statement.executeUpdate();
         } else {
-            throw new IOException(IMAGE_TABLE_KEY + " is not set");
+            throw new IOException(IMAGE_TABLE_CONFIG_KEY + " is not set");
         }
     }
 
@@ -211,42 +271,44 @@ class JdbcCache implements Cache {
          Configuration config = Application.getConfiguration();
         Connection conn = getConnection();
 
-        final String infoTableName = config.getString(INFO_TABLE_KEY);
+        final String infoTableName = config.getString(INFO_TABLE_CONFIG_KEY);
         if (infoTableName != null && infoTableName.length() > 0) {
             String sql = String.format("DELETE FROM %s WHERE %s < ?",
                     infoTableName, INFO_TABLE_LAST_MODIFIED_COLUMN);
             PreparedStatement statement = conn.prepareStatement(sql);
-            statement.setDate(1, oldestValidDate());
+            statement.setTimestamp(1, oldestValidDate());
             return statement.executeUpdate();
         } else {
-            throw new IOException(INFO_TABLE_KEY + " is not set");
+            throw new IOException(INFO_TABLE_CONFIG_KEY + " is not set");
         }
     }
 
     @Override
     public Dimension getDimension(Identifier identifier) throws IOException {
-        final Date oldestDate = oldestValidDate();
+        final Timestamp oldestDate = oldestValidDate();
         Configuration config = Application.getConfiguration();
-        String tableName = config.getString(INFO_TABLE_KEY, "");
+        String tableName = config.getString(INFO_TABLE_CONFIG_KEY, "");
         if (tableName != null && tableName.length() > 0) {
             try {
                 String sql = String.format(
-                        "SELECT width, height FROM %s " +
-                        "WHERE identifier = ? AND %s > ?",
-                        tableName, INFO_TABLE_LAST_MODIFIED_COLUMN);
+                        "SELECT %s, %s FROM %s WHERE %s = ? AND %s > ?",
+                        INFO_TABLE_WIDTH_COLUMN, INFO_TABLE_HEIGHT_COLUMN,
+                        tableName, INFO_TABLE_IDENTIFIER_COLUMN,
+                        INFO_TABLE_LAST_MODIFIED_COLUMN);
                 PreparedStatement statement = getConnection().prepareStatement(sql);
                 statement.setString(1, identifier.getValue());
-                statement.setDate(2, oldestDate);
-                ResultSet resultSet = statement.getResultSet();
+                statement.setTimestamp(2, oldestDate);
+                ResultSet resultSet = statement.executeQuery();
                 if (resultSet.next()) {
-                    return new Dimension(resultSet.getInt("width"),
-                            resultSet.getInt("height"));
+                    return new Dimension(
+                            resultSet.getInt(INFO_TABLE_WIDTH_COLUMN),
+                            resultSet.getInt(INFO_TABLE_HEIGHT_COLUMN));
                 }
             } catch (SQLException e) {
                 throw new IOException(e.getMessage(), e);
             }
         } else {
-            throw new IOException(INFO_TABLE_KEY + " is not set");
+            throw new IOException(INFO_TABLE_CONFIG_KEY + " is not set");
         }
         return null;
     }
@@ -254,9 +316,9 @@ class JdbcCache implements Cache {
     @Override
     public InputStream getImageInputStream(Parameters params) {
         InputStream inputStream = null;
-        final Date oldestDate = oldestValidDate();
+        final Timestamp oldestDate = oldestValidDate();
         Configuration config = Application.getConfiguration();
-        String tableName = config.getString(IMAGE_TABLE_KEY, "");
+        String tableName = config.getString(IMAGE_TABLE_CONFIG_KEY, "");
         if (tableName != null && tableName.length() > 0) {
             try {
                 Connection conn = getConnection();
@@ -267,8 +329,8 @@ class JdbcCache implements Cache {
                         IMAGE_TABLE_LAST_MODIFIED_COLUMN);
                 PreparedStatement statement = conn.prepareStatement(sql);
                 statement.setString(1, params.toString());
-                statement.setDate(2, oldestDate);
-                ResultSet resultSet = statement.getResultSet();
+                statement.setTimestamp(2, oldestDate);
+                ResultSet resultSet = statement.executeQuery();
                 if (resultSet.next()) {
                     inputStream = resultSet.getBinaryStream(1);
                 }
@@ -276,7 +338,7 @@ class JdbcCache implements Cache {
                 logger.error(e.getMessage(), e);
             }
         } else {
-            logger.error("{} is not set", IMAGE_TABLE_KEY);
+            logger.error("{} is not set", IMAGE_TABLE_CONFIG_KEY);
         }
         return inputStream;
     }
@@ -285,38 +347,50 @@ class JdbcCache implements Cache {
     public OutputStream getImageOutputStream(Parameters params)
             throws IOException {
         Configuration config = Application.getConfiguration();
-        String tableName = config.getString(IMAGE_TABLE_KEY, "");
+        String tableName = config.getString(IMAGE_TABLE_CONFIG_KEY, "");
         if (tableName != null && tableName.length() > 0) {
             try {
-                Connection conn = getConnection();
-                Blob blob = conn.createBlob();
-                return blob.setBinaryStream(0);
+                return new JdbcImageOutputStream(getConnection(), params);
             } catch (SQLException e) {
                 throw new IOException(e.getMessage(), e);
             }
         } else {
-            throw new IOException(IMAGE_TABLE_KEY + " is not set");
+            throw new IOException(IMAGE_TABLE_CONFIG_KEY + " is not set");
         }
+    }
+
+    public void createTables() throws IOException {
+        createImageTable();
+        createInfoTable();
     }
 
     private void createImageTable() throws IOException {
         Configuration config = Application.getConfiguration();
-        String tableName = config.getString(IMAGE_TABLE_KEY, "");
+        String tableName = config.getString(IMAGE_TABLE_CONFIG_KEY, "");
         if (tableName != null && tableName.length() > 0) {
             try {
                 Connection conn = getConnection();
+                /*
                 String sql = String.format(
                         "IF (NOT EXISTS (" +
                                 "SELECT * FROM INFORMATION_SCHEMA.TABLES " +
                                 "WHERE TABLE_NAME = '%s')) " +
                         "BEGIN " +
                         "CREATE TABLE %s (" +
-                                "id INTEGER NOT NULL PRIMARY KEY, " +
                                 "%s VARCHAR(4096) NOT NULL, " +
                                 "%s BLOB, " +
                                 "%s DATETIME) " +
                         "END",
                         tableName, tableName,
+                        IMAGE_TABLE_PARAMS_COLUMN,
+                        IMAGE_TABLE_IMAGE_COLUMN,
+                        IMAGE_TABLE_LAST_MODIFIED_COLUMN); */
+                String sql = String.format(
+                        "CREATE TABLE IF NOT EXISTS %s (" +
+                                "%s VARCHAR(4096) NOT NULL, " +
+                                "%s BLOB, " +
+                                "%s DATETIME);",
+                        tableName,
                         IMAGE_TABLE_PARAMS_COLUMN,
                         IMAGE_TABLE_IMAGE_COLUMN,
                         IMAGE_TABLE_LAST_MODIFIED_COLUMN);
@@ -326,29 +400,38 @@ class JdbcCache implements Cache {
                 throw new IOException(e.getMessage(), e);
             }
         } else {
-            throw new IOException(IMAGE_TABLE_KEY + " is not set");
+            throw new IOException(IMAGE_TABLE_CONFIG_KEY + " is not set");
         }
     }
 
     private void createInfoTable() throws IOException {
         Configuration config = Application.getConfiguration();
-        String tableName = config.getString(INFO_TABLE_KEY, "");
+        String tableName = config.getString(INFO_TABLE_CONFIG_KEY, "");
         if (tableName != null && tableName.length() > 0) {
             try {
                 Connection conn = getConnection();
+                /*
                 String sql = String.format(
                         "IF (NOT EXISTS (" +
                                 "SELECT * FROM INFORMATION_SCHEMA.TABLES " +
                                 "WHERE TABLE_NAME = '%s')) " +
                         "BEGIN " +
                         "CREATE TABLE %s (" +
-                                "id INTEGER NOT NULL PRIMARY KEY, " +
                                 "%s VARCHAR(4096) NOT NULL, " +
                                 "%s INTEGER, " +
                                 "%s INTEGER, " +
                                 "%s DATETIME) " +
                         "END",
                         tableName, tableName, INFO_TABLE_IDENTIFIER_COLUMN,
+                        INFO_TABLE_WIDTH_COLUMN, INFO_TABLE_HEIGHT_COLUMN,
+                        INFO_TABLE_LAST_MODIFIED_COLUMN); */
+                String sql = String.format(
+                        "CREATE TABLE IF NOT EXISTS %s (" +
+                                "%s VARCHAR(4096) NOT NULL, " +
+                                "%s INTEGER, " +
+                                "%s INTEGER, " +
+                                "%s DATETIME);",
+                        tableName, INFO_TABLE_IDENTIFIER_COLUMN,
                         INFO_TABLE_WIDTH_COLUMN, INFO_TABLE_HEIGHT_COLUMN,
                         INFO_TABLE_LAST_MODIFIED_COLUMN);
                 PreparedStatement statement = conn.prepareStatement(sql);
@@ -357,39 +440,91 @@ class JdbcCache implements Cache {
                 throw new IOException(e.getMessage(), e);
             }
         } else {
-            throw new IOException(INFO_TABLE_KEY + " is not set");
+            throw new IOException(INFO_TABLE_CONFIG_KEY + " is not set");
         }
     }
 
-    private Date oldestValidDate() {
+    public void dropTables() throws IOException {
+        dropImageTable();
+        dropInfoTable();
+    }
+
+    private void dropImageTable() throws IOException {
         Configuration config = Application.getConfiguration();
-        final Instant oldestInstant = Instant.now().
-                minus(Duration.ofSeconds(config.getLong(TTL_KEY, 0)));
-        return new Date(Date.from(oldestInstant).getTime());
+        String tableName = config.getString(IMAGE_TABLE_CONFIG_KEY, "");
+        if (tableName != null && tableName.length() > 0) {
+            try {
+                Connection conn = getConnection();
+                String sql = "DROP TABLE " + tableName;
+                PreparedStatement statement = conn.prepareStatement(sql);
+                statement.execute();
+            } catch (SQLException e) {
+                throw new IOException(e.getMessage(), e);
+            }
+        } else {
+            throw new IOException(IMAGE_TABLE_CONFIG_KEY + " is not set");
+        }
+    }
+
+    private void dropInfoTable() throws IOException {
+        Configuration config = Application.getConfiguration();
+        String tableName = config.getString(INFO_TABLE_CONFIG_KEY, "");
+        if (tableName != null && tableName.length() > 0) {
+            try {
+                Connection conn = getConnection();
+                String sql = "DROP TABLE " + tableName;
+                PreparedStatement statement = conn.prepareStatement(sql);
+                statement.execute();
+            } catch (SQLException e) {
+                throw new IOException(e.getMessage(), e);
+            }
+        } else {
+            throw new IOException(INFO_TABLE_CONFIG_KEY + " is not set");
+        }
+    }
+
+    private Timestamp now() {
+        Calendar calendar = Calendar.getInstance();
+        java.util.Date now = calendar.getTime();
+        return new java.sql.Timestamp(now.getTime());
+    }
+
+    public Timestamp oldestValidDate() {
+        Configuration config = Application.getConfiguration();
+        long ttl = config.getLong(TTL_CONFIG_KEY, 0);
+        if (ttl > 0) {
+            final Instant oldestInstant = Instant.now().
+                    minus(Duration.ofSeconds(ttl));
+            return Timestamp.from(oldestInstant);
+        } else {
+            return new Timestamp(Long.MIN_VALUE);
+        }
     }
 
     @Override
     public void putDimension(Identifier identifier, Dimension dimension)
             throws IOException {
         Configuration config = Application.getConfiguration();
-        String tableName = config.getString(INFO_TABLE_KEY, "");
+        String tableName = config.getString(INFO_TABLE_CONFIG_KEY, "");
         if (tableName != null && tableName.length() > 0) {
             try {
                 Connection conn = getConnection();
                 String sql = String.format(
-                        "INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
-                        tableName, INFO_TABLE_IDENTIFIER_COLUMN, INFO_TABLE_WIDTH_COLUMN,
-                        INFO_TABLE_HEIGHT_COLUMN);
+                        "INSERT INTO %s (%s, %s, %s, %s) VALUES (?, ?, ?, ?)",
+                        tableName, INFO_TABLE_IDENTIFIER_COLUMN,
+                        INFO_TABLE_WIDTH_COLUMN, INFO_TABLE_HEIGHT_COLUMN,
+                        INFO_TABLE_LAST_MODIFIED_COLUMN);
                 PreparedStatement statement = conn.prepareStatement(sql);
                 statement.setString(1, identifier.getValue());
                 statement.setInt(2, dimension.width);
                 statement.setInt(3, dimension.height);
-                statement.execute();
+                statement.setTimestamp(4, now());
+                statement.executeUpdate();
             } catch (SQLException e) {
                 throw new IOException(e.getMessage(), e);
             }
         } else {
-            throw new IOException(INFO_TABLE_KEY + " is not set");
+            throw new IOException(INFO_TABLE_CONFIG_KEY + " is not set");
         }
     }
 
