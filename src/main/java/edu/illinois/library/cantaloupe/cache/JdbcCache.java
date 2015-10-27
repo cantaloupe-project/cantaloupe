@@ -46,12 +46,7 @@ class JdbcCache implements Cache {
 
         @Override
         public void close() throws IOException {
-            outputStream.close();
-        }
-
-        @Override
-        public void flush() throws IOException {
-            outputStream.flush();
+            System.out.println("closing");
             try {
                 Configuration config = Application.getConfiguration();
                 String sql = String.format(
@@ -67,7 +62,14 @@ class JdbcCache implements Cache {
                 statement.executeUpdate();
             } catch (SQLException e) {
                 throw new IOException(e.getMessage(), e);
+            } finally {
+                outputStream.close();
             }
+        }
+
+        @Override
+        public void flush() throws IOException {
+            outputStream.flush();
         }
 
         @Override
