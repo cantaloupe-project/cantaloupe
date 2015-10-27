@@ -475,21 +475,18 @@ class JdbcCache implements Cache {
     @Override
     public OutputStream getImageOutputStream(Parameters params)
             throws IOException {
-        if (getImageInputStream(params) == null) {
-            logger.debug("Miss; caching {}", params);
-            Configuration config = Application.getConfiguration();
-            String tableName = config.getString(IMAGE_TABLE_CONFIG_KEY, "");
-            if (tableName != null && tableName.length() > 0) {
-                try {
-                    return new JdbcImageOutputStream(getConnection(), params);
-                } catch (SQLException e) {
-                    throw new IOException(e.getMessage(), e);
-                }
-            } else {
-                throw new IOException(IMAGE_TABLE_CONFIG_KEY + " is not set");
+        logger.debug("Miss; caching {}", params);
+        Configuration config = Application.getConfiguration();
+        String tableName = config.getString(IMAGE_TABLE_CONFIG_KEY, "");
+        if (tableName != null && tableName.length() > 0) {
+            try {
+                return new JdbcImageOutputStream(getConnection(), params);
+            } catch (SQLException e) {
+                throw new IOException(e.getMessage(), e);
             }
+        } else {
+            throw new IOException(IMAGE_TABLE_CONFIG_KEY + " is not set");
         }
-        return null;
     }
 
     private Timestamp now() {
