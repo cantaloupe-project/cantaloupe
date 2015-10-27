@@ -202,9 +202,14 @@ FilesystemCache.ttl_seconds = 2592000
 JdbcCache.connection_string = jdbc:postgresql://localhost:5432/cantaloupe
 JdbcCache.user = alexd
 JdbcCache.password =
+
+# These will be created automatically.
 JdbcCache.image_table = image_cache
 JdbcCache.info_table = info_cache
-JdbcCache.ttl_seconds = 10
+
+# Time before a cached image becomes stale and needs to be reloaded. Set to
+# blank or 0 for "forever"
+JdbcCache.ttl_seconds = 2592000
 
 ###############
 # LOGGING

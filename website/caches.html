@@ -10,7 +10,35 @@ layout: default
 
 <h3 id="FilesystemCache">FilesystemCache</h3>
 
-<p>FilesystemCache caches generated images and (parts of) information requests into a filesystem directory. The location of this directory is configurable, as is the "time-to-live" of the cache files.</p>
+<p>FilesystemCache caches generated images and (parts of) information requests into a filesystem directory. The location of this directory is configurable, as is the "time-to-live" of the cache files, with the following options:</p>
+
+<dl>
+  <dt><code>FilesystemCache.pathname</code></dt>
+  <dd>Absolute path of the folder in which cached images and information responses will be stored.</dd>
+  <dt><code>FilesystemCache.ttl_seconds</code></dt>
+  <dd>Time-to-live of the cached images and information responses, in seconds.</dd>
+</dl>
+
+<h3 id="JdbcCache">JdbcCache</h3>
+
+<p>JdbcCache caches generated images and (parts of) information requests into tables in a relational database (RDBMS). This cache can be configured with the following options:</p>
+
+<dl>
+  <dt><code>JdbcCache.connection_string</code></dt>
+  <dd>A valid JDBC connection string; for example, <code>jdbc:postgresql://localhost:5432/mydatabase</code>.</dd>
+  <dt><code>JdbcCache.user</code></dt>
+  <dd>User to connect to the database as.</dd>
+  <dt><code>JdbcCache.password</code></dt>
+  <dd>Password to use when connecting to the database. Can be left blank if not needed.</dd>
+  <dt><code>JdbcCache.image_table</code></dt>
+  <dd>The table in which to cache images. This will be created automatically.</dd>
+  <dt><code>JdbcCache.info_table</code></dt>
+  <dd>The table in which to cache information responses. This will be created automatically.</dd>
+  <dt><code>JdbcCache.ttl_seconds</code></dt>
+  <dd>Time-to-live of the cached images and information responses, in seconds.</dd>
+</dl>
+
+<p><em>Note: JdbcCache has been tested with PostgreSQL 9.4 and H2 1.4. Other databases may work, but are untested. In particular, the database needs to support <code>CREATE TABLE IF NOT EXISTS</code> syntax, which in the case of PostgreSQL, arrived in version 9.1.</em></p>
 
 <h3 id="Flushing">Flushing the Cache</h3>
 
