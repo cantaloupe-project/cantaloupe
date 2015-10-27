@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.request;
 
 import edu.illinois.library.cantaloupe.image.SourceFormat;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Encapsulates the parameters of an IIIF request.
@@ -18,6 +19,41 @@ public class Parameters implements Comparable<Parameters> {
     private Size size;
 
     /**
+     * @param paramsStr URI path fragment beginning from the identifier onward
+     * @throws IllegalArgumentException if the <code>params</code> is not in
+     * the correct format
+     */
+    public static Parameters fromUri(String paramsStr)
+            throws IllegalArgumentException {
+        Parameters params = new Parameters();
+        String[] parts = StringUtils.split(paramsStr, "/");
+        if (parts.length == 5) {
+            params.setIdentifier(Identifier.fromUri(parts[0]));
+            params.setRegion(Region.fromUri(parts[1]));
+            params.setSize(Size.fromUri(parts[2]));
+            params.setRotation(Rotation.fromUri(parts[3]));
+            String[] subparts = StringUtils.split(parts[4], ".");
+            if (subparts.length == 2) {
+                params.setQuality(Quality.valueOf(subparts[0].toUpperCase()));
+                params.setOutputFormat(OutputFormat.valueOf(subparts[1].toUpperCase()));
+            } else {
+                throw new IllegalArgumentException("Invalid parameters format");
+            }
+        } else {
+            throw new IllegalArgumentException("Invalid parameters format");
+        }
+        return params;
+    }
+
+    /**
+     * No-op constructor.
+     */
+    public Parameters() {}
+
+    /**
+
+
+     /**
      * @param identifier From URI
      * @param region From URI
      * @param size From URI
@@ -41,12 +77,12 @@ public class Parameters implements Comparable<Parameters> {
         return (last == 0) ? this.toString().compareTo(params.toString()) : last;
     }
 
-    public OutputFormat getOutputFormat() {
-        return outputFormat;
-    }
-
     public Identifier getIdentifier() {
         return identifier;
+    }
+
+    public OutputFormat getOutputFormat() {
+        return outputFormat;
     }
 
     public Quality getQuality() {
@@ -64,6 +100,32 @@ public class Parameters implements Comparable<Parameters> {
     public Size getSize() {
         return size;
     }
+
+    public void setIdentifier(Identifier identifier) {
+        this.identifier = identifier;
+    }
+
+    public void setOutputFormat(OutputFormat outputFormat) {
+        this.outputFormat = outputFormat;
+    }
+
+    public void setQuality(Quality quality) {
+        this.quality = quality;
+    }
+
+    public void setRegion(Region region) {
+        this.region = region;
+    }
+
+    public void setRotation(Rotation rotation) {
+        this.rotation = rotation;
+    }
+
+    public void setSize(Size size) {
+        this.size = size;
+    }
+
+
 
     /**
      * @return Whether the parameters are effectively requesting the unmodified

@@ -11,6 +11,29 @@ public class ParametersTest extends CantaloupeTestCase {
                 "default", "jpg");
     }
 
+    public void testFromUri() {
+        parameters = Parameters.fromUri("bla/20,20,50,50/pct:90/15/bitonal.jpg");
+        assertEquals("bla", parameters.getIdentifier().toString());
+        assertEquals("20,20,50,50", parameters.getRegion().toString());
+        assertEquals(90f, parameters.getSize().getPercent());
+        assertEquals(15f, parameters.getRotation().getDegrees());
+        assertEquals(Quality.BITONAL, parameters.getQuality());
+        assertEquals(OutputFormat.JPG, parameters.getOutputFormat());
+
+        try {
+            Parameters.fromUri("bla/20,20,50,50/15/bitonal.jpg");
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+        try {
+            Parameters.fromUri("bla/20,20,50,50/pct:90/15/bitonal");
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+    }
+
     public void testIsUnmodified() {
         parameters = new Parameters("identifier", "full", "full", "0",
                 "default", "jpg");
