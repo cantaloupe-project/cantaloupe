@@ -56,8 +56,8 @@ public interface Cache {
 
     /**
      * @param params IIIF request parameters
-     * @return OutputStream pointed at the cache to which an image
-     * corresponding to the supplied parameters can be written.
+     * @return OutputStream to which an image corresponding to the supplied
+     * parameters can be written.
      * @throws IOException
      */
     OutputStream getImageOutputStream(Parameters params) throws IOException;
