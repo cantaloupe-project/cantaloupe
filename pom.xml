@@ -98,6 +98,7 @@
       <artifactId>janino</artifactId>
       <version>${janino.version}</version>
     </dependency>
+    <!-- Used by GraphicsMagickProcessor and ImageMagickProcessor -->
     <dependency>
       <groupId>org.im4java</groupId>
       <artifactId>im4java</artifactId>
@@ -113,11 +114,18 @@
       <artifactId>org.restlet.ext.jackson</artifactId>
       <version>${restlet.version}</version>
     </dependency>
+    <!-- use the Simple HTTP server instead of the default Sun server -->
+    <dependency>
+      <groupId>org.restlet.jse</groupId>
+      <artifactId>org.restlet.ext.simple</artifactId>
+      <version>${restlet.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.restlet.jse</groupId>
       <artifactId>org.restlet.ext.slf4j</artifactId>
       <version>${restlet.version}</version>
     </dependency>
+    <!-- Provides Velocity for the landing and error page templates -->
     <dependency>
       <groupId>org.restlet.jse</groupId>
       <artifactId>org.restlet.ext.velocity</artifactId>
