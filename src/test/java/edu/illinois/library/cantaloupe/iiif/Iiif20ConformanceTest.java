@@ -489,7 +489,7 @@ public class Iiif20ConformanceTest extends CantaloupeTestCase {
             client.get();
             assertEquals(Status.SUCCESS_OK, client.getStatus());
             assertEquals(format.getMediaType(),
-                    client.getResponse().getHeaders().getFirst("Content-type").getValue());
+                    client.getResponse().getHeaders().getFirst("Content-Type").getValue());
         } else {
             try {
                 client.get();
@@ -551,7 +551,7 @@ public class Iiif20ConformanceTest extends CantaloupeTestCase {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
         client.get();
         assertEquals("application/json; charset=UTF-8",
-                client.getResponse().getHeaders().getFirst("Content-type").getValue());
+                client.getResponse().getHeaders().getFirst("Content-Type").getValue());
     }
 
     /**
@@ -566,13 +566,13 @@ public class Iiif20ConformanceTest extends CantaloupeTestCase {
         client.accept(new MediaType("application/ld+json"));
         client.get();
         assertEquals("application/ld+json; charset=UTF-8",
-                client.getResponse().getHeaders().getFirst("Content-type").getValue());
+                client.getResponse().getHeaders().getFirst("Content-Type").getValue());
 
         client = getClientForUriPath("/" + IMAGE + "/info.json");
         client.accept(new MediaType("application/json"));
         client.get();
         assertEquals("application/json; charset=UTF-8",
-                client.getResponse().getHeaders().getFirst("Content-type").getValue());
+                client.getResponse().getHeaders().getFirst("Content-Type").getValue());
     }
 
     /**
