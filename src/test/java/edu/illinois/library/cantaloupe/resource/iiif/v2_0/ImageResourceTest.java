@@ -1,6 +1,7 @@
-package edu.illinois.library.cantaloupe.resource;
+package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.apache.commons.configuration.Configuration;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.ChallengeResponse;

@@ -56,7 +56,7 @@ public abstract class ResourceTest extends CantaloupeTestCase {
 
     protected String getBaseUri() {
         return "http://localhost:" + PORT +
-                ImageServerApplication.BASE_IIIF_PATH;
+                ImageServerApplication.IIIF_2_0_PATH;
     }
 
 }

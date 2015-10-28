@@ -16,6 +16,14 @@ h1 {
     margin-top: 0.6em;
 }
 
+dt {
+    font-weight: normal;
+}
+
+dd {
+    margin-left: 1em;
+}
+
 /* landing page */
 
 body#cl-landing table#cl-source-format-assignments td:first-child {

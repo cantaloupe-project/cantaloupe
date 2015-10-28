@@ -2,8 +2,6 @@ package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
-import edu.illinois.library.cantaloupe.resource.ImageResource;
-import edu.illinois.library.cantaloupe.resource.InformationResource;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
 import org.apache.commons.configuration.Configuration;
 import org.apache.velocity.app.Velocity;
@@ -38,7 +36,9 @@ import java.util.NoSuchElementException;
 
 public class ImageServerApplication extends Application {
 
-    public static final String BASE_IIIF_PATH = "/iiif";
+    public static final String IIIF_PATH = "/iiif";
+    public static final String IIIF_1_1_PATH = "/iiif/1.1";
+    public static final String IIIF_2_0_PATH = "/iiif/2.0";
     public static final String STATIC_ROOT_PATH = "/static";
 
     /**
@@ -144,32 +144,59 @@ public class ImageServerApplication extends Application {
         corsFilter.setAllowedOrigins(new HashSet<>(Arrays.asList("*")));
         corsFilter.setAllowedCredentials(true);
 
-        // 2 Redirect image identifier to image information
+        /****************** IIIF Image API 1.1 routes *******************/
+
+        // Redirect image identifier to image information
         Redirector redirector = new Redirector(getContext(),
-                BASE_IIIF_PATH + "/{identifier}/info.json",
+                IIIF_1_1_PATH + "/{identifier}/info.json",
                 Redirector.MODE_CLIENT_SEE_OTHER);
-        router.attach(BASE_IIIF_PATH + "/{identifier}", redirector);
+        router.attach(IIIF_1_1_PATH + "/{identifier}", redirector);
 
-        // Redirect / to BASE_IIIF_PATH
-        redirector = new Redirector(getContext(), BASE_IIIF_PATH,
+        // Redirect IIIF_1_1_PATH/ to IIIF_1_1_PATH
+        redirector = new Redirector(getContext(), IIIF_1_1_PATH,
                 Redirector.MODE_CLIENT_PERMANENT);
-        router.attach("/", redirector);
+        router.attach(IIIF_1_1_PATH + "/", redirector);
 
-        // Redirect BASE_IIIF_PATH/ to BASE_IIIF_PATH
-        redirector = new Redirector(getContext(), BASE_IIIF_PATH,
+        // image request
+        Class resource = edu.illinois.library.cantaloupe.resource.iiif.v1_1.ImageResource.class;
+        router.attach(IIIF_1_1_PATH + "/{identifier}/{region}/{size}/{rotation}/{quality}.{format}",
+                resource);
+
+        // information request
+        resource = edu.illinois.library.cantaloupe.resource.iiif.v1_1.InformationResource.class;
+        router.attach(IIIF_1_1_PATH + "/{identifier}/info.{format}", resource);
+
+        /****************** IIIF Image API 2.0 routes *******************/
+
+        // Redirect image identifier to image information
+        redirector = new Redirector(getContext(),
+                IIIF_2_0_PATH + "/{identifier}/info.json",
+                Redirector.MODE_CLIENT_SEE_OTHER);
+        router.attach(IIIF_2_0_PATH + "/{identifier}", redirector);
+
+        // Redirect IIIF_2_0_PATH/ to IIIF_2_0_PATH
+        redirector = new Redirector(getContext(), IIIF_2_0_PATH,
                 Redirector.MODE_CLIENT_PERMANENT);
-        router.attach(BASE_IIIF_PATH + "/", redirector);
+        router.attach(IIIF_2_0_PATH + "/", redirector);
 
-        // 2.1 Image Request
-        router.attach(BASE_IIIF_PATH + "/{identifier}/{region}/{size}/{rotation}/{quality}.{format}",
-                ImageResource.class);
+        // image request
+        resource = edu.illinois.library.cantaloupe.resource.iiif.v2_0.ImageResource.class;
+        router.attach(IIIF_2_0_PATH + "/{identifier}/{region}/{size}/{rotation}/{quality}.{format}",
+                resource);
 
-        // 5 Information Request
-        router.attach(BASE_IIIF_PATH + "/{identifier}/info.{format}",
-                InformationResource.class);
+        // information request
+        resource = edu.illinois.library.cantaloupe.resource.iiif.v2_0.InformationResource.class;
+        router.attach(IIIF_2_0_PATH + "/{identifier}/info.{format}", resource);
+
+        // Redirect IIIF_PATH to IIIF_2_0_PATH (designates 2.0 as the default
+        // IIIF Image API)
+        redirector = new Redirector(getContext(), IIIF_2_0_PATH,
+                Redirector.MODE_CLIENT_PERMANENT);
+        router.attach(IIIF_PATH, redirector);
+
+        /****************** Other routes *******************/
 
         // landing page
-        router.attach(BASE_IIIF_PATH, LandingResource.class);
         router.attach("/", LandingResource.class);
 
         // Hook up HTTP Basic authentication

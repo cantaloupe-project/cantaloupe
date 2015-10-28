@@ -1,6 +1,6 @@
 # 🍈 Cantaloupe
 
-*Extensible [IIIF Image API 2.0](http://iiif.io) image server in Java*
+*Extensible [IIIF Image API](http://iiif.io) image server in Java*
 
 ### The project website is located at:
 **[https://medusa-project.github.io/cantaloupe/]

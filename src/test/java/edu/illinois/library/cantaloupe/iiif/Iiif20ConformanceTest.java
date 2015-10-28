@@ -656,7 +656,7 @@ public class Iiif20ConformanceTest extends CantaloupeTestCase {
 
     private String getBaseUri() {
         return "http://localhost:" + PORT +
-                ImageServerApplication.BASE_IIIF_PATH;
+                ImageServerApplication.IIIF_2_0_PATH;
     }
 
 }

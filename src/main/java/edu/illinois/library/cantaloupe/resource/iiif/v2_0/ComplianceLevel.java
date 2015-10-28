@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resource;
+package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
 import edu.illinois.library.cantaloupe.Feature;
 import edu.illinois.library.cantaloupe.processor.ProcessorFeature;
@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * IIIF compliance level.
  *
- * @see http://iiif.io/api/image/2.0/compliance.html
+ * @see <a href="http://iiif.io/api/image/2.0/compliance.html">Compliance Levels</a>
  */
 enum ComplianceLevel {
 

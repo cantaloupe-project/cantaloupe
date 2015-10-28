@@ -16,6 +16,16 @@
       </header>
 
       <section>
+        <h3>Endpoints</h3>
+        <dl>
+          <dt>IIIF Image API 1.1</dt>
+          <dd>/iiif/1.1</dd>
+          <dt>IIIF Image API 2.0</dt>
+          <dd>/iiif/2.0</dd>
+        </dl>
+      </section>
+
+      <section>
         <div class="row">
           <div class="col-sm-6">
             <h3>Resolver</h3>

@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resource;
+package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
 
 import java.awt.Dimension;
 import java.util.HashMap;
@@ -9,7 +9,6 @@ import java.util.Set;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import edu.illinois.library.cantaloupe.Feature;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
@@ -28,13 +27,12 @@ import edu.illinois.library.cantaloupe.resolver.FileResolver;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
-import org.restlet.data.CacheDirective;
+import edu.illinois.library.cantaloupe.resource.iiif.AbstractInformationResource;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
-import org.restlet.resource.ResourceException;
 
 /**
  * Handles IIIF information requests.
@@ -42,24 +40,7 @@ import org.restlet.resource.ResourceException;
  * @see <a href="http://iiif.io/api/image/2.0/#information-request">Information
  * Requests</a>
  */
-public class InformationResource extends AbstractResource {
-
-    private static final Set<ServiceFeature> SUPPORTED_SERVICE_FEATURES =
-            new HashSet<>();
-
-    static {
-        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.SIZE_BY_WHITELISTED);
-        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.BASE_URI_REDIRECT);
-        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.CANONICAL_LINK_HEADER);
-        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.CORS);
-        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.JSON_LD_MEDIA_TYPE);
-    }
-
-    @Override
-    protected void doInit() throws ResourceException {
-        super.doInit();
-        getResponseCacheDirectives().addAll(getCacheDirectives());
-    }
+public class InformationResource extends AbstractInformationResource {
 
     /**
      * Responds to IIIF Information requests.
@@ -123,10 +104,11 @@ public class InformationResource extends AbstractResource {
         imageInfo.setWidth(fullSize.width);
         imageInfo.setHeight(fullSize.height);
 
+        /* TODO: fix
         final String complianceUri = ComplianceLevel.
                 getLevel(SUPPORTED_SERVICE_FEATURES, processorFeatures,
                         qualities, outputFormats).getUri();
-        imageInfo.getProfile().add(complianceUri);
+        imageInfo.getProfile().add(complianceUri); */
 
         // sizes
         final short maxReductionFactor = 4;
@@ -157,6 +139,7 @@ public class InformationResource extends AbstractResource {
         }
         profileMap.put("qualities", qualityStrings);
 
+        /* TODO: fix
         // supports
         Set<String> featureStrings = new HashSet<>();
         for (Feature feature : processorFeatures) {
@@ -166,12 +149,12 @@ public class InformationResource extends AbstractResource {
             featureStrings.add(feature.getName());
         }
         profileMap.put("supports", featureStrings);
-
+        */
         return imageInfo;
     }
 
     private String getImageUri(Identifier identifier) {
-        return getPublicRootRef() + ImageServerApplication.BASE_IIIF_PATH +
+        return getPublicRootRef() + ImageServerApplication.IIIF_PATH +
                 "/" + Reference.encode(identifier.toString());
     }
 
