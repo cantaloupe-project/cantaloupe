@@ -46,7 +46,6 @@ class JdbcCache implements Cache {
 
         @Override
         public void close() throws IOException {
-            System.out.println("closing");
             try {
                 Configuration config = Application.getConfiguration();
                 String sql = String.format(
@@ -418,21 +417,23 @@ class JdbcCache implements Cache {
         if (tableName != null && tableName.length() > 0) {
             try {
                 String sql = String.format(
-                        "SELECT %s, %s FROM %s WHERE %s = ? AND %s > ?",
+                        "SELECT %s, %s, %s FROM %s WHERE %s = ?",
                         INFO_TABLE_WIDTH_COLUMN, INFO_TABLE_HEIGHT_COLUMN,
-                        tableName, INFO_TABLE_IDENTIFIER_COLUMN,
-                        INFO_TABLE_LAST_MODIFIED_COLUMN);
+                        INFO_TABLE_LAST_MODIFIED_COLUMN, tableName,
+                        INFO_TABLE_IDENTIFIER_COLUMN);
                 PreparedStatement statement = getConnection().prepareStatement(sql);
                 statement.setString(1, identifier.getValue());
-                statement.setTimestamp(2, oldestDate);
                 ResultSet resultSet = statement.executeQuery();
                 if (resultSet.next()) {
-                    logger.debug("Hit for dimension: {}", identifier);
-                    return new Dimension(
-                            resultSet.getInt(INFO_TABLE_WIDTH_COLUMN),
-                            resultSet.getInt(INFO_TABLE_HEIGHT_COLUMN));
-                } else {
-                    flushInfo(identifier);
+                    if (resultSet.getTimestamp(3).after(oldestDate)) {
+                        logger.debug("Hit for dimension: {}", identifier);
+                        return new Dimension(
+                                resultSet.getInt(INFO_TABLE_WIDTH_COLUMN),
+                                resultSet.getInt(INFO_TABLE_HEIGHT_COLUMN));
+                    } else {
+                        logger.debug("Miss for dimension: {}", identifier);
+                        flushInfo(identifier);
+                    }
                 }
             } catch (SQLException e) {
                 throw new IOException(e.getMessage(), e);
@@ -453,19 +454,23 @@ class JdbcCache implements Cache {
             try {
                 Connection conn = getConnection();
                 String sql = String.format(
-                        "SELECT %s FROM %s WHERE %s = ? AND %s > ?",
-                        IMAGE_TABLE_IMAGE_COLUMN, tableName,
-                        IMAGE_TABLE_PARAMS_COLUMN,
-                        IMAGE_TABLE_LAST_MODIFIED_COLUMN);
+                        "SELECT %s, %s FROM %s WHERE %s = ?",
+                        IMAGE_TABLE_IMAGE_COLUMN,
+                        IMAGE_TABLE_LAST_MODIFIED_COLUMN, tableName,
+                        IMAGE_TABLE_PARAMS_COLUMN);
                 PreparedStatement statement = conn.prepareStatement(sql);
                 statement.setString(1, params.toString());
-                statement.setTimestamp(2, oldestDate);
                 ResultSet resultSet = statement.executeQuery();
                 if (resultSet.next()) {
-                    logger.debug("Hit for image: {}", params);
-                    inputStream = resultSet.getBinaryStream(1);
+                    if (resultSet.getTimestamp(2).after(oldestDate)) {
+                        logger.debug("Hit for image: {}", params);
+                        inputStream = resultSet.getBinaryStream(1);
+                    } else {
+                        logger.debug("Miss for image: {}", params);
+                        flushImage(params);
+                    }
                 }
-            } catch (SQLException e) {
+            } catch (IOException | SQLException e) {
                 logger.error(e.getMessage(), e);
             }
         } else {

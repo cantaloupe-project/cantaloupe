@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,7 +26,6 @@ import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
-import org.restlet.data.CacheDirective;
 import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.resource.Get;
@@ -102,28 +100,67 @@ public class ImageResource extends AbstractResource {
          * @param outputStream Response body output stream supplied by Restlet
          * @throws IOException
          */
+        @Override
         public void write(OutputStream outputStream) throws IOException {
             Cache cache = CacheFactory.getInstance();
-            if (cache != null) {
-                try (InputStream cacheStream = cache.getImageInputStream(this.params)) {
-                    if (cacheStream != null) {
-                        IOUtils.copy(cacheStream, outputStream);
-                    } else {
-                        TeeOutputStream tos = new TeeOutputStream(outputStream,
-                                cache.getImageOutputStream(this.params));
-                        doWrite(tos, cache);
+            try {
+                if (cache != null) {
+                    OutputStream cacheOutputStream = null;
+                    try (InputStream cacheInputStream =
+                                 cache.getImageInputStream(this.params)) {
+                        if (cacheInputStream != null) {
+                            IOUtils.copy(cacheInputStream, outputStream);
+                        } else {
+                            cacheOutputStream = cache.
+                                    getImageOutputStream(this.params);
+                            TeeOutputStream tos = new TeeOutputStream(
+                                    outputStream, cacheOutputStream);
+                            doCacheAwareWrite(tos, cache);
+                        }
+                    } catch (Exception e) {
+                        throw new IOException(e);
+                    } finally {
+                        if (cacheOutputStream != null) {
+                            cacheOutputStream.close();
+                        }
                     }
-                } catch (Exception e) {
-                    throw new IOException(e);
+                } else {
+                    doWrite(outputStream);
                 }
-            } else {
+            } finally {
+                /*
+                TODO: doesn't work with Java2dProcessor.process() - try in release()?
+                try {
+                    if (this.inputStream != null) {
+                        this.inputStream.close();
+                    }
+                } catch (IOException e) {
+                    logger.error(e.getMessage(), e);
+                } */
+            }
+        }
+
+        /**
+         * Variant of doWrite() that cleans up incomplete cached images when
+         * the connection has been interrupted.
+         *
+         * @param outputStream
+         * @param cache
+         * @throws IOException
+         */
+        private void doCacheAwareWrite(TeeOutputStream outputStream,
+                                       Cache cache) throws IOException {
+            try {
                 doWrite(outputStream);
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+                cache.flush(this.params);
             }
         }
 
         private void doWrite(OutputStream outputStream) throws IOException {
             try {
-                long msec = System.currentTimeMillis();
+                final long msec = System.currentTimeMillis();
                 // if the parameters request an unmodified source image, it can
                 // be streamed right through
                 if (this.params.isRequestingUnmodifiedSource()) {
@@ -144,7 +181,7 @@ public class ImageResource extends AbstractResource {
                                 this.sourceFormat);
                         fproc.process(this.params, this.sourceFormat, size,
                                 this.file, outputStream);
-                    } else if (this.inputStream != null) {
+                    } else {
                         StreamProcessor sproc = (StreamProcessor) proc;
                         sproc.process(this.params, this.sourceFormat,
                                 this.fullSize, this.inputStream, outputStream);
@@ -155,33 +192,6 @@ public class ImageResource extends AbstractResource {
                 }
             } catch (Exception e) {
                 throw new IOException(e);
-            } /*finally {
-                TODO: doesn't work with Java2dProcessor.process()
-                try {
-                    if (this.inputStream != null) {
-                        this.inputStream.close();
-                    }
-                } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
-                }
-            }*/
-        }
-
-        /**
-         * Variant of doWrite() that cleans up incomplete cached images when
-         * the connection has been interrupted.
-         *
-         * @param outputStream
-         * @param cache
-         * @throws IOException
-         */
-        private void doWrite(OutputStream outputStream, Cache cache)
-                throws IOException {
-            try {
-                doWrite(outputStream);
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-                cache.flush(this.params);
             }
         }
 

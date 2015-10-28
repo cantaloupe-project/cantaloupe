@@ -42,19 +42,19 @@ public class JdbcCacheTest extends CantaloupeTestCase {
                 "default", "jpg");
         OutputStream os = instance.getImageOutputStream(params);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
-        os.flush();
+        os.close();
 
         params = new Parameters("dogs", "50,50,50,50", "pct:90",
                 "0", "default", "jpg");
         os = instance.getImageOutputStream(params);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
-        os.flush();
+        os.close();
 
         params = new Parameters("bunnies", "10,20,50,90", "40,",
                 "15", "color", "png");
         os = instance.getImageOutputStream(params);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
-        os.flush();
+        os.close();
 
         // persist some corresponding dimensions
         instance.putDimension(new Identifier("cats"), new Dimension(50, 40));
@@ -151,7 +151,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
                 "default", "jpg");
         OutputStream os = instance.getImageOutputStream(params);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
-        os.flush();
+        os.close();
         instance.putDimension(new Identifier("bees"), new Dimension(50, 40));
 
         instance.flushExpired();
@@ -232,7 +232,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
                 "default", "jpg");
         OutputStream os = instance.getImageOutputStream(params);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
-        os.flush();
+        os.close();
         instance.putDimension(new Identifier("bees"), new Dimension(50, 40));
 
         // existing, non-expired image
