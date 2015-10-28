@@ -156,7 +156,7 @@ class JdbcCache implements Cache {
                 }
                 PreparedStatement statement = conn.prepareStatement(sql);
                 statement.execute();
-                logger.info("Created table: {}", tableName);
+                logger.info("Created table (if not already existing): {}", tableName);
             } catch (SQLException e) {
                 throw new IOException(e.getMessage(), e);
             }
@@ -196,7 +196,7 @@ class JdbcCache implements Cache {
                 }
                 PreparedStatement statement = conn.prepareStatement(sql);
                 statement.execute();
-                logger.info("Created table: {}", tableName);
+                logger.info("Created table (if not already existing): {}", tableName);
             } catch (SQLException e) {
                 throw new IOException(e.getMessage(), e);
             }
