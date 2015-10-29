@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.request.Identifier;
-import edu.illinois.library.cantaloupe.request.Parameters;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Operations;
 import org.apache.commons.configuration.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,10 +36,10 @@ class JdbcCache implements Cache {
     private class JdbcImageOutputStream extends OutputStream {
 
         private ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        private Parameters params;
+        private Operations params;
         private Connection connection;
 
-        public JdbcImageOutputStream(Connection conn, Parameters params) {
+        public JdbcImageOutputStream(Connection conn, Operations params) {
             this.connection = conn;
             this.params = params;
         }
@@ -310,7 +310,7 @@ class JdbcCache implements Cache {
     }
 
     @Override
-    public void flush(Parameters params) throws IOException {
+    public void flush(Operations params) throws IOException {
         try {
             int numDeletedImages = flushImage(params);
             int numDeletedDimensions = flushInfo(params.getIdentifier());
@@ -327,7 +327,7 @@ class JdbcCache implements Cache {
      * @throws SQLException
      * @throws IOException
      */
-    private int flushImage(Parameters params) throws SQLException, IOException {
+    private int flushImage(Operations params) throws SQLException, IOException {
         Configuration config = Application.getConfiguration();
         Connection conn = getConnection();
 
@@ -445,7 +445,7 @@ class JdbcCache implements Cache {
     }
 
     @Override
-    public InputStream getImageInputStream(Parameters params) {
+    public InputStream getImageInputStream(Operations params) {
         InputStream inputStream = null;
         final Timestamp oldestDate = oldestValidDate();
         Configuration config = Application.getConfiguration();
@@ -480,7 +480,7 @@ class JdbcCache implements Cache {
     }
 
     @Override
-    public OutputStream getImageOutputStream(Parameters params)
+    public OutputStream getImageOutputStream(Operations params)
             throws IOException {
         logger.debug("Miss; caching {}", params);
         Configuration config = Application.getConfiguration();

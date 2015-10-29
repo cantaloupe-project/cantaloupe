@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.request.Parameters;
+import edu.illinois.library.cantaloupe.image.Operations;
 
 import java.awt.Dimension;
 import java.io.InputStream;
@@ -16,7 +16,7 @@ public interface StreamProcessor extends Processor {
     /**
      * @param inputStream Source image. Implementations should not close it.
      * @param sourceFormat Format of the source image
-     * @return Size of the source image in pixels.
+     * @return Scale of the source image in pixels.
      * @throws ProcessorException
      */
     Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
@@ -30,9 +30,9 @@ public interface StreamProcessor extends Processor {
      * own <code>getSize()</code> method to avoid reusing a potentially
      * unreusable InputStream.</p>
      *
-     * @param params Parameters of the output image
+     * @param params Operations of the output image
      * @param sourceFormat Format of the source image
-     * @param sourceSize Size of the source image
+     * @param sourceSize Scale of the source image
      * @param inputStream Stream from which to read the image. Implementations
      *                    should not close it.
      * @param outputStream Stream to which to write the image. Implementations
@@ -41,7 +41,7 @@ public interface StreamProcessor extends Processor {
      * @throws UnsupportedSourceFormatException
      * @throws ProcessorException
      */
-    void process(Parameters params, SourceFormat sourceFormat,
+    void process(Operations params, SourceFormat sourceFormat,
                  Dimension sourceSize, InputStream inputStream,
                  OutputStream outputStream) throws ProcessorException;
 

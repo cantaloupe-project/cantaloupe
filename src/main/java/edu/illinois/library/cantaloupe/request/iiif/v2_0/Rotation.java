@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.request;
+package edu.illinois.library.cantaloupe.request.iiif.v2_0;
 
 import edu.illinois.library.cantaloupe.util.NumberUtil;
 
@@ -57,6 +57,14 @@ public class Rotation {
      */
     public boolean shouldMirror() {
         return mirror;
+    }
+
+    public edu.illinois.library.cantaloupe.image.Rotation toRotation() {
+        edu.illinois.library.cantaloupe.image.Rotation rotation =
+                new edu.illinois.library.cantaloupe.image.Rotation();
+        rotation.setDegrees(this.getDegrees());
+        rotation.setMirror(this.shouldMirror());
+        return rotation;
     }
 
     /**

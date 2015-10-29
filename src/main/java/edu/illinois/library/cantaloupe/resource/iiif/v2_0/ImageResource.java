@@ -1,14 +1,14 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
 import edu.illinois.library.cantaloupe.ImageServerApplication;
+import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
-import edu.illinois.library.cantaloupe.request.OutputFormat;
-import edu.illinois.library.cantaloupe.request.Parameters;
+import edu.illinois.library.cantaloupe.request.iiif.v2_0.Parameters;
 import edu.illinois.library.cantaloupe.resolver.FileResolver;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
@@ -31,7 +31,7 @@ import java.util.Set;
  * Handles IIIF image requests.
  *
  * @see <a href="http://iiif.io/api/image/2.0/#image-request-parameters">Image
- * Request Parameters</a>
+ * Request Operations</a>
  */
 public class ImageResource extends AbstractImageResource {
 
@@ -51,22 +51,22 @@ public class ImageResource extends AbstractImageResource {
      */
     @Get
     public ImageRepresentation doGet() throws Exception {
-        // Assemble the URI parameters into a Parameters object
+        // Assemble the URI parameters into a Operations object
         Map<String,Object> attrs = this.getRequest().getAttributes();
-        String identifier = (String) attrs.get("identifier");
-        String format = (String) attrs.get("format");
-        String region = (String) attrs.get("region");
-        String size = (String) attrs.get("size");
-        String rotation = (String) attrs.get("rotation");
-        String quality = (String) attrs.get("quality");
-        Parameters params = new Parameters(identifier, region, size, rotation,
-                quality, format);
+        Parameters params = new Parameters(
+                (String) attrs.get("identifier"),
+                (String) attrs.get("region"),
+                (String) attrs.get("size"),
+                (String) attrs.get("rotation"),
+                (String) attrs.get("quality"),
+                (String) attrs.get("format"));
+        Operations ops = params.toOperations();
         // Get a reference to the source image (this will also cause an
         // exception if not found)
         Resolver resolver = ResolverFactory.getResolver();
         // Determine the format of the source image
         SourceFormat sourceFormat = resolver.
-                getSourceFormat(params.getIdentifier());
+                getSourceFormat(ops.getIdentifier());
         if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
             throw new UnsupportedSourceFormatException();
         }
@@ -91,7 +91,7 @@ public class ImageResource extends AbstractImageResource {
                 ImageServerApplication.IIIF_2_0_PATH, params.toString()));
 
         MediaType mediaType = new MediaType(
-                OutputFormat.valueOf(format.toUpperCase()).getMediaType());
+                ops.getOutputFormat().getMediaType());
 
         // FileResolver -> StreamProcessor: OK, using FileInputStream
         // FileResolver -> FileProcessor: OK, using File
@@ -109,8 +109,8 @@ public class ImageResource extends AbstractImageResource {
             logger.debug("Using {} as a FileProcessor",
                     proc.getClass().getSimpleName());
             File inputFile = ((FileResolver) resolver).
-                    getFile(params.getIdentifier());
-            return new ImageRepresentation(mediaType, sourceFormat, params,
+                    getFile(ops.getIdentifier());
+            return new ImageRepresentation(mediaType, sourceFormat, ops,
                     inputFile);
         } else if (resolver instanceof StreamResolver) {
             logger.debug("Using {} as a StreamProcessor",
@@ -119,12 +119,12 @@ public class ImageResource extends AbstractImageResource {
             if (proc instanceof StreamProcessor) {
                 StreamProcessor sproc = (StreamProcessor) proc;
                 InputStream inputStream = sres.
-                        getInputStream(params.getIdentifier());
+                        getInputStream(ops.getIdentifier());
                 Dimension fullSize = sproc.getSize(inputStream, sourceFormat);
                 // avoid reusing the stream
-                inputStream = sres.getInputStream(params.getIdentifier());
+                inputStream = sres.getInputStream(ops.getIdentifier());
                 return new ImageRepresentation(mediaType, sourceFormat, fullSize,
-                        params, inputStream);
+                        ops, inputStream);
             }
         }
         return null; // this should never happen

@@ -1,6 +1,6 @@
-package edu.illinois.library.cantaloupe.request;
+package edu.illinois.library.cantaloupe.request.iiif.v1_1;
 
-import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Operations;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -49,9 +49,6 @@ public class Parameters implements Comparable<Parameters> {
      * No-op constructor.
      */
     public Parameters() {}
-
-    /**
-
 
      /**
      * @param identifier From URI
@@ -125,26 +122,9 @@ public class Parameters implements Comparable<Parameters> {
         this.size = size;
     }
 
-
-
-    /**
-     * @return Whether the parameters are effectively requesting the unmodified
-     * source image, i.e. whether they specify full region, full scale, 0
-     * rotation, no mirroring, default or color quality, and the same output
-     * format as the source format.
-     */
-    public boolean isRequestingUnmodifiedSource() {
-        final Size size = this.getSize();
-        final boolean isFullSize = (size.getScaleMode() == Size.ScaleMode.FULL) ||
-                (size.getPercent() != null && Math.abs(size.getPercent() - 100f) < 0.000001f);
-        return this.getRegion().isFull() && isFullSize &&
-                this.getRotation().getDegrees() == 0 &&
-                !(this.getRotation().shouldMirror() &&
-                        this.getRotation().getDegrees() != 0) &&
-                (this.getQuality().equals(Quality.DEFAULT) ||
-                        this.getQuality().equals(Quality.COLOR)) &&
-                this.getOutputFormat().isEqual(
-                        SourceFormat.getSourceFormat(this.getIdentifier()));
+    public Operations toParameters() {
+        return Operations.
+                fromUri(this.toString());
     }
 
     /**

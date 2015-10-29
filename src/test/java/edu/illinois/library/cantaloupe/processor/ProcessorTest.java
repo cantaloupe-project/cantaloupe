@@ -2,9 +2,9 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
+import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.request.OutputFormat;
-import edu.illinois.library.cantaloupe.request.Parameters;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 
@@ -54,7 +54,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
     }
 
     public void testProcessWithSupportedSourceFormatsAndNoTransformation() throws Exception {
-        Parameters params = new Parameters("bla", "full", "full", "0",
+        Operations params = new Operations("bla", "full", "full", "0",
                 "default", "jpg");
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {
@@ -88,7 +88,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
     }
 
     public void testProcessWithUnsupportedSourceFormats() throws Exception {
-        Parameters params = new Parameters("bla", "20,20,50,50", "pct:80",
+        Operations params = new Operations("bla", "20,20,50,50", "pct:80",
                 "15", "color", "jpg");
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             if (getProcessor().getAvailableOutputFormats(sourceFormat).size() == 0) {
@@ -134,7 +134,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
     public void testProcessWithRegionTransformation() throws Exception {
         String[] regions = {"full", "10,10,50,50", "pct:20,20,20,20"};
         for (String region : regions) {
-            Parameters params = new Parameters("bla", region, "full", "0",
+            Operations params = new Operations("bla", region, "full", "0",
                     "default", "jpg");
             for (SourceFormat sourceFormat : SourceFormat.values()) {
                 if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {
@@ -172,7 +172,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
     public void testProcessWithSizeTransformation() throws Exception {
         String[] sizes = {"full", "20,", ",20", "pct:50", "20,20", "!20,20"};
         for (String size : sizes) {
-            Parameters params = new Parameters("bla", "10,10,50,50", size, "0",
+            Operations params = new Operations("bla", "10,10,50,50", size, "0",
                     "default", "jpg");
             for (SourceFormat sourceFormat : SourceFormat.values()) {
                 if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {
@@ -210,7 +210,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
     public void testProcessWithRotationTransformation() throws Exception {
         String[] rotations = {"0", "15", "275", "!15"};
         for (String rotation : rotations) {
-            Parameters params = new Parameters("bla", "10,10,50,50", "20,20",
+            Operations params = new Operations("bla", "10,10,50,50", "20,20",
                     rotation, "default", "jpg");
             for (SourceFormat sourceFormat : SourceFormat.values()) {
                 if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {
@@ -248,7 +248,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
     public void testProcessWithQualityTransformation() throws Exception {
         String[] qualities = {"default", "color", "gray", "bitonal"};
         for (String quality : qualities) {
-            Parameters params = new Parameters("bla", "10,10,50,50", "20,20",
+            Operations params = new Operations("bla", "10,10,50,50", "20,20",
                     "10", quality, "jpg");
             for (SourceFormat sourceFormat : SourceFormat.values()) {
                 if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {
@@ -287,7 +287,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         Set<OutputFormat> outputFormats = getProcessor().
                 getAvailableOutputFormats(SourceFormat.JPG);
         for (OutputFormat outputFormat : outputFormats) {
-            Parameters params = new Parameters("bla", "10,10,50,50", "20,20",
+            Operations params = new Operations("bla", "10,10,50,50", "20,20",
                     "10", "default", outputFormat.getExtension());
             for (SourceFormat sourceFormat : SourceFormat.values()) {
                 if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {

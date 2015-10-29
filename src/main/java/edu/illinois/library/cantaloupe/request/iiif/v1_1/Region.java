@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.request;
+package edu.illinois.library.cantaloupe.request.iiif.v1_1;
 
 import edu.illinois.library.cantaloupe.util.NumberUtil;
 

@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.request;
+package edu.illinois.library.cantaloupe.request.iiif.v1_1;
 
 import edu.illinois.library.cantaloupe.util.NumberUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -73,7 +73,7 @@ public class Size {
     /**
      * @return Float from 0-100
      */
-    public Float getPercent() { // TODO: use 0-1
+    public Float getPercent() {
         return percent;
     }
 
@@ -96,7 +96,7 @@ public class Size {
      * @param percent Float from 0-100
      * @throws IllegalArgumentException
      */
-    public void setPercent(Float percent) throws IllegalArgumentException { // TODO: use 0-1
+    public void setPercent(Float percent) throws IllegalArgumentException {
         if (percent <= 0) {
             throw new IllegalArgumentException("Percent must be positive");
         }

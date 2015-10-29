@@ -1,6 +1,4 @@
-package edu.illinois.library.cantaloupe.request;
-
-import org.restlet.data.Reference;
+package edu.illinois.library.cantaloupe.image;
 
 /**
  * Encapsulates the "identifier" component of an IIIF request URI.
@@ -13,15 +11,7 @@ public class Identifier implements Comparable<Identifier> {
     private String value;
 
     /**
-     * @param uriId Escaped URI identifier
-     * @return Unencoded identifier
-     */
-    public static Identifier fromUri(String uriId) {
-        return new Identifier(Reference.decode(uriId));
-    }
-
-    /**
-     * @param value Unencoded identifier value
+     * @param value Identifier value
      */
     public Identifier(String value) {
         this.setValue(value);

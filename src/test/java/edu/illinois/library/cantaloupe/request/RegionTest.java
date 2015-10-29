@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.request;
 
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
+import edu.illinois.library.cantaloupe.image.Region;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;

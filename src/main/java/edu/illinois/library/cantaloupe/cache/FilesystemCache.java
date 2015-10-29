@@ -2,9 +2,9 @@ package edu.illinois.library.cantaloupe.cache;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
-import edu.illinois.library.cantaloupe.request.Identifier;
-import edu.illinois.library.cantaloupe.request.Parameters;
+import edu.illinois.library.cantaloupe.resource.iiif.v2_0.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Operations;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,9 +47,9 @@ class FilesystemCache implements Cache {
     /** Set of identifiers for which info files are currently being written. */
     private final Set<Identifier> infosBeingWritten = new ConcurrentSkipListSet<>();
 
-    /** Set of Parameters for which image files are currently being flushed by
-     * flush(Parameters). */
-    private final Set<Parameters> paramsBeingFlushed =
+    /** Set of Operations for which image files are currently being flushed by
+     * flush(Operations). */
+    private final Set<Operations> paramsBeingFlushed =
             new ConcurrentSkipListSet<>();
 
     /** Lock object for synchronization */
@@ -146,7 +146,7 @@ class FilesystemCache implements Cache {
     }
 
     @Override
-    public void flush(Parameters params) throws IOException {
+    public void flush(Operations params) throws IOException {
         synchronized (lock1) {
             while (flushingInProgress || paramsBeingFlushed.contains(params)) {
                 try {
@@ -255,7 +255,7 @@ class FilesystemCache implements Cache {
     }
 
     @Override
-    public InputStream getImageInputStream(Parameters params) {
+    public InputStream getImageInputStream(Operations params) {
         File cacheFile = getCachedImageFile(params);
         if (cacheFile != null && cacheFile.exists()) {
             if (!isExpired(cacheFile)) {
@@ -275,7 +275,7 @@ class FilesystemCache implements Cache {
     }
 
     @Override
-    public OutputStream getImageOutputStream(Parameters params)
+    public OutputStream getImageOutputStream(Operations params)
             throws IOException { // TODO: make this work better concurrently
         logger.debug("Miss; caching {}", params);
         File cacheFile = getCachedImageFile(params);
@@ -289,7 +289,7 @@ class FilesystemCache implements Cache {
      * @return File corresponding to the given parameters, or null if
      * <code>FilesystemCache.pathname</code> is not set in the configuration.
      */
-    public File getCachedImageFile(Parameters params) {
+    public File getCachedImageFile(Operations params) {
         final String cachePathname = getImagePathname();
         if (cachePathname != null) {
             final String pathname = String.format("%s%s%s_%s_%s_%s_%s.%s",

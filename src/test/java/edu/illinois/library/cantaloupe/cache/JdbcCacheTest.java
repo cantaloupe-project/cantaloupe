@@ -2,8 +2,8 @@ package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
-import edu.illinois.library.cantaloupe.request.Identifier;
-import edu.illinois.library.cantaloupe.request.Parameters;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -38,19 +38,19 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         instance = new JdbcCache();
 
         // persist some images
-        Parameters params = new Parameters("cats", "full", "full", "0",
+        Operations params = new Operations("cats", "full", "full", "0",
                 "default", "jpg");
         OutputStream os = instance.getImageOutputStream(params);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
         os.close();
 
-        params = new Parameters("dogs", "50,50,50,50", "pct:90",
+        params = new Operations("dogs", "50,50,50,50", "pct:90",
                 "0", "default", "jpg");
         os = instance.getImageOutputStream(params);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
         os.close();
 
-        params = new Parameters("bunnies", "10,20,50,90", "40,",
+        params = new Operations("bunnies", "10,20,50,90", "40,",
                 "15", "color", "png");
         os = instance.getImageOutputStream(params);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
@@ -116,7 +116,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
     }
 
     public void testFlushWithParameters() throws Exception {
-        Parameters params = new Parameters("cats", "full", "full", "0",
+        Operations params = new Operations("cats", "full", "full", "0",
                 "default", "jpg");
         instance.flush(params);
 
@@ -147,7 +147,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Thread.sleep(1500);
 
         // add some fresh entities
-        Parameters params = new Parameters("bees", "full", "full", "0",
+        Operations params = new Operations("bees", "full", "full", "0",
                 "default", "jpg");
         OutputStream os = instance.getImageOutputStream(params);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
@@ -195,7 +195,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Thread.sleep(1500);
 
         // add some fresh entities
-        Parameters params = new Parameters("bees", "full", "full", "0",
+        Operations params = new Operations("bees", "full", "full", "0",
                 "default", "jpg");
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")),
                 instance.getImageOutputStream(params));
@@ -216,7 +216,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
     }
 
     public void testGetImageInputStreamWithZeroTtl() {
-        Parameters params = new Parameters("cats", "full", "full", "0",
+        Operations params = new Operations("cats", "full", "full", "0",
                 "default", "jpg");
         assertNotNull(instance.getImageInputStream(params));
     }
@@ -228,7 +228,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Thread.sleep(1500);
 
         // add some fresh entities
-        Parameters params = new Parameters("bees", "full", "full", "0",
+        Operations params = new Operations("bees", "full", "full", "0",
                 "default", "jpg");
         OutputStream os = instance.getImageOutputStream(params);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
@@ -239,14 +239,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         assertNotNull(instance.getImageInputStream(params));
         // existing, expired image
         assertNull(instance.getImageInputStream(
-                Parameters.fromUri("cats/full/full/0/default.jpg")));
+                Operations.fromUri("cats/full/full/0/default.jpg")));
         // nonexistent image
         assertNull(instance.getImageInputStream(
-                Parameters.fromUri("bogus/full/full/0/default.jpg")));
+                Operations.fromUri("bogus/full/full/0/default.jpg")));
     }
 
     public void testGetImageOutputStream() throws Exception {
-        Parameters params = new Parameters("cats", "full", "full", "0",
+        Operations params = new Operations("cats", "full", "full", "0",
                 "default", "jpg");
         assertNotNull(instance.getImageOutputStream(params));
     }

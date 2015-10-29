@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import edu.illinois.library.cantaloupe.request.Identifier;
-import edu.illinois.library.cantaloupe.request.Parameters;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Operations;
 
 import java.awt.Dimension;
 import java.io.IOException;
@@ -28,7 +28,7 @@ public interface Cache {
      * @param params
      * @throws IOException
      */
-    void flush(Parameters params) throws IOException;
+    void flush(Operations params) throws IOException;
 
     /**
      * Deletes expired images and dimensions from the cache.
@@ -48,7 +48,7 @@ public interface Cache {
      * if a non-expired image corresponding to the given parameters does not
      * exist in the cache.
      */
-    InputStream getImageInputStream(Parameters params);
+    InputStream getImageInputStream(Operations params);
 
     /**
      * <p>Reads cached dimension information.</p>
@@ -68,7 +68,7 @@ public interface Cache {
      * parameters can be written.
      * @throws IOException
      */
-    OutputStream getImageOutputStream(Parameters params) throws IOException;
+    OutputStream getImageOutputStream(Operations params) throws IOException;
 
     /**
      * Adds an image's dimension information to the cache.

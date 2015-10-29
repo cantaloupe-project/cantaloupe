@@ -3,12 +3,12 @@ package edu.illinois.library.cantaloupe.processor;
 import com.sun.media.jai.codec.ImageCodec;
 import com.sun.media.jai.codec.ImageDecoder;
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.request.OutputFormat;
-import edu.illinois.library.cantaloupe.request.Parameters;
-import edu.illinois.library.cantaloupe.request.Quality;
-import edu.illinois.library.cantaloupe.request.Region;
-import edu.illinois.library.cantaloupe.request.Size;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.image.Quality;
+import edu.illinois.library.cantaloupe.image.Region;
 import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,7 +139,7 @@ class Java2dProcessor implements StreamProcessor {
     }
 
     @Override
-    public void process(Parameters params, SourceFormat sourceFormat,
+    public void process(Operations params, SourceFormat sourceFormat,
                         Dimension fullSize, InputStream inputStream,
                         OutputStream outputStream) throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
@@ -169,7 +169,7 @@ class Java2dProcessor implements StreamProcessor {
 
     private BufferedImage loadImage(InputStream inputStream,
                                     SourceFormat sourceFormat,
-                                    Parameters params,
+                                    Operations params,
                                     Dimension fullSize,
                                     ReductionFactor reductionFactor)
             throws IOException, ProcessorException { // TODO: move this to ProcessorUtil
@@ -254,7 +254,7 @@ class Java2dProcessor implements StreamProcessor {
      *     TIFFImageReader source</a>
      */
     private BufferedImage loadUsingTiffImageReader(
-            InputStream inputStream, Parameters params, Dimension fullSize,
+            InputStream inputStream, Operations params, Dimension fullSize,
             ReductionFactor reductionFactor) throws IOException,
             ProcessorException {
         BufferedImage image = null;
@@ -324,7 +324,7 @@ class Java2dProcessor implements StreamProcessor {
      */
     private BufferedImage getSmallestUsableImage(ImageReader reader,
                                                  Dimension fullSize,
-                                                 Region region, Size size,
+                                                 Region region, Scale size,
                                                  ReductionFactor rf)
             throws IOException {
         // The goal here is to get a BufferedImage of TYPE_INT_RGB rather
@@ -343,7 +343,7 @@ class Java2dProcessor implements StreamProcessor {
         // param.setDestinationType(ImageTypeSpecifier.
         //        createFromBufferedImageType(BufferedImage.TYPE_INT_RGB));
         reader.read(0, param);
-        if (size.getScaleMode() != Size.ScaleMode.FULL) {
+        if (size.getScaleMode() != Scale.Mode.FULL) {
             // Pyramidal TIFFs will have > 1 image, each half the dimensions of
             // the next larger. The "true" parameter tells getNumImages() to
             // scan for images, which seems to be necessary for at least some
@@ -364,14 +364,14 @@ class Java2dProcessor implements StreamProcessor {
                     final double tileScale = (double) tile.getWidth() /
                             (double) fullSize.width;
                     boolean fits = false;
-                    if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
+                    if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                         fits = (size.getWidth() / (float) regionRect.width <= tileScale);
-                    } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
+                    } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                         fits = (size.getHeight() / (float) regionRect.height <= tileScale);
-                    } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
+                    } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
                         fits = (size.getWidth() / (float) regionRect.width <= tileScale &&
                                 size.getHeight() / (float) regionRect.height <= tileScale);
-                    } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
+                    } else if (size.getScaleMode() == Scale.Mode.NON_ASPECT_FILL) {
                         fits = (size.getWidth() / (float) regionRect.width <= tileScale &&
                                 size.getHeight() / (float) regionRect.height <= tileScale);
                     } else if (size.getPercent() != null) {

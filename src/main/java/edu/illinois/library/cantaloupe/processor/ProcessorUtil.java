@@ -1,19 +1,18 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.request.OutputFormat;
-import edu.illinois.library.cantaloupe.request.Quality;
-import edu.illinois.library.cantaloupe.request.Region;
-import edu.illinois.library.cantaloupe.request.Rotation;
-import edu.illinois.library.cantaloupe.request.Size;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.image.Quality;
+import edu.illinois.library.cantaloupe.image.Region;
+import edu.illinois.library.cantaloupe.image.Rotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
-import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
@@ -334,23 +333,23 @@ abstract class ProcessorUtil {
         return rotatedImage;
     }
 
-    public static RenderedOp scaleImage(RenderedOp inImage, Size size) {
+    public static RenderedOp scaleImage(RenderedOp inImage, Scale size) {
         RenderedOp scaledImage;
-        if (size.getScaleMode() == Size.ScaleMode.FULL) {
+        if (size.getScaleMode() == Scale.Mode.FULL) {
             scaledImage = inImage;
         } else {
             final double sourceWidth = inImage.getWidth();
             final double sourceHeight = inImage.getHeight();
             double xScale = 1.0f;
             double yScale = 1.0f;
-            if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
+            if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                 xScale = yScale = size.getWidth() / sourceWidth;
-            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
+            } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                 xScale = yScale = size.getHeight() / sourceHeight;
-            } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
+            } else if (size.getScaleMode() == Scale.Mode.NON_ASPECT_FILL) {
                 xScale = size.getWidth() / sourceWidth;
                 yScale = size.getHeight() / sourceHeight;
-            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
+            } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
                 double hScale = size.getWidth() / sourceWidth;
                 double vScale = size.getHeight() / sourceHeight;
                 xScale = (sourceWidth * Math.min(hScale, vScale));
@@ -382,10 +381,10 @@ abstract class ProcessorUtil {
      *                        <code>inImage</code>
      * @return Scaled image
      */
-    public static RenderedOp scaleImage(PlanarImage inImage, Size size,
+    public static RenderedOp scaleImage(PlanarImage inImage, Scale size,
                                         int reductionFactor) {
         RenderedOp scaledImage;
-        if (size.getScaleMode() == Size.ScaleMode.FULL) {
+        if (size.getScaleMode() == Scale.Mode.FULL) {
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
             pb.add(1.0f);
@@ -399,14 +398,14 @@ abstract class ProcessorUtil {
             final double sourceHeight = inImage.getHeight();
             double xScale = 1.0f;
             double yScale = 1.0f;
-            if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
+            if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                 xScale = yScale = size.getWidth() / sourceWidth;
-            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
+            } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                 xScale = yScale = size.getHeight() / sourceHeight;
-            } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
+            } else if (size.getScaleMode() == Scale.Mode.NON_ASPECT_FILL) {
                 xScale = size.getWidth() / sourceWidth;
                 yScale = size.getHeight() / sourceHeight;
-            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
+            } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
                 double hScale = size.getWidth() / sourceWidth;
                 double vScale = size.getHeight() / sourceHeight;
                 xScale = sourceWidth * Math.min(hScale, vScale);
@@ -436,22 +435,22 @@ abstract class ProcessorUtil {
      * @return
      */
     public static BufferedImage scaleImageWithAffineTransform(
-            BufferedImage inImage, Size size) {
+            BufferedImage inImage, Scale size) {
         BufferedImage scaledImage;
-        if (size.getScaleMode() == Size.ScaleMode.FULL) {
+        if (size.getScaleMode() == Scale.Mode.FULL) {
             scaledImage = inImage;
         } else {
             double xScale = 0.0f, yScale = 0.0f;
-            if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
+            if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                 xScale = size.getWidth() / (double) inImage.getWidth();
                 yScale = xScale;
-            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
+            } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                 yScale = size.getHeight() / (double) inImage.getHeight();
                 xScale = yScale;
-            } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
+            } else if (size.getScaleMode() == Scale.Mode.NON_ASPECT_FILL) {
                 xScale = size.getWidth() / (double) inImage.getWidth();
                 yScale = size.getHeight() / (double) inImage.getHeight();
-            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
+            } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
                 double hScale = (double) size.getWidth() /
                         (double) inImage.getWidth();
                 double vScale = (double) size.getHeight() /
@@ -482,7 +481,7 @@ abstract class ProcessorUtil {
      * @return
      */
     public static BufferedImage scaleImageWithG2d(BufferedImage inImage,
-                                                  Size size) {
+                                                  Scale size) {
         return scaleImageWithG2d(inImage, size, 0);
     }
 
@@ -499,25 +498,25 @@ abstract class ProcessorUtil {
      * @return Scaled image
      */
     public static BufferedImage scaleImageWithG2d(BufferedImage inImage,
-                                                  Size size,
+                                                  Scale size,
                                                   int reductionFactor) {
         BufferedImage scaledImage;
-        if (size.getScaleMode() == Size.ScaleMode.FULL) {
+        if (size.getScaleMode() == Scale.Mode.FULL) {
             scaledImage = inImage;
         } else {
             final int sourceWidth = inImage.getWidth();
             final int sourceHeight = inImage.getHeight();
             int width = 0, height = 0;
-            if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
+            if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                 width = size.getWidth();
                 height = sourceHeight * width / sourceWidth;
-            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
+            } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                 height = size.getHeight();
                 width = sourceWidth * height / sourceHeight;
-            } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
+            } else if (size.getScaleMode() == Scale.Mode.NON_ASPECT_FILL) {
                 width = size.getWidth();
                 height = size.getHeight();
-            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
+            } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
                 double hScale = (double) size.getWidth() / (double) sourceWidth;
                 double vScale = (double) size.getHeight() / sourceHeight;
                 width = (int) Math.round(sourceWidth *

@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.request;
+package edu.illinois.library.cantaloupe.image;
 
 /**
  * Encapsulates the "quality" component of an IIIF request URI.

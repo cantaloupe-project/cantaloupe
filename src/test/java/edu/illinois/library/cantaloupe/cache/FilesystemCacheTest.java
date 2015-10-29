@@ -3,9 +3,9 @@ package edu.illinois.library.cantaloupe.cache;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
-import edu.illinois.library.cantaloupe.request.Identifier;
-import edu.illinois.library.cantaloupe.request.Parameters;
+import edu.illinois.library.cantaloupe.resource.iiif.v2_0.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Operations;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.restlet.data.Reference;
@@ -47,12 +47,12 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     }
 
     public void testFlush() throws Exception {
-        Parameters params = new Parameters("cats", "full", "full", "0",
+        Operations params = new Operations("cats", "full", "full", "0",
                 "default", "jpg");
         instance.getCachedImageFile(params).createNewFile();
         instance.getCachedInfoFile(params.getIdentifier()).createNewFile();
 
-        params = new Parameters("dogs", "full", "full", "15", "gray", "jpg");
+        params = new Operations("dogs", "full", "full", "15", "gray", "jpg");
         instance.getCachedImageFile(params).createNewFile();
         instance.getCachedInfoFile(params.getIdentifier()).createNewFile();
 
@@ -62,7 +62,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     }
 
     public void testFlushWithParameters() throws Exception {
-        Parameters params = new Parameters("cats", "full", "full", "0",
+        Operations params = new Operations("cats", "full", "full", "0",
                 "default", "jpg");
         instance.getCachedImageFile(params).createNewFile();
         instance.getCachedInfoFile(params.getIdentifier()).createNewFile();
@@ -74,14 +74,14 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     public void testFlushExpired() throws Exception {
         Application.getConfiguration().setProperty("FilesystemCache.ttl_seconds", 1);
 
-        Parameters params = new Parameters("cats", "full", "full", "0",
+        Operations params = new Operations("cats", "full", "full", "0",
                 "default", "jpg");
         instance.getCachedImageFile(params).createNewFile();
         instance.getCachedInfoFile(params.getIdentifier()).createNewFile();
 
         Thread.sleep(2000);
 
-        params = new Parameters("dogs", "full", "full", "0", "default", "jpg");
+        params = new Operations("dogs", "full", "full", "0", "default", "jpg");
         instance.getCachedImageFile(params).createNewFile();
         instance.getCachedInfoFile(params.getIdentifier()).createNewFile();
 
@@ -118,7 +118,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     }
 
     public void testGetImageInputStreamWithZeroTtl() throws Exception {
-        Parameters params = new Parameters("cats", "full", "full", "0",
+        Operations params = new Operations("cats", "full", "full", "0",
                 "default", "jpg");
         assertNull(instance.getImageInputStream(params));
 
@@ -127,7 +127,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     }
 
     public void testGetImageInputStreamWithNonzeroTtl() throws Exception {
-        Parameters params = new Parameters("cats", "full", "full", "0",
+        Operations params = new Operations("cats", "full", "full", "0",
                 "default", "jpg");
         Application.getConfiguration().setProperty("FilesystemCache.ttl_seconds", 1);
         File cacheFile = instance.getCachedImageFile(params);
@@ -139,14 +139,14 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     }
 
     public void testGetImageOutputStream() throws Exception {
-        Parameters params = new Parameters("cats", "full", "full", "0",
+        Operations params = new Operations("cats", "full", "full", "0",
                 "default", "jpg");
         assertTrue(instance.getImageOutputStream(params) instanceof FileOutputStream);
     }
 
     public void testImageOutputStreamCreatesFolder() throws IOException {
         FileUtils.deleteDirectory(imagePath);
-        Parameters params = new Parameters("cats", "full", "full", "0",
+        Operations params = new Operations("cats", "full", "full", "0",
                 "default", "jpg");
         instance.getImageOutputStream(params);
         assertTrue(imagePath.exists());
@@ -161,7 +161,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         String rotation = "!10";
         String quality = "color";
         String format = "tif";
-        Parameters params = new Parameters(Reference.encode(identifier),
+        Operations params = new Operations(Reference.encode(identifier),
                 region, size, rotation, quality, format);
         final String search = "[^A-Za-z0-9._-]";
         final String replacement = "_";

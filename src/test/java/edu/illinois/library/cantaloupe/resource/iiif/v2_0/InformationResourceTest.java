@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.apache.commons.configuration.Configuration;
 import org.restlet.data.CacheDirective;
@@ -60,7 +59,7 @@ public class InformationResourceTest extends ResourceTest {
     public void testJson() throws IOException {
         // TODO: this could be a lot more thorough; but the aspects of the JSON
         // response defined in the Image API spec are tested in
-        // Iiif20ConformanceTest
+        // ConformanceTest
 
         // test whether the @id property respects the generate_https_links
         // setting in the app config

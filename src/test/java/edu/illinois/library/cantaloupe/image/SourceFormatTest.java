@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.image;
 
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
-import edu.illinois.library.cantaloupe.request.Identifier;
 import org.restlet.data.MediaType;
 
 public class SourceFormatTest extends CantaloupeTestCase {

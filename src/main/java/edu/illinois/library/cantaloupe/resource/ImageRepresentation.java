@@ -2,12 +2,12 @@ package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.StreamProcessor;
-import edu.illinois.library.cantaloupe.request.Parameters;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.restlet.data.MediaType;
@@ -33,7 +33,7 @@ public class ImageRepresentation extends OutputRepresentation {
     File file;
     Dimension fullSize;
     InputStream inputStream;
-    Parameters params;
+    Operations params;
     SourceFormat sourceFormat;
 
     /**
@@ -48,7 +48,7 @@ public class ImageRepresentation extends OutputRepresentation {
     public ImageRepresentation(MediaType mediaType,
                                SourceFormat sourceFormat,
                                Dimension fullSize,
-                               Parameters params,
+                               Operations params,
                                InputStream inputStream) {
         super(mediaType);
         this.inputStream = inputStream;
@@ -67,7 +67,7 @@ public class ImageRepresentation extends OutputRepresentation {
      */
     public ImageRepresentation(MediaType mediaType,
                                SourceFormat sourceFormat,
-                               Parameters params, File file) {
+                               Operations params, File file) {
         super(mediaType);
         this.file = file;
         this.params = params;

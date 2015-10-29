@@ -1,12 +1,12 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.request.OutputFormat;
-import edu.illinois.library.cantaloupe.request.Parameters;
-import edu.illinois.library.cantaloupe.request.Quality;
-import edu.illinois.library.cantaloupe.request.Region;
-import edu.illinois.library.cantaloupe.request.Size;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.Quality;
+import edu.illinois.library.cantaloupe.image.Region;
 import info.freelibrary.djatoka.io.PNMImage;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -219,7 +219,7 @@ class KakaduProcessor implements FileProcessor {
     }
 
     @Override
-    public void process(Parameters params, SourceFormat sourceFormat,
+    public void process(Operations params, SourceFormat sourceFormat,
                         Dimension fullSize, File inputFile,
                         OutputStream outputStream) throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
@@ -296,7 +296,7 @@ class KakaduProcessor implements FileProcessor {
      * @param reduction Modified by reference
      * @return Command string
      */
-    private ProcessBuilder getProcessBuilder(File inputFile, Parameters params,
+    private ProcessBuilder getProcessBuilder(File inputFile, Operations params,
                                              Dimension fullSize,
                                              ReductionFactor reduction) {
         final List<String> command = new ArrayList<>();
@@ -322,19 +322,19 @@ class KakaduProcessor implements FileProcessor {
         // significantly speeding decompression. We can use it if the scale mode
         // is ASPECT_FIT_* and either the percent is <=50, or the height/width
         // are <=50% of full size. The smaller the scale, the bigger the win.
-        final Size size = params.getSize();
-        if (size.getScaleMode() != Size.ScaleMode.FULL) {
-            if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
+        final Scale size = params.getSize();
+        if (size.getScaleMode() != Scale.Mode.FULL) {
+            if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                 double scale = (double) size.getWidth() /
                         (double) fullSize.width;
                 reduction.factor = ProcessorUtil.getReductionFactor(scale,
                         MAX_REDUCTION_FACTOR);
-            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
+            } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                 double scale = (double) size.getHeight() /
                         (double) fullSize.height;
                 reduction.factor = ProcessorUtil.getReductionFactor(scale,
                         MAX_REDUCTION_FACTOR);
-            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
+            } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
                 double hScale = (double) size.getWidth() /
                         (double) fullSize.width;
                 double vScale = (double) size.getHeight() /

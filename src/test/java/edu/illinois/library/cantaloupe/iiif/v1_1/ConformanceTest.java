@@ -1,15 +1,15 @@
-package edu.illinois.library.cantaloupe.iiif;
+package edu.illinois.library.cantaloupe.iiif.v1_1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.resource.iiif.v2_0.ImageInfo;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.request.Identifier;
-import edu.illinois.library.cantaloupe.request.OutputFormat;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.restlet.Client;
 import org.restlet.Context;
@@ -29,17 +29,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * <p>Functional test of the ImageMagickProcessor's conformance to the IIIF 2.0
- * API spec. Methods are implemented in the order of the assertions in the spec
- * document.</p>
+ * <p>Functional test of conformance to the IIIF 1.1 API spec. Methods are
+ * implemented in the order of the assertions in the spec document.</p>
  *
- * <p>This test suite only looks at HTTP responses; it doesn't try to analyze
- * the returned images for correctness.</p>
- *
- * @see <a href="http://iiif.io/api/image/2.0/#image-information">IIIF Image
- * API 2.0</a>
+ * @see <a href="http://iiif.io/api/image/1.1/">IIIF Image API 1.1</a>
  */
-public class Iiif20ConformanceTest extends CantaloupeTestCase {
+public class ConformanceTest extends CantaloupeTestCase {
 
     private static final Identifier IMAGE = new Identifier("escher_lego.jpg");
     private static final Integer PORT = 34852;
@@ -61,6 +56,18 @@ public class Iiif20ConformanceTest extends CantaloupeTestCase {
             fail("Failed to get the configuration");
         }
         return config;
+    }
+
+    private ClientResource getClientForUriPath(String path) {
+        Reference url = new Reference(getBaseUri() + path);
+        ClientResource resource = new ClientResource(url);
+        resource.setNext(client);
+        return resource;
+    }
+
+    private String getBaseUri() {
+        return "http://localhost:" + PORT +
+                ImageServerApplication.IIIF_1_1_PATH;
     }
 
     public void setUp() throws Exception {
@@ -645,18 +652,6 @@ public class Iiif20ConformanceTest extends CantaloupeTestCase {
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("http://iiif.io/api/image/2/level2.json",
                 info.getProfile().get(0));
-    }
-
-    private ClientResource getClientForUriPath(String path) {
-        Reference url = new Reference(getBaseUri() + path);
-        ClientResource resource = new ClientResource(url);
-        resource.setNext(client);
-        return resource;
-    }
-
-    private String getBaseUri() {
-        return "http://localhost:" + PORT +
-                ImageServerApplication.IIIF_2_0_PATH;
     }
 
 }

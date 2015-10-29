@@ -1,13 +1,13 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.request.OutputFormat;
-import edu.illinois.library.cantaloupe.request.Parameters;
-import edu.illinois.library.cantaloupe.request.Quality;
-import edu.illinois.library.cantaloupe.request.Region;
-import edu.illinois.library.cantaloupe.request.Rotation;
-import edu.illinois.library.cantaloupe.request.Size;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.image.Quality;
+import edu.illinois.library.cantaloupe.image.Region;
+import edu.illinois.library.cantaloupe.image.Rotation;
 import org.apache.commons.configuration.Configuration;
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
@@ -185,7 +185,7 @@ class ImageMagickProcessor implements StreamProcessor {
     }
 
     @Override
-    public void process(Parameters params, SourceFormat sourceFormat,
+    public void process(Operations params, SourceFormat sourceFormat,
                         Dimension fullSize, InputStream inputStream,
                         OutputStream outputStream) throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
@@ -225,7 +225,7 @@ class ImageMagickProcessor implements StreamProcessor {
         }
     }
 
-    private void assembleOperation(IMOperation op, Parameters params,
+    private void assembleOperation(IMOperation op, Operations params,
                                    Dimension fullSize) {
         // region transformation
         Region region = params.getRegion();
@@ -245,15 +245,15 @@ class ImageMagickProcessor implements StreamProcessor {
         }
 
         // size transformation
-        Size size = params.getSize();
-        if (size.getScaleMode() != Size.ScaleMode.FULL) {
-            if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
+        Scale size = params.getSize();
+        if (size.getScaleMode() != Scale.Mode.FULL) {
+            if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                 op.resize(size.getWidth());
-            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
+            } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                 op.resize(null, size.getHeight());
-            } else if (size.getScaleMode() == Size.ScaleMode.NON_ASPECT_FILL) {
+            } else if (size.getScaleMode() == Scale.Mode.NON_ASPECT_FILL) {
                 op.resize(size.getWidth(), size.getHeight(), "!".charAt(0));
-            } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
+            } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
                 op.resize(size.getWidth(), size.getHeight());
             } else if (size.getPercent() != null) {
                 op.resize(Math.round(size.getPercent()),

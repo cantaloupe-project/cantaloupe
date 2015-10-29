@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.image;
 
-import edu.illinois.library.cantaloupe.request.Identifier;
 import org.restlet.data.MediaType;
 
 import java.util.ArrayList;

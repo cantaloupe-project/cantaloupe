@@ -1,13 +1,14 @@
 package edu.illinois.library.cantaloupe.request;
 
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
+import edu.illinois.library.cantaloupe.image.Scale;
 
 public class SizeTest extends CantaloupeTestCase {
 
-    private Size size;
+    private Scale size;
 
     public void setUp() {
-        this.size = new Size();
+        this.size = new Scale();
     }
 
     /* fromUri(String) */
@@ -16,33 +17,33 @@ public class SizeTest extends CantaloupeTestCase {
      * Tests fromUri(String) with a value of "full".
      */
     public void testFromUriFull() {
-        Size s = Size.fromUri("full");
-        assertEquals(Size.ScaleMode.FULL, s.getScaleMode());
+        Scale s = Scale.fromUri("full");
+        assertEquals(Scale.Mode.FULL, s.getScaleMode());
     }
 
     /**
      * Tests fromUri(String) with width scaling.
      */
     public void testFromUriWidthScaled() {
-        Size s = Size.fromUri("50,");
+        Scale s = Scale.fromUri("50,");
         assertEquals(new Integer(50), s.getWidth());
-        assertEquals(Size.ScaleMode.ASPECT_FIT_WIDTH, s.getScaleMode());
+        assertEquals(Scale.Mode.ASPECT_FIT_WIDTH, s.getScaleMode());
     }
 
     /**
      * Tests fromUri(String) with height scaling.
      */
     public void testFromUriHeightScaled() {
-        Size s = Size.fromUri(",50");
+        Scale s = Scale.fromUri(",50");
         assertEquals(new Integer(50), s.getHeight());
-        assertEquals(Size.ScaleMode.ASPECT_FIT_HEIGHT, s.getScaleMode());
+        assertEquals(Scale.Mode.ASPECT_FIT_HEIGHT, s.getScaleMode());
     }
 
     /**
      * Tests fromUri(String) with percentage scaling.
      */
     public void testFromUriPercentageScaled() {
-        Size s = Size.fromUri("pct:50");
+        Scale s = Scale.fromUri("pct:50");
         assertEquals(new Float(50), s.getPercent());
     }
 
@@ -50,20 +51,20 @@ public class SizeTest extends CantaloupeTestCase {
      * Tests fromUri(String) with absolute width and height.
      */
     public void testFromUriAbsoluteScaled() {
-        Size s = Size.fromUri("50,40");
+        Scale s = Scale.fromUri("50,40");
         assertEquals(new Integer(50), s.getWidth());
         assertEquals(new Integer(40), s.getHeight());
-        assertEquals(Size.ScaleMode.NON_ASPECT_FILL, s.getScaleMode());
+        assertEquals(Scale.Mode.NON_ASPECT_FILL, s.getScaleMode());
     }
 
     /**
      * Tests fromUri(String) with scale-to-fit width and height.
      */
     public void testFromUriScaleToFit() {
-        Size s = Size.fromUri("!50,40");
+        Scale s = Scale.fromUri("!50,40");
         assertEquals(new Integer(50), s.getWidth());
         assertEquals(new Integer(40), s.getHeight());
-        assertEquals(Size.ScaleMode.ASPECT_FIT_INSIDE, s.getScaleMode());
+        assertEquals(Scale.Mode.ASPECT_FIT_INSIDE, s.getScaleMode());
     }
 
     /* height */
@@ -147,22 +148,22 @@ public class SizeTest extends CantaloupeTestCase {
     /* toString */
 
     public void testToString() {
-        Size s = Size.fromUri("full");
+        Scale s = Scale.fromUri("full");
         assertEquals("full", s.toString());
 
-        s = Size.fromUri("50,");
+        s = Scale.fromUri("50,");
         assertEquals("50,", s.toString());
 
-        s = Size.fromUri(",50");
+        s = Scale.fromUri(",50");
         assertEquals(",50", s.toString());
 
-        s = Size.fromUri("pct:50");
+        s = Scale.fromUri("pct:50");
         assertEquals("pct:50", s.toString());
 
-        s = Size.fromUri("50,40");
+        s = Scale.fromUri("50,40");
         assertEquals("50,40", s.toString());
 
-        s = Size.fromUri("!50,40");
+        s = Scale.fromUri("!50,40");
         assertEquals("!50,40", s.toString());
     }
 

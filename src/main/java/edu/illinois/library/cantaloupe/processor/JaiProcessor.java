@@ -5,11 +5,11 @@ import com.sun.media.jai.codec.ImageCodec;
 import com.sun.media.jai.codec.ImageEncoder;
 import com.sun.media.jai.codec.JPEGEncodeParam;
 import com.sun.media.jai.codecimpl.TIFFImageEncoder;
+import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.request.OutputFormat;
-import edu.illinois.library.cantaloupe.request.Parameters;
-import edu.illinois.library.cantaloupe.request.Quality;
-import edu.illinois.library.cantaloupe.request.Region;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.image.Quality;
+import edu.illinois.library.cantaloupe.image.Region;
 import it.geosolutions.jaiext.JAIExt;
 import org.restlet.data.MediaType;
 
@@ -140,20 +140,20 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
     }
 
     @Override
-    public void process(Parameters params, SourceFormat sourceFormat,
+    public void process(Operations params, SourceFormat sourceFormat,
                         Dimension sourceSize, File inputFile,
                         OutputStream outputStream) throws ProcessorException {
         doProcess(params, sourceFormat, inputFile, outputStream);
     }
 
     @Override
-    public void process(Parameters params, SourceFormat sourceFormat,
+    public void process(Operations params, SourceFormat sourceFormat,
                         Dimension fullSize, InputStream inputStream,
                         OutputStream outputStream) throws ProcessorException {
         doProcess(params, sourceFormat, inputStream, outputStream);
     }
 
-    private void doProcess(Parameters params, SourceFormat sourceFormat,
+    private void doProcess(Operations params, SourceFormat sourceFormat,
                            Object input, OutputStream outputStream)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
