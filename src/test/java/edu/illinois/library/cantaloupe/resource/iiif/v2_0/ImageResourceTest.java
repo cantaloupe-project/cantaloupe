@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.apache.commons.configuration.Configuration;
 import org.restlet.data.CacheDirective;
@@ -20,6 +21,11 @@ import java.util.Map;
  * Functional test of the non-IIIF features of ImageResource.
  */
 public class ImageResourceTest extends ResourceTest {
+
+    @Override
+    protected ClientResource getClientForUriPath(String path) {
+        return super.getClientForUriPath(ImageServerApplication.IIIF_2_0_PATH + path);
+    }
 
     public void testBasicAuth() throws Exception {
         final String username = "user";

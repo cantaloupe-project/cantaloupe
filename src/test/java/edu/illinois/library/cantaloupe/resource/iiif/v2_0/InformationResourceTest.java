@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.apache.commons.configuration.Configuration;
 import org.restlet.data.CacheDirective;
@@ -18,6 +19,11 @@ import java.util.Map;
  * Functional test of the non-IIIF features of InformationResource.
  */
 public class InformationResourceTest extends ResourceTest {
+
+    @Override
+    protected ClientResource getClientForUriPath(String path) {
+        return super.getClientForUriPath(ImageServerApplication.IIIF_2_0_PATH + path);
+    }
 
     public void testCacheHeaders() {
         Configuration config = Application.getConfiguration();

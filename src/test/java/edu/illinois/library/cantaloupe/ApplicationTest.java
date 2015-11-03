@@ -83,7 +83,7 @@ public class ApplicationTest extends CantaloupeTestCase {
     public void testMainWithNoArgsStartsServer() throws Exception {
         String[] args = {};
         Application.main(args);
-        ClientResource resource = getClientForUriPath("/iiif");
+        ClientResource resource = getClientForUriPath("/");
         resource.get();
         assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
     }
@@ -148,7 +148,7 @@ public class ApplicationTest extends CantaloupeTestCase {
     public void testStart() throws Exception {
         Application.setConfiguration(newConfiguration());
         Application.startServer();
-        ClientResource resource = getClientForUriPath("/iiif");
+        ClientResource resource = getClientForUriPath("/");
         resource.get();
         assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
     }

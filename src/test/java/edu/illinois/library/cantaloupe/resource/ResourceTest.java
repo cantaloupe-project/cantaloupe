@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
-import edu.illinois.library.cantaloupe.ImageServerApplication;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.restlet.Client;
 import org.restlet.Context;
@@ -55,8 +54,7 @@ public abstract class ResourceTest extends CantaloupeTestCase {
     }
 
     protected String getBaseUri() {
-        return "http://localhost:" + PORT +
-                ImageServerApplication.IIIF_2_0_PATH;
+        return "http://localhost:" + PORT;
     }
 
 }
