@@ -4,6 +4,10 @@ import edu.illinois.library.cantaloupe.Application;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Used to obtain an instance of the current {@link Cache} according to the
+ * application configuration.
+ */
 public abstract class CacheFactory {
 
     private static Logger logger = LoggerFactory.getLogger(CacheFactory.class);
@@ -14,11 +18,13 @@ public abstract class CacheFactory {
     private static Cache instance;
 
     /**
-     * Provides access to the shared Cache instance. This methods respects
-     * live changes in application configuration, mostly for the sake of
-     * testing.
+     * <p>Provides access to the shared {@link Cache} instance.</p>
      *
-     * @return The shared Cache Singleton, or null if a cache is not available.
+     * <p>This method respects live changes in application configuration,
+     * mostly for the sake of testing.</p>
+     *
+     * @return The shared {@link Cache} Singleton, or null if a cache is not
+     * available.
      */
     public static synchronized Cache getInstance() {
         try {
