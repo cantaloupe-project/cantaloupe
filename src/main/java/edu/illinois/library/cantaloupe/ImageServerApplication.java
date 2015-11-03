@@ -16,6 +16,7 @@ import org.restlet.engine.application.CorsFilter;
 import org.restlet.ext.velocity.TemplateRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Directory;
+import org.restlet.resource.ServerResource;
 import org.restlet.routing.Redirector;
 import org.restlet.routing.Router;
 import org.restlet.routing.Template;
@@ -158,7 +159,8 @@ public class ImageServerApplication extends Application {
         router.attach(IIIF_1_1_PATH + "/", redirector);
 
         // image request
-        Class resource = edu.illinois.library.cantaloupe.resource.iiif.v1_1.ImageResource.class;
+        Class<? extends ServerResource> resource =
+                edu.illinois.library.cantaloupe.resource.iiif.v1_1.ImageResource.class;
         router.attach(IIIF_1_1_PATH + "/{identifier}/{region}/{size}/{rotation}/{quality}.{format}",
                 resource);
 
