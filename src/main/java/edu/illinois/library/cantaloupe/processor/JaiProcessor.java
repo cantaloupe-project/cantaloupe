@@ -9,7 +9,7 @@ import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Quality;
-import edu.illinois.library.cantaloupe.image.Region;
+import edu.illinois.library.cantaloupe.image.Crop;
 import it.geosolutions.jaiext.JAIExt;
 import org.restlet.data.MediaType;
 
@@ -140,42 +140,42 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
     }
 
     @Override
-    public void process(Operations params, SourceFormat sourceFormat,
+    public void process(Operations ops, SourceFormat sourceFormat,
                         Dimension sourceSize, File inputFile,
                         OutputStream outputStream) throws ProcessorException {
-        doProcess(params, sourceFormat, inputFile, outputStream);
+        doProcess(ops, sourceFormat, inputFile, outputStream);
     }
 
     @Override
-    public void process(Operations params, SourceFormat sourceFormat,
+    public void process(Operations ops, SourceFormat sourceFormat,
                         Dimension fullSize, InputStream inputStream,
                         OutputStream outputStream) throws ProcessorException {
-        doProcess(params, sourceFormat, inputStream, outputStream);
+        doProcess(ops, sourceFormat, inputStream, outputStream);
     }
 
-    private void doProcess(Operations params, SourceFormat sourceFormat,
+    private void doProcess(Operations ops, SourceFormat sourceFormat,
                            Object input, OutputStream outputStream)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
             throw new UnsupportedSourceFormatException(sourceFormat);
-        } else if (!availableOutputFormats.contains(params.getOutputFormat())) {
+        } else if (!availableOutputFormats.contains(ops.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
 
         try {
-            RenderedOp image = loadRegion(input, params.getRegion());
-            image = ProcessorUtil.scaleImage(image, params.getSize());
-            image = ProcessorUtil.rotateImage(image, params.getRotation());
-            image = ProcessorUtil.filterImage(image, params.getQuality());
-            outputImage(image, params.getOutputFormat(), outputStream);
+            RenderedOp image = loadRegion(input, ops.getRegion());
+            image = ProcessorUtil.scaleImage(image, ops.getScale());
+            image = ProcessorUtil.rotateImage(image, ops.getRotation());
+            image = ProcessorUtil.filterImage(image, ops.getQuality());
+            outputImage(image, ops.getOutputFormat(), outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
     }
 
-    private RenderedOp loadRegion(Object input, Region region) {
+    private RenderedOp loadRegion(Object input, Crop region) {
         ParameterBlockJAI pbj = new ParameterBlockJAI("ImageRead");
         ImageLayout layout = new ImageLayout();
         layout.setTileWidth(JAI_TILE_SIZE);

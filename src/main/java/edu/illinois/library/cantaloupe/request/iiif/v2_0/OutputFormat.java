@@ -42,7 +42,7 @@ public enum OutputFormat {
     }
 
     public edu.illinois.library.cantaloupe.image.OutputFormat toOutputFormat() {
-        return edu.illinois.library.cantaloupe.image.OutputFormat.valueOf(this.toString());
+        return edu.illinois.library.cantaloupe.image.OutputFormat.valueOf(this.name());
     }
 
     /**

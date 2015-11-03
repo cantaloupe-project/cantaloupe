@@ -2,7 +2,12 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
+import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.Quality;
+import edu.illinois.library.cantaloupe.image.Rotation;
+import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -13,6 +18,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -54,8 +61,16 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
     }
 
     public void testProcessWithSupportedSourceFormatsAndNoTransformation() throws Exception {
-        Operations params = new Operations("bla", "full", "full", "0",
-                "default", "jpg");
+        Identifier identifier = new Identifier("bla");
+        Crop crop = new Crop();
+        crop.setFull(true);
+        Scale scale = new Scale();
+        scale.setScaleMode(Scale.Mode.FULL);
+        Rotation rotation = new Rotation(0);
+        Quality quality = Quality.DEFAULT;
+        OutputFormat format = OutputFormat.JPG;
+        Operations params = new Operations(identifier, crop, scale, rotation,
+                quality, format);
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {
                 if (getProcessor() instanceof StreamProcessor) {
@@ -88,8 +103,20 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
     }
 
     public void testProcessWithUnsupportedSourceFormats() throws Exception {
-        Operations params = new Operations("bla", "20,20,50,50", "pct:80",
-                "15", "color", "jpg");
+        Identifier identifier = new Identifier("bla");
+        Crop crop = new Crop();
+        crop.setX(20f);
+        crop.setY(20f);
+        crop.setWidth(50f);
+        crop.setHeight(50f);
+        Scale scale = new Scale();
+        scale.setScaleMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        scale.setPercent(0.8f);
+        Rotation rotation = new Rotation(15);
+        Quality quality = Quality.COLOR;
+        OutputFormat format = OutputFormat.JPG;
+        Operations params = new Operations(identifier, crop, scale, rotation,
+                quality, format);
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             if (getProcessor().getAvailableOutputFormats(sourceFormat).size() == 0) {
                 if (getProcessor() instanceof StreamProcessor) {
@@ -132,10 +159,35 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
     }
 
     public void testProcessWithRegionTransformation() throws Exception {
-        String[] regions = {"full", "10,10,50,50", "pct:20,20,20,20"};
-        for (String region : regions) {
-            Operations params = new Operations("bla", region, "full", "0",
-                    "default", "jpg");
+        List<Crop> regions = new ArrayList<>();
+        Crop crop = new Crop();
+        crop.setFull(true);
+        regions.add(crop);
+
+        crop = new Crop();
+        crop.setX(10f);
+        crop.setY(10f);
+        crop.setWidth(50f);
+        crop.setHeight(50f);
+        regions.add(crop);
+
+        crop = new Crop();
+        crop.setPercent(true);
+        crop.setX(20f);
+        crop.setY(20f);
+        crop.setWidth(20f);
+        crop.setHeight(20f);
+        regions.add(crop);
+
+        for (Crop region : regions) {
+            Identifier identifier = new Identifier("bla");
+            Scale scale = new Scale();
+            scale.setScaleMode(Scale.Mode.FULL);
+            Rotation rotation = new Rotation(0);
+            Quality quality = Quality.DEFAULT;
+            OutputFormat format = OutputFormat.JPG;
+            Operations params = new Operations(identifier, region, scale,
+                    rotation, quality, format);
             for (SourceFormat sourceFormat : SourceFormat.values()) {
                 if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {
                     if (getProcessor() instanceof StreamProcessor) {
@@ -170,10 +222,44 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
     }
 
     public void testProcessWithSizeTransformation() throws Exception {
-        String[] sizes = {"full", "20,", ",20", "pct:50", "20,20", "!20,20"};
-        for (String size : sizes) {
-            Operations params = new Operations("bla", "10,10,50,50", size, "0",
-                    "default", "jpg");
+        List<Scale> scales = new ArrayList<>();
+        Scale scale = new Scale();
+        scale.setScaleMode(Scale.Mode.FULL);
+        scales.add(scale);
+        scale = new Scale();
+        scale.setScaleMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        scale.setWidth(20);
+        scales.add(scale);
+        scale = new Scale();
+        scale.setScaleMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        scale.setHeight(20);
+        scales.add(scale);
+        scale = new Scale();
+        scale.setPercent(0.5f);
+        scales.add(scale);
+        scale = new Scale();
+        scale.setScaleMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        scale.setWidth(20);
+        scale.setHeight(20);
+        scales.add(scale);
+        scale = new Scale();
+        scale.setScaleMode(Scale.Mode.NON_ASPECT_FILL);
+        scale.setWidth(20);
+        scale.setHeight(20);
+        scales.add(scale);
+
+        for (Scale size : scales) {
+            Identifier identifier = new Identifier("bla");
+            Crop crop = new Crop();
+            crop.setX(10f);
+            crop.setY(10f);
+            crop.setWidth(50f);
+            crop.setHeight(50f);
+            Rotation rotation = new Rotation(0);
+            Quality quality = Quality.DEFAULT;
+            OutputFormat format = OutputFormat.JPG;
+            Operations ops = new Operations(identifier, crop, size, rotation,
+                    quality, format);
             for (SourceFormat sourceFormat : SourceFormat.values()) {
                 if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {
                     if (getProcessor() instanceof StreamProcessor) {
@@ -186,7 +272,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
                             Dimension fullSize = proc.getSize(sizeInputStream,
                                     sourceFormat);
                             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                            proc.process(params, sourceFormat, fullSize,
+                            proc.process(ops, sourceFormat, fullSize,
                                     processInputStream, outputStream);
                             assertTrue(outputStream.toByteArray().length > 100);
                         } finally {
@@ -199,7 +285,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
                         File file = TestUtil.getFixture(sourceFormat.getPreferredExtension());
                         Dimension fullSize = proc.getSize(file, sourceFormat);
                         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                        proc.process(params, sourceFormat, fullSize, file, outputStream);
+                        proc.process(ops, sourceFormat, fullSize, file, outputStream);
                         assertTrue(outputStream.toByteArray().length > 100);
                     }
                 }
@@ -208,10 +294,32 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
     }
 
     public void testProcessWithRotationTransformation() throws Exception {
-        String[] rotations = {"0", "15", "275", "!15"};
-        for (String rotation : rotations) {
-            Operations params = new Operations("bla", "10,10,50,50", "20,20",
-                    rotation, "default", "jpg");
+        List<Rotation> rotations = new ArrayList<>();
+        Rotation rot = new Rotation(0);
+        rotations.add(rot);
+        rot = new Rotation(15);
+        rotations.add(rot);
+        rot = new Rotation(275);
+        rotations.add(rot);
+        rot = new Rotation(15);
+        rot.setMirror(true);
+        rotations.add(rot);
+
+        for (Rotation rotation : rotations) {
+            Identifier identifier = new Identifier("bla");
+            Crop crop = new Crop();
+            crop.setX(10f);
+            crop.setY(10f);
+            crop.setWidth(50f);
+            crop.setHeight(50f);
+            Scale scale = new Scale();
+            scale.setWidth(20);
+            scale.setHeight(20);
+            scale.setScaleMode(Scale.Mode.ASPECT_FIT_INSIDE);
+            Quality quality = Quality.DEFAULT;
+            OutputFormat format = OutputFormat.JPG;
+            Operations params = new Operations(identifier, crop, scale,
+                    rotation, quality, format);
             for (SourceFormat sourceFormat : SourceFormat.values()) {
                 if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {
                     if (getProcessor() instanceof StreamProcessor) {
@@ -246,10 +354,27 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
     }
 
     public void testProcessWithQualityTransformation() throws Exception {
-        String[] qualities = {"default", "color", "gray", "bitonal"};
-        for (String quality : qualities) {
-            Operations params = new Operations("bla", "10,10,50,50", "20,20",
-                    "10", quality, "jpg");
+        List<Quality> qualities = new ArrayList<>();
+        qualities.add(Quality.DEFAULT);
+        qualities.add(Quality.COLOR);
+        qualities.add(Quality.GRAY);
+        qualities.add(Quality.BITONAL);
+
+        for (Quality quality : qualities) {
+            Identifier identifier = new Identifier("bla");
+            Crop crop = new Crop();
+            crop.setX(10f);
+            crop.setY(10f);
+            crop.setWidth(50f);
+            crop.setHeight(50f);
+            Scale scale = new Scale();
+            scale.setWidth(20);
+            scale.setHeight(20);
+            scale.setScaleMode(Scale.Mode.ASPECT_FIT_INSIDE);
+            Rotation rotation = new Rotation(10);
+            OutputFormat format = OutputFormat.JPG;
+            Operations params = new Operations(identifier, crop, scale,
+                    rotation, quality, format);
             for (SourceFormat sourceFormat : SourceFormat.values()) {
                 if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {
                     if (getProcessor() instanceof StreamProcessor) {
@@ -287,8 +412,21 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         Set<OutputFormat> outputFormats = getProcessor().
                 getAvailableOutputFormats(SourceFormat.JPG);
         for (OutputFormat outputFormat : outputFormats) {
-            Operations params = new Operations("bla", "10,10,50,50", "20,20",
-                    "10", "default", outputFormat.getExtension());
+            Identifier identifier = new Identifier("bla");
+            Crop crop = new Crop();
+            crop.setX(10f);
+            crop.setY(10f);
+            crop.setWidth(50f);
+            crop.setHeight(50f);
+            Scale scale = new Scale();
+            scale.setWidth(20);
+            scale.setHeight(20);
+            scale.setScaleMode(Scale.Mode.ASPECT_FIT_INSIDE);
+            Rotation rotation = new Rotation(10);
+            Quality quality = Quality.DEFAULT;
+            OutputFormat format = OutputFormat.JPG;
+            Operations params = new Operations(identifier, crop, scale,
+                    rotation, quality, format);
             for (SourceFormat sourceFormat : SourceFormat.values()) {
                 if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {
                     if (getProcessor() instanceof StreamProcessor) {

@@ -1,23 +1,12 @@
 package edu.illinois.library.cantaloupe.image;
 
+import edu.illinois.library.cantaloupe.util.NumberUtil;
+
 public class Scale {
 
     public enum Mode {
-
-        /** <code>,h</code> in an IIIF request URI */
-        ASPECT_FIT_HEIGHT,
-
-        /** <code>w,</code> in an IIIF request URI */
-        ASPECT_FIT_WIDTH,
-
-        /** <code>!w,h</code> in an IIIF request URI */
-        ASPECT_FIT_INSIDE,
-
-        /** <code>w,h</code> in an IIIF request URI */
-        NON_ASPECT_FILL,
-
-        /** <code>full</code> in an IIIF request URI */
-        FULL
+        ASPECT_FIT_HEIGHT, ASPECT_FIT_WIDTH, ASPECT_FIT_INSIDE,
+        NON_ASPECT_FILL, FULL
     }
 
     private Integer height;
@@ -71,6 +60,31 @@ public class Scale {
             throw new IllegalArgumentException("Width must be a positive integer");
         }
         this.width = width;
+    }
+
+    /**
+     * @return String representation of the instance, guaranteed to represent
+     * the instance, but not guaranteed to be meaningful.
+     */
+    public String toString() {
+        String str = "";
+        if (this.getScaleMode() == Mode.FULL) {
+            str += "full";
+        } else if (this.getPercent() != null) {
+            str += "pct:" + NumberUtil.removeTrailingZeroes(this.getPercent());
+        } else {
+            if (this.getScaleMode() == Mode.ASPECT_FIT_INSIDE) {
+                str += "!";
+            }
+            if (this.getWidth() != null && this.getWidth() > 0) {
+                str += this.getWidth();
+            }
+            str += ",";
+            if (this.getHeight() != null && this.getHeight() > 0) {
+                str += this.getHeight();
+            }
+        }
+        return str;
     }
 
 }

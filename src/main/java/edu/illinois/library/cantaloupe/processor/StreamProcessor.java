@@ -27,10 +27,10 @@ public interface StreamProcessor extends Processor {
      * InputStream, and writes the result to the given OutputStream.</p>
      *
      * <p>Implementations should use the sourceSize parameter and not their
-     * own <code>getSize()</code> method to avoid reusing a potentially
+     * own <code>getScale()</code> method to avoid reusing a potentially
      * unreusable InputStream.</p>
      *
-     * @param params Operations of the output image
+     * @param ops Operations of the output image
      * @param sourceFormat Format of the source image
      * @param sourceSize Scale of the source image
      * @param inputStream Stream from which to read the image. Implementations
@@ -41,7 +41,7 @@ public interface StreamProcessor extends Processor {
      * @throws UnsupportedSourceFormatException
      * @throws ProcessorException
      */
-    void process(Operations params, SourceFormat sourceFormat,
+    void process(Operations ops, SourceFormat sourceFormat,
                  Dimension sourceSize, InputStream inputStream,
                  OutputStream outputStream) throws ProcessorException;
 

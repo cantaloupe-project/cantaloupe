@@ -1,9 +1,7 @@
 package edu.illinois.library.cantaloupe.request.iiif.v2_0;
 
+import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.util.NumberUtil;
-
-import java.awt.Dimension;
-import java.awt.Rectangle;
 
 /**
  * Encapsulates the "region" component of an IIIF request URI.
@@ -12,12 +10,12 @@ import java.awt.Rectangle;
  */
 public class Region {
 
-    private Float height = 0.0f;
+    private Float height;
     private boolean isFull = false;
     private boolean isPercent = false;
-    private Float width = 0.0f;
-    private Float x = 0.0f;
-    private Float y = 0.0f;
+    private Float width;
+    private Float x;
+    private Float y;
 
     /**
      * @param uriRegion The "region" component of an IIIF URI.
@@ -56,32 +54,6 @@ public class Region {
 
     public Float getHeight() {
         return height;
-    }
-
-    /**
-     * @param fullSize Full-sized image dimensions.
-     * @return Region coordinates relative to the given full-sized image
-     * dimensions.
-     */
-    public Rectangle getRectangle(Dimension fullSize) {
-        int x, y, width, height;
-        if (this.isFull()) {
-            x = 0;
-            y = 0;
-            width = fullSize.width;
-            height = fullSize.height;
-        } else if (this.isPercent()) {
-            x = Math.round((this.getX() / 100f) * fullSize.width);
-            y = Math.round((this.getY() / 100f) * fullSize.height);
-            width = Math.round((this.getWidth() / 100f) * fullSize.width);
-            height = Math.round((this.getHeight() / 100f) * fullSize.height);
-        } else {
-            x = Math.round(this.getX());
-            y = Math.round(this.getY());
-            width = Math.round(this.getWidth());
-            height = Math.round(this.getHeight());
-        }
-        return new Rectangle(x, y, width, height);
     }
 
     public Float getWidth() {
@@ -140,16 +112,23 @@ public class Region {
         this.y = y;
     }
 
-    public edu.illinois.library.cantaloupe.image.Region toRegion() {
-        edu.illinois.library.cantaloupe.image.Region region =
-                new edu.illinois.library.cantaloupe.image.Region();
-        region.setFull(this.isFull());
-        region.setHeight(this.getHeight());
-        region.setWidth(this.getWidth());
-        region.setPercent(this.isPercent());
-        region.setX(this.getX());
-        region.setY(this.getY());
-        return region;
+    public Crop toCrop() {
+        Crop crop = new Crop();
+        crop.setFull(this.isFull());
+        if (this.getHeight() != null) {
+            crop.setHeight(this.getHeight());
+        }
+        if (this.getWidth() != null) {
+            crop.setWidth(this.getWidth());
+        }
+        crop.setPercent(this.isPercent());
+        if (this.getX() != null) {
+            crop.setX(this.getX());
+        }
+        if (this.getY() != null) {
+            crop.setY(this.getY());
+        }
+        return crop;
     }
 
     /**

@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
-import edu.illinois.library.cantaloupe.image.Region;
+import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Rotation;
 import edu.illinois.library.cantaloupe.image.Scale;
 
@@ -18,18 +18,26 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
                 BufferedImage.TYPE_INT_RGB);
 
         // full region
-        Region region = Region.fromUri("full");
+        Crop region = new Crop();
+        region.setFull(true);
         BufferedImage outImage = ProcessorUtil.cropImage(inImage, region);
         assertSame(inImage, outImage);
 
         // pixel region
-        region = Region.fromUri("0,0,50,50");
+        region = new Crop();
+        region.setWidth(50f);
+        region.setHeight(50f);
         outImage = ProcessorUtil.cropImage(inImage, region);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // percentage region
-        region = Region.fromUri("pct:50,50,50,50");
+        region = new Crop();
+        region.setX(50f);
+        region.setY(50f);
+        region.setWidth(50f);
+        region.setHeight(50f);
+        region.setPercent(true);
         outImage = ProcessorUtil.cropImage(inImage, region);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
@@ -40,21 +48,29 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
                 BufferedImage.TYPE_INT_RGB);
 
         // full region
-        Region region = Region.fromUri("full");
+        Crop region = new Crop();
+        region.setFull(true);
         int reductionFactor = 1;
         BufferedImage outImage = ProcessorUtil.cropImage(inImage, region,
                 reductionFactor);
         assertSame(inImage, outImage);
 
         // pixel region
-        region = Region.fromUri("0,0,50,50");
+        region = new Crop();
+        region.setWidth(50f);
+        region.setHeight(50f);
         reductionFactor = 1;
         outImage = ProcessorUtil.cropImage(inImage, region, reductionFactor);
         assertEquals(25, outImage.getWidth());
         assertEquals(25, outImage.getHeight());
 
         // percentage region
-        region = Region.fromUri("pct:50,50,50,50");
+        region = new Crop();
+        region.setX(50f);
+        region.setY(50f);
+        region.setWidth(50f);
+        region.setHeight(50f);
+        region.setPercent(true);
         reductionFactor = 1;
         outImage = ProcessorUtil.cropImage(inImage, region, reductionFactor);
         assertEquals(25, outImage.getWidth());
@@ -111,7 +127,7 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
         final int sourceWidth = inImage.getWidth();
         final int sourceHeight = inImage.getHeight();
 
-        Rotation rotation = Rotation.fromUri("15");
+        Rotation rotation = new Rotation(15);
         BufferedImage outImage = ProcessorUtil.rotateImage(inImage, rotation);
 
         double radians = Math.toRadians(rotation.getDegrees());
@@ -126,7 +142,8 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
         assertEquals(expectedHeight, outImage.getWidth());
 
         // mirroring
-        rotation = Rotation.fromUri("!15");
+        rotation = new Rotation(50);
+        rotation.setMirror(true);
         outImage = ProcessorUtil.rotateImage(inImage, rotation);
 
         radians = Math.toRadians(rotation.getDegrees());
@@ -158,24 +175,29 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
                 BufferedImage.TYPE_INT_RGB);
 
         // Scale.Mode.FULL
-        Scale size = Scale.fromUri("full");
+        Scale size = new Scale();
+        size.setScaleMode(Scale.Mode.FULL);
         BufferedImage outImage = ProcessorUtil.scaleImageWithAffineTransform(inImage, size);
         assertSame(inImage, outImage);
 
         // Scale.Mode.ASPECT_FIT_WIDTH
-        size = Scale.fromUri("50,");
+        size.setScaleMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        size.setWidth(50);
         outImage = ProcessorUtil.scaleImageWithAffineTransform(inImage, size);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // Scale.Mode.ASPECT_FIT_HEIGHT
-        size = Scale.fromUri("50,");
+        size.setScaleMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        size.setHeight(50);
         outImage = ProcessorUtil.scaleImageWithAffineTransform(inImage, size);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // Scale.Mode.ASPECT_FIT_INSIDE
-        size = Scale.fromUri("50,50");
+        size.setScaleMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        size.setWidth(50);
+        size.setHeight(50);
         outImage = ProcessorUtil.scaleImageWithAffineTransform(inImage, size);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
@@ -186,24 +208,29 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
                 BufferedImage.TYPE_INT_RGB);
 
         // Scale.Mode.FULL
-        Scale size = Scale.fromUri("full");
+        Scale size = new Scale();
+        size.setScaleMode(Scale.Mode.FULL);
         BufferedImage outImage = ProcessorUtil.scaleImageWithG2d(inImage, size);
         assertSame(inImage, outImage);
 
         // Scale.Mode.ASPECT_FIT_WIDTH
-        size = Scale.fromUri("50,");
+        size.setScaleMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        size.setWidth(50);
         outImage = ProcessorUtil.scaleImageWithG2d(inImage, size);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // Scale.Mode.ASPECT_FIT_HEIGHT
-        size = Scale.fromUri("50,");
+        size.setScaleMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        size.setHeight(50);
         outImage = ProcessorUtil.scaleImageWithG2d(inImage, size);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // Scale.Mode.ASPECT_FIT_INSIDE
-        size = Scale.fromUri("50,50");
+        size.setScaleMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        size.setWidth(50);
+        size.setHeight(50);
         outImage = ProcessorUtil.scaleImageWithG2d(inImage, size);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
@@ -214,7 +241,9 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
                 BufferedImage.TYPE_INT_RGB);
 
         // Scale.Mode.ASPECT_FIT_WIDTH
-        Scale size = Scale.fromUri("50,");
+        Scale size = new Scale();
+        size.setScaleMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        size.setWidth(50);
         int reductionFactor = 1;
         BufferedImage outImage = ProcessorUtil.scaleImageWithG2d(inImage, size,
                 reductionFactor);
@@ -222,7 +251,9 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
         assertEquals(50, outImage.getHeight());
 
         // Scale.Mode.ASPECT_FIT_HEIGHT
-        size = Scale.fromUri("50,");
+        size = new Scale();
+        size.setScaleMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        size.setHeight(50);
         reductionFactor = 1;
         outImage = ProcessorUtil.scaleImageWithG2d(inImage, size,
                 reductionFactor);
@@ -230,7 +261,10 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
         assertEquals(50, outImage.getHeight());
 
         // Scale.Mode.ASPECT_FIT_INSIDE
-        size = Scale.fromUri("50,50");
+        size = new Scale();
+        size.setScaleMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        size.setWidth(50);
+        size.setHeight(50);
         reductionFactor = 1;
         outImage = ProcessorUtil.scaleImageWithG2d(inImage, size,
                 reductionFactor);

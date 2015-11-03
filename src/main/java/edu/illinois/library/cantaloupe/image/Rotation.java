@@ -3,33 +3,26 @@ package edu.illinois.library.cantaloupe.image;
 import edu.illinois.library.cantaloupe.util.NumberUtil;
 
 /**
- * Encapsulates the "rotation" component of an IIIF request URI.
- *
- * @see <a href="http://iiif.io/api/image/2.0/#rotation">IIIF Image API 2.0</a>
+ * Encapsulates a rotation with optional mirroring.
  */
 public class Rotation {
 
-    private Float degrees;
-    private boolean mirror = false;
+    private float degrees = 0f;
+    private boolean mirror = false; // TODO: split out into a Flip class
 
-    public static Rotation fromUri(String rotationUri)
-            throws IllegalArgumentException {
-        Rotation rotation = new Rotation();
-        try {
-            if (rotationUri.startsWith("!")) {
-                rotation.setMirror(true);
-                rotation.setDegrees(Float.parseFloat(rotationUri.substring(1)));
-            } else {
-                rotation.setMirror(false);
-                rotation.setDegrees(Float.parseFloat(rotationUri));
-            }
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid rotation");
-        }
-        return rotation;
+    /**
+     * No-op constructor.
+     */
+    public Rotation() {}
+
+    /**
+     * @param degrees Degrees of rotation between 0 and 360
+     */
+    public Rotation(float degrees) {
+        this.setDegrees(degrees);
     }
 
-    public Float getDegrees() {
+    public float getDegrees() {
         return degrees;
     }
 
@@ -37,7 +30,7 @@ public class Rotation {
      * @param degrees Degrees of rotation between 0 and 360
      * @throws IllegalArgumentException
      */
-    public void setDegrees(Float degrees) throws IllegalArgumentException {
+    public void setDegrees(float degrees) throws IllegalArgumentException {
         if (degrees < 0 || degrees > 360) {
             throw new IllegalArgumentException("Degrees must be between 0 and 360");
         }
@@ -60,7 +53,8 @@ public class Rotation {
     }
 
     /**
-     * @return Value compatible with the rotation component of an IIIF URI.
+     * @return String representation of the instance, guaranteed to represent
+     * the instance, but not guaranteed to be meaningful.
      */
     public String toString() {
         String str = "";

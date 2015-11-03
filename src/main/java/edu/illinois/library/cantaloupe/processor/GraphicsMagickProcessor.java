@@ -1,12 +1,12 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Quality;
-import edu.illinois.library.cantaloupe.image.Region;
 import edu.illinois.library.cantaloupe.image.Rotation;
 import org.apache.commons.configuration.Configuration;
 import org.im4java.core.ConvertCmd;
@@ -182,25 +182,25 @@ class GraphicsMagickProcessor implements StreamProcessor {
         return qualities;
     }
 
-    public void process(Operations params, SourceFormat sourceFormat,
+    public void process(Operations ops, SourceFormat sourceFormat,
                         Dimension fullSize, File file,
                         OutputStream outputStream) throws ProcessorException {
-        doProcess(file.getAbsolutePath(), null, params, sourceFormat, fullSize,
+        doProcess(file.getAbsolutePath(), null, ops, sourceFormat, fullSize,
                 outputStream);
     }
 
     @Override
-    public void process(Operations params, SourceFormat sourceFormat,
+    public void process(Operations ops, SourceFormat sourceFormat,
                         Dimension fullSize, InputStream inputStream,
                         OutputStream outputStream) throws ProcessorException {
         doProcess(sourceFormat.getPreferredExtension() + ":-", inputStream,
-                params, sourceFormat, fullSize, outputStream);
+                ops, sourceFormat, fullSize, outputStream);
     }
 
-    private void assembleOperation(IMOperation op, Operations params,
+    private void assembleOperation(IMOperation op, Operations ops,
                                    Dimension fullSize) {
         // region transformation
-        Region region = params.getRegion();
+        Crop region = ops.getRegion();
         if (!region.isFull()) {
             if (region.isPercent()) {
                 // im4java doesn't support cropping x/y by percentage (only
@@ -217,7 +217,7 @@ class GraphicsMagickProcessor implements StreamProcessor {
         }
 
         // size transformation
-        Scale size = params.getSize();
+        Scale size = ops.getScale();
         if (size.getScaleMode() != Scale.Mode.FULL) {
             if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                 op.resize(size.getWidth());
@@ -228,23 +228,23 @@ class GraphicsMagickProcessor implements StreamProcessor {
             } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
                 op.resize(size.getWidth(), size.getHeight());
             } else if (size.getPercent() != null) {
-                op.resize(Math.round(size.getPercent()),
-                        Math.round(size.getPercent()),
-                        "%".charAt(0));
+                op.resize(Math.round(size.getPercent() * 100),
+                        Math.round(size.getPercent() * 100),
+                        "%");
             }
         }
 
         // rotation transformation
-        Rotation rotation = params.getRotation();
+        Rotation rotation = ops.getRotation();
         if (rotation.shouldMirror()) {
             op.flop();
         }
         if (rotation.getDegrees() != 0) {
-            op.rotate(rotation.getDegrees().doubleValue());
+            op.rotate((double) rotation.getDegrees());
         }
 
         // quality transformation
-        Quality quality = params.getQuality();
+        Quality quality = ops.getQuality();
         if (quality != Quality.COLOR && quality != Quality.DEFAULT) {
             switch (quality) {
                 case GRAY:
@@ -288,30 +288,30 @@ class GraphicsMagickProcessor implements StreamProcessor {
     /**
      * @param inputPath Absolute filename pathname or "-" to use a stream
      * @param inputStream Can be null
-     * @param params
+     * @param ops
      * @param sourceFormat
      * @param fullSize
      * @param outputStream Stream to write to
      * @throws ProcessorException
      */
     private void doProcess(String inputPath, InputStream inputStream,
-                          Operations params, SourceFormat sourceFormat,
+                          Operations ops, SourceFormat sourceFormat,
                           Dimension fullSize, OutputStream outputStream)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
             throw new UnsupportedSourceFormatException(sourceFormat);
-        } else if (!availableOutputFormats.contains(params.getOutputFormat())) {
+        } else if (!availableOutputFormats.contains(ops.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
 
         try {
             IMOperation op = new IMOperation();
             op.addImage(inputPath);
-            assembleOperation(op, params, fullSize);
+            assembleOperation(op, ops, fullSize);
 
-            op.addImage(params.getOutputFormat().getExtension() + ":-"); // write to stdout
+            op.addImage(ops.getOutputFormat().getExtension() + ":-"); // write to stdout
 
             ConvertCmd convert = new ConvertCmd(true);
 

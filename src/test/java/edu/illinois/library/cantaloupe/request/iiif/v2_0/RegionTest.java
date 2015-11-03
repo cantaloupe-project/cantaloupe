@@ -1,10 +1,7 @@
-package edu.illinois.library.cantaloupe.request;
+package edu.illinois.library.cantaloupe.request.iiif.v2_0;
 
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
-import edu.illinois.library.cantaloupe.image.Region;
-
-import java.awt.Dimension;
-import java.awt.Rectangle;
+import edu.illinois.library.cantaloupe.image.Crop;
 
 public class RegionTest extends CantaloupeTestCase {
 
@@ -30,10 +27,10 @@ public class RegionTest extends CantaloupeTestCase {
      */
     public void testFromUriAbsolute() {
         Region r = Region.fromUri("0,0,50,40");
-        assertEquals(new Float(0), r.getX());
-        assertEquals(new Float(0), r.getY());
-        assertEquals(new Float(50), r.getWidth());
-        assertEquals(new Float(40), r.getHeight());
+        assertEquals(0f, r.getX());
+        assertEquals(0f, r.getY());
+        assertEquals(50f, r.getWidth());
+        assertEquals(40f, r.getHeight());
         assertFalse(r.isPercent());
         assertFalse(r.isFull());
     }
@@ -43,10 +40,10 @@ public class RegionTest extends CantaloupeTestCase {
      */
     public void testFromUriPercentage() {
         Region r = Region.fromUri("pct:0,0,50,40");
-        assertEquals(new Float(0), r.getX());
-        assertEquals(new Float(0), r.getY());
-        assertEquals(new Float(50), r.getWidth());
-        assertEquals(new Float(40), r.getHeight());
+        assertEquals(0f, r.getX());
+        assertEquals(0f, r.getY());
+        assertEquals(50f, r.getWidth());
+        assertEquals(40f, r.getHeight());
         assertTrue(r.isPercent());
         assertFalse(r.isFull());
     }
@@ -74,30 +71,17 @@ public class RegionTest extends CantaloupeTestCase {
         }
     }
 
-    public void testGetRectangle() {
-        Dimension fullSize = new Dimension(200, 200);
-        // full
-        Region region = Region.fromUri("full");
-        assertEquals(new Rectangle(0, 0, 200, 200), region.getRectangle(fullSize));
-        // pixels
-        region = Region.fromUri("20,20,50,50");
-        assertEquals(new Rectangle(20, 20, 50, 50), region.getRectangle(fullSize));
-        // percentage
-        region = Region.fromUri("pct:20,20,50,50");
-        assertEquals(new Rectangle(40, 40, 100, 100), region.getRectangle(fullSize));
-    }
-
     /* height */
 
     public void testSetHeight() {
-        Float height = (float) 50;
+        float height = 50f;
         this.region.setHeight(height);
         assertEquals(height, this.region.getHeight());
     }
 
     public void testSetNegativeHeight() {
         try {
-            this.region.setHeight((float) -1);
+            this.region.setHeight(-1f);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Height must be a positive integer", e.getMessage());
@@ -106,7 +90,7 @@ public class RegionTest extends CantaloupeTestCase {
 
     public void testSetZeroHeight() {
         try {
-            this.region.setHeight((float) 0);
+            this.region.setHeight(0f);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Height must be a positive integer", e.getMessage());
@@ -116,14 +100,14 @@ public class RegionTest extends CantaloupeTestCase {
     /* width */
 
     public void testSetWidth() {
-        Float width = (float) 50;
+        float width = 50f;
         this.region.setWidth(width);
         assertEquals(width, this.region.getWidth());
     }
 
     public void testSetNegativeWidth() {
         try {
-            this.region.setWidth((float) -1);
+            this.region.setWidth(-1f);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Width must be a positive integer", e.getMessage());
@@ -132,7 +116,7 @@ public class RegionTest extends CantaloupeTestCase {
 
     public void testSetZeroWidth() {
         try {
-            this.region.setWidth((float) 0);
+            this.region.setWidth(0f);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Width must be a positive integer", e.getMessage());
@@ -149,7 +133,7 @@ public class RegionTest extends CantaloupeTestCase {
 
     public void testSetNegativeX() {
         try {
-            this.region.setX(new Float(-1));
+            this.region.setX(-1f);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("X must be a positive float", e.getMessage());
@@ -159,21 +143,36 @@ public class RegionTest extends CantaloupeTestCase {
     /* y */
 
     public void testSetY() {
-        Float y = new Float(50.0);
+        float y = 50.0f;
         this.region.setY(y);
         assertEquals(y, this.region.getY());
     }
 
     public void testSetNegativeY() {
         try {
-            this.region.setY(new Float(-1));
+            this.region.setY(-1f);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Y must be a positive float", e.getMessage());
         }
     }
 
-    /* toString */
+    public void testToCrop() {
+        region = new Region();
+        region.setX(30f);
+        region.setY(40f);
+        region.setWidth(50f);
+        region.setHeight(50f);
+        region.setPercent(true);
+        region.setFull(false);
+        Crop crop = region.toCrop();
+        assertEquals(region.getX(), crop.getX());
+        assertEquals(region.getY(), crop.getY());
+        assertEquals(region.getWidth(), crop.getWidth());
+        assertEquals(region.getHeight(), crop.getHeight());
+        assertEquals(region.isPercent(), crop.isPercent());
+        assertEquals(region.isFull(), crop.isFull());
+    }
 
     public void testToString() {
         Region r = Region.fromUri("full");

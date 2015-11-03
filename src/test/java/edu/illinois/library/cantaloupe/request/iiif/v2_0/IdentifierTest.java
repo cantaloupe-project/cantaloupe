@@ -1,17 +1,9 @@
-package edu.illinois.library.cantaloupe.request;
+package edu.illinois.library.cantaloupe.request.iiif.v2_0;
 
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import org.restlet.data.Reference;
 
 public class IdentifierTest extends CantaloupeTestCase {
-
-    public void testEquals() {
-        Identifier id1 = new Identifier("cats");
-        Identifier id2 = new Identifier("cats");
-        assertEquals(id1, id2);
-        assertTrue(id1.equals(id2));
-    }
 
     public void testFromUri() {
         Identifier id = Identifier.fromUri("cats");
@@ -20,6 +12,22 @@ public class IdentifierTest extends CantaloupeTestCase {
         String encodedId = Reference.encode("cats~`!@#$%^&*():;'<>,.?/\\");
         id = Identifier.fromUri(encodedId);
         assertEquals(Reference.decode(encodedId), id.getValue());
+    }
+
+    public void testCompareTo() {
+        Identifier id1 = new Identifier("cats");
+        Identifier id2 = new Identifier("dogs");
+        Identifier id3 = new Identifier("cats");
+        assertTrue(id1.compareTo(id2) < 0);
+        assertEquals(0, id1.compareTo(id3));
+    }
+
+    public void testEquals() {
+        Identifier id1 = new Identifier("cats");
+        Identifier id2 = new Identifier("cats");
+        Identifier id3 = new Identifier("dogs");
+        assertTrue(id1.equals(id2));
+        assertFalse(id2.equals(id3));
     }
 
     public void testHashCode() {

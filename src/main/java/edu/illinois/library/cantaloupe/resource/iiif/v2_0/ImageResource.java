@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
 import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -35,7 +36,8 @@ import java.util.Set;
  */
 public class ImageResource extends AbstractImageResource {
 
-    private static Logger logger = LoggerFactory.getLogger(AbstractImageResource.class);
+    private static Logger logger = LoggerFactory.
+            getLogger(AbstractImageResource.class);
 
     @Override
     protected void doInit() throws ResourceException {
@@ -61,8 +63,6 @@ public class ImageResource extends AbstractImageResource {
                 (String) attrs.get("quality"),
                 (String) attrs.get("format"));
         Operations ops = params.toOperations();
-        // Get a reference to the source image (this will also cause an
-        // exception if not found)
         Resolver resolver = ResolverFactory.getResolver();
         // Determine the format of the source image
         SourceFormat sourceFormat = resolver.
@@ -76,16 +76,16 @@ public class ImageResource extends AbstractImageResource {
 
         // Find out whether the processor supports that source format by
         // asking it whether it offers any output formats for it
-        Set availableOutputFormats = proc.getAvailableOutputFormats(sourceFormat);
-        if (!availableOutputFormats.contains(params.getOutputFormat())) {
+        Set<OutputFormat> availableOutputFormats =
+                proc.getAvailableOutputFormats(sourceFormat);
+        if (!availableOutputFormats.contains(ops.getOutputFormat())) {
             String msg = String.format("%s does not support the \"%s\" output format",
                     proc.getClass().getSimpleName(),
-                    params.getOutputFormat().getExtension());
+                    ops.getOutputFormat().getExtension());
             logger.warn(msg + ": " + this.getReference());
             throw new UnsupportedSourceFormatException(msg);
         }
-        // All checks made; at this point, we are pretty sure we can fulfill
-        // the request
+
         this.addHeader("Link", String.format("<%s%s/%s>;rel=\"canonical\"",
                 getPublicRootRef().toString(),
                 ImageServerApplication.IIIF_2_0_PATH, params.toString()));

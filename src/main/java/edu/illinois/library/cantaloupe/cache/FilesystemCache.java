@@ -1,8 +1,9 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.resource.iiif.v2_0.ImageInfo;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operations;
 import org.apache.commons.lang3.StringUtils;
@@ -22,11 +23,41 @@ import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * Cache using a filesystem folder, storing images and info files separately in
- * subfolders. Configurable by <code>FilesystemCache.pathname</code> and
- * <code>FilesystemCache.ttl_seconds</code> keys in the application
- * configuration.
+ * subfolders.
  */
 class FilesystemCache implements Cache {
+
+    /**
+     * Class whose instances are intended to be serialized to JSON for use in IIIF
+     * Image Information responses.
+     *
+     * @see <a href="https://github.com/FasterXML/jackson-databind">jackson-databind
+     * docs</a>
+     */
+    @JsonPropertyOrder({ "width", "height" })
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class ImageInfo {
+
+        private int height;
+        private int width;
+
+        public int getHeight() {
+            return height;
+        }
+
+        public void setHeight(int height) {
+            this.height = height;
+        }
+
+        public int getWidth() {
+            return width;
+        }
+
+        public void setWidth(int width) {
+            this.width = width;
+        }
+
+    }
 
     private static final Logger logger = LoggerFactory.
             getLogger(FilesystemCache.class);
@@ -39,7 +70,7 @@ class FilesystemCache implements Cache {
 
     private static final ObjectMapper infoMapper = new ObjectMapper();
 
-    private boolean flushingInProgress = false;
+    private boolean flushingInProgress = false; // TODO: make an AtomicBoolean
 
     /** Set of identifiers for which info files are currently being read. */
     private final Set<Identifier> infosBeingRead = new ConcurrentSkipListSet<>();
@@ -49,7 +80,7 @@ class FilesystemCache implements Cache {
 
     /** Set of Operations for which image files are currently being flushed by
      * flush(Operations). */
-    private final Set<Operations> paramsBeingFlushed =
+    private final Set<Operations> opsBeingFlushed =
             new ConcurrentSkipListSet<>();
 
     /** Lock object for synchronization */
@@ -103,7 +134,7 @@ class FilesystemCache implements Cache {
     @Override
     public void flush() throws IOException {
         synchronized (lock4) {
-            while (flushingInProgress || !paramsBeingFlushed.isEmpty()) {
+            while (flushingInProgress || !opsBeingFlushed.isEmpty()) {
                 try {
                     lock4.wait();
                 } catch (InterruptedException e) {
@@ -146,9 +177,9 @@ class FilesystemCache implements Cache {
     }
 
     @Override
-    public void flush(Operations params) throws IOException {
+    public void flush(Operations ops) throws IOException {
         synchronized (lock1) {
-            while (flushingInProgress || paramsBeingFlushed.contains(params)) {
+            while (flushingInProgress || opsBeingFlushed.contains(ops)) {
                 try {
                     lock1.wait();
                 } catch (InterruptedException e) {
@@ -158,25 +189,25 @@ class FilesystemCache implements Cache {
         }
 
         try {
-            paramsBeingFlushed.add(params);
-            File imageFile = getCachedImageFile(params);
+            opsBeingFlushed.add(ops);
+            File imageFile = getCachedImageFile(ops);
             if (imageFile != null && imageFile.exists()) {
                 imageFile.delete();
             }
-            File dimensionFile = getCachedInfoFile(params.getIdentifier());
+            File dimensionFile = getCachedInfoFile(ops.getIdentifier());
             if (dimensionFile != null && dimensionFile.exists()) {
                 dimensionFile.delete();
             }
-            logger.info("Flushed {}", params);
+            logger.info("Flushed {}", ops);
         } finally {
-            paramsBeingFlushed.remove(params);
+            opsBeingFlushed.remove(ops);
         }
     }
 
     @Override
     public void flushExpired() throws IOException {
         synchronized (lock4) {
-            while (flushingInProgress || !paramsBeingFlushed.isEmpty()) {
+            while (flushingInProgress || !opsBeingFlushed.isEmpty()) {
                 try {
                     lock4.wait();
                 } catch (InterruptedException e) {
@@ -255,12 +286,12 @@ class FilesystemCache implements Cache {
     }
 
     @Override
-    public InputStream getImageInputStream(Operations params) {
-        File cacheFile = getCachedImageFile(params);
+    public InputStream getImageInputStream(Operations ops) {
+        File cacheFile = getCachedImageFile(ops);
         if (cacheFile != null && cacheFile.exists()) {
             if (!isExpired(cacheFile)) {
                 try {
-                    logger.debug("Hit for image: {}", params);
+                    logger.debug("Hit for image: {}", ops);
                     return new FileInputStream(cacheFile);
                 } catch (FileNotFoundException e) {
                     // noop
@@ -275,32 +306,32 @@ class FilesystemCache implements Cache {
     }
 
     @Override
-    public OutputStream getImageOutputStream(Operations params)
+    public OutputStream getImageOutputStream(Operations ops)
             throws IOException { // TODO: make this work better concurrently
-        logger.debug("Miss; caching {}", params);
-        File cacheFile = getCachedImageFile(params);
+        logger.debug("Miss; caching {}", ops);
+        File cacheFile = getCachedImageFile(ops);
         cacheFile.getParentFile().mkdirs();
         cacheFile.createNewFile();
         return new FileOutputStream(cacheFile);
     }
 
     /**
-     * @param params Request parameters
+     * @param ops Request parameters
      * @return File corresponding to the given parameters, or null if
      * <code>FilesystemCache.pathname</code> is not set in the configuration.
      */
-    public File getCachedImageFile(Operations params) {
+    public File getCachedImageFile(Operations ops) {
         final String cachePathname = getImagePathname();
         if (cachePathname != null) {
             final String pathname = String.format("%s%s%s_%s_%s_%s_%s.%s",
                     StringUtils.stripEnd(cachePathname, File.separator),
                     File.separator,
-                    params.getIdentifier().toString().replaceAll(FILENAME_CHARACTERS, "_"),
-                    params.getRegion().toString().replaceAll(FILENAME_CHARACTERS, "_"),
-                    params.getSize().toString().replaceAll(FILENAME_CHARACTERS, "_"),
-                    params.getRotation().toString().replaceAll(FILENAME_CHARACTERS, "_"),
-                    params.getQuality().toString().toLowerCase(),
-                    params.getOutputFormat().getExtension());
+                    ops.getIdentifier().toString().replaceAll(FILENAME_CHARACTERS, "_"),
+                    ops.getRegion().toString().replaceAll(FILENAME_CHARACTERS, "_"),
+                    ops.getScale().toString().replaceAll(FILENAME_CHARACTERS, "_"),
+                    ops.getRotation().toString().replaceAll(FILENAME_CHARACTERS, "_"),
+                    ops.getQuality().toString().toLowerCase(),
+                    ops.getOutputFormat().getExtension());
             return new File(pathname);
         }
         return null;

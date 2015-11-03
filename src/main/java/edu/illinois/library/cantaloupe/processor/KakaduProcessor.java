@@ -6,7 +6,7 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.Quality;
-import edu.illinois.library.cantaloupe.image.Region;
+import edu.illinois.library.cantaloupe.image.Crop;
 import info.freelibrary.djatoka.io.PNMImage;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -219,14 +219,14 @@ class KakaduProcessor implements FileProcessor {
     }
 
     @Override
-    public void process(Operations params, SourceFormat sourceFormat,
+    public void process(Operations ops, SourceFormat sourceFormat,
                         Dimension fullSize, File inputFile,
                         OutputStream outputStream) throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
             throw new UnsupportedSourceFormatException(sourceFormat);
-        } else if (!availableOutputFormats.contains(params.getOutputFormat())) {
+        } else if (!availableOutputFormats.contains(ops.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
 
@@ -234,7 +234,7 @@ class KakaduProcessor implements FileProcessor {
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
             final ReductionFactor reduction = new ReductionFactor();
-            final ProcessBuilder pb = getProcessBuilder(inputFile, params,
+            final ProcessBuilder pb = getProcessBuilder(inputFile, ops,
                     fullSize, reduction);
             final Process process = pb.start();
 
@@ -256,18 +256,18 @@ class KakaduProcessor implements FileProcessor {
                     PlanarImage image = PlanarImage.wrapRenderedImage(
                             new PNMImage(bais).getBufferedImage());
                     RenderedOp op = ProcessorUtil.scaleImage(image,
-                            params.getSize(), reduction.factor);
-                    op = ProcessorUtil.rotateImage(op, params.getRotation());
-                    op = ProcessorUtil.filterImage(op, params.getQuality());
-                    ImageIO.write(op, params.getOutputFormat().getExtension(),
+                            ops.getScale(), reduction.factor);
+                    op = ProcessorUtil.rotateImage(op, ops.getRotation());
+                    op = ProcessorUtil.filterImage(op, ops.getQuality());
+                    ImageIO.write(op, ops.getOutputFormat().getExtension(),
                             outputStream);
                 } else {
                     BufferedImage image = new PNMImage(bais).getBufferedImage();
                     image = ProcessorUtil.scaleImageWithG2d(image,
-                            params.getSize(), reduction.factor);
-                    image = ProcessorUtil.rotateImage(image, params.getRotation());
-                    image = ProcessorUtil.filterImage(image, params.getQuality());
-                    ProcessorUtil.writeImage(image, params.getOutputFormat(),
+                            ops.getScale(), reduction.factor);
+                    image = ProcessorUtil.rotateImage(image, ops.getRotation());
+                    image = ProcessorUtil.filterImage(image, ops.getQuality());
+                    ProcessorUtil.writeImage(image, ops.getOutputFormat(),
                             outputStream);
                     image.flush();
                 }
@@ -291,12 +291,12 @@ class KakaduProcessor implements FileProcessor {
      * Gets a ProcessBuilder corresponding to the given parameters.
      *
      * @param inputFile
-     * @param params
+     * @param ops
      * @param fullSize The full size of the source image
      * @param reduction Modified by reference
      * @return Command string
      */
-    private ProcessBuilder getProcessBuilder(File inputFile, Operations params,
+    private ProcessBuilder getProcessBuilder(File inputFile, Operations ops,
                                              Dimension fullSize,
                                              ReductionFactor reduction) {
         final List<String> command = new ArrayList<>();
@@ -306,7 +306,7 @@ class KakaduProcessor implements FileProcessor {
         command.add("-i");
         command.add(inputFile.getAbsolutePath());
 
-        final Region region = params.getRegion();
+        final Crop region = ops.getRegion();
         if (!region.isFull()) {
             final double x = region.getX() / fullSize.width;
             final double y = region.getY() / fullSize.height;
@@ -322,7 +322,7 @@ class KakaduProcessor implements FileProcessor {
         // significantly speeding decompression. We can use it if the scale mode
         // is ASPECT_FIT_* and either the percent is <=50, or the height/width
         // are <=50% of full size. The smaller the scale, the bigger the win.
-        final Scale size = params.getSize();
+        final Scale size = ops.getScale();
         if (size.getScaleMode() != Scale.Mode.FULL) {
             if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                 double scale = (double) size.getWidth() /

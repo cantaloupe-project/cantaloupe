@@ -14,7 +14,7 @@ import java.nio.file.AccessDeniedException;
 public interface Resolver {
 
     /**
-     * @param identifier IIIF identifier.
+     * @param identifier
      * @return The expected source format of the image corresponding with the
      * given identifier; never <code>SourceFormat.UNKNOWN</code>.
      * @throws FileNotFoundException if an image corresponding to the given

@@ -30,7 +30,7 @@ public interface FileProcessor extends Processor {
      * own <code>getSize()</code> method to avoid reusing a potentially
      * unreusable InputStream.</p>
      *
-     * @param params Operations of the output image
+     * @param ops Operations of the output image
      * @param sourceFormat Format of the source image
      * @param inputFile File from which to read the image. Implementations
      *                  should not close it.
@@ -40,7 +40,7 @@ public interface FileProcessor extends Processor {
      * @throws UnsupportedSourceFormatException
      * @throws ProcessorException
      */
-    void process(Operations params, SourceFormat sourceFormat,
+    void process(Operations ops, SourceFormat sourceFormat,
                  Dimension sourceSize, File inputFile,
                  OutputStream outputStream) throws ProcessorException;
 

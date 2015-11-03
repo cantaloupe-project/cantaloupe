@@ -6,11 +6,9 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 
 /**
- * Encapsulates the "region" component of an IIIF request URI.
- *
- * @see <a href="http://iiif.io/api/image/2.0/#region">IIIF Image API 2.0</a>
+ * Encapsulates a region of an image for cropping purposes.
  */
-public class Region { // TODO: rename to Crop
+public class Crop {
 
     private Float height = 0.0f;
     private boolean isFull = false;
@@ -19,48 +17,13 @@ public class Region { // TODO: rename to Crop
     private Float x = 0.0f;
     private Float y = 0.0f;
 
-    /**
-     * @param uriRegion The "region" component of an IIIF URI.
-     * @return
-     * @throws IllegalArgumentException
-     */
-    public static Region fromUri(String uriRegion)
-            throws IllegalArgumentException {
-        Region region = new Region();
-
-        if (uriRegion.equals("full")) {
-            region.setFull(true);
-        } else {
-            region.setFull(false);
-            String csv;
-            if (uriRegion.startsWith("pct:")) {
-                region.setPercent(true);
-                String[] tmp = uriRegion.split(":");
-                csv = tmp[1];
-            } else {
-                region.setPercent(false);
-                csv = uriRegion;
-            }
-            String[] parts = csv.split(",");
-            if (parts.length == 4) {
-                region.setX(Float.parseFloat(parts[0]));
-                region.setY(Float.parseFloat(parts[1]));
-                region.setWidth(Float.parseFloat(parts[2]));
-                region.setHeight(Float.parseFloat(parts[3]));
-            } else {
-                throw new IllegalArgumentException("Invalid region");
-            }
-        }
-        return region;
-    }
-
     public Float getHeight() {
         return height;
     }
 
     /**
      * @param fullSize Full-sized image dimensions.
-     * @return Region coordinates relative to the given full-sized image
+     * @return Crop coordinates relative to the given full-sized image
      * dimensions.
      */
     public Rectangle getRectangle(Dimension fullSize) {
@@ -141,7 +104,8 @@ public class Region { // TODO: rename to Crop
     }
 
     /**
-     * @return Value compatible with the region component of an IIIF URI.
+     * @return String representation of the instance, guaranteed to represent
+     * the instance, but not guaranteed to be meaningful.
      */
     public String toString() {
         String str = "";

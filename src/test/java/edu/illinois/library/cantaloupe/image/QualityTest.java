@@ -1,7 +1,6 @@
-package edu.illinois.library.cantaloupe.request;
+package edu.illinois.library.cantaloupe.image;
 
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
-import edu.illinois.library.cantaloupe.image.Quality;
 
 public class QualityTest extends CantaloupeTestCase {
 

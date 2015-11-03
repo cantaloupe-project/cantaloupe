@@ -36,12 +36,12 @@ class JdbcCache implements Cache {
     private class JdbcImageOutputStream extends OutputStream {
 
         private ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        private Operations params;
+        private Operations ops;
         private Connection connection;
 
-        public JdbcImageOutputStream(Connection conn, Operations params) {
+        public JdbcImageOutputStream(Connection conn, Operations ops) {
             this.connection = conn;
-            this.params = params;
+            this.ops = ops;
         }
 
         @Override
@@ -51,10 +51,10 @@ class JdbcCache implements Cache {
                 String sql = String.format(
                         "INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
                         config.getString(IMAGE_TABLE_CONFIG_KEY),
-                        IMAGE_TABLE_PARAMS_COLUMN, IMAGE_TABLE_IMAGE_COLUMN,
+                        IMAGE_TABLE_OPERATIONS_COLUMN, IMAGE_TABLE_IMAGE_COLUMN,
                         IMAGE_TABLE_LAST_MODIFIED_COLUMN);
                 PreparedStatement statement = this.connection.prepareStatement(sql);
-                statement.setString(1, this.params.toString());
+                statement.setString(1, this.ops.toString());
                 statement.setBinaryStream(2,
                         new ByteArrayInputStream(this.outputStream.toByteArray()));
                 statement.setTimestamp(3, now());
@@ -93,7 +93,7 @@ class JdbcCache implements Cache {
 
     public static final String IMAGE_TABLE_IMAGE_COLUMN = "image";
     public static final String IMAGE_TABLE_LAST_MODIFIED_COLUMN = "last_modified";
-    public static final String IMAGE_TABLE_PARAMS_COLUMN = "params";
+    public static final String IMAGE_TABLE_OPERATIONS_COLUMN = "operations";
     public static final String INFO_TABLE_HEIGHT_COLUMN = "height";
     public static final String INFO_TABLE_IDENTIFIER_COLUMN = "identifier";
     public static final String INFO_TABLE_LAST_MODIFIED_COLUMN = "last_modified";
@@ -141,7 +141,7 @@ class JdbcCache implements Cache {
                                     "%s BYTEA, " +
                                     "%s TIMESTAMP);",
                             tableName,
-                            IMAGE_TABLE_PARAMS_COLUMN,
+                            IMAGE_TABLE_OPERATIONS_COLUMN,
                             IMAGE_TABLE_IMAGE_COLUMN,
                             IMAGE_TABLE_LAST_MODIFIED_COLUMN);
                 } else {
@@ -150,7 +150,7 @@ class JdbcCache implements Cache {
                                     "%s BLOB, " +
                                     "%s DATETIME);",
                             tableName,
-                            IMAGE_TABLE_PARAMS_COLUMN,
+                            IMAGE_TABLE_OPERATIONS_COLUMN,
                             IMAGE_TABLE_IMAGE_COLUMN,
                             IMAGE_TABLE_LAST_MODIFIED_COLUMN);
                 }
@@ -310,10 +310,10 @@ class JdbcCache implements Cache {
     }
 
     @Override
-    public void flush(Operations params) throws IOException {
+    public void flush(Operations ops) throws IOException {
         try {
-            int numDeletedImages = flushImage(params);
-            int numDeletedDimensions = flushInfo(params.getIdentifier());
+            int numDeletedImages = flushImage(ops);
+            int numDeletedDimensions = flushInfo(ops.getIdentifier());
             logger.info("Deleted {} cached image(s) and {} cached dimension(s)",
                     numDeletedImages, numDeletedDimensions);
         } catch (SQLException e) {
@@ -322,21 +322,21 @@ class JdbcCache implements Cache {
     }
 
     /**
-     * @param params
+     * @param ops
      * @return The number of flushed images
      * @throws SQLException
      * @throws IOException
      */
-    private int flushImage(Operations params) throws SQLException, IOException {
+    private int flushImage(Operations ops) throws SQLException, IOException {
         Configuration config = Application.getConfiguration();
         Connection conn = getConnection();
 
         final String imageTableName = config.getString(IMAGE_TABLE_CONFIG_KEY);
         if (imageTableName != null && imageTableName.length() > 0) {
             String sql = String.format("DELETE FROM %s WHERE %s = ?",
-                    imageTableName, IMAGE_TABLE_PARAMS_COLUMN);
+                    imageTableName, IMAGE_TABLE_OPERATIONS_COLUMN);
             PreparedStatement statement = conn.prepareStatement(sql);
-            statement.setString(1, params.toString());
+            statement.setString(1, ops.toString());
             return statement.executeUpdate();
         } else {
             throw new IOException(IMAGE_TABLE_CONFIG_KEY + " is not set");
@@ -445,7 +445,7 @@ class JdbcCache implements Cache {
     }
 
     @Override
-    public InputStream getImageInputStream(Operations params) {
+    public InputStream getImageInputStream(Operations ops) {
         InputStream inputStream = null;
         final Timestamp oldestDate = oldestValidDate();
         Configuration config = Application.getConfiguration();
@@ -457,17 +457,17 @@ class JdbcCache implements Cache {
                         "SELECT %s, %s FROM %s WHERE %s = ?",
                         IMAGE_TABLE_IMAGE_COLUMN,
                         IMAGE_TABLE_LAST_MODIFIED_COLUMN, tableName,
-                        IMAGE_TABLE_PARAMS_COLUMN);
+                        IMAGE_TABLE_OPERATIONS_COLUMN);
                 PreparedStatement statement = conn.prepareStatement(sql);
-                statement.setString(1, params.toString());
+                statement.setString(1, ops.toString());
                 ResultSet resultSet = statement.executeQuery();
                 if (resultSet.next()) {
                     if (resultSet.getTimestamp(2).after(oldestDate)) {
-                        logger.debug("Hit for image: {}", params);
+                        logger.debug("Hit for image: {}", ops);
                         inputStream = resultSet.getBinaryStream(1);
                     } else {
-                        logger.debug("Miss for image: {}", params);
-                        flushImage(params);
+                        logger.debug("Miss for image: {}", ops);
+                        flushImage(ops);
                     }
                 }
             } catch (IOException | SQLException e) {
@@ -480,14 +480,14 @@ class JdbcCache implements Cache {
     }
 
     @Override
-    public OutputStream getImageOutputStream(Operations params)
+    public OutputStream getImageOutputStream(Operations ops)
             throws IOException {
-        logger.debug("Miss; caching {}", params);
+        logger.debug("Miss; caching {}", ops);
         Configuration config = Application.getConfiguration();
         String tableName = config.getString(IMAGE_TABLE_CONFIG_KEY, "");
         if (tableName != null && tableName.length() > 0) {
             try {
-                return new JdbcImageOutputStream(getConnection(), params);
+                return new JdbcImageOutputStream(getConnection(), ops);
             } catch (SQLException e) {
                 throw new IOException(e.getMessage(), e);
             }

@@ -14,7 +14,7 @@ import java.nio.file.AccessDeniedException;
 public interface StreamResolver extends Resolver {
 
     /**
-     * @param identifier IIIF identifier.
+     * @param identifier
      * @return Stream for reading the source image; never null.
      * @throws FileNotFoundException if the image corresponding to the given
      * identifier does not exist

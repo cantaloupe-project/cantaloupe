@@ -60,9 +60,8 @@ class FilesystemResolver implements FileResolver, StreamResolver {
 
         String idStr = identifier.toString();
 
-        // The Image API 2.0 spec mandates the use of percent-encoded
-        // identifiers. But some web servers have issues dealing with the
-        // encoded slash (%2F). FilesystemResolver.path_separator enables the
+        // But some web servers have issues dealing with encoded slashes (%2F)
+        // in URL identifiers. FilesystemResolver.path_separator enables the
         // use of an alternate string as a path separator.
         String separator = config.getString("FilesystemResolver.path_separator");
         if (separator != null && separator.length() > 0) {
@@ -78,7 +77,7 @@ class FilesystemResolver implements FileResolver, StreamResolver {
      * Filters out "fileseparator.." and "..fileseparator" to prevent arbitrary
      * directory traversal.
      *
-     * @param identifier IIIF identifier
+     * @param identifier
      * @param fileSeparator The return value of <code>File.separator</code>
      * @return Sanitized identifier
      */
@@ -95,7 +94,7 @@ class FilesystemResolver implements FileResolver, StreamResolver {
         if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
             File file = new File(getPathname(identifier));
             checkAccess(file, identifier);
-            sourceFormat = getDetectedSourceFormat(identifier);
+            sourceFormat = detectSourceFormat(identifier);
         }
         return sourceFormat;
     }
@@ -119,7 +118,7 @@ class FilesystemResolver implements FileResolver, StreamResolver {
         return sourceFormat;
     }
 
-    private SourceFormat getDetectedSourceFormat(Identifier identifier) {
+    private SourceFormat detectSourceFormat(Identifier identifier) {
         SourceFormat sourceFormat = SourceFormat.UNKNOWN;
         String pathname = getPathname(identifier);
         Collection<?> detectedTypes = MimeUtil.getMimeTypes(pathname);

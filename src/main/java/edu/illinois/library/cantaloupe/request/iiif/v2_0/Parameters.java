@@ -123,12 +123,10 @@ public class Parameters implements Comparable<Parameters> {
     }
 
     public Operations toOperations() {
-        return new Operations(this.getIdentifier().toIdentifier(),
-                this.getRegion().toRegion(),
-                this.getSize().toScale(),
-                this.getRotation().toRotation(),
-                this.getQuality().toQuality(),
-                this.getOutputFormat().toOutputFormat());
+        return new Operations(getIdentifier().toIdentifier(),
+                getRegion().toCrop(), getSize().toScale(),
+                getRotation().toRotation(), getQuality().toQuality(),
+                getOutputFormat().toOutputFormat());
     }
 
     /**

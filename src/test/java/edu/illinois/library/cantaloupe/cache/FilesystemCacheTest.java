@@ -3,12 +3,16 @@ package edu.illinois.library.cantaloupe.cache;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
+import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.image.Quality;
+import edu.illinois.library.cantaloupe.image.Rotation;
+import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.resource.iiif.v2_0.ImageInfo;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operations;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.io.FileUtils;
-import org.restlet.data.Reference;
 
 import java.awt.Dimension;
 import java.io.File;
@@ -47,12 +51,29 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     }
 
     public void testFlush() throws Exception {
-        Operations params = new Operations("cats", "full", "full", "0",
-                "default", "jpg");
+        Identifier identifier = new Identifier("cats");
+        Crop region = new Crop();
+        region.setFull(true);
+        Scale scale = new Scale();
+        scale.setScaleMode(Scale.Mode.FULL);
+        Rotation rotation = new Rotation(0);
+        Quality quality = Quality.DEFAULT;
+        OutputFormat format = OutputFormat.JPG;
+        Operations params = new Operations(identifier, region, scale, rotation,
+                quality, format);
         instance.getCachedImageFile(params).createNewFile();
         instance.getCachedInfoFile(params.getIdentifier()).createNewFile();
 
-        params = new Operations("dogs", "full", "full", "15", "gray", "jpg");
+        identifier = new Identifier("dogs");
+        region = new Crop();
+        region.setFull(true);
+        scale = new Scale();
+        scale.setScaleMode(Scale.Mode.FULL);
+        rotation = new Rotation(15);
+        quality = Quality.GRAY;
+        format = OutputFormat.JPG;
+        params = new Operations(identifier, region, scale, rotation,
+                quality, format);
         instance.getCachedImageFile(params).createNewFile();
         instance.getCachedInfoFile(params.getIdentifier()).createNewFile();
 
@@ -62,8 +83,16 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     }
 
     public void testFlushWithParameters() throws Exception {
-        Operations params = new Operations("cats", "full", "full", "0",
-                "default", "jpg");
+        Identifier identifier = new Identifier("cats");
+        Crop region = new Crop();
+        region.setFull(true);
+        Scale scale = new Scale();
+        scale.setScaleMode(Scale.Mode.FULL);
+        Rotation rotation = new Rotation(0);
+        Quality quality = Quality.DEFAULT;
+        OutputFormat format = OutputFormat.JPG;
+        Operations params = new Operations(identifier, region, scale, rotation,
+                quality, format);
         instance.getCachedImageFile(params).createNewFile();
         instance.getCachedInfoFile(params.getIdentifier()).createNewFile();
         instance.flush(params);
@@ -74,14 +103,31 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     public void testFlushExpired() throws Exception {
         Application.getConfiguration().setProperty("FilesystemCache.ttl_seconds", 1);
 
-        Operations params = new Operations("cats", "full", "full", "0",
-                "default", "jpg");
+        Identifier identifier = new Identifier("cats");
+        Crop region = new Crop();
+        region.setFull(true);
+        Scale scale = new Scale();
+        scale.setScaleMode(Scale.Mode.FULL);
+        Rotation rotation = new Rotation(0);
+        Quality quality = Quality.DEFAULT;
+        OutputFormat format = OutputFormat.JPG;
+        Operations params = new Operations(identifier, region, scale, rotation,
+                quality, format);
         instance.getCachedImageFile(params).createNewFile();
         instance.getCachedInfoFile(params.getIdentifier()).createNewFile();
 
         Thread.sleep(2000);
 
-        params = new Operations("dogs", "full", "full", "0", "default", "jpg");
+        identifier = new Identifier("dogs");
+        region = new Crop();
+        region.setFull(true);
+        scale = new Scale();
+        scale.setScaleMode(Scale.Mode.FULL);
+        rotation = new Rotation(0);
+        quality = Quality.DEFAULT;
+        format = OutputFormat.JPG;
+        params = new Operations(identifier, region, scale, rotation,
+                quality, format);
         instance.getCachedImageFile(params).createNewFile();
         instance.getCachedInfoFile(params.getIdentifier()).createNewFile();
 
@@ -96,7 +142,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         FileUtils.writeStringToFile(file, "50x50");
 
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = new ImageInfo();
+        FilesystemCache.ImageInfo info = new FilesystemCache.ImageInfo();
         info.setWidth(50);
         info.setHeight(50);
         mapper.writeValue(file, info);
@@ -118,8 +164,16 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     }
 
     public void testGetImageInputStreamWithZeroTtl() throws Exception {
-        Operations params = new Operations("cats", "full", "full", "0",
-                "default", "jpg");
+        Identifier identifier = new Identifier("cats");
+        Crop region = new Crop();
+        region.setFull(true);
+        Scale scale = new Scale();
+        scale.setScaleMode(Scale.Mode.FULL);
+        Rotation rotation = new Rotation(0);
+        Quality quality = Quality.DEFAULT;
+        OutputFormat format = OutputFormat.JPG;
+        Operations params = new Operations(identifier, region, scale, rotation,
+                quality, format);
         assertNull(instance.getImageInputStream(params));
 
         instance.getCachedImageFile(params).createNewFile();
@@ -127,8 +181,16 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     }
 
     public void testGetImageInputStreamWithNonzeroTtl() throws Exception {
-        Operations params = new Operations("cats", "full", "full", "0",
-                "default", "jpg");
+        Identifier identifier = new Identifier("cats");
+        Crop region = new Crop();
+        region.setFull(true);
+        Scale scale = new Scale();
+        scale.setScaleMode(Scale.Mode.FULL);
+        Rotation rotation = new Rotation(0);
+        Quality quality = Quality.DEFAULT;
+        OutputFormat format = OutputFormat.JPG;
+        Operations params = new Operations(identifier, region, scale, rotation,
+                quality, format);
         Application.getConfiguration().setProperty("FilesystemCache.ttl_seconds", 1);
         File cacheFile = instance.getCachedImageFile(params);
         cacheFile.createNewFile();
@@ -139,15 +201,32 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     }
 
     public void testGetImageOutputStream() throws Exception {
-        Operations params = new Operations("cats", "full", "full", "0",
-                "default", "jpg");
+        Identifier identifier = new Identifier("cats");
+        Crop region = new Crop();
+        region.setFull(true);
+        Scale scale = new Scale();
+        scale.setScaleMode(Scale.Mode.FULL);
+        Rotation rotation = new Rotation(0);
+        Quality quality = Quality.DEFAULT;
+        OutputFormat format = OutputFormat.JPG;
+        Operations params = new Operations(identifier, region, scale, rotation,
+                quality, format);
         assertTrue(instance.getImageOutputStream(params) instanceof FileOutputStream);
     }
 
     public void testImageOutputStreamCreatesFolder() throws IOException {
         FileUtils.deleteDirectory(imagePath);
-        Operations params = new Operations("cats", "full", "full", "0",
-                "default", "jpg");
+
+        Identifier identifier = new Identifier("cats");
+        Crop region = new Crop();
+        region.setFull(true);
+        Scale scale = new Scale();
+        scale.setScaleMode(Scale.Mode.FULL);
+        Rotation rotation = new Rotation(0);
+        Quality quality = Quality.DEFAULT;
+        OutputFormat format = OutputFormat.JPG;
+        Operations params = new Operations(identifier, region, scale, rotation,
+                quality, format);
         instance.getImageOutputStream(params);
         assertTrue(imagePath.exists());
     }
@@ -155,24 +234,30 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     public void testGetCachedImageFile() {
         String pathname = Application.getConfiguration().
                 getString("FilesystemCache.pathname");
-        String identifier = "cats_~!@#$%^&*()";
-        String region = "0,0,50,50";
-        String size = "pct:90.5";
-        String rotation = "!10";
-        String quality = "color";
-        String format = "tif";
-        Operations params = new Operations(Reference.encode(identifier),
-                region, size, rotation, quality, format);
+
+        Identifier identifier = new Identifier("cats_~!@#$%^&*()");
+        Crop region = new Crop();
+        region.setWidth(50f);
+        region.setHeight(50f);
+        Scale scale = new Scale();
+        scale.setScaleMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        scale.setPercent(0.905f);
+        Rotation rotation = new Rotation(10);
+        rotation.setMirror(true);
+        Quality quality = Quality.COLOR;
+        OutputFormat format = OutputFormat.TIF;
+        Operations params = new Operations(identifier, region, scale, rotation,
+                quality, format);
         final String search = "[^A-Za-z0-9._-]";
         final String replacement = "_";
         String expected = String.format("%s%simage%s%s_%s_%s_%s_%s.%s", pathname,
                 File.separator,
                 File.separator,
-                identifier.replaceAll(search, replacement),
-                region.replaceAll(search, replacement),
-                size.replaceAll(search, replacement),
-                rotation.replaceAll(search, replacement),
-                quality, format);
+                identifier.toString().replaceAll(search, replacement),
+                region.toString().replaceAll(search, replacement),
+                scale.toString().replaceAll(search, replacement),
+                rotation.toString().replaceAll(search, replacement),
+                quality.toString().toLowerCase(), format);
         assertEquals(new File(expected), instance.getCachedImageFile(params));
     }
 

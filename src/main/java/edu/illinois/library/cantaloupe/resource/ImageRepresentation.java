@@ -33,7 +33,7 @@ public class ImageRepresentation extends OutputRepresentation {
     File file;
     Dimension fullSize;
     InputStream inputStream;
-    Operations params;
+    Operations ops;
     SourceFormat sourceFormat;
 
     /**
@@ -42,17 +42,17 @@ public class ImageRepresentation extends OutputRepresentation {
      * @param mediaType
      * @param sourceFormat
      * @param fullSize
-     * @param params
+     * @param ops
      * @param inputStream
      */
     public ImageRepresentation(MediaType mediaType,
                                SourceFormat sourceFormat,
                                Dimension fullSize,
-                               Operations params,
+                               Operations ops,
                                InputStream inputStream) {
         super(mediaType);
         this.inputStream = inputStream;
-        this.params = params;
+        this.ops = ops;
         this.sourceFormat = sourceFormat;
         this.fullSize = fullSize;
     }
@@ -62,15 +62,15 @@ public class ImageRepresentation extends OutputRepresentation {
      *
      * @param mediaType
      * @param sourceFormat
-     * @param params
+     * @param ops
      * @param file
      */
     public ImageRepresentation(MediaType mediaType,
                                SourceFormat sourceFormat,
-                               Operations params, File file) {
+                               Operations ops, File file) {
         super(mediaType);
         this.file = file;
-        this.params = params;
+        this.ops = ops;
         this.sourceFormat = sourceFormat;
     }
 
@@ -87,12 +87,16 @@ public class ImageRepresentation extends OutputRepresentation {
             if (cache != null) {
                 OutputStream cacheOutputStream = null;
                 try (InputStream cacheInputStream =
-                             cache.getImageInputStream(this.params)) {
+                             cache.getImageInputStream(this.ops)) {
                     if (cacheInputStream != null) {
+                        // a cached image is available; write it to the
+                        // response output stream.
                         IOUtils.copy(cacheInputStream, outputStream);
                     } else {
+                        // create a TeeOutputStream to write to both the
+                        // response output stream and the cache simultaneously.
                         cacheOutputStream = cache.
-                                getImageOutputStream(this.params);
+                                getImageOutputStream(this.ops);
                         TeeOutputStream tos = new TeeOutputStream(
                                 outputStream, cacheOutputStream);
                         doCacheAwareWrite(tos, cache);
@@ -122,7 +126,7 @@ public class ImageRepresentation extends OutputRepresentation {
 
     /**
      * Variant of doWrite() that cleans up incomplete cached images when
-     * the connection has been interrupted.
+     * the connection has been broken.
      *
      * @param outputStream
      * @param cache
@@ -134,7 +138,7 @@ public class ImageRepresentation extends OutputRepresentation {
             doWrite(outputStream);
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
-            cache.flush(this.params);
+            cache.flush(this.ops);
         }
     }
 
@@ -143,7 +147,7 @@ public class ImageRepresentation extends OutputRepresentation {
             final long msec = System.currentTimeMillis();
             // if the parameters request an unmodified source image, it can
             // be streamed right through
-            if (this.params.isRequestingUnmodifiedSource()) {
+            if (this.ops.isRequestingUnmodifiedSource()) {
                 if (this.file != null) {
                     IOUtils.copy(new FileInputStream(this.file),
                             outputStream);
@@ -159,11 +163,11 @@ public class ImageRepresentation extends OutputRepresentation {
                     FileProcessor fproc = (FileProcessor) proc;
                     Dimension size = fproc.getSize(this.file,
                             this.sourceFormat);
-                    fproc.process(this.params, this.sourceFormat, size,
+                    fproc.process(this.ops, this.sourceFormat, size,
                             this.file, outputStream);
                 } else {
                     StreamProcessor sproc = (StreamProcessor) proc;
-                    sproc.process(this.params, this.sourceFormat,
+                    sproc.process(this.ops, this.sourceFormat,
                             this.fullSize, this.inputStream, outputStream);
                 }
                 logger.debug("{} processed in {} msec",

@@ -1,10 +1,7 @@
 package edu.illinois.library.cantaloupe.image;
 
 /**
- * Encapsulates the "identifier" component of an IIIF request URI.
- *
- * @see <a href="http://iiif.io/api/image/2.0/#identifier">IIIF Image API
- * 2.0</a>
+ * Unique identifier of an image.
  */
 public class Identifier implements Comparable<Identifier> {
 
@@ -50,7 +47,7 @@ public class Identifier implements Comparable<Identifier> {
     }
 
     /**
-     * @return Unencoded value
+     * @return The value of the instance.
      */
     public String toString() {
         return getValue();

@@ -25,8 +25,10 @@ public enum SourceFormat {
     private String name;
 
     /**
-     * @param identifier IIIF identifier.
-     * @return The source format corresponding to the given identifier.
+     * @param identifier
+     * @return The source format corresponding to the given identifier,
+     * assuming that its value will have a recognizable filename extension. If
+     * not, <code>SourceFormat.UNKNOWN</code> will be returned.
      */
     public static SourceFormat getSourceFormat(Identifier identifier) {
         String extension = null;
@@ -46,7 +48,8 @@ public enum SourceFormat {
 
     /**
      * @param mediaType Media (MIME) type.
-     * @return The source format corresponding to the given media type.
+     * @return The source format corresponding to the given media type, or
+     * <code>SourceFormat.UNKNOWN</code> if unknown.
      */
     public static SourceFormat getSourceFormat(MediaType mediaType) {
         for (SourceFormat enumValue : SourceFormat.values()) {
@@ -132,7 +135,7 @@ public enum SourceFormat {
     }
 
     /**
-     * @return Extension.
+     * @return Preferred extension.
      */
     public String toString() {
         return this.getPreferredExtension();

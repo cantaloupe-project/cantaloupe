@@ -3,12 +3,12 @@ package edu.illinois.library.cantaloupe.processor;
 import com.sun.media.jai.codec.ImageCodec;
 import com.sun.media.jai.codec.ImageDecoder;
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Quality;
-import edu.illinois.library.cantaloupe.image.Region;
 import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,28 +139,28 @@ class Java2dProcessor implements StreamProcessor {
     }
 
     @Override
-    public void process(Operations params, SourceFormat sourceFormat,
+    public void process(Operations ops, SourceFormat sourceFormat,
                         Dimension fullSize, InputStream inputStream,
                         OutputStream outputStream) throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
             throw new UnsupportedSourceFormatException(sourceFormat);
-        } else if (!availableOutputFormats.contains(params.getOutputFormat())) {
+        } else if (!availableOutputFormats.contains(ops.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
 
         try {
             ReductionFactor reductionFactor = new ReductionFactor();
-            BufferedImage image = loadImage(inputStream, sourceFormat, params,
+            BufferedImage image = loadImage(inputStream, sourceFormat, ops,
                     fullSize, reductionFactor);
-            image = ProcessorUtil.cropImage(image, params.getRegion(),
+            image = ProcessorUtil.cropImage(image, ops.getRegion(),
                     reductionFactor.factor);
-            image = ProcessorUtil.scaleImageWithG2d(image, params.getSize(),
+            image = ProcessorUtil.scaleImageWithG2d(image, ops.getScale(),
                     reductionFactor.factor);
-            image = ProcessorUtil.rotateImage(image, params.getRotation());
-            image = ProcessorUtil.filterImage(image, params.getQuality());
-            ProcessorUtil.writeImage(image, params.getOutputFormat(),
+            image = ProcessorUtil.rotateImage(image, ops.getRotation());
+            image = ProcessorUtil.filterImage(image, ops.getQuality());
+            ProcessorUtil.writeImage(image, ops.getOutputFormat(),
                     outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
@@ -169,7 +169,7 @@ class Java2dProcessor implements StreamProcessor {
 
     private BufferedImage loadImage(InputStream inputStream,
                                     SourceFormat sourceFormat,
-                                    Operations params,
+                                    Operations ops,
                                     Dimension fullSize,
                                     ReductionFactor reductionFactor)
             throws IOException, ProcessorException { // TODO: move this to ProcessorUtil
@@ -183,7 +183,7 @@ class Java2dProcessor implements StreamProcessor {
                 String tiffReader = Application.getConfiguration().
                         getString(CONFIG_KEY_TIF_READER, "TIFFImageReader");
                 if (tiffReader.equals("TIFFImageReader")) {
-                    image = loadUsingTiffImageReader(inputStream, params,
+                    image = loadUsingTiffImageReader(inputStream, ops,
                             fullSize, reductionFactor);
                 } else {
                     image = loadUsingTiffImageDecoder(inputStream);
@@ -210,7 +210,7 @@ class Java2dProcessor implements StreamProcessor {
         BufferedImage rgbImage = ProcessorUtil.convertToRgb(image);
         if (rgbImage != image) {
             logger.warn("Converting {} to RGB (this is very expensive)",
-                    params.getIdentifier());
+                    ops.getIdentifier());
         }
         return rgbImage;
     }
@@ -244,7 +244,7 @@ class Java2dProcessor implements StreamProcessor {
      * generally doesn't provide any control over the reading process.</p>
      *
      * @param inputStream
-     * @param params
+     * @param ops
      * @param fullSize
      * @param reductionFactor
      * @return
@@ -254,7 +254,7 @@ class Java2dProcessor implements StreamProcessor {
      *     TIFFImageReader source</a>
      */
     private BufferedImage loadUsingTiffImageReader(
-            InputStream inputStream, Operations params, Dimension fullSize,
+            InputStream inputStream, Operations ops, Dimension fullSize,
             ReductionFactor reductionFactor) throws IOException,
             ProcessorException {
         BufferedImage image = null;
@@ -270,7 +270,7 @@ class Java2dProcessor implements StreamProcessor {
                     ImageInputStream iis = ImageIO.createImageInputStream(inputStream);
                     reader.setInput(iis);
                     image = getSmallestUsableImage(reader, fullSize,
-                            params.getRegion(), params.getSize(),
+                            ops.getRegion(), ops.getScale(),
                             reductionFactor);
                     break;
                 } finally {
@@ -279,7 +279,7 @@ class Java2dProcessor implements StreamProcessor {
             }
         } catch (ArrayIndexOutOfBoundsException e) {
             logger.error("TIFFImageReader failed to read {}",
-                    params.getIdentifier());
+                    ops.getIdentifier());
             throw e;
         }
         return image;
@@ -324,7 +324,7 @@ class Java2dProcessor implements StreamProcessor {
      */
     private BufferedImage getSmallestUsableImage(ImageReader reader,
                                                  Dimension fullSize,
-                                                 Region region, Scale size,
+                                                 Crop region, Scale size,
                                                  ReductionFactor rf)
             throws IOException {
         // The goal here is to get a BufferedImage of TYPE_INT_RGB rather

@@ -1,12 +1,5 @@
 package edu.illinois.library.cantaloupe.image;
 
-import edu.illinois.library.cantaloupe.image.SourceFormat;
-
-/**
- * Encapsulates the "format" component of an IIIF request URI.
- *
- * @see <a href="http://iiif.io/api/image/2.0/#format">IIIF Image API 2.0</a>
- */
 public enum OutputFormat {
 
     GIF("gif", "image/gif"),
@@ -42,7 +35,7 @@ public enum OutputFormat {
     }
 
     /**
-     * @return Value compatible with the format component of an IIIF URI.
+     * @return The extension.
      */
     public String toString() {
         return this.getExtension();

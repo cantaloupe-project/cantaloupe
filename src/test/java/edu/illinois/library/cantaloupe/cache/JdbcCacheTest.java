@@ -2,8 +2,13 @@ package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
+import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.image.Quality;
+import edu.illinois.library.cantaloupe.image.Rotation;
+import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -38,20 +43,49 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         instance = new JdbcCache();
 
         // persist some images
-        Operations params = new Operations("cats", "full", "full", "0",
-                "default", "jpg");
+        Identifier identifier = new Identifier("cats");
+        Crop crop = new Crop();
+        Scale scale = new Scale();
+        Rotation rotation = new Rotation();
+        Quality quality = Quality.DEFAULT;
+        OutputFormat format = OutputFormat.JPG;
+        Operations params = new Operations(identifier, crop, scale, rotation,
+                quality, format);
         OutputStream os = instance.getImageOutputStream(params);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
         os.close();
 
-        params = new Operations("dogs", "50,50,50,50", "pct:90",
-                "0", "default", "jpg");
+        identifier = new Identifier("dogs");
+        crop = new Crop();
+        crop.setX(50f);
+        crop.setY(50f);
+        crop.setWidth(50f);
+        crop.setHeight(50f);
+        scale = new Scale();
+        scale.setPercent(0.9f);
+        rotation = new Rotation();
+        quality = Quality.DEFAULT;
+        format = OutputFormat.JPG;
+        params = new Operations(identifier, crop, scale, rotation,
+                quality, format);
         os = instance.getImageOutputStream(params);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
         os.close();
 
-        params = new Operations("bunnies", "10,20,50,90", "40,",
-                "15", "color", "png");
+        identifier = new Identifier("bunnies");
+        crop = new Crop();
+        crop.setX(10f);
+        crop.setY(20f);
+        crop.setWidth(50f);
+        crop.setHeight(90f);
+        scale = new Scale();
+        scale.setWidth(40);
+        scale.setScaleMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        rotation = new Rotation(15);
+        quality = Quality.COLOR;
+        format = OutputFormat.PNG;
+        params = new Operations(identifier, crop, scale, rotation,
+                quality, format);
         os = instance.getImageOutputStream(params);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
         os.close();
@@ -63,7 +97,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
 
         // assert that the data has been seeded
         String sql = String.format("SELECT COUNT(%s) AS count FROM %s;",
-                JdbcCache.IMAGE_TABLE_PARAMS_COLUMN,
+                JdbcCache.IMAGE_TABLE_OPERATIONS_COLUMN,
                 config.getString(JdbcCache.IMAGE_TABLE_CONFIG_KEY));
         PreparedStatement statement = JdbcCache.getConnection().prepareStatement(sql);
         ResultSet resultSet = statement.executeQuery();
@@ -99,7 +133,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
 
         // assert that the images and infos were flushed
         String sql = String.format("SELECT COUNT(%s) AS count FROM %s",
-                JdbcCache.IMAGE_TABLE_PARAMS_COLUMN,
+                JdbcCache.IMAGE_TABLE_OPERATIONS_COLUMN,
                 config.getString(JdbcCache.IMAGE_TABLE_CONFIG_KEY));
         PreparedStatement statement = JdbcCache.getConnection().prepareStatement(sql);
         ResultSet resultSet = statement.executeQuery();
@@ -115,16 +149,22 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         assertEquals(0, resultSet.getInt("count"));
     }
 
-    public void testFlushWithParameters() throws Exception {
-        Operations params = new Operations("cats", "full", "full", "0",
-                "default", "jpg");
-        instance.flush(params);
+    public void testFlushWithOperations() throws Exception {
+        Identifier identifier = new Identifier("cats");
+        Crop crop = new Crop();
+        Scale scale = new Scale();
+        Rotation rotation = new Rotation();
+        Quality quality = Quality.DEFAULT;
+        OutputFormat format = OutputFormat.JPG;
+        Operations ops = new Operations(identifier, crop, scale, rotation,
+                quality, format);
+        instance.flush(ops);
 
         Configuration config = Application.getConfiguration();
 
         // assert that the image and info were flushed
         String sql = String.format("SELECT COUNT(%s) AS count FROM %s",
-                JdbcCache.IMAGE_TABLE_PARAMS_COLUMN,
+                JdbcCache.IMAGE_TABLE_OPERATIONS_COLUMN,
                 config.getString(JdbcCache.IMAGE_TABLE_CONFIG_KEY));
         PreparedStatement statement = JdbcCache.getConnection().prepareStatement(sql);
         ResultSet resultSet = statement.executeQuery();
@@ -147,9 +187,15 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Thread.sleep(1500);
 
         // add some fresh entities
-        Operations params = new Operations("bees", "full", "full", "0",
-                "default", "jpg");
-        OutputStream os = instance.getImageOutputStream(params);
+        Identifier identifier = new Identifier("bees");
+        Crop crop = new Crop();
+        Scale scale = new Scale();
+        Rotation rotation = new Rotation();
+        Quality quality = Quality.DEFAULT;
+        OutputFormat format = OutputFormat.JPG;
+        Operations ops = new Operations(identifier, crop, scale, rotation,
+                quality, format);
+        OutputStream os = instance.getImageOutputStream(ops);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
         os.close();
         instance.putDimension(new Identifier("bees"), new Dimension(50, 40));
@@ -159,7 +205,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         // assert that only the expired images and infos were flushed
         Configuration config = Application.getConfiguration();
         String sql = String.format("SELECT COUNT(%s) AS count FROM %s",
-                JdbcCache.IMAGE_TABLE_PARAMS_COLUMN,
+                JdbcCache.IMAGE_TABLE_OPERATIONS_COLUMN,
                 config.getString(JdbcCache.IMAGE_TABLE_CONFIG_KEY));
         PreparedStatement statement = JdbcCache.getConnection().prepareStatement(sql);
         ResultSet resultSet = statement.executeQuery();
@@ -167,7 +213,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         assertEquals(1, resultSet.getInt("count"));
 
         sql = String.format("SELECT COUNT(%s) AS count FROM %s",
-                JdbcCache.IMAGE_TABLE_PARAMS_COLUMN,
+                JdbcCache.IMAGE_TABLE_OPERATIONS_COLUMN,
                 config.getString(JdbcCache.IMAGE_TABLE_CONFIG_KEY));
         statement = JdbcCache.getConnection().prepareStatement(sql);
         resultSet = statement.executeQuery();
@@ -195,8 +241,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Thread.sleep(1500);
 
         // add some fresh entities
-        Operations params = new Operations("bees", "full", "full", "0",
-                "default", "jpg");
+        Identifier identifier = new Identifier("bees");
+        Crop crop = new Crop();
+        Scale scale = new Scale();
+        Rotation rotation = new Rotation();
+        Quality quality = Quality.DEFAULT;
+        OutputFormat format = OutputFormat.JPG;
+        Operations params = new Operations(identifier, crop, scale, rotation,
+                quality, format);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")),
                 instance.getImageOutputStream(params));
         instance.putDimension(new Identifier("bees"), new Dimension(50, 40));
@@ -216,8 +268,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
     }
 
     public void testGetImageInputStreamWithZeroTtl() {
-        Operations params = new Operations("cats", "full", "full", "0",
-                "default", "jpg");
+        Identifier identifier = new Identifier("cats");
+        Crop crop = new Crop();
+        Scale scale = new Scale();
+        Rotation rotation = new Rotation();
+        Quality quality = Quality.DEFAULT;
+        OutputFormat format = OutputFormat.JPG;
+        Operations params = new Operations(identifier, crop, scale, rotation,
+                quality, format);
         assertNotNull(instance.getImageInputStream(params));
     }
 
@@ -228,8 +286,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Thread.sleep(1500);
 
         // add some fresh entities
-        Operations params = new Operations("bees", "full", "full", "0",
-                "default", "jpg");
+        Identifier identifier = new Identifier("bees");
+        Crop crop = new Crop();
+        Scale scale = new Scale();
+        Rotation rotation = new Rotation();
+        Quality quality = Quality.DEFAULT;
+        OutputFormat format = OutputFormat.JPG;
+        Operations params = new Operations(identifier, crop, scale, rotation,
+                quality, format);
         OutputStream os = instance.getImageOutputStream(params);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
         os.close();
@@ -238,16 +302,36 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         // existing, non-expired image
         assertNotNull(instance.getImageInputStream(params));
         // existing, expired image
-        assertNull(instance.getImageInputStream(
-                Operations.fromUri("cats/full/full/0/default.jpg")));
+        identifier = new Identifier("cats");
+        crop = new Crop();
+        scale = new Scale();
+        rotation = new Rotation();
+        quality = Quality.DEFAULT;
+        format = OutputFormat.JPG;
+        params = new Operations(identifier, crop, scale, rotation,
+                quality, format);
+        assertNull(instance.getImageInputStream(params));
         // nonexistent image
-        assertNull(instance.getImageInputStream(
-                Operations.fromUri("bogus/full/full/0/default.jpg")));
+        identifier = new Identifier("bogus");
+        crop = new Crop();
+        scale = new Scale();
+        rotation = new Rotation();
+        quality = Quality.DEFAULT;
+        format = OutputFormat.JPG;
+        params = new Operations(identifier, crop, scale, rotation,
+                quality, format);
+        assertNull(instance.getImageInputStream(params));
     }
 
     public void testGetImageOutputStream() throws Exception {
-        Operations params = new Operations("cats", "full", "full", "0",
-                "default", "jpg");
+        Identifier identifier = new Identifier("cats");
+        Crop crop = new Crop();
+        Scale scale = new Scale();
+        Rotation rotation = new Rotation();
+        Quality quality = Quality.DEFAULT;
+        OutputFormat format = OutputFormat.JPG;
+        Operations params = new Operations(identifier, crop, scale, rotation,
+                quality, format);
         assertNotNull(instance.getImageOutputStream(params));
     }
 

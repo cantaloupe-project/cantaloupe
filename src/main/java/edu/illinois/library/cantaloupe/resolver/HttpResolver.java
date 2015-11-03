@@ -81,10 +81,9 @@ class HttpResolver implements StreamResolver {
 
         String idStr = identifier.toString();
 
-        // The Image API 2.0 spec mandates the use of percent-encoded
-        // identifiers. But some web servers have issues dealing with the
-        // encoded slash (%2F). FilesystemResolver.path_separator enables the
-        // use of an alternate string as a path separator.
+        // But some web servers have issues dealing with encoded slashes (%2F)
+        // in URL identifiers. HttpResolver.path_separator enables the use of
+        // an alternate string as a path separator.
         String separator = config.getString("HttpResolver.path_separator", "/");
         if (!separator.equals("/")) {
             idStr = StringUtils.replace(idStr, separator, "/");

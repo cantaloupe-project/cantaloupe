@@ -6,7 +6,7 @@ import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Quality;
-import edu.illinois.library.cantaloupe.image.Region;
+import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Rotation;
 import org.apache.commons.configuration.Configuration;
 import org.im4java.core.ConvertCmd;
@@ -41,9 +41,6 @@ class ImageMagickProcessor implements StreamProcessor {
             new HashSet<>();
     // Lazy-initialized by getFormats()
     private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
-
-    private InputStream inputStream;
-    private SourceFormat sourceFormat;
 
     static {
         SUPPORTED_QUALITIES.add(Quality.BITONAL);
@@ -185,27 +182,24 @@ class ImageMagickProcessor implements StreamProcessor {
     }
 
     @Override
-    public void process(Operations params, SourceFormat sourceFormat,
+    public void process(Operations ops, SourceFormat sourceFormat,
                         Dimension fullSize, InputStream inputStream,
                         OutputStream outputStream) throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
             throw new UnsupportedSourceFormatException(sourceFormat);
-        } else if (!availableOutputFormats.contains(params.getOutputFormat())) {
+        } else if (!availableOutputFormats.contains(ops.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
-
-        this.inputStream = inputStream;
-        this.sourceFormat = sourceFormat;
 
         try {
             IMOperation op = new IMOperation();
             op.addImage(sourceFormat.getPreferredExtension() + ":-"); // read from stdin
-            assembleOperation(op, params, fullSize);
+            assembleOperation(op, ops, fullSize);
 
             // format transformation
-            op.addImage(params.getOutputFormat().getExtension() + ":-"); // write to stdout
+            op.addImage(ops.getOutputFormat().getExtension() + ":-"); // write to stdout
 
             Pipe pipeIn = new Pipe(inputStream, null);
             Pipe pipeOut = new Pipe(null, outputStream);
@@ -225,10 +219,10 @@ class ImageMagickProcessor implements StreamProcessor {
         }
     }
 
-    private void assembleOperation(IMOperation op, Operations params,
+    private void assembleOperation(IMOperation op, Operations ops,
                                    Dimension fullSize) {
         // region transformation
-        Region region = params.getRegion();
+        Crop region = ops.getRegion();
         if (!region.isFull()) {
             if (region.isPercent()) {
                 // im4java doesn't support cropping x/y by percentage (only
@@ -245,7 +239,7 @@ class ImageMagickProcessor implements StreamProcessor {
         }
 
         // size transformation
-        Scale size = params.getSize();
+        Scale size = ops.getScale();
         if (size.getScaleMode() != Scale.Mode.FULL) {
             if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                 op.resize(size.getWidth());
@@ -263,16 +257,16 @@ class ImageMagickProcessor implements StreamProcessor {
         }
 
         // rotation transformation
-        Rotation rotation = params.getRotation();
+        Rotation rotation = ops.getRotation();
         if (rotation.shouldMirror()) {
             op.flop();
         }
         if (rotation.getDegrees() != 0) {
-            op.rotate(rotation.getDegrees().doubleValue());
+            op.rotate((double) rotation.getDegrees());
         }
 
         // quality transformation
-        Quality quality = params.getQuality();
+        Quality quality = ops.getQuality();
         if (quality != Quality.COLOR && quality != Quality.DEFAULT) {
             switch (quality) {
                 case GRAY:
