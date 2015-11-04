@@ -1,9 +1,11 @@
 package edu.illinois.library.cantaloupe.request.iiif.v2_0;
 
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Quality;
 import org.apache.commons.lang3.StringUtils;
+import org.restlet.data.Reference;
 
 /**
  * Encapsulates the parameters of an IIIF request.
@@ -30,7 +32,7 @@ public class Parameters implements Comparable<Parameters> {
         Parameters params = new Parameters();
         String[] parts = StringUtils.split(paramsStr, "/");
         if (parts.length == 5) {
-            params.setIdentifier(Identifier.fromUri(parts[0]));
+            params.setIdentifier(new Identifier(Reference.decode(parts[0])));
             params.setRegion(Region.fromUri(parts[1]));
             params.setSize(Size.fromUri(parts[2]));
             params.setRotation(Rotation.fromUri(parts[3]));
@@ -62,7 +64,7 @@ public class Parameters implements Comparable<Parameters> {
      */
     public Parameters(String identifier, String region, String size,
                       String rotation, String quality, String format) {
-        this.identifier = Identifier.fromUri(identifier);
+        this.identifier = new Identifier(Reference.decode(identifier));
         this.outputFormat = OutputFormat.valueOf(format.toUpperCase());
         this.quality = Quality.valueOf(quality.toUpperCase());
         this.region = Region.fromUri(region);
@@ -125,9 +127,9 @@ public class Parameters implements Comparable<Parameters> {
     }
 
     public Operations toOperations() {
-        return new Operations(getIdentifier().toIdentifier(),
-                getRegion().toCrop(), getSize().toScale(),
-                getRotation().toRotation(), getQuality(), getOutputFormat());
+        return new Operations(getIdentifier(), getRegion().toCrop(),
+                getSize().toScale(), getRotation().toRotation(), getQuality(),
+                getOutputFormat());
     }
 
     /**

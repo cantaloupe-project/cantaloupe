@@ -62,10 +62,8 @@ public class InformationResource extends AbstractResource {
     @Get("json")
     public StringRepresentation doGet() throws Exception {
         Map<String,Object> attrs = this.getRequest().getAttributes();
-        edu.illinois.library.cantaloupe.request.iiif.v2_0.Identifier iiifIdentifier =
-                edu.illinois.library.cantaloupe.request.iiif.v2_0.Identifier.
-                        fromUri((String) attrs.get("identifier"));
-        Identifier identifier = new Identifier(iiifIdentifier.toString());
+        Identifier identifier = new Identifier(
+                Reference.decode((String) attrs.get("identifier")));
         // Get the resolver
         Resolver resolver = ResolverFactory.getResolver();
         // Determine the format of the source image
