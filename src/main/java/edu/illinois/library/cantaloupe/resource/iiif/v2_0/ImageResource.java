@@ -14,8 +14,8 @@ import edu.illinois.library.cantaloupe.resolver.FileResolver;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
+import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
-import edu.illinois.library.cantaloupe.resource.iiif.AbstractImageResource;
 import org.restlet.data.MediaType;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
@@ -34,10 +34,9 @@ import java.util.Set;
  * @see <a href="http://iiif.io/api/image/2.0/#image-request-parameters">Image
  * Request Operations</a>
  */
-public class ImageResource extends AbstractImageResource {
+public class ImageResource extends AbstractResource {
 
-    private static Logger logger = LoggerFactory.
-            getLogger(AbstractImageResource.class);
+    private static Logger logger = LoggerFactory.getLogger(ImageResource.class);
 
     @Override
     protected void doInit() throws ResourceException {

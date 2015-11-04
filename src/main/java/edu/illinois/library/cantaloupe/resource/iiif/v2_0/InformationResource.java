@@ -27,7 +27,7 @@ import edu.illinois.library.cantaloupe.resolver.FileResolver;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
-import edu.illinois.library.cantaloupe.resource.iiif.AbstractInformationResource;
+import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
@@ -40,7 +40,7 @@ import org.restlet.resource.Get;
  * @see <a href="http://iiif.io/api/image/2.0/#information-request">Information
  * Requests</a>
  */
-public class InformationResource extends AbstractInformationResource {
+public class InformationResource extends AbstractResource {
 
     private static final Set<ServiceFeature> SUPPORTED_SERVICE_FEATURES =
             new HashSet<>();

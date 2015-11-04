@@ -27,7 +27,7 @@ import edu.illinois.library.cantaloupe.resolver.FileResolver;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
-import edu.illinois.library.cantaloupe.resource.iiif.AbstractInformationResource;
+import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
@@ -37,10 +37,10 @@ import org.restlet.resource.Get;
 /**
  * Handles IIIF information requests.
  *
- * @see <a href="http://iiif.io/api/image/2.0/#information-request">Information
+ * @see <a href="http://iiif.io/api/image/1.1/#image-info-request">Information
  * Requests</a>
  */
-public class InformationResource extends AbstractInformationResource {
+public class InformationResource extends AbstractResource {
 
     /**
      * Responds to IIIF Information requests.
