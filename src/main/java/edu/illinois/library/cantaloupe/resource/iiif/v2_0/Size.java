@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.request.iiif.v2_0;
+package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.util.NumberUtil;
@@ -9,7 +9,7 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @see <a href="http://iiif.io/api/image/2.0/#size">IIIF Image API 2.0</a>
  */
-public class Size {
+class Size {
 
     public enum ScaleMode {
 

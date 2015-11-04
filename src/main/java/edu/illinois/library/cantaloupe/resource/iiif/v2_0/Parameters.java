@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.request.iiif.v2_0;
+package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operations;
@@ -13,7 +13,7 @@ import org.restlet.data.Reference;
  * @see <a href="http://iiif.io/api/request/2.0/#request-request-parameters">IIIF
  *      Image API 2.0</a>
  */
-public class Parameters implements Comparable<Parameters> {
+class Parameters implements Comparable<Parameters> {
 
     private OutputFormat outputFormat;
     private Identifier identifier;
