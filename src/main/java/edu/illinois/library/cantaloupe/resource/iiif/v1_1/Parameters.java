@@ -1,17 +1,19 @@
-package edu.illinois.library.cantaloupe.request.iiif.v1_1;
+package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
 
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Quality;
 import org.apache.commons.lang3.StringUtils;
+import org.restlet.data.Reference;
 
 /**
  * Encapsulates the parameters of an IIIF request.
  *
- * @see <a href="http://iiif.io/api/request/2.0/#request-request-parameters">IIIF
- *      Image API 2.0</a>
+ * @see <a href="http://iiif.io/api/image/1.1/#parameters">IIIF Image API
+ * 1.1</a>
  */
-public class Parameters implements Comparable<Parameters> {
+class Parameters implements Comparable<Parameters> {
 
     private OutputFormat outputFormat;
     private Identifier identifier;
@@ -30,7 +32,7 @@ public class Parameters implements Comparable<Parameters> {
         Parameters params = new Parameters();
         String[] parts = StringUtils.split(paramsStr, "/");
         if (parts.length == 5) {
-            params.setIdentifier(Identifier.fromUri(parts[0]));
+            params.setIdentifier(new Identifier(Reference.decode(parts[0])));
             params.setRegion(Region.fromUri(parts[1]));
             params.setSize(Size.fromUri(parts[2]));
             params.setRotation(Rotation.fromUri(parts[3]));
@@ -66,7 +68,7 @@ public class Parameters implements Comparable<Parameters> {
      */
     public Parameters(String identifier, String region, String size,
                       String rotation, String quality, String format) {
-        this.identifier = Identifier.fromUri(identifier);
+        this.identifier = new Identifier(Reference.decode(identifier));
         this.region = Region.fromUri(region);
         this.size = Size.fromUri(size);
         this.rotation = Rotation.fromUri(rotation);
@@ -133,9 +135,9 @@ public class Parameters implements Comparable<Parameters> {
     }
 
     public Operations toOperations() {
-        return new Operations(getIdentifier().toIdentifier(),
-                getRegion().toCrop(), getSize().toScale(),
-                getRotation().toRotation(), getQuality(), getOutputFormat());
+        return new Operations(getIdentifier(), getRegion().toCrop(),
+                getSize().toScale(), getRotation().toRotation(), getQuality(),
+                getOutputFormat());
     }
 
     /**

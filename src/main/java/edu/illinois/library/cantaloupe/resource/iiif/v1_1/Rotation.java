@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.request.iiif.v1_1;
+package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
 
 import edu.illinois.library.cantaloupe.util.NumberUtil;
 
@@ -8,7 +8,7 @@ import edu.illinois.library.cantaloupe.util.NumberUtil;
  * @see <a href="http://iiif.io/api/image/1.1/#parameters-rotation">IIIF Image
  * API 1.1</a>
  */
-public class Rotation implements Comparable<Object> {
+class Rotation implements Comparable<Object> {
 
     private float degrees = 0f;
 

@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.request.iiif.v1_1;
+package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
 
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.util.NumberUtil;
@@ -8,7 +8,7 @@ import edu.illinois.library.cantaloupe.util.NumberUtil;
  *
  * @see <a href="http://iiif.io/api/image/2.0/#region">IIIF Image API 2.0</a>
  */
-public class Region {
+class Region {
 
     private Float height;
     private boolean isFull = false;
