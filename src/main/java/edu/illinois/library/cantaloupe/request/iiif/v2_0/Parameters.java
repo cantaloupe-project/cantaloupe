@@ -125,8 +125,7 @@ public class Parameters implements Comparable<Parameters> {
     public Operations toOperations() {
         return new Operations(getIdentifier().toIdentifier(),
                 getRegion().toCrop(), getSize().toScale(),
-                getRotation().toRotation(), getQuality().toQuality(),
-                getOutputFormat().toOutputFormat());
+                getRotation().toRotation(), getQuality(), getOutputFormat());
     }
 
     /**
