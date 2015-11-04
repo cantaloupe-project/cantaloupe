@@ -13,6 +13,9 @@ import edu.illinois.library.cantaloupe.Feature;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.image.Quality;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -20,9 +23,6 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.ProcessorFeature;
 import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.Quality;
 import edu.illinois.library.cantaloupe.resolver.FileResolver;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
@@ -61,29 +61,28 @@ public class InformationResource extends AbstractInformationResource {
      */
     @Get("json")
     public StringRepresentation doGet() throws Exception {
-        // 1. Assemble the URI parameters into a Operations object
         Map<String,Object> attrs = this.getRequest().getAttributes();
         edu.illinois.library.cantaloupe.request.iiif.v2_0.Identifier iiifIdentifier =
                 edu.illinois.library.cantaloupe.request.iiif.v2_0.Identifier.
                         fromUri((String) attrs.get("identifier"));
         Identifier identifier = new Identifier(iiifIdentifier.toString());
-        // 2. Get the resolver
+        // Get the resolver
         Resolver resolver = ResolverFactory.getResolver();
-        // 3. Determine the format of the source image
+        // Determine the format of the source image
         SourceFormat sourceFormat = resolver.getSourceFormat(identifier);
         if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
             throw new UnsupportedSourceFormatException();
         }
-        // 4. Obtain an instance of the processor assigned to that format in
+        // Obtain an instance of the processor assigned to that format in
         // the config file
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
-        // 5. Get an ImageInfo instance corresponding to the source image
+        // Get an ImageInfo instance corresponding to the source image
         ImageInfo imageInfo = getImageInfo(identifier,
                 getSize(identifier, proc, resolver, sourceFormat),
                 proc.getSupportedQualities(sourceFormat),
                 proc.getSupportedFeatures(sourceFormat),
                 proc.getAvailableOutputFormats(sourceFormat));
-        // 6. Transform the ImageInfo into JSON
+        // Transform the ImageInfo into JSON
         ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writer().
                 without(SerializationFeature.WRITE_NULL_MAP_VALUES).
@@ -117,9 +116,9 @@ public class InformationResource extends AbstractInformationResource {
         imageInfo.setWidth(fullSize.width);
         imageInfo.setHeight(fullSize.height);
 
-        final String complianceUri = ComplianceLevel.
-                getLevel(SUPPORTED_SERVICE_FEATURES, processorFeatures,
-                        qualities, outputFormats).getUri();
+        final String complianceUri = ComplianceLevel.getLevel(
+                SUPPORTED_SERVICE_FEATURES, processorFeatures, qualities,
+                outputFormats).getUri();
         imageInfo.getProfile().add(complianceUri);
 
         // sizes

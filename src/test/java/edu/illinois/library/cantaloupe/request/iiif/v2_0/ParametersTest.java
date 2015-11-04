@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.request.iiif.v2_0;
 
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.image.Quality;
 
 public class ParametersTest extends CantaloupeTestCase {
 

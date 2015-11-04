@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.request.iiif.v1_1;
 
 import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.image.Quality;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -50,7 +52,7 @@ public class Parameters implements Comparable<Parameters> {
      */
     public Parameters() {}
 
-     /**
+    /**
      * @param identifier From URI
      * @param region From URI
      * @param size From URI
@@ -122,9 +124,10 @@ public class Parameters implements Comparable<Parameters> {
         this.size = size;
     }
 
-    public Operations toParameters() {
-        return Operations.
-                fromUri(this.toString());
+    public Operations toOperations() {
+        return new Operations(getIdentifier().toIdentifier(),
+                getRegion().toCrop(), getSize().toScale(),
+                getRotation().toRotation(), getQuality(), getOutputFormat());
     }
 
     /**
