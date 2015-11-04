@@ -368,7 +368,7 @@ public class ConformanceTest extends CantaloupeTestCase {
      * @throws IOException
      */
     public void testRotation() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/15/color.jpg");
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/15.5/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
     }
@@ -624,7 +624,7 @@ public class ConformanceTest extends CantaloupeTestCase {
      * @throws IOException
      */
     public void testInformationRequestJson() throws IOException {
-        // this will be tested in the processor tests
+        // this will be tested in InformationResourceTest
     }
 
     /**

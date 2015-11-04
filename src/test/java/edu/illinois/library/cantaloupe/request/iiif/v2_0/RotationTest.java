@@ -22,6 +22,10 @@ public class RotationTest extends CantaloupeTestCase {
         assertEquals(35f, r.getDegrees());
         assertFalse(r.shouldMirror());
 
+        r = Rotation.fromUri("35.5");
+        assertEquals(35.5f, r.getDegrees());
+        assertFalse(r.shouldMirror());
+
         r = Rotation.fromUri("!35");
         assertEquals(35f, r.getDegrees());
         assertTrue(r.shouldMirror());
