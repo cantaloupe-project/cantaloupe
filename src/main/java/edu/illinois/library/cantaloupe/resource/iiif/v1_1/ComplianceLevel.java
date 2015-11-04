@@ -1,9 +1,9 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
 
 import edu.illinois.library.cantaloupe.Feature;
-import edu.illinois.library.cantaloupe.processor.ProcessorFeature;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Quality;
+import edu.illinois.library.cantaloupe.processor.ProcessorFeature;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -30,13 +30,10 @@ enum ComplianceLevel {
 
     static {
         LEVEL_1_FEATURES.add(ProcessorFeature.REGION_BY_PIXELS);
-        //LEVEL_1_FEATURES.add(ServiceFeature.SIZE_BY_WHITELISTED);
         LEVEL_1_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH);
         LEVEL_1_FEATURES.add(ProcessorFeature.SIZE_BY_HEIGHT);
         LEVEL_1_FEATURES.add(ProcessorFeature.SIZE_BY_PERCENT);
-        //LEVEL_1_FEATURES.add(ServiceFeature.BASE_URI_REDIRECT);
-        //LEVEL_1_FEATURES.add(ServiceFeature.CORS);
-        //LEVEL_1_FEATURES.add(ServiceFeature.JSON_LD_MEDIA_TYPE);
+        LEVEL_1_FEATURES.add(ProcessorFeature.ROTATION_BY_90S);
         LEVEL_1_QUALITIES.add(Quality.DEFAULT);
         LEVEL_1_OUTPUT_FORMATS.add(OutputFormat.JPG);
 
@@ -44,7 +41,6 @@ enum ComplianceLevel {
         LEVEL_2_FEATURES.add(ProcessorFeature.REGION_BY_PERCENT);
         LEVEL_2_FEATURES.add(ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
         LEVEL_2_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
-        LEVEL_2_FEATURES.add(ProcessorFeature.ROTATION_BY_90S);
         LEVEL_2_QUALITIES.addAll(LEVEL_1_QUALITIES);
         LEVEL_2_QUALITIES.add(Quality.BITONAL);
         LEVEL_2_QUALITIES.add(Quality.COLOR);
@@ -55,13 +51,12 @@ enum ComplianceLevel {
 
     /**
      * @param qualities
-     * @return The effective IIIF compliance level corresponding to the
-     * given features.
+     * @return Effective IIIF compliance level corresponding to the given
+     * features.
      */
     public static ComplianceLevel getLevel(
-                                           Set<ProcessorFeature> processorFeatures,
-                                           Set<Quality> qualities,
-                                           Set<OutputFormat> outputFormats) {
+            Set<ProcessorFeature> processorFeatures, Set<Quality> qualities,
+            Set<OutputFormat> outputFormats) {
         Set<Feature> allFeatures = new HashSet<>();
         allFeatures.addAll(processorFeatures);
 

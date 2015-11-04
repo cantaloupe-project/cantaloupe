@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.request.iiif.v1_1;
 
+import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.util.NumberUtil;
 import org.apache.commons.lang3.StringUtils;
 
@@ -25,7 +26,13 @@ public class Size {
         NON_ASPECT_FILL,
 
         /** <code>full</code> in an IIIF request URI */
-        FULL
+        FULL;
+
+        public edu.illinois.library.cantaloupe.image.Scale.Mode toMode() {
+            return edu.illinois.library.cantaloupe.image.Scale.Mode.
+                    valueOf(this.toString());
+        }
+
     }
 
     private Integer height;
@@ -112,6 +119,23 @@ public class Size {
             throw new IllegalArgumentException("Width must be a positive integer");
         }
         this.width = width;
+    }
+
+    public Scale toScale() {
+        Scale scale = new Scale();
+        if (this.getHeight() != null) {
+            scale.setHeight(this.getHeight());
+        }
+        if (this.getWidth() != null) {
+            scale.setWidth(this.getWidth());
+        }
+        if (this.getPercent() != null) {
+            scale.setPercent(this.getPercent() / 100f);
+        }
+        if (this.getScaleMode() != null) {
+            scale.setScaleMode(this.getScaleMode().toMode());
+        }
+        return scale;
     }
 
     /**

@@ -59,6 +59,10 @@ public class Identifier implements Comparable<Identifier> {
         value = val;
     }
 
+    public edu.illinois.library.cantaloupe.image.Identifier toIdentifier() {
+        return new edu.illinois.library.cantaloupe.image.Identifier(this.getValue());
+    }
+
     /**
      * @return Unencoded value
      */

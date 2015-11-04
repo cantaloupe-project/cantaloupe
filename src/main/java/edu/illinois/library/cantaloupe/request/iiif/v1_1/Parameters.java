@@ -36,7 +36,11 @@ public class Parameters implements Comparable<Parameters> {
             params.setRotation(Rotation.fromUri(parts[3]));
             String[] subparts = StringUtils.split(parts[4], ".");
             if (subparts.length == 2) {
-                params.setQuality(Quality.valueOf(subparts[0].toUpperCase()));
+                String qualityStr = subparts[0].toUpperCase();
+                if (qualityStr.equals("NATIVE")) {
+                    qualityStr = "DEFAULT";
+                }
+                params.setQuality(Quality.valueOf(qualityStr));
                 params.setOutputFormat(OutputFormat.valueOf(subparts[1].toUpperCase()));
             } else {
                 throw new IllegalArgumentException("Invalid parameters format");
@@ -63,11 +67,15 @@ public class Parameters implements Comparable<Parameters> {
     public Parameters(String identifier, String region, String size,
                       String rotation, String quality, String format) {
         this.identifier = Identifier.fromUri(identifier);
-        this.outputFormat = OutputFormat.valueOf(format.toUpperCase());
-        this.quality = Quality.valueOf(quality.toUpperCase());
         this.region = Region.fromUri(region);
-        this.rotation = Rotation.fromUri(rotation);
         this.size = Size.fromUri(size);
+        this.rotation = Rotation.fromUri(rotation);
+        String qualityStr = quality.toUpperCase();
+        if (qualityStr.equals("NATIVE")) {
+            qualityStr = "DEFAULT";
+        }
+        this.quality = Quality.valueOf(qualityStr);
+        this.outputFormat = OutputFormat.valueOf(format.toUpperCase());
     }
 
     @Override

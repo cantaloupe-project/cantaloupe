@@ -1,8 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
 
 import java.awt.Dimension;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,22 +10,19 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
-import edu.illinois.library.cantaloupe.resource.iiif.v2_0.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.image.Quality;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.processor.ProcessorFeature;
 import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.Quality;
 import edu.illinois.library.cantaloupe.resolver.FileResolver;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
-import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
@@ -50,27 +45,30 @@ public class InformationResource extends AbstractResource {
      */
     @Get("json")
     public StringRepresentation doGet() throws Exception {
-        // 1. Assemble the URI parameters into a Operations object
         Map<String,Object> attrs = this.getRequest().getAttributes();
-        Identifier identifier = Identifier.
-                fromUri((String) attrs.get("identifier"));
-        // 2. Get the resolver
+        String identifier = (String) attrs.get("identifier");
+        Identifier internalId = new Identifier(identifier);
+        // Get the resolver
         Resolver resolver = ResolverFactory.getResolver();
-        // 3. Determine the format of the source image
-        SourceFormat sourceFormat = resolver.getSourceFormat(identifier);
+        // Determine the format of the source image
+        SourceFormat sourceFormat = resolver.getSourceFormat(internalId);
         if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
             throw new UnsupportedSourceFormatException();
         }
-        // 4. Obtain an instance of the processor assigned to that format in
+        // Obtain an instance of the processor assigned to that format in
         // the config file
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
-        // 5. Get an ImageInfo instance corresponding to the source image
-        ImageInfo imageInfo = getImageInfo(identifier,
-                getSize(identifier, proc, resolver, sourceFormat),
-                proc.getSupportedQualities(sourceFormat),
+        // Get an ImageInfo instance corresponding to the source image
+        ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
                 proc.getSupportedFeatures(sourceFormat),
+                proc.getSupportedQualities(sourceFormat),
                 proc.getAvailableOutputFormats(sourceFormat));
-        // 6. Transform the ImageInfo into JSON
+        ImageInfo imageInfo = getImageInfo(internalId,
+                getSize(internalId, proc, resolver, sourceFormat),
+                complianceLevel,
+                proc.getSupportedQualities(sourceFormat),
+                proc.getAvailableOutputFormats(sourceFormat));
+        // Transform the ImageInfo into JSON
         ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writer().
                 without(SerializationFeature.WRITE_NULL_MAP_VALUES).
@@ -79,10 +77,10 @@ public class InformationResource extends AbstractResource {
         // could use JacksonRepresentation here; not sure whether it's worth bothering
         StringRepresentation rep = new StringRepresentation(json);
 
-        this.addHeader("Link", "<http://iiif.io/api/image/2/context.json>; " +
-                "rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"");
+        this.addHeader("Link", String.format("<%s>;rel=\"profile\";",
+                complianceLevel.getUri()));
 
-        // 7. If the client has requested JSON-LD, set the content type to
+        // If the client has requested JSON-LD, set the content type to
         // that; otherwise set it to JSON
         List<Preference<MediaType>> preferences = this.getRequest().
                 getClientInfo().getAcceptedMediaTypes();
@@ -96,60 +94,37 @@ public class InformationResource extends AbstractResource {
     }
 
     private ImageInfo getImageInfo(Identifier identifier, Dimension fullSize,
+                                   ComplianceLevel complianceLevel,
                                    Set<Quality> qualities,
-                                   Set<ProcessorFeature> processorFeatures,
                                    Set<OutputFormat> outputFormats) {
         ImageInfo imageInfo = new ImageInfo();
         imageInfo.setId(getImageUri(identifier));
         imageInfo.setWidth(fullSize.width);
         imageInfo.setHeight(fullSize.height);
+        imageInfo.setProfile(complianceLevel.getUri());
+        // totally arbitrary
+        imageInfo.setTileWidth(512);
+        imageInfo.setTileHeight(512);
 
-        /* TODO: fix
-        final String complianceUri = ComplianceLevel.
-                getLevel(SUPPORTED_SERVICE_FEATURES, processorFeatures,
-                        qualities, outputFormats).getUri();
-        imageInfo.getProfile().add(complianceUri); */
-
-        // sizes
-        final short maxReductionFactor = 4;
-        final short minSize = 256;
-        for (double i = 2; i <= Math.pow(2, maxReductionFactor); i *= 2) {
-            final int width = (int) Math.round(fullSize.width / i);
-            final int height = (int) Math.round(fullSize.height / i);
-            if (width < minSize || height < minSize) {
-                break;
-            }
-            ImageInfo.Size size = new ImageInfo.Size(width, height);
-            imageInfo.getSizes().add(0, size);
+        // scale factors
+        for (short i = 0; i < 5; i++) {
+            imageInfo.getScaleFactors().add((int) Math.pow(2, i));
         }
 
         // formats
-        Map<String, Set<String>> profileMap = new HashMap<>();
-        Set<String> formatStrings = new HashSet<>();
         for (OutputFormat format : outputFormats) {
-            formatStrings.add(format.getExtension());
+            imageInfo.getFormats().add(format.getExtension());
         }
-        profileMap.put("formats", formatStrings);
-        imageInfo.getProfile().add(profileMap);
 
         // qualities
-        Set<String> qualityStrings = new HashSet<>();
         for (Quality quality : qualities) {
-            qualityStrings.add(quality.toString().toLowerCase());
+            String qualityStr = quality.toString().toLowerCase();
+            if (quality.equals(Quality.DEFAULT)) {
+                qualityStr = "native";
+            }
+            imageInfo.getQualities().add(qualityStr);
         }
-        profileMap.put("qualities", qualityStrings);
 
-        /* TODO: fix
-        // supports
-        Set<String> featureStrings = new HashSet<>();
-        for (Feature feature : processorFeatures) {
-            featureStrings.add(feature.getName());
-        }
-        for (Feature feature : SUPPORTED_SERVICE_FEATURES) {
-            featureStrings.add(feature.getName());
-        }
-        profileMap.put("supports", featureStrings);
-        */
         return imageInfo;
     }
 

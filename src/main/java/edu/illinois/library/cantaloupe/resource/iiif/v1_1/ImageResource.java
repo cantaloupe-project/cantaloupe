@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
 
-import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
@@ -14,11 +13,9 @@ import edu.illinois.library.cantaloupe.resolver.FileResolver;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
-import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
 import org.restlet.data.MediaType;
 import org.restlet.resource.Get;
-import org.restlet.resource.ResourceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,15 +35,6 @@ public class ImageResource extends AbstractResource {
 
     private static Logger logger = LoggerFactory.
             getLogger(ImageResource.class);
-
-    @Override
-    protected void doInit() throws ResourceException {
-        super.doInit();
-        if (this.getReference().toString().length() > 1024) {
-            throw new ResourceException(414);
-        }
-        getResponseCacheDirectives().addAll(getCacheDirectives());
-    }
 
     /**
      * Responds to IIIF Image requests.
