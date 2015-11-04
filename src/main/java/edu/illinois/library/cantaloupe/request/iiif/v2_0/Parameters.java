@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.request.iiif.v2_0;
 
 import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.image.Quality;
 import org.apache.commons.lang3.StringUtils;
 
 /**
