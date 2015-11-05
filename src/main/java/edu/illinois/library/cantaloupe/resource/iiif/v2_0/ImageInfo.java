@@ -19,7 +19,7 @@ import java.util.List;
 @JsonPropertyOrder({ "@context", "@id", "protocol", "width", "height", "sizes",
         "tiles", "profile", "service" })
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ImageInfo {
+class ImageInfo {
 
     @JsonPropertyOrder({ "width", "height" })
     public static final class Size {

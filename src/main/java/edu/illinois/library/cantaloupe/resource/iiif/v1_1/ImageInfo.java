@@ -19,7 +19,7 @@ import java.util.List;
 @JsonPropertyOrder({ "@context", "@id", "width", "height", "scale_factors",
         "tile_width", "tile_height", "formats", "qualities", "profile" })
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ImageInfo {
+class ImageInfo {
 
     private final String context = "http://library.stanford.edu/iiif/image-api/1.1/context.json";
     private final List<String> formats = new ArrayList<>();
