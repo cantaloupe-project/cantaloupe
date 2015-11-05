@@ -9,7 +9,7 @@ import java.util.Set;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import edu.illinois.library.cantaloupe.Feature;
+import edu.illinois.library.cantaloupe.resource.iiif.Feature;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;

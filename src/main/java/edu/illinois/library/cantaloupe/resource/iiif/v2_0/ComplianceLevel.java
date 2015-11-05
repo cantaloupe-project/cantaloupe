@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
-import edu.illinois.library.cantaloupe.Feature;
+import edu.illinois.library.cantaloupe.resource.iiif.Feature;
 import edu.illinois.library.cantaloupe.processor.ProcessorFeature;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Quality;

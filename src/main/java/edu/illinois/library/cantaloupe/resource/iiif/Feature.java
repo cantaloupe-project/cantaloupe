@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe;
+package edu.illinois.library.cantaloupe.resource.iiif;
 
 /**
  * Encapsulates an IIIF "feature."
