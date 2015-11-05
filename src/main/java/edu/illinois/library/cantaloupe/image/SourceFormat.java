@@ -67,54 +67,76 @@ public enum SourceFormat {
 
     public List<String> getExtensions() {
         List<String> extensions = new ArrayList<>();
-        // the first extension will be the preferred extension
-        if (this.id.equals("bmp")) {
-            extensions.add("bmp");
-        } else if (this.id.equals("gif")) {
-            extensions.add("gif");
-        } else if (this.id.equals("jp2")) {
-            extensions.add("jp2");
-        } else if (this.id.equals("jpg")) {
-            extensions.add("jpg");
-            extensions.add("jpeg");
-        } else if (this.id.equals("pdf")) {
-            extensions.add("pdf");
-        } else if (this.id.equals("png")) {
-            extensions.add("png");
-        } else if (this.id.equals("tif")) {
-            extensions.add("tif");
-            extensions.add("ptif");
-            extensions.add("tiff");
-        } else if (this.id.equals("webp")) {
-            extensions.add("webp");
-        } else if (this.id.equals("unknown")) {
-            extensions.add("unknown");
+        // when there are multiple extensions for a given format, the first one
+        // will be the preferred extension
+        switch (this.id) {
+            case "bmp":
+                extensions.add("bmp");
+                break;
+            case "gif":
+                extensions.add("gif");
+                break;
+            case "jp2":
+                extensions.add("jp2");
+                break;
+            case "jpg":
+                extensions.add("jpg");
+                extensions.add("jpeg");
+                break;
+            case "pdf":
+                extensions.add("pdf");
+                break;
+            case "png":
+                extensions.add("png");
+                break;
+            case "tif":
+                extensions.add("tif");
+                extensions.add("ptif");
+                extensions.add("tiff");
+                break;
+            case "webp":
+                extensions.add("webp");
+                break;
+            case "unknown":
+                extensions.add("unknown");
+                break;
         }
         return extensions;
     }
 
     public List<MediaType> getMediaTypes() {
         List<MediaType> types = new ArrayList<>();
-        // the first type will be the preferred extension
-        if (this.id.equals("bmp")) {
-            types.add(new MediaType("image/bmp"));
-            types.add(new MediaType("image/x-ms-bmp"));
-        } else if (this.id.equals("gif")) {
-            types.add(new MediaType("image/gif"));
-        } else if (this.id.equals("jp2")) {
-            types.add(new MediaType("image/jp2"));
-        } else if (this.id.equals("jpg")) {
-            types.add(new MediaType("image/jpeg"));
-        } else if (this.id.equals("pdf")) {
-            types.add(new MediaType("application/pdf"));
-        } else if (this.id.equals("png")) {
-            types.add(new MediaType("image/png"));
-        } else if (this.id.equals("tif")) {
-            types.add(new MediaType("image/tiff"));
-        } else if (this.id.equals("webp")) {
-            types.add(new MediaType("image/webp"));
-        } else if (this.id.equals("unknown")) {
-            types.add(new MediaType("unknown/unknown"));
+        // when there are multiple types for a given format, the first one will
+        // be the preferred type
+        switch (this.id) {
+            case "bmp":
+                types.add(new MediaType("image/bmp"));
+                types.add(new MediaType("image/x-ms-bmp"));
+                break;
+            case "gif":
+                types.add(new MediaType("image/gif"));
+                break;
+            case "jp2":
+                types.add(new MediaType("image/jp2"));
+                break;
+            case "jpg":
+                types.add(new MediaType("image/jpeg"));
+                break;
+            case "pdf":
+                types.add(new MediaType("application/pdf"));
+                break;
+            case "png":
+                types.add(new MediaType("image/png"));
+                break;
+            case "tif":
+                types.add(new MediaType("image/tiff"));
+                break;
+            case "webp":
+                types.add(new MediaType("image/webp"));
+                break;
+            case "unknown":
+                types.add(new MediaType("unknown/unknown"));
+                break;
         }
         return types;
     }
