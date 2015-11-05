@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.iiif.v1_1;
+package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.Client;
@@ -37,7 +38,7 @@ import java.nio.file.Paths;
 public class ConformanceTest extends CantaloupeTestCase {
 
     private static final Identifier IMAGE = new Identifier("escher_lego.jpg");
-    private static final Integer PORT = 34852;
+    private static final Integer PORT = TestUtil.getOpenPort();
 
     private static Client client = new Client(new Context(), Protocol.HTTP);
 
