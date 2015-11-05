@@ -8,7 +8,6 @@ import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Quality;
 import edu.illinois.library.cantaloupe.image.Rotation;
 import edu.illinois.library.cantaloupe.image.Scale;
-import edu.illinois.library.cantaloupe.resource.iiif.v2_0.ImageInfo;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operations;
 import org.apache.commons.configuration.BaseConfiguration;
@@ -154,7 +153,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         Identifier identifier = new Identifier("test");
         File file = new File(infoPath + File.separator + identifier + ".json");
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = new ImageInfo();
+        FilesystemCache.ImageInfo info = new FilesystemCache.ImageInfo();
         info.setWidth(50);
         info.setHeight(50);
         mapper.writeValue(file, info);
