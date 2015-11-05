@@ -25,10 +25,10 @@ public interface Cache {
      * Deletes the cached image and dimensions corresponding to the given
      * parameters.
      *
-     * @param params
+     * @param ops
      * @throws IOException
      */
-    void flush(Operations params) throws IOException;
+    void flush(Operations ops) throws IOException;
 
     /**
      * Deletes expired images and dimensions from the cache.
@@ -63,12 +63,12 @@ public interface Cache {
     Dimension getDimension(Identifier identifier) throws IOException;
 
     /**
-     * @param params IIIF request parameters
+     * @param ops IIIF request parameters
      * @return OutputStream to which an image corresponding to the supplied
      * parameters can be written.
      * @throws IOException
      */
-    OutputStream getImageOutputStream(Operations params) throws IOException;
+    OutputStream getImageOutputStream(Operations ops) throws IOException;
 
     /**
      * Adds an image's dimension information to the cache.
