@@ -8,21 +8,14 @@
 
   <body id="cl-landing">
     <div class="container-fluid">
-      <header>
-        <img src="/static/cantaloupe.jpg" alt="Cantaloupe icon"
-             width="154" height="82" style="float:left">
-        <h1>Cantaloupe Image Server <small>$version</small></h1>
-        <a href="https://medusa-project.github.io/cantaloupe/">Home (GitHub)</a>
-      </header>
+      #parse("header.vm")
 
       <section>
         <h3>Endpoints</h3>
-        <dl>
-          <dt>IIIF Image API 1.1</dt>
-          <dd>/iiif/1.1</dd>
-          <dt>IIIF Image API 2.0</dt>
-          <dd>/iiif/2.0</dd>
-        </dl>
+        <ul>
+          <li><a href="/iiif/1.1">IIIF Image API 1.1</a></li>
+          <li><a href="/iiif/2.0">IIIF Image API 2.0</a></li>
+        </ul>
       </section>
 
       <section>

@@ -24,6 +24,15 @@ dd {
     margin-left: 1em;
 }
 
+.breadcrumb {
+    font-size: 0.9em;
+}
+
+ul {
+    margin-left: 1.2em;
+    padding-left: 0px;
+}
+
 /* landing page */
 
 body#cl-landing table#cl-source-format-assignments td:first-child {

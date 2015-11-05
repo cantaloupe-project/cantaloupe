@@ -33,6 +33,16 @@ import java.util.TreeMap;
  */
 public class LandingResource extends AbstractResource {
 
+    /**
+     * @return Map of template variables common to most or all views, such as
+     * variables that appear in a common header.
+     */
+    public static Map<String, Object> getCommonTemplateVars() {
+        Map<String,Object> vars = new HashMap<>();
+        vars.put("version", Application.getVersion());
+        return vars;
+    }
+
     private class ProcessorComparator implements Comparator<Processor> {
         public int compare(Processor o1, Processor o2) {
             return o1.getClass().getSimpleName().
@@ -63,10 +73,7 @@ public class LandingResource extends AbstractResource {
     }
 
     private Map<String,Object> getTemplateVars() throws Exception {
-        Map<String,Object> vars = new HashMap<String,Object>();
-
-        // version
-        vars.put("version", Application.getVersion());
+        Map<String, Object> vars = getCommonTemplateVars();
 
         // resolver name
         String resolverStr = "None";

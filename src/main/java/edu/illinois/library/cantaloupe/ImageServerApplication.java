@@ -89,12 +89,12 @@ public class ImageServerApplication extends Application {
         /**
          * Deprecated and replaced by <code>toStatus()</code>, but that doesn't
          * get called due to a bug in Restlet as of version 2.3.5.
+         * <a href="https://github.com/restlet/restlet-framework-java/issues/1156#issuecomment-145449634">(bug)</a>
          *
          * @param t
          * @param request
          * @param response
          * @return
-         * @see https://github.com/restlet/restlet-framework-java/issues/1156#issuecomment-145449634
          */
         @Override
         @SuppressWarnings({"deprecation"})
@@ -147,6 +147,10 @@ public class ImageServerApplication extends Application {
 
         /****************** IIIF Image API 1.1 routes *******************/
 
+        // landing page
+        router.attach(IIIF_1_1_PATH,
+                edu.illinois.library.cantaloupe.resource.iiif.v1_1.LandingResource.class);
+
         // Redirect image identifier to image information
         Redirector redirector = new Redirector(getContext(),
                 IIIF_1_1_PATH + "/{identifier}/info.json",
@@ -169,6 +173,10 @@ public class ImageServerApplication extends Application {
         router.attach(IIIF_1_1_PATH + "/{identifier}/info.{format}", resource);
 
         /****************** IIIF Image API 2.0 routes *******************/
+
+        // landing page
+        router.attach(IIIF_2_0_PATH,
+                edu.illinois.library.cantaloupe.resource.iiif.v2_0.LandingResource.class);
 
         // Redirect image identifier to image information
         redirector = new Redirector(getContext(),
