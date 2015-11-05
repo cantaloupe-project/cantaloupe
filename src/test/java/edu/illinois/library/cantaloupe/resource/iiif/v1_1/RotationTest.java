@@ -52,15 +52,14 @@ public class RotationTest extends CantaloupeTestCase {
         r2.setDegrees(15);
         assertEquals(-1, this.rotation.compareTo(r2));
         r2.setDegrees(0);
-        assertEquals(-1, this.rotation.compareTo(r2));
+        this.rotation.setDegrees(30);
+        assertEquals(1, this.rotation.compareTo(r2));
     }
 
     public void testEquals() {
         Rotation r2 = new Rotation();
         assertTrue(r2.equals(this.rotation));
         r2.setDegrees(15);
-        assertFalse(r2.equals(this.rotation));
-        r2.setDegrees(0);
         assertFalse(r2.equals(this.rotation));
     }
 
