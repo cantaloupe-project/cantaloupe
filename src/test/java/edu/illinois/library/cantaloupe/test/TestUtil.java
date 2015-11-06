@@ -16,13 +16,10 @@ public abstract class TestUtil {
     }
 
     public static Integer getOpenPort() {
-        for (int port = 1024; port <= 65536; port++) {
-            try {
-                new ServerSocket(port);
-                return port;
-            } catch (IOException e) {
-                // noop
-            }
+        try (ServerSocket socket = new ServerSocket(0)) {
+            return socket.getLocalPort();
+        } catch (IOException e) {
+            // noop
         }
         return null;
     }
