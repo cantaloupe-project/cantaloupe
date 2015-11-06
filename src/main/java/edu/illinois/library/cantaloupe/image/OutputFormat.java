@@ -13,6 +13,20 @@ public enum OutputFormat {
     private String extension;
     private String mediaType;
 
+    /**
+     * @param mediaType
+     * @return The OutputFormat corresponding to the given media type, or null
+     * if there is none.
+     */
+    public static OutputFormat getOutputFormat(String mediaType) {
+        for (OutputFormat format : OutputFormat.values()) {
+            if (format.getMediaType().equals(mediaType)) {
+                return format;
+            }
+        }
+        return null;
+    }
+
     OutputFormat(String extension, String mediaType) {
         this.extension = extension;
         this.mediaType = mediaType;

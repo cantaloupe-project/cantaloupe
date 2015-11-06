@@ -14,6 +14,23 @@ public class OutputFormatTest extends CantaloupeTestCase {
         assertNotNull(OutputFormat.valueOf("WEBP"));
     }
 
+    public void testGetOutputFormatWithString() {
+        assertEquals(OutputFormat.GIF,
+                OutputFormat.getOutputFormat("image/gif"));
+        assertEquals(OutputFormat.JP2,
+                OutputFormat.getOutputFormat("image/jp2"));
+        assertEquals(OutputFormat.JPG,
+                OutputFormat.getOutputFormat("image/jpeg"));
+        assertEquals(OutputFormat.PDF,
+                OutputFormat.getOutputFormat("application/pdf"));
+        assertEquals(OutputFormat.PNG,
+                OutputFormat.getOutputFormat("image/png"));
+        assertEquals(OutputFormat.TIF,
+                OutputFormat.getOutputFormat("image/tiff"));
+        assertEquals(OutputFormat.WEBP,
+                OutputFormat.getOutputFormat("image/webp"));
+    }
+
     public void testExtensions() {
         assertEquals("gif", OutputFormat.GIF.getExtension());
         assertEquals("jp2", OutputFormat.JP2.getExtension());
