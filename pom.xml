@@ -4,14 +4,14 @@
   <groupId>edu.illinois.library.cantaloupe</groupId>
   <artifactId>Cantaloupe</artifactId>
   <packaging>jar</packaging>
-  <version>1.0.1</version>
+  <version>SNAPSHOT</version>
   <name>Cantaloupe</name>
   <url>https://medusa-project.github.io/cantaloupe/</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <cantaloupe.version>1.0.1</cantaloupe.version>
+    <cantaloupe.version>SNAPSHOT</cantaloupe.version>
     <commons-io.version>2.4</commons-io.version>
     <commons-lang3.version>3.4</commons-lang3.version>
     <h2.version>1.4.190</h2.version>
