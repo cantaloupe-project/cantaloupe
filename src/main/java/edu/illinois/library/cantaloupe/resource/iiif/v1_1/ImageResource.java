@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
 
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
@@ -13,7 +14,9 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
+import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.MediaType;
+import org.restlet.representation.Variant;
 import org.restlet.resource.Get;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,11 +24,13 @@ import org.slf4j.LoggerFactory;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * Handles IIIF image requests.
+ * Handles IIIF Image API 1.1 image requests.
  *
  * @see <a href="http://iiif.io/api/image/1.1/#url-syntax-image-request">Image
  * Request Operations</a>
@@ -36,33 +41,43 @@ public class ImageResource extends AbstractResource {
             getLogger(ImageResource.class);
 
     /**
-     * Responds to IIIF Image requests.
+     * Format to assume when no extension is present in the URI.
+     */
+    private static final OutputFormat DEFAULT_FORMAT = OutputFormat.JPG;
+
+    /**
+     * Responds to image requests.
      *
      * @return ImageRepresentation
      * @throws Exception
      */
     @Get
     public ImageRepresentation doGet() throws Exception {
-        // Assemble the URI parameters into a Operations object
         Map<String,Object> attrs = this.getRequest().getAttributes();
-        Parameters params = new Parameters(
-                (String) attrs.get("identifier"),
-                (String) attrs.get("region"),
-                (String) attrs.get("size"),
-                (String) attrs.get("rotation"),
-                (String) attrs.get("quality"),
-                (String) attrs.get("format"));
-        Operations ops = params.toOperations();
+
         Resolver resolver = ResolverFactory.getResolver();
         // Determine the format of the source image
-        SourceFormat sourceFormat = resolver.
-                getSourceFormat(ops.getIdentifier());
+        SourceFormat sourceFormat = resolver.getSourceFormat(
+                new Identifier((String) attrs.get("identifier")));
         if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
             throw new UnsupportedSourceFormatException();
         }
         // Obtain an instance of the processor assigned to that format in
         // the config file
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
+
+        Set<OutputFormat> availableOutputFormats =
+                proc.getAvailableOutputFormats(sourceFormat);
+
+        // Assemble the URI parameters into a Parameters object
+        Parameters params = new Parameters(
+                (String) attrs.get("identifier"),
+                (String) attrs.get("region"),
+                (String) attrs.get("size"),
+                (String) attrs.get("rotation"),
+                StringUtils.split((String) attrs.get("quality"), ".")[0],
+                getOutputFormat(availableOutputFormats).getExtension());
+        Operations ops = params.toOperations();
 
         ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
                 proc.getSupportedFeatures(sourceFormat),
@@ -73,8 +88,6 @@ public class ImageResource extends AbstractResource {
 
         // Find out whether the processor supports that source format by
         // asking it whether it offers any output formats for it
-        Set<OutputFormat> availableOutputFormats =
-                proc.getAvailableOutputFormats(sourceFormat);
         if (!availableOutputFormats.contains(ops.getOutputFormat())) {
             String msg = String.format("%s does not support the \"%s\" output format",
                     proc.getClass().getSimpleName(),
@@ -121,6 +134,50 @@ public class ImageResource extends AbstractResource {
             }
         }
         return null; // this should never happen
+    }
+
+    /**
+     * @param limitToFormats Set of OutputFormats to limit the
+     * result to
+     * @return The best output format based on the URI extension, Accept
+     * header, or default, as outlined by the Image API 1.1 spec.
+     */
+    private OutputFormat getOutputFormat(Set<OutputFormat> limitToFormats) {
+        // check the URI for a format in the extension
+        OutputFormat format = null;
+        for (OutputFormat f : OutputFormat.values()) {
+            if (f.getExtension().equals(this.getReference().getExtensions())) {
+                format = f;
+                break;
+            }
+        }
+        if (format == null) { // if none, check the Accept header
+            format = getPreferredOutputFormat(limitToFormats);
+            if (format == null) {
+                format = DEFAULT_FORMAT;
+            }
+        }
+        return format;
+    }
+
+    /**
+     * @param limitToFormats Set of OutputFormats to limit the
+     * result to
+     * @return Best OutputFormat for the client preferences as specified in the
+     * Accept header.
+     */
+    private OutputFormat getPreferredOutputFormat(Set<OutputFormat> limitToFormats) {
+        List<Variant> variants = new ArrayList<>();
+        for (OutputFormat format : limitToFormats) {
+            variants.add(new Variant(new MediaType(format.getMediaType())));
+        }
+        Variant preferred = getPreferredVariant(variants);
+        if (preferred != null) {
+            String mediaTypeStr = preferred.getMediaType().toString();
+            OutputFormat format = OutputFormat.getOutputFormat(mediaTypeStr);
+            return format;
+        }
+        return null;
     }
 
 }

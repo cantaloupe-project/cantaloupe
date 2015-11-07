@@ -27,6 +27,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>Functional test of conformance to the IIIF Image API 1.1 spec. Methods
@@ -527,7 +529,7 @@ public class ConformanceTest extends CantaloupeTestCase {
         client.accept(MediaType.IMAGE_PNG);
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
-        assertEquals(MediaType.IMAGE_PNG,
+        assertEquals(MediaType.IMAGE_PNG.toString(),
                 client.getResponse().getHeaders().getFirst("Content-Type").getValue());
     }
 
@@ -537,10 +539,17 @@ public class ConformanceTest extends CantaloupeTestCase {
      */
     public void testNoFormat() {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/native");
+        client.accept(MediaType.ALL);
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
-        assertEquals(MediaType.IMAGE_JPEG,
-                client.getResponse().getHeaders().getFirst("Content-Type").getValue());
+        // TODO: this is kind of brittle
+        List<String> mediaTypes = new ArrayList<>();
+        mediaTypes.add("image/gif");
+        mediaTypes.add("image/jpeg");
+        mediaTypes.add("image/png");
+        mediaTypes.add("image/tiff");
+        assertTrue(mediaTypes.contains(
+                client.getResponse().getHeaders().getFirst("Content-Type").getValue()));
     }
 
     /**

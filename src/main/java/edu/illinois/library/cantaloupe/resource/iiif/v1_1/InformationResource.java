@@ -30,7 +30,7 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 
 /**
- * Handles IIIF information requests.
+ * Handles IIIF Image API 1.1 information requests.
  *
  * @see <a href="http://iiif.io/api/image/1.1/#image-info-request">Information
  * Requests</a>
@@ -38,7 +38,7 @@ import org.restlet.resource.Get;
 public class InformationResource extends AbstractResource {
 
     /**
-     * Responds to IIIF Information requests.
+     * Responds to information requests.
      *
      * @return StringRepresentation
      * @throws Exception

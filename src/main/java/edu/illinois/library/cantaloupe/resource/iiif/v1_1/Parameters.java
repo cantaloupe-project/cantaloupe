@@ -68,16 +68,16 @@ class Parameters implements Comparable<Parameters> {
      */
     public Parameters(String identifier, String region, String size,
                       String rotation, String quality, String format) {
-        this.identifier = new Identifier(Reference.decode(identifier));
-        this.region = Region.fromUri(region);
-        this.size = Size.fromUri(size);
-        this.rotation = Rotation.fromUri(rotation);
+        this.setIdentifier(new Identifier(Reference.decode(identifier)));
+        this.setRegion(Region.fromUri(region));
+        this.setSize(Size.fromUri(size));
+        this.setRotation(Rotation.fromUri(rotation));
         String qualityStr = quality.toUpperCase();
         if (qualityStr.equals("NATIVE")) {
             qualityStr = "DEFAULT";
         }
-        this.quality = Quality.valueOf(qualityStr);
-        this.outputFormat = OutputFormat.valueOf(format.toUpperCase());
+        this.setQuality(Quality.valueOf(qualityStr));
+        this.setOutputFormat(OutputFormat.valueOf(format.toUpperCase()));
     }
 
     @Override

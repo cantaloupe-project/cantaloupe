@@ -165,7 +165,7 @@ public class ImageServerApplication extends Application {
         // image request
         Class<? extends ServerResource> resource =
                 edu.illinois.library.cantaloupe.resource.iiif.v1_1.ImageResource.class;
-        router.attach(IIIF_1_1_PATH + "/{identifier}/{region}/{size}/{rotation}/{quality}.{format}",
+        router.attach(IIIF_1_1_PATH + "/{identifier}/{region}/{size}/{rotation}/{quality}",
                 resource);
 
         // information request
