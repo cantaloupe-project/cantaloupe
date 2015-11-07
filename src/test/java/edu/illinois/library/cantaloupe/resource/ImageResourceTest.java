@@ -5,6 +5,7 @@ import org.apache.commons.configuration.Configuration;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.ChallengeResponse;
 import org.restlet.data.ChallengeScheme;
+import org.restlet.data.Disposition;
 import org.restlet.data.Header;
 import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
@@ -107,6 +108,28 @@ public class ImageResourceTest extends ResourceTest {
         ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
         client.get();
         assertEquals(0, client.getResponse().getCacheDirectives().size());
+    }
+
+    public void testContentDispositionHeader() {
+        // no header
+        ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
+        client.get();
+        assertNull(client.getResponseEntity().getDisposition());
+
+        // inline
+        Configuration config = Application.getConfiguration();
+        config.setProperty(ImageResource.CONTENT_DISPOSITION_CONFIG_KEY, "inline");
+        client.get();
+        assertEquals(Disposition.TYPE_INLINE,
+                client.getResponseEntity().getDisposition().getType());
+
+        // attachment
+        config.setProperty(ImageResource.CONTENT_DISPOSITION_CONFIG_KEY, "attachment");
+        client.get();
+        assertEquals(Disposition.TYPE_ATTACHMENT,
+                client.getResponseEntity().getDisposition().getType());
+        assertEquals("jpg.jpg",
+                client.getResponseEntity().getDisposition().getFilename());
     }
 
     /**

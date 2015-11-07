@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.util.Map;
 import java.util.Set;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
@@ -18,6 +19,7 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
+import edu.illinois.library.cantaloupe.request.Identifier;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.resolver.FileResolver;
@@ -26,6 +28,7 @@ import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
+import org.restlet.data.Disposition;
 import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.resource.Get;
@@ -49,6 +52,8 @@ public class ImageResource extends AbstractResource {
      * render the error page, as response headers will have already been sent.
      */
     private class ImageRepresentation extends OutputRepresentation {
+
+        private static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
 
         File file;
         Dimension fullSize;
@@ -75,6 +80,7 @@ public class ImageResource extends AbstractResource {
             this.params = params;
             this.sourceFormat = sourceFormat;
             this.fullSize = fullSize;
+            initialize(params.getIdentifier(), params.getOutputFormat());
         }
 
         /**
@@ -92,6 +98,25 @@ public class ImageResource extends AbstractResource {
             this.file = file;
             this.params = params;
             this.sourceFormat = sourceFormat;
+            initialize(params.getIdentifier(), params.getOutputFormat());
+        }
+
+        private void initialize(Identifier identifier, OutputFormat format) {
+            Disposition disposition = new Disposition();
+            switch (Application.getConfiguration().
+                    getString(CONTENT_DISPOSITION_CONFIG_KEY)) {
+                case "inline":
+                    disposition.setType(Disposition.TYPE_INLINE);
+                    this.setDisposition(disposition);
+                    break;
+                case "attachment":
+                    disposition.setType(Disposition.TYPE_ATTACHMENT);
+                    disposition.setFilename(
+                            identifier.toString().replaceAll(FILENAME_CHARACTERS, "_") +
+                                    "." + format.getExtension());
+                    this.setDisposition(disposition);
+                    break;
+            }
         }
 
         /**
@@ -198,6 +223,9 @@ public class ImageResource extends AbstractResource {
     }
 
     private static Logger logger = LoggerFactory.getLogger(ImageResource.class);
+
+    public static final String CONTENT_DISPOSITION_CONFIG_KEY =
+            "http.content_disposition";
 
     @Override
     protected void doInit() throws ResourceException {
