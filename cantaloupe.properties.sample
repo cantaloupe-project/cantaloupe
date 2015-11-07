@@ -27,7 +27,8 @@ print_stack_trace_on_error_pages = true
 ###############
 
 # The resolver that translates the identifier in the URL to an image source.
-# Available values are `FilesystemResolver` and `HttpResolver`.
+# Available values are `FilesystemResolver`, `HttpResolver`, and
+# `AmazonS3Resolver`.
 resolver = FilesystemResolver
 
 ###
@@ -103,6 +104,23 @@ JdbcResolver.function.media_type = function getMediaType() {\
 JdbcResolver.lookup_sql = SELECT image \
     FROM item \
     WHERE filename = ?
+
+###
+# AmazonS3Resolver
+###
+
+# See: http://aws.amazon.com/security-credentials
+# Access key ID associated with your AWS account.
+AmazonS3Resolver.access_key_id =
+# Secret key associated with your AWS account.
+AmazonS3Resolver.secret_key =
+
+# Name of a bucket containing images.
+AmazonS3Resolver.bucket.name =
+
+# See: http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
+# Can be commented out or left blank.
+#AmazonS3Resolver.bucket.region = us-east-1
 
 ###############
 # PROCESSORS

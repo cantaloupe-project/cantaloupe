@@ -14,7 +14,11 @@ public class ApplicationLogFilter extends Filter<ILoggingEvent> {
      * Filters out useless log messages.
      */
     public FilterReply decide(ILoggingEvent event) {
-        if (event.getLoggerName().equals("org.restlet") &&
+        // stop the Amazon S3 client from logging HTTP responses
+        if (event.getLoggerName().startsWith("org.apache.http.") &&
+                event.getLevel().equals(Level.DEBUG)) {
+            return FilterReply.DENY;
+        } else if (event.getLoggerName().equals("org.restlet") &&
                 event.getLevel().equals(Level.INFO) &&
                 event.getMessage().contains("ing the internal HTTP client")) {
             return FilterReply.DENY;
