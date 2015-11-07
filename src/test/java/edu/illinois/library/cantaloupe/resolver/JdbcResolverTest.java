@@ -1,21 +1,19 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.Identifier;
-import junit.framework.TestCase;
+import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
-public class JdbcResolverTest extends TestCase {
+public class JdbcResolverTest extends CantaloupeTestCase {
 
     private JdbcResolver instance;
 
@@ -47,7 +45,8 @@ public class JdbcResolverTest extends TestCase {
         statement = conn.prepareStatement(sql);
         statement.setString(1, "jpg.jpg");
         statement.setString(2, "image/jpeg");
-        statement.setBinaryStream(3, new FileInputStream(getFixture("jpg")));
+        statement.setBinaryStream(3,
+                new FileInputStream(TestUtil.getFixture("jpg")));
         statement.executeUpdate();
 
         instance = new JdbcResolver();
@@ -112,13 +111,6 @@ public class JdbcResolverTest extends TestCase {
     public void testExecuteGetMediaType() throws Exception {
         String result = instance.executeGetMediaType(new Identifier("cats.jpg"));
         assertEquals("SELECT media_type FROM items WHERE filename = ?", result);
-    }
-
-    protected File getFixture(String filename) throws IOException {
-        File directory = new File(".");
-        String cwd = directory.getCanonicalPath();
-        Path testPath = Paths.get(cwd, "src", "test", "resources");
-        return new File(testPath + File.separator + filename);
     }
 
 }

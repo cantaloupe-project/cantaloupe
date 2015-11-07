@@ -20,42 +20,48 @@ abstract class AbstractResource extends ServerResource {
     private static Logger logger = LoggerFactory.
             getLogger(AbstractResource.class);
 
-    protected static List<CacheDirective> getCacheDirectives() {
+    protected List<CacheDirective> getCacheDirectives() {
         List<CacheDirective> directives = new ArrayList<>();
         try {
             Configuration config = Application.getConfiguration();
-            String maxAge = config.getString("cache.client.max_age");
-            if (maxAge != null && maxAge.length() > 0) {
-                directives.add(CacheDirective.maxAge(Integer.parseInt(maxAge)));
-            }
-            String sMaxAge = config.getString("cache.client.shared_max_age");
-            if (sMaxAge != null && sMaxAge.length() > 0) {
-                directives.add(CacheDirective.
-                        sharedMaxAge(Integer.parseInt(sMaxAge)));
-            }
-            if (config.getBoolean("cache.client.public")) {
-                directives.add(CacheDirective.publicInfo());
-            } else if (config.getBoolean("cache.client.private")) {
-                directives.add(CacheDirective.privateInfo());
-            }
-            if (config.getBoolean("cache.client.no_cache")) {
-                directives.add(CacheDirective.noCache());
-            }
-            if (config.getBoolean("cache.client.no_store")) {
-                directives.add(CacheDirective.noStore());
-            }
-            if (config.getBoolean("cache.client.must_revalidate")) {
-                directives.add(CacheDirective.mustRevalidate());
-            }
-            if (config.getBoolean("cache.client.proxy_revalidate")) {
-                directives.add(CacheDirective.proxyMustRevalidate());
-            }
-            if (config.getBoolean("cache.client.no_transform")) {
-                directives.add(CacheDirective.noTransform());
+            boolean enabled = config.getBoolean("cache.client.enabled", false);
+            if (enabled) {
+                String maxAge = config.getString("cache.client.max_age");
+                if (maxAge != null && maxAge.length() > 0) {
+                    directives.add(CacheDirective.maxAge(Integer.parseInt(maxAge)));
+                }
+                String sMaxAge = config.getString("cache.client.shared_max_age");
+                if (sMaxAge != null && sMaxAge.length() > 0) {
+                    directives.add(CacheDirective.
+                            sharedMaxAge(Integer.parseInt(sMaxAge)));
+                }
+                if (config.getBoolean("cache.client.public")) {
+                    directives.add(CacheDirective.publicInfo());
+                } else if (config.getBoolean("cache.client.private")) {
+                    directives.add(CacheDirective.privateInfo());
+                }
+                if (config.getBoolean("cache.client.no_cache")) {
+                    directives.add(CacheDirective.noCache());
+                }
+                if (config.getBoolean("cache.client.no_store")) {
+                    directives.add(CacheDirective.noStore());
+                }
+                if (config.getBoolean("cache.client.must_revalidate")) {
+                    directives.add(CacheDirective.mustRevalidate());
+                }
+                if (config.getBoolean("cache.client.proxy_revalidate")) {
+                    directives.add(CacheDirective.proxyMustRevalidate());
+                }
+                if (config.getBoolean("cache.client.no_transform")) {
+                    directives.add(CacheDirective.noTransform());
+                }
+            } else {
+                logger.debug("Cache-Control headers are disabled. " +
+                        "(cache.client.enabled = false)");
             }
         } catch (NoSuchElementException e) {
-            logger.info("Cache-Control headers are disabled. " +
-                    "Original error: {}", e.getMessage());
+            logger.warn("Cache-Control headers are invalid: {}",
+                    e.getMessage());
         }
         return directives;
     }

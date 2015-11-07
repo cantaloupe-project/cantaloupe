@@ -151,7 +151,7 @@ Java2dProcessor.tif.reader = TIFFImageReader
 ###
 
 # Optional; overrides the PATH
-KakaduProcessor.path_to_binaries = /usr/local/bin
+#KakaduProcessor.path_to_binaries = /usr/local/bin
 
 # Due to a quirk of kdu_expand, you will need to create a symbolic link to
 # /dev/stdout somewhere called `stdout.ppm`, like this:
@@ -164,6 +164,9 @@ KakaduProcessor.post_processor = java2d
 ###############
 # CACHING
 ###############
+
+# Whether to enable the response Cache-Control header.
+cache.client.enabled = true
 
 # Customize the response Cache-Control header. (This may be overridden by
 # proxies.) Comment out to disable the Cache-Control header.
@@ -191,6 +194,22 @@ FilesystemCache.pathname = /var/cache/cantaloupe
 # Time before a cached image becomes stale and needs to be reloaded. Set to
 # blank or 0 for "forever"
 FilesystemCache.ttl_seconds = 2592000
+
+###
+# JdbcCache
+###
+
+JdbcCache.connection_string = jdbc:postgresql://localhost:5432/cantaloupe
+JdbcCache.user = alexd
+JdbcCache.password =
+
+# These will be created automatically.
+JdbcCache.image_table = image_cache
+JdbcCache.info_table = info_cache
+
+# Time before a cached image becomes stale and needs to be reloaded. Set to
+# blank or 0 for "forever"
+JdbcCache.ttl_seconds = 2592000
 
 ###############
 # LOGGING

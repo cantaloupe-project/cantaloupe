@@ -277,14 +277,11 @@ class FilesystemCache implements Cache {
     @Override
     public OutputStream getImageOutputStream(Parameters params)
             throws IOException { // TODO: make this work better concurrently
-        if (getImageInputStream(params) == null) {
-            logger.debug("Miss; caching {}", params);
-            File cacheFile = getCachedImageFile(params);
-            cacheFile.getParentFile().mkdirs();
-            cacheFile.createNewFile();
-            return new FileOutputStream(cacheFile);
-        }
-        return null;
+        logger.debug("Miss; caching {}", params);
+        File cacheFile = getCachedImageFile(params);
+        cacheFile.getParentFile().mkdirs();
+        cacheFile.createNewFile();
+        return new FileOutputStream(cacheFile);
     }
 
     /**

@@ -1,10 +1,10 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.Application;
-import junit.framework.TestCase;
+import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import org.apache.commons.configuration.BaseConfiguration;
 
-public class CacheFactoryTest extends TestCase {
+public class CacheFactoryTest extends CantaloupeTestCase {
 
     public void testGetInstance() throws Exception {
         BaseConfiguration config = new BaseConfiguration();

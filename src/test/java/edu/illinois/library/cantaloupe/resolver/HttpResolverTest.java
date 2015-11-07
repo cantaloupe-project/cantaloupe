@@ -1,15 +1,15 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.Identifier;
-import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-public class HttpResolverTest extends TestCase {
+public class HttpResolverTest extends CantaloupeTestCase {
 
     private static final Identifier IMAGE = new Identifier("14405804_o1.jpg");
     HttpResolver instance;

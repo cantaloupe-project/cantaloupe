@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Quality;
+import edu.illinois.library.cantaloupe.test.TestUtil;
 
 import java.awt.Dimension;
 import java.io.FileInputStream;
@@ -38,13 +39,13 @@ public class KakaduProcessorTest extends ProcessorTest {
         if (getProcessor() instanceof StreamProcessor) {
             StreamProcessor proc = (StreamProcessor) getProcessor();
             Dimension actualSize = proc.getSize(
-                    new FileInputStream(getFixture("jp2")),
+                    new FileInputStream(TestUtil.getFixture("jp2")),
                     SourceFormat.JP2);
             assertEquals(expectedSize, actualSize);
         }
         if (getProcessor() instanceof FileProcessor) {
             FileProcessor proc = (FileProcessor) getProcessor();
-            Dimension actualSize = proc.getSize(getFixture("jp2"),
+            Dimension actualSize = proc.getSize(TestUtil.getFixture("jp2"),
                     SourceFormat.JP2);
             assertEquals(expectedSize, actualSize);
         }

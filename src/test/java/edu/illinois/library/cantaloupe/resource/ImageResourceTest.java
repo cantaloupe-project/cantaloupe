@@ -56,8 +56,9 @@ public class ImageResourceTest extends ResourceTest {
         assertEquals(Status.SUCCESS_OK, client.getStatus());
     }
 
-    public void testCacheHeaders() {
+    public void testCacheHeadersWhenCachingEnabled() {
         Configuration config = Application.getConfiguration();
+        config.setProperty("cache.client.enabled", "true");
         config.setProperty("cache.client.max_age", "1234");
         config.setProperty("cache.client.shared_max_age", "4567");
         config.setProperty("cache.client.public", "true");
@@ -87,6 +88,25 @@ public class ImageResourceTest extends ResourceTest {
                 }
             }
         }
+    }
+
+    public void testCacheHeadersWhenCachingDisabled() {
+        Configuration config = Application.getConfiguration();
+        config.setProperty("cache.client.enabled", "false");
+        config.setProperty("cache.client.max_age", "1234");
+        config.setProperty("cache.client.shared_max_age", "4567");
+        config.setProperty("cache.client.public", "true");
+        config.setProperty("cache.client.private", "false");
+        config.setProperty("cache.client.no_cache", "false");
+        config.setProperty("cache.client.no_store", "false");
+        config.setProperty("cache.client.must_revalidate", "false");
+        config.setProperty("cache.client.proxy_revalidate", "false");
+        config.setProperty("cache.client.no_transform", "true");
+        Application.setConfiguration(config);
+
+        ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
+        client.get();
+        assertEquals(0, client.getResponse().getCacheDirectives().size());
     }
 
     /**
