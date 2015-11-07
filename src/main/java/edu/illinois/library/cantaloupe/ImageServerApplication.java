@@ -140,7 +140,7 @@ public class ImageServerApplication extends Application {
      * @see <a href="http://iiif.io/api/image/2.0/#uri-syntax">URI Syntax</a>
      */
     @Override
-    public synchronized Restlet createInboundRoot() {
+    public Restlet createInboundRoot() {
         final Router router = new Router(getContext());
         router.setDefaultMatchingMode(Template.MODE_EQUALS);
 
