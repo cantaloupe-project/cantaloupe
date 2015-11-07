@@ -50,6 +50,8 @@ class AmazonS3Resolver implements StreamResolver {
             "AmazonS3Resolver.bucket.name";
     public static final String BUCKET_REGION_CONFIG_KEY =
             "AmazonS3Resolver.bucket.region";
+    public static final String ENDPOINT_CONFIG_KEY =
+            "AmazonS3Resolver.endpoint";
     public static final String SECRET_KEY_CONFIG_KEY =
             "AmazonS3Resolver.secret_key";
 
@@ -60,11 +62,19 @@ class AmazonS3Resolver implements StreamResolver {
             AWSCredentials credentials = new ConfigFileCredentials();
             client = new AmazonS3Client(credentials);
             Configuration config = Application.getConfiguration();
+
+            // a custom endpoint will be used in testing
+            final String endpoint = config.getString(ENDPOINT_CONFIG_KEY);
+            if (endpoint != null) {
+                logger.info("Using endpoint: {}", endpoint);
+                client.setEndpoint(endpoint);
+            }
+
             final String regionName = config.getString(BUCKET_REGION_CONFIG_KEY);
             if (regionName != null) {
                 Regions regions = Regions.fromName(regionName);
                 Region region = Region.getRegion(regions);
-                logger.debug("Using region: {}", region);
+                logger.info("Using region: {}", region);
                 client.setRegion(region);
             }
         }
@@ -94,6 +104,7 @@ class AmazonS3Resolver implements StreamResolver {
 
     @Override
     public SourceFormat getSourceFormat(Identifier identifier) throws IOException {
+        getInputStream(identifier); // throw exception if not found etc.
         return SourceFormat.getSourceFormat(identifier);
     }
 
