@@ -27,7 +27,7 @@ print_stack_trace_on_error_pages = true
 ###############
 
 # The resolver that translates the identifier in the URL to an image source.
-# Available values are `FilesystemResolver` and `HttpResolver`.
+# Available values are `FilesystemResolver`, `HttpResolver`, and `JdbcResolver`.
 resolver = FilesystemResolver
 
 ###
