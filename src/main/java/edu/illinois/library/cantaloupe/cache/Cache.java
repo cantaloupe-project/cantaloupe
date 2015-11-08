@@ -10,14 +10,14 @@ import java.io.OutputStream;
 
 /**
  * Interface to be implemented by all caches. Instances will be shared
- * Singletons.
+ * Singletons, so must be thread-safe.
  */
 public interface Cache {
 
     /**
-     * Deletes the entire cache contents. Must be thread-safe.
+     * Deletes the entire cache contents.
      *
-     * @throws Exception
+     * @throws IOException
      */
     void flush() throws IOException;
 
@@ -26,18 +26,23 @@ public interface Cache {
      * parameters.
      *
      * @param params
-     * @throws Exception
+     * @throws IOException
      */
     void flush(Parameters params) throws IOException;
 
     /**
      * Deletes expired images and dimensions from the cache.
      *
-     * @throws Exception
+     * @throws IOException
      */
     void flushExpired() throws IOException;
 
     /**
+     * <p>Returns an InputStream corresponding to the given parameters.</p>
+     *
+     * <p>If an image corresponding to the given parameters exists in the
+     * cache but is expired, implementations should delete it.</p>
+     *
      * @param params IIIF request parameters
      * @return An input stream corresponding to the given parameters, or null
      * if a non-expired image corresponding to the given parameters does not
@@ -46,18 +51,21 @@ public interface Cache {
     InputStream getImageInputStream(Parameters params);
 
     /**
-     * Reads cached dimension information.
+     * <p>Reads cached dimension information.</p>
+     *
+     * <p>If a dimension corresponding to the given parameters exists in the
+     * cache but is expired, implementations should delete it.</p>
      *
      * @param identifier IIIF identifier
-     * @return Dimension corresponding to the given identifier, or null if a
+     * @return Dimension corresponding to the given identifier, or null if no
      * non-expired dimension exists in the cache.
      */
     Dimension getDimension(Identifier identifier) throws IOException;
 
     /**
      * @param params IIIF request parameters
-     * @return OutputStream pointed at the cache to which an image
-     * corresponding to the supplied parameters can be written.
+     * @return OutputStream to which an image corresponding to the supplied
+     * parameters can be written.
      * @throws IOException
      */
     OutputStream getImageOutputStream(Parameters params) throws IOException;

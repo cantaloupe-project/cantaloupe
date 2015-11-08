@@ -4,8 +4,6 @@ import edu.illinois.library.cantaloupe.Feature;
 
 /**
  * Encapsulates an IIIF "feature" that is processor-dependent.
- *
- * @see edu.illinois.library.cantaloupe.resource.ServiceFeature
  */
 public enum ProcessorFeature implements Feature {
 

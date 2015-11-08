@@ -1,14 +1,14 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.processor.ProcessorFeature;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Quality;
-import junit.framework.TestCase;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class ComplianceLevelTest extends TestCase {
+public class ComplianceLevelTest extends CantaloupeTestCase {
 
     public void testGetLevel() {
         Set<ServiceFeature> serviceFeatures = new HashSet<>();

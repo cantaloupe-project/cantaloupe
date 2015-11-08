@@ -1,9 +1,9 @@
 package edu.illinois.library.cantaloupe.request;
 
-import junit.framework.TestCase;
+import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import org.restlet.data.Reference;
 
-public class IdentifierTest extends TestCase {
+public class IdentifierTest extends CantaloupeTestCase {
 
     public void testEquals() {
         Identifier id1 = new Identifier("cats");

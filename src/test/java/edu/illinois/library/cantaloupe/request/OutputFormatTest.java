@@ -1,9 +1,9 @@
 package edu.illinois.library.cantaloupe.request;
 
+import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import junit.framework.TestCase;
 
-public class OutputFormatTest extends TestCase {
+public class OutputFormatTest extends CantaloupeTestCase {
 
     public void testValues() {
         assertNotNull(OutputFormat.valueOf("GIF"));

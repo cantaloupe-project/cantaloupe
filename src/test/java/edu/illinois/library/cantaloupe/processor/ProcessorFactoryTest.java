@@ -1,11 +1,11 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
 
-public class ProcessorFactoryTest extends TestCase {
+public class ProcessorFactoryTest extends CantaloupeTestCase {
 
     public void setUp() {
         BaseConfiguration config = new BaseConfiguration();

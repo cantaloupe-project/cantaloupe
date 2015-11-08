@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.request;
 
-import junit.framework.TestCase;
+import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 
-public class QualityTest extends TestCase {
+public class QualityTest extends CantaloupeTestCase {
 
     public void testValues() {
         assertNotNull(Quality.valueOf("BITONAL"));

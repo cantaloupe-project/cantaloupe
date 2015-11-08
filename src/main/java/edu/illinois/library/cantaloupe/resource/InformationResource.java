@@ -46,8 +46,6 @@ public class InformationResource extends AbstractResource {
 
     private static final Set<ServiceFeature> SUPPORTED_SERVICE_FEATURES =
             new HashSet<>();
-    private static final List<CacheDirective> CACHE_DIRECTIVES =
-            getCacheDirectives();
 
     static {
         SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.SIZE_BY_WHITELISTED);
@@ -60,7 +58,7 @@ public class InformationResource extends AbstractResource {
     @Override
     protected void doInit() throws ResourceException {
         super.doInit();
-        getResponseCacheDirectives().addAll(CACHE_DIRECTIVES);
+        getResponseCacheDirectives().addAll(getCacheDirectives());
     }
 
     /**

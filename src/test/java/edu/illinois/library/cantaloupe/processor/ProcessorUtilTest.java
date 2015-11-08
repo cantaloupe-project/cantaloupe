@@ -1,13 +1,13 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.request.Region;
 import edu.illinois.library.cantaloupe.request.Rotation;
 import edu.illinois.library.cantaloupe.request.Size;
-import junit.framework.TestCase;
 
 import java.awt.image.BufferedImage;
 
-public class ProcessorUtilTest extends TestCase {
+public class ProcessorUtilTest extends CantaloupeTestCase {
 
     public void testConvertToRgb() {
         // TODO: write this

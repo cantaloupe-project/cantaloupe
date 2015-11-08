@@ -4,16 +4,17 @@
   <groupId>edu.illinois.library.cantaloupe</groupId>
   <artifactId>Cantaloupe</artifactId>
   <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.2-SNAPSHOT</version>
   <name>Cantaloupe</name>
   <url>https://medusa-project.github.io/cantaloupe/</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <cantaloupe.version>1.0-SNAPSHOT</cantaloupe.version>
+    <cantaloupe.version>1.2-SNAPSHOT</cantaloupe.version>
     <commons-io.version>2.4</commons-io.version>
     <commons-lang3.version>3.4</commons-lang3.version>
+    <h2.version>1.4.190</h2.version>
     <im4java.version>1.4.0</im4java.version>
     <imageio-ext.version>1.1.12</imageio-ext.version>
     <jackson.version>2.6.0</jackson.version>
@@ -32,6 +33,13 @@
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <version>${logback.version}</version>
+    </dependency>
+    <!-- Used by JdbcResolverTest -->
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>${h2.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>commons-configuration</groupId>
@@ -90,6 +98,7 @@
       <artifactId>janino</artifactId>
       <version>${janino.version}</version>
     </dependency>
+    <!-- Used by GraphicsMagickProcessor and ImageMagickProcessor -->
     <dependency>
       <groupId>org.im4java</groupId>
       <artifactId>im4java</artifactId>
@@ -105,11 +114,18 @@
       <artifactId>org.restlet.ext.jackson</artifactId>
       <version>${restlet.version}</version>
     </dependency>
+    <!-- use the Simple HTTP server instead of the default Sun server -->
+    <dependency>
+      <groupId>org.restlet.jse</groupId>
+      <artifactId>org.restlet.ext.simple</artifactId>
+      <version>${restlet.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.restlet.jse</groupId>
       <artifactId>org.restlet.ext.slf4j</artifactId>
       <version>${restlet.version}</version>
     </dependency>
+    <!-- Provides Velocity for the landing and error page templates -->
     <dependency>
       <groupId>org.restlet.jse</groupId>
       <artifactId>org.restlet.ext.velocity</artifactId>

@@ -20,11 +20,19 @@ layout: default
 
 <p>Assuming the <code>http.port</code> option has not been changed, it is now running at: <a href="http://localhost:8182/iiif">http://localhost:8182/iiif</a></p>
 
+<p><em>Note: On OS X, a "java" icon will appear in the Dock while Cantaloupe is running. This can be disabled by adding <code>-Djava.awt.headless=true</code> to the command.</em></p>
+
 <h3 id="Upgrading">Upgrading</h3>
 
 <p>Upgrading is usually just a matter of downloading a new version and running it. Since instances are self-contained, new versions can run happily alongside existing ones, with each using its own config file. Sometimes there are backwards-incompatible changes to the configuration file structure, though, so check below to see if there is anything more to be done.</p>
 
-<h4>1.0-beta3 to 1.0-beta4</h4>
+<h4>1.0.x to 1.1</h4>
+
+<ul>
+  <li>Add the <code>cache.client.enabled</code> key from the sample configuration.</li>
+</ul>
+
+<h4>1.0-beta3 to 1.0</h4>
 
 <ul>
   <li>Add the <code>logging.*</code> keys from the sample configuration.</li>
@@ -59,7 +67,7 @@ layout: default
 
 <p>Generally, response times benefit from multiple fast CPU cores. Even if a particular processor doesn't support multithreading, the operating system is at least likely to schedule different processing threads (from simultaneous requests) on different cores.</p>
 
-<p>A 64-bit CPU is also important, as it enables the JVM to use more memory.</p>
+<p>A 64-bit CPU is also important, as it enables Cantaloupe to use more memory.</p>
 
 <h4 id="Memory">Memory</h4>
 
@@ -68,10 +76,10 @@ decompressed size. Multiple clients are simultaneously requesting numerous downs
 
 <p>Furthermore, some processors are inefficient in that they have to create new images internally at each intermediate step in the processing pipeline (cropping, scaling, rotating, etc.). Each one occupies precious memory.</p>
 
-<p>It's easy to see where RAM becomes a very major consideration here. With the processors that do their work in Java, It is completely normal to see transient spikes of hundreds of megabytes of memory use on the Java heap in response to a single zooming-image-viewer request. The JVM will accommodate by dynamically increasing the heap size. From the operating system's perspective, the process is bloating up to multiple gigabytes in size, but there is nothing wrong &mdash; most of this is actually unused heap space.</p>
+<p>It's easy to see where RAM becomes a very major consideration here. With the processors that do their work in Java, It is completely normal to see transient spikes of hundreds of megabytes of memory use on the Java heap in response to a single zooming-image-viewer request. The JVM will accommodate by dynamically increasing the heap size. From the operating system's perspective, the process is bloating up to a gigabyte in size and beyond, but there is nothing wrong &mdash; most of this is actually unused heap space.</p>
 
 <p>The smaller the available heap space, the larger the source images, and the larger the number of simultaneous requests, the greater the likelihood of OutOfMemoryErrors. In production, it is highly recommended to use the <code>-Xmx</code> flag to increase the maximum heap size to the largest amount possible &emdash; for example, <code>-Xmx8g</code> for 8GB. And, by all means, use caching liberally on both the <a href="client-caching.html">client</a> and <a href="caches.html">server</a>.</p>
 
 <h4>Storage</h4>
 
-<p>Cantaloupe benefits from high-speed read performance in the underlying storage system.</p>
+<p>Cantaloupe benefits from fast read performance in the underlying storage system, especially as source image size increases.</p>

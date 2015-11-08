@@ -24,7 +24,7 @@ public interface StreamProcessor extends Processor {
 
     /**
      * <p>Uses the supplied parameters to process an image from the supplied
-     * ImageInputStream, and writes the result to the given OutputStream.</p>
+     * InputStream, and writes the result to the given OutputStream.</p>
      *
      * <p>Implementations should use the sourceSize parameter and not their
      * own <code>getSize()</code> method to avoid reusing a potentially
