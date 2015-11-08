@@ -163,7 +163,8 @@ public class ImageResource extends AbstractResource {
                 final long msec = System.currentTimeMillis();
                 // if the parameters request an unmodified source image, it can
                 // be streamed right through
-                if (this.params.isRequestingUnmodifiedSource()) {
+                if (this.sourceFormat.getType().equals(SourceFormat.Type.IMAGE) &&
+                        this.params.isRequestingUnmodifiedSource()) {
                     if (this.file != null) {
                         IOUtils.copy(new FileInputStream(this.file),
                                 outputStream);
