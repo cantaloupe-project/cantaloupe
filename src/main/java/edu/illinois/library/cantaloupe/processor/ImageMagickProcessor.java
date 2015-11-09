@@ -14,6 +14,7 @@ import org.im4java.core.IM4JavaException;
 import org.im4java.core.IMOperation;
 import org.im4java.core.Info;
 import org.im4java.process.Pipe;
+import org.restlet.data.Form;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,9 +42,6 @@ class ImageMagickProcessor implements StreamProcessor {
             new HashSet<>();
     // Lazy-initialized by getFormats()
     private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
-
-    private InputStream inputStream;
-    private SourceFormat sourceFormat;
 
     static {
         SUPPORTED_QUALITIES.add(Quality.BITONAL);
@@ -185,9 +183,10 @@ class ImageMagickProcessor implements StreamProcessor {
     }
 
     @Override
-    public void process(Parameters params, SourceFormat sourceFormat,
-                        Dimension fullSize, InputStream inputStream,
-                        OutputStream outputStream) throws ProcessorException {
+    public void process(Parameters params, Form urlQuery,
+                        SourceFormat sourceFormat, Dimension fullSize,
+                        InputStream inputStream, OutputStream outputStream)
+            throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -195,9 +194,6 @@ class ImageMagickProcessor implements StreamProcessor {
         } else if (!availableOutputFormats.contains(params.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
-
-        this.inputStream = inputStream;
-        this.sourceFormat = sourceFormat;
 
         try {
             IMOperation op = new IMOperation();

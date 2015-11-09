@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.request.Rotation;
 import edu.illinois.library.cantaloupe.request.Size;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.restlet.data.Form;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -117,6 +118,7 @@ class FfmpegProcessor implements FileProcessor {
         return path;
     }
 
+    @Override
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
         Set<OutputFormat> outputFormats = new HashSet<>();
         if (sourceFormat.getType() != null &&
@@ -134,6 +136,7 @@ class FfmpegProcessor implements FileProcessor {
      * @return
      * @throws ProcessorException
      */
+    @Override
     public Dimension getSize(File inputFile, SourceFormat sourceFormat)
             throws ProcessorException {
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -152,7 +155,7 @@ class FfmpegProcessor implements FileProcessor {
         try {
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.redirectErrorStream(true);
-            logger.debug("Executing " + StringUtils.join(pb.command(), " "));
+            logger.debug("Executing {}", StringUtils.join(pb.command(), " "));
             Process process = pb.start();
 
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -194,7 +197,7 @@ class FfmpegProcessor implements FileProcessor {
         try {
             final ProcessBuilder pb = new ProcessBuilder(command);
 
-            logger.debug("Executing " + StringUtils.join(pb.command(), " "));
+            logger.debug("Executing {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
             new Thread(new StreamCopier(process.getInputStream(), outputBucket)).start();
@@ -204,7 +207,7 @@ class FfmpegProcessor implements FileProcessor {
             try {
                 int code = process.waitFor();
                 if (code != 0) {
-                    logger.warn("ffprobe returned with code " + code);
+                    logger.warn("ffprobe returned with code {}", code);
                     final String errorStr = errorBucket.toString();
                     if (errorStr != null && errorStr.length() > 0) {
                         throw new ProcessorException(errorStr);
@@ -235,6 +238,7 @@ class FfmpegProcessor implements FileProcessor {
         }
     }
 
+    @Override
     public Set<ProcessorFeature> getSupportedFeatures(SourceFormat sourceFormat) {
         Set<ProcessorFeature> features = new HashSet<>();
         if (getAvailableOutputFormats(sourceFormat).size() > 0) {
@@ -243,6 +247,7 @@ class FfmpegProcessor implements FileProcessor {
         return features;
     }
 
+    @Override
     public Set<Quality> getSupportedQualities(SourceFormat sourceFormat) {
         Set<Quality> qualities = new HashSet<>();
         if (getAvailableOutputFormats(sourceFormat).size() > 0) {
@@ -251,9 +256,11 @@ class FfmpegProcessor implements FileProcessor {
         return qualities;
     }
 
-    public void process(Parameters params, SourceFormat sourceFormat,
-                        Dimension fullSize, File inputFile,
-                        OutputStream outputStream) throws ProcessorException {
+    @Override
+    public void process(Parameters params, Form urlQuery,
+                        SourceFormat sourceFormat, Dimension fullSize,
+                        File inputFile, OutputStream outputStream)
+            throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -267,7 +274,7 @@ class FfmpegProcessor implements FileProcessor {
         try {
             final ProcessBuilder pb = getProcessBuilder(params, fullSize,
                     inputFile);
-            logger.debug("Executing " + StringUtils.join(pb.command(), " "));
+            logger.debug("Executing {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
             new Thread(new StreamCopier(process.getInputStream(), outputBucket)).start();
@@ -276,7 +283,7 @@ class FfmpegProcessor implements FileProcessor {
             try {
                 int code = process.waitFor();
                 if (code != 0) {
-                    logger.warn("ffmpeg returned with code " + code);
+                    logger.warn("ffmpeg returned with code {}", code);
                     final String errorStr = errorBucket.toString();
                     if (errorStr != null && errorStr.length() > 0) {
                         throw new ProcessorException(errorStr);
@@ -301,9 +308,10 @@ class FfmpegProcessor implements FileProcessor {
         }
     }
 
-    public void process(Parameters params, SourceFormat sourceFormat,
-                        Dimension fullSize, InputStream inputStream,
-                        OutputStream outputStream) throws ProcessorException {
+    public void process(Parameters params, Form urlQuery,
+                        SourceFormat sourceFormat, Dimension fullSize,
+                        InputStream inputStream, OutputStream outputStream)
+            throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -316,7 +324,7 @@ class FfmpegProcessor implements FileProcessor {
         try {
             final ProcessBuilder pb = getProcessBuilder(params, fullSize);
 
-            logger.debug("Executing " + StringUtils.join(pb.command(), " "));
+            logger.debug("Executing {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
             new Thread(new StreamCopier(process.getInputStream(), outputStream)).start();

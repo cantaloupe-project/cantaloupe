@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.request.Region;
 import it.geosolutions.jaiext.JAIExt;
+import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 
 import javax.imageio.IIOImage;
@@ -140,16 +141,18 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
     }
 
     @Override
-    public void process(Parameters params, SourceFormat sourceFormat,
-                        Dimension sourceSize, File inputFile,
-                        OutputStream outputStream) throws ProcessorException {
+    public void process(Parameters params, Form urlQuery,
+                        SourceFormat sourceFormat, Dimension sourceSize,
+                        File inputFile, OutputStream outputStream)
+            throws ProcessorException {
         doProcess(params, sourceFormat, inputFile, outputStream);
     }
 
     @Override
-    public void process(Parameters params, SourceFormat sourceFormat,
-                        Dimension fullSize, InputStream inputStream,
-                        OutputStream outputStream) throws ProcessorException {
+    public void process(Parameters params, Form urlQuery,
+                        SourceFormat sourceFormat, Dimension fullSize,
+                        InputStream inputStream, OutputStream outputStream)
+            throws ProcessorException {
         doProcess(params, sourceFormat, inputStream, outputStream);
     }
 

@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.request.Size;
 import info.freelibrary.djatoka.io.PNMImage;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.restlet.data.Form;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -219,9 +220,10 @@ class KakaduProcessor implements FileProcessor {
     }
 
     @Override
-    public void process(Parameters params, SourceFormat sourceFormat,
-                        Dimension fullSize, File inputFile,
-                        OutputStream outputStream) throws ProcessorException {
+    public void process(Parameters params, Form urlQuery,
+                        SourceFormat sourceFormat, Dimension fullSize,
+                        File inputFile, OutputStream outputStream)
+            throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -244,7 +246,7 @@ class KakaduProcessor implements FileProcessor {
             try {
                 int code = process.waitFor();
                 if (code != 0) {
-                    logger.warn("kdu_expand returned with code " + code);
+                    logger.warn("kdu_expand returned with code {}", code);
                     final String errorStr = errorBucket.toString();
                     if (errorStr != null && errorStr.length() > 0) {
                         throw new ProcessorException(errorStr);

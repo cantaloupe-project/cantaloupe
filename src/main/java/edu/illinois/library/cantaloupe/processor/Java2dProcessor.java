@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.request.Quality;
 import edu.illinois.library.cantaloupe.request.Region;
 import edu.illinois.library.cantaloupe.request.Size;
+import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,9 +140,10 @@ class Java2dProcessor implements StreamProcessor {
     }
 
     @Override
-    public void process(Parameters params, SourceFormat sourceFormat,
-                        Dimension fullSize, InputStream inputStream,
-                        OutputStream outputStream) throws ProcessorException {
+    public void process(Parameters params, Form urlQuery,
+                        SourceFormat sourceFormat, Dimension fullSize,
+                        InputStream inputStream, OutputStream outputStream)
+            throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
