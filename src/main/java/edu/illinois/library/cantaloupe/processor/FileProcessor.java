@@ -34,7 +34,8 @@ public interface FileProcessor extends Processor {
      * @param params Parameters of the output image
      * @param query The URL query. This enables processors to support custom
      *              options and operations not available in the parameters, in
-     *              a non-standard way.
+     *              a non-standard way. Query options are unsanitized, so
+     *              implementations should take care in parsing them.
      * @param sourceFormat Format of the source image
      * @param inputFile File from which to read the image. Implementations
      *                  should not close it.
