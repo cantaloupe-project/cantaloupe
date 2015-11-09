@@ -26,7 +26,6 @@ import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
-import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.resource.Get;
@@ -56,7 +55,6 @@ public class ImageResource extends AbstractResource {
         InputStream inputStream;
         Parameters params;
         SourceFormat sourceFormat;
-        Form query;
 
         /**
          * Constructor for images from InputStreams.
@@ -65,19 +63,16 @@ public class ImageResource extends AbstractResource {
          * @param sourceFormat
          * @param fullSize
          * @param params
-         * @param query
          * @param inputStream
          */
         public ImageRepresentation(MediaType mediaType,
                                    SourceFormat sourceFormat,
                                    Dimension fullSize,
                                    Parameters params,
-                                   Form query,
                                    InputStream inputStream) {
             super(mediaType);
             this.inputStream = inputStream;
             this.params = params;
-            this.query = query;
             this.sourceFormat = sourceFormat;
             this.fullSize = fullSize;
         }
@@ -93,12 +88,10 @@ public class ImageResource extends AbstractResource {
         public ImageRepresentation(MediaType mediaType,
                                    SourceFormat sourceFormat,
                                    Parameters params,
-                                   Form query,
                                    File file) {
             super(mediaType);
             this.file = file;
             this.params = params;
-            this.query = query;
             this.sourceFormat = sourceFormat;
         }
 
@@ -188,14 +181,12 @@ public class ImageResource extends AbstractResource {
                         FileProcessor fproc = (FileProcessor) proc;
                         Dimension size = fproc.getSize(this.file,
                                 this.sourceFormat);
-                        fproc.process(this.params, this.query,
-                                this.sourceFormat, size, this.file,
-                                outputStream);
+                        fproc.process(this.params, this.sourceFormat, size,
+                                this.file, outputStream);
                     } else {
                         StreamProcessor sproc = (StreamProcessor) proc;
-                        sproc.process(this.params, this.query,
-                                this.sourceFormat, this.fullSize,
-                                this.inputStream, outputStream);
+                        sproc.process(this.params, this.sourceFormat,
+                                this.fullSize, this.inputStream, outputStream);
                     }
                     logger.debug("{} processed in {} msec",
                             proc.getClass().getSimpleName(),
@@ -234,6 +225,7 @@ public class ImageResource extends AbstractResource {
         String quality = (String) attrs.get("quality");
         Parameters params = new Parameters(identifier, region, size, rotation,
                 quality, format);
+        params.setQuery(this.getQuery());
         // Get a reference to the source image (this will also cause an
         // exception if not found)
         Resolver resolver = ResolverFactory.getResolver();
@@ -284,7 +276,7 @@ public class ImageResource extends AbstractResource {
             File inputFile = ((FileResolver) resolver).
                     getFile(params.getIdentifier());
             return new ImageRepresentation(mediaType, sourceFormat, params,
-                    this.getQuery(), inputFile);
+                    inputFile);
         } else if (resolver instanceof StreamResolver) {
             logger.debug("Using {} as a StreamProcessor",
                     proc.getClass().getSimpleName());
@@ -296,8 +288,8 @@ public class ImageResource extends AbstractResource {
                 Dimension fullSize = sproc.getSize(inputStream, sourceFormat);
                 // avoid reusing the stream
                 inputStream = sres.getInputStream(params.getIdentifier());
-                return new ImageRepresentation(mediaType, sourceFormat, fullSize,
-                        params, this.getQuery(), inputStream);
+                return new ImageRepresentation(mediaType, sourceFormat,
+                        fullSize, params, inputStream);
             }
         }
         return null; // this should never happen

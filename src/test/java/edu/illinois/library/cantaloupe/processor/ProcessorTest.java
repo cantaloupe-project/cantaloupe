@@ -7,7 +7,6 @@ import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
-import org.restlet.data.Form;
 
 import java.awt.Dimension;
 import java.io.ByteArrayOutputStream;
@@ -75,7 +74,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
                         StreamProcessor proc = (StreamProcessor) getProcessor();
                         Dimension size = proc.getSize(sizeInputStream, sourceFormat);
                         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                        proc.process(params, new Form(), sourceFormat, size,
+                        proc.process(params, sourceFormat, size,
                                 processInputStream, outputStream);
                         assertTrue(outputStream.toByteArray().length > 100);
                     } finally {
@@ -88,7 +87,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
                     File file = TestUtil.getFixture(sourceFormat.getPreferredExtension());
                     Dimension size = proc.getSize(file, sourceFormat);
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                    proc.process(params, new Form(), sourceFormat, size, file,
+                    proc.process(params, sourceFormat, size, file,
                             outputStream);
                     assertTrue(outputStream.toByteArray().length > 100);
                 }
@@ -109,7 +108,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
                     try {
                         StreamProcessor proc = (StreamProcessor) getProcessor();
                         Dimension size = proc.getSize(sizeInputStream, sourceFormat);
-                        proc.process(params, new Form(), sourceFormat, size,
+                        proc.process(params, sourceFormat, size,
                                 processInputStream, new NullOutputStream());
                         fail("Expected exception");
                     } catch (ProcessorException e) {
@@ -127,7 +126,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
                         File file = TestUtil.getFixture(
                                 sourceFormat.getPreferredExtension());
                         Dimension size = proc.getSize(file, sourceFormat);
-                        proc.process(params, new Form(), sourceFormat, size,
+                        proc.process(params, sourceFormat, size,
                                 file, new NullOutputStream());
                         fail("Expected exception");
                     } catch (ProcessorException e) {
@@ -157,7 +156,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
                             Dimension size = proc.getSize(sizeInputStream,
                                     sourceFormat);
                             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                            proc.process(params, new Form(), sourceFormat, size,
+                            proc.process(params, sourceFormat, size,
                                     processInputStream, outputStream);
                             assertTrue(outputStream.toByteArray().length > 100);
                         } finally {
@@ -170,7 +169,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
                         File file = TestUtil.getFixture(sourceFormat.getPreferredExtension());
                         Dimension size = proc.getSize(file, sourceFormat);
                         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                        proc.process(params, new Form(), sourceFormat, size,
+                        proc.process(params, sourceFormat, size,
                                 file, outputStream);
                         assertTrue(outputStream.toByteArray().length > 100);
                     }
@@ -196,8 +195,8 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
                             Dimension fullSize = proc.getSize(sizeInputStream,
                                     sourceFormat);
                             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                            proc.process(params, new Form(), sourceFormat,
-                                    fullSize, processInputStream, outputStream);
+                            proc.process(params, sourceFormat, fullSize,
+                                    processInputStream, outputStream);
                             assertTrue(outputStream.toByteArray().length > 100);
                         } finally {
                             sizeInputStream.close();
@@ -209,8 +208,8 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
                         File file = TestUtil.getFixture(sourceFormat.getPreferredExtension());
                         Dimension fullSize = proc.getSize(file, sourceFormat);
                         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                        proc.process(params, new Form(), sourceFormat, fullSize,
-                                file, outputStream);
+                        proc.process(params, sourceFormat, fullSize, file,
+                                outputStream);
                         assertTrue(outputStream.toByteArray().length > 100);
                     }
                 }
@@ -235,8 +234,8 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
                             Dimension size = proc.getSize(sizeInputStream,
                                     sourceFormat);
                             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                            proc.process(params, new Form(), sourceFormat,
-                                    size, processInputStream, outputStream);
+                            proc.process(params, sourceFormat, size,
+                                    processInputStream, outputStream);
                             assertTrue(outputStream.toByteArray().length > 100);
                         } finally {
                             sizeInputStream.close();
@@ -248,8 +247,8 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
                         File file = TestUtil.getFixture(sourceFormat.getPreferredExtension());
                         Dimension size = proc.getSize(file, sourceFormat);
                         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                        proc.process(params, new Form(), sourceFormat, size,
-                                file, outputStream);
+                        proc.process(params, sourceFormat, size, file,
+                                outputStream);
                         assertTrue(outputStream.toByteArray().length > 100);
                     }
                 }
@@ -274,7 +273,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
                             Dimension size = proc.getSize(sizeInputStream,
                                     sourceFormat);
                             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                            proc.process(params, new Form(), sourceFormat, size,
+                            proc.process(params, sourceFormat, size,
                                     processInputStream, outputStream);
                             assertTrue(outputStream.toByteArray().length > 100);
                         } finally {
@@ -287,8 +286,8 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
                         File file = TestUtil.getFixture(sourceFormat.getPreferredExtension());
                         Dimension size = proc.getSize(file, sourceFormat);
                         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                        proc.process(params, new Form(), sourceFormat, size,
-                                file, outputStream);
+                        proc.process(params, sourceFormat, size, file,
+                                outputStream);
                         assertTrue(outputStream.toByteArray().length > 100);
                     }
                 }
@@ -314,7 +313,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
                             Dimension size = proc.getSize(sizeInputStream,
                                     sourceFormat);
                             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                            proc.process(params, new Form(), sourceFormat, size,
+                            proc.process(params, sourceFormat, size,
                                     processInputStream, outputStream);
                             System.out.println(outputFormat.getExtension());
                             assertTrue(outputStream.toByteArray().length > 100);
@@ -328,8 +327,8 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
                         File file = TestUtil.getFixture(sourceFormat.getPreferredExtension());
                         Dimension size = proc.getSize(file, sourceFormat);
                         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                        proc.process(params, new Form(), sourceFormat, size,
-                                file, outputStream);
+                        proc.process(params, sourceFormat, size, file,
+                                outputStream);
                         assertTrue(outputStream.toByteArray().length > 100);
                     }
                 }

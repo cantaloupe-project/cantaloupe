@@ -14,7 +14,6 @@ import org.im4java.core.IM4JavaException;
 import org.im4java.core.IMOperation;
 import org.im4java.core.Info;
 import org.im4java.process.Pipe;
-import org.restlet.data.Form;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -183,10 +182,9 @@ class ImageMagickProcessor implements StreamProcessor {
     }
 
     @Override
-    public void process(Parameters params, Form urlQuery,
-                        SourceFormat sourceFormat, Dimension fullSize,
-                        InputStream inputStream, OutputStream outputStream)
-            throws ProcessorException {
+    public void process(Parameters params, SourceFormat sourceFormat,
+                        Dimension fullSize, InputStream inputStream,
+                        OutputStream outputStream) throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {

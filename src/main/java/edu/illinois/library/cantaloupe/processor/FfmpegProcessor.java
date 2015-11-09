@@ -10,7 +10,6 @@ import edu.illinois.library.cantaloupe.request.Rotation;
 import edu.illinois.library.cantaloupe.request.Size;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.restlet.data.Form;
 import org.restlet.data.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -258,10 +257,9 @@ class FfmpegProcessor implements FileProcessor {
     }
 
     @Override
-    public void process(Parameters params, Form urlQuery,
-                        SourceFormat sourceFormat, Dimension fullSize,
-                        File inputFile, OutputStream outputStream)
-            throws ProcessorException {
+    public void process(Parameters params, SourceFormat sourceFormat,
+                        Dimension fullSize, File inputFile,
+                        OutputStream outputStream) throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -273,8 +271,8 @@ class FfmpegProcessor implements FileProcessor {
         final ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
-            final ProcessBuilder pb = getProcessBuilder(params, urlQuery,
-                    fullSize, inputFile);
+            final ProcessBuilder pb = getProcessBuilder(params, fullSize,
+                    inputFile);
             logger.debug("Executing {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
@@ -309,9 +307,9 @@ class FfmpegProcessor implements FileProcessor {
         }
     }
 
-    public void process(Parameters params, Form urlQuery,
-                        SourceFormat sourceFormat, Dimension fullSize,
-                        InputStream inputStream, OutputStream outputStream)
+    public void process(Parameters params, SourceFormat sourceFormat,
+                        Dimension fullSize, InputStream inputStream,
+                        OutputStream outputStream)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
@@ -323,8 +321,7 @@ class FfmpegProcessor implements FileProcessor {
 
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
-            final ProcessBuilder pb = getProcessBuilder(params, urlQuery,
-                    fullSize);
+            final ProcessBuilder pb = getProcessBuilder(params, fullSize);
 
             logger.debug("Executing {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
@@ -360,37 +357,34 @@ class FfmpegProcessor implements FileProcessor {
 
     /**
      * @param params
-     * @param urlQuery
      * @param fullSize The full size of the source image
      * @return Command string
      */
-    private ProcessBuilder getProcessBuilder(Parameters params, Form urlQuery,
+    private ProcessBuilder getProcessBuilder(Parameters params,
                                              Dimension fullSize) {
-        return getProcessBuilder(params, urlQuery, fullSize, "pipe:0");
+        return getProcessBuilder(params, fullSize, "pipe:0");
     }
 
     /**
      * @param params
-     * @param urlQuery
      * @param fullSize The full size of the source image
      * @param inputFile
      * @return Command string
      */
-    private ProcessBuilder getProcessBuilder(Parameters params, Form urlQuery,
+    private ProcessBuilder getProcessBuilder(Parameters params,
                                              Dimension fullSize,
                                              File inputFile) {
-        return getProcessBuilder(params, urlQuery, fullSize,
+        return getProcessBuilder(params, fullSize,
                 quote(inputFile.getAbsolutePath()));
     }
 
     /**
      * @param params
-     * @param urlQuery
      * @param fullSize
      * @param inputArg Either an absolute pathname or <code>pipe:</code>
      * @return
      */
-    private ProcessBuilder getProcessBuilder(Parameters params, Form urlQuery,
+    private ProcessBuilder getProcessBuilder(Parameters params,
                                              Dimension fullSize,
                                              String inputArg) {
         // ffmpeg -i pipe:0 -nostdin -v quiet -vframes 1 -an -vf [ops] -f image2pipe pipe:1 < video.mpg > out.jpg
@@ -401,14 +395,16 @@ class FfmpegProcessor implements FileProcessor {
         // parameter which gets injected into an -ss flag. FFmpeg supports
         // additional syntax, but this will do for now.
         // https://trac.ffmpeg.org/wiki/Seeking
-        Parameter timeParam = urlQuery.getFirst("time");
-        if (timeParam != null) {
-            String time = timeParam.getValue();
-            // prevent arbitrary input
-            if (time != null &&
-                    time.matches("[0-9][0-9]:[0-5][0-9]:[0-5][0-9]")) {
-                command.add("-ss");
-                command.add(time);
+        if (params.getQuery().size() > 0) {
+            Parameter timeParam = params.getQuery().getFirst("time");
+            if (timeParam != null) {
+                String time = timeParam.getValue();
+                // prevent arbitrary input
+                if (time != null &&
+                        time.matches("[0-9][0-9]:[0-5][0-9]:[0-5][0-9]")) {
+                    command.add("-ss");
+                    command.add(time);
+                }
             }
         }
 

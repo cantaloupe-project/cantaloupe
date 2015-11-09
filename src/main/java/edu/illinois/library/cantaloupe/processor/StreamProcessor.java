@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
-import org.restlet.data.Form;
 
 import java.awt.Dimension;
 import java.io.InputStream;
@@ -32,10 +31,6 @@ public interface StreamProcessor extends Processor {
      * unreusable InputStream.</p>
      *
      * @param params Parameters of the output image
-     * @param query The URL query. This enables processors to support custom
-     *              options and operations not available in the parameters, in
-     *              a non-standard way. Query options are unsanitized, so
-     *              implementations should take care in parsing them.
      * @param sourceFormat Format of the source image
      * @param sourceSize Size of the source image
      * @param inputStream Stream from which to read the image. Implementations
@@ -46,7 +41,7 @@ public interface StreamProcessor extends Processor {
      * @throws UnsupportedSourceFormatException
      * @throws ProcessorException
      */
-    void process(Parameters params, Form query, SourceFormat sourceFormat,
+    void process(Parameters params, SourceFormat sourceFormat,
                  Dimension sourceSize, InputStream inputStream,
                  OutputStream outputStream) throws ProcessorException;
 

@@ -89,15 +89,15 @@ public class FfmpegProcessorTest extends ProcessorTest {
         File file = TestUtil.getFixture(sourceFormat.getPreferredExtension());
         Dimension size = proc.getSize(file, sourceFormat);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        proc.process(params, new Form(), sourceFormat, size, file,
-                outputStream);
+        proc.process(params, sourceFormat, size, file, outputStream);
         byte[] zeroSecondFrame = outputStream.toByteArray();
 
         // frame option present
         final Form urlQuery = new Form();
         urlQuery.add("time", "00:00:05");
         outputStream = new ByteArrayOutputStream();
-        proc.process(params, urlQuery, sourceFormat, size, file, outputStream);
+        params.setQuery(urlQuery);
+        proc.process(params, sourceFormat, size, file, outputStream);
         byte[] fiveSecondFrame = outputStream.toByteArray();
 
         assertFalse(Arrays.equals(zeroSecondFrame, fiveSecondFrame));
