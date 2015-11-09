@@ -53,19 +53,17 @@ examples.</p>
 
 <p>The <a href="http://jekyllrb.com">Jekyll</a> website compiler transforms the HTML pages in the <span class="filename">website</span> folder into a working static website. The <span class="filename">build/deploy_website.rb</span> script takes care of building the website, adding the current Javadoc to it, committing it, and deploying it to GitHub Pages.</p>
 
-<p>To merely preview the website without releasing it, <code>cd</code> into the <span class="filename">website</span> folder and run <code>jekyll serve</code>, then go to <a href="http://localhost:4000/">http://localhost:4000/</a> in a web browser.</p>
+<p>To merely preview the website without releasing it, <code>cd</code> into the <span class="filename">website</span> folder and run <code>jekyll serve</code>, then go to <a href="http://localhost:4000/cantaloupe/">http://localhost:4000/cantaloupe/</a> in a web browser.</p>
 
 <h4 id="Versioning">Versioning</h4>
 
-<p>Cantaloupe roughly uses semantic versioning. Major releases (n) break backwards compatibility in a major way. Minor releases (n.n) either do not break it, or only in a minor/trivial way. Patch releases (n.n.n) are for bugfixes only.</p>
+<p>Cantaloupe roughly uses semantic versioning. Major releases (n) break backwards compatibility in a significant way. Minor releases (n.n) either do not break compatibility, or only in a trivial way. Patch releases (n.n.n) are for bugfixes only.</p>
 
-<p>Note that the above statement covers public API (the HTTP endpoints) only. Internals may change significantly from release to release (though this is not really likely.)</p>
-
-<p>Because Cantaloupe is generally intended to provide stable APIs, major version increments should be expected to be rare.</p>
+<p>Note that the above statement applies only to the HTTP endpoints. Internal public API may change significantly from release to release (though this is not really likely.)</p>
 
 <h4 id="Releasing">Releasing</h4>
 
-<p>Currently, the release process is mostly manual. The steps involved are:</p>
+<p>Currently, the release process is mostly manual, consisting of the following steps:</p>
 
 <ol>
   <li>Finalize the code to be released, addressing any relevant milestone issues, TODOs, etc.</li>

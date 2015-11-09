@@ -16,6 +16,7 @@ import org.restlet.engine.application.CorsFilter;
 import org.restlet.ext.velocity.TemplateRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Directory;
+import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
 import org.restlet.routing.Redirector;
 import org.restlet.routing.Router;
@@ -107,16 +108,19 @@ public class ImageServerApplication extends Application {
         public Status toStatus(Throwable t, Request request,
                                Response response) {
             Status status;
-            Throwable cause = t.getCause();
-            if (cause instanceof IllegalArgumentException ||
-                    cause instanceof UnsupportedEncodingException ||
-                    cause instanceof UnsupportedOutputFormatException) {
+            t = (t.getCause() != null) ? t.getCause() : t;
+
+            if (t instanceof ResourceException) {
+                status = ((ResourceException) t).getStatus();
+            } else if (t instanceof IllegalArgumentException ||
+                    t instanceof UnsupportedEncodingException ||
+                    t instanceof UnsupportedOutputFormatException) {
                 status = new Status(Status.CLIENT_ERROR_BAD_REQUEST, t);
-            } else if (cause instanceof UnsupportedSourceFormatException) {
+            } else if (t instanceof UnsupportedSourceFormatException) {
                 status = new Status(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE, t);
-            } else if (cause instanceof FileNotFoundException) {
+            } else if (t instanceof FileNotFoundException) {
                 status = new Status(Status.CLIENT_ERROR_NOT_FOUND, t);
-            } else if (cause instanceof AccessDeniedException) {
+            } else if (t instanceof AccessDeniedException) {
                 status = new Status(Status.CLIENT_ERROR_FORBIDDEN, t);
             } else {
                 status = new Status(Status.SERVER_ERROR_INTERNAL, t);
@@ -137,7 +141,7 @@ public class ImageServerApplication extends Application {
      * @see <a href="http://iiif.io/api/image/2.0/#uri-syntax">URI Syntax</a>
      */
     @Override
-    public synchronized Restlet createInboundRoot() {
+    public Restlet createInboundRoot() {
         final Router router = new Router(getContext());
         router.setDefaultMatchingMode(Template.MODE_EQUALS);
 
