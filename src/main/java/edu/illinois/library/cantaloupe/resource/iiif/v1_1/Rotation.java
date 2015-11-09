@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
 
-import edu.illinois.library.cantaloupe.util.NumberUtil;
-
 /**
  * Encapsulates the "rotation" component of an IIIF request URI.
  *
@@ -74,7 +72,7 @@ class Rotation implements Comparable<Object> {
      * @return Value compatible with the rotation component of an IIIF URI.
      */
     public String toString() {
-        return NumberUtil.removeTrailingZeroes(this.getDegrees());
+        return NumberUtil.formatForUrl(this.getDegrees());
     }
 
 }

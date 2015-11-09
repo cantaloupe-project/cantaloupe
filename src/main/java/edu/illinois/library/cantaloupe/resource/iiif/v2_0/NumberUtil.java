@@ -1,8 +1,8 @@
-package edu.illinois.library.cantaloupe.util;
+package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
-public class NumberUtil {
+abstract class NumberUtil {
 
-    public static String removeTrailingZeroes(Float f) {
+    public static String formatForUrl(Float f) {
         String s = f.toString();
         return s.indexOf(".") < 0 ? s : s.replaceAll("0*$", "").
                 replaceAll("\\.$", "");

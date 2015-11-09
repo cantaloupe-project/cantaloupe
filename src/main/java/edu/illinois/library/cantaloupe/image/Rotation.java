@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.image;
 
-import edu.illinois.library.cantaloupe.util.NumberUtil;
-
 /**
  * Encapsulates a rotation with optional mirroring.
  */
