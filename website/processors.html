@@ -68,3 +68,19 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 <p>Years ago, Sun published <a href="http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-java-client-419417.html">platform-native accelerator JARs</a> called <a href="http://www.oracle.com/technetwork/java/install-1-1-2-135866.html">mediaLib</a> for Windows, Linux, and Solaris, which improved JAI's performance. It is unknown whether these still work on modern platforms, but perhaps they are something to try.</p>
 
 <p><em>Note: if mediaLib is not installed, an error message will be generated saying, "Could not find mediaLib accelerator wrapper classes. Continuing in pure Java mode." This is harmless, but can be suppressed anyway by launching Cantaloupe with the <code>-Dcom.sun.media.jai.disableMediaLib=true</code> option.</em></p>
+
+<h3 id="FfmpegProcessor">FfmpegProcessor</h3>
+
+<p>FfmpegProcessor uses the <a href="http://www.ffmpeg.org">FFmpeg</a> tool to extract still frames from video files. It can be used for video thumbnail generation á la YouTube, as well as deep zooming of high-resolution still frames.</p>
+
+<p>FfmpegProcessor has been tested with FFmpeg version 2.8. Other versions may or may not work.</p>
+
+<h4>Optional Parameters</h4>
+
+<p>FFmpegProcessor supports a <code>time</code> URL query parameter which can be used to return a frame at a particular second in the source video. The value of this parameter should be in <code>hours:minutes:seconds</code> format, like:</p>
+
+<pre>http://example.org/iiif/video.mp4/full/full/0/default.jpg?time=00:02:15</pre>
+
+<p>If the <code>time</code> parameter is not present in the URL, the first frame will be returned.</p>
+
+<p>Note that the <code>time</code> parameter is nonstandard and Cantaloupe-specific.</p>

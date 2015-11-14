@@ -75,6 +75,10 @@ public class ParametersTest extends CantaloupeTestCase {
     public void testToString() {
         String expected = "identifier/full/full/0/default.jpg";
         assertEquals(expected, parameters.toString());
+
+        parameters.getQuery().add("bla", "cats");
+        expected = "identifier/full/full/0/default.jpg?bla=cats";
+        assertEquals(expected, parameters.toString());
     }
 
 }

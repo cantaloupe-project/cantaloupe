@@ -15,7 +15,7 @@ public class ProcessorFactoryTest extends CantaloupeTestCase {
     }
 
     public void testGetAllProcessors() {
-        assertEquals(5, ProcessorFactory.getAllProcessors().size());
+        assertEquals(6, ProcessorFactory.getAllProcessors().size());
     }
 
     /**

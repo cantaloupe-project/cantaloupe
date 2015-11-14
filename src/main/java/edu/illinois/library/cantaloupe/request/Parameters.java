@@ -2,6 +2,11 @@ package edu.illinois.library.cantaloupe.request;
 
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import org.apache.commons.lang3.StringUtils;
+import org.restlet.data.Form;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 /**
  * Encapsulates the parameters of an IIIF request.
@@ -11,9 +16,12 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class Parameters implements Comparable<Parameters> {
 
+    private static Logger logger = LoggerFactory.getLogger(Parameters.class);
+
     private OutputFormat outputFormat;
     private Identifier identifier;
     private Quality quality;
+    private Form query = new Form();
     private Region region;
     private Rotation rotation;
     private Size size;
@@ -89,6 +97,15 @@ public class Parameters implements Comparable<Parameters> {
         return quality;
     }
 
+    /**
+     * @return The URL query. This enables processors to support options and
+     * operations not available in the parameters. Query keys and values are
+     * unsanitized.
+     */
+    public Form getQuery() {
+        return query;
+    }
+
     public Region getRegion() {
         return region;
     }
@@ -111,6 +128,10 @@ public class Parameters implements Comparable<Parameters> {
 
     public void setQuality(Quality quality) {
         this.quality = quality;
+    }
+
+    public void setQuery(Form query) {
+        this.query = query;
     }
 
     public void setRegion(Region region) {
@@ -151,9 +172,17 @@ public class Parameters implements Comparable<Parameters> {
      * @return IIIF URI parameters with no leading slash.
      */
     public String toString() {
-        return String.format("%s/%s/%s/%s/%s.%s", getIdentifier(), getRegion(),
-                getSize(), getRotation(), getQuality().toString().toLowerCase(),
-                getOutputFormat());
+        String str = String.format("%s/%s/%s/%s/%s.%s", getIdentifier(),
+                getRegion(), getSize(), getRotation(),
+                getQuality().toString().toLowerCase(), getOutputFormat());
+        if (this.getQuery().size() > 0) {
+            try {
+                str += "?" + this.getQuery().encode();
+            } catch (IOException e) {
+                logger.error("Failed to encode query: {}", this.getQuery());
+            }
+        }
+        return str;
     }
 
 }
