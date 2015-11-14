@@ -87,7 +87,8 @@ public class ImageResource extends AbstractResource {
          */
         public ImageRepresentation(MediaType mediaType,
                                    SourceFormat sourceFormat,
-                                   Parameters params, File file) {
+                                   Parameters params,
+                                   File file) {
             super(mediaType);
             this.file = file;
             this.params = params;
@@ -163,7 +164,8 @@ public class ImageResource extends AbstractResource {
                 final long msec = System.currentTimeMillis();
                 // if the parameters request an unmodified source image, it can
                 // be streamed right through
-                if (this.params.isRequestingUnmodifiedSource()) {
+                if (this.sourceFormat.getType().equals(SourceFormat.Type.IMAGE) &&
+                        this.params.isRequestingUnmodifiedSource()) {
                     if (this.file != null) {
                         IOUtils.copy(new FileInputStream(this.file),
                                 outputStream);
@@ -223,6 +225,7 @@ public class ImageResource extends AbstractResource {
         String quality = (String) attrs.get("quality");
         Parameters params = new Parameters(identifier, region, size, rotation,
                 quality, format);
+        params.setQuery(this.getQuery());
         // Get a reference to the source image (this will also cause an
         // exception if not found)
         Resolver resolver = ResolverFactory.getResolver();
@@ -285,8 +288,8 @@ public class ImageResource extends AbstractResource {
                 Dimension fullSize = sproc.getSize(inputStream, sourceFormat);
                 // avoid reusing the stream
                 inputStream = sres.getInputStream(params.getIdentifier());
-                return new ImageRepresentation(mediaType, sourceFormat, fullSize,
-                        params, inputStream);
+                return new ImageRepresentation(mediaType, sourceFormat,
+                        fullSize, params, inputStream);
             }
         }
         return null; // this should never happen
