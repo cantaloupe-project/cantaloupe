@@ -1,5 +1,9 @@
 @import url(/static/bootstrap.min.css);
-@import url(https://fonts.googleapis.com/css?family=Cabin);
+
+@font-face {
+    font-family: Cabin;
+    src: url(/static/Cabin-Regular.woff);
+}
 
 /* base styles */
 
