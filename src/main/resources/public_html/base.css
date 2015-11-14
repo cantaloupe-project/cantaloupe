@@ -16,9 +16,13 @@ h1 {
     margin-top: 0.6em;
 }
 
+.tab-content {
+    padding-top: 0.8em;
+}
+
 /* landing page */
 
-body#cl-landing table#cl-source-format-assignments td:first-child {
+body#cl-landing table.cl-source-format-assignments td:first-child {
     text-align: right;
 }
 
