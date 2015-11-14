@@ -170,6 +170,10 @@ public enum SourceFormat {
         return this.type;
     }
 
+    public boolean isImage() {
+        return (this.getType() != null && this.getType().equals(Type.IMAGE));
+    }
+
     /**
      * @return Extension.
      */

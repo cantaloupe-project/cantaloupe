@@ -191,6 +191,23 @@ public class SourceFormatTest extends CantaloupeTestCase {
         assertNull(SourceFormat.UNKNOWN.getType());
     }
 
+    public void testIsImage() {
+        assertFalse(SourceFormat.AVI.isImage());
+        assertTrue(SourceFormat.BMP.isImage());
+        assertTrue(SourceFormat.GIF.isImage());
+        assertTrue(SourceFormat.JP2.isImage());
+        assertTrue(SourceFormat.JPG.isImage());
+        assertFalse(SourceFormat.MOV.isImage());
+        assertFalse(SourceFormat.MP4.isImage());
+        assertFalse(SourceFormat.MPG.isImage());
+        assertTrue(SourceFormat.PDF.isImage());
+        assertTrue(SourceFormat.PNG.isImage());
+        assertTrue(SourceFormat.TIF.isImage());
+        assertFalse(SourceFormat.WEBM.isImage());
+        assertTrue(SourceFormat.WEBP.isImage());
+        assertFalse(SourceFormat.UNKNOWN.isImage());
+    }
+
     public void testToString() {
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             assertEquals(sourceFormat.getPreferredExtension(),
