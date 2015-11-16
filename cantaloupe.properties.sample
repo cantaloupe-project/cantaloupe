@@ -232,7 +232,7 @@ FilesystemCache.ttl_seconds = 2592000
 ###
 
 JdbcCache.connection_string = jdbc:postgresql://localhost:5432/cantaloupe
-JdbcCache.user = alexd
+JdbcCache.user = postgres
 JdbcCache.password =
 
 # These will be created automatically.
