@@ -1,8 +1,11 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -10,6 +13,7 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
+import org.restlet.data.Disposition;
 import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
 import org.slf4j.Logger;
@@ -29,6 +33,10 @@ public class ImageRepresentation extends OutputRepresentation {
 
     private static Logger logger = LoggerFactory.
             getLogger(ImageRepresentation.class);
+
+    public static final String CONTENT_DISPOSITION_CONFIG_KEY =
+            "http.content_disposition";
+    private static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
 
     File file;
     Dimension fullSize;
@@ -55,6 +63,8 @@ public class ImageRepresentation extends OutputRepresentation {
         this.ops = ops;
         this.sourceFormat = sourceFormat;
         this.fullSize = fullSize;
+        initialize(ops.getIdentifier(), ops.getOutputFormat());
+
     }
 
     /**
@@ -72,6 +82,25 @@ public class ImageRepresentation extends OutputRepresentation {
         this.file = file;
         this.ops = ops;
         this.sourceFormat = sourceFormat;
+        initialize(ops.getIdentifier(), ops.getOutputFormat());
+    }
+
+    private void initialize(Identifier identifier, OutputFormat format) {
+        Disposition disposition = new Disposition();
+        switch (Application.getConfiguration().
+                getString(CONTENT_DISPOSITION_CONFIG_KEY)) {
+            case "inline":
+                disposition.setType(Disposition.TYPE_INLINE);
+                this.setDisposition(disposition);
+                break;
+            case "attachment":
+                disposition.setType(Disposition.TYPE_ATTACHMENT);
+                disposition.setFilename(
+                        identifier.toString().replaceAll(FILENAME_CHARACTERS, "_") +
+                                "." + format.getExtension());
+                this.setDisposition(disposition);
+                break;
+        }
     }
 
     /**

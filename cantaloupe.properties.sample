@@ -15,6 +15,10 @@ http.port = 8182
 #http.auth.basic.username = myself
 #http.auth.basic.secret = password
 
+# Controls the response Content-Disposition header for images. Allowed values
+# are `inline`, `attachment`, and `none`.
+http.content_disposition = inline
+
 # Whether to generate all internal links with `https://` URLs, i.e. for when
 # running behind an HTTPS reverse proxy.
 generate_https_links = false
@@ -27,7 +31,8 @@ print_stack_trace_on_error_pages = true
 ###############
 
 # The resolver that translates the identifier in the URL to an image source.
-# Available values are `FilesystemResolver`, `HttpResolver`, and `JdbcResolver`.
+# Available values are `FilesystemResolver`, `HttpResolver`, `JdbcResolver`,
+# and `AmazonS3Resolver`.
 resolver = FilesystemResolver
 
 ###
@@ -65,7 +70,7 @@ HttpResolver.url_suffix =
 #HttpResolver.path_separator =
 
 # Used for HTTP Basic authentication.
-HttpResolver.auto.basic.username =
+HttpResolver.auth.basic.username =
 HttpResolver.auth.basic.secret =
 
 ###
@@ -77,8 +82,7 @@ JdbcResolver.user = postgres
 JdbcResolver.password = postgres
 
 # JavaScript function that takes in an unencoded identifier and returns the
-# value that will be used in the prepared statement returned by lookup() and
-# identify().
+# value that will be used in prepared statements.
 JdbcResolver.function.identifier = function getDatabaseIdentifier(url_identifier) {\
       // return the un-altered identifier\
       return url_identifier;\
@@ -90,7 +94,7 @@ JdbcResolver.function.identifier = function getDatabaseIdentifier(url_identifier
 # JavaScript function that returns a media (MIME) type. If the media type is
 # stored in the database, this can return an SQL statement to retrieve it, in
 # which case the "SELECT" and "FROM" clauses should be in uppercase in order
-# to be autodetected. Comment out to force Cantaloupe to infer the media type
+# to be autodetected. If commented out, Cantaloupe will infer the media type
 # from the identifier extension (if present).
 JdbcResolver.function.media_type = function getMediaType() {\
       return "SELECT media_type " +\
@@ -99,10 +103,27 @@ JdbcResolver.function.media_type = function getMediaType() {\
   }
 
 # SQL statement that selects the BLOB corresponding to the value returned by
-# the function.lookup.statement_value function.
+# the getDatabaseIdentifier() function above.
 JdbcResolver.lookup_sql = SELECT image \
     FROM item \
     WHERE filename = ?
+
+###
+# AmazonS3Resolver
+###
+
+# See: http://aws.amazon.com/security-credentials
+# Access key ID associated with your AWS account.
+AmazonS3Resolver.access_key_id =
+# Secret key associated with your AWS account.
+AmazonS3Resolver.secret_key =
+
+# Name of a bucket containing images.
+AmazonS3Resolver.bucket.name =
+
+# See: http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
+# Can be commented out or left blank.
+#AmazonS3Resolver.bucket.region = us-east-1
 
 ###############
 # PROCESSORS
@@ -110,15 +131,26 @@ JdbcResolver.lookup_sql = SELECT image \
 
 # Image processors to use for various source formats. Available values are
 # `Java2dProcessor`, `GraphicsMagickProcessor`, `ImageMagickProcessor`,
-# `KakaduProcessor`, and `JaiProcessor`.
+# `KakaduProcessor`, `JaiProcessor`, and `FfmpegProcessor`.
 
 # These extension-specific definitions are optional.
+processor.avi = FfmpegProcessor
 #processor.jpg = ImageMagickProcessor
 #processor.jp2 = KakaduProcessor
+processor.mov = FfmpegProcessor
+processor.mp4 = FfmpegProcessor
 #processor.tif = GraphicsMagickProcessor
+processor.webm = FfmpegProcessor
 
 # Fall back to this processor for any formats not assigned above.
 processor.fallback = Java2dProcessor
+
+###
+# FfmpegProcessor
+###
+
+# Optional; overrides the PATH
+#FfmpegProcessor.path_to_binaries = /usr/local/bin
 
 ###
 # GraphicsMagickProcessor
@@ -142,8 +174,8 @@ processor.fallback = Java2dProcessor
 Java2dProcessor.jpg.quality = 0.7f
 
 # Available values are `TIFFImageReader` and `TIFFImageDecoder`.
-# TIFFImageReader is optimized for pyramidal TIFFs, but if you notice any
-# issues, try switching.
+# TIFFImageReader is optimized for pyramidal TIFFs, but both are flaky in
+# their own ways. If you notice any issues, try switching.
 Java2dProcessor.tif.reader = TIFFImageReader
 
 ###
@@ -156,7 +188,7 @@ Java2dProcessor.tif.reader = TIFFImageReader
 # Due to a quirk of kdu_expand, you will need to create a symbolic link to
 # /dev/stdout somewhere called `stdout.ppm`, like this:
 # `ln -s /dev/stdout /path/to/stdout.ppm`
-KakaduProcessor.path_to_stdout_symlink = /some/path/to/stdout.ppm
+KakaduProcessor.path_to_stdout_symlink = /path/to/stdout.ppm
 
 # Available values are `jai` and `java2d`.
 KakaduProcessor.post_processor = java2d
@@ -200,7 +232,7 @@ FilesystemCache.ttl_seconds = 2592000
 ###
 
 JdbcCache.connection_string = jdbc:postgresql://localhost:5432/cantaloupe
-JdbcCache.user = alexd
+JdbcCache.user = postgres
 JdbcCache.password =
 
 # These will be created automatically.

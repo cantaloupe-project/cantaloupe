@@ -6,23 +6,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Should contain constants for every source format that anyone could possibly
- * ever want to read.
+ * Should contain constants for every source format that any processor could
+ * possibly consider supporting.
  */
 public enum SourceFormat {
 
-    BMP("bmp", "BMP"),
-    GIF("gif", "GIF"),
-    JP2("jp2", "JPEG2000"),
-    JPG("jpg", "JPEG"),
-    PDF("pdf", "PDF"),
-    PNG("png", "PNG"),
-    TIF("tif", "TIFF"),
-    WEBP("webp", "WebP"),
-    UNKNOWN("unknown", "Unknown");
+    AVI("avi", "AVI", Type.VIDEO),
+    BMP("bmp", "BMP", Type.IMAGE),
+    GIF("gif", "GIF", Type.IMAGE),
+    JP2("jp2", "JPEG2000", Type.IMAGE),
+    JPG("jpg", "JPEG", Type.IMAGE),
+    MOV("mov", "QuickTime", Type.VIDEO),
+    MP4("mp4", "MPEG-4", Type.VIDEO),
+    MPG("mpg", "MPEG", Type.VIDEO),
+    PDF("pdf", "PDF", Type.IMAGE),
+    PNG("png", "PNG", Type.IMAGE),
+    TIF("tif", "TIFF", Type.IMAGE),
+    WEBM("webm", "WebM", Type.VIDEO),
+    WEBP("webp", "WebP", Type.IMAGE),
+    UNKNOWN("unknown", "Unknown", null);
+
+    public enum Type {
+        IMAGE, VIDEO
+    }
 
     private String id;
     private String name;
+    private Type type;
 
     /**
      * @param identifier
@@ -60,9 +70,10 @@ public enum SourceFormat {
         return SourceFormat.UNKNOWN;
     }
 
-    SourceFormat(String internalId, String name) {
+    SourceFormat(String internalId, String name, Type type) {
         this.id = internalId;
         this.name = name;
+        this.type = type;
     }
 
     public List<String> getExtensions() {
@@ -70,6 +81,9 @@ public enum SourceFormat {
         // when there are multiple extensions for a given format, the first one
         // will be the preferred extension
         switch (this.id) {
+            case "avi":
+                extensions.add("avi");
+                break;
             case "bmp":
                 extensions.add("bmp");
                 break;
@@ -83,6 +97,15 @@ public enum SourceFormat {
                 extensions.add("jpg");
                 extensions.add("jpeg");
                 break;
+            case "mov":
+                extensions.add("mov");
+                break;
+            case "mp4":
+                extensions.add("mp4");
+                break;
+            case "mpg":
+                extensions.add("mpg");
+                break;
             case "pdf":
                 extensions.add("pdf");
                 break;
@@ -93,6 +116,9 @@ public enum SourceFormat {
                 extensions.add("tif");
                 extensions.add("ptif");
                 extensions.add("tiff");
+                break;
+            case "webm":
+                extensions.add("webm");
                 break;
             case "webp":
                 extensions.add("webp");
@@ -109,6 +135,11 @@ public enum SourceFormat {
         // when there are multiple types for a given format, the first one will
         // be the preferred type
         switch (this.id) {
+            case "avi":
+                types.add(new MediaType("video/avi"));
+                types.add(new MediaType("video/msvideo"));
+                types.add(new MediaType("video/x-msvideo"));
+                break;
             case "bmp":
                 types.add(new MediaType("image/bmp"));
                 types.add(new MediaType("image/x-ms-bmp"));
@@ -122,6 +153,16 @@ public enum SourceFormat {
             case "jpg":
                 types.add(new MediaType("image/jpeg"));
                 break;
+            case "mov":
+                types.add(new MediaType("video/quicktime"));
+                types.add(new MediaType("video/x-quicktime"));
+                break;
+            case "mp4":
+                types.add(new MediaType("video/mp4"));
+                break;
+            case "mpg":
+                types.add(new MediaType("video/mpeg"));
+                break;
             case "pdf":
                 types.add(new MediaType("application/pdf"));
                 break;
@@ -130,6 +171,9 @@ public enum SourceFormat {
                 break;
             case "tif":
                 types.add(new MediaType("image/tiff"));
+                break;
+            case "webm":
+                types.add(new MediaType("video/webm"));
                 break;
             case "webp":
                 types.add(new MediaType("image/webp"));
@@ -154,6 +198,14 @@ public enum SourceFormat {
 
     public MediaType getPreferredMediaType() {
         return this.getMediaTypes().get(0);
+    }
+
+    public Type getType() {
+        return this.type;
+    }
+
+    public boolean isImage() {
+        return (this.getType() != null && this.getType().equals(Type.IMAGE));
     }
 
     /**

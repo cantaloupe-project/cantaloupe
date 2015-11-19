@@ -244,7 +244,7 @@ class KakaduProcessor implements FileProcessor {
             try {
                 int code = process.waitFor();
                 if (code != 0) {
-                    logger.warn("kdu_expand returned with code " + code);
+                    logger.warn("kdu_expand returned with code {}", code);
                     final String errorStr = errorBucket.toString();
                     if (errorStr != null && errorStr.length() > 0) {
                         throw new ProcessorException(errorStr);

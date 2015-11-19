@@ -17,6 +17,7 @@ public class OperationsTest extends CantaloupeTestCase {
         OutputFormat format = OutputFormat.JPG;
         ops = new Operations(identifier, crop, scale, rotation, quality,
                 format);
+        assertNotNull(ops.getOptions());
     }
 
     public void testCompareTo() {

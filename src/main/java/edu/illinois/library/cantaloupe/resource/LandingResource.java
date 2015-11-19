@@ -123,15 +123,27 @@ public class LandingResource extends AbstractResource {
         }
         vars.put("processorAssignments", assignments);
 
-        // source formats
-        List<SourceFormat> sourceFormats = new ArrayList<>();
+        // image source formats
+        List<SourceFormat> imageFormats = new ArrayList<>();
         for (SourceFormat sourceFormat : SourceFormat.values()) {
-            if (sourceFormat != SourceFormat.UNKNOWN) {
-                sourceFormats.add(sourceFormat);
+            if (sourceFormat.getType() != null &&
+                    sourceFormat.getType().equals(SourceFormat.Type.IMAGE)) {
+                imageFormats.add(sourceFormat);
             }
         }
-        Collections.sort(sourceFormats, new SourceFormatComparator());
-        vars.put("sourceFormats", sourceFormats);
+        Collections.sort(imageFormats, new SourceFormatComparator());
+        vars.put("imageSourceFormats", imageFormats);
+
+        // video source formats
+        List<SourceFormat> videoFormats = new ArrayList<>();
+        for (SourceFormat sourceFormat : SourceFormat.values()) {
+            if (sourceFormat.getType() != null &&
+                    sourceFormat.getType().equals(SourceFormat.Type.VIDEO)) {
+                videoFormats.add(sourceFormat);
+            }
+        }
+        Collections.sort(videoFormats, new SourceFormatComparator());
+        vars.put("videoSourceFormats", videoFormats);
 
         // processors
         List<Processor> sortedProcessors =

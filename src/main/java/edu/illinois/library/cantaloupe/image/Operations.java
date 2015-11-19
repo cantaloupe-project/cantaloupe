@@ -1,5 +1,8 @@
 package edu.illinois.library.cantaloupe.image;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * <p>Encapsulates a set of image transform operations. Operations can be
  * expected to be applied in the following order:</p>
@@ -15,6 +18,7 @@ package edu.illinois.library.cantaloupe.image;
 public class Operations implements Comparable<Operations> {
 
     private Identifier identifier;
+    private Map<String,Object> options = new HashMap<>();
     private OutputFormat outputFormat;
     private Quality quality;
     private Crop region;
@@ -52,6 +56,14 @@ public class Operations implements Comparable<Operations> {
 
     public Identifier getIdentifier() {
         return identifier;
+    }
+
+    /**
+     * @return Map of auxiliary options separate from the basic
+     * crop/scale/etc., such as URI query variables, etc.
+     */
+    public Map<String,Object> getOptions() {
+        return options;
     }
 
     public OutputFormat getOutputFormat() {

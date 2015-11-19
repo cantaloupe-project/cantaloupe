@@ -2,11 +2,13 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
+import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.apache.commons.configuration.Configuration;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.ChallengeResponse;
 import org.restlet.data.ChallengeScheme;
+import org.restlet.data.Disposition;
 import org.restlet.data.Header;
 import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
@@ -17,9 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Functional test of the non-IIIF features of ImageResource.
- */
 public class ImageResourceTest extends ResourceTest {
 
     @Override
@@ -114,6 +113,30 @@ public class ImageResourceTest extends ResourceTest {
         ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
         client.get();
         assertEquals(0, client.getResponse().getCacheDirectives().size());
+    }
+
+    public void testContentDispositionHeader() {
+        // no header
+        ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
+        client.get();
+        assertNull(client.getResponseEntity().getDisposition());
+
+        // inline
+        Configuration config = Application.getConfiguration();
+        config.setProperty(ImageRepresentation.CONTENT_DISPOSITION_CONFIG_KEY,
+                "inline");
+        client.get();
+        assertEquals(Disposition.TYPE_INLINE,
+                client.getResponseEntity().getDisposition().getType());
+
+        // attachment
+        config.setProperty(ImageRepresentation.CONTENT_DISPOSITION_CONFIG_KEY,
+                "attachment");
+        client.get();
+        assertEquals(Disposition.TYPE_ATTACHMENT,
+                client.getResponseEntity().getDisposition().getType());
+        assertEquals("jpg.jpg",
+                client.getResponseEntity().getDisposition().getFilename());
     }
 
     /**
