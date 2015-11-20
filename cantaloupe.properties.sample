@@ -19,9 +19,10 @@ http.port = 8182
 # are `inline`, `attachment`, and `none`.
 http.content_disposition = inline
 
-# Whether to generate all internal links with `https://` URLs, i.e. for when
-# running behind an HTTPS reverse proxy.
-generate_https_links = false
+# The base URI to use for internal links, such as Link headers and JSON-LD @id
+# values. This is mainly needed in reverse-proxy scenarios, where a public base
+# URI needs to override the local URI. Leave blank to use the default.
+base_uri =
 
 # Helpful in development
 print_stack_trace_on_error_pages = true

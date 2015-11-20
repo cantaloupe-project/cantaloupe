@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.Header;
 import org.restlet.data.Reference;
@@ -67,18 +68,25 @@ abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * @return A root reference usable in public, with a scheme customizable in
-     * the application configuration.
+     * @return A root reference usable in public, respecting the
+     * <code>base_uri</code> option in the application configuration.
      */
-    protected Reference getPublicRootRef() {
+    protected Reference getPublicRootRef() { // TODO: move into a util class and unit-test
         Reference rootRef = getRootRef();
-        try {
-            if (Application.getConfiguration().getBoolean("generate_https_links")) {
-                rootRef = rootRef.clone();
-                rootRef.setScheme("https");
+        final String baseUri = Application.getConfiguration().getString("base_uri");
+        if (baseUri != null && baseUri.length() > 0) {
+            rootRef = rootRef.clone();
+            Reference baseRef = new Reference(baseUri);
+            rootRef.setScheme(baseRef.getScheme());
+            rootRef.setHostDomain(baseRef.getHostDomain());
+            // if the "port" is a local socket, Reference will actually put -1
+            // in the URL.
+            if (baseRef.getHostPort() == -1) {
+                rootRef.setHostPort(null);
+            } else {
+                rootRef.setHostPort(baseRef.getHostPort());
             }
-        } catch (NoSuchElementException e) {
-            logger.warn("Config file is missing the generate_https_links key.");
+            rootRef.setPath(StringUtils.stripEnd(baseRef.getPath(), "/"));
         }
         return rootRef;
     }

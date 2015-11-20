@@ -133,21 +133,23 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     /**
-     * Tests that the Link header respects the <code>generate_https_links</code>
+     * Tests that the Link header respects the <code>base_uri</code>
      * key in the configuration.
      */
     public void testLinkHeader() {
         Configuration config = Application.getConfiguration();
         ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
-        config.setProperty("generate_https_links", false);
+
+        config.setProperty("base_uri", null);
         client.get();
         Header header = client.getResponse().getHeaders().getFirst("Link");
-        assertTrue(header.getValue().startsWith("<http://"));
+        assertTrue(header.getValue().startsWith("<http://localhost"));
 
-        config.setProperty("generate_https_links", true);
+        config.setProperty("base_uri", "https://example.org/");
         client.get();
         header = client.getResponse().getHeaders().getFirst("Link");
-        assertTrue(header.getValue().startsWith("<https://"));
+        System.out.println(header.getValue());
+        assertTrue(header.getValue().startsWith("<https://example.org/"));
     }
 
     public void testNotFound() throws IOException {
