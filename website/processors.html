@@ -84,3 +84,68 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 <p>If the <code>time</code> parameter is not present in the URL, the first frame will be returned.</p>
 
 <p>Note that the <code>time</code> parameter is nonstandard and Cantaloupe-specific.</p>
+
+<h3 id="Compatibility">Processor/Resolver Compatibility</h3>
+
+<p>A processor's ability to work with a given resolver depends on the interfaces implemented by both:</p>
+
+<ul>
+  <li>StreamProcessors can work with either FileResolvers or StreamResolvers.</li> <li>FileProcessors can work only with FileResolvers.</li>
+</ul>
+
+<p>In the table below, the red cells indicate processors that want to open and seek around the source data directly, and are not able to consume input from a Java stream.</p>
+
+<table class="table table-striped table-bordered">
+  <tr>
+    <th rowspan="2"></th>
+    <th colspan="4">Resolver</th>
+  </tr>
+  <tr>
+    <th><a href="resolvers.html#AmazonS3Resolver">Amazon S3</a></th>
+    <th><a href="resolvers.html#FilesystemResolver">Filesystem</a></th>
+    <th><a href="resolvers.html#HttpResolver">HTTP</a></th>
+    <th><a href="resolvers.html#JdbcResolver">JDBC</a></th>
+  </tr>
+  <tr>
+    <td><a href="processors.html#FfmpegProcessor">FfmpegProcessor</a></td>
+    <td class="bg-danger">&times;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-danger">&times;</td>
+    <td class="bg-danger">&times;</td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a></td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a></td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#JaiProcessor">JaiProcessor</a></td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#Java2dProcessor">Java2dProcessor</a></td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#KakaduProcessor">KakaduProcessor</a></td>
+    <td class="bg-danger">&times;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-danger">&times;</td>
+    <td class="bg-danger">&times;</td>
+  </tr>
+</table>
