@@ -70,6 +70,27 @@ layout: default
   <li>Add the <code>FilesystemResolver.path_separator</code> and <code>HttpResolver.path_separator</code> keys from the sample configuration.</li>
 </ul>
 
+<h3 id="Proxying">Proxying</h3>
+
+<p>Cantaloupe can be reverse-proxied behind another web server like Apache or nginx. The following example should be able to get you most of the way toward a working Apache reverse proxy. This assumes that Cantaloupe is running on a server called <span class="filename">images.example.org</span> on port 8182; the reverse proxy is running on <span class="filename">www.example.org</span>; and Cantaloupe is to be made available at the <span class="filename">/cantaloupe</span> base path.</p>
+
+<p>First, set <code>base_uri</code> in the Cantaloupe configuration file to the publicly-visible base URI:
+
+<pre>base_uri = http://www.example.org/cantaloupe</pre>
+
+<p>Then, add something like the following to your Apache reverse proxy configuration:</p>
+
+<pre>&lt;VirtualHost *:80&gt;
+    ServerName www.example.org
+    ProxyPass /cantaloupe/ http://images.example.org:8182/
+    ProxyPassReverse /cantaloupe/ http://images.example.org:8182/
+    ProxyPassReverseCookiePath / /
+    ProxyPassReverseCookieDomain images.example.org:8182 localhost
+&lt;/VirtualHost&gt;
+</pre>
+
+<p><span class="filename">http://www.example.org/cantaloupe/iiif</span> now displays the Cantaloupe landing page.</p>
+
 <h3 id="Considerations">Considerations</h3>
 
 <h4>CPU</h4>
