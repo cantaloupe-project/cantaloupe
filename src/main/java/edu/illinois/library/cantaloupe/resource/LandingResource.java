@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
@@ -9,6 +10,7 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.app.Velocity;
 import org.restlet.data.CacheDirective;
@@ -64,6 +66,11 @@ public class LandingResource extends AbstractResource {
 
     private Map<String,Object> getTemplateVars() throws Exception {
         Map<String,Object> vars = new HashMap<String,Object>();
+
+        // base URI
+        String baseUri = Application.getConfiguration().getString("base_uri", "");
+        baseUri = StringUtils.stripEnd(baseUri, "/");
+        vars.put("baseUri", baseUri);
 
         // version
         vars.put("version", Application.getVersion());

@@ -1,8 +1,8 @@
-@import url(/static/bootstrap.min.css);
+@import url(bootstrap.min.css);
 
 @font-face {
     font-family: Cabin;
-    src: url(/static/Cabin-Regular.woff);
+    src: url(Cabin-Regular.woff);
 }
 
 /* base styles */
