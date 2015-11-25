@@ -40,7 +40,12 @@ public class LandingResource extends AbstractResource {
      */
     public static Map<String, Object> getCommonTemplateVars() {
         Map<String,Object> vars = new HashMap<>();
+        // application version
         vars.put("version", Application.getVersion());
+        // base URI
+        String baseUri = Application.getConfiguration().getString("base_uri", "");
+        baseUri = StringUtils.stripEnd(baseUri, "/");
+        vars.put("baseUri", baseUri);
         return vars;
     }
 
@@ -75,14 +80,6 @@ public class LandingResource extends AbstractResource {
 
     private Map<String,Object> getTemplateVars() throws Exception {
         Map<String, Object> vars = getCommonTemplateVars();
-
-        // base URI
-        String baseUri = Application.getConfiguration().getString("base_uri", "");
-        baseUri = StringUtils.stripEnd(baseUri, "/");
-        vars.put("baseUri", baseUri);
-
-        // version
-        vars.put("version", Application.getVersion());
 
         // resolver name
         String resolverStr = "None";

@@ -11,7 +11,7 @@
         #parse("header.vm")
 
         <ol class="breadcrumb">
-            <li><a href="/">Home</a></li>
+            <li><a href="$baseUri/">Home</a></li>
             <li class="active">IIIF Image API 1.1 Endpoint</li>
         </ol>
 

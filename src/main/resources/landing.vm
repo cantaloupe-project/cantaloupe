@@ -15,8 +15,8 @@
         <section>
             <h3>Endpoints</h3>
             <ul>
-                <li><a href="/iiif/1.1">IIIF Image API 1.1</a></li>
-                <li><a href="/iiif/2.0">IIIF Image API 2.0</a></li>
+                <li><a href="$baseUri/iiif/1.1">IIIF Image API 1.1</a></li>
+                <li><a href="$baseUri/iiif/2.0">IIIF Image API 2.0</a></li>
             </ul>
         </section>
 
