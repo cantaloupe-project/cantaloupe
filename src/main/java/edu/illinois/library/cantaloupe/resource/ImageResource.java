@@ -193,7 +193,10 @@ public class ImageResource extends AbstractResource {
                     try (InputStream cacheInputStream =
                                  cache.getImageInputStream(this.params)) {
                         if (cacheInputStream != null) {
+                            final long msec = System.currentTimeMillis();
                             IOUtils.copy(cacheInputStream, outputStream);
+                            logger.debug("Streamed from the cache in {} msec",
+                                    System.currentTimeMillis() - msec);
                         } else {
                             cacheOutputStream = cache.
                                     getImageOutputStream(this.params);
