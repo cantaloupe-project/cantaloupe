@@ -362,7 +362,7 @@ public class ImageResource extends AbstractResource {
         this.addLinkHeader(params);
 
         MediaType mediaType = new MediaType(
-                OutputFormat.valueOf(format.toUpperCase()).getMediaType());
+                params.getOutputFormat().getMediaType());
 
         // FileResolver -> StreamProcessor: OK, using FileInputStream
         // FileResolver -> FileProcessor: OK, using File
