@@ -217,6 +217,11 @@ cache.client.no_transform = true
 # to disable caching.
 #cache.server = FilesystemCache
 
+# If true, the source image will be checked to make sure it exists before a
+# cached copy is returned. If false, the cached copy will be returned without
+# any checking. Resolving first is safer but slower.
+cache.server.resolve_first = true
+
 ###
 # FilesystemCache
 ###
