@@ -5,6 +5,7 @@ import org.apache.commons.configuration.Configuration;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.ChallengeResponse;
 import org.restlet.data.ChallengeScheme;
+import org.restlet.data.Disposition;
 import org.restlet.data.Header;
 import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
@@ -109,22 +110,46 @@ public class ImageResourceTest extends ResourceTest {
         assertEquals(0, client.getResponse().getCacheDirectives().size());
     }
 
+    public void testContentDispositionHeader() {
+        // no header
+        ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
+        client.get();
+        assertNull(client.getResponseEntity().getDisposition());
+
+        // inline
+        Configuration config = Application.getConfiguration();
+        config.setProperty(ImageResource.CONTENT_DISPOSITION_CONFIG_KEY, "inline");
+        client.get();
+        assertEquals(Disposition.TYPE_INLINE,
+                client.getResponseEntity().getDisposition().getType());
+
+        // attachment
+        config.setProperty(ImageResource.CONTENT_DISPOSITION_CONFIG_KEY, "attachment");
+        client.get();
+        assertEquals(Disposition.TYPE_ATTACHMENT,
+                client.getResponseEntity().getDisposition().getType());
+        assertEquals("jpg.jpg",
+                client.getResponseEntity().getDisposition().getFilename());
+    }
+
     /**
-     * Tests that the Link header respects the <code>generate_https_links</code>
+     * Tests that the Link header respects the <code>base_uri</code>
      * key in the configuration.
      */
     public void testLinkHeader() {
         Configuration config = Application.getConfiguration();
         ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
-        config.setProperty("generate_https_links", false);
+
+        config.setProperty("base_uri", null);
         client.get();
         Header header = client.getResponse().getHeaders().getFirst("Link");
-        assertTrue(header.getValue().startsWith("<http://"));
+        assertTrue(header.getValue().startsWith("<http://localhost"));
 
-        config.setProperty("generate_https_links", true);
+        config.setProperty("base_uri", "https://example.org/");
         client.get();
         header = client.getResponse().getHeaders().getFirst("Link");
-        assertTrue(header.getValue().startsWith("<https://"));
+        System.out.println(header.getValue());
+        assertTrue(header.getValue().startsWith("<https://example.org/"));
     }
 
     public void testNotFound() throws IOException {

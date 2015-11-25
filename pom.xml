@@ -4,14 +4,15 @@
   <groupId>edu.illinois.library.cantaloupe</groupId>
   <artifactId>Cantaloupe</artifactId>
   <packaging>jar</packaging>
-  <version>1.1</version>
+  <version>1.2</version>
   <name>Cantaloupe</name>
   <url>https://medusa-project.github.io/cantaloupe/</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <cantaloupe.version>1.1</cantaloupe.version>
+    <cantaloupe.version>1.2</cantaloupe.version>
+    <amazon-s3.version>1.9.0</amazon-s3.version>
     <commons-io.version>2.4</commons-io.version>
     <commons-lang3.version>3.4</commons-lang3.version>
     <h2.version>1.4.190</h2.version>
@@ -33,6 +34,12 @@
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <version>${logback.version}</version>
+    </dependency>
+    <!-- Used by AmazonS3Resolver -->
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-s3</artifactId>
+      <version>${amazon-s3.version}</version>
     </dependency>
     <!-- Used by JdbcResolverTest -->
     <dependency>

@@ -98,7 +98,7 @@ jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre
 
 <h4 id="JdbcResolverMediaTypeFunction">Media Type Retrieval Function</h4>
 
-<p>This JavaScript function returns a media (MIME) type corresponding to the value returned by the <code><a href="#JdbcResolverIdentifierFunction">getDatabaseIdentifier()</a></code> function. If the media type is instead stored in the database, this example will return an SQL statement to retrieve it.</p>
+<p>This JavaScript function returns a media (MIME) type corresponding to the value returned by the <code><a href="#JdbcResolverIdentifierFunction">getDatabaseIdentifier()</a></code> function. If the media type is stored in the database, this example will return an SQL statement to retrieve it.</p>
 
 <pre><code>JdbcResolver.function.media_type = function getMediaType(identifier) {\
       return "SELECT media_type " +\
@@ -115,3 +115,22 @@ jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre
 <pre><code>JdbcResolver.lookup_sql = SELECT image_blob_column \
     FROM some_table \
     WHERE some_identifier = ?</code></pre>
+
+<h3 id="AmazonS3Resolver">AmazonS3Resolver</h3>
+
+<p>AmazonS3Resolver maps an identifier in an IIIF URL to an Amazon S3 object. The identifier is passed as-is to S3.</p>
+
+<p>AmazonS3Resolver currently only supports images with recognizable filename extensions. For images with extensions that are missing or unrecognized, an HTTP 404 error will be returned.</p>
+
+<p>AmazonS3Resolver can be configured with the following options:</p>
+
+<dl>
+  <dt><code>AmazonS3Resolver.access_key_id</code></dt>
+  <dd>An access key associated with your AWS account. (See <a href="http://aws.amazon.com/security-credentials">AWS Security Credentials</a>.)</dd>
+  <dt><code>AmazonS3Resolver.secret_key</code></dt>
+  <dd>A secret key associated with your AWS account. (See <a href="http://aws.amazon.com/security-credentials">AWS Security Credentials</a>.)</dd>
+  <dt><code>AmazonS3Resolver.bucket.name</code></dt>
+  <dd>Name of the bucket containing the images to be served.</dd>
+  <dt><code>AmazonS3Resolver.bucket.region</code></dt>
+  <dd>Name of a region to send requests to, such as <code>us-east-1</code>. Can be commented out or left blank to use a default region. (See <a href="http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region">S3 Regions</a>.)</dd>
+</dl>

@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
@@ -9,6 +10,7 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.app.Velocity;
 import org.restlet.data.CacheDirective;
@@ -65,6 +67,11 @@ public class LandingResource extends AbstractResource {
     private Map<String,Object> getTemplateVars() throws Exception {
         Map<String,Object> vars = new HashMap<String,Object>();
 
+        // base URI
+        String baseUri = Application.getConfiguration().getString("base_uri", "");
+        baseUri = StringUtils.stripEnd(baseUri, "/");
+        vars.put("baseUri", baseUri);
+
         // version
         vars.put("version", Application.getVersion());
 
@@ -116,15 +123,27 @@ public class LandingResource extends AbstractResource {
         }
         vars.put("processorAssignments", assignments);
 
-        // source formats
-        List<SourceFormat> sourceFormats = new ArrayList<>();
+        // image source formats
+        List<SourceFormat> imageFormats = new ArrayList<>();
         for (SourceFormat sourceFormat : SourceFormat.values()) {
-            if (sourceFormat != SourceFormat.UNKNOWN) {
-                sourceFormats.add(sourceFormat);
+            if (sourceFormat.getType() != null &&
+                    sourceFormat.getType().equals(SourceFormat.Type.IMAGE)) {
+                imageFormats.add(sourceFormat);
             }
         }
-        Collections.sort(sourceFormats, new SourceFormatComparator());
-        vars.put("sourceFormats", sourceFormats);
+        Collections.sort(imageFormats, new SourceFormatComparator());
+        vars.put("imageSourceFormats", imageFormats);
+
+        // video source formats
+        List<SourceFormat> videoFormats = new ArrayList<>();
+        for (SourceFormat sourceFormat : SourceFormat.values()) {
+            if (sourceFormat.getType() != null &&
+                    sourceFormat.getType().equals(SourceFormat.Type.VIDEO)) {
+                videoFormats.add(sourceFormat);
+            }
+        }
+        Collections.sort(videoFormats, new SourceFormatComparator());
+        vars.put("videoSourceFormats", videoFormats);
 
         // processors
         List<Processor> sortedProcessors =

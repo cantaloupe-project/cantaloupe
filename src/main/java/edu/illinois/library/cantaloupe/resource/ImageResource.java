@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.util.Map;
 import java.util.Set;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
@@ -18,6 +19,7 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
+import edu.illinois.library.cantaloupe.request.Identifier;
 import edu.illinois.library.cantaloupe.request.OutputFormat;
 import edu.illinois.library.cantaloupe.request.Parameters;
 import edu.illinois.library.cantaloupe.resolver.FileResolver;
@@ -26,6 +28,7 @@ import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
+import org.restlet.data.Disposition;
 import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.resource.Get;
@@ -42,6 +45,64 @@ import org.slf4j.LoggerFactory;
 public class ImageResource extends AbstractResource {
 
     /**
+     * Restlet representation for cached images, returned by
+     * ImageResource.doGet().
+     */
+    private class CachedImageRepresentation extends OutputRepresentation {
+
+        private InputStream inputStream;
+
+        /**
+         * Constructor for images from the cache.
+         *
+         * @param mediaType
+         * @param cacheInputStream
+         */
+        public CachedImageRepresentation(MediaType mediaType,
+                                         Parameters params,
+                                         InputStream cacheInputStream) {
+            super(mediaType);
+            this.inputStream = cacheInputStream;
+            initialize(params.getIdentifier(), params.getOutputFormat());
+        }
+
+        // TODO: duplicated in ImageRepresentation
+        private void initialize(Identifier identifier, OutputFormat format) {
+            Disposition disposition = new Disposition();
+            switch (Application.getConfiguration().
+                    getString(CONTENT_DISPOSITION_CONFIG_KEY, "none")) {
+                case "inline":
+                    disposition.setType(Disposition.TYPE_INLINE);
+                    this.setDisposition(disposition);
+                    break;
+                case "attachment":
+                    disposition.setType(Disposition.TYPE_ATTACHMENT);
+                    disposition.setFilename(
+                            identifier.toString().replaceAll(
+                                    ImageRepresentation.FILENAME_CHARACTERS, "_") +
+                                    "." + format.getExtension());
+                    this.setDisposition(disposition);
+                    break;
+            }
+        }
+
+        /**
+         * Writes the source image to the given output stream.
+         *
+         * @param outputStream Response body output stream supplied by Restlet
+         * @throws IOException
+         */
+        @Override
+        public void write(OutputStream outputStream) throws IOException {
+            final long msec = System.currentTimeMillis();
+            IOUtils.copy(this.inputStream, outputStream);
+            logger.debug("Streamed from the cache without resolving in {} msec",
+                    System.currentTimeMillis() - msec);
+        }
+
+    }
+
+    /**
      * Restlet representation for images, returned by ImageResource.doGet().
      *
      * <em>Note:</em> doGet() should handle all preflight checks. Once it has
@@ -50,11 +111,13 @@ public class ImageResource extends AbstractResource {
      */
     private class ImageRepresentation extends OutputRepresentation {
 
-        File file;
-        Dimension fullSize;
-        InputStream inputStream;
-        Parameters params;
-        SourceFormat sourceFormat;
+        public static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
+
+        private File file;
+        private Dimension fullSize;
+        private InputStream inputStream;
+        private Parameters params;
+        private SourceFormat sourceFormat;
 
         /**
          * Constructor for images from InputStreams.
@@ -75,6 +138,7 @@ public class ImageResource extends AbstractResource {
             this.params = params;
             this.sourceFormat = sourceFormat;
             this.fullSize = fullSize;
+            initialize(params.getIdentifier(), params.getOutputFormat());
         }
 
         /**
@@ -87,11 +151,31 @@ public class ImageResource extends AbstractResource {
          */
         public ImageRepresentation(MediaType mediaType,
                                    SourceFormat sourceFormat,
-                                   Parameters params, File file) {
+                                   Parameters params,
+                                   File file) {
             super(mediaType);
             this.file = file;
             this.params = params;
             this.sourceFormat = sourceFormat;
+            initialize(params.getIdentifier(), params.getOutputFormat());
+        }
+
+        private void initialize(Identifier identifier, OutputFormat format) {
+            Disposition disposition = new Disposition();
+            switch (Application.getConfiguration().
+                    getString(CONTENT_DISPOSITION_CONFIG_KEY, "none")) {
+                case "inline":
+                    disposition.setType(Disposition.TYPE_INLINE);
+                    this.setDisposition(disposition);
+                    break;
+                case "attachment":
+                    disposition.setType(Disposition.TYPE_ATTACHMENT);
+                    disposition.setFilename(
+                            identifier.toString().replaceAll(FILENAME_CHARACTERS, "_") +
+                                    "." + format.getExtension());
+                    this.setDisposition(disposition);
+                    break;
+            }
         }
 
         /**
@@ -109,7 +193,10 @@ public class ImageResource extends AbstractResource {
                     try (InputStream cacheInputStream =
                                  cache.getImageInputStream(this.params)) {
                         if (cacheInputStream != null) {
+                            final long msec = System.currentTimeMillis();
                             IOUtils.copy(cacheInputStream, outputStream);
+                            logger.debug("Streamed from the cache in {} msec",
+                                    System.currentTimeMillis() - msec);
                         } else {
                             cacheOutputStream = cache.
                                     getImageOutputStream(this.params);
@@ -163,7 +250,8 @@ public class ImageResource extends AbstractResource {
                 final long msec = System.currentTimeMillis();
                 // if the parameters request an unmodified source image, it can
                 // be streamed right through
-                if (this.params.isRequestingUnmodifiedSource()) {
+                if (this.sourceFormat.getType().equals(SourceFormat.Type.IMAGE) &&
+                        this.params.isRequestingUnmodifiedSource()) {
                     if (this.file != null) {
                         IOUtils.copy(new FileInputStream(this.file),
                                 outputStream);
@@ -199,6 +287,11 @@ public class ImageResource extends AbstractResource {
 
     private static Logger logger = LoggerFactory.getLogger(ImageResource.class);
 
+    public static final String CONTENT_DISPOSITION_CONFIG_KEY =
+            "http.content_disposition";
+    public static final String RESOLVE_FIRST_CONFIG_KEY =
+            "cache.server.resolve_first";
+
     @Override
     protected void doInit() throws ResourceException {
         super.doInit();
@@ -212,7 +305,7 @@ public class ImageResource extends AbstractResource {
      * @throws Exception
      */
     @Get
-    public ImageRepresentation doGet() throws Exception {
+    public OutputRepresentation doGet() throws Exception {
         // Assemble the URI parameters into a Parameters object
         Map<String,Object> attrs = this.getRequest().getAttributes();
         String identifier = (String) attrs.get("identifier");
@@ -223,6 +316,24 @@ public class ImageResource extends AbstractResource {
         String quality = (String) attrs.get("quality");
         Parameters params = new Parameters(identifier, region, size, rotation,
                 quality, format);
+        params.setQuery(this.getQuery());
+
+        // if we don't need to resolve first and are using a cache, skip all
+        // the setup and just return a cached image.
+        if (!Application.getConfiguration().
+                getBoolean(RESOLVE_FIRST_CONFIG_KEY, true)) {
+            Cache cache = CacheFactory.getInstance();
+            if (cache != null) {
+                InputStream inputStream = cache.getImageInputStream(params);
+                if (inputStream != null) {
+                    this.addLinkHeader(params);
+                    return new CachedImageRepresentation(
+                            new MediaType(params.getOutputFormat().getMediaType()),
+                            params, inputStream);
+                }
+            }
+        }
+
         // Get a reference to the source image (this will also cause an
         // exception if not found)
         Resolver resolver = ResolverFactory.getResolver();
@@ -248,12 +359,10 @@ public class ImageResource extends AbstractResource {
         }
         // All checks made; at this point, we are pretty sure we can fulfill
         // the request
-        this.addHeader("Link", String.format("<%s%s/%s>;rel=\"canonical\"",
-                getPublicRootRef().toString(),
-                ImageServerApplication.BASE_IIIF_PATH, params.toString()));
+        this.addLinkHeader(params);
 
         MediaType mediaType = new MediaType(
-                OutputFormat.valueOf(format.toUpperCase()).getMediaType());
+                params.getOutputFormat().getMediaType());
 
         // FileResolver -> StreamProcessor: OK, using FileInputStream
         // FileResolver -> FileProcessor: OK, using File
@@ -285,11 +394,17 @@ public class ImageResource extends AbstractResource {
                 Dimension fullSize = sproc.getSize(inputStream, sourceFormat);
                 // avoid reusing the stream
                 inputStream = sres.getInputStream(params.getIdentifier());
-                return new ImageRepresentation(mediaType, sourceFormat, fullSize,
-                        params, inputStream);
+                return new ImageRepresentation(mediaType, sourceFormat,
+                        fullSize, params, inputStream);
             }
         }
         return null; // this should never happen
+    }
+
+    private void addLinkHeader(Parameters params) {
+        this.addHeader("Link", String.format("<%s%s/%s>;rel=\"canonical\"",
+                getPublicRootRef().toString(),
+                ImageServerApplication.BASE_IIIF_PATH, params.toString()));
     }
 
 }

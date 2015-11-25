@@ -42,9 +42,6 @@ class ImageMagickProcessor implements StreamProcessor {
     // Lazy-initialized by getFormats()
     private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
 
-    private InputStream inputStream;
-    private SourceFormat sourceFormat;
-
     static {
         SUPPORTED_QUALITIES.add(Quality.BITONAL);
         SUPPORTED_QUALITIES.add(Quality.COLOR);
@@ -195,9 +192,6 @@ class ImageMagickProcessor implements StreamProcessor {
         } else if (!availableOutputFormats.contains(params.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
-
-        this.inputStream = inputStream;
-        this.sourceFormat = sourceFormat;
 
         try {
             IMOperation op = new IMOperation();
