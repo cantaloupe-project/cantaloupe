@@ -19,170 +19,169 @@
                 <li><a href="/iiif/2.0">IIIF Image API 2.0</a></li>
             </ul>
         </section>
-    </div>
 
-    <section>
-        <div class="row">
-            <div class="col-sm-6">
-                <h3>Resolver</h3>
-                <p>$resolverName</p>
-            </div>
-            <div class="col-sm-6">
-                <h3>Cache</h3>
-                <p>$cacheName</p>
-            </div>
-        </div>
-    </section>
-
-    <section>
-        <div class="row">
-            <div class="col-sm-6">
-                <h3>Effective Source Format Assignments</h3>
-
-                <ul class="nav nav-tabs" role="tablist">
-                    <li role="presentation" class="active">
-                        <a href="#image-assignments"
-                           aria-controls="image-assignments" role="tab"
-                           data-toggle="tab">Image</a>
-                    </li>
-                    <li role="presentation">
-                        <a href="#video-assignments"
-                           aria-controls="video-assignments" role="tab"
-                           data-toggle="tab">Video</a>
-                    </li>
-                </ul>
-
-                <div class="tab-content">
-                    <div role="tabpanel" class="tab-pane active" id="image-assignments">
-                        <table class="table table-condensed table-bordered cl-source-format-assignments">
-                            #foreach ($sourceFormat in $processorAssignments.keySet())
-                                #if ($sourceFormat.isImage())
-                                    <tr>
-                                        <td style="width:30%">$sourceFormat.getName()</td>
-                                        <td>$processorAssignments.get($sourceFormat)</td>
-                                    </tr>
-                                #end
-                            #end
-                        </table>
-                    </div>
-
-                    <div role="tabpanel" class="tab-pane" id="video-assignments">
-                        <table class="table table-condensed table-bordered cl-source-format-assignments">
-                            #foreach ($sourceFormat in $processorAssignments.keySet())
-                                #if (!$sourceFormat.isImage())
-                                    <tr>
-                                        <td style="width:30%">$sourceFormat.getName()</td>
-                                        <td>$processorAssignments.get($sourceFormat)</td>
-                                    </tr>
-                                #end
-                            #end
-                        </table>
-                    </div>
+        <section>
+            <div class="row">
+                <div class="col-sm-6">
+                    <h3>Resolver</h3>
+                    <p>$resolverName</p>
+                </div>
+                <div class="col-sm-6">
+                    <h3>Cache</h3>
+                    <p>$cacheName</p>
                 </div>
             </div>
+        </section>
 
-            <div class="col-sm-6">
-                <h3>Memory</h3>
-                <table class="table table-condensed table-bordered">
-                    <tr>
-                        <td>Used Heap</td>
-                        <td>$usedHeap MB</td>
-                    </tr>
-                    <tr>
-                        <td>Available Heap</td>
-                        <td>$freeHeap MB</td>
-                    </tr>
-                    <tr>
-                        <td>Total Heap</td>
-                        <td>$totalHeap MB</td>
-                    </tr>
-                    <tr>
-                        <td>Max Heap</td>
-                        <td>$maxHeap MB</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-    </section>
+        <section>
+            <div class="row">
+                <div class="col-sm-6">
+                    <h3>Effective Source Format Assignments</h3>
 
-    <section>
-        <h3>Supported Source Formats</h3>
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a href="#image-assignments"
+                               aria-controls="image-assignments" role="tab"
+                               data-toggle="tab">Image</a>
+                        </li>
+                        <li role="presentation">
+                            <a href="#video-assignments"
+                               aria-controls="video-assignments" role="tab"
+                               data-toggle="tab">Video</a>
+                        </li>
+                    </ul>
 
-        <ul class="nav nav-tabs" role="tablist">
-            <li role="presentation" class="active">
-                <a href="#supported-image-formats"
-                   aria-controls="supported-image-formats" role="tab"
-                   data-toggle="tab">Image</a>
-            </li>
-            <li role="presentation">
-                <a href="#supported-video-formats"
-                   aria-controls="supported-video-formats" role="tab"
-                   data-toggle="tab">Video</a>
-            </li>
-        </ul>
+                    <div class="tab-content">
+                        <div role="tabpanel" class="tab-pane active" id="image-assignments">
+                            <table class="table table-condensed table-bordered cl-source-format-assignments">
+                                #foreach ($sourceFormat in $processorAssignments.keySet())
+                                    #if ($sourceFormat.isImage())
+                                        <tr>
+                                            <td style="width:30%">$sourceFormat.getName()</td>
+                                            <td>$processorAssignments.get($sourceFormat)</td>
+                                        </tr>
+                                    #end
+                                #end
+                            </table>
+                        </div>
 
-        <div class="tab-content">
-            <div role="tabpanel" class="tab-pane active" id="supported-image-formats">
-                <table class="table table-condensed table-bordered">
-                    <tr>
-                        <th></th>
-                        #foreach ($sourceFormat in $imageSourceFormats)
-                            <th class="text-center">$sourceFormat.getName()</th>
-                        #end
-                    </tr>
+                        <div role="tabpanel" class="tab-pane" id="video-assignments">
+                            <table class="table table-condensed table-bordered cl-source-format-assignments">
+                                #foreach ($sourceFormat in $processorAssignments.keySet())
+                                    #if (!$sourceFormat.isImage())
+                                        <tr>
+                                            <td style="width:30%">$sourceFormat.getName()</td>
+                                            <td>$processorAssignments.get($sourceFormat)</td>
+                                        </tr>
+                                    #end
+                                #end
+                            </table>
+                        </div>
+                    </div>
+                </div>
 
-                    #foreach ($processor in $processors)
+                <div class="col-sm-6">
+                    <h3>Memory</h3>
+                    <table class="table table-condensed table-bordered">
                         <tr>
-                            <td>$processor.getClass().getSimpleName()</td>
+                            <td>Used Heap</td>
+                            <td>$usedHeap MB</td>
+                        </tr>
+                        <tr>
+                            <td>Available Heap</td>
+                            <td>$freeHeap MB</td>
+                        </tr>
+                        <tr>
+                            <td>Total Heap</td>
+                            <td>$totalHeap MB</td>
+                        </tr>
+                        <tr>
+                            <td>Max Heap</td>
+                            <td>$maxHeap MB</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h3>Supported Source Formats</h3>
+
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active">
+                    <a href="#supported-image-formats"
+                       aria-controls="supported-image-formats" role="tab"
+                       data-toggle="tab">Image</a>
+                </li>
+                <li role="presentation">
+                    <a href="#supported-video-formats"
+                       aria-controls="supported-video-formats" role="tab"
+                       data-toggle="tab">Video</a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="supported-image-formats">
+                    <table class="table table-condensed table-bordered">
+                        <tr>
+                            <th></th>
                             #foreach ($sourceFormat in $imageSourceFormats)
-                                <td class="text-center">
-                                    #if ($processor.getAvailableOutputFormats($sourceFormat).size() > 0)
-                                        <span class="text-success">&check;</span>
-                                    #end
-                                </td>
+                                <th class="text-center">$sourceFormat.getName()</th>
                             #end
                         </tr>
-                    #end
-                </table>
-            </div>
 
-            <div role="tabpanel" class="tab-pane" id="supported-video-formats">
-                <table class="table table-condensed table-bordered">
-                    <tr>
-                        <th></th>
-                        #foreach ($sourceFormat in $videoSourceFormats)
-                            <th class="text-center">$sourceFormat.getName()</th>
+                        #foreach ($processor in $processors)
+                            <tr>
+                                <td>$processor.getClass().getSimpleName()</td>
+                                #foreach ($sourceFormat in $imageSourceFormats)
+                                    <td class="text-center">
+                                        #if ($processor.getAvailableOutputFormats($sourceFormat).size() > 0)
+                                            <span class="text-success">&check;</span>
+                                        #end
+                                    </td>
+                                #end
+                            </tr>
                         #end
-                    </tr>
+                    </table>
+                </div>
 
-                    #foreach ($processor in $processors)
+                <div role="tabpanel" class="tab-pane" id="supported-video-formats">
+                    <table class="table table-condensed table-bordered">
                         <tr>
-                            <td>$processor.getClass().getSimpleName()</td>
+                            <th></th>
                             #foreach ($sourceFormat in $videoSourceFormats)
-                                <td class="text-center">
-                                    #if ($processor.getAvailableOutputFormats($sourceFormat).size() > 0)
-                                        <span class="text-success">&check;</span>
-                                    #end
-                                </td>
+                                <th class="text-center">$sourceFormat.getName()</th>
                             #end
                         </tr>
-                    #end
-                </table>
+
+                        #foreach ($processor in $processors)
+                            <tr>
+                                <td>$processor.getClass().getSimpleName()</td>
+                                #foreach ($sourceFormat in $videoSourceFormats)
+                                    <td class="text-center">
+                                        #if ($processor.getAvailableOutputFormats($sourceFormat).size() > 0)
+                                            <span class="text-success">&check;</span>
+                                        #end
+                                    </td>
+                                #end
+                            </tr>
+                        #end
+                    </table>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section>
-        <h3>VM Arguments</h3>
-        <table class="table table-condensed table-bordered">
-            #foreach ($arg in $vmArguments)
-                <tr>
-                    <td>$arg</td>
-                </tr>
-            #end
-        </table>
-    </section>
+        <section>
+            <h3>VM Arguments</h3>
+            <table class="table table-condensed table-bordered">
+                #foreach ($arg in $vmArguments)
+                    <tr>
+                        <td>$arg</td>
+                    </tr>
+                #end
+            </table>
+        </section>
 
-</div>
+    </div>
 </body>
 </html>
