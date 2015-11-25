@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatExceptio
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.app.Velocity;
 import org.restlet.Application;
 import org.restlet.Request;
@@ -81,6 +82,10 @@ public class ImageServerApplication extends Application {
                     status.getReasonPhrase());
             templateVars.put("message", message);
             templateVars.put("stackTrace", stackTrace);
+            String baseUri = edu.illinois.library.cantaloupe.Application.
+                    getConfiguration().getString("base_uri", "");
+            baseUri = StringUtils.stripEnd(baseUri, "/");
+            templateVars.put("baseUri", baseUri);
 
             org.apache.velocity.Template template = Velocity.getTemplate("error.vm");
             return new TemplateRepresentation(template, templateVars,

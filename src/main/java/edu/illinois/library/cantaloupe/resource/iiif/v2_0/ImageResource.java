@@ -1,6 +1,9 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
+import edu.illinois.library.cantaloupe.cache.Cache;
+import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
@@ -14,8 +17,10 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
+import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
 import org.restlet.data.MediaType;
+import org.restlet.representation.OutputRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
 import org.slf4j.Logger;
@@ -50,7 +55,7 @@ public class ImageResource extends AbstractResource {
      * @throws Exception
      */
     @Get
-    public ImageRepresentation doGet() throws Exception {
+    public OutputRepresentation doGet() throws Exception {
         // Assemble the URI parameters into a Operations object
         Map<String,Object> attrs = this.getRequest().getAttributes();
         Parameters params = new Parameters(
@@ -61,6 +66,24 @@ public class ImageResource extends AbstractResource {
                 (String) attrs.get("quality"),
                 (String) attrs.get("format"));
         Operations ops = params.toOperations();
+
+        // If we don't need to resolve first, and are using a cache, and the
+        // cache contains an image matching the request, skip all the setup and
+        // just return the cached image.
+        if (!Application.getConfiguration().
+                getBoolean(RESOLVE_FIRST_CONFIG_KEY, true)) {
+            Cache cache = CacheFactory.getInstance();
+            if (cache != null) {
+                InputStream inputStream = cache.getImageInputStream(ops);
+                if (inputStream != null) {
+                    this.addLinkHeader(ops);
+                    return new CachedImageRepresentation(
+                            new MediaType(params.getOutputFormat().getMediaType()),
+                            ops, inputStream);
+                }
+            }
+        }
+
         Resolver resolver = ResolverFactory.getResolver();
         // Determine the format of the source image
         SourceFormat sourceFormat = resolver.
@@ -84,9 +107,7 @@ public class ImageResource extends AbstractResource {
             throw new UnsupportedSourceFormatException(msg);
         }
 
-        this.addHeader("Link", String.format("<%s%s/%s>;rel=\"canonical\"",
-                getPublicRootRef().toString(),
-                ImageServerApplication.IIIF_2_0_PATH, params.toString()));
+        this.addLinkHeader(ops);
 
         MediaType mediaType = new MediaType(
                 ops.getOutputFormat().getMediaType());
@@ -126,6 +147,12 @@ public class ImageResource extends AbstractResource {
             }
         }
         return null; // this should never happen
+    }
+
+    private void addLinkHeader(Operations ops) {
+        this.addHeader("Link", String.format("<%s%s/%s>;rel=\"canonical\"",
+                getPublicRootRef().toString(),
+                ImageServerApplication.IIIF_2_0_PATH, ops.toString()));
     }
 
 }

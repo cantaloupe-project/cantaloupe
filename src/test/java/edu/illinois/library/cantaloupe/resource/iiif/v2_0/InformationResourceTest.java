@@ -67,8 +67,8 @@ public class InformationResourceTest extends ResourceTest {
         // response defined in the Image API spec are tested in
         // ConformanceTest
 
-        // test whether the @id property respects the generate_https_links
-        // setting in the app config
+        // test whether the @id property respects the base_uri configuration
+        // option
         ClientResource client = getClientForUriPath("/escher_lego.jpg/info.json");
         client.get();
         String json = client.getResponse().getEntityAsText();
@@ -77,11 +77,11 @@ public class InformationResourceTest extends ResourceTest {
         assertTrue(info.getId().startsWith("http://"));
 
         Configuration config = Application.getConfiguration();
-        config.setProperty("generate_https_links", true);
+        config.setProperty("base_uri", "http://example.org/");
         client.get();
         json = client.getResponse().getEntityAsText();
         info = mapper.readValue(json, ImageInfo.class);
-        assertTrue(info.getId().startsWith("https://"));
+        assertTrue(info.getId().startsWith("http://example.org/"));
     }
 
     public void testNotFound() throws IOException {

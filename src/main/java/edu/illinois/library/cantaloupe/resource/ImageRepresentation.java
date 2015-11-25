@@ -36,13 +36,13 @@ public class ImageRepresentation extends OutputRepresentation {
 
     public static final String CONTENT_DISPOSITION_CONFIG_KEY =
             "http.content_disposition";
-    private static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
+    public static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
 
-    File file;
-    Dimension fullSize;
-    InputStream inputStream;
-    Operations ops;
-    SourceFormat sourceFormat;
+    private File file;
+    private Dimension fullSize;
+    private InputStream inputStream;
+    private Operations ops;
+    private SourceFormat sourceFormat;
 
     /**
      * Constructor for images from InputStreams.

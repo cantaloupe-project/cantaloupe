@@ -19,9 +19,10 @@ http.port = 8182
 # are `inline`, `attachment`, and `none`.
 http.content_disposition = inline
 
-# Whether to generate all internal links with `https://` URLs, i.e. for when
-# running behind an HTTPS reverse proxy.
-generate_https_links = false
+# The base URI to use for internal links, such as Link headers and JSON-LD @id
+# values. This is mainly needed in reverse-proxy scenarios, where a public base
+# URI needs to override the local URI. Leave blank to use the default.
+base_uri =
 
 # Helpful in development
 print_stack_trace_on_error_pages = true
@@ -215,6 +216,13 @@ cache.client.no_transform = true
 # The only available value is `FilesystemCache`. Comment out or set blank
 # to disable caching.
 #cache.server = FilesystemCache
+
+# If true, the source image will be checked to make sure it exists before a
+# cached copy is returned. If false, the cached copy will be returned without
+# any checking. Resolving first is safer but slower.
+# Note: this has no effect with the IIIF 1.1 endpoint -- it is effectively
+# always true.
+cache.server.resolve_first = true
 
 ###
 # FilesystemCache
