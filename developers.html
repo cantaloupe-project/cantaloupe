@@ -50,6 +50,7 @@
         <li><a href="getting-started.html#Configuration">Configuration</a></li>
         <li><a href="getting-started.html#Running">Running</a></li>
         <li><a href="getting-started.html#Upgrading">Upgrading</a></li>
+        <li><a href="getting-started.html#Proxying">Proxying</a></li>
         <li><a href="getting-started.html#Considerations">Considerations</a></li>
       </ul>
     </li>
@@ -59,6 +60,7 @@
         <li><a href="resolvers.html#FilesystemResolver">Filesystem</a></li>
         <li><a href="resolvers.html#HttpResolver">HTTP</a></li>
         <li><a href="resolvers.html#JdbcResolver">JDBC</a></li>
+        <li><a href="resolvers.html#AmazonS3Resolver">Amazon S3</a></li>
       </ul>
     </li>
     <li>
@@ -69,6 +71,8 @@
         <li><a href="processors.html#ImageMagickProcessor">ImageMagick</a></li>
         <li><a href="processors.html#KakaduProcessor">Kakadu</a></li>
         <li><a href="processors.html#JaiProcessor">JAI</a></li>
+        <li><a href="processors.html#FfmpegProcessor">FFmpeg</a></li>
+        <li><a href="processors.html#Compatibility">Compatibility</a></li>
       </ul>
     </li>
     <li>
@@ -144,9 +148,9 @@ examples.</p>
 
 <h3 id="Contributing">Contributing</h3>
 
-<p>Ideas, suggestions, feature requests, bug reports, and other kinds of feedback are welcome; <a href="mailto:alexd@illinois.edu">contact the author</a>, or submit an issue or pull request.</p>
+<p>Ideas, suggestions, feature requests, bug reports, and other kinds of feedback are welcome; please <a href="https://github.com/medusa-project/cantaloupe/issues/new">submit an issue</a>.</p>
 
-<p>This project uses the <a href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow/">Gitflow</a> branching model. All changes should take place in feature branches ("feature/xxxx") that branch off from the main branch, "develop." They can then be cleanly integrated, by the release manager, into a particular release.</p>
+<p>This project uses the <a href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow/">Gitflow</a> branching model. All changes should take place in feature branches ("feature/xxxx") that branch off from the main branch, "develop." They can then be cleanly integrated into a particular release by the release manager.</p>
 
 <p>The general process for contributing code changes is:</p>
 
@@ -155,7 +159,7 @@ examples.</p>
   <li>Create a feature branch (<code>git checkout -b feature/my-new-feature</code>)</li>
   <li>Commit your changes (<code>`git commit -am 'Add some feature'</code>)</li>
   <li>Push to the branch (<code>git push origin feature/my-new-feature</code>)</li>
-  <li>Create a new Pull Request</li>
+  <li>Create a pull request</li>
 </ol>
 
 <h3 id="Administrative">Administrative</h3>
@@ -171,8 +175,6 @@ examples.</p>
 <h4 id="Versioning">Versioning</h4>
 
 <p>Cantaloupe roughly uses semantic versioning. Major releases (n) break backwards compatibility in a significant way. Minor releases (n.n) either do not break compatibility, or only in a trivial way. Patch releases (n.n.n) are for bugfixes only.</p>
-
-<p>Note that the above statement applies only to the HTTP endpoints. Internal public API may change significantly from release to release (though this is not really likely.)</p>
 
 <h4 id="Releasing">Releasing</h4>
 

@@ -50,6 +50,7 @@
         <li><a href="getting-started.html#Configuration">Configuration</a></li>
         <li><a href="getting-started.html#Running">Running</a></li>
         <li><a href="getting-started.html#Upgrading">Upgrading</a></li>
+        <li><a href="getting-started.html#Proxying">Proxying</a></li>
         <li><a href="getting-started.html#Considerations">Considerations</a></li>
       </ul>
     </li>
@@ -59,6 +60,7 @@
         <li><a href="resolvers.html#FilesystemResolver">Filesystem</a></li>
         <li><a href="resolvers.html#HttpResolver">HTTP</a></li>
         <li><a href="resolvers.html#JdbcResolver">JDBC</a></li>
+        <li><a href="resolvers.html#AmazonS3Resolver">Amazon S3</a></li>
       </ul>
     </li>
     <li>
@@ -69,6 +71,8 @@
         <li><a href="processors.html#ImageMagickProcessor">ImageMagick</a></li>
         <li><a href="processors.html#KakaduProcessor">Kakadu</a></li>
         <li><a href="processors.html#JaiProcessor">JAI</a></li>
+        <li><a href="processors.html#FfmpegProcessor">FFmpeg</a></li>
+        <li><a href="processors.html#Compatibility">Compatibility</a></li>
       </ul>
     </li>
     <li>
@@ -116,6 +120,16 @@
 
         <div class="col-sm-9">
           <h2>Change Log</h2>
+
+<h3>1.2</h3>
+
+<ul>
+  <li>Added AmazonS3Resolver.</li>
+  <li>Added FfmpegProcessor.</li>
+  <li>Made the <code>Content-Disposition</code> header configurable.</li>
+  <li>Replaced the <code>generate_https_links</code> configuration option with the <code>base_uri</code> option.</li>
+  <li>Added the <code>cache.server.resolve_first</code> configuration option.</li>
+</ul>
 
 <h3>1.1</h3>
 

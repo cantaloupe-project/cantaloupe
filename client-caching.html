@@ -50,6 +50,7 @@
         <li><a href="getting-started.html#Configuration">Configuration</a></li>
         <li><a href="getting-started.html#Running">Running</a></li>
         <li><a href="getting-started.html#Upgrading">Upgrading</a></li>
+        <li><a href="getting-started.html#Proxying">Proxying</a></li>
         <li><a href="getting-started.html#Considerations">Considerations</a></li>
       </ul>
     </li>
@@ -59,6 +60,7 @@
         <li><a href="resolvers.html#FilesystemResolver">Filesystem</a></li>
         <li><a href="resolvers.html#HttpResolver">HTTP</a></li>
         <li><a href="resolvers.html#JdbcResolver">JDBC</a></li>
+        <li><a href="resolvers.html#AmazonS3Resolver">Amazon S3</a></li>
       </ul>
     </li>
     <li>
@@ -69,6 +71,8 @@
         <li><a href="processors.html#ImageMagickProcessor">ImageMagick</a></li>
         <li><a href="processors.html#KakaduProcessor">Kakadu</a></li>
         <li><a href="processors.html#JaiProcessor">JAI</a></li>
+        <li><a href="processors.html#FfmpegProcessor">FFmpeg</a></li>
+        <li><a href="processors.html#Compatibility">Compatibility</a></li>
       </ul>
     </li>
     <li>
@@ -137,8 +141,6 @@ cache.client.no_transform = true</pre>
 <p>These are reasonable defaults that tell clients they can keep cached images for one month (2592000 seconds).</p>
 
 <p>Note that the Cache-Control header must have a particular structure, so not just any combination of the above will work.</p>
-
-<p>To disable the Cache-Control header, simply comment out the <code>cache.client.*</code> lines.</p>
 
         </div>
       </div>

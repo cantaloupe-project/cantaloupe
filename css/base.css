@@ -36,6 +36,9 @@ nav#toc {
       margin-left: 1em;
       padding-left: 0px; }
 
+table th {
+  text-align: center; }
+
 footer {
   height: 2em; }
 

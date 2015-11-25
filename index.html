@@ -50,6 +50,7 @@
         <li><a href="getting-started.html#Configuration">Configuration</a></li>
         <li><a href="getting-started.html#Running">Running</a></li>
         <li><a href="getting-started.html#Upgrading">Upgrading</a></li>
+        <li><a href="getting-started.html#Proxying">Proxying</a></li>
         <li><a href="getting-started.html#Considerations">Considerations</a></li>
       </ul>
     </li>
@@ -59,6 +60,7 @@
         <li><a href="resolvers.html#FilesystemResolver">Filesystem</a></li>
         <li><a href="resolvers.html#HttpResolver">HTTP</a></li>
         <li><a href="resolvers.html#JdbcResolver">JDBC</a></li>
+        <li><a href="resolvers.html#AmazonS3Resolver">Amazon S3</a></li>
       </ul>
     </li>
     <li>
@@ -69,6 +71,8 @@
         <li><a href="processors.html#ImageMagickProcessor">ImageMagick</a></li>
         <li><a href="processors.html#KakaduProcessor">Kakadu</a></li>
         <li><a href="processors.html#JaiProcessor">JAI</a></li>
+        <li><a href="processors.html#FfmpegProcessor">FFmpeg</a></li>
+        <li><a href="processors.html#Compatibility">Compatibility</a></li>
       </ul>
     </li>
     <li>
@@ -136,11 +140,11 @@
 <ul>
   <li>Easy to get working</li>
   <li>Self-contained</li>
-  <li>Pluggable resolvers for filesystem, database, and HTTP sources</li>
-  <li>Pluggable processors to support a wide variety of source image formats, including TIFF and JPEG2000</li>
-  <li>Lean and efficient with no app server or Servlet stack overhead</li>
-  <li>Configurable caching</li>
-  <li>Optional authentication</li>
+  <li>Pluggable resolvers for filesystem, database, HTTP, and Amazon S3 sources</li>
+  <li>Pluggable processors to support a wide variety of source image formats, including TIFF and JPEG2000 &mdash; as well as video formats</li>
+  <li>Lean and efficient with no application server overhead</li>
+  <li>Configurable server- and client-side caching</li>
+  <li>Available authentication</li>
 </ul>
 
 <h2 id="Download">Download</h2>
