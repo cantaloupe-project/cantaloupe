@@ -113,11 +113,11 @@ public class ImageResource extends AbstractResource {
 
         public static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
 
-        File file;
-        Dimension fullSize;
-        InputStream inputStream;
-        Parameters params;
-        SourceFormat sourceFormat;
+        private File file;
+        private Dimension fullSize;
+        private InputStream inputStream;
+        private Parameters params;
+        private SourceFormat sourceFormat;
 
         /**
          * Constructor for images from InputStreams.
