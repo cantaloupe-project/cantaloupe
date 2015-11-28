@@ -23,8 +23,8 @@ public interface FileProcessor extends Processor {
             throws ProcessorException;
 
     /**
-     * Uses the supplied parameters to process an image from the supplied File,
-     * and writes the result to the given OutputStream.
+     * <p>Performs the supplied operations on an image, reading it from the
+     * supplied file, and writing the result to the supplied OutputStream.</p>
      *
      * <p>Implementations should use the sourceSize parameter and not their
      * own <code>getSize()</code> method to avoid reusing a potentially

@@ -54,6 +54,7 @@ public class Rotation {
      * @return String representation of the instance, guaranteed to represent
      * the instance, but not guaranteed to be meaningful.
      */
+    @Override
     public String toString() {
         String str = "";
         if (this.shouldMirror()) {

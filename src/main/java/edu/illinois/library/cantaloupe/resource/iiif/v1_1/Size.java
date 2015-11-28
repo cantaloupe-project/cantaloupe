@@ -6,7 +6,8 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Encapsulates the "size" component of an IIIF request URI.
  *
- * @see <a href="http://iiif.io/api/image/2.0/#size">IIIF Image API 2.0</a>
+ * @see <a href="http://iiif.io/api/image/1.1/#parameters-size">IIIF Image API
+ * 1.1</a>
  */
 class Size {
 

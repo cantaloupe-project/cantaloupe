@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.image;
 
 /**
- * Unique identifier of an image.
+ * Image-server-unique image identifier.
  */
 public class Identifier implements Comparable<Identifier> {
 
@@ -49,6 +49,7 @@ public class Identifier implements Comparable<Identifier> {
     /**
      * @return The value of the instance.
      */
+    @Override
     public String toString() {
         return getValue();
     }

@@ -192,10 +192,16 @@ public enum SourceFormat {
         return this.name;
     }
 
+    /**
+     * @return The most appropriate extension for the format.
+     */
     public String getPreferredExtension() {
         return this.getExtensions().get(0);
     }
 
+    /**
+     * @return The most appropriate media type for the format.
+     */
     public MediaType getPreferredMediaType() {
         return this.getMediaTypes().get(0);
     }
@@ -204,6 +210,12 @@ public enum SourceFormat {
         return this.type;
     }
 
+    /**
+     * Convenience method.
+     *
+     * @return True if the type (as returned by {@link #getType()}) is
+     * {@link Type.IMAGE}.
+     */
     public boolean isImage() {
         return (this.getType() != null && this.getType().equals(Type.IMAGE));
     }

@@ -17,7 +17,7 @@ public class Scale {
     }
 
     /**
-     * @return Float from 0-1
+     * @return Float from 0 to 1
      */
     public Float getPercent() {
         return percent;
@@ -39,7 +39,7 @@ public class Scale {
     }
 
     /**
-     * @param percent Float from 0-1
+     * @param percent Float from 0 to 1
      * @throws IllegalArgumentException
      */
     public void setPercent(Float percent) throws IllegalArgumentException {
@@ -64,6 +64,7 @@ public class Scale {
      * @return String representation of the instance, guaranteed to represent
      * the instance, but not guaranteed to be meaningful.
      */
+    @Override
     public String toString() {
         String str = "";
         if (this.getScaleMode() == Mode.FULL) {

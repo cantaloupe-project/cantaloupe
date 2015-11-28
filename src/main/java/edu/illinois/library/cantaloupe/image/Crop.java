@@ -4,7 +4,10 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 
 /**
- * Encapsulates a region of an image for cropping purposes.
+ * <p>Encapsulates a cropping operation.</p>
+ *
+ * <p>Note that {@link #isFull()} can be assumed to take precedence over all
+ * other properties.</p>
  */
 public class Crop {
 
@@ -15,7 +18,12 @@ public class Crop {
     private Float x = 0.0f;
     private Float y = 0.0f;
 
-    public Float getHeight() {
+    /**
+     * @return The height of the operation. If {@link #isPercent()} returns
+     * <code>true</code>, this will be a percentage of the full image height
+     * between 0 and 1.
+     */
+    public float getHeight() {
         return height;
     }
 
@@ -45,18 +53,37 @@ public class Crop {
         return new Rectangle(x, y, width, height);
     }
 
-    public Float getWidth() {
+    /**
+     * @return The width of the operation. If {@link #isPercent()} returns
+     * <code>true</code>, this will be a percentage of the full image width
+     * between 0 and 1.
+     */
+    public float getWidth() {
         return width;
     }
 
-    public Float getX() {
+    /**
+     * @return The left bounding coordinate of the operation. If
+     * {@link #isPercent()} returns <code>true</code>, this will be a
+     * percentage of the full image width between 0 and 1.
+     */
+    public float getX() {
         return x;
     }
 
-    public Float getY() {
+    /**
+     * @return The top bounding coordinate of the operation. If
+     * {@link #isPercent()} returns <code>true</code>, this will be a
+     * percentage of the full image height between 0 and 1.
+     */
+    public float getY() {
         return y;
     }
 
+    /**
+     * @return Whether the crop specifies the full source area, i.e. whether it
+     * is effectively a no-op.
+     */
     public boolean isFull() {
         return this.isFull;
     }
@@ -105,6 +132,7 @@ public class Crop {
      * @return String representation of the instance, guaranteed to represent
      * the instance, but not guaranteed to be meaningful.
      */
+    @Override
     public String toString() {
         String str = "";
         if (this.isFull()) {

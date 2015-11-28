@@ -132,9 +132,10 @@ public class Operations implements Comparable<Operations> {
     }
 
     /**
-     * @return String representation of the instance, guaranteed to represent
-     * the instance, but not guaranteed to be meaningful.
+     * @return String representation of the instance, guaranteed to uniquely
+     * represent the instance, but not guaranteed to be meaningful.
      */
+    @Override
     public String toString() {
         return String.format("%s_%s_%s_%s_%s_%s", getIdentifier(), getRegion(),
                 getScale(), getRotation(),
