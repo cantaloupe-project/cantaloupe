@@ -234,7 +234,7 @@ class GraphicsMagickProcessor implements StreamProcessor {
             if (op instanceof Crop) {
                 Crop crop = (Crop) op;
                 if (!crop.isFull()) {
-                    if (crop.isPercent()) {
+                    if (crop.getUnit().equals(Crop.Unit.PERCENT)) {
                         // im4java doesn't support cropping x/y by percentage --
                         // only width/height -- so we have to calculate them.
                         int x = Math.round(crop.getX() * fullSize.width);

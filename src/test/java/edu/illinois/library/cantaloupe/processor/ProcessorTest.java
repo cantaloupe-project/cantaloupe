@@ -160,7 +160,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         crop.setHeight(50f);
         crops.add(crop);
         crop = new Crop();
-        crop.setPercent(true);
+        crop.setUnit(Crop.Unit.PERCENT);
         crop.setX(0.2f);
         crop.setY(0.2f);
         crop.setWidth(0.2f);

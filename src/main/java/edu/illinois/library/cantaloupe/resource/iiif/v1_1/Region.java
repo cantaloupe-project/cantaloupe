@@ -68,14 +68,14 @@ class Region {
             final Crop crop = (Crop) obj;
             if (this.isPercent()) {
                 return isFull() == crop.isFull() &&
-                        isPercent() == crop.isPercent() &&
+                        isPercent() == crop.getUnit().equals(Crop.Unit.PERCENT) &&
                         Math.abs(getX() - crop.getX() * 100) < fudge &&
                         Math.abs(getY() - crop.getY() * 100) < fudge &&
                         Math.abs(getWidth() - crop.getWidth() * 100) < fudge &&
                         Math.abs(getHeight() - crop.getHeight() * 100) < fudge;
             }
             return isFull() == crop.isFull() &&
-                    isPercent() == crop.isPercent() &&
+                    isPercent() == crop.getUnit().equals(Crop.Unit.PERCENT) &&
                     Math.abs(getX() - crop.getX()) < fudge &&
                     Math.abs(getY() - crop.getY()) < fudge &&
                     Math.abs(getWidth() - crop.getWidth()) < fudge &&
@@ -147,7 +147,7 @@ class Region {
     public Crop toCrop() {
         Crop crop = new Crop();
         crop.setFull(this.isFull());
-        crop.setPercent(this.isPercent());
+        crop.setUnit(this.isPercent() ? Crop.Unit.PERCENT : Crop.Unit.PIXELS);
         if (this.getX() != null) {
             crop.setX(this.isPercent() ? this.getX() / 100f : this.getX());
         }

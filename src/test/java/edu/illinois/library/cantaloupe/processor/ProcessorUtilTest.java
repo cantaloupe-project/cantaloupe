@@ -33,7 +33,7 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
 
         // percentage crop
         crop = new Crop();
-        crop.setPercent(true);
+        crop.setUnit(Crop.Unit.PERCENT);
         crop.setX(0.5f);
         crop.setY(0.5f);
         crop.setWidth(0.5f);
@@ -66,7 +66,7 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
 
         // percentage crop
         crop = new Crop();
-        crop.setPercent(true);
+        crop.setUnit(Crop.Unit.PERCENT);
         crop.setX(0.5f);
         crop.setY(0.5f);
         crop.setWidth(0.5f);

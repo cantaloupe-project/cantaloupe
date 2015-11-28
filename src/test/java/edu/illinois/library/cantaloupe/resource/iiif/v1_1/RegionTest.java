@@ -130,7 +130,7 @@ public class RegionTest extends CantaloupeTestCase {
 
     public void testEqualsWithEqualCrop() {
         Crop crop = new Crop();
-        crop.setPercent(true);
+        crop.setUnit(Crop.Unit.PERCENT);
         crop.setX(0.2f);
         crop.setY(0.2f);
         crop.setWidth(0.2f);
@@ -140,7 +140,7 @@ public class RegionTest extends CantaloupeTestCase {
 
     public void testEqualsWithUnequalCrop1() {
         Crop crop = new Crop();
-        crop.setPercent(true);
+        crop.setUnit(Crop.Unit.PERCENT);
         crop.setX(0.5f);
         crop.setY(0.2f);
         crop.setWidth(0.2f);
@@ -150,7 +150,7 @@ public class RegionTest extends CantaloupeTestCase {
 
     public void testEqualsWithUnequalCrop2() {
         Crop crop = new Crop();
-        crop.setPercent(true);
+        crop.setUnit(Crop.Unit.PERCENT);
         crop.setX(0.2f);
         crop.setY(0.5f);
         crop.setWidth(0.2f);
@@ -160,7 +160,7 @@ public class RegionTest extends CantaloupeTestCase {
 
     public void testEqualsWithUnequalCrop3() {
         Crop crop = new Crop();
-        crop.setPercent(true);
+        crop.setUnit(Crop.Unit.PERCENT);
         crop.setX(0.2f);
         crop.setY(0.2f);
         crop.setWidth(0.5f);
@@ -170,7 +170,7 @@ public class RegionTest extends CantaloupeTestCase {
 
     public void testEqualsWithUnequalCrop4() {
         Crop crop = new Crop();
-        crop.setPercent(true);
+        crop.setUnit(Crop.Unit.PERCENT);
         crop.setX(0.2f);
         crop.setY(0.2f);
         crop.setWidth(0.2f);

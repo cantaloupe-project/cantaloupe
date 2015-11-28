@@ -102,7 +102,7 @@ abstract class ProcessorUtil {
 
             int x, y, requestedWidth, requestedHeight, croppedWidth,
                     croppedHeight;
-            if (crop.isPercent()) {
+            if (crop.getUnit().equals(Crop.Unit.PERCENT)) {
                 x = (int) Math.round(regionX * inImage.getWidth());
                 y = (int) Math.round(regionY * inImage.getHeight());
                 requestedWidth = (int) Math.round(regionWidth  *
@@ -133,7 +133,7 @@ abstract class ProcessorUtil {
         } else {
             // calculate the region x, y, and actual width/height
             float x, y, requestedWidth, requestedHeight, actualWidth, actualHeight;
-            if (crop.isPercent()) {
+            if (crop.getUnit().equals(Crop.Unit.PERCENT)) {
                 x = crop.getX() * inImage.getWidth();
                 y = crop.getY() * inImage.getHeight();
                 requestedWidth = crop.getWidth() * inImage.getWidth();
