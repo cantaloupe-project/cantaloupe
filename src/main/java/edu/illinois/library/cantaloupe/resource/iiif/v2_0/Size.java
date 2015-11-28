@@ -132,7 +132,7 @@ class Size {
             scale.setPercent(this.getPercent() / 100f);
         }
         if (this.getScaleMode() != null) {
-            scale.setScaleMode(this.getScaleMode().toMode());
+            scale.setMode(this.getScaleMode().toMode());
         }
         return scale;
     }

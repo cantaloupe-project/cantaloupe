@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
+import edu.illinois.library.cantaloupe.image.Transpose;
 
 public class RotationTest extends CantaloupeTestCase {
 
@@ -8,8 +9,8 @@ public class RotationTest extends CantaloupeTestCase {
 
     public void setUp() {
         this.rotation = new Rotation();
-        assertEquals(0f, this.rotation.getDegrees());
-        assertFalse(this.rotation.shouldMirror());
+        assertEquals(0f, rotation.getDegrees());
+        assertFalse(rotation.shouldMirror());
     }
 
     /* fromUri(String) */
@@ -55,36 +56,36 @@ public class RotationTest extends CantaloupeTestCase {
 
     public void testCompareTo() {
         Rotation r2 = new Rotation();
-        assertEquals(0, this.rotation.compareTo(r2));
+        assertEquals(0, rotation.compareTo(r2));
         r2.setDegrees(15);
-        assertEquals(-1, this.rotation.compareTo(r2));
+        assertEquals(-1, rotation.compareTo(r2));
         r2.setDegrees(0);
         r2.setMirror(true);
-        assertEquals(-1, this.rotation.compareTo(r2));
+        assertEquals(-1, rotation.compareTo(r2));
     }
 
     public void testEquals() {
         Rotation r2 = new Rotation();
-        assertTrue(r2.equals(this.rotation));
+        assertTrue(r2.equals(rotation));
         r2.setDegrees(15);
-        assertFalse(r2.equals(this.rotation));
+        assertFalse(r2.equals(rotation));
         r2.setDegrees(0);
         r2.setMirror(true);
-        assertFalse(r2.equals(this.rotation));
+        assertFalse(r2.equals(rotation));
     }
 
     /* setDegrees() */
 
     public void testSetDegrees() {
         float degrees = 50.0f;
-        this.rotation.setDegrees(degrees);
-        assertEquals(degrees, this.rotation.getDegrees());
+        rotation.setDegrees(degrees);
+        assertEquals(degrees, rotation.getDegrees());
     }
 
     public void testSetLargeDegrees() {
         float degrees = 530.0f;
         try {
-            this.rotation.setDegrees(degrees);
+            rotation.setDegrees(degrees);
         } catch (IllegalArgumentException e) {
             assertEquals("Degrees must be between 0 and 360", e.getMessage());
         }
@@ -93,17 +94,22 @@ public class RotationTest extends CantaloupeTestCase {
     public void testSetNegativeDegrees() {
         float degrees = -50.0f;
         try {
-            this.rotation.setDegrees(degrees);
+            rotation.setDegrees(degrees);
         } catch (IllegalArgumentException e) {
             assertEquals("Degrees must be between 0 and 360", e.getMessage());
         }
     }
 
     public void testToRotation() {
-        edu.illinois.library.cantaloupe.image.Rotation actual =
-                new edu.illinois.library.cantaloupe.image.Rotation(this.rotation.getDegrees());
-        actual.setMirror(this.rotation.shouldMirror());
-        assertTrue(this.rotation.equals(this.rotation.toRotation()));
+        assertTrue(rotation.equals(rotation.toRotation()));
+    }
+
+    public void testToTranspose() {
+        rotation.setMirror(false);
+        assertNull(rotation.toTranspose());
+        rotation.setMirror(true);
+        assertEquals(new Transpose(Transpose.Axis.HORIZONTAL),
+                rotation.toTranspose());
     }
 
     public void testToString() {

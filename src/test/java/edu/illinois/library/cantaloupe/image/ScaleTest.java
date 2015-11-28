@@ -10,7 +10,26 @@ public class ScaleTest extends CantaloupeTestCase {
         this.scale = new Scale();
     }
 
-    /* height */
+    public void testIsNoOp() {
+        scale.setMode(Scale.Mode.FULL);
+        assertTrue(scale.isNoOp());
+        scale = new Scale();
+        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        scale.setPercent(1f);
+        assertTrue(scale.isNoOp());
+        scale = new Scale();
+        scale.setPercent(0.5f);
+        assertFalse(scale.isNoOp());
+        scale = new Scale();
+        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        scale.setWidth(100);
+        scale.setHeight(100);
+        assertFalse(scale.isNoOp());
+        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        assertFalse(scale.isNoOp());
+        scale.setMode(Scale.Mode.NON_ASPECT_FILL);
+        assertFalse(scale.isNoOp());
+    }
 
     public void testSetHeight() {
         Integer height = 50;
@@ -36,8 +55,6 @@ public class ScaleTest extends CantaloupeTestCase {
         }
     }
 
-    /* percent */
-
     public void testSetPercent() {
         float percent = 0.5f;
         this.scale.setPercent(percent);
@@ -61,8 +78,6 @@ public class ScaleTest extends CantaloupeTestCase {
             assertEquals("Percent must be between 0-1", e.getMessage());
         }
     }
-
-    /* width */
 
     public void testSetWidth() {
         Integer width = 50;
@@ -88,38 +103,36 @@ public class ScaleTest extends CantaloupeTestCase {
         }
     }
 
-    /* toString */
-
     public void testToString() {
         Scale scale = new Scale();
-        scale.setScaleMode(Scale.Mode.FULL);
+        scale.setMode(Scale.Mode.FULL);
         assertEquals("full", scale.toString());
 
         scale = new Scale();
         scale.setWidth(50);
-        scale.setScaleMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
         assertEquals("50,", scale.toString());
 
         scale = new Scale();
         scale.setHeight(50);
-        scale.setScaleMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
         assertEquals(",50", scale.toString());
 
         scale = new Scale();
-        scale.setScaleMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setPercent(0.5f);
         assertEquals("pct:0.5", scale.toString());
 
         scale = new Scale();
         scale.setWidth(50);
         scale.setHeight(40);
-        scale.setScaleMode(Scale.Mode.NON_ASPECT_FILL);
+        scale.setMode(Scale.Mode.NON_ASPECT_FILL);
         assertEquals("50,40", scale.toString());
 
         scale = new Scale();
         scale.setWidth(50);
         scale.setHeight(40);
-        scale.setScaleMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         assertEquals("!50,40", scale.toString());
     }
 

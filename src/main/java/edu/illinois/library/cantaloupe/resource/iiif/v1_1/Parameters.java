@@ -135,9 +135,14 @@ class Parameters implements Comparable<Parameters> {
     }
 
     public Operations toOperations() {
-        return new Operations(getIdentifier(), getRegion().toCrop(),
-                getSize().toScale(), getRotation().toRotation(), getQuality(),
-                getOutputFormat());
+        Operations ops = new Operations();
+        ops.setIdentifier(getIdentifier());
+        ops.setOutputFormat(getOutputFormat());
+        ops.add(getRegion().toCrop());
+        ops.add(getSize().toScale());
+        ops.add(getRotation().toRotation());
+        ops.add(getQuality());
+        return ops;
     }
 
     /**

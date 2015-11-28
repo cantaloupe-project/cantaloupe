@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.image;
 
-public class Scale {
+public class Scale implements Operation {
 
     public enum Mode {
         ASPECT_FIT_HEIGHT, ASPECT_FIT_WIDTH, ASPECT_FIT_INSIDE,
@@ -16,6 +16,10 @@ public class Scale {
         return height;
     }
 
+    public Mode getMode() {
+        return scaleMode;
+    }
+
     /**
      * @return Float from 0 to 1
      */
@@ -23,12 +27,14 @@ public class Scale {
         return percent;
     }
 
-    public Mode getScaleMode() {
-        return scaleMode;
-    }
-
     public Integer getWidth() {
         return width;
+    }
+
+    public boolean isNoOp() {
+        return (this.getMode() == Mode.FULL) ||
+                (this.getPercent() != null && Math.abs(this.getPercent() - 1f) < 0.000001f) ||
+                (this.getPercent() == null && this.getHeight() == null && this.getWidth() == null);
     }
 
     public void setHeight(Integer height) throws IllegalArgumentException {
@@ -49,7 +55,7 @@ public class Scale {
         this.percent = percent;
     }
 
-    public void setScaleMode(Mode scaleMode) {
+    public void setMode(Mode scaleMode) {
         this.scaleMode = scaleMode;
     }
 
@@ -67,12 +73,12 @@ public class Scale {
     @Override
     public String toString() {
         String str = "";
-        if (this.getScaleMode() == Mode.FULL) {
+        if (this.getMode() == Mode.FULL) {
             str += "full";
         } else if (this.getPercent() != null) {
             str += "pct:" + NumberUtil.removeTrailingZeroes(this.getPercent());
         } else {
-            if (this.getScaleMode() == Mode.ASPECT_FIT_INSIDE) {
+            if (this.getMode() == Mode.ASPECT_FIT_INSIDE) {
                 str += "!";
             }
             if (this.getWidth() != null && this.getWidth() > 0) {

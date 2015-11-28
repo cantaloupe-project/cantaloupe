@@ -1,6 +1,12 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
+import com.sun.media.jai.codec.ImageCodec;
+import com.sun.media.jai.codec.ImageEncoder;
+import com.sun.media.jai.codec.JPEGEncodeParam;
+import com.sun.media.jai.codecimpl.TIFFImageEncoder;
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
@@ -68,8 +74,8 @@ abstract class ProcessorUtil {
     }
 
     public static BufferedImage cropImage(BufferedImage inImage,
-                                          Crop region) {
-        return cropImage(inImage, region, 0);
+                                          Crop crop) {
+        return cropImage(inImage, crop, 0);
     }
 
     /**
@@ -78,30 +84,30 @@ abstract class ProcessorUtil {
      * rf times but the given region is relative to the full-sized image.
      *
      * @param inImage
-     * @param region
+     * @param crop
      * @param reductionFactor
      * @return
      */
     public static BufferedImage cropImage(BufferedImage inImage,
-                                          Crop region, int reductionFactor) {
+                                          Crop crop, int reductionFactor) {
         BufferedImage croppedImage;
-        if (region.isFull()) {
+        if (crop.isFull()) {
             croppedImage = inImage;
         } else {
             final double scale = getScale(reductionFactor);
-            final double regionX = region.getX() * scale;
-            final double regionY = region.getY() * scale;
-            final double regionWidth = region.getWidth() * scale;
-            final double regionHeight = region.getHeight() * scale;
+            final double regionX = crop.getX() * scale;
+            final double regionY = crop.getY() * scale;
+            final double regionWidth = crop.getWidth() * scale;
+            final double regionHeight = crop.getHeight() * scale;
 
             int x, y, requestedWidth, requestedHeight, croppedWidth,
                     croppedHeight;
-            if (region.isPercent()) {
-                x = (int) Math.round((regionX / 100.0) * inImage.getWidth());
-                y = (int) Math.round((regionY / 100.0) * inImage.getHeight());
-                requestedWidth = (int) Math.round((regionWidth / 100.0) *
+            if (crop.isPercent()) {
+                x = (int) Math.round(regionX * inImage.getWidth());
+                y = (int) Math.round(regionY * inImage.getHeight());
+                requestedWidth = (int) Math.round(regionWidth  *
                         inImage.getWidth());
-                requestedHeight = (int) Math.round((regionHeight / 100.0) *
+                requestedHeight = (int) Math.round(regionHeight *
                         inImage.getHeight());
             } else {
                 x = (int) Math.round(regionX);
@@ -116,6 +122,40 @@ abstract class ProcessorUtil {
             croppedHeight = (y + requestedHeight > inImage.getHeight()) ?
                     inImage.getHeight() - y : requestedHeight;
             croppedImage = inImage.getSubimage(x, y, croppedWidth, croppedHeight);
+        }
+        return croppedImage;
+    }
+
+    public static RenderedOp cropImage(RenderedOp inImage, Crop crop) {
+        RenderedOp croppedImage;
+        if (crop.isFull()) {
+            croppedImage = inImage;
+        } else {
+            // calculate the region x, y, and actual width/height
+            float x, y, requestedWidth, requestedHeight, actualWidth, actualHeight;
+            if (crop.isPercent()) {
+                x = crop.getX() * inImage.getWidth();
+                y = crop.getY() * inImage.getHeight();
+                requestedWidth = crop.getWidth() * inImage.getWidth();
+                requestedHeight = crop.getHeight() * inImage.getHeight();
+            } else {
+                x = crop.getX();
+                y = crop.getY();
+                requestedWidth = crop.getWidth();
+                requestedHeight = crop.getHeight();
+            }
+            actualWidth = (x + requestedWidth > inImage.getWidth()) ?
+                    inImage.getWidth() - x : requestedWidth;
+            actualHeight = (y + requestedHeight > inImage.getHeight()) ?
+                    inImage.getHeight() - y : requestedHeight;
+
+            ParameterBlock pb = new ParameterBlock();
+            pb.addSource(inImage);
+            pb.add(x);
+            pb.add(y);
+            pb.add(actualWidth);
+            pb.add(actualHeight);
+            croppedImage = JAI.create("crop", pb);
         }
         return croppedImage;
     }
@@ -144,19 +184,19 @@ abstract class ProcessorUtil {
     public static BufferedImage filterImage(BufferedImage inImage,
                                             Quality quality) {
         BufferedImage filteredImage = inImage;
-        if (quality != Quality.COLOR && quality != Quality.DEFAULT) {
-            switch (quality) {
-                case GRAY:
-                    filteredImage = new BufferedImage(inImage.getWidth(),
-                            inImage.getHeight(),
-                            BufferedImage.TYPE_BYTE_GRAY);
-                    break;
-                case BITONAL:
-                    filteredImage = new BufferedImage(inImage.getWidth(),
-                            inImage.getHeight(),
-                            BufferedImage.TYPE_BYTE_BINARY);
-                    break;
-            }
+        switch (quality) {
+            case GRAY:
+                filteredImage = new BufferedImage(inImage.getWidth(),
+                        inImage.getHeight(),
+                        BufferedImage.TYPE_BYTE_GRAY);
+                break;
+            case BITONAL:
+                filteredImage = new BufferedImage(inImage.getWidth(),
+                        inImage.getHeight(),
+                        BufferedImage.TYPE_BYTE_BINARY);
+                break;
+        }
+        if (filteredImage != inImage) {
             Graphics2D g2d = filteredImage.createGraphics();
             g2d.drawImage(inImage, 0, 0, null);
         }
@@ -266,21 +306,12 @@ abstract class ProcessorUtil {
 
     public static RenderedOp rotateImage(RenderedOp inImage,
                                          Rotation rotation) {
-        // do mirroring
-        RenderedOp mirroredImage = inImage;
-        if (rotation.shouldMirror()) {
-            ParameterBlock pb = new ParameterBlock();
-            pb.addSource(inImage);
-            pb.add(TransposeDescriptor.FLIP_HORIZONTAL);
-            mirroredImage = JAI.create("transpose", pb);
-        }
-        // do rotation
-        RenderedOp rotatedImage = mirroredImage;
+        RenderedOp rotatedImage = inImage;
         if (rotation.getDegrees() > 0) {
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(rotatedImage);
-            pb.add(mirroredImage.getWidth() / 2.0f);
-            pb.add(mirroredImage.getHeight() / 2.0f);
+            pb.add(inImage.getWidth() / 2.0f);
+            pb.add(inImage.getHeight() / 2.0f);
             pb.add((float) Math.toRadians(rotation.getDegrees()));
             pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
             rotatedImage = JAI.create("rotate", pb);
@@ -290,21 +321,11 @@ abstract class ProcessorUtil {
 
     public static BufferedImage rotateImage(BufferedImage inImage,
                                             Rotation rotation) {
-        // do mirroring
-        BufferedImage mirroredImage = inImage;
-        if (rotation.shouldMirror()) {
-            AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
-            tx.translate(-mirroredImage.getWidth(null), 0);
-            AffineTransformOp op = new AffineTransformOp(tx,
-                    AffineTransformOp.TYPE_BILINEAR);
-            mirroredImage = op.filter(inImage, null);
-        }
-        // do rotation
-        BufferedImage rotatedImage = mirroredImage;
+        BufferedImage rotatedImage = inImage;
         if (rotation.getDegrees() > 0) {
             double radians = Math.toRadians(rotation.getDegrees());
-            int sourceWidth = mirroredImage.getWidth();
-            int sourceHeight = mirroredImage.getHeight();
+            int sourceWidth = inImage.getWidth();
+            int sourceHeight = inImage.getHeight();
             int canvasWidth = (int) Math.round(Math.abs(sourceWidth *
                     Math.cos(radians)) + Math.abs(sourceHeight *
                     Math.sin(radians)));
@@ -328,28 +349,28 @@ abstract class ProcessorUtil {
                     RenderingHints.KEY_INTERPOLATION,
                     RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             g2d.setRenderingHints(hints);
-            g2d.drawImage(mirroredImage, tx, null);
+            g2d.drawImage(inImage, tx, null);
         }
         return rotatedImage;
     }
 
     public static RenderedOp scaleImage(RenderedOp inImage, Scale scale) {
         RenderedOp scaledImage;
-        if (scale.getScaleMode() == Scale.Mode.FULL) {
+        if (scale.getMode() == Scale.Mode.FULL) {
             scaledImage = inImage;
         } else {
             final double sourceWidth = inImage.getWidth();
             final double sourceHeight = inImage.getHeight();
             double xScale = 1.0f;
             double yScale = 1.0f;
-            if (scale.getScaleMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+            if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                 xScale = yScale = scale.getWidth() / sourceWidth;
-            } else if (scale.getScaleMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
+            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                 xScale = yScale = scale.getHeight() / sourceHeight;
-            } else if (scale.getScaleMode() == Scale.Mode.NON_ASPECT_FILL) {
+            } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
                 xScale = scale.getWidth() / sourceWidth;
                 yScale = scale.getHeight() / sourceHeight;
-            } else if (scale.getScaleMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
+            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
                 double hScale = scale.getWidth() / sourceWidth;
                 double vScale = scale.getHeight() / sourceHeight;
                 xScale = (sourceWidth * Math.min(hScale, vScale));
@@ -384,7 +405,7 @@ abstract class ProcessorUtil {
     public static RenderedOp scaleImage(PlanarImage inImage, Scale scale,
                                         int reductionFactor) {
         RenderedOp scaledImage;
-        if (scale.getScaleMode() == Scale.Mode.FULL) {
+        if (scale.getMode() == Scale.Mode.FULL) {
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
             pb.add(1.0f);
@@ -398,21 +419,20 @@ abstract class ProcessorUtil {
             final double sourceHeight = inImage.getHeight();
             double xScale = 1.0f;
             double yScale = 1.0f;
-            if (scale.getScaleMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+            if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                 xScale = yScale = scale.getWidth() / sourceWidth;
-            } else if (scale.getScaleMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
+            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                 xScale = yScale = scale.getHeight() / sourceHeight;
-            } else if (scale.getScaleMode() == Scale.Mode.NON_ASPECT_FILL) {
+            } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
                 xScale = scale.getWidth() / sourceWidth;
                 yScale = scale.getHeight() / sourceHeight;
-            } else if (scale.getScaleMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
+            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
                 double hScale = scale.getWidth() / sourceWidth;
                 double vScale = scale.getHeight() / sourceHeight;
                 xScale = sourceWidth * Math.min(hScale, vScale);
                 yScale = sourceHeight * Math.min(hScale, vScale);
             } else if (scale.getPercent() != null) {
-                double reqScale = scale.getPercent() / 100.0f;
-                int reqRf = getReductionFactor(reqScale, 0);
+                int reqRf = getReductionFactor(scale.getPercent(), 0);
                 xScale = yScale = getScale(reqRf - reductionFactor);
             }
             ParameterBlock pb = new ParameterBlock();
@@ -437,20 +457,20 @@ abstract class ProcessorUtil {
     public static BufferedImage scaleImageWithAffineTransform(
             BufferedImage inImage, Scale scale) {
         BufferedImage scaledImage;
-        if (scale.getScaleMode() == Scale.Mode.FULL) {
+        if (scale.getMode() == Scale.Mode.FULL) {
             scaledImage = inImage;
         } else {
             double xScale = 0.0f, yScale = 0.0f;
-            if (scale.getScaleMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+            if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                 xScale = scale.getWidth() / (double) inImage.getWidth();
                 yScale = xScale;
-            } else if (scale.getScaleMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
+            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                 yScale = scale.getHeight() / (double) inImage.getHeight();
                 xScale = yScale;
-            } else if (scale.getScaleMode() == Scale.Mode.NON_ASPECT_FILL) {
+            } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
                 xScale = scale.getWidth() / (double) inImage.getWidth();
                 yScale = scale.getHeight() / (double) inImage.getHeight();
-            } else if (scale.getScaleMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
+            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
                 double hScale = (double) scale.getWidth() /
                         (double) inImage.getWidth();
                 double vScale = (double) scale.getHeight() /
@@ -501,22 +521,22 @@ abstract class ProcessorUtil {
                                                   Scale scale,
                                                   int reductionFactor) {
         BufferedImage scaledImage;
-        if (scale.getScaleMode() == Scale.Mode.FULL) {
+        if (scale.getMode() == Scale.Mode.FULL) {
             scaledImage = inImage;
         } else {
             final int sourceWidth = inImage.getWidth();
             final int sourceHeight = inImage.getHeight();
             int width = 0, height = 0;
-            if (scale.getScaleMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+            if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                 width = scale.getWidth();
                 height = sourceHeight * width / sourceWidth;
-            } else if (scale.getScaleMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
+            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                 height = scale.getHeight();
                 width = sourceWidth * height / sourceHeight;
-            } else if (scale.getScaleMode() == Scale.Mode.NON_ASPECT_FILL) {
+            } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
                 width = scale.getWidth();
                 height = scale.getHeight();
-            } else if (scale.getScaleMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
+            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
                 double hScale = (double) scale.getWidth() / (double) sourceWidth;
                 double vScale = (double) scale.getHeight() / (double) sourceHeight;
                 width = (int) Math.round(sourceWidth *
@@ -541,6 +561,37 @@ abstract class ProcessorUtil {
             g2d.dispose();
         }
         return scaledImage;
+    }
+
+    public static BufferedImage transposeImage(BufferedImage inImage,
+                                               Transpose transpose) {
+        AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
+        switch (transpose.getAxis()) {
+            case HORIZONTAL:
+                tx.translate(-inImage.getWidth(null), 0);
+                break;
+            case VERTICAL:
+                tx.translate(0, -inImage.getHeight(null)); // TODO: test this
+                break;
+        }
+        AffineTransformOp op = new AffineTransformOp(tx,
+                AffineTransformOp.TYPE_BILINEAR);
+        return op.filter(inImage, null);
+    }
+
+    public static RenderedOp transposeImage(RenderedOp inImage,
+                                            Transpose flip) {
+        ParameterBlock pb = new ParameterBlock();
+        pb.addSource(inImage);
+        switch (flip.getAxis()) {
+            case HORIZONTAL:
+                pb.add(TransposeDescriptor.FLIP_HORIZONTAL);
+                break;
+            case VERTICAL:
+                pb.add(TransposeDescriptor.FLIP_VERTICAL);
+                break;
+        }
+        return JAI.create("transpose", pb);
     }
 
     /**
@@ -620,6 +671,72 @@ abstract class ProcessorUtil {
                         outputStream);
                 break;
         }
+    }
+
+    public static void writeImage(RenderedOp image, OutputFormat format,
+                                  OutputStream outputStream)
+            throws IOException {
+        switch (format) {
+            case GIF:
+                // TODO: this and ImageIO.write() frequently don't work
+                Iterator writers = ImageIO.getImageWritersByFormatName("GIF");
+                if (writers.hasNext()) {
+                    // GIFWriter can't deal with a non-0,0 origin
+                    ParameterBlock pb = new ParameterBlock();
+                    pb.addSource(image);
+                    pb.add((float) -image.getMinX());
+                    pb.add((float) -image.getMinY());
+                    image = JAI.create("translate", pb);
+
+                    ImageWriter writer = (ImageWriter) writers.next();
+                    ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
+                    writer.setOutput(os);
+                    writer.write(image);
+                }
+                break;
+            case JP2:
+                // TODO: neither this nor ImageIO.write() seem to write anything
+                writers = ImageIO.getImageWritersByFormatName("JPEG2000");
+                if (writers.hasNext()) {
+                    ImageWriter writer = (ImageWriter) writers.next();
+                    IIOImage iioImage = new IIOImage(image, null, null);
+                    J2KImageWriteParam j2Param = new J2KImageWriteParam();
+                    j2Param.setLossless(false);
+                    j2Param.setEncodingRate(Double.MAX_VALUE);
+                    j2Param.setCodeBlockSize(new int[]{128, 8});
+                    j2Param.setTilingMode(ImageWriteParam.MODE_DISABLED);
+                    j2Param.setProgressionType("res");
+                    ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
+                    writer.setOutput(os);
+                    writer.write(null, iioImage, j2Param);
+                }
+                break;
+            case JPG:
+                // JPEGImageEncoder seems to be slightly more efficient than
+                // ImageIO.write()
+                JPEGEncodeParam jParam = new JPEGEncodeParam();
+                ImageEncoder encoder = ImageCodec.createImageEncoder("JPEG",
+                        outputStream, jParam);
+                encoder.encode(image);
+                break;
+            case PNG:
+                // ImageIO.write() seems to be more efficient than
+                // PNGImageEncoder
+                ImageIO.write(image, format.getExtension(), outputStream);
+                /* PNGEncodeParam pngParam = new PNGEncodeParam.RGB();
+                ImageEncoder pngEncoder = ImageCodec.createImageEncoder("PNG",
+                        outputStream, pngParam);
+                pngEncoder.encode(image); */
+                break;
+            case TIF:
+                // TIFFImageEncoder seems to be more efficient than
+                // ImageIO.write();
+                ImageEncoder tiffEnc = new TIFFImageEncoder(outputStream,
+                        null);
+                tiffEnc.encode(image);
+                break;
+        }
+
     }
 
 }

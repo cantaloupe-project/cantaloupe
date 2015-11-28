@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.Operations;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -18,6 +19,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
@@ -323,16 +326,16 @@ class FilesystemCache implements Cache {
     public File getCachedImageFile(Operations ops) {
         final String cachePathname = getImagePathname();
         if (cachePathname != null) {
-            final String pathname = String.format("%s%s%s_%s_%s_%s_%s.%s",
-                    StringUtils.stripEnd(cachePathname, File.separator),
-                    File.separator,
-                    ops.getIdentifier().toString().replaceAll(FILENAME_CHARACTERS, "_"),
-                    ops.getRegion().toString().replaceAll(FILENAME_CHARACTERS, "_"),
-                    ops.getScale().toString().replaceAll(FILENAME_CHARACTERS, "_"),
-                    ops.getRotation().toString().replaceAll(FILENAME_CHARACTERS, "_"),
-                    ops.getQuality().toString().toLowerCase(),
+            List<String> parts = new ArrayList<>();
+            parts.add(StringUtils.stripEnd(cachePathname, File.separator) +
+                    File.separator +
+                    ops.getIdentifier().toString().replaceAll(FILENAME_CHARACTERS, "_"));
+            for (Operation op : ops) {
+                parts.add(op.toString().replaceAll(FILENAME_CHARACTERS, "_"));
+            }
+            final String baseName = StringUtils.join(parts, "_");
+            return new File(baseName + "." +
                     ops.getOutputFormat().getExtension());
-            return new File(pathname);
         }
         return null;
     }

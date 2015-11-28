@@ -176,7 +176,7 @@ public class ImageRepresentation extends OutputRepresentation {
             final long msec = System.currentTimeMillis();
             // if the parameters request an unmodified source image, it can
             // be streamed right through
-            if (this.ops.isRequestingUnmodifiedSource()) {
+            if (this.ops.isNoOp()) {
                 if (this.file != null) {
                     IOUtils.copy(new FileInputStream(this.file),
                             outputStream);

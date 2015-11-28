@@ -11,4 +11,18 @@ public class QualityTest extends CantaloupeTestCase {
         assertNotNull(Quality.valueOf("GRAY"));
     }
 
+    public void testIsNoOp() {
+        assertFalse(Quality.BITONAL.isNoOp());
+        assertTrue(Quality.COLOR.isNoOp());
+        assertTrue(Quality.DEFAULT.isNoOp());
+        assertFalse(Quality.GRAY.isNoOp());
+    }
+
+    public void testToString() {
+        assertEquals("bitonal", Quality.BITONAL.toString());
+        assertEquals("color", Quality.COLOR.toString());
+        assertEquals("default", Quality.DEFAULT.toString());
+        assertEquals("gray", Quality.GRAY.toString());
+    }
+
 }

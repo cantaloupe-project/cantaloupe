@@ -1,51 +1,31 @@
 package edu.illinois.library.cantaloupe.image;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
- * <p>Encapsulates a set of image transform operations. Operations can be
- * expected to be applied in the following order:</p>
- *
- * <ol>
- *     <li>Cropping</li>
- *     <li>Scaling</li>
- *     <li>Rotation</li>
- *     <li>Filtering</li>
- *     <li>Format conversion</li>
- * </ol>
+ * Encapsulates a normalized list of image transform operations along with an
+ * image identifier and desired output format.
  */
-public class Operations implements Comparable<Operations> {
+public class Operations implements Comparable<Operations>, Iterable<Operation> {
 
     private Identifier identifier;
+    private List<Operation> operations = new ArrayList<>();
     private Map<String,Object> options = new HashMap<>();
     private OutputFormat outputFormat;
-    private Quality quality;
-    private Crop region;
-    private Rotation rotation;
-    private Scale scale;
 
     /**
-     * No-op constructor.
+     * @param op Operation to add. Null values will be discarded.
      */
-    public Operations() {}
-
-    /**
-     * @param identifier
-     * @param region
-     * @param scale
-     * @param rotation
-     * @param quality
-     * @param format
-     */
-    public Operations(Identifier identifier, Crop region, Scale scale,
-                      Rotation rotation, Quality quality, OutputFormat format) {
-        setIdentifier(identifier);
-        setRegion(region);
-        setScale(scale);
-        setRotation(rotation);
-        setQuality(quality);
-        setOutputFormat(format);
+    public void add(Operation op) {
+        if (op != null) {
+            operations.add(op);
+        }
     }
 
     @Override
@@ -70,41 +50,27 @@ public class Operations implements Comparable<Operations> {
         return outputFormat;
     }
 
-    public Quality getQuality() {
-        return quality;
-    }
-
-    public Crop getRegion() {
-        return region;
-    }
-
-    public Rotation getRotation() {
-        return rotation;
-    }
-
-    public Scale getScale() {
-        return scale;
-    }
-
     /**
-     * @return Whether the operations are effectively requesting the unmodified
-     * source image, i.e. whether they specify full region, full scale, 0
-     * rotation, no mirroring, default or color quality, and the same output
-     * format as the source format.
+     * @return Whether the operations are effectively calling for the
+     * unmodified source image.
      */
-    public boolean isRequestingUnmodifiedSource() {
-        final Scale scale = this.getScale();
-        final boolean isFullSize = (scale.getScaleMode() == Scale.Mode.FULL) ||
-                (scale.getPercent() != null && Math.abs(scale.getPercent() - 100f) < 0.000001f ||
-                        (scale.getPercent() == null && scale.getWidth() == null && scale.getHeight() == null));
-        return this.getRegion().isFull() && isFullSize &&
-                this.getRotation().getDegrees() == 0 &&
-                !(this.getRotation().shouldMirror() &&
-                        this.getRotation().getDegrees() != 0) &&
-                (this.getQuality().equals(Quality.DEFAULT) ||
-                        this.getQuality().equals(Quality.COLOR)) &&
-                this.getOutputFormat().isEqual(
-                        SourceFormat.getSourceFormat(this.getIdentifier()));
+    public boolean isNoOp() {
+        if (!this.getOutputFormat().isEqual(
+                SourceFormat.getSourceFormat(this.getIdentifier()))) {
+            return false;
+        }
+        for (Operation op : this) {
+            if (!op.isNoOp()) {
+                System.out.println(op);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public Iterator<Operation> iterator() {
+        return operations.iterator();
     }
 
     public void setIdentifier(Identifier identifier) {
@@ -115,31 +81,19 @@ public class Operations implements Comparable<Operations> {
         this.outputFormat = outputFormat;
     }
 
-    public void setQuality(Quality quality) {
-        this.quality = quality;
-    }
-
-    public void setRegion(Crop region) {
-        this.region = region;
-    }
-
-    public void setRotation(Rotation rotation) {
-        this.rotation = rotation;
-    }
-
-    public void setScale(Scale scale) {
-        this.scale = scale;
-    }
-
     /**
      * @return String representation of the instance, guaranteed to uniquely
      * represent the instance, but not guaranteed to be meaningful.
      */
     @Override
     public String toString() {
-        return String.format("%s_%s_%s_%s_%s_%s", getIdentifier(), getRegion(),
-                getScale(), getRotation(),
-                getQuality().toString().toLowerCase(), getOutputFormat());
+        List<String> parts = new ArrayList<>();
+        parts.add(getIdentifier().toString());
+        for (Operation op : this) {
+            parts.add(op.toString());
+        }
+        return StringUtils.join(parts, "_") + "." +
+                getOutputFormat().getExtension();
     }
 
 }

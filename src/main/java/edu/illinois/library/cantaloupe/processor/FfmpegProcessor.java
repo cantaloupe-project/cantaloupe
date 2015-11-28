@@ -2,15 +2,16 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Quality;
 import edu.illinois.library.cantaloupe.image.Rotation;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Transpose;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.restlet.data.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -414,65 +415,75 @@ class FfmpegProcessor implements FileProcessor {
         command.add("1");
         command.add("-an"); // disable audio
 
-        final Crop region = ops.getRegion();
-        final Scale size = ops.getScale();
-        final Rotation rotation = ops.getRotation();
-        final Quality quality = ops.getQuality();
-
-        if (!region.isFull() || size.getScaleMode() != Scale.Mode.FULL ||
-                rotation.shouldMirror() || rotation.getDegrees() > 0 ||
-                (quality != Quality.COLOR && quality != Quality.DEFAULT)) {
-            List<String> filters = new ArrayList<>();
-
-            if (!region.isFull()) {
-                Rectangle cropArea = region.getRectangle(fullSize);
-                // ffmpeg will complain if given an out-of-bounds crop area
-                cropArea.width = Math.min(cropArea.width, fullSize.width - cropArea.x);
-                cropArea.height = Math.min(cropArea.height, fullSize.height - cropArea.y);
-                filters.add(String.format("crop=%d:%d:%d:%d", cropArea.width,
-                        cropArea.height, cropArea.x, cropArea.y));
-            }
-            if (size.getScaleMode() != Scale.Mode.FULL) {
-                if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                    filters.add(String.format("scale=%d:-1", size.getWidth()));
-                } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                    filters.add(String.format("scale=-1:%d", size.getHeight()));
-                } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                    int min = Math.min(size.getWidth(), size.getHeight());
-                    filters.add(String.format("scale=min(%d\\, iw):-1", min));
-                } else if (size.getScaleMode() == Scale.Mode.NON_ASPECT_FILL) {
-                    filters.add(String.format("scale=%d:%d", size.getWidth(),
-                            size.getHeight()));
-                } else if (size.getPercent() != 0) {
-                    int width = Math.round(fullSize.width * (size.getPercent() / 100f));
-                    int height = Math.round(fullSize.height * (size.getPercent() / 100f));
-                    filters.add(String.format("scale=%d:%d", width, height));
+        List<String> filters = new ArrayList<>();
+        for (Operation op : ops) {
+            if (op instanceof Crop) {
+                Crop crop = (Crop) op;
+                if (!crop.isFull()) {
+                    Rectangle cropArea = crop.getRectangle(fullSize);
+                    // ffmpeg will complain if given an out-of-bounds crop area
+                    cropArea.width = Math.min(cropArea.width, fullSize.width - cropArea.x);
+                    cropArea.height = Math.min(cropArea.height, fullSize.height - cropArea.y);
+                    filters.add(String.format("crop=%d:%d:%d:%d", cropArea.width,
+                            cropArea.height, cropArea.x, cropArea.y));
                 }
-            }
-            if (rotation.shouldMirror()) {
-                filters.add("hflip");
-            }
-            if (rotation.getDegrees() > 0) {
-                // 0 = 90CounterClockwise and Vertical Flip (default)
-                // 1 = 90Clockwise
-                // 2 = 90CounterClockwise
-                // 3 = 90Clockwise and Vertical Flip
-                switch (Math.round(rotation.getDegrees())) {
-                    case 90:
-                        filters.add("transpose=1");
+            } else if (op instanceof Scale) {
+                Scale scale = (Scale) op;
+                if (scale.getMode() != Scale.Mode.FULL) {
+                    if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+                        filters.add(String.format("scale=%d:-1", scale.getWidth()));
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
+                        filters.add(String.format("scale=-1:%d", scale.getHeight()));
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
+                        int min = Math.min(scale.getWidth(), scale.getHeight());
+                        filters.add(String.format("scale=min(%d\\, iw):-1", min));
+                    } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
+                        filters.add(String.format("scale=%d:%d", scale.getWidth(),
+                                scale.getHeight()));
+                    } else if (scale.getPercent() != 0) {
+                        int width = Math.round(fullSize.width * scale.getPercent());
+                        int height = Math.round(fullSize.height * scale.getPercent());
+                        filters.add(String.format("scale=%d:%d", width, height));
+                    }
+                }
+            } else if (op instanceof Transpose) {
+                Transpose transpose = (Transpose) op;
+                switch (transpose.getAxis()) {
+                    case HORIZONTAL:
+                        filters.add("hflip");
                         break;
-                    case 180:
-                        filters.add("transpose=1");
-                        filters.add("transpose=1");
-                        break;
-                    case 270:
-                        filters.add("transpose=2");
+                    case VERTICAL:
+                        filters.add("vflip");
                         break;
                 }
+            } else if (op instanceof Rotation) {
+                Rotation rotation = (Rotation) op;
+                if (rotation.getDegrees() > 0) {
+                    // 0 = 90CounterClockwise and Vertical Transpose (default)
+                    // 1 = 90Clockwise
+                    // 2 = 90CounterClockwise
+                    // 3 = 90Clockwise and Vertical Transpose
+                    switch (Math.round(rotation.getDegrees())) {
+                        case 90:
+                            filters.add("transpose=1");
+                            break;
+                        case 180:
+                            filters.add("transpose=1");
+                            filters.add("transpose=1");
+                            break;
+                        case 270:
+                            filters.add("transpose=2");
+                            break;
+                    }
+                }
+            } else if (op instanceof Quality) {
+                Quality quality = (Quality) op;
+                if (quality.equals(Quality.GRAY)) {
+                    filters.add("colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3");
+                }
             }
-            if (quality.equals(Quality.GRAY)) {
-                filters.add("colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3");
-            }
+        }
+        if (filters.size() > 0) {
             command.add("-vf");
             command.add(StringUtils.join(filters, ","));
         }

@@ -27,6 +27,11 @@ public interface StreamProcessor extends Processor {
      * supplied InputStream, and writing the result to the supplied
      * OutputStream.</p>
      *
+     * <p>Operations should be applied in the order they are set in the
+     * Operations object. Implementations should check whether each option is
+     * a no-op ({@link Operation#isNoOp()}) before performing it, for the sake
+     * of efficiency.</p>
+     *
      * <p>Implementations should use the sourceSize parameter and not their
      * own <code>getScale()</code> method to avoid reusing a potentially
      * unreusable InputStream.</p>

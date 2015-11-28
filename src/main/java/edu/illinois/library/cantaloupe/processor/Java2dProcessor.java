@@ -4,11 +4,14 @@ import com.sun.media.jai.codec.ImageCodec;
 import com.sun.media.jai.codec.ImageDecoder;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.Rotation;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Quality;
+import edu.illinois.library.cantaloupe.image.Transpose;
 import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -154,12 +157,21 @@ class Java2dProcessor implements StreamProcessor {
             ReductionFactor reductionFactor = new ReductionFactor();
             BufferedImage image = loadImage(inputStream, sourceFormat, ops,
                     fullSize, reductionFactor);
-            image = ProcessorUtil.cropImage(image, ops.getRegion(),
-                    reductionFactor.factor);
-            image = ProcessorUtil.scaleImageWithG2d(image, ops.getScale(),
-                    reductionFactor.factor);
-            image = ProcessorUtil.rotateImage(image, ops.getRotation());
-            image = ProcessorUtil.filterImage(image, ops.getQuality());
+            for (Operation op : ops) {
+                if (op instanceof Crop) {
+                    image = ProcessorUtil.cropImage(image, (Crop) op,
+                            reductionFactor.factor);
+                } else if (op instanceof Scale) {
+                    image = ProcessorUtil.scaleImageWithG2d(image, (Scale) op,
+                            reductionFactor.factor);
+                } else if (op instanceof Transpose) {
+                    image = ProcessorUtil.transposeImage(image, (Transpose) op);
+                } else if (op instanceof Rotation) {
+                    image = ProcessorUtil.rotateImage(image, (Rotation) op);
+                } else if (op instanceof Quality) {
+                    image = ProcessorUtil.filterImage(image, (Quality) op);
+                }
+            }
             ProcessorUtil.writeImage(image, ops.getOutputFormat(),
                     outputStream);
         } catch (IOException e) {
@@ -261,21 +273,26 @@ class Java2dProcessor implements StreamProcessor {
         try {
             Iterator<ImageReader> it = ImageIO.
                     getImageReadersByMIMEType("image/tiff");
-            while (it.hasNext()) {
-                ImageReader reader = it.next();
-                // TODO: figure out why it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader
-                // is not found in the packaged jar and remove it from the pom
-                // if not possible to get it working
-                try {
-                    ImageInputStream iis = ImageIO.createImageInputStream(inputStream);
-                    reader.setInput(iis);
-                    image = getSmallestUsableImage(reader, fullSize,
-                            ops.getRegion(), ops.getScale(),
-                            reductionFactor);
-                    break;
-                } finally {
-                    reader.dispose();
+            ImageReader reader = it.next();
+            // TODO: figure out why it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader is not found in the packaged jar
+            try {
+                Crop crop = new Crop();
+                crop.setFull(true);
+                Scale scale = new Scale();
+                scale.setMode(Scale.Mode.FULL);
+                for (Operation op : ops) {
+                    if (op instanceof Crop) {
+                        crop = (Crop) op;
+                    } else if (op instanceof Scale) {
+                        scale = (Scale) op;
+                    }
                 }
+                ImageInputStream iis = ImageIO.createImageInputStream(inputStream);
+                reader.setInput(iis);
+                image = getSmallestUsableImage(reader, fullSize, crop,
+                        scale, reductionFactor);
+            } finally {
+                reader.dispose();
             }
         } catch (ArrayIndexOutOfBoundsException e) {
             logger.error("TIFFImageReader failed to read {}",
@@ -316,15 +333,15 @@ class Java2dProcessor implements StreamProcessor {
      *
      * @param reader ImageReader with input source already set
      * @param fullSize
-     * @param region Requested region
-     * @param size Requested size
+     * @param crop Requested crop
+     * @param scale Requested scale
      * @param rf Set by reference
      * @return
      * @throws IOException
      */
     private BufferedImage getSmallestUsableImage(ImageReader reader,
                                                  Dimension fullSize,
-                                                 Crop region, Scale size,
+                                                 Crop crop, Scale scale,
                                                  ReductionFactor rf)
             throws IOException {
         // The goal here is to get a BufferedImage of TYPE_INT_RGB rather
@@ -343,7 +360,7 @@ class Java2dProcessor implements StreamProcessor {
         // param.setDestinationType(ImageTypeSpecifier.
         //        createFromBufferedImageType(BufferedImage.TYPE_INT_RGB));
         reader.read(0, param);
-        if (size.getScaleMode() != Scale.Mode.FULL) {
+        if (scale.getMode() != Scale.Mode.FULL) {
             // Pyramidal TIFFs will have > 1 image, each half the dimensions of
             // the next larger. The "true" parameter tells getNumImages() to
             // scan for images, which seems to be necessary for at least some
@@ -355,7 +372,7 @@ class Java2dProcessor implements StreamProcessor {
             if (numImages > 1) {
                 logger.debug("Detected pyramidal TIFF with {} levels",
                         numImages);
-                final Rectangle regionRect = region.getRectangle(fullSize);
+                final Rectangle regionRect = crop.getRectangle(fullSize);
 
                 // Loop through the tiles from smallest to largest to find the
                 // first one that fits the requested scale
@@ -364,18 +381,18 @@ class Java2dProcessor implements StreamProcessor {
                     final double tileScale = (double) tile.getWidth() /
                             (double) fullSize.width;
                     boolean fits = false;
-                    if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                        fits = (size.getWidth() / (float) regionRect.width <= tileScale);
-                    } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                        fits = (size.getHeight() / (float) regionRect.height <= tileScale);
-                    } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                        fits = (size.getWidth() / (float) regionRect.width <= tileScale &&
-                                size.getHeight() / (float) regionRect.height <= tileScale);
-                    } else if (size.getScaleMode() == Scale.Mode.NON_ASPECT_FILL) {
-                        fits = (size.getWidth() / (float) regionRect.width <= tileScale &&
-                                size.getHeight() / (float) regionRect.height <= tileScale);
-                    } else if (size.getPercent() != null) {
-                        float pct = (size.getPercent() / 100f);
+                    if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+                        fits = (scale.getWidth() / (float) regionRect.width <= tileScale);
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
+                        fits = (scale.getHeight() / (float) regionRect.height <= tileScale);
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
+                        fits = (scale.getWidth() / (float) regionRect.width <= tileScale &&
+                                scale.getHeight() / (float) regionRect.height <= tileScale);
+                    } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
+                        fits = (scale.getWidth() / (float) regionRect.width <= tileScale &&
+                                scale.getHeight() / (float) regionRect.height <= tileScale);
+                    } else if (scale.getPercent() != null) {
+                        float pct = scale.getPercent();
                         fits = ((pct * fullSize.width) / (float) regionRect.width <= tileScale &&
                                 (pct * fullSize.height) / (float) regionRect.height <= tileScale);
                     }

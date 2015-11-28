@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.image.Rotation;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.restlet.data.Form;
 
 import java.awt.Dimension;
 import java.io.ByteArrayOutputStream;
@@ -88,12 +87,19 @@ public class FfmpegProcessorTest extends ProcessorTest {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
-        scale.setScaleMode(Scale.Mode.FULL);
+        scale.setMode(Scale.Mode.FULL);
         Rotation rotation = new Rotation(0);
         Quality quality = Quality.DEFAULT;
         OutputFormat format = OutputFormat.JPG;
-        Operations ops = new Operations(identifier, crop, scale, rotation,
-                quality, format);
+
+        Operations ops = new Operations();
+        ops.setIdentifier(identifier);
+        ops.add(crop);
+        ops.add(scale);
+        ops.add(rotation);
+        ops.add(quality);
+        ops.setOutputFormat(format);
+
         final SourceFormat sourceFormat = SourceFormat.MPG;
 
         // time option missing

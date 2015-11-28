@@ -1,37 +1,30 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
-import com.sun.media.jai.codec.ImageCodec;
-import com.sun.media.jai.codec.ImageEncoder;
-import com.sun.media.jai.codec.JPEGEncodeParam;
-import com.sun.media.jai.codecimpl.TIFFImageEncoder;
+import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.Rotation;
+import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Quality;
 import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.image.Transpose;
 import it.geosolutions.jaiext.JAIExt;
 import org.restlet.data.MediaType;
 
-import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
 import javax.media.jai.ParameterBlockJAI;
 import javax.media.jai.RenderedOp;
 import java.awt.Dimension;
 import java.awt.RenderingHints;
-import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -165,123 +158,35 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
         }
 
         try {
-            RenderedOp image = loadRegion(input, ops.getRegion());
-            image = ProcessorUtil.scaleImage(image, ops.getScale());
-            image = ProcessorUtil.rotateImage(image, ops.getRotation());
-            image = ProcessorUtil.filterImage(image, ops.getQuality());
-            outputImage(image, ops.getOutputFormat(), outputStream);
+            RenderedOp image = loadImage(input);
+            for (Operation op : ops) {
+                if (op instanceof Crop) {
+                    image = ProcessorUtil.cropImage(image, (Crop) op);
+                } else if (op instanceof Scale) {
+                    image = ProcessorUtil.scaleImage(image, (Scale) op);
+                } else if (op instanceof Transpose) {
+                    image = ProcessorUtil.transposeImage(image, (Transpose) op);
+                } else if (op instanceof Rotation) {
+                    image = ProcessorUtil.rotateImage(image, (Rotation) op);
+                } else if (op instanceof Quality) {
+                    image = ProcessorUtil.filterImage(image, (Quality) op);
+                }
+            }
+            ProcessorUtil.writeImage(image, ops.getOutputFormat(),
+                    outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
     }
 
-    private RenderedOp loadRegion(Object input, Crop region) {
+    private RenderedOp loadImage(Object input) {
         ParameterBlockJAI pbj = new ParameterBlockJAI("ImageRead");
         ImageLayout layout = new ImageLayout();
         layout.setTileWidth(JAI_TILE_SIZE);
         layout.setTileHeight(JAI_TILE_SIZE);
         RenderingHints hints = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, layout);
         pbj.setParameter("Input", input);
-        RenderedOp op = JAI.create("ImageRead", pbj, hints);
-
-        RenderedOp croppedImage;
-        if (region.isFull()) {
-            croppedImage = op;
-        } else {
-            // calculate the region x, y, and actual width/height
-            float x, y, requestedWidth, requestedHeight, actualWidth, actualHeight;
-            if (region.isPercent()) {
-                x = (float) (region.getX() / 100.0) * op.getWidth();
-                y = (float) (region.getY() / 100.0) * op.getHeight();
-                requestedWidth = (float) (region.getWidth() / 100.0) *
-                        op.getWidth();
-                requestedHeight = (float) (region.getHeight() / 100.0) *
-                        op.getHeight();
-            } else {
-                x = region.getX();
-                y = region.getY();
-                requestedWidth = region.getWidth();
-                requestedHeight = region.getHeight();
-            }
-            actualWidth = (x + requestedWidth > op.getWidth()) ?
-                    op.getWidth() - x : requestedWidth;
-            actualHeight = (y + requestedHeight > op.getHeight()) ?
-                    op.getHeight() - y : requestedHeight;
-
-            ParameterBlock pb = new ParameterBlock();
-            pb.addSource(op);
-            pb.add(x);
-            pb.add(y);
-            pb.add(actualWidth);
-            pb.add(actualHeight);
-            croppedImage = JAI.create("crop", pb);
-        }
-        return croppedImage;
-    }
-
-    private void outputImage(RenderedOp image, OutputFormat format,
-                             OutputStream outputStream) throws IOException {
-        switch (format) {
-            case GIF:
-                // TODO: this and ImageIO.write() frequently don't work
-                Iterator writers = ImageIO.getImageWritersByFormatName("GIF");
-                if (writers.hasNext()) {
-                    // GIFWriter can't deal with a non-0,0 origin
-                    ParameterBlock pb = new ParameterBlock();
-                    pb.addSource(image);
-                    pb.add((float) -image.getMinX());
-                    pb.add((float) -image.getMinY());
-                    image = JAI.create("translate", pb);
-
-                    ImageWriter writer = (ImageWriter) writers.next();
-                    ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
-                    writer.setOutput(os);
-                    writer.write(image);
-                }
-                break;
-            case JP2:
-                // TODO: neither this nor ImageIO.write() seem to write anything
-                writers = ImageIO.getImageWritersByFormatName("JPEG2000");
-                if (writers.hasNext()) {
-                    ImageWriter writer = (ImageWriter) writers.next();
-                    IIOImage iioImage = new IIOImage(image, null, null);
-                    J2KImageWriteParam j2Param = new J2KImageWriteParam();
-                    j2Param.setLossless(false);
-                    j2Param.setEncodingRate(Double.MAX_VALUE);
-                    j2Param.setCodeBlockSize(new int[]{128, 8});
-                    j2Param.setTilingMode(ImageWriteParam.MODE_DISABLED);
-                    j2Param.setProgressionType("res");
-                    ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
-                    writer.setOutput(os);
-                    writer.write(null, iioImage, j2Param);
-                }
-                break;
-            case JPG:
-                // JPEGImageEncoder seems to be slightly more efficient than
-                // ImageIO.write()
-                JPEGEncodeParam jParam = new JPEGEncodeParam();
-                ImageEncoder encoder = ImageCodec.createImageEncoder("JPEG",
-                        outputStream, jParam);
-                encoder.encode(image);
-                break;
-            case PNG:
-                // ImageIO.write() seems to be more efficient than
-                // PNGImageEncoder
-                ImageIO.write(image, format.getExtension(), outputStream);
-                /* PNGEncodeParam pngParam = new PNGEncodeParam.RGB();
-                ImageEncoder pngEncoder = ImageCodec.createImageEncoder("PNG",
-                        outputStream, pngParam);
-                pngEncoder.encode(image); */
-                break;
-            case TIF:
-                // TIFFImageEncoder seems to be more efficient than
-                // ImageIO.write();
-                ImageEncoder tiffEnc = new TIFFImageEncoder(outputStream,
-                        null);
-                tiffEnc.encode(image);
-                break;
-        }
-
+        return JAI.create("ImageRead", pbj, hints);
     }
 
 }

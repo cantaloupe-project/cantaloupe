@@ -9,19 +9,22 @@ public class RotationTest extends CantaloupeTestCase {
     public void setUp() {
         this.rotation = new Rotation();
         assertEquals(0f, this.rotation.getDegrees());
-        assertFalse(this.rotation.shouldMirror());
     }
 
-    /* degrees */
+    public void testIsNoOp() {
+        assertTrue(rotation.isNoOp());
+        rotation.setDegrees(30);
+        assertFalse(rotation.isNoOp());
+    }
 
     public void testSetDegrees() {
-        Float degrees = new Float(50.0);
+        float degrees = 50f;
         this.rotation.setDegrees(degrees);
         assertEquals(degrees, this.rotation.getDegrees());
     }
 
     public void testSetLargeDegrees() {
-        Float degrees = new Float(530.0);
+        float degrees = 530f;
         try {
             this.rotation.setDegrees(degrees);
         } catch (IllegalArgumentException e) {
@@ -30,7 +33,7 @@ public class RotationTest extends CantaloupeTestCase {
     }
 
     public void testSetNegativeDegrees() {
-        Float degrees = new Float(-50.0);
+        float degrees = -50f;
         try {
             this.rotation.setDegrees(degrees);
         } catch (IllegalArgumentException e) {
@@ -41,9 +44,10 @@ public class RotationTest extends CantaloupeTestCase {
     public void testToString() {
         Rotation r = new Rotation(50f);
         assertEquals("50", r.toString());
-
-        r.setMirror(true);
-        assertEquals("!50", r.toString());
+        r = new Rotation(50.5f);
+        assertEquals("50.5", r.toString());
+        r = new Rotation(50.5000f);
+        assertEquals("50.5", r.toString());
     }
 
 }

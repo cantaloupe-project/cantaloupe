@@ -146,18 +146,20 @@ class Region {
     public Crop toCrop() {
         Crop crop = new Crop();
         crop.setFull(this.isFull());
-        if (this.getHeight() != null) {
-            crop.setHeight(this.getHeight());
-        }
-        if (this.getWidth() != null) {
-            crop.setWidth(this.getWidth());
-        }
         crop.setPercent(this.isPercent());
         if (this.getX() != null) {
-            crop.setX(this.getX());
+            crop.setX(this.isPercent() ? this.getX() / 100f : this.getX());
         }
         if (this.getY() != null) {
-            crop.setY(this.getY());
+            crop.setY(this.isPercent() ? this.getY() / 100f : this.getY());
+        }
+        if (this.getWidth() != null) {
+            crop.setWidth(this.isPercent() ?
+                    this.getWidth() / 100f : this.getWidth());
+        }
+        if (this.getHeight() != null) {
+            crop.setHeight(this.isPercent() ?
+                    this.getHeight() / 100f : this.getHeight());
         }
         return crop;
     }

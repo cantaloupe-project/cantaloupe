@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
+import edu.illinois.library.cantaloupe.image.Transpose;
+
 /**
  * Encapsulates the "rotation" component of an IIIF request URI.
  *
@@ -32,8 +34,12 @@ class Rotation implements Comparable<Object> {
         if (object instanceof edu.illinois.library.cantaloupe.image.Rotation) {
             edu.illinois.library.cantaloupe.image.Rotation rotation =
                     (edu.illinois.library.cantaloupe.image.Rotation) object;
-            if (this.getDegrees() == rotation.getDegrees() &&
-                    this.shouldMirror() == rotation.shouldMirror()) {
+            if (this.getDegrees() == rotation.getDegrees()) {
+                return 0;
+            }
+        } else if (object instanceof Transpose) {
+            Transpose flip = (Transpose) object;
+            if (this.shouldMirror() && flip.getAxis() == Transpose.Axis.HORIZONTAL) {
                 return 0;
             }
         } else if (object instanceof Rotation) {
@@ -86,11 +92,22 @@ class Rotation implements Comparable<Object> {
         return mirror;
     }
 
+    /**
+     * @return Transpose, or null if there is no transposition.
+     */
+    public Transpose toTranspose() {
+        if (shouldMirror()) {
+            Transpose flip = new Transpose();
+            flip.setAxis(Transpose.Axis.HORIZONTAL);
+            return flip;
+        }
+        return null;
+    }
+
     public edu.illinois.library.cantaloupe.image.Rotation toRotation() {
         edu.illinois.library.cantaloupe.image.Rotation rotation =
                 new edu.illinois.library.cantaloupe.image.Rotation();
         rotation.setDegrees(this.getDegrees());
-        rotation.setMirror(this.shouldMirror());
         return rotation;
     }
 

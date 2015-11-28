@@ -272,13 +272,7 @@ public class RegionTest extends CantaloupeTestCase {
         region.setHeight(50f);
         region.setPercent(true);
         region.setFull(false);
-        Crop crop = region.toCrop();
-        assertEquals(region.getX(), crop.getX());
-        assertEquals(region.getY(), crop.getY());
-        assertEquals(region.getWidth(), crop.getWidth());
-        assertEquals(region.getHeight(), crop.getHeight());
-        assertEquals(region.isPercent(), crop.isPercent());
-        assertEquals(region.isFull(), crop.isFull());
+        assertTrue(region.equals(region.toCrop()));
     }
 
     public void testToString() {

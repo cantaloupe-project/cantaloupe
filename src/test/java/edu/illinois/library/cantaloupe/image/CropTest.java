@@ -7,10 +7,10 @@ import java.awt.Rectangle;
 
 public class CropTest extends CantaloupeTestCase {
 
-    private Crop region;
+    private Crop crop;
 
     public void setUp() {
-        this.region = new Crop();
+        this.crop = new Crop();
     }
 
     public void testGetRectangle() {
@@ -28,25 +28,46 @@ public class CropTest extends CantaloupeTestCase {
         assertEquals(new Rectangle(20, 20, 50, 50), region.getRectangle(fullSize));
         // percentage
         region = new Crop();
-        region.setX(20f);
-        region.setY(20f);
-        region.setWidth(50f);
-        region.setHeight(50f);
         region.setPercent(true);
+        region.setX(0.2f);
+        region.setY(0.2f);
+        region.setWidth(0.5f);
+        region.setHeight(0.5f);
         assertEquals(new Rectangle(40, 40, 100, 100), region.getRectangle(fullSize));
     }
 
-    /* height */
+    public void testIsNull() {
+        // new instance
+        Crop crop = new Crop();
+        assertFalse(crop.isNoOp());
+        // 100% crop
+        crop = new Crop();
+        crop.setPercent(true);
+        crop.setWidth(1f);
+        crop.setHeight(1f);
+        assertTrue(crop.isNoOp());
+        // <100% crop
+        crop = new Crop();
+        crop.setPercent(true);
+        crop.setWidth(0.8f);
+        crop.setHeight(0.8f);
+        assertFalse(crop.isNoOp());
+        // pixel crop
+        crop = new Crop();
+        crop.setWidth(50f);
+        crop.setHeight(50f);
+        assertFalse(crop.isNoOp());
+    }
 
     public void testSetHeight() {
         float height = 50f;
-        this.region.setHeight(height);
-        assertEquals(height, this.region.getHeight());
+        this.crop.setHeight(height);
+        assertEquals(height, this.crop.getHeight());
     }
 
     public void testSetNegativeHeight() {
         try {
-            this.region.setHeight(-1f);
+            this.crop.setHeight(-1f);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Height must be a positive integer", e.getMessage());
@@ -55,24 +76,32 @@ public class CropTest extends CantaloupeTestCase {
 
     public void testSetZeroHeight() {
         try {
-            this.region.setHeight(0f);
+            this.crop.setHeight(0f);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Height must be a positive integer", e.getMessage());
         }
     }
 
-    /* width */
+    public void testSetMoreThan100PercentHeight() {
+        try {
+            this.crop.setPercent(true);
+            this.crop.setHeight(1.2f);
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Height percentage must be <= 1", e.getMessage());
+        }
+    }
 
     public void testSetWidth() {
         Float width = (float) 50;
-        this.region.setWidth(width);
-        assertEquals(width, this.region.getWidth());
+        this.crop.setWidth(width);
+        assertEquals(width, this.crop.getWidth());
     }
 
     public void testSetNegativeWidth() {
         try {
-            this.region.setWidth(-1f);
+            this.crop.setWidth(-1f);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Width must be a positive integer", e.getMessage());
@@ -81,44 +110,70 @@ public class CropTest extends CantaloupeTestCase {
 
     public void testSetZeroWidth() {
         try {
-            this.region.setWidth(0f);
+            this.crop.setWidth(0f);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Width must be a positive integer", e.getMessage());
         }
     }
 
-    /* x */
+    public void testSetMoreThan100PercentWidth() {
+        try {
+            this.crop.setPercent(true);
+            this.crop.setWidth(1.2f);
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Width percentage must be <= 1", e.getMessage());
+        }
+    }
 
     public void testSetX() {
         float x = 50f;
-        this.region.setX(x);
-        assertEquals(x, this.region.getX());
+        this.crop.setX(x);
+        assertEquals(x, this.crop.getX());
     }
 
     public void testSetNegativeX() {
         try {
-            this.region.setX(-1f);
+            this.crop.setX(-1f);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("X must be a positive float", e.getMessage());
         }
     }
 
-    /* y */
+    public void testSetMoreThan100PercentX() {
+        try {
+            this.crop.setPercent(true);
+            this.crop.setX(1.2f);
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            assertEquals("X percentage must be <= 1", e.getMessage());
+        }
+    }
 
     public void testSetY() {
         float y = 50f;
-        this.region.setY(y);
-        assertEquals(y, this.region.getY());
+        this.crop.setY(y);
+        assertEquals(y, this.crop.getY());
     }
 
     public void testSetNegativeY() {
         try {
-            this.region.setY(-1f);
+            this.crop.setY(-1f);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Y must be a positive float", e.getMessage());
+        }
+    }
+
+    public void testSetMoreThan100PercentY() {
+        try {
+            this.crop.setPercent(true);
+            this.crop.setY(1.2f);
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Y percentage must be <= 1", e.getMessage());
         }
     }
 
@@ -134,9 +189,9 @@ public class CropTest extends CantaloupeTestCase {
 
         crop = new Crop();
         crop.setPercent(true);
-        crop.setWidth(50f);
-        crop.setHeight(40f);
-        assertEquals("pct:0,0,50,40", crop.toString());
+        crop.setWidth(0.5f);
+        crop.setHeight(0.4f);
+        assertEquals("pct:0,0,0.5,0.4", crop.toString());
     }
 
 }

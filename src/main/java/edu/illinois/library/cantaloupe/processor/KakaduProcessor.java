@@ -1,12 +1,15 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.Operation;
+import edu.illinois.library.cantaloupe.image.Rotation;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.Quality;
 import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.image.Transpose;
 import info.freelibrary.djatoka.io.PNMImage;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -253,20 +256,42 @@ class KakaduProcessor implements FileProcessor {
                 final ByteArrayInputStream bais = new ByteArrayInputStream(
                         outputBucket.toByteArray());
                 if (postProcessor == PostProcessor.JAI) {
-                    PlanarImage image = PlanarImage.wrapRenderedImage(
+                    RenderedOp image = (RenderedOp) PlanarImage.wrapRenderedImage(
                             new PNMImage(bais).getBufferedImage());
-                    RenderedOp op = ProcessorUtil.scaleImage(image,
-                            ops.getScale(), reduction.factor);
-                    op = ProcessorUtil.rotateImage(op, ops.getRotation());
-                    op = ProcessorUtil.filterImage(op, ops.getQuality());
-                    ImageIO.write(op, ops.getOutputFormat().getExtension(),
+                    for (Operation op : ops) {
+                        if (op instanceof Scale) {
+                            image = ProcessorUtil.scaleImage(image, (Scale) op,
+                                    reduction.factor);
+                        } else if (op instanceof Transpose) {
+                            image = ProcessorUtil.transposeImage(image,
+                                    (Transpose) op);
+                        } else if (op instanceof Rotation) {
+                            image = ProcessorUtil.rotateImage(image,
+                                    (Rotation) op);
+                        } else if (op instanceof Quality) {
+                            image = ProcessorUtil.filterImage(image,
+                                    (Quality) op);
+                        }
+                    }
+                    ImageIO.write(image, ops.getOutputFormat().getExtension(),
                             outputStream);
                 } else {
                     BufferedImage image = new PNMImage(bais).getBufferedImage();
-                    image = ProcessorUtil.scaleImageWithG2d(image,
-                            ops.getScale(), reduction.factor);
-                    image = ProcessorUtil.rotateImage(image, ops.getRotation());
-                    image = ProcessorUtil.filterImage(image, ops.getQuality());
+                    for (Operation op : ops) {
+                        if (op instanceof Scale) {
+                            image = ProcessorUtil.scaleImageWithG2d(image,
+                                    (Scale) op, reduction.factor);
+                        } else if (op instanceof Transpose) {
+                            image = ProcessorUtil.transposeImage(image,
+                                    (Transpose) op);
+                        } else if (op instanceof Rotation) {
+                            image = ProcessorUtil.rotateImage(image,
+                                    (Rotation) op);
+                        } else if (op instanceof Quality) {
+                            image = ProcessorUtil.filterImage(image,
+                                    (Quality) op);
+                        }
+                    }
                     ProcessorUtil.writeImage(image, ops.getOutputFormat(),
                             outputStream);
                     image.flush();
@@ -306,50 +331,55 @@ class KakaduProcessor implements FileProcessor {
         command.add("-i");
         command.add(inputFile.getAbsolutePath());
 
-        final Crop region = ops.getRegion();
-        if (!region.isFull()) {
-            final double x = region.getX() / fullSize.width;
-            final double y = region.getY() / fullSize.height;
-            final double width = region.getWidth() / fullSize.width;
-            final double height = region.getHeight() / fullSize.height;
-            command.add("-region");
-            command.add(String.format("{%.7f,%.7f},{%.7f,%.7f}",
-                    y, x, height, width));
-        }
-
-        // kdu_expand is not capable of arbitrary scaling, but it does offer a
-        // -reduce option which is capable of downscaling by factors of 2,
-        // significantly speeding decompression. We can use it if the scale mode
-        // is ASPECT_FIT_* and either the percent is <=50, or the height/width
-        // are <=50% of full size. The smaller the scale, the bigger the win.
-        final Scale size = ops.getScale();
-        if (size.getScaleMode() != Scale.Mode.FULL) {
-            if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                double scale = (double) size.getWidth() /
-                        (double) fullSize.width;
-                reduction.factor = ProcessorUtil.getReductionFactor(scale,
-                        MAX_REDUCTION_FACTOR);
-            } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                double scale = (double) size.getHeight() /
-                        (double) fullSize.height;
-                reduction.factor = ProcessorUtil.getReductionFactor(scale,
-                        MAX_REDUCTION_FACTOR);
-            } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                double hScale = (double) size.getWidth() /
-                        (double) fullSize.width;
-                double vScale = (double) size.getHeight() /
-                        (double) fullSize.height;
-                reduction.factor = ProcessorUtil.getReductionFactor(
-                        Math.min(hScale, vScale), MAX_REDUCTION_FACTOR);
-            } else if (size.getPercent() != null) {
-                reduction.factor = ProcessorUtil.getReductionFactor(
-                        size.getPercent() / 100.0f, MAX_REDUCTION_FACTOR);
-            } else {
-                reduction.factor = 0;
-            }
-            if (reduction.factor > 0) {
-                command.add("-reduce");
-                command.add(reduction.factor + "");
+        for (Operation op : ops) {
+            if (op instanceof Crop) {
+                final Crop crop = (Crop) op;
+                if (!crop.isFull()) {
+                    final double x = crop.getX() / fullSize.width;
+                    final double y = crop.getY() / fullSize.height;
+                    final double width = crop.getWidth() / fullSize.width;
+                    final double height = crop.getHeight() / fullSize.height;
+                    command.add("-region");
+                    command.add(String.format("{%.7f,%.7f},{%.7f,%.7f}",
+                            y, x, height, width));
+                }
+            } else if (op instanceof Scale) {
+                // kdu_expand is not capable of arbitrary scaling, but it does
+                // offer a -reduce option which is capable of downscaling by
+                // factors of 2, significantly speeding decompression. We can
+                // use it if the scale mode is ASPECT_FIT_* and either the
+                // percent is <=50, or the height/width are <=50% of full size.
+                // The smaller the scale, the bigger the win.
+                final Scale scale = (Scale) op;
+                if (scale.getMode() != Scale.Mode.FULL) {
+                    if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+                        double hvScale = (double) scale.getWidth() /
+                                (double) fullSize.width;
+                        reduction.factor = ProcessorUtil.getReductionFactor(
+                                hvScale, MAX_REDUCTION_FACTOR);
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
+                        double hvScale = (double) scale.getHeight() /
+                                (double) fullSize.height;
+                        reduction.factor = ProcessorUtil.getReductionFactor(
+                                hvScale, MAX_REDUCTION_FACTOR);
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
+                        double hScale = (double) scale.getWidth() /
+                                (double) fullSize.width;
+                        double vScale = (double) scale.getHeight() /
+                                (double) fullSize.height;
+                        reduction.factor = ProcessorUtil.getReductionFactor(
+                                Math.min(hScale, vScale), MAX_REDUCTION_FACTOR);
+                    } else if (scale.getPercent() != null) {
+                        reduction.factor = ProcessorUtil.getReductionFactor(
+                                scale.getPercent(), MAX_REDUCTION_FACTOR);
+                    } else {
+                        reduction.factor = 0;
+                    }
+                    if (reduction.factor > 0) {
+                        command.add("-reduce");
+                        command.add(reduction.factor + "");
+                    }
+                }
             }
         }
 

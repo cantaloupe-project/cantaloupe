@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Rotation;
 import edu.illinois.library.cantaloupe.image.Scale;
+import edu.illinois.library.cantaloupe.image.Transpose;
 
 import java.awt.image.BufferedImage;
 
@@ -13,32 +14,31 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
         // TODO: write this
     }
 
-    public void testCropImage() {
+    public void testCropImageWithBufferedImage() {
         BufferedImage inImage = new BufferedImage(100, 100,
                 BufferedImage.TYPE_INT_RGB);
-
-        // full region
-        Crop region = new Crop();
-        region.setFull(true);
-        BufferedImage outImage = ProcessorUtil.cropImage(inImage, region);
+        // full
+        Crop crop = new Crop();
+        crop.setFull(true);
+        BufferedImage outImage = ProcessorUtil.cropImage(inImage, crop);
         assertSame(inImage, outImage);
 
-        // pixel region
-        region = new Crop();
-        region.setWidth(50f);
-        region.setHeight(50f);
-        outImage = ProcessorUtil.cropImage(inImage, region);
+        // pixel crop
+        crop = new Crop();
+        crop.setWidth(50f);
+        crop.setHeight(50f);
+        outImage = ProcessorUtil.cropImage(inImage, crop);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
-        // percentage region
-        region = new Crop();
-        region.setX(50f);
-        region.setY(50f);
-        region.setWidth(50f);
-        region.setHeight(50f);
-        region.setPercent(true);
-        outImage = ProcessorUtil.cropImage(inImage, region);
+        // percentage crop
+        crop = new Crop();
+        crop.setPercent(true);
+        crop.setX(0.5f);
+        crop.setY(0.5f);
+        crop.setWidth(0.5f);
+        crop.setHeight(0.5f);
+        outImage = ProcessorUtil.cropImage(inImage, crop);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
     }
@@ -47,34 +47,38 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
         BufferedImage inImage = new BufferedImage(100, 100,
                 BufferedImage.TYPE_INT_RGB);
 
-        // full region
-        Crop region = new Crop();
-        region.setFull(true);
+        // full crop
+        Crop crop = new Crop();
+        crop.setFull(true);
         int reductionFactor = 1;
-        BufferedImage outImage = ProcessorUtil.cropImage(inImage, region,
+        BufferedImage outImage = ProcessorUtil.cropImage(inImage, crop,
                 reductionFactor);
         assertSame(inImage, outImage);
 
-        // pixel region
-        region = new Crop();
-        region.setWidth(50f);
-        region.setHeight(50f);
+        // pixel crop
+        crop = new Crop();
+        crop.setWidth(50f);
+        crop.setHeight(50f);
         reductionFactor = 1;
-        outImage = ProcessorUtil.cropImage(inImage, region, reductionFactor);
+        outImage = ProcessorUtil.cropImage(inImage, crop, reductionFactor);
         assertEquals(25, outImage.getWidth());
         assertEquals(25, outImage.getHeight());
 
-        // percentage region
-        region = new Crop();
-        region.setX(50f);
-        region.setY(50f);
-        region.setWidth(50f);
-        region.setHeight(50f);
-        region.setPercent(true);
+        // percentage crop
+        crop = new Crop();
+        crop.setPercent(true);
+        crop.setX(0.5f);
+        crop.setY(0.5f);
+        crop.setWidth(0.5f);
+        crop.setHeight(0.5f);
         reductionFactor = 1;
-        outImage = ProcessorUtil.cropImage(inImage, region, reductionFactor);
+        outImage = ProcessorUtil.cropImage(inImage, crop, reductionFactor);
         assertEquals(25, outImage.getWidth());
         assertEquals(25, outImage.getHeight());
+    }
+
+    public void testCropImageWithRenderedOp() {
+        // TODO: write this
     }
 
     public void testFilterImageWithBufferedImage() {
@@ -121,8 +125,7 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
     }
 
     public void testRotateImageWithBufferedImage() {
-        // no mirroring
-        BufferedImage inImage = new BufferedImage(100, 100,
+        BufferedImage inImage = new BufferedImage(200, 100,
                 BufferedImage.TYPE_INT_RGB);
         final int sourceWidth = inImage.getWidth();
         final int sourceHeight = inImage.getHeight();
@@ -139,26 +142,14 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
                 Math.sin(radians)));
 
         assertEquals(expectedWidth, outImage.getWidth());
-        assertEquals(expectedHeight, outImage.getWidth());
-
-        // mirroring
-        rotation = new Rotation(50);
-        rotation.setMirror(true);
-        outImage = ProcessorUtil.rotateImage(inImage, rotation);
-
-        radians = Math.toRadians(rotation.getDegrees());
-        expectedWidth = (int) Math.round(Math.abs(sourceWidth *
-                Math.cos(radians)) + Math.abs(sourceHeight *
-                Math.sin(radians)));
-        expectedHeight = (int) Math.round(Math.abs(sourceHeight *
-                Math.cos(radians)) + Math.abs(sourceWidth *
-                Math.sin(radians)));
-
-        assertEquals(expectedWidth, outImage.getWidth());
-        assertEquals(expectedHeight, outImage.getWidth());
+        assertEquals(expectedHeight, outImage.getHeight());
     }
 
     public void testRotateImageWithRenderedOp() {
+        // TODO: write this
+    }
+
+    public void testScaleImageWithBufferedImage() {
         // TODO: write this
     }
 
@@ -175,30 +166,30 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
                 BufferedImage.TYPE_INT_RGB);
 
         // Scale.Mode.FULL
-        Scale size = new Scale();
-        size.setScaleMode(Scale.Mode.FULL);
-        BufferedImage outImage = ProcessorUtil.scaleImageWithAffineTransform(inImage, size);
+        Scale scale = new Scale();
+        scale.setMode(Scale.Mode.FULL);
+        BufferedImage outImage = ProcessorUtil.scaleImageWithAffineTransform(inImage, scale);
         assertSame(inImage, outImage);
 
         // Scale.Mode.ASPECT_FIT_WIDTH
-        size.setScaleMode(Scale.Mode.ASPECT_FIT_WIDTH);
-        size.setWidth(50);
-        outImage = ProcessorUtil.scaleImageWithAffineTransform(inImage, size);
+        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        scale.setWidth(50);
+        outImage = ProcessorUtil.scaleImageWithAffineTransform(inImage, scale);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // Scale.Mode.ASPECT_FIT_HEIGHT
-        size.setScaleMode(Scale.Mode.ASPECT_FIT_HEIGHT);
-        size.setHeight(50);
-        outImage = ProcessorUtil.scaleImageWithAffineTransform(inImage, size);
+        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        scale.setHeight(50);
+        outImage = ProcessorUtil.scaleImageWithAffineTransform(inImage, scale);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // Scale.Mode.ASPECT_FIT_INSIDE
-        size.setScaleMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        size.setWidth(50);
-        size.setHeight(50);
-        outImage = ProcessorUtil.scaleImageWithAffineTransform(inImage, size);
+        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        scale.setWidth(50);
+        scale.setHeight(50);
+        outImage = ProcessorUtil.scaleImageWithAffineTransform(inImage, scale);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
     }
@@ -208,30 +199,30 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
                 BufferedImage.TYPE_INT_RGB);
 
         // Scale.Mode.FULL
-        Scale size = new Scale();
-        size.setScaleMode(Scale.Mode.FULL);
-        BufferedImage outImage = ProcessorUtil.scaleImageWithG2d(inImage, size);
+        Scale scale = new Scale();
+        scale.setMode(Scale.Mode.FULL);
+        BufferedImage outImage = ProcessorUtil.scaleImageWithG2d(inImage, scale);
         assertSame(inImage, outImage);
 
         // Scale.Mode.ASPECT_FIT_WIDTH
-        size.setScaleMode(Scale.Mode.ASPECT_FIT_WIDTH);
-        size.setWidth(50);
-        outImage = ProcessorUtil.scaleImageWithG2d(inImage, size);
+        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        scale.setWidth(50);
+        outImage = ProcessorUtil.scaleImageWithG2d(inImage, scale);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // Scale.Mode.ASPECT_FIT_HEIGHT
-        size.setScaleMode(Scale.Mode.ASPECT_FIT_HEIGHT);
-        size.setHeight(50);
-        outImage = ProcessorUtil.scaleImageWithG2d(inImage, size);
+        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        scale.setHeight(50);
+        outImage = ProcessorUtil.scaleImageWithG2d(inImage, scale);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // Scale.Mode.ASPECT_FIT_INSIDE
-        size.setScaleMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        size.setWidth(50);
-        size.setHeight(50);
-        outImage = ProcessorUtil.scaleImageWithG2d(inImage, size);
+        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        scale.setWidth(50);
+        scale.setHeight(50);
+        outImage = ProcessorUtil.scaleImageWithG2d(inImage, scale);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
     }
@@ -241,38 +232,56 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
                 BufferedImage.TYPE_INT_RGB);
 
         // Scale.Mode.ASPECT_FIT_WIDTH
-        Scale size = new Scale();
-        size.setScaleMode(Scale.Mode.ASPECT_FIT_WIDTH);
-        size.setWidth(50);
+        Scale scale = new Scale();
+        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        scale.setWidth(50);
         int reductionFactor = 1;
-        BufferedImage outImage = ProcessorUtil.scaleImageWithG2d(inImage, size,
+        BufferedImage outImage = ProcessorUtil.scaleImageWithG2d(inImage, scale,
                 reductionFactor);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // Scale.Mode.ASPECT_FIT_HEIGHT
-        size = new Scale();
-        size.setScaleMode(Scale.Mode.ASPECT_FIT_HEIGHT);
-        size.setHeight(50);
+        scale = new Scale();
+        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        scale.setHeight(50);
         reductionFactor = 1;
-        outImage = ProcessorUtil.scaleImageWithG2d(inImage, size,
+        outImage = ProcessorUtil.scaleImageWithG2d(inImage, scale,
                 reductionFactor);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // Scale.Mode.ASPECT_FIT_INSIDE
-        size = new Scale();
-        size.setScaleMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        size.setWidth(50);
-        size.setHeight(50);
+        scale = new Scale();
+        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        scale.setWidth(50);
+        scale.setHeight(50);
         reductionFactor = 1;
-        outImage = ProcessorUtil.scaleImageWithG2d(inImage, size,
+        outImage = ProcessorUtil.scaleImageWithG2d(inImage, scale,
                 reductionFactor);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
     }
 
-    public void testWriteImage() {
+    public void testTransposeImageWithBufferedImage() {
+        BufferedImage inImage = new BufferedImage(200, 100,
+                BufferedImage.TYPE_INT_RGB);
+        Transpose transpose = new Transpose(Transpose.Axis.HORIZONTAL);
+        BufferedImage outImage = ProcessorUtil.transposeImage(inImage, transpose);
+
+        assertEquals(200, outImage.getWidth());
+        assertEquals(100, outImage.getHeight());
+    }
+
+    public void testTransposeImageWithRenderedOp() {
+        // TODO: write this
+    }
+
+    public void testWriteImageWithBufferedImage() {
+        // TODO: write this
+    }
+
+    public void testWriteImageWithRenderedOp() {
         // TODO: write this
     }
 

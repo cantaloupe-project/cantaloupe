@@ -49,9 +49,15 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Rotation rotation = new Rotation();
         Quality quality = Quality.DEFAULT;
         OutputFormat format = OutputFormat.JPG;
-        Operations params = new Operations(identifier, crop, scale, rotation,
-                quality, format);
-        OutputStream os = instance.getImageOutputStream(params);
+        Operations ops = new Operations();
+        ops.setIdentifier(identifier);
+        ops.add(crop);
+        ops.add(scale);
+        ops.add(rotation);
+        ops.add(quality);
+        ops.setOutputFormat(format);
+
+        OutputStream os = instance.getImageOutputStream(ops);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
         os.close();
 
@@ -66,9 +72,15 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         rotation = new Rotation();
         quality = Quality.DEFAULT;
         format = OutputFormat.JPG;
-        params = new Operations(identifier, crop, scale, rotation,
-                quality, format);
-        os = instance.getImageOutputStream(params);
+        ops = new Operations();
+        ops.setIdentifier(identifier);
+        ops.add(crop);
+        ops.add(scale);
+        ops.add(rotation);
+        ops.add(quality);
+        ops.setOutputFormat(format);
+
+        os = instance.getImageOutputStream(ops);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
         os.close();
 
@@ -80,13 +92,19 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         crop.setHeight(90f);
         scale = new Scale();
         scale.setWidth(40);
-        scale.setScaleMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
         rotation = new Rotation(15);
         quality = Quality.COLOR;
         format = OutputFormat.PNG;
-        params = new Operations(identifier, crop, scale, rotation,
-                quality, format);
-        os = instance.getImageOutputStream(params);
+        ops = new Operations();
+        ops.setIdentifier(identifier);
+        ops.add(crop);
+        ops.add(scale);
+        ops.add(rotation);
+        ops.add(quality);
+        ops.setOutputFormat(format);
+
+        os = instance.getImageOutputStream(ops);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
         os.close();
 
@@ -156,8 +174,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Rotation rotation = new Rotation();
         Quality quality = Quality.DEFAULT;
         OutputFormat format = OutputFormat.JPG;
-        Operations ops = new Operations(identifier, crop, scale, rotation,
-                quality, format);
+        Operations ops = new Operations();
+        ops.setIdentifier(identifier);
+        ops.add(crop);
+        ops.add(scale);
+        ops.add(rotation);
+        ops.add(quality);
+        ops.setOutputFormat(format);
+
         instance.flush(ops);
 
         Configuration config = Application.getConfiguration();
@@ -193,8 +217,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Rotation rotation = new Rotation();
         Quality quality = Quality.DEFAULT;
         OutputFormat format = OutputFormat.JPG;
-        Operations ops = new Operations(identifier, crop, scale, rotation,
-                quality, format);
+        Operations ops = new Operations();
+        ops.setIdentifier(identifier);
+        ops.add(crop);
+        ops.add(scale);
+        ops.add(rotation);
+        ops.add(quality);
+        ops.setOutputFormat(format);
+
         OutputStream os = instance.getImageOutputStream(ops);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
         os.close();
@@ -247,10 +277,16 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Rotation rotation = new Rotation();
         Quality quality = Quality.DEFAULT;
         OutputFormat format = OutputFormat.JPG;
-        Operations params = new Operations(identifier, crop, scale, rotation,
-                quality, format);
+        Operations ops = new Operations();
+        ops.setIdentifier(identifier);
+        ops.add(crop);
+        ops.add(scale);
+        ops.add(rotation);
+        ops.add(quality);
+        ops.setOutputFormat(format);
+
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")),
-                instance.getImageOutputStream(params));
+                instance.getImageOutputStream(ops));
         instance.putDimension(new Identifier("bees"), new Dimension(50, 40));
 
         // existing, non-expired image
@@ -274,9 +310,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Rotation rotation = new Rotation();
         Quality quality = Quality.DEFAULT;
         OutputFormat format = OutputFormat.JPG;
-        Operations params = new Operations(identifier, crop, scale, rotation,
-                quality, format);
-        assertNotNull(instance.getImageInputStream(params));
+        Operations ops = new Operations();
+        ops.setIdentifier(identifier);
+        ops.add(crop);
+        ops.add(scale);
+        ops.add(rotation);
+        ops.add(quality);
+        ops.setOutputFormat(format);
+        assertNotNull(instance.getImageInputStream(ops));
     }
 
     public void testGetImageInputStreamWithNonzeroTtl() throws Exception {
@@ -292,15 +333,20 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Rotation rotation = new Rotation();
         Quality quality = Quality.DEFAULT;
         OutputFormat format = OutputFormat.JPG;
-        Operations params = new Operations(identifier, crop, scale, rotation,
-                quality, format);
-        OutputStream os = instance.getImageOutputStream(params);
+        Operations ops = new Operations();
+        ops.setIdentifier(identifier);
+        ops.add(crop);
+        ops.add(scale);
+        ops.add(rotation);
+        ops.add(quality);
+        ops.setOutputFormat(format);
+        OutputStream os = instance.getImageOutputStream(ops);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
         os.close();
         instance.putDimension(new Identifier("bees"), new Dimension(50, 40));
 
         // existing, non-expired image
-        assertNotNull(instance.getImageInputStream(params));
+        assertNotNull(instance.getImageInputStream(ops));
         // existing, expired image
         identifier = new Identifier("cats");
         crop = new Crop();
@@ -308,9 +354,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         rotation = new Rotation();
         quality = Quality.DEFAULT;
         format = OutputFormat.JPG;
-        params = new Operations(identifier, crop, scale, rotation,
-                quality, format);
-        assertNull(instance.getImageInputStream(params));
+        ops = new Operations();
+        ops.setIdentifier(identifier);
+        ops.add(crop);
+        ops.add(scale);
+        ops.add(rotation);
+        ops.add(quality);
+        ops.setOutputFormat(format);
+        assertNull(instance.getImageInputStream(ops));
         // nonexistent image
         identifier = new Identifier("bogus");
         crop = new Crop();
@@ -318,9 +369,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         rotation = new Rotation();
         quality = Quality.DEFAULT;
         format = OutputFormat.JPG;
-        params = new Operations(identifier, crop, scale, rotation,
-                quality, format);
-        assertNull(instance.getImageInputStream(params));
+        ops = new Operations();
+        ops.setIdentifier(identifier);
+        ops.add(crop);
+        ops.add(scale);
+        ops.add(rotation);
+        ops.add(quality);
+        ops.setOutputFormat(format);
+        assertNull(instance.getImageInputStream(ops));
     }
 
     public void testGetImageOutputStream() throws Exception {
@@ -330,9 +386,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Rotation rotation = new Rotation();
         Quality quality = Quality.DEFAULT;
         OutputFormat format = OutputFormat.JPG;
-        Operations params = new Operations(identifier, crop, scale, rotation,
-                quality, format);
-        assertNotNull(instance.getImageOutputStream(params));
+        Operations ops = new Operations();
+        ops.setIdentifier(identifier);
+        ops.add(crop);
+        ops.add(scale);
+        ops.add(rotation);
+        ops.add(quality);
+        ops.setOutputFormat(format);
+        assertNotNull(instance.getImageOutputStream(ops));
     }
 
     public void testOldestValidDate() {

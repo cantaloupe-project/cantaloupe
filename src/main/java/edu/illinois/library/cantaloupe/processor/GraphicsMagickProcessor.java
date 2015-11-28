@@ -2,12 +2,14 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Quality;
 import edu.illinois.library.cantaloupe.image.Rotation;
+import edu.illinois.library.cantaloupe.image.Transpose;
 import org.apache.commons.configuration.Configuration;
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
@@ -197,62 +199,69 @@ class GraphicsMagickProcessor implements StreamProcessor {
                 ops, sourceFormat, fullSize, outputStream);
     }
 
-    private void assembleOperation(IMOperation op, Operations ops,
+    private void assembleOperation(IMOperation imOp, Operations ops,
                                    Dimension fullSize) {
-        // region transformation
-        Crop region = ops.getRegion();
-        if (!region.isFull()) {
-            if (region.isPercent()) {
-                // im4java doesn't support cropping x/y by percentage (only
-                // width/height), so we have to calculate them.
-                int x = Math.round(region.getX() / 100.0f * fullSize.width);
-                int y = Math.round(region.getY() / 100.0f * fullSize.height);
-                int width = Math.round(region.getWidth());
-                int height = Math.round(region.getHeight());
-                op.crop(width, height, x, y, "%");
-            } else {
-                op.crop(Math.round(region.getWidth()), Math.round(region.getHeight()),
-                        Math.round(region.getX()), Math.round(region.getY()));
-            }
-        }
-
-        // size transformation
-        Scale size = ops.getScale();
-        if (size.getScaleMode() != Scale.Mode.FULL) {
-            if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                op.resize(size.getWidth());
-            } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                op.resize(null, size.getHeight());
-            } else if (size.getScaleMode() == Scale.Mode.NON_ASPECT_FILL) {
-                op.resize(size.getWidth(), size.getHeight(), "!".charAt(0));
-            } else if (size.getScaleMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                op.resize(size.getWidth(), size.getHeight());
-            } else if (size.getPercent() != null) {
-                op.resize(Math.round(size.getPercent() * 100),
-                        Math.round(size.getPercent() * 100),
-                        "%");
-            }
-        }
-
-        // rotation transformation
-        Rotation rotation = ops.getRotation();
-        if (rotation.shouldMirror()) {
-            op.flop();
-        }
-        if (rotation.getDegrees() != 0) {
-            op.rotate((double) rotation.getDegrees());
-        }
-
-        // quality transformation
-        Quality quality = ops.getQuality();
-        if (quality != Quality.COLOR && quality != Quality.DEFAULT) {
-            switch (quality) {
-                case GRAY:
-                    op.colorspace("Gray");
-                    break;
-                case BITONAL:
-                    op.monochrome();
-                    break;
+        for (Operation op : ops) {
+            if (op instanceof Crop) {
+                Crop crop = (Crop) op;
+                if (!crop.isFull()) {
+                    if (crop.isPercent()) {
+                        // im4java doesn't support cropping x/y by percentage --
+                        // only width/height -- so we have to calculate them.
+                        int x = Math.round(crop.getX() * fullSize.width);
+                        int y = Math.round(crop.getY() * fullSize.height);
+                        int width = Math.round(crop.getWidth() * 100);
+                        int height = Math.round(crop.getHeight() * 100);
+                        imOp.crop(width, height, x, y, "%");
+                    } else {
+                        imOp.crop(Math.round(crop.getWidth()),
+                                Math.round(crop.getHeight()),
+                                Math.round(crop.getX()),
+                                Math.round(crop.getY()));
+                    }
+                }
+            } else if (op instanceof Scale) {
+                Scale scale = (Scale) op;
+                if (scale.getMode() != Scale.Mode.FULL) {
+                    if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+                        imOp.resize(scale.getWidth());
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
+                        imOp.resize(null, scale.getHeight());
+                    } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
+                        imOp.resize(scale.getWidth(), scale.getHeight(), "!".charAt(0));
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
+                        imOp.resize(scale.getWidth(), scale.getHeight());
+                    } else if (scale.getPercent() != null) {
+                        imOp.resize(Math.round(scale.getPercent()),
+                                Math.round(scale.getPercent()),
+                                "%");
+                    }
+                }
+            } else if (op instanceof Transpose) {
+                Transpose transpose = (Transpose) op;
+                switch (transpose.getAxis()) {
+                    case HORIZONTAL:
+                        imOp.flop();
+                        break;
+                    case VERTICAL:
+                        imOp.flip();
+                        break;
+                }
+            } else if (op instanceof Rotation) {
+                Rotation rotation = (Rotation) op;
+                if (rotation.getDegrees() != 0) {
+                    imOp.rotate((double) rotation.getDegrees());
+                }
+            } else if (op instanceof Quality) {
+                Quality quality = (Quality) op;
+                switch (quality) {
+                    case GRAY:
+                        imOp.colorspace("Gray");
+                        break;
+                    case BITONAL:
+                        imOp.monochrome();
+                        break;
+                }
             }
         }
     }
