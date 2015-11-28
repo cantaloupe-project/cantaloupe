@@ -37,7 +37,7 @@ import java.util.Set;
  */
 public class ImageResource extends AbstractResource {
 
-    private static Logger logger = LoggerFactory.
+    private static final Logger logger = LoggerFactory.
             getLogger(ImageResource.class);
 
     /**
@@ -53,33 +53,43 @@ public class ImageResource extends AbstractResource {
      */
     @Get
     public ImageRepresentation doGet() throws Exception {
-        Map<String,Object> attrs = this.getRequest().getAttributes();
+        final Map<String,Object> attrs = this.getRequest().getAttributes();
 
-        Resolver resolver = ResolverFactory.getResolver();
+        final Resolver resolver = ResolverFactory.getResolver();
         // Determine the format of the source image
-        SourceFormat sourceFormat = resolver.getSourceFormat(
+        final SourceFormat sourceFormat = resolver.getSourceFormat(
                 new Identifier((String) attrs.get("identifier")));
         if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
             throw new UnsupportedSourceFormatException();
         }
         // Obtain an instance of the processor assigned to that format in
         // the config file
-        Processor proc = ProcessorFactory.getProcessor(sourceFormat);
+        final Processor proc = ProcessorFactory.getProcessor(sourceFormat);
 
-        Set<OutputFormat> availableOutputFormats =
+        final Set<OutputFormat> availableOutputFormats =
                 proc.getAvailableOutputFormats(sourceFormat);
 
+        // Extract the quality and format from the URI
+        String[] qualityAndFormat = StringUtils.split((String) attrs.get("quality_format"), ".");
+        // If a format is present, try to use that. Otherwise, guess it based
+        // on the Accept header per Image API 1.1 spec section 4.5.
+        String outputFormat;
+        if (qualityAndFormat.length > 1) {
+            outputFormat = qualityAndFormat[qualityAndFormat.length - 1];
+        } else {
+            outputFormat = getOutputFormat(availableOutputFormats).getExtension();
+        }
+
         // Assemble the URI parameters into a Parameters object
-        Parameters params = new Parameters(
+        final Parameters params = new Parameters(
                 (String) attrs.get("identifier"),
                 (String) attrs.get("region"),
                 (String) attrs.get("size"),
                 (String) attrs.get("rotation"),
-                StringUtils.split((String) attrs.get("quality"), ".")[0],
-                getOutputFormat(availableOutputFormats).getExtension());
-        Operations ops = params.toOperations();
+                qualityAndFormat[0],
+                outputFormat);
 
-        ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
+        final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
                 proc.getSupportedFeatures(sourceFormat),
                 proc.getSupportedQualities(sourceFormat),
                 proc.getAvailableOutputFormats(sourceFormat));
@@ -88,6 +98,7 @@ public class ImageResource extends AbstractResource {
 
         // Find out whether the processor supports that source format by
         // asking it whether it offers any output formats for it
+        final Operations ops = params.toOperations();
         if (!availableOutputFormats.contains(ops.getOutputFormat())) {
             String msg = String.format("%s does not support the \"%s\" output format",
                     proc.getClass().getSimpleName(),
@@ -96,7 +107,7 @@ public class ImageResource extends AbstractResource {
             throw new UnsupportedSourceFormatException(msg);
         }
 
-        MediaType mediaType = new MediaType(
+        final MediaType mediaType = new MediaType(
                 ops.getOutputFormat().getMediaType());
 
         // FileResolver -> StreamProcessor: OK, using FileInputStream
