@@ -7,7 +7,7 @@ import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.Operations;
-import edu.illinois.library.cantaloupe.image.Rotation;
+import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
@@ -195,8 +195,8 @@ class Java2dProcessor implements StreamProcessor {
                             reductionFactor.factor);
                 } else if (op instanceof Transpose) {
                     image = ProcessorUtil.transposeImage(image, (Transpose) op);
-                } else if (op instanceof Rotation) {
-                    image = ProcessorUtil.rotateImage(image, (Rotation) op);
+                } else if (op instanceof Rotate) {
+                    image = ProcessorUtil.rotateImage(image, (Rotate) op);
                 } else if (op instanceof Filter) {
                     image = ProcessorUtil.filterImage(image, (Filter) op);
                 }

@@ -89,10 +89,8 @@ public class RotationTest extends CantaloupeTestCase {
         }
     }
 
-    public void testToRotation() {
-        edu.illinois.library.cantaloupe.image.Rotation actual =
-                new edu.illinois.library.cantaloupe.image.Rotation(this.rotation.getDegrees());
-        assertTrue(this.rotation.equals(this.rotation.toRotation()));
+    public void testToRotate() {
+        assertTrue(this.rotation.equals(this.rotation.toRotate()));
     }
 
     public void testToString() {

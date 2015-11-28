@@ -2,31 +2,31 @@ package edu.illinois.library.cantaloupe.image;
 
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 
-public class RotationTest extends CantaloupeTestCase {
+public class RotateTest extends CantaloupeTestCase {
 
-    private Rotation rotation;
+    private Rotate rotate;
 
     public void setUp() {
-        this.rotation = new Rotation();
-        assertEquals(0f, this.rotation.getDegrees());
+        this.rotate = new Rotate();
+        assertEquals(0f, this.rotate.getDegrees());
     }
 
     public void testIsNoOp() {
-        assertTrue(rotation.isNoOp());
-        rotation.setDegrees(30);
-        assertFalse(rotation.isNoOp());
+        assertTrue(rotate.isNoOp());
+        rotate.setDegrees(30);
+        assertFalse(rotate.isNoOp());
     }
 
     public void testSetDegrees() {
         float degrees = 50f;
-        this.rotation.setDegrees(degrees);
-        assertEquals(degrees, this.rotation.getDegrees());
+        this.rotate.setDegrees(degrees);
+        assertEquals(degrees, this.rotate.getDegrees());
     }
 
     public void testSetLargeDegrees() {
         float degrees = 530f;
         try {
-            this.rotation.setDegrees(degrees);
+            this.rotate.setDegrees(degrees);
         } catch (IllegalArgumentException e) {
             assertEquals("Degrees must be between 0 and 360", e.getMessage());
         }
@@ -35,18 +35,18 @@ public class RotationTest extends CantaloupeTestCase {
     public void testSetNegativeDegrees() {
         float degrees = -50f;
         try {
-            this.rotation.setDegrees(degrees);
+            this.rotate.setDegrees(degrees);
         } catch (IllegalArgumentException e) {
             assertEquals("Degrees must be between 0 and 360", e.getMessage());
         }
     }
 
     public void testToString() {
-        Rotation r = new Rotation(50f);
+        Rotate r = new Rotate(50f);
         assertEquals("50", r.toString());
-        r = new Rotation(50.5f);
+        r = new Rotate(50.5f);
         assertEquals("50.5", r.toString());
-        r = new Rotation(50.5000f);
+        r = new Rotate(50.5000f);
         assertEquals("50.5", r.toString());
     }
 

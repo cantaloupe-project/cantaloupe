@@ -6,7 +6,7 @@ import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operations;
-import edu.illinois.library.cantaloupe.image.Rotation;
+import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
@@ -86,14 +86,14 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         crop.setFull(true);
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
-        Rotation rotation = new Rotation(0);
+        Rotate rotate = new Rotate(0);
         Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.JPG;
         Operations ops = new Operations();
         ops.setIdentifier(identifier);
         ops.add(crop);
         ops.add(scale);
-        ops.add(rotation);
+        ops.add(rotate);
         ops.add(filter);
         ops.setOutputFormat(format);
         doProcessTest(ops);
@@ -109,14 +109,14 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setPercent(0.8f);
-        Rotation rotation = new Rotation(15);
+        Rotate rotate = new Rotate(15);
         Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.JPG;
         Operations ops = new Operations();
         ops.setIdentifier(identifier);
         ops.add(crop);
         ops.add(scale);
-        ops.add(rotation);
+        ops.add(rotate);
         ops.add(filter);
         ops.setOutputFormat(format);
         for (SourceFormat sourceFormat : SourceFormat.values()) {
@@ -237,12 +237,12 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
     }
 
     public void testProcessWithRotateOperation() throws Exception {
-        Rotation[] rotations = {
-                new Rotation(0), new Rotation(15), new Rotation(275) };
-        for (Rotation rotation : rotations) {
+        Rotate[] rotates = {
+                new Rotate(0), new Rotate(15), new Rotate(275) };
+        for (Rotate rotate : rotates) {
             Operations ops = new Operations();
             ops.setIdentifier(new Identifier("bla"));
-            ops.add(rotation);
+            ops.add(rotate);
             ops.setOutputFormat(OutputFormat.JPG);
             doProcessTest(ops);
         }

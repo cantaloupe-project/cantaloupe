@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
-import edu.illinois.library.cantaloupe.image.Rotation;
+import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
@@ -294,9 +294,9 @@ class KakaduProcessor implements FileProcessor {
                         } else if (op instanceof Transpose) {
                             image = ProcessorUtil.transposeImage(image,
                                     (Transpose) op);
-                        } else if (op instanceof Rotation) {
+                        } else if (op instanceof Rotate) {
                             image = ProcessorUtil.rotateImage(image,
-                                    (Rotation) op);
+                                    (Rotate) op);
                         } else if (op instanceof Filter) {
                             image = ProcessorUtil.filterImage(image,
                                     (Filter) op);
@@ -313,9 +313,9 @@ class KakaduProcessor implements FileProcessor {
                         } else if (op instanceof Transpose) {
                             image = ProcessorUtil.transposeImage(image,
                                     (Transpose) op);
-                        } else if (op instanceof Rotation) {
+                        } else if (op instanceof Rotate) {
                             image = ProcessorUtil.rotateImage(image,
-                                    (Rotation) op);
+                                    (Rotate) op);
                         } else if (op instanceof Filter) {
                             image = ProcessorUtil.filterImage(image,
                                     (Filter) op);

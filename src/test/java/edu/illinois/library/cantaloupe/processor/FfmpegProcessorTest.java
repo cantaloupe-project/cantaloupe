@@ -5,7 +5,7 @@ import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.Rotation;
+import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -74,7 +74,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
         crop.setFull(true);
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
-        Rotation rotation = new Rotation(0);
+        Rotate rotate = new Rotate(0);
         Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.JPG;
 
@@ -82,7 +82,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
         ops.setIdentifier(identifier);
         ops.add(crop);
         ops.add(scale);
-        ops.add(rotation);
+        ops.add(rotate);
         ops.add(filter);
         ops.setOutputFormat(format);
 

@@ -8,7 +8,7 @@ import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Crop;
-import edu.illinois.library.cantaloupe.image.Rotation;
+import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import org.apache.commons.configuration.Configuration;
 import org.im4java.core.ConvertCmd;
@@ -298,10 +298,10 @@ class ImageMagickProcessor implements StreamProcessor {
                         imOp.flip();
                         break;
                 }
-            } else if (op instanceof Rotation) {
-                Rotation rotation = (Rotation) op;
-                if (rotation.getDegrees() != 0) {
-                    imOp.rotate((double) rotation.getDegrees());
+            } else if (op instanceof Rotate) {
+                Rotate rotate = (Rotate) op;
+                if (rotate.getDegrees() != 0) {
+                    imOp.rotate((double) rotate.getDegrees());
                 }
             } else if (op instanceof Filter) {
                 switch ((Filter) op) {

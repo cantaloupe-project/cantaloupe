@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
 
-import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.image.Rotate;
 
 /**
  * Encapsulates the "rotation" component of an IIIF request URI.
@@ -25,11 +25,11 @@ class Rotation implements Comparable<Object> {
 
     @Override
     public int compareTo(Object object) {
-        if (object instanceof edu.illinois.library.cantaloupe.image.Rotation) {
-            edu.illinois.library.cantaloupe.image.Rotation rotation =
-                    (edu.illinois.library.cantaloupe.image.Rotation) object;
+        if (object instanceof Rotate) {
+            Rotate rotate =
+                    (Rotate) object;
             return new Float(this.getDegrees()).
-                    compareTo(rotation.getDegrees());
+                    compareTo(rotate.getDegrees());
         } else if (object instanceof Rotation) {
             Rotation rotation = (Rotation) object;
             return new Float(this.getDegrees()).
@@ -63,11 +63,8 @@ class Rotation implements Comparable<Object> {
         this.degrees = degrees;
     }
 
-    public edu.illinois.library.cantaloupe.image.Rotation toRotation() {
-        edu.illinois.library.cantaloupe.image.Rotation rotation =
-                new edu.illinois.library.cantaloupe.image.Rotation();
-        rotation.setDegrees(this.getDegrees());
-        return rotation;
+    public Rotate toRotate() {
+        return new Rotate(this.getDegrees());
     }
 
     /**

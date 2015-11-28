@@ -6,7 +6,7 @@ import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.Rotation;
+import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Transpose;
@@ -481,14 +481,14 @@ class FfmpegProcessor implements FileProcessor {
                         filters.add("vflip");
                         break;
                 }
-            } else if (op instanceof Rotation) {
-                Rotation rotation = (Rotation) op;
-                if (rotation.getDegrees() > 0) {
+            } else if (op instanceof Rotate) {
+                Rotate rotate = (Rotate) op;
+                if (rotate.getDegrees() > 0) {
                     // 0 = 90CounterClockwise and Vertical Transpose (default)
                     // 1 = 90Clockwise
                     // 2 = 90CounterClockwise
                     // 3 = 90Clockwise and Vertical Transpose
-                    switch (Math.round(rotation.getDegrees())) {
+                    switch (Math.round(rotate.getDegrees())) {
                         case 90:
                             filters.add("transpose=1");
                             break;

@@ -19,7 +19,7 @@ public class OperationsTest extends CantaloupeTestCase {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
         ops.add(scale);
-        ops.add(new Rotation(0));
+        ops.add(new Rotate(0));
         ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.JPG);
 
@@ -29,7 +29,7 @@ public class OperationsTest extends CantaloupeTestCase {
     public void testAdd() {
         ops = new Operations();
         assertFalse(ops.iterator().hasNext());
-        ops.add(new Rotation());
+        ops.add(new Rotate());
         assertTrue(ops.iterator().hasNext());
     }
 
@@ -42,7 +42,7 @@ public class OperationsTest extends CantaloupeTestCase {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
         ops2.add(scale);
-        ops2.add(new Rotation(0));
+        ops2.add(new Rotate(0));
         ops2.add(Filter.NONE);
         ops2.setOutputFormat(OutputFormat.JPG);
         assertEquals(0, ops2.compareTo(this.ops));
@@ -53,14 +53,14 @@ public class OperationsTest extends CantaloupeTestCase {
         crop.setFull(true);
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
-        Rotation rotation = new Rotation(0);
+        Rotate rotate = new Rotate(0);
         Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.JPG;
         ops = new Operations();
         ops.setIdentifier(new Identifier("identifier"));
         ops.add(crop);
         ops.add(scale);
-        ops.add(rotation);
+        ops.add(rotate);
         ops.add(filter);
         ops.setOutputFormat(format);
         assertFalse(ops.isNoOp());
@@ -75,7 +75,7 @@ public class OperationsTest extends CantaloupeTestCase {
         ops.setIdentifier(new Identifier("identifier"));
         ops.add(crop);
         ops.add(scale);
-        ops.add(new Rotation(0));
+        ops.add(new Rotate(0));
         ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.JPG);
         assertFalse(ops.isNoOp()); // false because the identifier has no discernible source format
@@ -90,7 +90,7 @@ public class OperationsTest extends CantaloupeTestCase {
         ops.setIdentifier(new Identifier("identifier.gif"));
         ops.add(crop);
         ops.add(scale);
-        ops.add(new Rotation(0));
+        ops.add(new Rotate(0));
         ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.GIF);
         assertTrue(ops.isNoOp());
@@ -109,7 +109,7 @@ public class OperationsTest extends CantaloupeTestCase {
         ops.setIdentifier(new Identifier("identifier.gif"));
         ops.add(crop);
         ops.add(scale);
-        ops.add(new Rotation(0));
+        ops.add(new Rotate(0));
         ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.GIF);
         assertFalse(ops.isNoOp());
@@ -124,7 +124,7 @@ public class OperationsTest extends CantaloupeTestCase {
         ops.setIdentifier(new Identifier("identifier.gif"));
         ops.add(crop);
         ops.add(scale);
-        ops.add(new Rotation(0));
+        ops.add(new Rotate(0));
         ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.GIF);
         assertTrue(ops.isNoOp());
@@ -140,7 +140,7 @@ public class OperationsTest extends CantaloupeTestCase {
         ops.setIdentifier(new Identifier("identifier.gif"));
         ops.add(crop);
         ops.add(scale);
-        ops.add(new Rotation(0));
+        ops.add(new Rotate(0));
         ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.GIF);
         assertFalse(ops.isNoOp());
@@ -155,7 +155,7 @@ public class OperationsTest extends CantaloupeTestCase {
         ops.setIdentifier(new Identifier("identifier.gif"));
         ops.add(crop);
         ops.add(scale);
-        ops.add(new Rotation(2));
+        ops.add(new Rotate(2));
         ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.GIF);
         assertFalse(ops.isNoOp());
@@ -170,7 +170,7 @@ public class OperationsTest extends CantaloupeTestCase {
         ops.setIdentifier(new Identifier("identifier.gif"));
         ops.add(crop);
         ops.add(scale);;
-        ops.add(new Rotation());
+        ops.add(new Rotate());
         ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.GIF);
         assertTrue(ops.isNoOp());
@@ -185,7 +185,7 @@ public class OperationsTest extends CantaloupeTestCase {
         ops.setIdentifier(new Identifier("identifier.gif"));
         ops.add(crop);
         ops.add(scale);
-        ops.add(new Rotation(0));
+        ops.add(new Rotate(0));
         ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.GIF);
         assertTrue(ops.isNoOp());

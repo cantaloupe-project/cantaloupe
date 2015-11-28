@@ -153,7 +153,7 @@ class Parameters implements Comparable<Parameters> {
         ops.add(getRegion().toCrop());
         ops.add(getSize().toScale());
         ops.add(getRotation().toTranspose());
-        ops.add(getRotation().toRotation());
+        ops.add(getRotation().toRotate());
         ops.add(getQuality().toFilter());
         return ops;
     }

@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
+import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Transpose;
 
 /**
@@ -31,10 +32,10 @@ class Rotation implements Comparable<Object> {
 
     @Override
     public int compareTo(Object object) {
-        if (object instanceof edu.illinois.library.cantaloupe.image.Rotation) {
-            edu.illinois.library.cantaloupe.image.Rotation rotation =
-                    (edu.illinois.library.cantaloupe.image.Rotation) object;
-            if (this.getDegrees() == rotation.getDegrees()) {
+        if (object instanceof Rotate) {
+            Rotate rotate =
+                    (Rotate) object;
+            if (this.getDegrees() == rotate.getDegrees()) {
                 return 0;
             }
         } else if (object instanceof Transpose) {
@@ -104,11 +105,8 @@ class Rotation implements Comparable<Object> {
         return null;
     }
 
-    public edu.illinois.library.cantaloupe.image.Rotation toRotation() {
-        edu.illinois.library.cantaloupe.image.Rotation rotation =
-                new edu.illinois.library.cantaloupe.image.Rotation();
-        rotation.setDegrees(this.getDegrees());
-        return rotation;
+    public Rotate toRotate() {
+        return new Rotate(this.getDegrees());
     }
 
     /**

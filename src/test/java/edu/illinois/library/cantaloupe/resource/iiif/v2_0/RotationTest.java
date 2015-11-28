@@ -100,8 +100,8 @@ public class RotationTest extends CantaloupeTestCase {
         }
     }
 
-    public void testToRotation() {
-        assertTrue(rotation.equals(rotation.toRotation()));
+    public void testToRotate() {
+        assertTrue(rotation.equals(rotation.toRotate()));
     }
 
     public void testToTranspose() {

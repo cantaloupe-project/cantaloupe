@@ -6,13 +6,13 @@ import com.sun.media.jai.codec.ImageEncoder;
 import com.sun.media.jai.codec.JPEGEncodeParam;
 import com.sun.media.jai.codecimpl.TIFFImageEncoder;
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Crop;
-import edu.illinois.library.cantaloupe.image.Rotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -305,14 +305,14 @@ abstract class ProcessorUtil {
     }
 
     public static RenderedOp rotateImage(RenderedOp inImage,
-                                         Rotation rotation) {
+                                         Rotate rotate) {
         RenderedOp rotatedImage = inImage;
-        if (rotation.getDegrees() > 0) {
+        if (rotate.getDegrees() > 0) {
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(rotatedImage);
             pb.add(inImage.getWidth() / 2.0f);
             pb.add(inImage.getHeight() / 2.0f);
-            pb.add((float) Math.toRadians(rotation.getDegrees()));
+            pb.add((float) Math.toRadians(rotate.getDegrees()));
             pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
             rotatedImage = JAI.create("rotate", pb);
         }
@@ -320,10 +320,10 @@ abstract class ProcessorUtil {
     }
 
     public static BufferedImage rotateImage(BufferedImage inImage,
-                                            Rotation rotation) {
+                                            Rotate rotate) {
         BufferedImage rotatedImage = inImage;
-        if (rotation.getDegrees() > 0) {
-            double radians = Math.toRadians(rotation.getDegrees());
+        if (rotate.getDegrees() > 0) {
+            double radians = Math.toRadians(rotate.getDegrees());
             int sourceWidth = inImage.getWidth();
             int sourceHeight = inImage.getHeight();
             int canvasWidth = (int) Math.round(Math.abs(sourceWidth *

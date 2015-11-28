@@ -1,21 +1,21 @@
 package edu.illinois.library.cantaloupe.image;
 
 /**
- * Encapsulates a rotation with optional mirroring.
+ * Encapsulates a rotation operation.
  */
-public class Rotation implements Operation {
+public class Rotate implements Operation {
 
     private float degrees = 0f;
 
     /**
      * No-op constructor.
      */
-    public Rotation() {}
+    public Rotate() {}
 
     /**
      * @param degrees Degrees of rotation between 0 and 360
      */
-    public Rotation(float degrees) {
+    public Rotate(float degrees) {
         this.setDegrees(degrees);
     }
 

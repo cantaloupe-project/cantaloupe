@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.Crop;
-import edu.illinois.library.cantaloupe.image.Rotation;
+import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
 
@@ -130,10 +130,10 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
         final int sourceWidth = inImage.getWidth();
         final int sourceHeight = inImage.getHeight();
 
-        Rotation rotation = new Rotation(15);
-        BufferedImage outImage = ProcessorUtil.rotateImage(inImage, rotation);
+        Rotate rotate = new Rotate(15);
+        BufferedImage outImage = ProcessorUtil.rotateImage(inImage, rotate);
 
-        double radians = Math.toRadians(rotation.getDegrees());
+        double radians = Math.toRadians(rotate.getDegrees());
         int expectedWidth = (int) Math.round(Math.abs(sourceWidth *
                 Math.cos(radians)) + Math.abs(sourceHeight *
                 Math.sin(radians)));
