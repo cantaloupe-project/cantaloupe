@@ -76,7 +76,7 @@ public class ImageResource extends AbstractResource {
             if (cache != null) {
                 InputStream inputStream = cache.getImageInputStream(ops);
                 if (inputStream != null) {
-                    this.addLinkHeader(ops);
+                    this.addLinkHeader(params);
                     return new CachedImageRepresentation(
                             new MediaType(params.getOutputFormat().getMediaType()),
                             ops, inputStream);
@@ -107,7 +107,7 @@ public class ImageResource extends AbstractResource {
             throw new UnsupportedSourceFormatException(msg);
         }
 
-        this.addLinkHeader(ops);
+        this.addLinkHeader(params);
 
         MediaType mediaType = new MediaType(
                 ops.getOutputFormat().getMediaType());
@@ -149,10 +149,10 @@ public class ImageResource extends AbstractResource {
         return null; // this should never happen
     }
 
-    private void addLinkHeader(Operations ops) {
+    private void addLinkHeader(Parameters params) {
         this.addHeader("Link", String.format("<%s%s/%s>;rel=\"canonical\"",
                 getPublicRootRef().toString(),
-                ImageServerApplication.IIIF_2_0_PATH, ops.toString()));
+                ImageServerApplication.IIIF_2_0_PATH, params.toString()));
     }
 
 }
