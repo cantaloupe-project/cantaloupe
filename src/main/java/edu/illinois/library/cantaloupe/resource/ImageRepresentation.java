@@ -88,7 +88,7 @@ public class ImageRepresentation extends OutputRepresentation {
     private void initialize(Identifier identifier, OutputFormat format) {
         Disposition disposition = new Disposition();
         switch (Application.getConfiguration().
-                getString(CONTENT_DISPOSITION_CONFIG_KEY)) {
+                getString(CONTENT_DISPOSITION_CONFIG_KEY, "none")) {
             case "inline":
                 disposition.setType(Disposition.TYPE_INLINE);
                 this.setDisposition(disposition);
