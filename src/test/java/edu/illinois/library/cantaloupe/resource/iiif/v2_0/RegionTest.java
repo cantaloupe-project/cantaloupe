@@ -8,7 +8,12 @@ public class RegionTest extends CantaloupeTestCase {
     private Region region;
 
     public void setUp() {
-        this.region = new Region();
+        region = new Region();
+        region.setPercent(true);
+        region.setX(20f);
+        region.setY(20f);
+        region.setWidth(20f);
+        region.setHeight(20f);
     }
 
     /* fromUri(String) */
@@ -71,6 +76,108 @@ public class RegionTest extends CantaloupeTestCase {
         }
     }
 
+    /* equals */
+
+    public void testEqualsWithEqualRegion() {
+        Region region2 = new Region();
+        region2.setPercent(true);
+        region2.setX(20f);
+        region2.setY(20f);
+        region2.setWidth(20f);
+        region2.setHeight(20f);
+        assertTrue(region.equals(region2));
+    }
+
+    public void testEqualsWithUnequalRegion1() {
+        Region region2 = new Region();
+        region2.setPercent(true);
+        region2.setX(50f);
+        region2.setY(20f);
+        region2.setWidth(20f);
+        region2.setHeight(20f);
+        assertFalse(region.equals(region2));
+    }
+
+    public void testEqualsWithUnequalRegion2() {
+        Region region2 = new Region();
+        region2.setPercent(true);
+        region2.setX(20f);
+        region2.setY(50f);
+        region2.setWidth(20f);
+        region2.setHeight(20f);
+        assertFalse(region.equals(region2));
+    }
+
+    public void testEqualsWithUnequalRegion3() {
+        Region region2 = new Region();
+        region2.setPercent(true);
+        region2.setX(20f);
+        region2.setY(20f);
+        region2.setWidth(50f);
+        region2.setHeight(20f);
+        assertFalse(region.equals(region2));
+    }
+
+    public void testEqualsWithUnequalRegion4() {
+        Region region2 = new Region();
+        region2.setPercent(true);
+        region2.setX(20f);
+        region2.setY(20f);
+        region2.setWidth(20f);
+        region2.setHeight(50f);
+        assertFalse(region.equals(region2));
+    }
+
+    public void testEqualsWithEqualCrop() {
+        Crop crop = new Crop();
+        crop.setPercent(true);
+        crop.setX(0.2f);
+        crop.setY(0.2f);
+        crop.setWidth(0.2f);
+        crop.setHeight(0.2f);
+        assertTrue(region.equals(crop));
+    }
+
+    public void testEqualsWithUnequalCrop1() {
+        Crop crop = new Crop();
+        crop.setPercent(true);
+        crop.setX(0.5f);
+        crop.setY(0.2f);
+        crop.setWidth(0.2f);
+        crop.setHeight(0.2f);
+        assertFalse(region.equals(crop));
+    }
+
+    public void testEqualsWithUnequalCrop2() {
+        Crop crop = new Crop();
+        crop.setPercent(true);
+        crop.setX(0.2f);
+        crop.setY(0.5f);
+        crop.setWidth(0.2f);
+        crop.setHeight(0.2f);
+        assertFalse(region.equals(crop));
+    }
+
+    public void testEqualsWithUnequalCrop3() {
+        Crop crop = new Crop();
+        crop.setPercent(true);
+        crop.setX(0.2f);
+        crop.setY(0.2f);
+        crop.setWidth(0.5f);
+        crop.setHeight(0.2f);
+        assertFalse(region.equals(crop));
+    }
+
+    public void testEqualsWithUnequalCrop4() {
+        Crop crop = new Crop();
+        crop.setPercent(true);
+        crop.setX(0.2f);
+        crop.setY(0.2f);
+        crop.setWidth(0.2f);
+        crop.setHeight(0.5f);
+        assertFalse(region.equals(crop));
+    }
+
     /* height */
 
     public void testSetHeight() {
@@ -126,7 +233,7 @@ public class RegionTest extends CantaloupeTestCase {
     /* x */
 
     public void testSetX() {
-        Float x = new Float(50.0);
+        Float x = 50.0f;
         this.region.setX(x);
         assertEquals(x, this.region.getX());
     }

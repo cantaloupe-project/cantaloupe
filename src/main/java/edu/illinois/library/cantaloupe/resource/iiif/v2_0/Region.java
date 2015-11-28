@@ -51,6 +51,38 @@ class Region {
         return region;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        final float fudge = 0.0001f;
+        if (obj instanceof Region) {
+            final Region region = (Region) obj;
+            return isFull() == region.isFull() &&
+                    isPercent() == region.isPercent() &&
+                    Math.abs(getX() - region.getX()) < fudge &&
+                    Math.abs(getY() - region.getY()) < fudge &&
+                    Math.abs(getWidth() - region.getWidth()) < fudge &&
+                    Math.abs(getHeight() - region.getHeight()) < fudge;
+        }
+        if (obj instanceof Crop) {
+            final Crop crop = (Crop) obj;
+            if (this.isPercent()) {
+                return isFull() == crop.isFull() &&
+                        isPercent() == crop.isPercent() &&
+                        Math.abs(getX() - crop.getX() * 100) < fudge &&
+                        Math.abs(getY() - crop.getY() * 100) < fudge &&
+                        Math.abs(getWidth() - crop.getWidth() * 100) < fudge &&
+                        Math.abs(getHeight() - crop.getHeight() * 100) < fudge;
+            }
+            return isFull() == crop.isFull() &&
+                    isPercent() == crop.isPercent() &&
+                    Math.abs(getX() - crop.getX()) < fudge &&
+                    Math.abs(getY() - crop.getY()) < fudge &&
+                    Math.abs(getWidth() - crop.getWidth()) < fudge &&
+                    Math.abs(getHeight() - crop.getHeight()) < fudge;
+        }
+        return super.equals(obj);
+    }
+
     public Float getHeight() {
         return height;
     }
