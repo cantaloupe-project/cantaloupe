@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
 
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.Quality;
 
 public class ParametersTest extends CantaloupeTestCase {
 
@@ -14,7 +13,7 @@ public class ParametersTest extends CantaloupeTestCase {
         assertEquals("20,20,50,50", params.getRegion().toString());
         assertEquals(90f, params.getSize().getPercent());
         assertEquals(15f, params.getRotation().getDegrees());
-        assertEquals(Quality.DEFAULT, params.getQuality());
+        assertEquals(Quality.NATIVE, params.getQuality());
         assertEquals(OutputFormat.JPG, params.getOutputFormat());
 
         try {

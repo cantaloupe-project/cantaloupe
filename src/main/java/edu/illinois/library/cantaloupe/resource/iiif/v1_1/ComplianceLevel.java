@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
 
 import edu.illinois.library.cantaloupe.resource.iiif.Feature;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.Quality;
 import edu.illinois.library.cantaloupe.processor.ProcessorFeature;
 
 import java.util.HashSet;
@@ -34,7 +33,7 @@ enum ComplianceLevel {
         LEVEL_1_FEATURES.add(ProcessorFeature.SIZE_BY_HEIGHT);
         LEVEL_1_FEATURES.add(ProcessorFeature.SIZE_BY_PERCENT);
         LEVEL_1_FEATURES.add(ProcessorFeature.ROTATION_BY_90S);
-        LEVEL_1_QUALITIES.add(Quality.DEFAULT);
+        LEVEL_1_QUALITIES.add(Quality.NATIVE);
         LEVEL_1_OUTPUT_FORMATS.add(OutputFormat.JPG);
 
         LEVEL_2_FEATURES.addAll(LEVEL_1_FEATURES);

@@ -1,11 +1,11 @@
 package edu.illinois.library.cantaloupe.image;
 
-public enum Quality implements Operation {
+public enum Filter implements Operation {
 
-    BITONAL, COLOR, DEFAULT, GRAY;
+    BITONAL, DEFAULT, GRAY;
 
     public boolean isNoOp() {
-        return (this == DEFAULT || this == COLOR);
+        return (this == DEFAULT);
     }
 
     @Override

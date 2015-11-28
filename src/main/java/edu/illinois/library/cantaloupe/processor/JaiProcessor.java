@@ -1,12 +1,12 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.Rotation;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.Quality;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import it.geosolutions.jaiext.JAIExt;
@@ -33,20 +33,36 @@ import java.util.Set;
 class JaiProcessor implements FileProcessor, StreamProcessor {
 
     private static final int JAI_TILE_SIZE = 512;
-    private static final Set<Quality> SUPPORTED_QUALITIES = new HashSet<>();
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
+    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality>
+            SUPPORTED_IIIF_1_1_QUALITIES = new HashSet<>();
+    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality>
+            SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
 
     private static HashMap<SourceFormat,Set<OutputFormat>> formatsMap;
 
     static {
-        // replace the JRE JAI operations with GeoTools JAI-EXT
+        // use GeoTools JAI-EXT instead of Sun JAI
         JAIExt.initJAIEXT();
 
-        SUPPORTED_QUALITIES.add(Quality.BITONAL);
-        SUPPORTED_QUALITIES.add(Quality.COLOR);
-        SUPPORTED_QUALITIES.add(Quality.DEFAULT);
-        SUPPORTED_QUALITIES.add(Quality.GRAY);
+        SUPPORTED_IIIF_1_1_QUALITIES.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality.BITONAL);
+        SUPPORTED_IIIF_1_1_QUALITIES.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality.COLOR);
+        SUPPORTED_IIIF_1_1_QUALITIES.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality.GRAY);
+        SUPPORTED_IIIF_1_1_QUALITIES.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality.NATIVE);
+
+        SUPPORTED_IIIF_2_0_QUALITIES.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality.BITONAL);
+        SUPPORTED_IIIF_2_0_QUALITIES.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality.COLOR);
+        SUPPORTED_IIIF_2_0_QUALITIES.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality.DEFAULT);
+        SUPPORTED_IIIF_2_0_QUALITIES.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality.GRAY);
 
         SUPPORTED_FEATURES.add(ProcessorFeature.MIRRORING);
         SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PERCENT);
@@ -124,10 +140,23 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
     }
 
     @Override
-    public Set<Quality> getSupportedQualities(final SourceFormat sourceFormat) {
-        Set<Quality> qualities = new HashSet<>();
+    public Set<edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality>
+    getSupportedIiif1_1Qualities(final SourceFormat sourceFormat) {
+        Set<edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality>
+                qualities = new HashSet<>();
         if (getAvailableOutputFormats(sourceFormat).size() > 0) {
-            qualities.addAll(SUPPORTED_QUALITIES);
+            qualities.addAll(SUPPORTED_IIIF_1_1_QUALITIES);
+        }
+        return qualities;
+    }
+
+    @Override
+    public Set<edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality>
+    getSupportedIiif2_0Qualities(final SourceFormat sourceFormat) {
+        Set<edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality>
+                qualities = new HashSet<>();
+        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+            qualities.addAll(SUPPORTED_IIIF_2_0_QUALITIES);
         }
         return qualities;
     }
@@ -168,8 +197,8 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
                     image = ProcessorUtil.transposeImage(image, (Transpose) op);
                 } else if (op instanceof Rotation) {
                     image = ProcessorUtil.rotateImage(image, (Rotation) op);
-                } else if (op instanceof Quality) {
-                    image = ProcessorUtil.filterImage(image, (Quality) op);
+                } else if (op instanceof Filter) {
+                    image = ProcessorUtil.filterImage(image, (Filter) op);
                 }
             }
             ProcessorUtil.writeImage(image, ops.getOutputFormat(),

@@ -15,7 +15,7 @@ import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.Quality;
+import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -77,7 +77,7 @@ public class InformationResource extends AbstractResource {
         // Get an ImageInfo instance corresponding to the source image
         ImageInfo imageInfo = getImageInfo(identifier,
                 getSize(identifier, proc, resolver, sourceFormat),
-                proc.getSupportedQualities(sourceFormat),
+                proc.getSupportedIiif2_0Qualities(sourceFormat),
                 proc.getSupportedFeatures(sourceFormat),
                 proc.getAvailableOutputFormats(sourceFormat));
         // Transform the ImageInfo into JSON

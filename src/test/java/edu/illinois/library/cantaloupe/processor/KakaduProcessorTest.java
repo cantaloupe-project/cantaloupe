@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.Quality;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 
 import java.awt.Dimension;
@@ -70,20 +69,6 @@ public class KakaduProcessorTest extends ProcessorTest {
         expectedFeatures = new HashSet<>();
         assertEquals(expectedFeatures,
                 instance.getSupportedFeatures(SourceFormat.UNKNOWN));
-    }
-
-    public void testGetSupportedQualities() {
-        Set<Quality> expectedQualities = new HashSet<>();
-        expectedQualities.add(Quality.BITONAL);
-        expectedQualities.add(Quality.COLOR);
-        expectedQualities.add(Quality.DEFAULT);
-        expectedQualities.add(Quality.GRAY);
-        assertEquals(expectedQualities,
-                instance.getSupportedQualities(SourceFormat.JP2));
-
-        expectedQualities = new HashSet<>();
-        assertEquals(expectedQualities,
-                instance.getSupportedQualities(SourceFormat.UNKNOWN));
     }
 
 }

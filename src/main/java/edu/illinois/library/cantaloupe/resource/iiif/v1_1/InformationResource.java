@@ -10,9 +10,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.Quality;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -61,12 +61,12 @@ public class InformationResource extends AbstractResource {
         // Get an ImageInfo instance corresponding to the source image
         ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
                 proc.getSupportedFeatures(sourceFormat),
-                proc.getSupportedQualities(sourceFormat),
+                proc.getSupportedIiif1_1Qualities(sourceFormat),
                 proc.getAvailableOutputFormats(sourceFormat));
         ImageInfo imageInfo = getImageInfo(internalId,
                 getSize(internalId, proc, resolver, sourceFormat),
                 complianceLevel,
-                proc.getSupportedQualities(sourceFormat),
+                proc.getSupportedIiif1_1Qualities(sourceFormat),
                 proc.getAvailableOutputFormats(sourceFormat));
         // Transform the ImageInfo into JSON
         ObjectMapper mapper = new ObjectMapper();
@@ -119,7 +119,7 @@ public class InformationResource extends AbstractResource {
         // qualities
         for (Quality quality : qualities) {
             String qualityStr = quality.toString().toLowerCase();
-            if (quality.equals(Quality.DEFAULT)) {
+            if (quality.equals(Filter.DEFAULT)) {
                 qualityStr = "native";
             }
             imageInfo.getQualities().add(qualityStr);

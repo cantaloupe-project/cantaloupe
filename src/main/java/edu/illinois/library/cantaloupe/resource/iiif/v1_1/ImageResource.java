@@ -91,7 +91,7 @@ public class ImageResource extends AbstractResource {
 
         final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
                 proc.getSupportedFeatures(sourceFormat),
-                proc.getSupportedQualities(sourceFormat),
+                proc.getSupportedIiif1_1Qualities(sourceFormat),
                 proc.getAvailableOutputFormats(sourceFormat));
         this.addHeader("Link", String.format("<%s>;rel=\"profile\";",
                 complianceLevel.getUri()));

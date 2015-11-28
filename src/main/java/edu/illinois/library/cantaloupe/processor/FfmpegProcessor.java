@@ -2,10 +2,10 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.Quality;
 import edu.illinois.library.cantaloupe.image.Rotation;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
@@ -67,15 +67,27 @@ class FfmpegProcessor implements FileProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(FfmpegProcessor.class);
 
-    private static final Set<Quality> SUPPORTED_QUALITIES = new HashSet<>();
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
+    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality>
+            SUPPORTED_IIIF_1_1_QUALITIES = new HashSet<>();
+    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality>
+            SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
 
     static {
-        //SUPPORTED_QUALITIES.add(Quality.BITONAL);
-        SUPPORTED_QUALITIES.add(Quality.COLOR);
-        SUPPORTED_QUALITIES.add(Quality.DEFAULT);
-        SUPPORTED_QUALITIES.add(Quality.GRAY);
+        SUPPORTED_IIIF_1_1_QUALITIES.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality.COLOR);
+        SUPPORTED_IIIF_1_1_QUALITIES.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality.GRAY);
+        SUPPORTED_IIIF_1_1_QUALITIES.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality.NATIVE);
+
+        SUPPORTED_IIIF_2_0_QUALITIES.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality.COLOR);
+        SUPPORTED_IIIF_2_0_QUALITIES.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality.DEFAULT);
+        SUPPORTED_IIIF_2_0_QUALITIES.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality.GRAY);
 
         SUPPORTED_FEATURES.add(ProcessorFeature.MIRRORING);
         SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PERCENT);
@@ -249,10 +261,23 @@ class FfmpegProcessor implements FileProcessor {
     }
 
     @Override
-    public Set<Quality> getSupportedQualities(SourceFormat sourceFormat) {
-        Set<Quality> qualities = new HashSet<>();
+    public Set<edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality>
+    getSupportedIiif1_1Qualities(SourceFormat sourceFormat) {
+        Set<edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality>
+                qualities = new HashSet<>();
         if (getAvailableOutputFormats(sourceFormat).size() > 0) {
-            qualities.addAll(SUPPORTED_QUALITIES);
+            qualities.addAll(SUPPORTED_IIIF_1_1_QUALITIES);
+        }
+        return qualities;
+    }
+
+    @Override
+    public Set<edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality>
+    getSupportedIiif2_0Qualities(SourceFormat sourceFormat) {
+        Set<edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality>
+                qualities = new HashSet<>();
+        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+            qualities.addAll(SUPPORTED_IIIF_2_0_QUALITIES);
         }
         return qualities;
     }
@@ -476,9 +501,9 @@ class FfmpegProcessor implements FileProcessor {
                             break;
                     }
                 }
-            } else if (op instanceof Quality) {
-                Quality quality = (Quality) op;
-                if (quality.equals(Quality.GRAY)) {
+            } else if (op instanceof Filter) {
+                Filter filter = (Filter) op;
+                if (filter.equals(Filter.GRAY)) {
                     filters.add("colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3");
                 }
             }

@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.Quality;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Reference;
 import org.restlet.data.Form;
@@ -155,7 +154,7 @@ class Parameters implements Comparable<Parameters> {
         ops.add(getSize().toScale());
         ops.add(getRotation().toTranspose());
         ops.add(getRotation().toRotation());
-        ops.add(getQuality());
+        ops.add(getQuality().toFilter());
         return ops;
     }
 

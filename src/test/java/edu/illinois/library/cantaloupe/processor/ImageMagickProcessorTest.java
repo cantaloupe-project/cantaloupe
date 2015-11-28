@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.Quality;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.BufferedReader;
@@ -136,20 +135,6 @@ public class ImageMagickProcessorTest extends ProcessorTest {
         expectedFeatures = new HashSet<>();
         assertEquals(expectedFeatures,
                 instance.getSupportedFeatures(SourceFormat.UNKNOWN));
-    }
-
-    public void testGetSupportedQualities() {
-        Set<Quality> expectedQualities = new HashSet<>();
-        expectedQualities.add(Quality.BITONAL);
-        expectedQualities.add(Quality.COLOR);
-        expectedQualities.add(Quality.DEFAULT);
-        expectedQualities.add(Quality.GRAY);
-        assertEquals(expectedQualities,
-                instance.getSupportedQualities(getAnySupportedSourceFormat(instance)));
-
-        expectedQualities = new HashSet<>();
-        assertEquals(expectedQualities,
-                instance.getSupportedQualities(SourceFormat.UNKNOWN));
     }
 
 }

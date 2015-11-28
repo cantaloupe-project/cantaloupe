@@ -1,10 +1,10 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.Quality;
 import edu.illinois.library.cantaloupe.image.Rotation;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
@@ -68,20 +68,6 @@ public class FfmpegProcessorTest extends ProcessorTest {
                 instance.getSupportedFeatures(SourceFormat.UNKNOWN));
     }
 
-    public void testGetSupportedQualities() {
-        Set<Quality> expectedQualities = new HashSet<>();
-        //expectedQualities.add(Quality.BITONAL);
-        expectedQualities.add(Quality.COLOR);
-        expectedQualities.add(Quality.DEFAULT);
-        expectedQualities.add(Quality.GRAY);
-        assertEquals(expectedQualities,
-                instance.getSupportedQualities(getAnySupportedSourceFormat(instance)));
-
-        expectedQualities = new HashSet<>();
-        assertEquals(expectedQualities,
-                instance.getSupportedQualities(SourceFormat.UNKNOWN));
-    }
-
     public void testProcessWithFrameOption() throws Exception {
         Identifier identifier = new Identifier("bla");
         Crop crop = new Crop();
@@ -89,7 +75,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
         Rotation rotation = new Rotation(0);
-        Quality quality = Quality.DEFAULT;
+        Filter filter = Filter.DEFAULT;
         OutputFormat format = OutputFormat.JPG;
 
         Operations ops = new Operations();
@@ -97,7 +83,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
         ops.add(crop);
         ops.add(scale);
         ops.add(rotation);
-        ops.add(quality);
+        ops.add(filter);
         ops.setOutputFormat(format);
 
         final SourceFormat sourceFormat = SourceFormat.MPG;
@@ -117,6 +103,42 @@ public class FfmpegProcessorTest extends ProcessorTest {
         byte[] fiveSecondFrame = outputStream.toByteArray();
 
         assertFalse(Arrays.equals(zeroSecondFrame, fiveSecondFrame));
+    }
+
+    @Override
+    public void testGetSupportedIiif11Qualities() {
+        Set<edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality>
+                expectedQualities = new HashSet<>();
+        expectedQualities.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality.COLOR);
+        expectedQualities.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality.GRAY);
+        expectedQualities.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality.NATIVE);
+        assertEquals(expectedQualities,
+                getProcessor().getSupportedIiif1_1Qualities(getAnySupportedSourceFormat(getProcessor())));
+
+        expectedQualities = new HashSet<>();
+        assertEquals(expectedQualities,
+                getProcessor().getSupportedIiif1_1Qualities(SourceFormat.UNKNOWN));
+    }
+
+    @Override
+    public void testGetSupportedIiif20Qualities() {
+        Set<edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality>
+                expectedQualities = new HashSet<>();
+        expectedQualities.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality.COLOR);
+        expectedQualities.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality.DEFAULT);
+        expectedQualities.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality.GRAY);
+        assertEquals(expectedQualities,
+                getProcessor().getSupportedIiif2_0Qualities(getAnySupportedSourceFormat(getProcessor())));
+
+        expectedQualities = new HashSet<>();
+        assertEquals(expectedQualities,
+                getProcessor().getSupportedIiif1_1Qualities(SourceFormat.UNKNOWN));
     }
 
 }

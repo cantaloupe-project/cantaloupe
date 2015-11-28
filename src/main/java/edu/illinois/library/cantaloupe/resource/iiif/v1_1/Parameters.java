@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.Quality;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Reference;
 
@@ -38,11 +37,7 @@ class Parameters implements Comparable<Parameters> {
             params.setRotation(Rotation.fromUri(parts[3]));
             String[] subparts = StringUtils.split(parts[4], ".");
             if (subparts.length == 2) {
-                String qualityStr = subparts[0].toUpperCase();
-                if (qualityStr.equals("NATIVE")) {
-                    qualityStr = "DEFAULT";
-                }
-                params.setQuality(Quality.valueOf(qualityStr));
+                params.setQuality(Quality.valueOf(subparts[0].toUpperCase()));
                 params.setOutputFormat(OutputFormat.valueOf(subparts[1].toUpperCase()));
             } else {
                 throw new IllegalArgumentException("Invalid parameters format");
@@ -72,11 +67,7 @@ class Parameters implements Comparable<Parameters> {
         this.setRegion(Region.fromUri(region));
         this.setSize(Size.fromUri(size));
         this.setRotation(Rotation.fromUri(rotation));
-        String qualityStr = quality.toUpperCase();
-        if (qualityStr.equals("NATIVE")) {
-            qualityStr = "DEFAULT";
-        }
-        this.setQuality(Quality.valueOf(qualityStr));
+        this.setQuality(Quality.valueOf(quality.toUpperCase()));
         this.setOutputFormat(OutputFormat.valueOf(format.toUpperCase()));
     }
 
@@ -141,7 +132,7 @@ class Parameters implements Comparable<Parameters> {
         ops.add(getRegion().toCrop());
         ops.add(getSize().toScale());
         ops.add(getRotation().toRotation());
-        ops.add(getQuality());
+        ops.add(getQuality().toFilter());
         return ops;
     }
 

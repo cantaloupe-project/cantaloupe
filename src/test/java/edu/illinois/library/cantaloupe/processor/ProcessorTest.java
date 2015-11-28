@@ -3,9 +3,9 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operations;
-import edu.illinois.library.cantaloupe.image.Quality;
 import edu.illinois.library.cantaloupe.image.Rotation;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -86,14 +87,14 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
         Rotation rotation = new Rotation(0);
-        Quality quality = Quality.DEFAULT;
+        Filter filter = Filter.DEFAULT;
         OutputFormat format = OutputFormat.JPG;
         Operations ops = new Operations();
         ops.setIdentifier(identifier);
         ops.add(crop);
         ops.add(scale);
         ops.add(rotation);
-        ops.add(quality);
+        ops.add(filter);
         ops.setOutputFormat(format);
         doProcessTest(ops);
     }
@@ -109,14 +110,14 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setPercent(0.8f);
         Rotation rotation = new Rotation(15);
-        Quality quality = Quality.COLOR;
+        Filter filter = Filter.DEFAULT;
         OutputFormat format = OutputFormat.JPG;
         Operations ops = new Operations();
         ops.setIdentifier(identifier);
         ops.add(crop);
         ops.add(scale);
         ops.add(rotation);
-        ops.add(quality);
+        ops.add(filter);
         ops.setOutputFormat(format);
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             if (getProcessor().getAvailableOutputFormats(sourceFormat).size() == 0) {
@@ -247,11 +248,11 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         }
     }
 
-    public void testProcessWithQualityOperation() throws Exception {
-        for (Quality quality : Quality.values()) {
+    public void testProcessWithFilterOperation() throws Exception {
+        for (Filter filter : Filter.values()) {
             Operations ops = new Operations();
             ops.setIdentifier(new Identifier("bla"));
-            ops.add(quality);
+            ops.add(filter);
             ops.setOutputFormat(OutputFormat.JPG);
             doProcessTest(ops);
         }
@@ -266,6 +267,52 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
             ops.setOutputFormat(outputFormat);
             doProcessTest(ops);
         }
+    }
+
+    /**
+     * Tests for the presernce of all available IIIF 1.1 qualities. Subclasses
+     * must override if they lack support for any of these.
+     */
+    public void testGetSupportedIiif11Qualities() {
+        Set<edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality>
+                expectedQualities = new HashSet<>();
+        expectedQualities.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality.BITONAL);
+        expectedQualities.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality.COLOR);
+        expectedQualities.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality.GRAY);
+        expectedQualities.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality.NATIVE);
+        assertEquals(expectedQualities,
+                getProcessor().getSupportedIiif1_1Qualities(getAnySupportedSourceFormat(getProcessor())));
+
+        expectedQualities = new HashSet<>();
+        assertEquals(expectedQualities,
+                getProcessor().getSupportedIiif1_1Qualities(SourceFormat.UNKNOWN));
+    }
+
+    /**
+     * Tests for the presernce of all available IIIF 2.0 qualities. Subclasses
+     * must override if they lack support for any of these.
+     */
+    public void testGetSupportedIiif20Qualities() {
+        Set<edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality>
+                expectedQualities = new HashSet<>();
+        expectedQualities.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality.BITONAL);
+        expectedQualities.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality.COLOR);
+        expectedQualities.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality.DEFAULT);
+        expectedQualities.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality.GRAY);
+        assertEquals(expectedQualities,
+                getProcessor().getSupportedIiif2_0Qualities(getAnySupportedSourceFormat(getProcessor())));
+
+        expectedQualities = new HashSet<>();
+        assertEquals(expectedQualities,
+                getProcessor().getSupportedIiif1_1Qualities(SourceFormat.UNKNOWN));
     }
 
     private void doProcessTest(Operations ops) throws Exception {

@@ -10,7 +10,7 @@ import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.Quality;
+import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Rotation;
 import org.slf4j.Logger;
@@ -182,9 +182,9 @@ abstract class ProcessorUtil {
     }
 
     public static BufferedImage filterImage(BufferedImage inImage,
-                                            Quality quality) {
+                                            Filter filter) {
         BufferedImage filteredImage = inImage;
-        switch (quality) {
+        switch (filter) {
             case GRAY:
                 filteredImage = new BufferedImage(inImage.getWidth(),
                         inImage.getHeight(),
@@ -205,9 +205,9 @@ abstract class ProcessorUtil {
 
     @SuppressWarnings({"deprecation"}) // really, JAI itself is basically deprecated
     public static RenderedOp filterImage(RenderedOp inImage,
-                                         Quality quality) {
+                                         Filter filter) {
         RenderedOp filteredImage = inImage;
-        if (quality != Quality.COLOR && quality != Quality.DEFAULT) {
+        if (filter != Filter.DEFAULT) {
             // convert to grayscale
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
@@ -220,7 +220,7 @@ abstract class ProcessorUtil {
                 pb.add(matrixRgb);
             }
             filteredImage = JAI.create("bandcombine", pb, null);
-            if (quality == Quality.BITONAL) {
+            if (filter == Filter.BITONAL) {
                 pb = new ParameterBlock();
                 pb.addSource(filteredImage);
                 pb.add(1.0 * 128);

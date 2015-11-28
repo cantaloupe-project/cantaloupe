@@ -3,10 +3,10 @@ package edu.illinois.library.cantaloupe.cache;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.Quality;
 import edu.illinois.library.cantaloupe.image.Rotation;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -47,14 +47,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Crop crop = new Crop();
         Scale scale = new Scale();
         Rotation rotation = new Rotation();
-        Quality quality = Quality.DEFAULT;
+        Filter filter = Filter.DEFAULT;
         OutputFormat format = OutputFormat.JPG;
         Operations ops = new Operations();
         ops.setIdentifier(identifier);
         ops.add(crop);
         ops.add(scale);
         ops.add(rotation);
-        ops.add(quality);
+        ops.add(filter);
         ops.setOutputFormat(format);
 
         OutputStream os = instance.getImageOutputStream(ops);
@@ -70,14 +70,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         scale = new Scale();
         scale.setPercent(0.9f);
         rotation = new Rotation();
-        quality = Quality.DEFAULT;
+        filter = Filter.DEFAULT;
         format = OutputFormat.JPG;
         ops = new Operations();
         ops.setIdentifier(identifier);
         ops.add(crop);
         ops.add(scale);
         ops.add(rotation);
-        ops.add(quality);
+        ops.add(filter);
         ops.setOutputFormat(format);
 
         os = instance.getImageOutputStream(ops);
@@ -94,14 +94,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         scale.setWidth(40);
         scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
         rotation = new Rotation(15);
-        quality = Quality.COLOR;
+        filter = Filter.DEFAULT;
         format = OutputFormat.PNG;
         ops = new Operations();
         ops.setIdentifier(identifier);
         ops.add(crop);
         ops.add(scale);
         ops.add(rotation);
-        ops.add(quality);
+        ops.add(filter);
         ops.setOutputFormat(format);
 
         os = instance.getImageOutputStream(ops);
@@ -172,14 +172,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Crop crop = new Crop();
         Scale scale = new Scale();
         Rotation rotation = new Rotation();
-        Quality quality = Quality.DEFAULT;
+        Filter filter = Filter.DEFAULT;
         OutputFormat format = OutputFormat.JPG;
         Operations ops = new Operations();
         ops.setIdentifier(identifier);
         ops.add(crop);
         ops.add(scale);
         ops.add(rotation);
-        ops.add(quality);
+        ops.add(filter);
         ops.setOutputFormat(format);
 
         instance.flush(ops);
@@ -215,14 +215,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Crop crop = new Crop();
         Scale scale = new Scale();
         Rotation rotation = new Rotation();
-        Quality quality = Quality.DEFAULT;
+        Filter filter = Filter.DEFAULT;
         OutputFormat format = OutputFormat.JPG;
         Operations ops = new Operations();
         ops.setIdentifier(identifier);
         ops.add(crop);
         ops.add(scale);
         ops.add(rotation);
-        ops.add(quality);
+        ops.add(filter);
         ops.setOutputFormat(format);
 
         OutputStream os = instance.getImageOutputStream(ops);
@@ -275,14 +275,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Crop crop = new Crop();
         Scale scale = new Scale();
         Rotation rotation = new Rotation();
-        Quality quality = Quality.DEFAULT;
+        Filter filter = Filter.DEFAULT;
         OutputFormat format = OutputFormat.JPG;
         Operations ops = new Operations();
         ops.setIdentifier(identifier);
         ops.add(crop);
         ops.add(scale);
         ops.add(rotation);
-        ops.add(quality);
+        ops.add(filter);
         ops.setOutputFormat(format);
 
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")),
@@ -308,14 +308,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Crop crop = new Crop();
         Scale scale = new Scale();
         Rotation rotation = new Rotation();
-        Quality quality = Quality.DEFAULT;
+        Filter filter = Filter.DEFAULT;
         OutputFormat format = OutputFormat.JPG;
         Operations ops = new Operations();
         ops.setIdentifier(identifier);
         ops.add(crop);
         ops.add(scale);
         ops.add(rotation);
-        ops.add(quality);
+        ops.add(filter);
         ops.setOutputFormat(format);
         assertNotNull(instance.getImageInputStream(ops));
     }
@@ -331,14 +331,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Crop crop = new Crop();
         Scale scale = new Scale();
         Rotation rotation = new Rotation();
-        Quality quality = Quality.DEFAULT;
+        Filter filter = Filter.DEFAULT;
         OutputFormat format = OutputFormat.JPG;
         Operations ops = new Operations();
         ops.setIdentifier(identifier);
         ops.add(crop);
         ops.add(scale);
         ops.add(rotation);
-        ops.add(quality);
+        ops.add(filter);
         ops.setOutputFormat(format);
         OutputStream os = instance.getImageOutputStream(ops);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
@@ -352,14 +352,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         crop = new Crop();
         scale = new Scale();
         rotation = new Rotation();
-        quality = Quality.DEFAULT;
+        filter = Filter.DEFAULT;
         format = OutputFormat.JPG;
         ops = new Operations();
         ops.setIdentifier(identifier);
         ops.add(crop);
         ops.add(scale);
         ops.add(rotation);
-        ops.add(quality);
+        ops.add(filter);
         ops.setOutputFormat(format);
         assertNull(instance.getImageInputStream(ops));
         // nonexistent image
@@ -367,14 +367,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         crop = new Crop();
         scale = new Scale();
         rotation = new Rotation();
-        quality = Quality.DEFAULT;
+        filter = Filter.DEFAULT;
         format = OutputFormat.JPG;
         ops = new Operations();
         ops.setIdentifier(identifier);
         ops.add(crop);
         ops.add(scale);
         ops.add(rotation);
-        ops.add(quality);
+        ops.add(filter);
         ops.setOutputFormat(format);
         assertNull(instance.getImageInputStream(ops));
     }
@@ -384,14 +384,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Crop crop = new Crop();
         Scale scale = new Scale();
         Rotation rotation = new Rotation();
-        Quality quality = Quality.DEFAULT;
+        Filter filter = Filter.DEFAULT;
         OutputFormat format = OutputFormat.JPG;
         Operations ops = new Operations();
         ops.setIdentifier(identifier);
         ops.add(crop);
         ops.add(scale);
         ops.add(rotation);
-        ops.add(quality);
+        ops.add(filter);
         ops.setOutputFormat(format);
         assertNotNull(instance.getImageOutputStream(ops));
     }

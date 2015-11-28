@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.processor.ProcessorFeature;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.Quality;
 
 import java.util.HashSet;
 import java.util.Set;
