@@ -75,7 +75,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
         Rotation rotation = new Rotation(0);
-        Filter filter = Filter.DEFAULT;
+        Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.JPG;
 
         Operations ops = new Operations();

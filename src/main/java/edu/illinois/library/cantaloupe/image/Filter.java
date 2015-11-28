@@ -2,10 +2,10 @@ package edu.illinois.library.cantaloupe.image;
 
 public enum Filter implements Operation {
 
-    BITONAL, DEFAULT, GRAY;
+    BITONAL, NONE, GRAY;
 
     public boolean isNoOp() {
-        return (this == DEFAULT);
+        return (this == NONE);
     }
 
     @Override

@@ -119,7 +119,7 @@ public class InformationResource extends AbstractResource {
         // qualities
         for (Quality quality : qualities) {
             String qualityStr = quality.toString().toLowerCase();
-            if (quality.equals(Filter.DEFAULT)) {
+            if (quality.equals(Filter.NONE)) {
                 qualityStr = "native";
             }
             imageInfo.getQualities().add(qualityStr);

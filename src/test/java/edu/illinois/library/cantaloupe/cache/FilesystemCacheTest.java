@@ -64,7 +64,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotation(0));
-        ops.add(Filter.DEFAULT);
+        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.JPG);
         instance.getCachedImageFile(ops).createNewFile();
         instance.getCachedInfoFile(ops.getIdentifier()).createNewFile();
@@ -101,7 +101,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotation(0));
-        ops.add(Filter.DEFAULT);
+        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.JPG);
 
         instance.getCachedImageFile(ops).createNewFile();
@@ -124,7 +124,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotation(0));
-        ops.add(Filter.DEFAULT);
+        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.JPG);
 
         instance.getCachedImageFile(ops).createNewFile();
@@ -141,7 +141,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotation(0));
-        ops.add(Filter.DEFAULT);
+        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.JPG);
 
         instance.getCachedImageFile(ops).createNewFile();
@@ -186,7 +186,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
         Rotation rotation = new Rotation(0);
-        Filter filter = Filter.DEFAULT;
+        Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.JPG;
 
         Operations ops = new Operations();
@@ -214,7 +214,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotation(0));
-        ops.add(Filter.DEFAULT);
+        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.JPG);
 
         Application.getConfiguration().setProperty("FilesystemCache.ttl_seconds", 1);
@@ -238,7 +238,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotation(0));
-        ops.add(Filter.DEFAULT);
+        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.JPG);
 
         assertTrue(instance.getImageOutputStream(ops) instanceof FileOutputStream);
@@ -257,7 +257,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotation(0));
-        ops.add(Filter.DEFAULT);
+        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.JPG);
 
         instance.getImageOutputStream(ops);
@@ -276,7 +276,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setPercent(0.905f);
         Rotation rotation = new Rotation(10);
-        Filter filter = Filter.DEFAULT;
+        Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.TIF;
 
         Operations ops = new Operations();

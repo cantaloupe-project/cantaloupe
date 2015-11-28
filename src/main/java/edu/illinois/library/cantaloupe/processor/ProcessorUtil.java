@@ -207,7 +207,7 @@ abstract class ProcessorUtil {
     public static RenderedOp filterImage(RenderedOp inImage,
                                          Filter filter) {
         RenderedOp filteredImage = inImage;
-        if (filter != Filter.DEFAULT) {
+        if (filter != Filter.NONE) {
             // convert to grayscale
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);

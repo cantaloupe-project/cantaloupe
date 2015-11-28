@@ -47,7 +47,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Crop crop = new Crop();
         Scale scale = new Scale();
         Rotation rotation = new Rotation();
-        Filter filter = Filter.DEFAULT;
+        Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.JPG;
         Operations ops = new Operations();
         ops.setIdentifier(identifier);
@@ -70,7 +70,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         scale = new Scale();
         scale.setPercent(0.9f);
         rotation = new Rotation();
-        filter = Filter.DEFAULT;
+        filter = Filter.NONE;
         format = OutputFormat.JPG;
         ops = new Operations();
         ops.setIdentifier(identifier);
@@ -94,7 +94,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         scale.setWidth(40);
         scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
         rotation = new Rotation(15);
-        filter = Filter.DEFAULT;
+        filter = Filter.NONE;
         format = OutputFormat.PNG;
         ops = new Operations();
         ops.setIdentifier(identifier);
@@ -172,7 +172,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Crop crop = new Crop();
         Scale scale = new Scale();
         Rotation rotation = new Rotation();
-        Filter filter = Filter.DEFAULT;
+        Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.JPG;
         Operations ops = new Operations();
         ops.setIdentifier(identifier);
@@ -215,7 +215,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Crop crop = new Crop();
         Scale scale = new Scale();
         Rotation rotation = new Rotation();
-        Filter filter = Filter.DEFAULT;
+        Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.JPG;
         Operations ops = new Operations();
         ops.setIdentifier(identifier);
@@ -275,7 +275,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Crop crop = new Crop();
         Scale scale = new Scale();
         Rotation rotation = new Rotation();
-        Filter filter = Filter.DEFAULT;
+        Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.JPG;
         Operations ops = new Operations();
         ops.setIdentifier(identifier);
@@ -308,7 +308,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Crop crop = new Crop();
         Scale scale = new Scale();
         Rotation rotation = new Rotation();
-        Filter filter = Filter.DEFAULT;
+        Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.JPG;
         Operations ops = new Operations();
         ops.setIdentifier(identifier);
@@ -331,7 +331,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Crop crop = new Crop();
         Scale scale = new Scale();
         Rotation rotation = new Rotation();
-        Filter filter = Filter.DEFAULT;
+        Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.JPG;
         Operations ops = new Operations();
         ops.setIdentifier(identifier);
@@ -352,7 +352,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         crop = new Crop();
         scale = new Scale();
         rotation = new Rotation();
-        filter = Filter.DEFAULT;
+        filter = Filter.NONE;
         format = OutputFormat.JPG;
         ops = new Operations();
         ops.setIdentifier(identifier);
@@ -367,7 +367,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         crop = new Crop();
         scale = new Scale();
         rotation = new Rotation();
-        filter = Filter.DEFAULT;
+        filter = Filter.NONE;
         format = OutputFormat.JPG;
         ops = new Operations();
         ops.setIdentifier(identifier);
@@ -384,7 +384,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Crop crop = new Crop();
         Scale scale = new Scale();
         Rotation rotation = new Rotation();
-        Filter filter = Filter.DEFAULT;
+        Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.JPG;
         Operations ops = new Operations();
         ops.setIdentifier(identifier);

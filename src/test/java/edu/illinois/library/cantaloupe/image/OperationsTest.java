@@ -20,7 +20,7 @@ public class OperationsTest extends CantaloupeTestCase {
         scale.setMode(Scale.Mode.FULL);
         ops.add(scale);
         ops.add(new Rotation(0));
-        ops.add(Filter.DEFAULT);
+        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.JPG);
 
         assertNotNull(ops.getOptions());
@@ -43,7 +43,7 @@ public class OperationsTest extends CantaloupeTestCase {
         scale.setMode(Scale.Mode.FULL);
         ops2.add(scale);
         ops2.add(new Rotation(0));
-        ops2.add(Filter.DEFAULT);
+        ops2.add(Filter.NONE);
         ops2.setOutputFormat(OutputFormat.JPG);
         assertEquals(0, ops2.compareTo(this.ops));
     }
@@ -54,7 +54,7 @@ public class OperationsTest extends CantaloupeTestCase {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
         Rotation rotation = new Rotation(0);
-        Filter filter = Filter.DEFAULT;
+        Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.JPG;
         ops = new Operations();
         ops.setIdentifier(new Identifier("identifier"));
@@ -76,7 +76,7 @@ public class OperationsTest extends CantaloupeTestCase {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotation(0));
-        ops.add(Filter.DEFAULT);
+        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.JPG);
         assertFalse(ops.isNoOp()); // false because the identifier has no discernible source format
     }
@@ -91,7 +91,7 @@ public class OperationsTest extends CantaloupeTestCase {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotation(0));
-        ops.add(Filter.DEFAULT);
+        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.GIF);
         assertTrue(ops.isNoOp());
     }
@@ -110,7 +110,7 @@ public class OperationsTest extends CantaloupeTestCase {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotation(0));
-        ops.add(Filter.DEFAULT);
+        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.GIF);
         assertFalse(ops.isNoOp());
     }
@@ -125,7 +125,7 @@ public class OperationsTest extends CantaloupeTestCase {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotation(0));
-        ops.add(Filter.DEFAULT);
+        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.GIF);
         assertTrue(ops.isNoOp());
     }
@@ -141,7 +141,7 @@ public class OperationsTest extends CantaloupeTestCase {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotation(0));
-        ops.add(Filter.DEFAULT);
+        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.GIF);
         assertFalse(ops.isNoOp());
     }
@@ -156,7 +156,7 @@ public class OperationsTest extends CantaloupeTestCase {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotation(2));
-        ops.add(Filter.DEFAULT);
+        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.GIF);
         assertFalse(ops.isNoOp());
     }
@@ -171,7 +171,7 @@ public class OperationsTest extends CantaloupeTestCase {
         ops.add(crop);
         ops.add(scale);;
         ops.add(new Rotation());
-        ops.add(Filter.DEFAULT);
+        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.GIF);
         assertTrue(ops.isNoOp());
     }
@@ -186,7 +186,7 @@ public class OperationsTest extends CantaloupeTestCase {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotation(0));
-        ops.add(Filter.DEFAULT);
+        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.GIF);
         assertTrue(ops.isNoOp());
     }

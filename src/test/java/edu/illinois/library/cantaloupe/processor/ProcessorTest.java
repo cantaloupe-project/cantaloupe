@@ -87,7 +87,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
         Rotation rotation = new Rotation(0);
-        Filter filter = Filter.DEFAULT;
+        Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.JPG;
         Operations ops = new Operations();
         ops.setIdentifier(identifier);
@@ -110,7 +110,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setPercent(0.8f);
         Rotation rotation = new Rotation(15);
-        Filter filter = Filter.DEFAULT;
+        Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.JPG;
         Operations ops = new Operations();
         ops.setIdentifier(identifier);
