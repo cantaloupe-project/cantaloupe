@@ -69,23 +69,6 @@ public class FfmpegProcessorTest extends ProcessorTest {
     }
 
     public void testProcessWithFrameOption() throws Exception {
-        Identifier identifier = new Identifier("bla");
-        Crop crop = new Crop();
-        crop.setFull(true);
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
-        Rotate rotate = new Rotate(0);
-        Filter filter = Filter.NONE;
-        OutputFormat format = OutputFormat.JPG;
-
-        Operations ops = new Operations();
-        ops.setIdentifier(identifier);
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(rotate);
-        ops.add(filter);
-        ops.setOutputFormat(format);
-
         final SourceFormat sourceFormat = SourceFormat.MPG;
 
         // time option missing
@@ -93,6 +76,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
         File file = TestUtil.getFixture(sourceFormat.getPreferredExtension());
         Dimension size = proc.getSize(file, sourceFormat);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Operations ops = TestUtil.newOperations();
         proc.process(ops, sourceFormat, size, file, outputStream);
         byte[] zeroSecondFrame = outputStream.toByteArray();
 

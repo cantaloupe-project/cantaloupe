@@ -43,35 +43,24 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         instance = new JdbcCache();
 
         // persist some images
-        Identifier identifier = new Identifier("cats");
-        Crop crop = new Crop();
-        Scale scale = new Scale();
-        Rotate rotate = new Rotate();
-        Filter filter = Filter.NONE;
-        OutputFormat format = OutputFormat.JPG;
-        Operations ops = new Operations();
-        ops.setIdentifier(identifier);
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(rotate);
-        ops.add(filter);
-        ops.setOutputFormat(format);
+        Operations ops = TestUtil.newOperations();
+        ops.getIdentifier().setValue("cats");
 
         OutputStream os = instance.getImageOutputStream(ops);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
         os.close();
 
-        identifier = new Identifier("dogs");
-        crop = new Crop();
+        Identifier identifier = new Identifier("dogs");
+        Crop crop = new Crop();
         crop.setX(50f);
         crop.setY(50f);
         crop.setWidth(50f);
         crop.setHeight(50f);
-        scale = new Scale();
+        Scale scale = new Scale();
         scale.setPercent(0.9f);
-        rotate = new Rotate();
-        filter = Filter.NONE;
-        format = OutputFormat.JPG;
+        Rotate rotate = new Rotate();
+        Filter filter = Filter.NONE;
+        OutputFormat format = OutputFormat.JPG;
         ops = new Operations();
         ops.setIdentifier(identifier);
         ops.add(crop);
@@ -168,20 +157,8 @@ public class JdbcCacheTest extends CantaloupeTestCase {
     }
 
     public void testFlushWithOperations() throws Exception {
-        Identifier identifier = new Identifier("cats");
-        Crop crop = new Crop();
-        Scale scale = new Scale();
-        Rotate rotate = new Rotate();
-        Filter filter = Filter.NONE;
-        OutputFormat format = OutputFormat.JPG;
-        Operations ops = new Operations();
-        ops.setIdentifier(identifier);
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(rotate);
-        ops.add(filter);
-        ops.setOutputFormat(format);
-
+        Operations ops = TestUtil.newOperations();
+        ops.getIdentifier().setValue("cats");
         instance.flush(ops);
 
         Configuration config = Application.getConfiguration();
@@ -211,19 +188,8 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Thread.sleep(1500);
 
         // add some fresh entities
-        Identifier identifier = new Identifier("bees");
-        Crop crop = new Crop();
-        Scale scale = new Scale();
-        Rotate rotate = new Rotate();
-        Filter filter = Filter.NONE;
-        OutputFormat format = OutputFormat.JPG;
-        Operations ops = new Operations();
-        ops.setIdentifier(identifier);
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(rotate);
-        ops.add(filter);
-        ops.setOutputFormat(format);
+        Operations ops = TestUtil.newOperations();
+        ops.getIdentifier().setValue("bees");
 
         OutputStream os = instance.getImageOutputStream(ops);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
@@ -271,19 +237,8 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Thread.sleep(1500);
 
         // add some fresh entities
-        Identifier identifier = new Identifier("bees");
-        Crop crop = new Crop();
-        Scale scale = new Scale();
-        Rotate rotate = new Rotate();
-        Filter filter = Filter.NONE;
-        OutputFormat format = OutputFormat.JPG;
-        Operations ops = new Operations();
-        ops.setIdentifier(identifier);
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(rotate);
-        ops.add(filter);
-        ops.setOutputFormat(format);
+        Operations ops = TestUtil.newOperations();
+        ops.getIdentifier().setValue("bees");
 
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")),
                 instance.getImageOutputStream(ops));
@@ -304,19 +259,8 @@ public class JdbcCacheTest extends CantaloupeTestCase {
     }
 
     public void testGetImageInputStreamWithZeroTtl() {
-        Identifier identifier = new Identifier("cats");
-        Crop crop = new Crop();
-        Scale scale = new Scale();
-        Rotate rotate = new Rotate();
-        Filter filter = Filter.NONE;
-        OutputFormat format = OutputFormat.JPG;
-        Operations ops = new Operations();
-        ops.setIdentifier(identifier);
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(rotate);
-        ops.add(filter);
-        ops.setOutputFormat(format);
+        Operations ops = TestUtil.newOperations();
+        ops.getIdentifier().setValue("cats");
         assertNotNull(instance.getImageInputStream(ops));
     }
 
@@ -327,19 +271,9 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Thread.sleep(1500);
 
         // add some fresh entities
-        Identifier identifier = new Identifier("bees");
-        Crop crop = new Crop();
-        Scale scale = new Scale();
-        Rotate rotate = new Rotate();
-        Filter filter = Filter.NONE;
-        OutputFormat format = OutputFormat.JPG;
-        Operations ops = new Operations();
-        ops.setIdentifier(identifier);
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(rotate);
-        ops.add(filter);
-        ops.setOutputFormat(format);
+        Operations ops = TestUtil.newOperations();
+        ops.getIdentifier().setValue("bees");
+
         OutputStream os = instance.getImageOutputStream(ops);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
         os.close();
@@ -347,52 +281,21 @@ public class JdbcCacheTest extends CantaloupeTestCase {
 
         // existing, non-expired image
         assertNotNull(instance.getImageInputStream(ops));
+
         // existing, expired image
-        identifier = new Identifier("cats");
-        crop = new Crop();
-        scale = new Scale();
-        rotate = new Rotate();
-        filter = Filter.NONE;
-        format = OutputFormat.JPG;
-        ops = new Operations();
-        ops.setIdentifier(identifier);
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(rotate);
-        ops.add(filter);
-        ops.setOutputFormat(format);
+        ops = TestUtil.newOperations();
+        ops.getIdentifier().setValue("cats");
         assertNull(instance.getImageInputStream(ops));
+
         // nonexistent image
-        identifier = new Identifier("bogus");
-        crop = new Crop();
-        scale = new Scale();
-        rotate = new Rotate();
-        filter = Filter.NONE;
-        format = OutputFormat.JPG;
-        ops = new Operations();
-        ops.setIdentifier(identifier);
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(rotate);
-        ops.add(filter);
-        ops.setOutputFormat(format);
+        ops = TestUtil.newOperations();
+        ops.getIdentifier().setValue("bogus");
         assertNull(instance.getImageInputStream(ops));
     }
 
     public void testGetImageOutputStream() throws Exception {
-        Identifier identifier = new Identifier("cats");
-        Crop crop = new Crop();
-        Scale scale = new Scale();
-        Rotate rotate = new Rotate();
-        Filter filter = Filter.NONE;
-        OutputFormat format = OutputFormat.JPG;
-        Operations ops = new Operations();
-        ops.setIdentifier(identifier);
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(rotate);
-        ops.add(filter);
-        ops.setOutputFormat(format);
+        Operations ops = TestUtil.newOperations();
+        ops.getIdentifier().setValue("cats");
         assertNotNull(instance.getImageOutputStream(ops));
     }
 

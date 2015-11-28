@@ -1,5 +1,9 @@
 package edu.illinois.library.cantaloupe.test;
 
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -22,6 +26,16 @@ public abstract class TestUtil {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * @return Dummy Operations object with no operations added.
+     */
+    public static Operations newOperations() {
+        Operations ops = new Operations();
+        ops.setIdentifier(new Identifier("dummy"));
+        ops.setOutputFormat(OutputFormat.JPG);
+        return ops;
     }
 
 }

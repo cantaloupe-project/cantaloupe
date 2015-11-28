@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.io.FileUtils;
 
@@ -54,33 +55,12 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     }
 
     public void testFlush() throws Exception {
-        Identifier identifier = new Identifier("cats");
-        Crop crop = new Crop();
-        crop.setFull(true);
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
-        Operations ops = new Operations();
-        ops.setIdentifier(identifier);
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(new Rotate(0));
-        ops.add(Filter.NONE);
-        ops.setOutputFormat(OutputFormat.JPG);
+        Operations ops = TestUtil.newOperations();
         instance.getCachedImageFile(ops).createNewFile();
         instance.getCachedInfoFile(ops.getIdentifier()).createNewFile();
 
-        identifier = new Identifier("dogs");
-        crop = new Crop();
-        crop.setFull(true);
-        scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
-        ops = new Operations();
-        ops.setIdentifier(identifier);
-        ops.add(crop);
-        ops.add(scale);
+        ops.getIdentifier().setValue("dogs");
         ops.add(new Rotate(15));
-        ops.add(Filter.GRAY);
-        ops.setOutputFormat(OutputFormat.JPG);
         instance.getCachedImageFile(ops).createNewFile();
         instance.getCachedInfoFile(ops.getIdentifier()).createNewFile();
 
@@ -90,20 +70,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     }
 
     public void testFlushWithParameters() throws Exception {
-        Identifier identifier = new Identifier("cats");
-        Crop crop = new Crop();
-        crop.setFull(true);
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
-
-        Operations ops = new Operations();
-        ops.setIdentifier(identifier);
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(new Rotate(0));
-        ops.add(Filter.NONE);
-        ops.setOutputFormat(OutputFormat.JPG);
-
+        Operations ops = TestUtil.newOperations();
         instance.getCachedImageFile(ops).createNewFile();
         instance.getCachedInfoFile(ops.getIdentifier()).createNewFile();
         instance.flush(ops);
@@ -119,31 +86,13 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
 
-        Operations ops = new Operations();
-        ops.setIdentifier(new Identifier("cats"));
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(new Rotate(0));
-        ops.add(Filter.NONE);
-        ops.setOutputFormat(OutputFormat.JPG);
-
+        Operations ops = TestUtil.newOperations();
         instance.getCachedImageFile(ops).createNewFile();
         instance.getCachedInfoFile(ops.getIdentifier()).createNewFile();
 
         Thread.sleep(2000);
 
-        crop = new Crop();
-        crop.setFull(true);
-        scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
-        ops = new Operations();
-        ops.setIdentifier(new Identifier("dogs"));
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(new Rotate(0));
-        ops.add(Filter.NONE);
-        ops.setOutputFormat(OutputFormat.JPG);
-
+        ops.getIdentifier().setValue("dogs");
         instance.getCachedImageFile(ops).createNewFile();
         instance.getCachedInfoFile(ops.getIdentifier()).createNewFile();
 
@@ -180,23 +129,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     }
 
     public void testGetImageInputStreamWithZeroTtl() throws Exception {
-        Identifier identifier = new Identifier("cats");
-        Crop crop = new Crop();
-        crop.setFull(true);
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
-        Rotate rotate = new Rotate(0);
-        Filter filter = Filter.NONE;
-        OutputFormat format = OutputFormat.JPG;
-
-        Operations ops = new Operations();
-        ops.setIdentifier(identifier);
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(rotate);
-        ops.add(filter);
-        ops.setOutputFormat(format);
-
+        Operations ops = TestUtil.newOperations();
         assertNull(instance.getImageInputStream(ops));
 
         instance.getCachedImageFile(ops).createNewFile();
@@ -204,19 +137,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     }
 
     public void testGetImageInputStreamWithNonzeroTtl() throws Exception {
-        Crop crop = new Crop();
-        crop.setFull(true);
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
-
-        Operations ops = new Operations();
-        ops.setIdentifier(new Identifier("cats"));
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(new Rotate(0));
-        ops.add(Filter.NONE);
-        ops.setOutputFormat(OutputFormat.JPG);
-
+        Operations ops = TestUtil.newOperations();
         Application.getConfiguration().setProperty("FilesystemCache.ttl_seconds", 1);
         File cacheFile = instance.getCachedImageFile(ops);
         cacheFile.createNewFile();
@@ -228,38 +149,14 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     }
 
     public void testGetImageOutputStream() throws Exception {
-        Crop crop = new Crop();
-        crop.setFull(true);
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
-
-        Operations ops = new Operations();
-        ops.setIdentifier(new Identifier("cats"));
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(new Rotate(0));
-        ops.add(Filter.NONE);
-        ops.setOutputFormat(OutputFormat.JPG);
-
+        Operations ops = TestUtil.newOperations();
         assertTrue(instance.getImageOutputStream(ops) instanceof FileOutputStream);
     }
 
     public void testImageOutputStreamCreatesFolder() throws IOException {
         FileUtils.deleteDirectory(imagePath);
 
-        Crop crop = new Crop();
-        crop.setFull(true);
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
-
-        Operations ops = new Operations();
-        ops.setIdentifier(new Identifier("cats"));
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(new Rotate(0));
-        ops.add(Filter.NONE);
-        ops.setOutputFormat(OutputFormat.JPG);
-
+        Operations ops = TestUtil.newOperations();
         instance.getImageOutputStream(ops);
         assertTrue(imagePath.exists());
     }

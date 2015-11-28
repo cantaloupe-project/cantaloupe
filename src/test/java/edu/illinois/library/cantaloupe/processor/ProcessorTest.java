@@ -74,33 +74,25 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
 
     public void testProcessWithSupportedSourceFormatsAndNoOperations()
             throws Exception {
-        Operations ops = new Operations();
-        ops.setIdentifier(new Identifier("bla"));
-        ops.setOutputFormat(OutputFormat.JPG);
-        doProcessTest(ops);
+        doProcessTest(TestUtil.newOperations());
     }
 
     public void testProcessWithSupportedSourceFormatsAndNoOpOperations() throws Exception {
-        Identifier identifier = new Identifier("bla");
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
-        Rotate rotate = new Rotate(0);
-        Filter filter = Filter.NONE;
-        OutputFormat format = OutputFormat.JPG;
         Operations ops = new Operations();
-        ops.setIdentifier(identifier);
+        ops.setIdentifier(new Identifier("bla"));
         ops.add(crop);
         ops.add(scale);
-        ops.add(rotate);
-        ops.add(filter);
-        ops.setOutputFormat(format);
+        ops.add(new Rotate(0));
+        ops.add(Filter.NONE);
+        ops.setOutputFormat(OutputFormat.JPG);
         doProcessTest(ops);
     }
 
     public void testProcessWithUnsupportedSourceFormats() throws Exception {
-        Identifier identifier = new Identifier("bla");
         Crop crop = new Crop();
         crop.setX(20f);
         crop.setY(20f);
@@ -109,16 +101,12 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setPercent(0.8f);
-        Rotate rotate = new Rotate(15);
-        Filter filter = Filter.NONE;
-        OutputFormat format = OutputFormat.JPG;
         Operations ops = new Operations();
-        ops.setIdentifier(identifier);
+        ops.setIdentifier(new Identifier("bla"));
         ops.add(crop);
         ops.add(scale);
-        ops.add(rotate);
-        ops.add(filter);
-        ops.setOutputFormat(format);
+        ops.add(new Rotate(15));
+        ops.setOutputFormat(OutputFormat.JPG);
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             if (getProcessor().getAvailableOutputFormats(sourceFormat).size() == 0) {
                 if (getProcessor() instanceof StreamProcessor) {
@@ -179,10 +167,8 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         crop.setHeight(0.2f);
         crops.add(crop);
         for (Crop crop_ : crops) {
-            Operations ops = new Operations();
-            ops.setIdentifier(new Identifier("bla"));
+            Operations ops = TestUtil.newOperations();
             ops.add(crop_);
-            ops.setOutputFormat(OutputFormat.JPG);
             doProcessTest(ops);
         }
     }
@@ -214,10 +200,8 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         scale.setHeight(20);
         scales.add(scale);
         for (Scale scale_ : scales) {
-            Operations ops = new Operations();
-            ops.setIdentifier(new Identifier("bla"));
+            Operations ops = TestUtil.newOperations();
             ops.add(scale_);
-            ops.setOutputFormat(OutputFormat.JPG);
             doProcessTest(ops);
         }
     }
@@ -228,10 +212,8 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         // we aren't using this yet
         //transposes.add(new Transpose(Transpose.Axis.VERTICAL));
         for (Transpose transpose : transposes) {
-            Operations ops = new Operations();
-            ops.setIdentifier(new Identifier("bla"));
+            Operations ops = TestUtil.newOperations();
             ops.add(transpose);
-            ops.setOutputFormat(OutputFormat.JPG);
             doProcessTest(ops);
         }
     }
@@ -240,20 +222,16 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         Rotate[] rotates = {
                 new Rotate(0), new Rotate(15), new Rotate(275) };
         for (Rotate rotate : rotates) {
-            Operations ops = new Operations();
-            ops.setIdentifier(new Identifier("bla"));
+            Operations ops = TestUtil.newOperations();
             ops.add(rotate);
-            ops.setOutputFormat(OutputFormat.JPG);
             doProcessTest(ops);
         }
     }
 
     public void testProcessWithFilterOperation() throws Exception {
         for (Filter filter : Filter.values()) {
-            Operations ops = new Operations();
-            ops.setIdentifier(new Identifier("bla"));
+            Operations ops = TestUtil.newOperations();
             ops.add(filter);
-            ops.setOutputFormat(OutputFormat.JPG);
             doProcessTest(ops);
         }
     }
@@ -262,8 +240,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         Set<OutputFormat> outputFormats = getProcessor().
                 getAvailableOutputFormats(SourceFormat.JPG);
         for (OutputFormat outputFormat : outputFormats) {
-            Operations ops = new Operations();
-            ops.setIdentifier(new Identifier("bla"));
+            Operations ops = TestUtil.newOperations();
             ops.setOutputFormat(outputFormat);
             doProcessTest(ops);
         }
