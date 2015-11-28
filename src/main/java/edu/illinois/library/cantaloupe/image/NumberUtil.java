@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.image;
 
-public class NumberUtil {
+class NumberUtil {
 
     public static String removeTrailingZeroes(Float f) {
         String s = f.toString();

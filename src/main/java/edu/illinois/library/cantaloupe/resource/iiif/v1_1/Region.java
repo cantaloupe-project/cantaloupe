@@ -1,12 +1,12 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
 
 import edu.illinois.library.cantaloupe.image.Crop;
-import edu.illinois.library.cantaloupe.image.NumberUtil;
 
 /**
  * Encapsulates the "region" component of an IIIF request URI.
  *
- * @see <a href="http://iiif.io/api/image/2.0/#region">IIIF Image API 2.0</a>
+ * @see <a href="http://iiif.io/api/image/1.1/#parameters-region">IIIF Image
+ * API 1.1</a>
  */
 class Region {
 
@@ -141,16 +141,16 @@ class Region {
         } else {
             String x, y;
             if (this.isPercent()) {
-                x = NumberUtil.removeTrailingZeroes(this.getX());
-                y = NumberUtil.removeTrailingZeroes(this.getY());
+                x = NumberUtil.formatForUrl(this.getX());
+                y = NumberUtil.formatForUrl(this.getY());
                 str += "pct:";
             } else {
                 x = Integer.toString(Math.round(this.getX()));
                 y = Integer.toString(Math.round(this.getY()));
             }
             str += String.format("%s,%s,%s,%s", x, y,
-                    NumberUtil.removeTrailingZeroes(this.getWidth()),
-                    NumberUtil.removeTrailingZeroes(this.getHeight()));
+                    NumberUtil.formatForUrl(this.getWidth()),
+                    NumberUtil.formatForUrl(this.getHeight()));
         }
         return str;
     }
