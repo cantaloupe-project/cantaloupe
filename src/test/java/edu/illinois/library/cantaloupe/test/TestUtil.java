@@ -19,7 +19,7 @@ public abstract class TestUtil {
         try (ServerSocket socket = new ServerSocket(0)) {
             return socket.getLocalPort();
         } catch (IOException e) {
-            // noop
+            e.printStackTrace();
         }
         return null;
     }

@@ -177,7 +177,7 @@ public class Application {
                     versionStr = version;
                 }
             } catch (IOException e) {
-                // noop
+                logger.error(e.getMessage(), e);
             }
         }
         return versionStr;

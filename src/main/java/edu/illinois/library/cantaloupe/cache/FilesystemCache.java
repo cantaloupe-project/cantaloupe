@@ -278,7 +278,7 @@ class FilesystemCache implements Cache {
                 }
             }
         } catch (FileNotFoundException e) {
-            // noop
+            logger.debug(e.getMessage(), e);
         } finally {
             infosBeingRead.remove(identifier);
         }
@@ -294,7 +294,7 @@ class FilesystemCache implements Cache {
                     logger.debug("Hit for image: {}", ops);
                     return new FileInputStream(cacheFile);
                 } catch (FileNotFoundException e) {
-                    // noop
+                    logger.error(e.getMessage(), e);
                 }
             } else {
                 logger.debug("Deleting stale cache file: {}",
