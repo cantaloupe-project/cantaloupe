@@ -70,7 +70,8 @@ class FilesystemCache implements Cache {
             new ConcurrentSkipListSet<>();
     /** Set of Operations for which image files are currently being flushed by
      * flush(OperationList). */
-    private final Set<OperationList> opsBeingFlushed =
+    private final Set<OperationList> imagesBeingFlushed =
+            new ConcurrentSkipListSet<>();
             new ConcurrentSkipListSet<>();
 
     /** Lock object for synchronization */
@@ -123,7 +124,7 @@ class FilesystemCache implements Cache {
     @Override
     public void flush() throws IOException {
         synchronized (lock4) {
-            while (flushingInProgress.get() || !opsBeingFlushed.isEmpty()) {
+            while (flushingInProgress.get() || !imagesBeingFlushed.isEmpty()) {
                 try {
                     lock4.wait();
                 } catch (InterruptedException e) {
@@ -168,7 +169,7 @@ class FilesystemCache implements Cache {
     @Override
     public void flush(OperationList ops) throws IOException {
         synchronized (lock1) {
-            while (flushingInProgress.get() || opsBeingFlushed.contains(ops)) {
+            while (flushingInProgress.get() || imagesBeingFlushed.contains(ops)) {
                 try {
                     lock1.wait();
                 } catch (InterruptedException e) {
@@ -178,7 +179,7 @@ class FilesystemCache implements Cache {
         }
 
         try {
-            opsBeingFlushed.add(ops);
+            imagesBeingFlushed.add(ops);
             File imageFile = getCachedImageFile(ops);
             if (imageFile != null && imageFile.exists()) {
                 imageFile.delete();
@@ -189,14 +190,14 @@ class FilesystemCache implements Cache {
             }
             logger.info("Flushed {}", ops);
         } finally {
-            opsBeingFlushed.remove(ops);
+            imagesBeingFlushed.remove(ops);
         }
     }
 
     @Override
     public void flushExpired() throws IOException {
         synchronized (lock4) {
-            while (flushingInProgress.get() || !opsBeingFlushed.isEmpty()) {
+            while (flushingInProgress.get() || !imagesBeingFlushed.isEmpty()) {
                 try {
                     lock4.wait();
                 } catch (InterruptedException e) {
