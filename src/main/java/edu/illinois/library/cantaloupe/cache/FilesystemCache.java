@@ -388,11 +388,20 @@ class FilesystemCache implements Cache {
             final File cacheFile = getCachedInfoFile(identifier);
             if (cacheFile != null) {
                 logger.debug("Caching dimension: {}", identifier);
-                cacheFile.getParentFile().mkdirs();
+                if (!cacheFile.getParentFile().exists() &&
+                        !cacheFile.getParentFile().mkdirs()) {
+                    throw new IOException("Unable to create directory: " +
+                            cacheFile.getParentFile());
+                }
                 ImageInfo info = new ImageInfo();
                 info.width = dimension.width;
                 info.height = dimension.height;
-                infoMapper.writeValue(cacheFile, info);
+                try {
+                    infoMapper.writeValue(cacheFile, info);
+                } catch (IOException e) {
+                    throw new IOException("Unable to create " +
+                            cacheFile.getAbsolutePath(), e);
+                }
             } else {
                 throw new IOException(PATHNAME_CONFIG_KEY + " is not set");
             }

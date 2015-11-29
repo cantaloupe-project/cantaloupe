@@ -83,6 +83,7 @@ public interface Cache {
      * @param identifier Identifier of the image corresponding to the given
      *                   size.
      * @param size Dimension containing width and height in pixels.
+     * @throws IOException If the dimension cannot be saved for any reason.
      */
     void putDimension(Identifier identifier, Dimension size) throws IOException;
 

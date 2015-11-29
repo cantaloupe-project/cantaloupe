@@ -306,4 +306,20 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         assertEquals(dimension, instance.getDimension(identifier));
     }
 
+    public void testPutDimensionFailureThrowsException() throws IOException {
+        final Identifier identifier = new Identifier("cats");
+        final File cacheFile = instance.getCachedInfoFile(identifier);
+        cacheFile.getParentFile().setWritable(false);
+        try {
+            try {
+                instance.putDimension(identifier, new Dimension(52, 52));
+                fail("Expected exception");
+            } catch (IOException e) {
+                assertTrue(e.getMessage().startsWith("Unable to create"));
+            }
+        } finally {
+            cacheFile.getParentFile().setWritable(true);
+        }
+    }
+
 }
