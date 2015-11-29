@@ -26,10 +26,83 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Cache using a filesystem folder, storing images and info files separately in
- * subfolders.
+ * Cache using a filesystem folder, storing images and dimensions separately as
+ * files in subfolders.
  */
 class FilesystemCache implements Cache {
+
+    /**
+     * Returned by {@link FilesystemCache#getImageOutputStream} when an image
+     * for a given operation list can be cached.
+     */
+    private static class ConcurrentFileOutputStream extends FileOutputStream {
+
+        private static final Logger logger = LoggerFactory.
+                getLogger(ConcurrentFileOutputStream.class);
+
+        private Set<OperationList> imagesBeingWritten;
+        private OperationList opsList;
+
+        /**
+         * @param file
+         * @param imagesBeingWritten Set of OperationLists for all images
+         *                           currently being written.
+         * @param opsList
+         * @throws FileNotFoundException
+         */
+        public ConcurrentFileOutputStream(File file,
+                                          Set<OperationList> imagesBeingWritten,
+                                          OperationList opsList)
+                throws FileNotFoundException {
+            super(file);
+            imagesBeingWritten.add(opsList);
+            this.imagesBeingWritten = imagesBeingWritten;
+            this.opsList = opsList;
+        }
+
+        @Override
+        public void close() throws IOException {
+            logger.debug("Closing stream for {}", opsList);
+            imagesBeingWritten.remove(opsList);
+            super.close();
+        }
+
+    }
+
+    /**
+     * Returned by {@link FilesystemCache#getImageOutputStream} when an
+     * output stream for the same operation list has been returned in another
+     * thread but has not yet been closed. Allows that thread to keep writing
+     * without the current thread interfering.
+     */
+    private static class ConcurrentNullOutputStream extends OutputStream {
+
+        private Set<OperationList> imagesBeingWritten;
+        private OperationList opsList;
+
+        /**
+         * @param imagesBeingWritten Set of OperationLists for all images
+         *                           currently being written.
+         * @param opsList
+         */
+        public ConcurrentNullOutputStream(Set<OperationList> imagesBeingWritten,
+                                          OperationList opsList) {
+            this.imagesBeingWritten = imagesBeingWritten;
+            this.opsList = opsList;
+        }
+
+        @Override
+        public void close() throws IOException {
+            imagesBeingWritten.remove(opsList);
+            super.close();
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            // noop
+        }
+
+    }
 
     /**
      * Class whose instances are intended to be serialized to JSON for storing
@@ -72,6 +145,9 @@ class FilesystemCache implements Cache {
      * flush(OperationList). */
     private final Set<OperationList> imagesBeingFlushed =
             new ConcurrentSkipListSet<>();
+    /** Set of operation lists for which image files are currently being
+     * written. */
+    private final Set<OperationList> imagesBeingWritten =
             new ConcurrentSkipListSet<>();
 
     /** Lock object for synchronization */
@@ -321,12 +397,23 @@ class FilesystemCache implements Cache {
 
     @Override
     public OutputStream getImageOutputStream(OperationList ops)
-            throws IOException { // TODO: make this work better concurrently
+            throws IOException {
+        if (imagesBeingWritten.contains(ops)) {
+            logger.debug("Miss, but cache file for {} is being written in " +
+                    "another thread, so not caching", ops);
+            return new ConcurrentNullOutputStream(imagesBeingWritten, ops);
+        }
+        imagesBeingWritten.add(ops); // will be removed by ConcurrentNullOutputStream.close()
         logger.debug("Miss; caching {}", ops);
         File cacheFile = getCachedImageFile(ops);
-        cacheFile.getParentFile().mkdirs();
-        cacheFile.createNewFile();
-        return new FileOutputStream(cacheFile);
+        if (!cacheFile.getParentFile().exists()) {
+            if (!cacheFile.getParentFile().mkdirs() ||
+                    !cacheFile.createNewFile()) {
+                throw new IOException("Unable to create " + cacheFile);
+            }
+        }
+        return new ConcurrentFileOutputStream(cacheFile, imagesBeingWritten,
+                ops);
     }
 
     /**
