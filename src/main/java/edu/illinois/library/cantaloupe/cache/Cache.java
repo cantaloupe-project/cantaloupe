@@ -22,7 +22,7 @@ public interface Cache {
     /**
      * Deletes the entire cache contents.
      *
-     * @throws IOException
+     * @throws IOException If any part of the process fails.
      */
     void flush() throws IOException;
 
@@ -31,14 +31,14 @@ public interface Cache {
      * operation list.
      *
      * @param ops
-     * @throws IOException
+     * @throws IOException If any part of the process fails.
      */
     void flush(OperationList ops) throws IOException;
 
     /**
      * Deletes expired images and dimensions from the cache.
      *
-     * @throws IOException
+     * @throws IOException If any part of the process fails.
      */
     void flushExpired() throws IOException;
 

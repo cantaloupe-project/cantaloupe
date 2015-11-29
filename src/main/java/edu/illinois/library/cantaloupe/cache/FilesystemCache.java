@@ -142,8 +142,13 @@ class FilesystemCache implements Cache {
                 final File imageDir = new File(imagePathname);
                 if (imageDir.isDirectory()) {
                     for (File file : imageDir.listFiles()) {
-                        if (file.isFile() && file.delete()) {
-                            imageCount++;
+                        if (file.isFile()) {
+                            if (file.delete()) {
+                                imageCount++;
+                            } else {
+                                throw new IOException("Unable to delete " +
+                                        file.getAbsolutePath());
+                            }
                         }
                     }
                 }
@@ -151,8 +156,13 @@ class FilesystemCache implements Cache {
                 final File infoDir = new File(infoPathname);
                 if (infoDir.isDirectory()) {
                     for (File file : infoDir.listFiles()) {
-                        if (file.isFile() && file.delete()) {
-                            infoCount++;
+                        if (file.isFile()) {
+                            if (file.delete()) {
+                                infoCount++;
+                            } else {
+                                throw new IOException("Unable to delete " +
+                                        file.getAbsolutePath());
+                            }
                         }
                     }
                 }
@@ -182,11 +192,15 @@ class FilesystemCache implements Cache {
             imagesBeingFlushed.add(ops);
             File imageFile = getCachedImageFile(ops);
             if (imageFile != null && imageFile.exists()) {
-                imageFile.delete();
+                if (!imageFile.delete()) {
+                    throw new IOException("Unable to delete " + imageFile);
+                }
             }
             File dimensionFile = getCachedInfoFile(ops.getIdentifier());
             if (dimensionFile != null && dimensionFile.exists()) {
-                dimensionFile.delete();
+                if (!dimensionFile.delete()) {
+                    throw new IOException("Unable to delete " + imageFile);
+                }
             }
             logger.info("Flushed {}", ops);
         } finally {
@@ -215,8 +229,13 @@ class FilesystemCache implements Cache {
                 final File imageDir = new File(imagePathname);
                 if (imageDir.isDirectory()) {
                     for (File file : imageDir.listFiles()) {
-                        if (file.isFile() && isExpired(file) && file.delete()) {
-                            imageCount++;
+                        if (file.isFile() && isExpired(file)) {
+                            if (file.delete()) {
+                                imageCount++;
+                            } else {
+                                throw new IOException("Unable to delete " +
+                                        file.getAbsolutePath());
+                            }
                         }
                     }
                 }
@@ -224,8 +243,13 @@ class FilesystemCache implements Cache {
                 final File infoDir = new File(infoPathname);
                 if (infoDir.isDirectory()) {
                     for (File file : infoDir.listFiles()) {
-                        if (file.isFile() && isExpired(file) && file.delete()) {
-                            infoCount++;
+                        if (file.isFile() && isExpired(file)) {
+                            if (file.delete()) {
+                                infoCount++;
+                            } else {
+                                throw new IOException("Unable to delete " +
+                                        file.getAbsolutePath());
+                            }
                         }
                     }
                 }

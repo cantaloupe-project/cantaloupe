@@ -54,6 +54,8 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         FileUtils.deleteDirectory(fixturePath);
     }
 
+    /* flush() */
+
     public void testFlush() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         instance.getCachedImageFile(ops).createNewFile();
@@ -69,7 +71,36 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         assertEquals(0, infoPath.listFiles().length);
     }
 
-    public void testFlushWithParameters() throws Exception {
+    public void testFlushFailureThrowsException() throws Exception {
+        OperationList ops = TestUtil.newOperationList();
+        // create an unwritable image cache file
+        File imageFile = instance.getCachedImageFile(ops);
+        File infoFile = instance.getCachedInfoFile(ops.getIdentifier());
+        imageFile.createNewFile();
+        infoFile.createNewFile();
+        imageFile.getParentFile().setWritable(false);
+        infoFile.getParentFile().setWritable(false);
+        try {
+            try {
+                instance.flush();
+                fail("Expected exception");
+            } catch (IOException e) {
+                assertTrue(e.getMessage().startsWith("Unable to delete"));
+            }
+            imageFile.getParentFile().setWritable(true);
+            infoFile.getParentFile().setWritable(true);
+            instance.flush();
+            assertEquals(0, imagePath.listFiles().length);
+            assertEquals(0, infoPath.listFiles().length);
+        } finally {
+            imageFile.getParentFile().setWritable(true);
+            infoFile.getParentFile().setWritable(true);
+        }
+    }
+
+    /* flush(OperationsList) */
+
+    public void testFlushWithOperationList() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         instance.getCachedImageFile(ops).createNewFile();
         instance.getCachedInfoFile(ops.getIdentifier()).createNewFile();
@@ -77,6 +108,35 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         assertEquals(0, imagePath.listFiles().length);
         assertEquals(0, infoPath.listFiles().length);
     }
+
+    public void testFlushWithOperationListFailureThrowsException()
+            throws Exception {
+        OperationList ops = TestUtil.newOperationList();
+        File imageFile = instance.getCachedImageFile(ops);
+        File dimensionFile = instance.getCachedInfoFile(ops.getIdentifier());
+        imageFile.createNewFile();
+        dimensionFile.createNewFile();
+        imageFile.getParentFile().setWritable(false);
+        dimensionFile.getParentFile().setWritable(false);
+        try {
+            try {
+                instance.flush(ops);
+                fail("Expected exception");
+            } catch (IOException e) {
+                assertTrue(e.getMessage().startsWith("Unable to delete"));
+            }
+            imageFile.getParentFile().setWritable(true);
+            dimensionFile.getParentFile().setWritable(true);
+            instance.flush(ops);
+            assertEquals(0, imagePath.listFiles().length);
+            assertEquals(0, infoPath.listFiles().length);
+        } finally {
+            imageFile.getParentFile().setWritable(true);
+            dimensionFile.getParentFile().setWritable(true);
+        }
+    }
+
+    /* flushExpired() */
 
     public void testFlushExpired() throws Exception {
         Application.getConfiguration().setProperty("FilesystemCache.ttl_seconds", 1);
@@ -100,6 +160,40 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         assertEquals(1, imagePath.listFiles().length);
         assertEquals(1, infoPath.listFiles().length);
     }
+
+    public void testFlushExpiredFailureThrowsException() throws Exception {
+        Application.getConfiguration().setProperty("FilesystemCache.ttl_seconds", 1);
+
+        OperationList ops = TestUtil.newOperationList();
+        // create an unwritable image cache file
+        File imageFile = instance.getCachedImageFile(ops);
+        File infoFile = instance.getCachedInfoFile(ops.getIdentifier());
+        imageFile.createNewFile();
+        infoFile.createNewFile();
+        imageFile.getParentFile().setWritable(false);
+        infoFile.getParentFile().setWritable(false);
+
+        Thread.sleep(1500);
+
+        try {
+            try {
+                instance.flushExpired();
+                fail("Expected exception");
+            } catch (IOException e) {
+                assertTrue(e.getMessage().startsWith("Unable to delete"));
+            }
+            imageFile.getParentFile().setWritable(true);
+            infoFile.getParentFile().setWritable(true);
+            instance.flushExpired();
+            assertEquals(0, imagePath.listFiles().length);
+            assertEquals(0, infoPath.listFiles().length);
+        } finally {
+            imageFile.getParentFile().setWritable(true);
+            infoFile.getParentFile().setWritable(true);
+        }
+    }
+
+    /* getDimension(Identifier) */
 
     public void testGetDimensionWithZeroTtl() throws Exception {
         Identifier identifier = new Identifier("test");
@@ -128,6 +222,8 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         assertNull(instance.getDimension(identifier));
     }
 
+    /* getImageInputStream(OperationList) */
+
     public void testGetImageInputStreamWithZeroTtl() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         assertNull(instance.getImageInputStream(ops));
@@ -148,6 +244,8 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         assertFalse(cacheFile.exists());
     }
 
+    /* getImageOutputStream(OperationList) */
+
     public void testGetImageOutputStream() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         assertTrue(instance.getImageOutputStream(ops) instanceof FileOutputStream);
@@ -160,6 +258,8 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         instance.getImageOutputStream(ops);
         assertTrue(imagePath.exists());
     }
+
+    /* getCachedImageFile(OperationList) */
 
     public void testGetCachedImageFile() {
         String pathname = Application.getConfiguration().
@@ -196,6 +296,8 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
                 filter.toString().toLowerCase(), format);
         assertEquals(new File(expected), instance.getCachedImageFile(ops));
     }
+
+    /* putDimension(Identifier, Dimension) */
 
     public void testPutDimension() throws IOException {
         Identifier identifier = new Identifier("cats");
