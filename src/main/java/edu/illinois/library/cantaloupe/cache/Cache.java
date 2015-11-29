@@ -73,7 +73,8 @@ public interface Cache {
      *               writing to the cache.
      * @return OutputStream to which an image corresponding to the supplied
      * parameters can be written.
-     * @throws IOException
+     * @throws IOException If an output stream cannot be returned for any
+     * reason.
      */
     OutputStream getImageOutputStream(OperationList opList) throws IOException;
 
