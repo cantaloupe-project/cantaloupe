@@ -25,6 +25,8 @@ public class Identifier implements Comparable<Identifier> {
     public boolean equals(Object obj) {
         if (obj instanceof Identifier) {
             return this.toString().equals(obj.toString());
+        } else if (obj instanceof String) {
+            return this.toString().equals(obj);
         }
         return super.equals(obj);
     }
