@@ -23,8 +23,12 @@ public class Identifier implements Comparable<Identifier> {
 
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof Identifier &&
-                this.getValue().equals(((Identifier) obj).getValue()));
+        if (obj instanceof Identifier) {
+            return this.getValue().equals(((Identifier) obj).getValue());
+        } else if (obj instanceof String) {
+            return this.getValue().equals(obj);
+        }
+        return super.equals(obj);
     }
 
     /**

@@ -12,12 +12,18 @@ public class IdentifierTest extends CantaloupeTestCase {
         assertEquals(0, id1.compareTo(id3));
     }
 
-    public void testEquals() {
+    public void testEqualsWithIdentifier() {
         Identifier id1 = new Identifier("cats");
         Identifier id2 = new Identifier("cats");
         Identifier id3 = new Identifier("dogs");
         assertTrue(id1.equals(id2));
         assertFalse(id2.equals(id3));
+    }
+
+    public void testEqualsWithString() {
+        Identifier id = new Identifier("cats");
+        assertTrue(id.equals("cats"));
+        assertFalse(id.equals("dogs"));
     }
 
     public void testHashCode() {
