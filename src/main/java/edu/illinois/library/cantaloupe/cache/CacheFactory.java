@@ -23,8 +23,7 @@ public abstract class CacheFactory {
      * <p>This method respects live changes in application configuration,
      * mostly for the sake of testing.</p>
      *
-     * @return The shared {@link Cache} Singleton, or null if a cache is not
-     * available.
+     * @return The shared Cache Singleton, or null if a cache is not available.
      */
     public static synchronized Cache getInstance() {
         try {

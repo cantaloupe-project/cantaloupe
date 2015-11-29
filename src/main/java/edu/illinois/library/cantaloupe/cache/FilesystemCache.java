@@ -48,7 +48,10 @@ class FilesystemCache implements Cache {
     private static final Logger logger = LoggerFactory.
             getLogger(FilesystemCache.class);
 
-    // https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations
+    /**
+     * @see <a href="https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations">
+     *     Comparison of filename limitations</a>
+     */
     private static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
     private static final String IMAGE_FOLDER = "image";
     private static final String INFO_FOLDER = "info";
