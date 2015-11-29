@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Cache using a filesystem folder, storing images and info files separately in
@@ -55,7 +56,7 @@ class FilesystemCache implements Cache {
 
     private static final ObjectMapper infoMapper = new ObjectMapper();
 
-    private boolean flushingInProgress = false; // TODO: make an AtomicBoolean
+    private final AtomicBoolean flushingInProgress = new AtomicBoolean(false);
 
     /** Set of identifiers for which info files are currently being read. */
     private final Set<Identifier> infosBeingRead = new ConcurrentSkipListSet<>();
@@ -119,7 +120,7 @@ class FilesystemCache implements Cache {
     @Override
     public void flush() throws IOException {
         synchronized (lock4) {
-            while (flushingInProgress || !opsBeingFlushed.isEmpty()) {
+            while (flushingInProgress.get() || !opsBeingFlushed.isEmpty()) {
                 try {
                     lock4.wait();
                 } catch (InterruptedException e) {
@@ -129,7 +130,7 @@ class FilesystemCache implements Cache {
         }
 
         try {
-            flushingInProgress = true;
+            flushingInProgress.set(true);
             final String imagePathname = getImagePathname();
             final String infoPathname = getInfoPathname();
             if (imagePathname != null && infoPathname != null) {
@@ -157,14 +158,14 @@ class FilesystemCache implements Cache {
                 throw new IOException("FilesystemCache.pathname is not set");
             }
         } finally {
-            flushingInProgress = false;
+            flushingInProgress.set(false);
         }
     }
 
     @Override
     public void flush(OperationList ops) throws IOException {
         synchronized (lock1) {
-            while (flushingInProgress || opsBeingFlushed.contains(ops)) {
+            while (flushingInProgress.get() || opsBeingFlushed.contains(ops)) {
                 try {
                     lock1.wait();
                 } catch (InterruptedException e) {
@@ -192,7 +193,7 @@ class FilesystemCache implements Cache {
     @Override
     public void flushExpired() throws IOException {
         synchronized (lock4) {
-            while (flushingInProgress || !opsBeingFlushed.isEmpty()) {
+            while (flushingInProgress.get() || !opsBeingFlushed.isEmpty()) {
                 try {
                     lock4.wait();
                 } catch (InterruptedException e) {
@@ -202,7 +203,7 @@ class FilesystemCache implements Cache {
         }
 
         try {
-            flushingInProgress = true;
+            flushingInProgress.set(true);
             final String imagePathname = getImagePathname();
             final String infoPathname = getInfoPathname();
             if (imagePathname != null && infoPathname != null) {
@@ -230,7 +231,7 @@ class FilesystemCache implements Cache {
                 throw new IOException("FilesystemCache.pathname is not set");
             }
         } finally {
-            flushingInProgress = false;
+            flushingInProgress.set(false);
         }
     }
 
