@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.image;
 
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
+import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -46,6 +47,20 @@ public class OperationListTest extends CantaloupeTestCase {
         ops2.add(Filter.NONE);
         ops2.setOutputFormat(OutputFormat.JPG);
         assertEquals(0, ops2.compareTo(this.ops));
+    }
+
+    public void testEqualsWithEqualOperationList() {
+        OperationList ops1 = TestUtil.newOperationList();
+        OperationList ops2 = TestUtil.newOperationList();
+        ops2.add(new Rotate());
+        assertTrue(ops1.equals(ops2));
+    }
+
+    public void testEqualsWithUnequalOperationList() {
+        OperationList ops1 = TestUtil.newOperationList();
+        OperationList ops2 = TestUtil.newOperationList();
+        ops2.add(new Rotate(1));
+        assertFalse(ops1.equals(ops2));
     }
 
     public void testIsNoOp1() {

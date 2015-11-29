@@ -34,6 +34,14 @@ public class OperationList implements Comparable<OperationList>, Iterable<Operat
         return (last == 0) ? this.toString().compareTo(ops.toString()) : last;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof OperationList) {
+            return obj.toString().equals(this.toString());
+        }
+        return super.equals(obj);
+    }
+
     public Identifier getIdentifier() {
         return identifier;
     }
@@ -61,7 +69,6 @@ public class OperationList implements Comparable<OperationList>, Iterable<Operat
         }
         for (Operation op : this) {
             if (!op.isNoOp()) {
-                System.out.println(op);
                 return false;
             }
         }
