@@ -41,11 +41,15 @@ public enum OutputFormat {
     }
 
     /**
-     * @param sourceFormat
-     * @return Whether the instance is equal to the given source format.
+     * @param obj
+     * @return Whether the instance is equal to the given object.
      */
-    public boolean isEqual(SourceFormat sourceFormat) {
-        return sourceFormat.getExtensions().contains(this.getExtension());
+    public boolean isEqual(Object obj) {
+        if (obj instanceof SourceFormat) {
+            return ((SourceFormat) obj).getExtensions().
+                    contains(this.getExtension());
+        }
+        return this.equals(obj);
     }
 
     /**
