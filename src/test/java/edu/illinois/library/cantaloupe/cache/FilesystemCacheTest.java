@@ -108,8 +108,8 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
         ObjectMapper mapper = new ObjectMapper();
         FilesystemCache.ImageInfo info = new FilesystemCache.ImageInfo();
-        info.setWidth(50);
-        info.setHeight(50);
+        info.width = 50;
+        info.height = 50;
         mapper.writeValue(file, info);
         assertEquals(new Dimension(50, 50), instance.getDimension(identifier));
     }
@@ -120,8 +120,8 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         File file = new File(infoPath + File.separator + identifier + ".json");
         ObjectMapper mapper = new ObjectMapper();
         FilesystemCache.ImageInfo info = new FilesystemCache.ImageInfo();
-        info.setWidth(50);
-        info.setHeight(50);
+        info.width = 50;
+        info.height = 50;
         mapper.writeValue(file, info);
 
         Thread.sleep(1100);

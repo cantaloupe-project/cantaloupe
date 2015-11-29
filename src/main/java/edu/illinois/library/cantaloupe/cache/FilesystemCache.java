@@ -31,35 +31,17 @@ import java.util.concurrent.ConcurrentSkipListSet;
 class FilesystemCache implements Cache {
 
     /**
-     * Class whose instances are intended to be serialized to JSON for use in IIIF
-     * Image Information responses.
+     * Class whose instances are intended to be serialized to JSON for storing
+     * image dimension information.
      *
      * @see <a href="https://github.com/FasterXML/jackson-databind">jackson-databind
      * docs</a>
      */
     @JsonPropertyOrder({ "width", "height" })
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class ImageInfo {
-
-        private int height;
-        private int width;
-
-        public int getHeight() {
-            return height;
-        }
-
-        public void setHeight(int height) {
-            this.height = height;
-        }
-
-        public int getWidth() {
-            return width;
-        }
-
-        public void setWidth(int width) {
-            this.width = width;
-        }
-
+    static class ImageInfo {
+        public int height;
+        public int width;
     }
 
     private static final Logger logger = LoggerFactory.
@@ -273,7 +255,7 @@ class FilesystemCache implements Cache {
 
                     ImageInfo info = infoMapper.readValue(cacheFile,
                             ImageInfo.class);
-                    return new Dimension(info.getWidth(), info.getHeight());
+                    return new Dimension(info.width, info.height);
                 } else {
                     logger.debug("Deleting stale cache file: {}",
                             cacheFile.getName());
@@ -379,8 +361,8 @@ class FilesystemCache implements Cache {
                 logger.debug("Caching dimension: {}", identifier);
                 cacheFile.getParentFile().mkdirs();
                 ImageInfo info = new ImageInfo();
-                info.setWidth(dimension.width);
-                info.setHeight(dimension.height);
+                info.width = dimension.width;
+                info.height = dimension.height;
                 infoMapper.writeValue(cacheFile, info);
             } else {
                 throw new IOException("FilesystemCache.pathname is not set");
