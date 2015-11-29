@@ -15,6 +15,10 @@ public class RotateTest extends CantaloupeTestCase {
         assertTrue(rotate.isNoOp());
         rotate.setDegrees(30);
         assertFalse(rotate.isNoOp());
+        rotate.setDegrees(0.001f);
+        assertFalse(rotate.isNoOp());
+        rotate.setDegrees(0.00001f);
+        assertTrue(rotate.isNoOp());
     }
 
     public void testSetDegrees() {

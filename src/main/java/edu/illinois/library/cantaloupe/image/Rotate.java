@@ -24,7 +24,7 @@ public class Rotate implements Operation {
     }
 
     public boolean isNoOp() {
-        return (Math.abs(getDegrees()) - 1 < 0.00001f);
+        return (Math.abs(getDegrees()) < 0.0001f);
     }
 
     /**
