@@ -56,6 +56,7 @@ class FilesystemCache implements Cache {
     private static final String IMAGE_FOLDER = "image";
     private static final String INFO_FOLDER = "info";
     private static final String INFO_EXTENSION = ".json";
+    private static final String PATHNAME_CONFIG_KEY = "FilesystemCache.pathname";
 
     private static final ObjectMapper infoMapper = new ObjectMapper();
 
@@ -85,8 +86,7 @@ class FilesystemCache implements Cache {
      * @return Pathname of the root cache folder.
      */
     private static String getCachePathname() {
-        return Application.getConfiguration().
-                getString("FilesystemCache.pathname");
+        return Application.getConfiguration().getString(PATHNAME_CONFIG_KEY);
     }
 
     /**
@@ -158,7 +158,7 @@ class FilesystemCache implements Cache {
                 logger.info("Flushed {} images and {} dimensions", imageCount,
                         infoCount);
             } else {
-                throw new IOException("FilesystemCache.pathname is not set");
+                throw new IOException(PATHNAME_CONFIG_KEY + " is not set");
             }
         } finally {
             flushingInProgress.set(false);
@@ -231,7 +231,7 @@ class FilesystemCache implements Cache {
                 logger.info("Flushed {} expired images and {} expired dimensions",
                         imageCount, infoCount);
             } else {
-                throw new IOException("FilesystemCache.pathname is not set");
+                throw new IOException(PATHNAME_CONFIG_KEY + " is not set");
             }
         } finally {
             flushingInProgress.set(false);
@@ -327,7 +327,7 @@ class FilesystemCache implements Cache {
     }
 
     /**
-     * @param identifier IIIF identifier
+     * @param identifier
      * @return File corresponding to the given parameters, or null if
      * <code>FilesystemCache.pathname</code> is not set in the configuration.
      */
@@ -369,7 +369,7 @@ class FilesystemCache implements Cache {
                 info.height = dimension.height;
                 infoMapper.writeValue(cacheFile, info);
             } else {
-                throw new IOException("FilesystemCache.pathname is not set");
+                throw new IOException(PATHNAME_CONFIG_KEY + " is not set");
             }
         } finally {
             infosBeingWritten.remove(identifier);
