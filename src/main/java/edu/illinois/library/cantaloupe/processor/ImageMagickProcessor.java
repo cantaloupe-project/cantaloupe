@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
-import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
@@ -213,7 +213,7 @@ class ImageMagickProcessor implements StreamProcessor {
     }
 
     @Override
-    public void process(Operations ops, SourceFormat sourceFormat,
+    public void process(OperationList ops, SourceFormat sourceFormat,
                         Dimension fullSize, InputStream inputStream,
                         OutputStream outputStream) throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
@@ -250,7 +250,7 @@ class ImageMagickProcessor implements StreamProcessor {
         }
     }
 
-    private void assembleOperation(IMOperation imOp, Operations ops,
+    private void assembleOperation(IMOperation imOp, OperationList ops,
                                    Dimension fullSize) {
         for (Operation op : ops) {
             if (op instanceof Crop) {

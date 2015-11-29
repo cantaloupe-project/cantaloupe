@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.test;
 
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 
 import java.io.File;
@@ -29,10 +29,10 @@ public abstract class TestUtil {
     }
 
     /**
-     * @return Dummy Operations object with no operations added.
+     * @return Dummy OperationList object with no operations added.
      */
-    public static Operations newOperations() {
-        Operations ops = new Operations();
+    public static OperationList newOperationList() {
+        OperationList ops = new OperationList();
         ops.setIdentifier(new Identifier("dummy"));
         ops.setOutputFormat(OutputFormat.JPG);
         return ops;

@@ -5,7 +5,7 @@ import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
@@ -74,7 +74,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
 
     public void testProcessWithSupportedSourceFormatsAndNoOperations()
             throws Exception {
-        doProcessTest(TestUtil.newOperations());
+        doProcessTest(TestUtil.newOperationList());
     }
 
     public void testProcessWithSupportedSourceFormatsAndNoOpOperations() throws Exception {
@@ -82,7 +82,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         crop.setFull(true);
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
-        Operations ops = new Operations();
+        OperationList ops = new OperationList();
         ops.setIdentifier(new Identifier("bla"));
         ops.add(crop);
         ops.add(scale);
@@ -101,7 +101,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setPercent(0.8f);
-        Operations ops = new Operations();
+        OperationList ops = new OperationList();
         ops.setIdentifier(new Identifier("bla"));
         ops.add(crop);
         ops.add(scale);
@@ -167,7 +167,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         crop.setHeight(0.2f);
         crops.add(crop);
         for (Crop crop_ : crops) {
-            Operations ops = TestUtil.newOperations();
+            OperationList ops = TestUtil.newOperationList();
             ops.add(crop_);
             doProcessTest(ops);
         }
@@ -200,7 +200,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         scale.setHeight(20);
         scales.add(scale);
         for (Scale scale_ : scales) {
-            Operations ops = TestUtil.newOperations();
+            OperationList ops = TestUtil.newOperationList();
             ops.add(scale_);
             doProcessTest(ops);
         }
@@ -212,7 +212,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         // we aren't using this yet
         //transposes.add(new Transpose(Transpose.Axis.VERTICAL));
         for (Transpose transpose : transposes) {
-            Operations ops = TestUtil.newOperations();
+            OperationList ops = TestUtil.newOperationList();
             ops.add(transpose);
             doProcessTest(ops);
         }
@@ -222,7 +222,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         Rotate[] rotates = {
                 new Rotate(0), new Rotate(15), new Rotate(275) };
         for (Rotate rotate : rotates) {
-            Operations ops = TestUtil.newOperations();
+            OperationList ops = TestUtil.newOperationList();
             ops.add(rotate);
             doProcessTest(ops);
         }
@@ -230,7 +230,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
 
     public void testProcessWithFilterOperation() throws Exception {
         for (Filter filter : Filter.values()) {
-            Operations ops = TestUtil.newOperations();
+            OperationList ops = TestUtil.newOperationList();
             ops.add(filter);
             doProcessTest(ops);
         }
@@ -240,7 +240,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         Set<OutputFormat> outputFormats = getProcessor().
                 getAvailableOutputFormats(SourceFormat.JPG);
         for (OutputFormat outputFormat : outputFormats) {
-            Operations ops = TestUtil.newOperations();
+            OperationList ops = TestUtil.newOperationList();
             ops.setOutputFormat(outputFormat);
             doProcessTest(ops);
         }
@@ -292,7 +292,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
                 getProcessor().getSupportedIiif1_1Qualities(SourceFormat.UNKNOWN));
     }
 
-    private void doProcessTest(Operations ops) throws Exception {
+    private void doProcessTest(OperationList ops) throws Exception {
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {
                 if (getProcessor() instanceof StreamProcessor) {

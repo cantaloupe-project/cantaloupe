@@ -4,7 +4,7 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
-import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
@@ -283,7 +283,7 @@ class FfmpegProcessor implements FileProcessor {
     }
 
     @Override
-    public void process(Operations ops, SourceFormat sourceFormat,
+    public void process(OperationList ops, SourceFormat sourceFormat,
                         Dimension fullSize, File inputFile,
                         OutputStream outputStream) throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
@@ -333,7 +333,7 @@ class FfmpegProcessor implements FileProcessor {
         }
     }
 
-    public void process(Operations ops, SourceFormat sourceFormat,
+    public void process(OperationList ops, SourceFormat sourceFormat,
                         Dimension fullSize, InputStream inputStream,
                         OutputStream outputStream)
             throws ProcessorException {
@@ -386,7 +386,7 @@ class FfmpegProcessor implements FileProcessor {
      * @param fullSize The full size of the source image
      * @return Command string
      */
-    private ProcessBuilder getProcessBuilder(Operations ops,
+    private ProcessBuilder getProcessBuilder(OperationList ops,
                                              Dimension fullSize) {
         return getProcessBuilder(ops, fullSize, "pipe:0");
     }
@@ -397,7 +397,7 @@ class FfmpegProcessor implements FileProcessor {
      * @param inputFile
      * @return Command string
      */
-    private ProcessBuilder getProcessBuilder(Operations ops,
+    private ProcessBuilder getProcessBuilder(OperationList ops,
                                              Dimension fullSize,
                                              File inputFile) {
         return getProcessBuilder(ops, fullSize,
@@ -410,7 +410,7 @@ class FfmpegProcessor implements FileProcessor {
      * @param inputArg Either an absolute pathname or <code>pipe:</code>
      * @return
      */
-    private ProcessBuilder getProcessBuilder(Operations ops,
+    private ProcessBuilder getProcessBuilder(OperationList ops,
                                              Dimension fullSize,
                                              String inputArg) {
         // ffmpeg -i pipe:0 -nostdin -v quiet -vframes 1 -an -vf [ops] -f image2pipe pipe:1 < video.mpg > out.jpg

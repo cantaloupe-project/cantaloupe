@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import org.apache.commons.io.IOUtils;
 import org.restlet.data.Disposition;
@@ -33,7 +33,7 @@ public class CachedImageRepresentation extends OutputRepresentation {
      * @param cacheInputStream
      */
     public CachedImageRepresentation(MediaType mediaType,
-                                     Operations ops,
+                                     OperationList ops,
                                      InputStream cacheInputStream) {
         super(mediaType);
         this.inputStream = cacheInputStream;

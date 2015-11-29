@@ -4,7 +4,7 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
-import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
@@ -56,8 +56,8 @@ public class ImageResource extends AbstractResource {
      */
     @Get
     public OutputRepresentation doGet() throws Exception {
-        // Assemble the URI parameters into a Operations object
         Map<String,Object> attrs = this.getRequest().getAttributes();
+        // Assemble the URI parameters into a Parameters object
         Parameters params = new Parameters(
                 (String) attrs.get("identifier"),
                 (String) attrs.get("region"),
@@ -65,7 +65,7 @@ public class ImageResource extends AbstractResource {
                 (String) attrs.get("rotation"),
                 (String) attrs.get("quality"),
                 (String) attrs.get("format"));
-        Operations ops = params.toOperations();
+        OperationList ops = params.toOperationList();
 
         // If we don't need to resolve first, and are using a cache, and the
         // cache contains an image matching the request, skip all the setup and

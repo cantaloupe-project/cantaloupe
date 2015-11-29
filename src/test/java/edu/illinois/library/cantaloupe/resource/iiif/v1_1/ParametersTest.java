@@ -34,7 +34,7 @@ public class ParametersTest extends CantaloupeTestCase {
         // TODO: write this
     }
 
-    public void testToOperations() {
+    public void testToOperationList() {
         // TODO: write this
     }
 

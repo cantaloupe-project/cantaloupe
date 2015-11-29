@@ -4,7 +4,7 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
-import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
@@ -213,7 +213,7 @@ class GraphicsMagickProcessor implements StreamProcessor {
         return qualities;
     }
 
-    public void process(Operations ops, SourceFormat sourceFormat,
+    public void process(OperationList ops, SourceFormat sourceFormat,
                         Dimension fullSize, File file,
                         OutputStream outputStream) throws ProcessorException {
         doProcess(file.getAbsolutePath(), null, ops, sourceFormat, fullSize,
@@ -221,14 +221,14 @@ class GraphicsMagickProcessor implements StreamProcessor {
     }
 
     @Override
-    public void process(Operations ops, SourceFormat sourceFormat,
+    public void process(OperationList ops, SourceFormat sourceFormat,
                         Dimension fullSize, InputStream inputStream,
                         OutputStream outputStream) throws ProcessorException {
         doProcess(sourceFormat.getPreferredExtension() + ":-", inputStream,
                 ops, sourceFormat, fullSize, outputStream);
     }
 
-    private void assembleOperation(IMOperation imOp, Operations ops,
+    private void assembleOperation(IMOperation imOp, OperationList ops,
                                    Dimension fullSize) {
         for (Operation op : ops) {
             if (op instanceof Crop) {
@@ -333,8 +333,8 @@ class GraphicsMagickProcessor implements StreamProcessor {
      * @throws ProcessorException
      */
     private void doProcess(String inputPath, InputStream inputStream,
-                          Operations ops, SourceFormat sourceFormat,
-                          Dimension fullSize, OutputStream outputStream)
+                           OperationList ops, SourceFormat sourceFormat,
+                           Dimension fullSize, OutputStream outputStream)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);

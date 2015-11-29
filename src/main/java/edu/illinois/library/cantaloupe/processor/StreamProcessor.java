@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OperationList;
 
 import java.awt.Dimension;
 import java.io.InputStream;
@@ -28,7 +28,7 @@ public interface StreamProcessor extends Processor {
      * OutputStream.</p>
      *
      * <p>Operations should be applied in the order they are set in the
-     * Operations object. Implementations should check whether each option is
+     * OperationList object. Implementations should check whether each option is
      * a no-op ({@link Operation#isNoOp()}) before performing it, for the sake
      * of efficiency.</p>
      *
@@ -36,7 +36,7 @@ public interface StreamProcessor extends Processor {
      * own <code>getScale()</code> method to avoid reusing a potentially
      * unreusable InputStream.</p>
      *
-     * @param ops Operations of the output image
+     * @param ops OperationList of the output image
      * @param sourceFormat Format of the source image
      * @param sourceSize Scale of the source image
      * @param inputStream Stream from which to read the image. Implementations
@@ -47,7 +47,7 @@ public interface StreamProcessor extends Processor {
      * @throws UnsupportedSourceFormatException
      * @throws ProcessorException
      */
-    void process(Operations ops, SourceFormat sourceFormat,
+    void process(OperationList ops, SourceFormat sourceFormat,
                  Dimension sourceSize, InputStream inputStream,
                  OutputStream outputStream) throws ProcessorException;
 

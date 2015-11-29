@@ -5,7 +5,7 @@ import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
@@ -43,7 +43,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         instance = new JdbcCache();
 
         // persist some images
-        Operations ops = TestUtil.newOperations();
+        OperationList ops = TestUtil.newOperationList();
         ops.getIdentifier().setValue("cats");
 
         OutputStream os = instance.getImageOutputStream(ops);
@@ -61,7 +61,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Rotate rotate = new Rotate();
         Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.JPG;
-        ops = new Operations();
+        ops = new OperationList();
         ops.setIdentifier(identifier);
         ops.add(crop);
         ops.add(scale);
@@ -85,7 +85,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         rotate = new Rotate(15);
         filter = Filter.NONE;
         format = OutputFormat.PNG;
-        ops = new Operations();
+        ops = new OperationList();
         ops.setIdentifier(identifier);
         ops.add(crop);
         ops.add(scale);
@@ -157,7 +157,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
     }
 
     public void testFlushWithOperations() throws Exception {
-        Operations ops = TestUtil.newOperations();
+        OperationList ops = TestUtil.newOperationList();
         ops.getIdentifier().setValue("cats");
         instance.flush(ops);
 
@@ -188,7 +188,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Thread.sleep(1500);
 
         // add some fresh entities
-        Operations ops = TestUtil.newOperations();
+        OperationList ops = TestUtil.newOperationList();
         ops.getIdentifier().setValue("bees");
 
         OutputStream os = instance.getImageOutputStream(ops);
@@ -237,7 +237,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Thread.sleep(1500);
 
         // add some fresh entities
-        Operations ops = TestUtil.newOperations();
+        OperationList ops = TestUtil.newOperationList();
         ops.getIdentifier().setValue("bees");
 
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")),
@@ -259,7 +259,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
     }
 
     public void testGetImageInputStreamWithZeroTtl() {
-        Operations ops = TestUtil.newOperations();
+        OperationList ops = TestUtil.newOperationList();
         ops.getIdentifier().setValue("cats");
         assertNotNull(instance.getImageInputStream(ops));
     }
@@ -271,7 +271,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Thread.sleep(1500);
 
         // add some fresh entities
-        Operations ops = TestUtil.newOperations();
+        OperationList ops = TestUtil.newOperationList();
         ops.getIdentifier().setValue("bees");
 
         OutputStream os = instance.getImageOutputStream(ops);
@@ -283,18 +283,18 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         assertNotNull(instance.getImageInputStream(ops));
 
         // existing, expired image
-        ops = TestUtil.newOperations();
+        ops = TestUtil.newOperationList();
         ops.getIdentifier().setValue("cats");
         assertNull(instance.getImageInputStream(ops));
 
         // nonexistent image
-        ops = TestUtil.newOperations();
+        ops = TestUtil.newOperationList();
         ops.getIdentifier().setValue("bogus");
         assertNull(instance.getImageInputStream(ops));
     }
 
     public void testGetImageOutputStream() throws Exception {
-        Operations ops = TestUtil.newOperations();
+        OperationList ops = TestUtil.newOperationList();
         ops.getIdentifier().setValue("cats");
         assertNotNull(instance.getImageOutputStream(ops));
     }

@@ -1,12 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.image.Crop;
-import edu.illinois.library.cantaloupe.image.Filter;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.Rotate;
-import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 
@@ -76,7 +71,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
         File file = TestUtil.getFixture(sourceFormat.getPreferredExtension());
         Dimension size = proc.getSize(file, sourceFormat);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Operations ops = TestUtil.newOperations();
+        OperationList ops = TestUtil.newOperationList();
         proc.process(ops, sourceFormat, size, file, outputStream);
         byte[] zeroSecondFrame = outputStream.toByteArray();
 

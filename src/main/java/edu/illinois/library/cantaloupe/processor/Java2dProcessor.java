@@ -6,7 +6,7 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
-import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
@@ -171,7 +171,7 @@ class Java2dProcessor implements StreamProcessor {
     }
 
     @Override
-    public void process(Operations ops, SourceFormat sourceFormat,
+    public void process(OperationList ops, SourceFormat sourceFormat,
                         Dimension fullSize, InputStream inputStream,
                         OutputStream outputStream) throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
@@ -210,7 +210,7 @@ class Java2dProcessor implements StreamProcessor {
 
     private BufferedImage loadImage(InputStream inputStream,
                                     SourceFormat sourceFormat,
-                                    Operations ops,
+                                    OperationList ops,
                                     Dimension fullSize,
                                     ReductionFactor reductionFactor)
             throws IOException, ProcessorException { // TODO: move this to ProcessorUtil
@@ -295,7 +295,7 @@ class Java2dProcessor implements StreamProcessor {
      *     TIFFImageReader source</a>
      */
     private BufferedImage loadUsingTiffImageReader(
-            InputStream inputStream, Operations ops, Dimension fullSize,
+            InputStream inputStream, OperationList ops, Dimension fullSize,
             ReductionFactor reductionFactor) throws IOException,
             ProcessorException {
         BufferedImage image = null;

@@ -6,12 +6,12 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OperationsTest extends CantaloupeTestCase {
+public class OperationListTest extends CantaloupeTestCase {
 
-    private Operations ops;
+    private OperationList ops;
 
     public void setUp() {
-        ops = new Operations();
+        ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier.jpg"));
         Crop crop = new Crop();
         crop.setFull(true);
@@ -27,14 +27,14 @@ public class OperationsTest extends CantaloupeTestCase {
     }
 
     public void testAdd() {
-        ops = new Operations();
+        ops = new OperationList();
         assertFalse(ops.iterator().hasNext());
         ops.add(new Rotate());
         assertTrue(ops.iterator().hasNext());
     }
 
     public void testCompareTo() {
-        Operations ops2 = new Operations();
+        OperationList ops2 = new OperationList();
         ops2.setIdentifier(new Identifier("identifier.jpg"));
         Crop crop = new Crop();
         crop.setFull(true);
@@ -56,7 +56,7 @@ public class OperationsTest extends CantaloupeTestCase {
         Rotate rotate = new Rotate(0);
         Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.JPG;
-        ops = new Operations();
+        ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier"));
         ops.add(crop);
         ops.add(scale);
@@ -71,7 +71,7 @@ public class OperationsTest extends CantaloupeTestCase {
         crop.setFull(true);
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
-        ops = new Operations();
+        ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier"));
         ops.add(crop);
         ops.add(scale);
@@ -86,7 +86,7 @@ public class OperationsTest extends CantaloupeTestCase {
         crop.setFull(true);
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
-        ops = new Operations();
+        ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier.gif"));
         ops.add(crop);
         ops.add(scale);
@@ -105,7 +105,7 @@ public class OperationsTest extends CantaloupeTestCase {
         crop.setHeight(30f);
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
-        ops = new Operations();
+        ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier.gif"));
         ops.add(crop);
         ops.add(scale);
@@ -120,7 +120,7 @@ public class OperationsTest extends CantaloupeTestCase {
         crop.setFull(true);
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        ops = new Operations();
+        ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier.gif"));
         ops.add(crop);
         ops.add(scale);
@@ -136,7 +136,7 @@ public class OperationsTest extends CantaloupeTestCase {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setPercent(0.5f);
-        ops = new Operations();
+        ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier.gif"));
         ops.add(crop);
         ops.add(scale);
@@ -151,7 +151,7 @@ public class OperationsTest extends CantaloupeTestCase {
         crop.setFull(true);
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
-        ops = new Operations();
+        ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier.gif"));
         ops.add(crop);
         ops.add(scale);
@@ -166,7 +166,7 @@ public class OperationsTest extends CantaloupeTestCase {
         crop.setFull(true);
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
-        ops = new Operations();
+        ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier.gif"));
         ops.add(crop);
         ops.add(scale);;
@@ -181,7 +181,7 @@ public class OperationsTest extends CantaloupeTestCase {
         crop.setFull(true);
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
-        ops = new Operations();
+        ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier.gif"));
         ops.add(crop);
         ops.add(scale);

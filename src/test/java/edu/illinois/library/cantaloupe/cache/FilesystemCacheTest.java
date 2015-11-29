@@ -5,11 +5,11 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
+import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.io.FileUtils;
@@ -55,7 +55,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     }
 
     public void testFlush() throws Exception {
-        Operations ops = TestUtil.newOperations();
+        OperationList ops = TestUtil.newOperationList();
         instance.getCachedImageFile(ops).createNewFile();
         instance.getCachedInfoFile(ops.getIdentifier()).createNewFile();
 
@@ -70,7 +70,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     }
 
     public void testFlushWithParameters() throws Exception {
-        Operations ops = TestUtil.newOperations();
+        OperationList ops = TestUtil.newOperationList();
         instance.getCachedImageFile(ops).createNewFile();
         instance.getCachedInfoFile(ops.getIdentifier()).createNewFile();
         instance.flush(ops);
@@ -86,7 +86,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
 
-        Operations ops = TestUtil.newOperations();
+        OperationList ops = TestUtil.newOperationList();
         instance.getCachedImageFile(ops).createNewFile();
         instance.getCachedInfoFile(ops.getIdentifier()).createNewFile();
 
@@ -129,7 +129,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     }
 
     public void testGetImageInputStreamWithZeroTtl() throws Exception {
-        Operations ops = TestUtil.newOperations();
+        OperationList ops = TestUtil.newOperationList();
         assertNull(instance.getImageInputStream(ops));
 
         instance.getCachedImageFile(ops).createNewFile();
@@ -137,7 +137,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     }
 
     public void testGetImageInputStreamWithNonzeroTtl() throws Exception {
-        Operations ops = TestUtil.newOperations();
+        OperationList ops = TestUtil.newOperationList();
         Application.getConfiguration().setProperty("FilesystemCache.ttl_seconds", 1);
         File cacheFile = instance.getCachedImageFile(ops);
         cacheFile.createNewFile();
@@ -149,14 +149,14 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     }
 
     public void testGetImageOutputStream() throws Exception {
-        Operations ops = TestUtil.newOperations();
+        OperationList ops = TestUtil.newOperationList();
         assertTrue(instance.getImageOutputStream(ops) instanceof FileOutputStream);
     }
 
     public void testImageOutputStreamCreatesFolder() throws IOException {
         FileUtils.deleteDirectory(imagePath);
 
-        Operations ops = TestUtil.newOperations();
+        OperationList ops = TestUtil.newOperationList();
         instance.getImageOutputStream(ops);
         assertTrue(imagePath.exists());
     }
@@ -176,7 +176,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.TIF;
 
-        Operations ops = new Operations();
+        OperationList ops = new OperationList();
         ops.setIdentifier(identifier);
         ops.add(crop);
         ops.add(scale);

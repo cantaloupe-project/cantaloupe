@@ -4,7 +4,7 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
@@ -41,7 +41,7 @@ public class ImageRepresentation extends OutputRepresentation {
     private File file;
     private Dimension fullSize;
     private InputStream inputStream;
-    private Operations ops;
+    private OperationList ops;
     private SourceFormat sourceFormat;
 
     /**
@@ -56,7 +56,7 @@ public class ImageRepresentation extends OutputRepresentation {
     public ImageRepresentation(MediaType mediaType,
                                SourceFormat sourceFormat,
                                Dimension fullSize,
-                               Operations ops,
+                               OperationList ops,
                                InputStream inputStream) {
         super(mediaType);
         this.inputStream = inputStream;
@@ -77,7 +77,7 @@ public class ImageRepresentation extends OutputRepresentation {
      */
     public ImageRepresentation(MediaType mediaType,
                                SourceFormat sourceFormat,
-                               Operations ops, File file) {
+                               OperationList ops, File file) {
         super(mediaType);
         this.file = file;
         this.ops = ops;

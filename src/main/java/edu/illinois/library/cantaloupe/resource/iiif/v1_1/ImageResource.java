@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
 
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
@@ -98,7 +98,7 @@ public class ImageResource extends AbstractResource {
 
         // Find out whether the processor supports that source format by
         // asking it whether it offers any output formats for it
-        final Operations ops = params.toOperations();
+        final OperationList ops = params.toOperationList();
         if (!availableOutputFormats.contains(ops.getOutputFormat())) {
             String msg = String.format("%s does not support the \"%s\" output format",
                     proc.getClass().getSimpleName(),

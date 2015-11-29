@@ -3,11 +3,11 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
+import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.Operations;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import info.freelibrary.djatoka.io.PNMImage;
@@ -251,7 +251,7 @@ class KakaduProcessor implements FileProcessor {
     }
 
     @Override
-    public void process(Operations ops, SourceFormat sourceFormat,
+    public void process(OperationList ops, SourceFormat sourceFormat,
                         Dimension fullSize, File inputFile,
                         OutputStream outputStream) throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
@@ -350,7 +350,7 @@ class KakaduProcessor implements FileProcessor {
      * @param reduction Modified by reference
      * @return Command string
      */
-    private ProcessBuilder getProcessBuilder(File inputFile, Operations ops,
+    private ProcessBuilder getProcessBuilder(File inputFile, OperationList ops,
                                              Dimension fullSize,
                                              ReductionFactor reduction) {
         final List<String> command = new ArrayList<>();

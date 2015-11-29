@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Encapsulates a normalized list of image transform operations along with an
- * image identifier and desired output format.
+ * Normalized list of image transform operations along with an image identifier
+ * and desired output format.
  */
-public class Operations implements Comparable<Operations>, Iterable<Operation> {
+public class OperationList implements Comparable<OperationList>, Iterable<Operation> {
 
     private Identifier identifier;
     private List<Operation> operations = new ArrayList<>();
@@ -29,7 +29,7 @@ public class Operations implements Comparable<Operations>, Iterable<Operation> {
     }
 
     @Override
-    public int compareTo(Operations ops) {
+    public int compareTo(OperationList ops) {
         int last = this.toString().compareTo(ops.toString());
         return (last == 0) ? this.toString().compareTo(ops.toString()) : last;
     }

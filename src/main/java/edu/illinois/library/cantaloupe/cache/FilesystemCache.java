@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operation;
-import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OperationList;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,8 +82,8 @@ class FilesystemCache implements Cache {
     private final Set<Identifier> infosBeingWritten = new ConcurrentSkipListSet<>();
 
     /** Set of Operations for which image files are currently being flushed by
-     * flush(Operations). */
-    private final Set<Operations> opsBeingFlushed =
+     * flush(OperationList). */
+    private final Set<OperationList> opsBeingFlushed =
             new ConcurrentSkipListSet<>();
 
     /** Lock object for synchronization */
@@ -180,7 +180,7 @@ class FilesystemCache implements Cache {
     }
 
     @Override
-    public void flush(Operations ops) throws IOException {
+    public void flush(OperationList ops) throws IOException {
         synchronized (lock1) {
             while (flushingInProgress || opsBeingFlushed.contains(ops)) {
                 try {
@@ -289,7 +289,7 @@ class FilesystemCache implements Cache {
     }
 
     @Override
-    public InputStream getImageInputStream(Operations ops) {
+    public InputStream getImageInputStream(OperationList ops) {
         File cacheFile = getCachedImageFile(ops);
         if (cacheFile != null && cacheFile.exists()) {
             if (!isExpired(cacheFile)) {
@@ -309,7 +309,7 @@ class FilesystemCache implements Cache {
     }
 
     @Override
-    public OutputStream getImageOutputStream(Operations ops)
+    public OutputStream getImageOutputStream(OperationList ops)
             throws IOException { // TODO: make this work better concurrently
         logger.debug("Miss; caching {}", ops);
         File cacheFile = getCachedImageFile(ops);
@@ -323,7 +323,7 @@ class FilesystemCache implements Cache {
      * @return File corresponding to the given parameters, or null if
      * <code>FilesystemCache.pathname</code> is not set in the configuration.
      */
-    public File getCachedImageFile(Operations ops) {
+    public File getCachedImageFile(OperationList ops) {
         final String cachePathname = getImagePathname();
         if (cachePathname != null) {
             List<String> parts = new ArrayList<>();

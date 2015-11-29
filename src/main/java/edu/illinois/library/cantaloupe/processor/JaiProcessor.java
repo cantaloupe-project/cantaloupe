@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
-import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
@@ -162,20 +162,20 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
     }
 
     @Override
-    public void process(Operations ops, SourceFormat sourceFormat,
+    public void process(OperationList ops, SourceFormat sourceFormat,
                         Dimension sourceSize, File inputFile,
                         OutputStream outputStream) throws ProcessorException {
         doProcess(ops, sourceFormat, inputFile, outputStream);
     }
 
     @Override
-    public void process(Operations ops, SourceFormat sourceFormat,
+    public void process(OperationList ops, SourceFormat sourceFormat,
                         Dimension fullSize, InputStream inputStream,
                         OutputStream outputStream) throws ProcessorException {
         doProcess(ops, sourceFormat, inputStream, outputStream);
     }
 
-    private void doProcess(Operations ops, SourceFormat sourceFormat,
+    private void doProcess(OperationList ops, SourceFormat sourceFormat,
                            Object input, OutputStream outputStream)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =

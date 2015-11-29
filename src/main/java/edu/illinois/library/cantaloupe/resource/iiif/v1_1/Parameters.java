@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
 
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Reference;
@@ -125,8 +125,8 @@ class Parameters implements Comparable<Parameters> {
         this.size = size;
     }
 
-    public Operations toOperations() {
-        Operations ops = new Operations();
+    public OperationList toOperationList() {
+        OperationList ops = new OperationList();
         ops.setIdentifier(getIdentifier());
         ops.setOutputFormat(getOutputFormat());
         ops.add(getRegion().toCrop());

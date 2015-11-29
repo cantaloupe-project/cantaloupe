@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.Operations;
+import edu.illinois.library.cantaloupe.image.OperationList;
 import org.apache.commons.configuration.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,10 +36,10 @@ class JdbcCache implements Cache {
     private class JdbcImageOutputStream extends OutputStream {
 
         private ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        private Operations ops;
+        private OperationList ops;
         private Connection connection;
 
-        public JdbcImageOutputStream(Connection conn, Operations ops) {
+        public JdbcImageOutputStream(Connection conn, OperationList ops) {
             this.connection = conn;
             this.ops = ops;
         }
@@ -310,7 +310,7 @@ class JdbcCache implements Cache {
     }
 
     @Override
-    public void flush(Operations ops) throws IOException {
+    public void flush(OperationList ops) throws IOException {
         try {
             int numDeletedImages = flushImage(ops);
             int numDeletedDimensions = flushInfo(ops.getIdentifier());
@@ -327,7 +327,7 @@ class JdbcCache implements Cache {
      * @throws SQLException
      * @throws IOException
      */
-    private int flushImage(Operations ops) throws SQLException, IOException {
+    private int flushImage(OperationList ops) throws SQLException, IOException {
         Configuration config = Application.getConfiguration();
         Connection conn = getConnection();
 
@@ -445,7 +445,7 @@ class JdbcCache implements Cache {
     }
 
     @Override
-    public InputStream getImageInputStream(Operations ops) {
+    public InputStream getImageInputStream(OperationList ops) {
         InputStream inputStream = null;
         final Timestamp oldestDate = oldestValidDate();
         Configuration config = Application.getConfiguration();
@@ -480,7 +480,7 @@ class JdbcCache implements Cache {
     }
 
     @Override
-    public OutputStream getImageOutputStream(Operations ops)
+    public OutputStream getImageOutputStream(OperationList ops)
             throws IOException {
         logger.debug("Miss; caching {}", ops);
         Configuration config = Application.getConfiguration();
