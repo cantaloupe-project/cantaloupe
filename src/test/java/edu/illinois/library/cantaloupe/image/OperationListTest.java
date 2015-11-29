@@ -195,7 +195,9 @@ public class OperationListTest extends CantaloupeTestCase {
         List<String> parts = new ArrayList<>();
         parts.add(ops.getIdentifier().toString());
         for (Operation op : ops) {
-            parts.add(op.toString());
+            if (!op.isNoOp()) {
+                parts.add(op.toString());
+            }
         }
         String expected = StringUtils.join(parts, "_") + "." +
                 ops.getOutputFormat().getExtension();

@@ -87,10 +87,12 @@ public class OperationList implements Comparable<OperationList>, Iterable<Operat
      */
     @Override
     public String toString() {
-        List<String> parts = new ArrayList<>();
+        final List<String> parts = new ArrayList<>();
         parts.add(getIdentifier().toString());
         for (Operation op : this) {
-            parts.add(op.toString());
+            if (!op.isNoOp()) {
+                parts.add(op.toString());
+            }
         }
         return StringUtils.join(parts, "_") + "." +
                 getOutputFormat().getExtension();
