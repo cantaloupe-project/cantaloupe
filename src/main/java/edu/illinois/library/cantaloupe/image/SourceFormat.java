@@ -42,9 +42,9 @@ public enum SourceFormat {
      */
     public static SourceFormat getSourceFormat(Identifier identifier) {
         String extension = null;
-        int i = identifier.getValue().lastIndexOf('.');
+        int i = identifier.toString().lastIndexOf('.');
         if (i > 0) {
-            extension = identifier.getValue().substring(i + 1);
+            extension = identifier.toString().substring(i + 1);
         }
         if (extension != null) {
             for (SourceFormat enumValue : SourceFormat.values()) {

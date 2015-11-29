@@ -88,7 +88,7 @@ class AmazonS3Resolver implements StreamResolver {
         Configuration config = Application.getConfiguration();
         final String bucketName = config.getString(BUCKET_NAME_CONFIG_KEY);
         logger.debug("Using bucket: {}", bucketName);
-        final String objectKey = identifier.getValue();
+        final String objectKey = identifier.toString();
         logger.debug("Requesting {}", objectKey);
         try {
             S3Object object = s3.getObject(new GetObjectRequest(bucketName, objectKey));

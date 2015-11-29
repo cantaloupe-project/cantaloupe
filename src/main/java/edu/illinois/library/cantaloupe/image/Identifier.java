@@ -11,7 +11,7 @@ public class Identifier implements Comparable<Identifier> {
      * @param value Identifier value
      */
     public Identifier(String value) {
-        this.setValue(value);
+        this.value = value;
     }
 
     @Override
@@ -24,30 +24,14 @@ public class Identifier implements Comparable<Identifier> {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Identifier) {
-            return this.getValue().equals(((Identifier) obj).getValue());
-        } else if (obj instanceof String) {
-            return this.getValue().equals(obj);
+            return this.toString().equals(obj.toString());
         }
         return super.equals(obj);
     }
 
-    /**
-     * @return Unencoded value
-     */
-    public String getValue() {
-        return value;
-    }
-
     @Override
     public int hashCode(){
-        return this.getValue().hashCode();
-    }
-
-    /**
-     * @param val Unencoded value
-     */
-    public void setValue(String val) {
-        value = val;
+        return this.toString().hashCode();
     }
 
     /**
@@ -55,7 +39,7 @@ public class Identifier implements Comparable<Identifier> {
      */
     @Override
     public String toString() {
-        return getValue();
+        return this.value;
     }
 
 }

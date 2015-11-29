@@ -44,7 +44,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
 
         // persist some images
         OperationList ops = TestUtil.newOperationList();
-        ops.getIdentifier().setValue("cats");
+        ops.setIdentifier(new Identifier("cats"));
 
         OutputStream os = instance.getImageOutputStream(ops);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
@@ -158,7 +158,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
 
     public void testFlushWithOperations() throws Exception {
         OperationList ops = TestUtil.newOperationList();
-        ops.getIdentifier().setValue("cats");
+        ops.setIdentifier(new Identifier("cats"));
         instance.flush(ops);
 
         Configuration config = Application.getConfiguration();
@@ -189,7 +189,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
 
         // add some fresh entities
         OperationList ops = TestUtil.newOperationList();
-        ops.getIdentifier().setValue("bees");
+        ops.setIdentifier(new Identifier("cats"));
 
         OutputStream os = instance.getImageOutputStream(ops);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
@@ -238,7 +238,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
 
         // add some fresh entities
         OperationList ops = TestUtil.newOperationList();
-        ops.getIdentifier().setValue("bees");
+        ops.setIdentifier(new Identifier("bees"));
 
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")),
                 instance.getImageOutputStream(ops));
@@ -260,7 +260,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
 
     public void testGetImageInputStreamWithZeroTtl() {
         OperationList ops = TestUtil.newOperationList();
-        ops.getIdentifier().setValue("cats");
+        ops.setIdentifier(new Identifier("cats"));
         assertNotNull(instance.getImageInputStream(ops));
     }
 
@@ -272,7 +272,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
 
         // add some fresh entities
         OperationList ops = TestUtil.newOperationList();
-        ops.getIdentifier().setValue("bees");
+        ops.setIdentifier(new Identifier("bees"));
 
         OutputStream os = instance.getImageOutputStream(ops);
         IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
@@ -284,18 +284,18 @@ public class JdbcCacheTest extends CantaloupeTestCase {
 
         // existing, expired image
         ops = TestUtil.newOperationList();
-        ops.getIdentifier().setValue("cats");
+        ops.setIdentifier(new Identifier("cats"));
         assertNull(instance.getImageInputStream(ops));
 
         // nonexistent image
         ops = TestUtil.newOperationList();
-        ops.getIdentifier().setValue("bogus");
+        ops.setIdentifier(new Identifier("bogus"));
         assertNull(instance.getImageInputStream(ops));
     }
 
     public void testGetImageOutputStream() throws Exception {
         OperationList ops = TestUtil.newOperationList();
-        ops.getIdentifier().setValue("cats");
+        ops.setIdentifier(new Identifier("cats"));
         assertNotNull(instance.getImageOutputStream(ops));
     }
 

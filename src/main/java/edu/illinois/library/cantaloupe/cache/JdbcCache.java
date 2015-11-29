@@ -422,7 +422,7 @@ class JdbcCache implements Cache {
                         INFO_TABLE_LAST_MODIFIED_COLUMN, tableName,
                         INFO_TABLE_IDENTIFIER_COLUMN);
                 PreparedStatement statement = getConnection().prepareStatement(sql);
-                statement.setString(1, identifier.getValue());
+                statement.setString(1, identifier.toString());
                 ResultSet resultSet = statement.executeQuery();
                 if (resultSet.next()) {
                     if (resultSet.getTimestamp(3).after(oldestDate)) {
@@ -528,7 +528,7 @@ class JdbcCache implements Cache {
                         INFO_TABLE_WIDTH_COLUMN, INFO_TABLE_HEIGHT_COLUMN,
                         INFO_TABLE_LAST_MODIFIED_COLUMN);
                 PreparedStatement statement = conn.prepareStatement(sql);
-                statement.setString(1, identifier.getValue());
+                statement.setString(1, identifier.toString());
                 statement.setInt(2, dimension.width);
                 statement.setInt(3, dimension.height);
                 statement.setTimestamp(4, now());

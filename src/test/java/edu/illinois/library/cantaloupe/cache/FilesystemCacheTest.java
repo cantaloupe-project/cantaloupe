@@ -59,7 +59,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         instance.getCachedImageFile(ops).createNewFile();
         instance.getCachedInfoFile(ops.getIdentifier()).createNewFile();
 
-        ops.getIdentifier().setValue("dogs");
+        ops.setIdentifier(new Identifier("dogs"));
         ops.add(new Rotate(15));
         instance.getCachedImageFile(ops).createNewFile();
         instance.getCachedInfoFile(ops.getIdentifier()).createNewFile();
@@ -92,7 +92,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
         Thread.sleep(2000);
 
-        ops.getIdentifier().setValue("dogs");
+        ops.setIdentifier(new Identifier("dogs"));
         instance.getCachedImageFile(ops).createNewFile();
         instance.getCachedInfoFile(ops.getIdentifier()).createNewFile();
 
