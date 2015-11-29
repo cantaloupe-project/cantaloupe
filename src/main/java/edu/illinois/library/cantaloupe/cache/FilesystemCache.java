@@ -63,11 +63,11 @@ class FilesystemCache implements Cache {
     private final AtomicBoolean flushingInProgress = new AtomicBoolean(false);
 
     /** Set of identifiers for which info files are currently being read. */
-    private final Set<Identifier> infosBeingRead = new ConcurrentSkipListSet<>();
-
+    private final Set<Identifier> dimensionsBeingRead =
+            new ConcurrentSkipListSet<>();
     /** Set of identifiers for which info files are currently being written. */
-    private final Set<Identifier> infosBeingWritten = new ConcurrentSkipListSet<>();
-
+    private final Set<Identifier> dimensionsBeingWritten =
+            new ConcurrentSkipListSet<>();
     /** Set of Operations for which image files are currently being flushed by
      * flush(OperationList). */
     private final Set<OperationList> opsBeingFlushed =
@@ -241,7 +241,7 @@ class FilesystemCache implements Cache {
     @Override
     public Dimension getDimension(Identifier identifier) throws IOException {
         synchronized (lock2) {
-            while (infosBeingWritten.contains(identifier)) {
+            while (dimensionsBeingWritten.contains(identifier)) {
                 try {
                     lock2.wait();
                 } catch (InterruptedException e) {
@@ -251,7 +251,7 @@ class FilesystemCache implements Cache {
         }
 
         try {
-            infosBeingRead.add(identifier);
+            dimensionsBeingRead.add(identifier);
             File cacheFile = getCachedInfoFile(identifier);
             if (cacheFile != null && cacheFile.exists()) {
                 if (!isExpired(cacheFile)) {
@@ -269,7 +269,7 @@ class FilesystemCache implements Cache {
         } catch (FileNotFoundException e) {
             logger.debug(e.getMessage(), e);
         } finally {
-            infosBeingRead.remove(identifier);
+            dimensionsBeingRead.remove(identifier);
         }
         return null;
     }
@@ -348,8 +348,8 @@ class FilesystemCache implements Cache {
     public void putDimension(Identifier identifier, Dimension dimension)
             throws IOException {
         synchronized (lock3) {
-            while (infosBeingWritten.contains(identifier) ||
-                    infosBeingRead.contains(identifier)) {
+            while (dimensionsBeingWritten.contains(identifier) ||
+                    dimensionsBeingRead.contains(identifier)) {
                 try {
                     lock3.wait();
                 } catch (InterruptedException e) {
@@ -359,7 +359,7 @@ class FilesystemCache implements Cache {
         }
 
         try {
-            infosBeingWritten.add(identifier);
+            dimensionsBeingWritten.add(identifier);
             final File cacheFile = getCachedInfoFile(identifier);
             if (cacheFile != null) {
                 logger.debug("Caching dimension: {}", identifier);
@@ -372,7 +372,7 @@ class FilesystemCache implements Cache {
                 throw new IOException(PATHNAME_CONFIG_KEY + " is not set");
             }
         } finally {
-            infosBeingWritten.remove(identifier);
+            dimensionsBeingWritten.remove(identifier);
         }
     }
 
