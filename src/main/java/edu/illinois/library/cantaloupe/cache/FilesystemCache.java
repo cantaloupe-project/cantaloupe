@@ -364,7 +364,10 @@ class FilesystemCache implements Cache {
                 } else {
                     logger.debug("Deleting stale cache file: {}",
                             cacheFile.getName());
-                    cacheFile.delete();
+                    if (!cacheFile.delete()) {
+                        // TODO: should this be an IOException?
+                        logger.error("Unable to delete {}", cacheFile);
+                    }
                 }
             }
         } catch (FileNotFoundException e) {
@@ -389,7 +392,10 @@ class FilesystemCache implements Cache {
             } else {
                 logger.debug("Deleting stale cache file: {}",
                         cacheFile.getName());
-                cacheFile.delete();
+                if (!cacheFile.delete()) {
+                    // TODO: should this be an IOException?
+                    logger.error("Unable to delete {}", cacheFile);
+                }
             }
         }
         return null;
