@@ -8,21 +8,15 @@ import java.util.Set;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
-import edu.illinois.library.cantaloupe.cache.Cache;
-import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
-import edu.illinois.library.cantaloupe.resolver.FileResolver;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
-import edu.illinois.library.cantaloupe.resolver.StreamResolver;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
@@ -131,72 +125,6 @@ public class InformationResource extends AbstractResource {
     private String getImageUri(Identifier identifier) {
         return getPublicRootRef() + ImageServerApplication.IIIF_PATH +
                 "/" + Reference.encode(identifier.toString());
-    }
-
-    /**
-     * Gets the size of the image corresponding to the given identifier, first
-     * by checking the cache and then, if necessary, by reading it from the
-     * image and caching the result.
-     *
-     * @param identifier
-     * @param proc
-     * @param resolver
-     * @param sourceFormat
-     * @return
-     * @throws Exception
-     */
-    private Dimension getSize(Identifier identifier, Processor proc,
-                              Resolver resolver, SourceFormat sourceFormat)
-            throws Exception {
-        Dimension size = null;
-        Cache cache = CacheFactory.getInstance();
-        if (cache != null) {
-            size = cache.getDimension(identifier);
-            if (size == null) {
-                size = readSize(identifier, resolver, proc, sourceFormat);
-                cache.putDimension(identifier, size);
-            }
-        }
-        if (size == null) {
-            size = readSize(identifier, resolver, proc, sourceFormat);
-        }
-        return size;
-    }
-
-    /**
-     * Reads the size from the source image.
-     *
-     * @param identifier
-     * @param resolver
-     * @param proc
-     * @param sourceFormat
-     * @return
-     * @throws Exception
-     */
-    private Dimension readSize(Identifier identifier, Resolver resolver,
-                               Processor proc, SourceFormat sourceFormat)
-            throws Exception {
-        Dimension size = null;
-        if (resolver instanceof FileResolver) {
-            if (proc instanceof FileProcessor) {
-                size = ((FileProcessor)proc).getSize(
-                        ((FileResolver) resolver).getFile(identifier),
-                        sourceFormat);
-            } else if (proc instanceof StreamProcessor) {
-                size = ((StreamProcessor)proc).getSize(
-                        ((StreamResolver) resolver).getInputStream(identifier),
-                        sourceFormat);
-            }
-        } else if (resolver instanceof StreamResolver) {
-            if (!(proc instanceof StreamProcessor)) {
-                // StreamResolvers don't support FileProcessors
-            } else {
-                size = ((StreamProcessor)proc).getSize(
-                        ((StreamResolver) resolver).getInputStream(identifier),
-                        sourceFormat);
-            }
-        }
-        return size;
     }
 
 }
