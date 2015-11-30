@@ -3,65 +3,24 @@ package edu.illinois.library.cantaloupe.image;
 /**
  * Encapsulates a transposition (flipping/mirroring) operation on an image.
  */
-public class Transpose implements Operation {
+public enum Transpose implements Operation {
 
-    public enum Axis {
-        /** Indicates mirroring. */
-        HORIZONTAL,
-        /** Indicates flipping. */
-        VERTICAL
-    }
-
-    private Axis axis = Axis.HORIZONTAL;
-
-    /**
-     * No-op constructor.
-     */
-    public Transpose() {}
-
-    /**
-     * @param axis
-     */
-    public Transpose(Axis axis) {
-        this.setAxis(axis);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof Transpose) {
-            Transpose t = (Transpose) obj;
-            if (t.getAxis() != null && this.getAxis() != null) {
-                return t.getAxis().equals(this.getAxis());
-            }
-        }
-        return super.equals(obj);
-    }
-
-    /**
-     * @return Axis
-     */
-    public Axis getAxis() {
-        return this.axis;
-    }
+    /** Indicates mirroring. */
+    HORIZONTAL,
+    /** Indicates flipping. */
+    VERTICAL;
 
     public boolean isNoOp() {
-        return (this.getAxis() == null);
-    }
-
-    /**
-     * @param axis
-     */
-    public void setAxis(Axis axis) {
-        this.axis = axis;
+        return false;
     }
 
     /**
      * @return String representation of the instance, guaranteed to represent
-     * the instance, but not guaranteed to be meaningful.
+     * the instance, but not guaranteed to have any particular format.
      */
     @Override
     public String toString() {
-        switch (getAxis()) {
+        switch (this) {
             case HORIZONTAL:
                 return "h";
             case VERTICAL:

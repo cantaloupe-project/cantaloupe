@@ -39,8 +39,8 @@ class Rotation implements Comparable<Object> {
                 return 0;
             }
         } else if (object instanceof Transpose) {
-            Transpose flip = (Transpose) object;
-            if (this.shouldMirror() && flip.getAxis() == Transpose.Axis.HORIZONTAL) {
+            Transpose t = (Transpose) object;
+            if (this.shouldMirror() && t == Transpose.HORIZONTAL) {
                 return 0;
             }
         } else if (object instanceof Rotation) {
@@ -98,9 +98,7 @@ class Rotation implements Comparable<Object> {
      */
     public Transpose toTranspose() {
         if (shouldMirror()) {
-            Transpose flip = new Transpose();
-            flip.setAxis(Transpose.Axis.HORIZONTAL);
-            return flip;
+            return Transpose.HORIZONTAL;
         }
         return null;
     }

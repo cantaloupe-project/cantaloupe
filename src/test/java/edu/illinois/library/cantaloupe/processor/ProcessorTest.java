@@ -208,7 +208,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
 
     public void testProcessWithTransposeOperation() throws Exception {
         List<Transpose> transposes = new ArrayList<>();
-        transposes.add(new Transpose(Transpose.Axis.HORIZONTAL));
+        transposes.add(Transpose.HORIZONTAL);
         // we aren't using this yet
         //transposes.add(new Transpose(Transpose.Axis.VERTICAL));
         for (Transpose transpose : transposes) {

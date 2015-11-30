@@ -566,7 +566,7 @@ abstract class ProcessorUtil {
     public static BufferedImage transposeImage(BufferedImage inImage,
                                                Transpose transpose) {
         AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
-        switch (transpose.getAxis()) {
+        switch (transpose) {
             case HORIZONTAL:
                 tx.translate(-inImage.getWidth(null), 0);
                 break;
@@ -580,10 +580,10 @@ abstract class ProcessorUtil {
     }
 
     public static RenderedOp transposeImage(RenderedOp inImage,
-                                            Transpose flip) {
+                                            Transpose transpose) {
         ParameterBlock pb = new ParameterBlock();
         pb.addSource(inImage);
-        switch (flip.getAxis()) {
+        switch (transpose) {
             case HORIZONTAL:
                 pb.add(TransposeDescriptor.FLIP_HORIZONTAL);
                 break;

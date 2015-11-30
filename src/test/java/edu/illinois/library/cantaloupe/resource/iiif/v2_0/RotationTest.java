@@ -108,8 +108,7 @@ public class RotationTest extends CantaloupeTestCase {
         rotation.setMirror(false);
         assertNull(rotation.toTranspose());
         rotation.setMirror(true);
-        assertEquals(new Transpose(Transpose.Axis.HORIZONTAL),
-                rotation.toTranspose());
+        assertEquals(Transpose.HORIZONTAL, rotation.toTranspose());
     }
 
     public void testToString() {

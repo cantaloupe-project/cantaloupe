@@ -266,7 +266,7 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
     public void testTransposeImageWithBufferedImage() {
         BufferedImage inImage = new BufferedImage(200, 100,
                 BufferedImage.TYPE_INT_RGB);
-        Transpose transpose = new Transpose(Transpose.Axis.HORIZONTAL);
+        Transpose transpose = Transpose.HORIZONTAL;
         BufferedImage outImage = ProcessorUtil.transposeImage(inImage, transpose);
 
         assertEquals(200, outImage.getWidth());

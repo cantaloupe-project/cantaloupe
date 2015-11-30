@@ -473,7 +473,7 @@ class FfmpegProcessor implements FileProcessor {
                 }
             } else if (op instanceof Transpose) {
                 Transpose transpose = (Transpose) op;
-                switch (transpose.getAxis()) {
+                switch (transpose) {
                     case HORIZONTAL:
                         filters.add("hflip");
                         break;
