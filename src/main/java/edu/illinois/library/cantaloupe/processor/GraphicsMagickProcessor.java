@@ -42,6 +42,8 @@ class GraphicsMagickProcessor implements StreamProcessor {
     private static Logger logger = LoggerFactory.
             getLogger(GraphicsMagickProcessor.class);
 
+    private static final String BINARIES_PATH_CONFIG_KEY =
+            "GraphicsMagickProcessor.path_to_binaries";
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality>
@@ -93,17 +95,15 @@ class GraphicsMagickProcessor implements StreamProcessor {
             final Set<OutputFormat> outputFormats = new HashSet<>();
             String cmdPath = "gm";
             try {
-                // retrieve the output of the `gm version` command, which contains a
-                // list of all optional formats
-                Runtime runtime = Runtime.getRuntime();
+                // retrieve the output of the `gm version` command, which
+                // contains a list of all optional formats
                 Configuration config = Application.getConfiguration();
-                if (config != null) {
-                    String pathPrefix = config.getString("GraphicsMagickProcessor.path_to_binaries");
-                    if (pathPrefix != null) {
-                        cmdPath = pathPrefix + File.separator + cmdPath;
-                    }
+                String pathPrefix = config.getString(BINARIES_PATH_CONFIG_KEY);
+                if (pathPrefix != null) {
+                    cmdPath = pathPrefix + File.separator + cmdPath;
                 }
                 String[] commands = {cmdPath, "version"};
+                Runtime runtime = Runtime.getRuntime();
                 Process proc = runtime.exec(commands);
                 BufferedReader stdInput = new BufferedReader(
                         new InputStreamReader(proc.getInputStream()));
@@ -236,8 +236,8 @@ class GraphicsMagickProcessor implements StreamProcessor {
                 Crop crop = (Crop) op;
                 if (!crop.isFull()) {
                     if (crop.getUnit().equals(Crop.Unit.PERCENT)) {
-                        // im4java doesn't support cropping x/y by percentage --
-                        // only width/height -- so we have to calculate them.
+                        // im4java doesn't support cropping x/y by percentage
+                        // (only width/height), so we have to calculate them.
                         int x = Math.round(crop.getX() * fullSize.width);
                         int y = Math.round(crop.getY() * fullSize.height);
                         int width = Math.round(crop.getWidth() * 100);
@@ -263,8 +263,7 @@ class GraphicsMagickProcessor implements StreamProcessor {
                         imOp.resize(scale.getWidth(), scale.getHeight());
                     } else if (scale.getPercent() != null) {
                         imOp.resize(Math.round(scale.getPercent()),
-                                Math.round(scale.getPercent()),
-                                "%");
+                                Math.round(scale.getPercent()), "%");
                     }
                 }
             } else if (op instanceof Transpose) {
@@ -316,9 +315,8 @@ class GraphicsMagickProcessor implements StreamProcessor {
             } else {
                 sourceInfo = new Info(inputPath, true);
             }
-            Dimension dimension = new Dimension(sourceInfo.getImageWidth(),
+            return new Dimension(sourceInfo.getImageWidth(),
                     sourceInfo.getImageHeight());
-            return dimension;
         } catch (IM4JavaException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
@@ -355,7 +353,7 @@ class GraphicsMagickProcessor implements StreamProcessor {
             ConvertCmd convert = new ConvertCmd(true);
 
             String binaryPath = Application.getConfiguration().
-                    getString("GraphicsMagickProcessor.path_to_binaries", "");
+                    getString(BINARIES_PATH_CONFIG_KEY, "");
             if (binaryPath.length() > 0) {
                 convert.setSearchPath(binaryPath);
             }

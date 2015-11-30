@@ -104,7 +104,7 @@ class FfmpegProcessor implements FileProcessor {
     }
 
     /**
-     * @param binaryName Name of one of the kdu_* binaries
+     * @param binaryName Name of one of the ffmpeg binaries
      * @return
      */
     private static String getPath(String binaryName) {
@@ -126,7 +126,7 @@ class FfmpegProcessor implements FileProcessor {
      * @return
      */
     private static String quote(String path) {
-        if (path.contains(" ")) {
+        if (path.trim().contains(" ")) {
             path = "\"" + path + "\"";
         }
         return path;

@@ -39,6 +39,8 @@ class ImageMagickProcessor implements StreamProcessor {
     private static Logger logger = LoggerFactory.
             getLogger(ImageMagickProcessor.class);
 
+    private static final String BINARIES_PATH_CONFIG_KEY =
+            "ImageMagickProcessor.path_to_binaries";
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality>
@@ -92,15 +94,13 @@ class ImageMagickProcessor implements StreamProcessor {
             try {
                 // retrieve the output of the `identify -list format` command,
                 // which contains a list of all supported formats
-                Runtime runtime = Runtime.getRuntime();
                 Configuration config = Application.getConfiguration();
-                if (config != null) {
-                    String pathPrefix = config.getString("ImageMagickProcessor.path_to_binaries");
-                    if (pathPrefix != null) {
-                        cmdPath = pathPrefix + File.separator + cmdPath;
-                    }
+                String pathPrefix = config.getString(BINARIES_PATH_CONFIG_KEY);
+                if (pathPrefix != null) {
+                    cmdPath = pathPrefix + File.separator + cmdPath;
                 }
                 String[] commands = {cmdPath, "-list", "format"};
+                Runtime runtime = Runtime.getRuntime();
                 Process proc = runtime.exec(commands);
                 BufferedReader stdInput = new BufferedReader(
                         new InputStreamReader(proc.getInputStream()));
@@ -173,9 +173,8 @@ class ImageMagickProcessor implements StreamProcessor {
         try {
             Info sourceInfo = new Info(sourceFormat.getPreferredExtension() + ":-",
                     inputStream, true);
-            Dimension dimension = new Dimension(sourceInfo.getImageWidth(),
+            return new Dimension(sourceInfo.getImageWidth(),
                     sourceInfo.getImageHeight());
-            return dimension;
         } catch (IM4JavaException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
@@ -239,7 +238,7 @@ class ImageMagickProcessor implements StreamProcessor {
             ConvertCmd convert = new ConvertCmd();
 
             String binaryPath = Application.getConfiguration().
-                    getString("ImageMagickProcessor.path_to_binaries", "");
+                    getString(BINARIES_PATH_CONFIG_KEY, "");
             if (binaryPath.length() > 0) {
                 convert.setSearchPath(binaryPath);
             }
@@ -258,8 +257,8 @@ class ImageMagickProcessor implements StreamProcessor {
                 Crop crop = (Crop) op;
                 if (!crop.isFull()) {
                     if (crop.getUnit().equals(Crop.Unit.PERCENT)) {
-                        // im4java doesn't support cropping x/y by percentage (only
-                        // width/height), so we have to calculate them.
+                        // im4java doesn't support cropping x/y by percentage
+                        // (only width/height), so we have to calculate them.
                         int x = Math.round(crop.getX() * fullSize.width);
                         int y = Math.round(crop.getY() * fullSize.height);
                         int width = Math.round(crop.getWidth());
@@ -285,8 +284,7 @@ class ImageMagickProcessor implements StreamProcessor {
                         imOp.resize(scale.getWidth(), scale.getHeight());
                     } else if (scale.getPercent() != null) {
                         imOp.resize(Math.round(scale.getPercent()),
-                                Math.round(scale.getPercent()),
-                                "%".charAt(0));
+                                Math.round(scale.getPercent()), "%");
                     }
                 }
             } else if (op instanceof Transpose) {

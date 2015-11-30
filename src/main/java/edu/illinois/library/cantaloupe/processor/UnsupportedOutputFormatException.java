@@ -6,8 +6,4 @@ public class UnsupportedOutputFormatException extends ProcessorException {
         super("Unsupported output format");
     }
 
-    public UnsupportedOutputFormatException(String message) {
-        super(message);
-    }
-
 }

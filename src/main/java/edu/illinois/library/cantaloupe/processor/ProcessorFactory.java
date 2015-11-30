@@ -28,6 +28,8 @@ public abstract class ProcessorFactory {
      *                     <code>SourceFormat.UNKNOWN</code>.
      * @return An instance suitable for handling the given source format, based
      * on configuration settings.
+     * @throws ClassNotFoundException If a fallback processor is needed but not
+     * defined.
      * @throws UnsupportedSourceFormatException If the processor assigned to
      * the given source format, or the fallback processor, does not support the
      * format.

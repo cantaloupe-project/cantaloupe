@@ -33,6 +33,7 @@ import java.util.Set;
  */
 class JaiProcessor implements FileProcessor, StreamProcessor {
 
+    // TODO: this should be used in conjunction with tile offset to match the crop region
     private static final int JAI_TILE_SIZE = 512;
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
@@ -89,14 +90,14 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
             formatsMap = new HashMap<>();
             for (SourceFormat sourceFormat : SourceFormat.values()) {
                 Set<OutputFormat> outputFormats = new HashSet<>();
-
                 for (int i = 0, length = readerMimeTypes.length; i < length; i++) {
                     if (sourceFormat.getMediaTypes().
                             contains(new MediaType(readerMimeTypes[i].toLowerCase()))) {
                         for (OutputFormat outputFormat : OutputFormat.values()) {
                             if (outputFormat == OutputFormat.GIF ||
                                     outputFormat == OutputFormat.JP2) {
-                                // these currently don't work (see outputImage())
+                                // these currently don't work
+                                // (see ProcessorUtil.writeImage(RenderedOp))
                                 continue;
                             }
                             for (i = 0, length = writerMimeTypes.length; i < length; i++) {
@@ -188,7 +189,7 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
         }
 
         try {
-            RenderedOp image = loadImage(input);
+            RenderedOp image = readImage(input);
             for (Operation op : ops) {
                 if (op instanceof Crop) {
                     image = ProcessorUtil.cropImage(image, (Crop) op);
@@ -209,7 +210,7 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
         }
     }
 
-    private RenderedOp loadImage(Object input) {
+    private RenderedOp readImage(Object input) {
         ParameterBlockJAI pbj = new ParameterBlockJAI("ImageRead");
         ImageLayout layout = new ImageLayout();
         layout.setTileWidth(JAI_TILE_SIZE);
