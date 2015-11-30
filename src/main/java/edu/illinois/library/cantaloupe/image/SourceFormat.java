@@ -227,6 +227,16 @@ public enum SourceFormat {
     }
 
     /**
+     * Convenience method.
+     *
+     * @return True if the type (as returned by {@link #getType()}) is
+     * {@link SourceFormat.Type#VIDEO}.
+     */
+    public boolean isVideo() {
+        return (this.getType() != null && this.getType().equals(Type.VIDEO));
+    }
+
+    /**
      * @return Preferred extension.
      */
     public String toString() {

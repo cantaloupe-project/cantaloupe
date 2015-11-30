@@ -135,8 +135,7 @@ class FfmpegProcessor implements FileProcessor {
     @Override
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
         Set<OutputFormat> outputFormats = new HashSet<>();
-        if (sourceFormat.getType() != null &&
-                sourceFormat.getType().equals(SourceFormat.Type.VIDEO)) {
+        if (sourceFormat.isVideo()) {
             outputFormats.add(OutputFormat.JPG);
         }
         return outputFormats;

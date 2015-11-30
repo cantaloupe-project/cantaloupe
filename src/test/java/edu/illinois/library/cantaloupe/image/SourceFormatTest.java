@@ -207,6 +207,23 @@ public class SourceFormatTest extends CantaloupeTestCase {
         assertFalse(SourceFormat.UNKNOWN.isImage());
     }
 
+    public void testIsVideo() {
+        assertTrue(SourceFormat.AVI.isVideo());
+        assertFalse(SourceFormat.BMP.isVideo());
+        assertFalse(SourceFormat.GIF.isVideo());
+        assertFalse(SourceFormat.JP2.isVideo());
+        assertFalse(SourceFormat.JPG.isVideo());
+        assertTrue(SourceFormat.MOV.isVideo());
+        assertTrue(SourceFormat.MP4.isVideo());
+        assertTrue(SourceFormat.MPG.isVideo());
+        assertFalse(SourceFormat.PDF.isVideo());
+        assertFalse(SourceFormat.PNG.isVideo());
+        assertFalse(SourceFormat.TIF.isVideo());
+        assertTrue(SourceFormat.WEBM.isVideo());
+        assertFalse(SourceFormat.WEBP.isVideo());
+        assertFalse(SourceFormat.UNKNOWN.isVideo());
+    }
+
     public void testToString() {
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             assertEquals(sourceFormat.getPreferredExtension(),
