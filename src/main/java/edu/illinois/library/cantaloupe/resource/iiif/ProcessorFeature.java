@@ -1,9 +1,7 @@
-package edu.illinois.library.cantaloupe.processor;
-
-import edu.illinois.library.cantaloupe.resource.iiif.Feature;
+package edu.illinois.library.cantaloupe.resource.iiif;
 
 /**
- * Encapsulates an IIIF "feature" that is processor-dependent.
+ * Encapsulates a "feature" that is processor-dependent.
  */
 public enum ProcessorFeature implements Feature {
 

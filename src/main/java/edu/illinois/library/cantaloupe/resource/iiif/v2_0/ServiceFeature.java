@@ -1,11 +1,12 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
 import edu.illinois.library.cantaloupe.resource.iiif.Feature;
+import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
 /**
  * Encapsulates an IIIF "feature" that is application-dependent.
  *
- * @see edu.illinois.library.cantaloupe.processor.ProcessorFeature
+ * @see ProcessorFeature
  */
 enum ServiceFeature implements Feature {
 

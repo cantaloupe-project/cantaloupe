@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
 import edu.illinois.library.cantaloupe.resource.iiif.Feature;
-import edu.illinois.library.cantaloupe.processor.ProcessorFeature;
+import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 
 import java.util.HashSet;
