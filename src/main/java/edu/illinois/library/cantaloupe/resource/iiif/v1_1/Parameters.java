@@ -23,8 +23,8 @@ class Parameters implements Comparable<Parameters> {
 
     /**
      * @param paramsStr URI path fragment beginning from the identifier onward
-     * @throws IllegalArgumentException if the <code>params</code> is not in
-     * the correct format
+     * @throws IllegalArgumentException if the given string does not have the
+     * correct format
      */
     public static Parameters fromUri(String paramsStr)
             throws IllegalArgumentException {
@@ -54,7 +54,7 @@ class Parameters implements Comparable<Parameters> {
     public Parameters() {}
 
     /**
-     * @param identifier From URI
+     * @param identifier Encoded URI value
      * @param region From URI
      * @param size From URI
      * @param rotation From URI

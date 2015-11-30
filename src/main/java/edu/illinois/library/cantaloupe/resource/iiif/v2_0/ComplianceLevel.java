@@ -10,7 +10,8 @@ import java.util.Set;
 /**
  * IIIF compliance level.
  *
- * @see <a href="http://iiif.io/api/image/2.0/compliance.html">Compliance Levels</a>
+ * @see <a href="http://iiif.io/api/image/2.0/compliance.html">Compliance
+ * Levels</a>
  */
 enum ComplianceLevel {
 
@@ -54,9 +55,11 @@ enum ComplianceLevel {
 
     /**
      * @param serviceFeatures
+     * @param processorFeatures
      * @param qualities
-     * @return The effective IIIF compliance level corresponding to the
-     * given features.
+     * @param outputFormats
+     * @return The effective IIIF compliance level corresponding to the given
+     * parameters.
      */
     public static ComplianceLevel getLevel(Set<ServiceFeature> serviceFeatures,
                                            Set<ProcessorFeature> processorFeatures,
