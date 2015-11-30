@@ -92,22 +92,22 @@ public class InformationResource extends AbstractResource {
                                    Set<Quality> qualities,
                                    Set<OutputFormat> outputFormats) {
         ImageInfo imageInfo = new ImageInfo();
-        imageInfo.setId(getImageUri(identifier));
-        imageInfo.setWidth(fullSize.width);
-        imageInfo.setHeight(fullSize.height);
-        imageInfo.setProfile(complianceLevel.getUri());
+        imageInfo.id = getImageUri(identifier);
+        imageInfo.width = fullSize.width;
+        imageInfo.height = fullSize.height;
+        imageInfo.profile = complianceLevel.getUri();
         // totally arbitrary
-        imageInfo.setTileWidth(512);
-        imageInfo.setTileHeight(512);
+        imageInfo.tileWidth = 512;
+        imageInfo.tileHeight = 512;
 
         // scale factors
         for (short i = 0; i < 5; i++) {
-            imageInfo.getScaleFactors().add((int) Math.pow(2, i));
+            imageInfo.scaleFactors.add((int) Math.pow(2, i));
         }
 
         // formats
         for (OutputFormat format : outputFormats) {
-            imageInfo.getFormats().add(format.getExtension());
+            imageInfo.formats.add(format.getExtension());
         }
 
         // qualities
@@ -116,7 +116,7 @@ public class InformationResource extends AbstractResource {
             if (quality.equals(Filter.NONE)) {
                 qualityStr = "native";
             }
-            imageInfo.getQualities().add(qualityStr);
+            imageInfo.qualities.add(qualityStr);
         }
 
         return imageInfo;

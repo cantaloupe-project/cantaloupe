@@ -74,14 +74,14 @@ public class InformationResourceTest extends ResourceTest {
         String json = client.getResponse().getEntityAsText();
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
-        assertTrue(info.getId().startsWith("http://"));
+        assertTrue(info.id.startsWith("http://"));
 
         Configuration config = Application.getConfiguration();
         config.setProperty("base_uri", "http://example.org/");
         client.get();
         json = client.getResponse().getEntityAsText();
         info = mapper.readValue(json, ImageInfo.class);
-        assertTrue(info.getId().startsWith("http://example.org/"));
+        assertTrue(info.id.startsWith("http://example.org/"));
     }
 
     public void testNotFound() throws IOException {

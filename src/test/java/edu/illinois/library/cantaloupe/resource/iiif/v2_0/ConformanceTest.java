@@ -653,7 +653,7 @@ public class ConformanceTest extends CantaloupeTestCase {
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("http://iiif.io/api/image/2/level2.json",
-                info.getProfile().get(0));
+                info.profile.get(0));
     }
 
 }

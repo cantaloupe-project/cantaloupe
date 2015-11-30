@@ -21,84 +21,29 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class ImageInfo {
 
-    private final String context = "http://library.stanford.edu/iiif/image-api/1.1/context.json";
-    private final List<String> formats = new ArrayList<>();
-    private Integer height;
-    private String id;
-    private String profile;
-    private final List<String> qualities = new ArrayList<>();
-    private final List<Integer> scaleFactors = new ArrayList<>();
-    private Integer tileHeight;
-    private Integer tileWidth;
-    private Integer width;
-
     @JsonProperty("@context")
-    public String getContext() {
-        return context;
-    }
+    public final String context = "http://library.stanford.edu/iiif/image-api/1.1/context.json";
 
-    public List<String> getFormats() {
-        return formats;
-    }
+    public final List<String> formats = new ArrayList<>();
 
-    public Integer getHeight() {
-        return height;
-    }
+    public Integer height;
 
     @JsonProperty("@id")
-    public String getId() {
-        return id;
-    }
+    public String id;
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    public String profile;
 
-    public String getProfile() {
-        return profile;
-    }
-
-    public List<String> getQualities() {
-        return qualities;
-    }
+    public final List<String> qualities = new ArrayList<>();
 
     @JsonProperty("scale_factors")
-    public List<Integer> getScaleFactors() {
-        return scaleFactors;
-    }
+    public final List<Integer> scaleFactors = new ArrayList<>();
 
     @JsonProperty("tile_height")
-    public Integer getTileHeight() {
-        return tileHeight;
-    }
+    public Integer tileHeight;
 
     @JsonProperty("tile_width")
-    public Integer getTileWidth() {
-        return tileWidth;
-    }
+    public Integer tileWidth;
 
-    public Integer getWidth() {
-        return width;
-    }
-
-    public void setHeight(Integer height) {
-        this.height = height;
-    }
-
-    public void setProfile(String profile) {
-        this.profile = profile;
-    }
-
-    public void setTileHeight(int height) {
-        this.tileHeight = height;
-    }
-
-    public void setTileWidth(int width) {
-        this.tileWidth = width;
-    }
-
-    public void setWidth(Integer width) {
-        this.width = width;
-    }
+    public Integer width;
 
 }

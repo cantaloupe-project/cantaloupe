@@ -103,14 +103,14 @@ public class InformationResource extends AbstractResource {
                                    Set<ProcessorFeature> processorFeatures,
                                    Set<OutputFormat> outputFormats) {
         ImageInfo imageInfo = new ImageInfo();
-        imageInfo.setId(getImageUri(identifier));
-        imageInfo.setWidth(fullSize.width);
-        imageInfo.setHeight(fullSize.height);
+        imageInfo.id = getImageUri(identifier);
+        imageInfo.width = fullSize.width;
+        imageInfo.height = fullSize.height;
 
         final String complianceUri = ComplianceLevel.getLevel(
                 SUPPORTED_SERVICE_FEATURES, processorFeatures, qualities,
                 outputFormats).getUri();
-        imageInfo.getProfile().add(complianceUri);
+        imageInfo.profile.add(complianceUri);
 
         // sizes
         final short maxReductionFactor = 4;
@@ -122,7 +122,7 @@ public class InformationResource extends AbstractResource {
                 break;
             }
             ImageInfo.Size size = new ImageInfo.Size(width, height);
-            imageInfo.getSizes().add(0, size);
+            imageInfo.sizes.add(0, size);
         }
 
         // formats
@@ -132,7 +132,7 @@ public class InformationResource extends AbstractResource {
             formatStrings.add(format.getExtension());
         }
         profileMap.put("formats", formatStrings);
-        imageInfo.getProfile().add(profileMap);
+        imageInfo.profile.add(profileMap);
 
         // qualities
         Set<String> qualityStrings = new HashSet<>();
