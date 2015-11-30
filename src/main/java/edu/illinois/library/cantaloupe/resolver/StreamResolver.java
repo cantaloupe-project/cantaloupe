@@ -9,7 +9,7 @@ import java.nio.file.AccessDeniedException;
 
 /**
  * Interface to be implemented by all resolvers that support access to source
- * images via streams.
+ * images via input streams.
  */
 public interface StreamResolver extends Resolver {
 

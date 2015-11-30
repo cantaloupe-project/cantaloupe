@@ -7,6 +7,10 @@ import org.apache.commons.configuration.Configuration;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Used to obtain an instance of a {@link Processor} for a given source format,
+ * as defined in the configuration.
+ */
 public abstract class ProcessorFactory {
 
     public static Set<Processor> getAllProcessors() {

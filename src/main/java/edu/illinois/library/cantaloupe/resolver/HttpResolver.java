@@ -26,6 +26,17 @@ class HttpResolver implements StreamResolver {
 
     private static Logger logger = LoggerFactory.getLogger(HttpResolver.class);
 
+    private static final String BASIC_AUTH_SECRET_CONFIG_KEY =
+            "HttpResolver.auth.basic.secret";
+    private static final String BASIC_AUTH_USERNAME_CONFIG_KEY =
+            "HttpResolver.auth.basic.username";
+    private static final String PATH_SEPARATOR_CONFIG_KEY =
+            "HttpResolver.path_separator";
+    private static final String URL_PREFIX_CONFIG_KEY =
+            "HttpResolver.url_prefix";
+    private static final String URL_SUFFIX_CONFIG_KEY =
+            "HttpResolver.url_suffix";
+
     private static Client client = new Client(new Context(), Protocol.HTTP);
 
     @Override
@@ -38,8 +49,8 @@ class HttpResolver implements StreamResolver {
         resource.setNext(client);
 
         // set up HTTP Basic authentication
-        String username = config.getString("HttpResolver.auth.basic.username", "");
-        String secret = config.getString("HttpResolver.auth.basic.secret", "");
+        String username = config.getString(BASIC_AUTH_USERNAME_CONFIG_KEY, "");
+        String secret = config.getString(BASIC_AUTH_SECRET_CONFIG_KEY, "");
         if (username.length() > 0 && secret.length() > 0) {
             resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC,
                     username, secret);
@@ -70,21 +81,21 @@ class HttpResolver implements StreamResolver {
 
     public Reference getUrl(Identifier identifier) {
         Configuration config = Application.getConfiguration();
-        String prefix = config.getString("HttpResolver.url_prefix");
+        String prefix = config.getString(URL_PREFIX_CONFIG_KEY);
         if (prefix == null) {
             prefix = "";
         }
-        String suffix = config.getString("HttpResolver.url_suffix");
+        String suffix = config.getString(URL_SUFFIX_CONFIG_KEY);
         if (suffix == null) {
             suffix = "";
         }
 
         String idStr = identifier.toString();
 
-        // But some web servers have issues dealing with encoded slashes (%2F)
-        // in URL identifiers. HttpResolver.path_separator enables the use of
-        // an alternate string as a path separator.
-        String separator = config.getString("HttpResolver.path_separator", "/");
+        // Some web servers have issues dealing with encoded slashes (%2F) in
+        // URL identifiers. HttpResolver.path_separator enables the use of an
+        // alternate string as a path separator.
+        String separator = config.getString(PATH_SEPARATOR_CONFIG_KEY, "/");
         if (!separator.equals("/")) {
             idStr = StringUtils.replace(idStr, separator, "/");
         }
@@ -93,7 +104,7 @@ class HttpResolver implements StreamResolver {
 
     /**
      * @param identifier
-     * @return A source format, or <code>SourceFormat.UNKNOWN</code> if unknown.
+     * @return A source format, or {@link SourceFormat#UNKNOWN} if unknown.
      */
     private SourceFormat getSourceFormatFromIdentifier(Identifier identifier) {
         // try to get the source format based on a filename extension in the
@@ -121,7 +132,7 @@ class HttpResolver implements StreamResolver {
      * response to determine the source format.
      *
      * @param identifier
-     * @return A source format, or <code>SourceFormat.UNKNOWN</code> if unknown.
+     * @return A source format, or {@link SourceFormat#UNKNOWN} if unknown.
      */
     private SourceFormat getSourceFormatFromServer(Identifier identifier) {
         SourceFormat sourceFormat = SourceFormat.UNKNOWN;
@@ -142,10 +153,11 @@ class HttpResolver implements StreamResolver {
         } catch (ResourceException e) {
             // nothing we can do but log it
             if (contentType.length() > 0) {
-                logger.debug("Failed to determine source format based on a Content-Type of {}",
-                        contentType);
+                logger.debug("Failed to determine source format based on a " +
+                        "Content-Type of {}", contentType);
             } else {
-                logger.debug("Failed to determine source format (missing Content-Type at {})", url);
+                logger.debug("Failed to determine source format (missing " +
+                        "Content-Type at {})", url);
             }
         }
         return sourceFormat;

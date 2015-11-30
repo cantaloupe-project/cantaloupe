@@ -21,19 +21,28 @@ import java.util.Collection;
 
 class FilesystemResolver implements FileResolver, StreamResolver {
 
-    static {
-        MimeUtil.registerMimeDetector("eu.medsea.mimeutil.detector.MagicMimeMimeDetector");
-    }
-
     private static Logger logger = LoggerFactory.
             getLogger(FilesystemResolver.class);
+
+    private static final String PATH_PREFIX_CONFIG_KEY =
+            "FilesystemResolver.path_prefix";
+    private static final String PATH_SEPARATOR_CONFIG_KEY =
+            "FilesystemResolver.path_separator";
+    private static final String PATH_SUFFIX_CONFIG_KEY =
+            "FilesystemResolver.path_suffix";
+
+    static {
+        MimeUtil.registerMimeDetector(
+                "eu.medsea.mimeutil.detector.MagicMimeMimeDetector");
+    }
 
     @Override
     public File getFile(Identifier identifier) throws IOException {
         File file = new File(getPathname(identifier));
         try {
             checkAccess(file, identifier);
-            logger.debug("Resolved {} to {}", identifier, file.getAbsolutePath());
+            logger.debug("Resolved {} to {}", identifier,
+                    file.getAbsolutePath());
         } catch (IOException e) {
             logger.warn(e.getMessage(), e);
             throw e;
@@ -49,21 +58,21 @@ class FilesystemResolver implements FileResolver, StreamResolver {
 
     public String getPathname(Identifier identifier) {
         Configuration config = Application.getConfiguration();
-        String prefix = config.getString("FilesystemResolver.path_prefix");
+        String prefix = config.getString(PATH_PREFIX_CONFIG_KEY);
         if (prefix == null) {
             prefix = "";
         }
-        String suffix = config.getString("FilesystemResolver.path_suffix");
+        String suffix = config.getString(PATH_SUFFIX_CONFIG_KEY);
         if (suffix == null) {
             suffix = "";
         }
 
         String idStr = identifier.toString();
 
-        // But some web servers have issues dealing with encoded slashes (%2F)
+        // Some web servers have issues dealing with encoded slashes (%2F)
         // in URL identifiers. FilesystemResolver.path_separator enables the
         // use of an alternate string as a path separator.
-        String separator = config.getString("FilesystemResolver.path_separator");
+        String separator = config.getString(PATH_SEPARATOR_CONFIG_KEY);
         if (separator != null && separator.length() > 0) {
             idStr = StringUtils.replace(idStr, separator, File.separator);
         }
@@ -78,7 +87,7 @@ class FilesystemResolver implements FileResolver, StreamResolver {
      * directory traversal.
      *
      * @param identifier
-     * @param fileSeparator The return value of <code>File.separator</code>
+     * @param fileSeparator The return value of {@link File#separator}
      * @return Sanitized identifier
      */
     public String getSanitizedIdentifier(String identifier,

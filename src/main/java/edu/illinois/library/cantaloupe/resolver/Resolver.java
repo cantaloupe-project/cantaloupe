@@ -16,7 +16,7 @@ public interface Resolver {
     /**
      * @param identifier
      * @return The expected source format of the image corresponding with the
-     * given identifier, or <code>SourceFormat.UNKNOWN</code> if unknown;
+     * given identifier, or {@link SourceFormat#UNKNOWN} if unknown;
      * never null.
      * @throws FileNotFoundException if an image corresponding to the given
      * identifier does not exist

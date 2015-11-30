@@ -23,6 +23,18 @@ import java.sql.SQLException;
 class JdbcResolver implements StreamResolver {
 
     private static Logger logger = LoggerFactory.getLogger(JdbcResolver.class);
+
+    private static final String CONNECTION_STRING_CONFIG_KEY =
+            "JdbcResolver.connection_string";
+    private static final String IDENTIFIER_FUNCTION_CONFIG_KEY =
+            "JdbcResolver.function.identifier";
+    private static final String LOOKUP_SQL_CONFIG_KEY =
+            "JdbcResolver.lookup_sql";
+    private static final String MEDIA_TYPE_FUNCTION_CONFIG_KEY =
+            "JdbcResolver.function.media_type";
+    private static final String PASSWORD_CONFIG_KEY = "JdbcResolver.password";
+    private static final String USER_CONFIG_KEY = "JdbcResolver.user";
+
     private static Connection connection;
 
     static {
@@ -32,7 +44,7 @@ class JdbcResolver implements StreamResolver {
                     connection.getMetaData().getDriverVersion());
             Configuration config = Application.getConfiguration();
             logger.info("Connection string: {}",
-                    config.getString("JdbcResolver.connection_string"));
+                    config.getString(CONNECTION_STRING_CONFIG_KEY));
         } catch (SQLException e) {
             logger.error("Failed to establish a database connection", e);
         }
@@ -42,9 +54,9 @@ class JdbcResolver implements StreamResolver {
         if (connection == null) {
             Configuration config = Application.getConfiguration();
             final String connectionString = config.
-                    getString("JdbcResolver.connection_string", "");
-            final String user = config.getString("JdbcResolver.user", "");
-            final String password = config.getString("JdbcResolver.password", "");
+                    getString(CONNECTION_STRING_CONFIG_KEY, "");
+            final String user = config.getString(USER_CONFIG_KEY, "");
+            final String password = config.getString(PASSWORD_CONFIG_KEY, "");
             connection = DriverManager.getConnection(connectionString, user,
                     password);
         }
@@ -56,10 +68,10 @@ class JdbcResolver implements StreamResolver {
             throws IOException {
         try {
             Configuration config = Application.getConfiguration();
-            String sql = config.getString("JdbcResolver.lookup_sql");
+            String sql = config.getString(LOOKUP_SQL_CONFIG_KEY);
             if (!sql.contains("?")) {
-                throw new IOException("JdbcResolver.lookup_sql does not " +
-                        "support prepared statements");
+                throw new IOException(LOOKUP_SQL_CONFIG_KEY +
+                        " does not support prepared statements");
             }
             logger.debug(sql);
 
@@ -86,8 +98,8 @@ class JdbcResolver implements StreamResolver {
             if (functionResult != null) {
                 // the function result may be a media type, or an SQL
                 // statement to look it up.
-                if (functionResult.toUpperCase().contains("SELECT ") &&
-                        functionResult.toUpperCase().contains("FROM ")) {
+                if (functionResult.toUpperCase().contains("SELECT") &&
+                        functionResult.toUpperCase().contains("FROM")) {
                     logger.debug(functionResult);
                     PreparedStatement statement = getConnection().
                             prepareStatement(functionResult);
@@ -109,21 +121,32 @@ class JdbcResolver implements StreamResolver {
         }
     }
 
+    /**
+     * @param identifier
+     * @return Result of the <code>getDatabaseIdentifier()</code> function.
+     * @throws ScriptException
+     * @throws SQLException
+     */
     public String executeGetDatabaseIdentifier(Identifier identifier)
             throws ScriptException {
         Configuration config = Application.getConfiguration();
         final String statement = String.format("%s\ngetDatabaseIdentifier(\"%s\")",
-                config.getString("JdbcResolver.function.identifier"),
-                identifier);
+                config.getString(IDENTIFIER_FUNCTION_CONFIG_KEY), identifier);
         ScriptEngineManager manager = new ScriptEngineManager();
         ScriptEngine engine = manager.getEngineByName("js");
         return (String) engine.eval(statement);
     }
 
-    public String executeGetMediaType(Identifier identifier) throws ScriptException,
-            SQLException {
+    /**
+     * @param identifier
+     * @return Result of the <code>getMediaType()</code> function.
+     * @throws ScriptException
+     * @throws SQLException
+     */
+    public String executeGetMediaType(Identifier identifier)
+            throws ScriptException, SQLException {
         Configuration config = Application.getConfiguration();
-        String function = config.getString("JdbcResolver.function.media_type");
+        String function = config.getString(MEDIA_TYPE_FUNCTION_CONFIG_KEY);
         if (function != null && function.length() > 0) {
             final String statement = String.format("%s\ngetMediaType(\"%s\")",
                     function, identifier);
