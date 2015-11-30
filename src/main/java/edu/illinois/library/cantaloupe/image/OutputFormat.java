@@ -41,6 +41,8 @@ public enum OutputFormat {
     }
 
     /**
+     * Analog of {@link #equals} that also works with {@link SourceFormat}s.
+     *
      * @param obj
      * @return Whether the instance is equal to the given object.
      */

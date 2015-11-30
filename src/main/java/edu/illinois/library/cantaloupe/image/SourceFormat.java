@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Should contain constants for every source format that any processor could
- * possibly consider supporting.
+ * Contains constants for a wide variety of source formats, including all that
+ * any processor supports.
  */
 public enum SourceFormat {
 
@@ -35,6 +35,12 @@ public enum SourceFormat {
     private Type type;
 
     /**
+     * <p>Attempts to infer a source format from the given identifier.</p>
+     *
+     * <p>(It is usually more reliable (but also perhaps more expensive) to get
+     * this information from a
+     * {@link edu.illinois.library.cantaloupe.resolver.Resolver}.)</p>
+     *
      * @param identifier
      * @return The source format corresponding to the given identifier,
      * assuming that its value will have a recognizable filename extension. If
@@ -214,7 +220,7 @@ public enum SourceFormat {
      * Convenience method.
      *
      * @return True if the type (as returned by {@link #getType()}) is
-     * {@link Type.IMAGE}.
+     * {@link SourceFormat.Type#IMAGE}.
      */
     public boolean isImage() {
         return (this.getType() != null && this.getType().equals(Type.IMAGE));

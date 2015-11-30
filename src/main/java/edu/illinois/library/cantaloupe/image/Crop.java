@@ -157,7 +157,7 @@ public class Crop implements Operation {
 
     /**
      * @return String representation of the instance, guaranteed to represent
-     * the instance, but not guaranteed to be meaningful.
+     * the instance, but not guaranteed to have any particular format.
      */
     @Override
     public String toString() {

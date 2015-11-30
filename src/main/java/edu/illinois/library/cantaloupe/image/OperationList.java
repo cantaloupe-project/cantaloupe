@@ -12,7 +12,8 @@ import java.util.Map;
  * Normalized list of image transform operations along with an image identifier
  * and desired output format.
  */
-public class OperationList implements Comparable<OperationList>, Iterable<Operation> {
+public class OperationList implements Comparable<OperationList>,
+        Iterable<Operation> {
 
     private Identifier identifier;
     private List<Operation> operations = new ArrayList<>();
@@ -90,7 +91,8 @@ public class OperationList implements Comparable<OperationList>, Iterable<Operat
 
     /**
      * @return String representation of the instance, guaranteed to uniquely
-     * represent the instance, but not guaranteed to be meaningful.
+     * represent the instance, but not guaranteed to have any particular
+     * format.
      */
     @Override
     public String toString() {
