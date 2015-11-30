@@ -155,7 +155,7 @@ public class InformationResource extends AbstractResource {
     }
 
     private String getImageUri(Identifier identifier) {
-        return getPublicRootRef() + ImageServerApplication.IIIF_PATH +
+        return getPublicRootRef() + ImageServerApplication.IIIF_2_0_PATH +
                 "/" + Reference.encode(identifier.toString());
     }
 
