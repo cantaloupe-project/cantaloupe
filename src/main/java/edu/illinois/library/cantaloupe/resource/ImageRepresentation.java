@@ -1,11 +1,8 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -13,9 +10,7 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
-import org.restlet.data.Disposition;
 import org.restlet.data.MediaType;
-import org.restlet.representation.OutputRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +24,7 @@ import java.io.OutputStream;
 /**
  * Restlet representation for images.
  */
-public class ImageRepresentation extends OutputRepresentation {
+public class ImageRepresentation extends AbstractImageRepresentation {
 
     private static Logger logger = LoggerFactory.
             getLogger(ImageRepresentation.class);
@@ -58,13 +53,11 @@ public class ImageRepresentation extends OutputRepresentation {
                                Dimension fullSize,
                                OperationList ops,
                                InputStream inputStream) {
-        super(mediaType);
+        super(mediaType, ops.getIdentifier(), ops.getOutputFormat());
         this.inputStream = inputStream;
         this.ops = ops;
         this.sourceFormat = sourceFormat;
         this.fullSize = fullSize;
-        initialize(ops.getIdentifier(), ops.getOutputFormat());
-
     }
 
     /**
@@ -78,29 +71,10 @@ public class ImageRepresentation extends OutputRepresentation {
     public ImageRepresentation(MediaType mediaType,
                                SourceFormat sourceFormat,
                                OperationList ops, File file) {
-        super(mediaType);
+        super(mediaType, ops.getIdentifier(), ops.getOutputFormat());
         this.file = file;
         this.ops = ops;
         this.sourceFormat = sourceFormat;
-        initialize(ops.getIdentifier(), ops.getOutputFormat());
-    }
-
-    private void initialize(Identifier identifier, OutputFormat format) {
-        Disposition disposition = new Disposition();
-        switch (Application.getConfiguration().
-                getString(CONTENT_DISPOSITION_CONFIG_KEY, "none")) {
-            case "inline":
-                disposition.setType(Disposition.TYPE_INLINE);
-                this.setDisposition(disposition);
-                break;
-            case "attachment":
-                disposition.setType(Disposition.TYPE_ATTACHMENT);
-                disposition.setFilename(
-                        identifier.toString().replaceAll(FILENAME_CHARACTERS, "_") +
-                                "." + format.getExtension());
-                this.setDisposition(disposition);
-                break;
-        }
     }
 
     /**
