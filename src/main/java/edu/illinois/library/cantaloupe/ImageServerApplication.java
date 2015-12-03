@@ -207,10 +207,9 @@ public class ImageServerApplication extends Application {
         resource = edu.illinois.library.cantaloupe.resource.iiif.v2_0.InformationResource.class;
         router.attach(IIIF_2_0_PATH + "/{identifier}/info.{format}", resource);
 
-        // Redirect IIIF_PATH to IIIF_2_0_PATH (designates 2.0 as the default
-        // IIIF Image API)
+        // 303-redirect IIIF_PATH to IIIF_2_0_PATH
         redirector = new Redirector(getContext(), IIIF_2_0_PATH,
-                Redirector.MODE_CLIENT_PERMANENT);
+                Redirector.MODE_CLIENT_SEE_OTHER);
         router.attach(IIIF_PATH, redirector);
 
         /****************** Other routes *******************/
