@@ -31,7 +31,7 @@ class JdbcCache implements Cache {
 
     /**
      * Buffers written image data and flushes it into a database tuple as a
-     * BLOB.
+     * BLOB upon closing.
      */
     private class JdbcImageOutputStream extends OutputStream {
 
@@ -53,10 +53,10 @@ class JdbcCache implements Cache {
                         config.getString(IMAGE_TABLE_CONFIG_KEY),
                         IMAGE_TABLE_OPERATIONS_COLUMN, IMAGE_TABLE_IMAGE_COLUMN,
                         IMAGE_TABLE_LAST_MODIFIED_COLUMN);
-                PreparedStatement statement = this.connection.prepareStatement(sql);
-                statement.setString(1, this.ops.toString());
+                PreparedStatement statement = connection.prepareStatement(sql);
+                statement.setString(1, ops.toString());
                 statement.setBinaryStream(2,
-                        new ByteArrayInputStream(this.outputStream.toByteArray()));
+                        new ByteArrayInputStream(outputStream.toByteArray()));
                 statement.setTimestamp(3, now());
                 statement.executeUpdate();
             } catch (SQLException e) {
@@ -115,7 +115,7 @@ class JdbcCache implements Cache {
                     connection.getMetaData().getDriverVersion());
             Configuration config = Application.getConfiguration();
             logger.info("Connection string: {}",
-                    config.getString("JdbcCache.connection_string"));
+                    config.getString(CONNECTION_STRING_CONFIG_KEY));
             createTables();
         } catch (IOException | SQLException e) {
             logger.error("Failed to establish a database connection", e);
@@ -156,7 +156,8 @@ class JdbcCache implements Cache {
                 }
                 PreparedStatement statement = conn.prepareStatement(sql);
                 statement.execute();
-                logger.info("Created table (if not already existing): {}", tableName);
+                logger.info("Created table (if not already existing): {}",
+                        tableName);
             } catch (SQLException e) {
                 throw new IOException(e.getMessage(), e);
             }
@@ -196,7 +197,8 @@ class JdbcCache implements Cache {
                 }
                 PreparedStatement statement = conn.prepareStatement(sql);
                 statement.execute();
-                logger.info("Created table (if not already existing): {}", tableName);
+                logger.info("Created table (if not already existing): {}",
+                        tableName);
             } catch (SQLException e) {
                 throw new IOException(e.getMessage(), e);
             }
@@ -394,7 +396,7 @@ class JdbcCache implements Cache {
     }
 
     private int flushExpiredInfos() throws SQLException, IOException {
-         Configuration config = Application.getConfiguration();
+        Configuration config = Application.getConfiguration();
         Connection conn = getConnection();
 
         final String infoTableName = config.getString(INFO_TABLE_CONFIG_KEY);
