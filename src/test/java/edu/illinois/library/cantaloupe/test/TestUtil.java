@@ -31,6 +31,10 @@ public abstract class TestUtil {
         return null;
     }
 
+    public static File getTempFolder() throws IOException {
+        return new File(System.getProperty("java.io.tmpdir"));
+    }
+
     /**
      * @return Dummy OperationList object with no operations added.
      */
