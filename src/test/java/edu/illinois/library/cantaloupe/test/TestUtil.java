@@ -13,10 +13,13 @@ import java.nio.file.Paths;
 public abstract class TestUtil {
 
     public static File getFixture(String filename) throws IOException {
+        return new File(getFixturePath() + File.separator + filename);
+    }
+
+    public static Path getFixturePath() throws IOException {
         File directory = new File(".");
         String cwd = directory.getCanonicalPath();
-        Path testPath = Paths.get(cwd, "src", "test", "resources");
-        return new File(testPath + File.separator + filename);
+        return Paths.get(cwd, "src", "test", "resources");
     }
 
     public static Integer getOpenPort() {

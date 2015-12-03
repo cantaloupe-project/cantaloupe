@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
+import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.restlet.Client;
 import org.restlet.Context;
@@ -10,8 +11,7 @@ import org.restlet.data.Reference;
 import org.restlet.resource.ClientResource;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.IOException;
 
 public abstract class ResourceTest extends CantaloupeTestCase {
 
@@ -19,21 +19,15 @@ public abstract class ResourceTest extends CantaloupeTestCase {
 
     protected static Client client = new Client(new Context(), Protocol.HTTP);
 
-    public static BaseConfiguration newConfiguration() {
+    public static BaseConfiguration newConfiguration() throws IOException {
         BaseConfiguration config = new BaseConfiguration();
-        try {
-            File directory = new File(".");
-            String cwd = directory.getCanonicalPath();
-            Path fixturePath = Paths.get(cwd, "src", "test", "resources");
-            config.setProperty("print_stack_trace_on_error_pages", false);
-            config.setProperty("http.port", PORT);
-            config.setProperty("http.content_disposition", "none");
-            config.setProperty("processor.fallback", "Java2dProcessor");
-            config.setProperty("resolver", "FilesystemResolver");
-            config.setProperty("FilesystemResolver.path_prefix", fixturePath + File.separator);
-        } catch (Exception e) {
-            fail("Failed to get the configuration");
-        }
+        config.setProperty("print_stack_trace_on_error_pages", false);
+        config.setProperty("http.port", PORT);
+        config.setProperty("http.content_disposition", "none");
+        config.setProperty("processor.fallback", "Java2dProcessor");
+        config.setProperty("resolver", "FilesystemResolver");
+        config.setProperty("FilesystemResolver.path_prefix",
+                TestUtil.getFixturePath() + File.separator);
         return config;
     }
 
