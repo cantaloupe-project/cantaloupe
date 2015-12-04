@@ -2,9 +2,16 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
+import edu.illinois.library.cantaloupe.cache.Cache;
+import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
+import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.io.FileUtils;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.ChallengeResponse;
 import org.restlet.data.ChallengeScheme;
@@ -13,6 +20,7 @@ import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -136,6 +144,74 @@ public class ImageResourceTest extends ResourceTest {
                 client.getResponseEntity().getDisposition().getType());
         assertEquals("jpg.jpg",
                 client.getResponseEntity().getDisposition().getFilename());
+    }
+
+    public void testFlushFromCacheWhenSourceIsMissingAndOptionIsFalse()
+            throws Exception {
+        doFlushFromCacheWhenSourceIsMissingAnd(false);
+    }
+
+    public void testFlushFromCacheWhenSourceIsMissingAndOptionIsTrue()
+            throws Exception {
+        doFlushFromCacheWhenSourceIsMissingAnd(true);
+    }
+
+    private void doFlushFromCacheWhenSourceIsMissingAnd(boolean flushMissing)
+            throws Exception {
+        File cacheFolder = TestUtil.getTempFolder();
+        cacheFolder = new File(cacheFolder.getAbsolutePath() + "/cache");
+        if (!cacheFolder.exists()) {
+            cacheFolder.mkdir();
+        }
+        File imageCacheFolder = new File(cacheFolder.getAbsolutePath() + "/image");
+
+        Configuration config = Application.getConfiguration();
+        config.setProperty("cache.server", "FilesystemCache");
+        config.setProperty("FilesystemCache.pathname",
+                cacheFolder.getAbsolutePath());
+        config.setProperty("FilesystemCache.ttl_seconds", 10);
+        config.setProperty("cache.server.flush_missing", flushMissing);
+
+        File tempImage = File.createTempFile("temp", ".jpg");
+        tempImage.delete();
+        File image = TestUtil.getFixture("jpg");
+        try {
+            OperationList ops = TestUtil.newOperationList();
+            ops.setIdentifier(new Identifier("jpg"));
+            ops.setOutputFormat(OutputFormat.JPG);
+
+            assertEquals(0, cacheFolder.listFiles().length);
+
+            // request an image to cache it
+            ClientResource client =
+                    getClientForUriPath("/jpg/full/full/0/native.jpg");
+            client.get();
+
+            // assert that it has been cached
+            assertEquals(1, imageCacheFolder.listFiles().length);
+            Cache cache = CacheFactory.getInstance();
+            assertNotNull(cache.getImageInputStream(ops));
+
+            // move the source image out of the way
+            FileUtils.moveFile(image, tempImage);
+
+            // request the same image which is now cached but underlying is 404
+            try {
+                client.get();
+                fail("Expected exception");
+            } catch (ResourceException e) {
+                // noop
+            }
+
+            if (flushMissing) {
+                assertNotNull(cache.getImageInputStream(ops));
+            } else {
+                assertNotNull(cache.getImageInputStream(ops));
+            }
+        } finally {
+            FileUtils.deleteDirectory(cacheFolder);
+            FileUtils.moveFile(tempImage, image);
+        }
     }
 
     public void testNotFound() throws IOException {

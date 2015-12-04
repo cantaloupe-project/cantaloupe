@@ -217,9 +217,16 @@ cache.client.no_transform = true
 # to disable caching.
 #cache.server = FilesystemCache
 
-# If true, the source image will be checked to make sure it exists before a
-# cached copy is returned. If false, the cached copy will be returned without
-# any checking. Resolving first is safer but slower.
+# If true, when the resolver reports that the requested image has gone missing,
+# but an image matching the request is contained in the cache, the cached copy
+# will be deleted.
+# Note: this is effectively always false when cache.server.resolve_first is
+# also false.
+cache.server.flush_missing = false
+
+# If true, the source image will be confirmed to exist before a cached copy is
+# returned. If false, the cached copy will be returned without any checking.
+# Resolving first is slower but safer.
 # Note: this has no effect with the IIIF 1.1 endpoint -- it is effectively
 # always true.
 cache.server.resolve_first = true
