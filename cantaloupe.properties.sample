@@ -217,9 +217,8 @@ cache.client.no_transform = true
 # to disable caching.
 #cache.server = FilesystemCache
 
-# If true, when the resolver reports that the requested image has gone missing,
-# but an image matching the request is contained in the cache, the cached copy
-# will be deleted.
+# If true, when the resolver reports that the requested source image has gone
+# missing, all cached information relating to it (if any) will be deleted.
 # Note: this is effectively always false when cache.server.resolve_first is
 # also false.
 cache.server.flush_missing = false
