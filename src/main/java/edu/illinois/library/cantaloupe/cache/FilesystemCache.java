@@ -265,12 +265,14 @@ class FilesystemCache implements Cache {
     @Override
     public void flush(Identifier identifier) throws IOException {
         for (File imageFile : getImageFiles(identifier)) {
+            logger.debug("Deleting {}", imageFile);
             if (!imageFile.delete()) {
                 throw new IOException("Failed to delete " + imageFile);
             }
         }
         File dimensionFile = getDimensionFile(identifier);
         if (dimensionFile.exists()) {
+            logger.debug("Deleting {}", dimensionFile);
             if (!dimensionFile.delete()) {
                 throw new IOException("Failed to delete " + dimensionFile);
             }

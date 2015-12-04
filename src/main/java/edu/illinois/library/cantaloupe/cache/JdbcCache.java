@@ -58,6 +58,7 @@ class JdbcCache implements Cache {
                 statement.setBinaryStream(2,
                         new ByteArrayInputStream(outputStream.toByteArray()));
                 statement.setTimestamp(3, now());
+                logger.debug(sql);
                 statement.executeUpdate();
             } catch (SQLException e) {
                 throw new IOException(e.getMessage(), e);
@@ -155,6 +156,7 @@ class JdbcCache implements Cache {
                             IMAGE_TABLE_LAST_MODIFIED_COLUMN);
                 }
                 PreparedStatement statement = conn.prepareStatement(sql);
+                logger.debug(sql);
                 statement.execute();
                 logger.info("Created table (if not already existing): {}",
                         tableName);
@@ -196,6 +198,7 @@ class JdbcCache implements Cache {
                             INFO_TABLE_LAST_MODIFIED_COLUMN);
                 }
                 PreparedStatement statement = conn.prepareStatement(sql);
+                logger.debug(sql);
                 statement.execute();
                 logger.info("Created table (if not already existing): {}",
                         tableName);
@@ -220,6 +223,7 @@ class JdbcCache implements Cache {
                 Connection conn = getConnection();
                 String sql = "DROP TABLE " + tableName;
                 PreparedStatement statement = conn.prepareStatement(sql);
+                logger.debug(sql);
                 statement.execute();
                 logger.info("Dropped table: {}", tableName);
             } catch (SQLException e) {
@@ -238,6 +242,7 @@ class JdbcCache implements Cache {
                 Connection conn = getConnection();
                 String sql = "DROP TABLE " + tableName;
                 PreparedStatement statement = conn.prepareStatement(sql);
+                logger.debug(sql);
                 statement.execute();
                 logger.info("Dropped table: {}", tableName);
             } catch (SQLException e) {
@@ -286,6 +291,7 @@ class JdbcCache implements Cache {
         if (imageTableName != null && imageTableName.length() > 0) {
             String sql = "DELETE FROM " + imageTableName;
             PreparedStatement statement = conn.prepareStatement(sql);
+            logger.debug(sql);
             return statement.executeUpdate();
         } else {
             throw new IOException(IMAGE_TABLE_CONFIG_KEY + " is not set");
@@ -309,6 +315,7 @@ class JdbcCache implements Cache {
                     IMAGE_TABLE_OPERATIONS_COLUMN + " LIKE ?";
             PreparedStatement statement = conn.prepareStatement(sql);
             statement.setString(1, identifier.toString() + "%");
+            logger.debug(sql);
             return statement.executeUpdate();
         } else {
             throw new IOException(IMAGE_TABLE_CONFIG_KEY + " is not set");
@@ -328,6 +335,7 @@ class JdbcCache implements Cache {
         if (infoTableName != null && infoTableName.length() > 0) {
             String sql = "DELETE FROM " + infoTableName;
             PreparedStatement statement = conn.prepareStatement(sql);
+            logger.debug(sql);
             return statement.executeUpdate();
         } else {
             throw new IOException(INFO_TABLE_CONFIG_KEY + " is not set");
@@ -374,6 +382,7 @@ class JdbcCache implements Cache {
                     imageTableName, IMAGE_TABLE_OPERATIONS_COLUMN);
             PreparedStatement statement = conn.prepareStatement(sql);
             statement.setString(1, ops.toString());
+            logger.debug(sql);
             return statement.executeUpdate();
         } else {
             throw new IOException(IMAGE_TABLE_CONFIG_KEY + " is not set");
@@ -396,6 +405,7 @@ class JdbcCache implements Cache {
                     infoTableName, INFO_TABLE_IDENTIFIER_COLUMN);
             PreparedStatement statement = conn.prepareStatement(sql);
             statement.setString(1, identifier.toString());
+            logger.debug(sql);
             return statement.executeUpdate();
         } else {
             throw new IOException(INFO_TABLE_CONFIG_KEY + " is not set");
@@ -424,6 +434,7 @@ class JdbcCache implements Cache {
                     imageTableName, IMAGE_TABLE_LAST_MODIFIED_COLUMN);
             PreparedStatement statement = conn.prepareStatement(sql);
             statement.setTimestamp(1, oldestValidDate());
+            logger.debug(sql);
             return statement.executeUpdate();
         } else {
             throw new IOException(IMAGE_TABLE_CONFIG_KEY + " is not set");
@@ -440,6 +451,7 @@ class JdbcCache implements Cache {
                     infoTableName, INFO_TABLE_LAST_MODIFIED_COLUMN);
             PreparedStatement statement = conn.prepareStatement(sql);
             statement.setTimestamp(1, oldestValidDate());
+            logger.debug(sql);
             return statement.executeUpdate();
         } else {
             throw new IOException(INFO_TABLE_CONFIG_KEY + " is not set");
@@ -460,6 +472,7 @@ class JdbcCache implements Cache {
                         INFO_TABLE_IDENTIFIER_COLUMN);
                 PreparedStatement statement = getConnection().prepareStatement(sql);
                 statement.setString(1, identifier.toString());
+                logger.debug(sql);
                 ResultSet resultSet = statement.executeQuery();
                 if (resultSet.next()) {
                     if (resultSet.getTimestamp(3).after(oldestDate)) {
@@ -497,6 +510,7 @@ class JdbcCache implements Cache {
                         IMAGE_TABLE_OPERATIONS_COLUMN);
                 PreparedStatement statement = conn.prepareStatement(sql);
                 statement.setString(1, ops.toString());
+                logger.debug(sql);
                 ResultSet resultSet = statement.executeQuery();
                 if (resultSet.next()) {
                     if (resultSet.getTimestamp(2).after(oldestDate)) {
@@ -569,6 +583,7 @@ class JdbcCache implements Cache {
                 statement.setInt(2, dimension.width);
                 statement.setInt(3, dimension.height);
                 statement.setTimestamp(4, now());
+                logger.debug(sql);
                 statement.executeUpdate();
                 logger.debug("Cached dimension: {}", identifier);
             } catch (SQLException e) {
