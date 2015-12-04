@@ -423,8 +423,8 @@ class FilesystemCache implements Cache {
     }
 
     /**
-     * @param ops Request parameters
-     * @return File corresponding to the given parameters, or null if
+     * @param ops
+     * @return File corresponding to the given operation list, or null if
      * <code>FilesystemCache.pathname</code> is not set in the configuration.
      */
     public File getImageFile(OperationList ops) {
@@ -434,7 +434,9 @@ class FilesystemCache implements Cache {
             parts.add(StringUtils.stripEnd(cachePathname, File.separator) +
                     File.separator + filenameSafe(ops.getIdentifier()));
             for (Operation op : ops) {
-                parts.add(filenameSafe(op));
+                if (!op.isNoOp()) {
+                    parts.add(filenameSafe(op));
+                }
             }
             final String baseName = StringUtils.join(parts, "_");
             return new File(baseName + "." +
