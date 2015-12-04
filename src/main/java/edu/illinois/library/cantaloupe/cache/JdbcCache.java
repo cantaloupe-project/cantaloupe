@@ -293,6 +293,29 @@ class JdbcCache implements Cache {
     }
 
     /**
+     * @param identifier
+     * @return The number of flushed images
+     * @throws SQLException
+     * @throws IOException
+     */
+    private int flushImages(Identifier identifier)
+            throws SQLException, IOException {
+        Configuration config = Application.getConfiguration();
+        Connection conn = getConnection();
+
+        final String imageTableName = config.getString(IMAGE_TABLE_CONFIG_KEY);
+        if (imageTableName != null && imageTableName.length() > 0) {
+            String sql = "DELETE FROM " + imageTableName + " WHERE " +
+                    IMAGE_TABLE_OPERATIONS_COLUMN + " LIKE ?";
+            PreparedStatement statement = conn.prepareStatement(sql);
+            statement.setString(1, identifier.toString() + "%");
+            return statement.executeUpdate();
+        } else {
+            throw new IOException(IMAGE_TABLE_CONFIG_KEY + " is not set");
+        }
+    }
+
+    /**
      * @return The number of flushed infos
      * @throws SQLException
      * @throws IOException
@@ -308,6 +331,18 @@ class JdbcCache implements Cache {
             return statement.executeUpdate();
         } else {
             throw new IOException(INFO_TABLE_CONFIG_KEY + " is not set");
+        }
+    }
+
+    @Override
+    public void flush(Identifier identifier) throws IOException {
+        try {
+            int numDeletedImages = flushImages(identifier);
+            int numDeletedDimensions = flushInfo(identifier);
+            logger.info("Deleted {} cached image(s) and {} cached dimension(s)",
+                    numDeletedImages, numDeletedDimensions);
+        } catch (SQLException e) {
+            throw new IOException(e.getMessage(), e);
         }
     }
 

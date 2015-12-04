@@ -133,6 +133,8 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         instance.flush();
     }
 
+    /* flush() */
+
     public void testFlush() throws Exception {
         Configuration config = Application.getConfiguration();
 
@@ -155,6 +157,34 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         resultSet.next();
         assertEquals(0, resultSet.getInt("count"));
     }
+
+    /* flush(Identifier) */
+
+    public void testFlushWithIdentifier() throws Exception {
+        Configuration config = Application.getConfiguration();
+
+        Identifier id1 = new Identifier("cats");
+        instance.flush(id1);
+
+        // assert that the images and infos were flushed
+        String sql = String.format("SELECT COUNT(%s) AS count FROM %s",
+                JdbcCache.IMAGE_TABLE_OPERATIONS_COLUMN,
+                config.getString(JdbcCache.IMAGE_TABLE_CONFIG_KEY));
+        PreparedStatement statement = JdbcCache.getConnection().prepareStatement(sql);
+        ResultSet resultSet = statement.executeQuery();
+        resultSet.next();
+        assertEquals(2, resultSet.getInt("count"));
+
+        sql = String.format("SELECT COUNT(%s) AS count FROM %s",
+                JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN,
+                config.getString(JdbcCache.INFO_TABLE_CONFIG_KEY));
+        statement = JdbcCache.getConnection().prepareStatement(sql);
+        resultSet = statement.executeQuery();
+        resultSet.next();
+        assertEquals(2, resultSet.getInt("count"));
+    }
+
+    /* flush(OperationList) */
 
     public void testFlushWithOperations() throws Exception {
         OperationList ops = TestUtil.newOperationList();
@@ -180,6 +210,8 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         resultSet.next();
         assertEquals(2, resultSet.getInt("count"));
     }
+
+    /* flushExpired() */
 
     public void testFlushExpired() throws Exception {
         Application.getConfiguration().setProperty(JdbcCache.TTL_CONFIG_KEY, 1);

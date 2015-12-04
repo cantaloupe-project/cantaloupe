@@ -27,8 +27,16 @@ public interface Cache {
     void flush() throws IOException;
 
     /**
-     * Deletes the cached image and dimensions corresponding to the given
-     * operation list.
+     * Deletes all cached content corresponding to the image with the given
+     * identifier.
+     *
+     * @param identifier
+     * @throws IOException If any part of the process fails.
+     */
+    void flush(Identifier identifier) throws IOException;
+
+    /**
+     * Deletes the cached image corresponding to the given operation list.
      *
      * @param ops
      * @throws IOException If any part of the process fails.

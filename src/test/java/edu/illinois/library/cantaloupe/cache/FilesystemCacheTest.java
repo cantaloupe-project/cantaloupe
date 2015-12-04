@@ -98,6 +98,32 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         }
     }
 
+    /* flush(Identifier) */
+
+    public void testFlushWithIdentifier() throws Exception {
+        Identifier id1 = new Identifier("dogs");
+        Identifier id2 = new Identifier("ferrets");
+
+        OperationList ops = TestUtil.newOperationList();
+        ops.setIdentifier(id1);
+        instance.getImageFile(ops).createNewFile();
+        instance.getDimensionFile(ops.getIdentifier()).createNewFile();
+
+        ops.setIdentifier(id2);
+        ops.add(new Rotate(15));
+        instance.getImageFile(ops).createNewFile();
+        instance.getDimensionFile(ops.getIdentifier()).createNewFile();
+
+        assertEquals(2, imagePath.listFiles().length);
+        assertEquals(2, infoPath.listFiles().length);
+        instance.flush(id1);
+        assertEquals(1, imagePath.listFiles().length);
+        assertEquals(1, infoPath.listFiles().length);
+        instance.flush(id2);
+        assertEquals(0, imagePath.listFiles().length);
+        assertEquals(0, infoPath.listFiles().length);
+    }
+
     /* flush(OperationsList) */
 
     public void testFlushWithOperationList() throws Exception {
@@ -220,6 +246,12 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
         Thread.sleep(1100);
         assertNull(instance.getDimension(identifier));
+    }
+
+    /* getDimensionFile(Identifier) */
+
+    public void testGetDimensionFile() {
+        // TODO: write this
     }
 
     /* getImageFile(OperationList) */
