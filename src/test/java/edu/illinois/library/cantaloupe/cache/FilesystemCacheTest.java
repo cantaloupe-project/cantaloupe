@@ -273,7 +273,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setPercent(0.905f);
         Rotate rotate = new Rotate(10);
-        Filter filter = Filter.NONE;
+        Filter filter = Filter.BITONAL;
         OutputFormat format = OutputFormat.TIF;
 
         OperationList ops = new OperationList();
@@ -294,6 +294,36 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
                 scale.toString().replaceAll(search, replacement),
                 rotate.toString().replaceAll(search, replacement),
                 filter.toString().toLowerCase(), format);
+        assertEquals(new File(expected), instance.getCachedImageFile(ops));
+    }
+
+    public void testGetCachedImageFileWithNoOpOperations() {
+        String pathname = Application.getConfiguration().
+                getString("FilesystemCache.pathname");
+
+        Identifier identifier = new Identifier("cats_~!@#$%^&*()");
+        Crop crop = new Crop();
+        crop.setFull(true);
+        Scale scale = new Scale();
+        scale.setMode(Scale.Mode.FULL);
+        Rotate rotate = new Rotate(0);
+        Filter filter = Filter.NONE;
+        OutputFormat format = OutputFormat.TIF;
+
+        OperationList ops = new OperationList();
+        ops.setIdentifier(identifier);
+        ops.add(crop);
+        ops.add(scale);
+        ops.add(rotate);
+        ops.add(filter);
+        ops.setOutputFormat(format);
+
+        final String search = "[^A-Za-z0-9._-]";
+        final String replacement = "_";
+        String expected = String.format("%s%simage%s%s.%s", pathname,
+                File.separator,
+                File.separator,
+                identifier.toString().replaceAll(search, replacement), format);
         assertEquals(new File(expected), instance.getCachedImageFile(ops));
     }
 
