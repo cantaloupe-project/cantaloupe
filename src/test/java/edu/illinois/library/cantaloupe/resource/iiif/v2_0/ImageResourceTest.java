@@ -164,7 +164,10 @@ public class ImageResourceTest extends ResourceTest {
         if (!cacheFolder.exists()) {
             cacheFolder.mkdir();
         }
-        File imageCacheFolder = new File(cacheFolder.getAbsolutePath() + "/image");
+        final File imageCacheFolder =
+                new File(cacheFolder.getAbsolutePath() + "/image");
+        final File infoCacheFolder =
+                new File(cacheFolder.getAbsolutePath() + "/info");
 
         Configuration config = Application.getConfiguration();
         config.setProperty("cache.server", "FilesystemCache");
@@ -174,7 +177,6 @@ public class ImageResourceTest extends ResourceTest {
         config.setProperty("cache.server.flush_missing", flushMissing);
 
         File tempImage = File.createTempFile("temp", ".jpg");
-        tempImage.delete();
         File image = TestUtil.getFixture("jpg");
         try {
             OperationList ops = TestUtil.newOperationList();
@@ -184,34 +186,52 @@ public class ImageResourceTest extends ResourceTest {
             assertEquals(0, cacheFolder.listFiles().length);
 
             // request an image to cache it
-            ClientResource client =
+            ClientResource imageClient =
                     getClientForUriPath("/jpg/full/full/0/default.jpg");
-            client.get();
+            imageClient.get();
+            ClientResource infoClient =
+                    getClientForUriPath("/jpg/info.json");
+            infoClient.get();
 
             // assert that it has been cached
             assertEquals(1, imageCacheFolder.listFiles().length);
+            assertEquals(1, infoCacheFolder.listFiles().length);
             Cache cache = CacheFactory.getInstance();
             assertNotNull(cache.getImageInputStream(ops));
+            assertNotNull(cache.getDimension(ops.getIdentifier()));
 
             // move the source image out of the way
+            if (tempImage.exists()) {
+                tempImage.delete();
+            }
             FileUtils.moveFile(image, tempImage);
 
             // request the same image which is now cached but underlying is 404
             try {
-                client.get();
+                imageClient.get();
+                fail("Expected exception");
+            } catch (ResourceException e) {
+                // noop
+            }
+            try {
+                infoClient.get();
                 fail("Expected exception");
             } catch (ResourceException e) {
                 // noop
             }
 
             if (flushMissing) {
-                assertNotNull(cache.getImageInputStream(ops));
+                assertNull(cache.getImageInputStream(ops));
+                assertNull(cache.getDimension(ops.getIdentifier()));
             } else {
                 assertNotNull(cache.getImageInputStream(ops));
+                assertNotNull(cache.getDimension(ops.getIdentifier()));
             }
         } finally {
             FileUtils.deleteDirectory(cacheFolder);
-            FileUtils.moveFile(tempImage, image);
+            if (tempImage.exists() && !image.exists()) {
+                FileUtils.moveFile(tempImage, image);
+            }
         }
     }
 

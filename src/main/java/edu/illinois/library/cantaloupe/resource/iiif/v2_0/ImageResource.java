@@ -167,7 +167,7 @@ public class ImageResource extends AbstractResource {
                 // if the image was not found, flush it from the cache
                 final Cache cache = CacheFactory.getInstance();
                 if (cache != null) {
-                    cache.flush(ops);
+                    cache.flush(ops.getIdentifier());
                 }
             }
             throw e;
