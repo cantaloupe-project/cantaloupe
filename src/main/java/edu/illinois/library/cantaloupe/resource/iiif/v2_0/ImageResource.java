@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Set;
@@ -51,7 +52,7 @@ public class ImageResource extends AbstractResource {
     /**
      * Responds to IIIF Image requests.
      *
-     * @return ImageRepresentation
+     * @return OutputRepresentation
      * @throws Exception
      */
     @Get
@@ -86,8 +87,20 @@ public class ImageResource extends AbstractResource {
 
         Resolver resolver = ResolverFactory.getResolver();
         // Determine the format of the source image
-        SourceFormat sourceFormat = resolver.
-                getSourceFormat(ops.getIdentifier());
+        SourceFormat sourceFormat = SourceFormat.UNKNOWN;
+        try {
+            sourceFormat = resolver.getSourceFormat(ops.getIdentifier());
+        } catch (FileNotFoundException e) {
+            if (Application.getConfiguration().
+                    getBoolean(FLUSH_MISSING_CONFIG_KEY, false)) {
+                // if the image was not found, flush it from the cache
+                final Cache cache = CacheFactory.getInstance();
+                if (cache != null) {
+                    cache.flush(ops.getIdentifier());
+                }
+            }
+            throw e;
+        }
         if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
             throw new UnsupportedSourceFormatException();
         }
@@ -109,9 +122,22 @@ public class ImageResource extends AbstractResource {
 
         this.addLinkHeader(params);
 
-        MediaType mediaType = new MediaType(
-                ops.getOutputFormat().getMediaType());
+        return getRepresentation(ops, sourceFormat, resolver, proc);
+    }
 
+    private void addLinkHeader(Parameters params) {
+        this.addHeader("Link", String.format("<%s%s/%s>;rel=\"canonical\"",
+                getPublicRootRef().toString(),
+                ImageServerApplication.IIIF_2_0_PATH, params.toString()));
+    }
+
+    private OutputRepresentation getRepresentation(OperationList ops,
+                                                   SourceFormat sourceFormat,
+                                                   Resolver resolver,
+                                                   Processor proc)
+            throws Exception {
+        final MediaType mediaType = new MediaType(
+                ops.getOutputFormat().getMediaType());
         // FileResolver -> StreamProcessor: OK, using FileInputStream
         // FileResolver -> FileProcessor: OK, using File
         // StreamResolver -> StreamProcessor: OK, using InputStream
@@ -134,7 +160,7 @@ public class ImageResource extends AbstractResource {
         } else if (resolver instanceof StreamResolver) {
             logger.debug("Using {} as a StreamProcessor",
                     proc.getClass().getSimpleName());
-            StreamResolver sres = (StreamResolver) resolver;
+            final StreamResolver sres = (StreamResolver) resolver;
             if (proc instanceof StreamProcessor) {
                 StreamProcessor sproc = (StreamProcessor) proc;
                 InputStream inputStream = sres.
@@ -142,17 +168,11 @@ public class ImageResource extends AbstractResource {
                 Dimension fullSize = sproc.getSize(inputStream, sourceFormat);
                 // avoid reusing the stream
                 inputStream = sres.getInputStream(ops.getIdentifier());
-                return new ImageRepresentation(mediaType, sourceFormat, fullSize,
-                        ops, inputStream);
+                return new ImageRepresentation(mediaType, sourceFormat,
+                        fullSize, ops, inputStream);
             }
         }
-        return null; // this should never happen
-    }
-
-    private void addLinkHeader(Parameters params) {
-        this.addHeader("Link", String.format("<%s%s/%s>;rel=\"canonical\"",
-                getPublicRootRef().toString(),
-                ImageServerApplication.IIIF_2_0_PATH, params.toString()));
+        return null; // should never happen
     }
 
 }

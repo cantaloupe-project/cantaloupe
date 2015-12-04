@@ -16,10 +16,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -125,7 +127,7 @@ class FilesystemCache implements Cache {
      * @see <a href="https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations">
      *     Comparison of filename limitations</a>
      */
-    private static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
+    private static final String FILENAME_SAFE_CHARACTERS = "[^A-Za-z0-9._-]";
     private static final String IMAGE_FOLDER = "image";
     private static final String INFO_FOLDER = "info";
     private static final String INFO_EXTENSION = ".json";
@@ -158,6 +160,14 @@ class FilesystemCache implements Cache {
     private final Object lock3 = new Object();
     /** Lock object for synchronization */
     private final Object lock4 = new Object();
+
+    private static String filenameSafe(Identifier identifier) {
+        return identifier.toString().replaceAll(FILENAME_SAFE_CHARACTERS, "_");
+    }
+
+    private static String filenameSafe(Operation op) {
+        return op.toString().replaceAll(FILENAME_SAFE_CHARACTERS, "_");
+    }
 
     /**
      * @return Pathname of the root cache folder.
@@ -253,6 +263,23 @@ class FilesystemCache implements Cache {
     }
 
     @Override
+    public void flush(Identifier identifier) throws IOException {
+        for (File imageFile : getImageFiles(identifier)) {
+            logger.debug("Deleting {}", imageFile);
+            if (!imageFile.delete()) {
+                throw new IOException("Failed to delete " + imageFile);
+            }
+        }
+        File dimensionFile = getDimensionFile(identifier);
+        if (dimensionFile.exists()) {
+            logger.debug("Deleting {}", dimensionFile);
+            if (!dimensionFile.delete()) {
+                throw new IOException("Failed to delete " + dimensionFile);
+            }
+        }
+    }
+
+    @Override
     public void flush(OperationList ops) throws IOException {
         synchronized (lock1) {
             while (flushingInProgress.get() || imagesBeingFlushed.contains(ops)) {
@@ -266,13 +293,13 @@ class FilesystemCache implements Cache {
 
         try {
             imagesBeingFlushed.add(ops);
-            File imageFile = getCachedImageFile(ops);
+            File imageFile = getImageFile(ops);
             if (imageFile != null && imageFile.exists()) {
                 if (!imageFile.delete()) {
                     throw new IOException("Unable to delete " + imageFile);
                 }
             }
-            File dimensionFile = getCachedInfoFile(ops.getIdentifier());
+            File dimensionFile = getDimensionFile(ops.getIdentifier());
             if (dimensionFile != null && dimensionFile.exists()) {
                 if (!dimensionFile.delete()) {
                     throw new IOException("Unable to delete " + imageFile);
@@ -353,7 +380,7 @@ class FilesystemCache implements Cache {
 
         try {
             dimensionsBeingRead.add(identifier);
-            File cacheFile = getCachedInfoFile(identifier);
+            File cacheFile = getDimensionFile(identifier);
             if (cacheFile != null && cacheFile.exists()) {
                 if (!isExpired(cacheFile)) {
                     logger.debug("Hit for dimension: {}", cacheFile.getName());
@@ -378,9 +405,73 @@ class FilesystemCache implements Cache {
         return null;
     }
 
+    /**
+     * @param identifier
+     * @return File corresponding to the given parameters, or null if
+     * <code>FilesystemCache.pathname</code> is not set in the configuration.
+     */
+    public File getDimensionFile(Identifier identifier) {
+        final String cachePathname = getInfoPathname();
+        if (cachePathname != null) {
+            final String pathname =
+                    StringUtils.stripEnd(cachePathname, File.separator) +
+                            File.separator + filenameSafe(identifier) +
+                            INFO_EXTENSION;
+            return new File(pathname);
+        }
+        return null;
+    }
+
+    /**
+     * @param ops
+     * @return File corresponding to the given operation list, or null if
+     * <code>FilesystemCache.pathname</code> is not set in the configuration.
+     */
+    public File getImageFile(OperationList ops) {
+        final String cachePathname = getImagePathname();
+        if (cachePathname != null) {
+            List<String> parts = new ArrayList<>();
+            parts.add(StringUtils.stripEnd(cachePathname, File.separator) +
+                    File.separator + filenameSafe(ops.getIdentifier()));
+            for (Operation op : ops) {
+                if (!op.isNoOp()) {
+                    parts.add(filenameSafe(op));
+                }
+            }
+            final String baseName = StringUtils.join(parts, "_");
+            return new File(baseName + "." +
+                    ops.getOutputFormat().getExtension());
+        }
+        return null;
+    }
+
+    /**
+     * @param identifier
+     * @return All cached image files deriving from the image with the given
+     * identifier.
+     */
+    public List<File> getImageFiles(Identifier identifier) {
+        class IdentifierFilter implements FilenameFilter {
+            private Identifier identifier;
+
+            public IdentifierFilter(Identifier identifier) {
+                this.identifier = identifier;
+            }
+
+            public boolean accept(File dir, String name) {
+                return name.startsWith(filenameSafe(identifier));
+            }
+        }
+
+        final File cachePathname = new File(getImagePathname());
+        final File[] files = cachePathname.
+                listFiles(new IdentifierFilter(identifier));
+        return new ArrayList<>(Arrays.asList(files));
+    }
+
     @Override
     public InputStream getImageInputStream(OperationList ops) {
-        File cacheFile = getCachedImageFile(ops);
+        File cacheFile = getImageFile(ops);
         if (cacheFile != null && cacheFile.exists()) {
             if (!isExpired(cacheFile)) {
                 try {
@@ -411,7 +502,7 @@ class FilesystemCache implements Cache {
         }
         imagesBeingWritten.add(ops); // will be removed by ConcurrentNullOutputStream.close()
         logger.debug("Miss; caching {}", ops);
-        File cacheFile = getCachedImageFile(ops);
+        File cacheFile = getImageFile(ops);
         if (!cacheFile.getParentFile().exists()) {
             if (!cacheFile.getParentFile().mkdirs() ||
                     !cacheFile.createNewFile()) {
@@ -420,48 +511,6 @@ class FilesystemCache implements Cache {
         }
         return new ConcurrentFileOutputStream(cacheFile, imagesBeingWritten,
                 ops);
-    }
-
-    /**
-     * @param ops
-     * @return File corresponding to the given operation list, or null if
-     * <code>FilesystemCache.pathname</code> is not set in the configuration.
-     */
-    public File getCachedImageFile(OperationList ops) {
-        final String cachePathname = getImagePathname();
-        if (cachePathname != null) {
-            List<String> parts = new ArrayList<>();
-            parts.add(StringUtils.stripEnd(cachePathname, File.separator) +
-                    File.separator +
-                    ops.getIdentifier().toString().replaceAll(FILENAME_CHARACTERS, "_"));
-            for (Operation op : ops) {
-                if (!op.isNoOp()) {
-                    parts.add(op.toString().replaceAll(FILENAME_CHARACTERS, "_"));
-                }
-            }
-            final String baseName = StringUtils.join(parts, "_");
-            return new File(baseName + "." +
-                    ops.getOutputFormat().getExtension());
-        }
-        return null;
-    }
-
-    /**
-     * @param identifier
-     * @return File corresponding to the given parameters, or null if
-     * <code>FilesystemCache.pathname</code> is not set in the configuration.
-     */
-    public File getCachedInfoFile(Identifier identifier) {
-        final String cachePathname = getInfoPathname();
-        if (cachePathname != null) {
-            final String pathname =
-                    StringUtils.stripEnd(cachePathname, File.separator) +
-                    File.separator +
-                    identifier.toString().replaceAll(FILENAME_CHARACTERS, "_") +
-                    INFO_EXTENSION;
-            return new File(pathname);
-        }
-        return null;
     }
 
     @Override
@@ -480,7 +529,7 @@ class FilesystemCache implements Cache {
 
         try {
             dimensionsBeingWritten.add(identifier);
-            final File cacheFile = getCachedInfoFile(identifier);
+            final File cacheFile = getDimensionFile(identifier);
             if (cacheFile != null) {
                 logger.debug("Caching dimension: {}", identifier);
                 if (!cacheFile.getParentFile().exists() &&
