@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
 import java.awt.Dimension;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -9,6 +10,9 @@ import java.util.Set;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.cache.Cache;
+import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.Feature;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -60,10 +64,25 @@ public class InformationResource extends AbstractResource {
         // Get the resolver
         Resolver resolver = ResolverFactory.getResolver();
         // Determine the format of the source image
-        SourceFormat sourceFormat = resolver.getSourceFormat(identifier);
+        SourceFormat sourceFormat = SourceFormat.UNKNOWN;
+        try {
+            // Determine the format of the source image
+            sourceFormat = resolver.getSourceFormat(identifier);
+        } catch (FileNotFoundException e) {
+            if (Application.getConfiguration().
+                    getBoolean(FLUSH_MISSING_CONFIG_KEY, false)) {
+                // if the image was not found, flush it from the cache
+                final Cache cache = CacheFactory.getInstance();
+                if (cache != null) {
+                    cache.flush(identifier);
+                }
+            }
+            throw e;
+        }
         if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
             throw new UnsupportedSourceFormatException();
         }
+
         // Obtain an instance of the processor assigned to that format in
         // the config file
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
