@@ -222,43 +222,6 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         assertNull(instance.getDimension(identifier));
     }
 
-    /* getImageInputStream(OperationList) */
-
-    public void testGetImageInputStreamWithZeroTtl() throws Exception {
-        OperationList ops = TestUtil.newOperationList();
-        assertNull(instance.getImageInputStream(ops));
-
-        instance.getImageFile(ops).createNewFile();
-        assertTrue(instance.getImageInputStream(ops) instanceof FileInputStream);
-    }
-
-    public void testGetImageInputStreamWithNonzeroTtl() throws Exception {
-        OperationList ops = TestUtil.newOperationList();
-        Application.getConfiguration().setProperty("FilesystemCache.ttl_seconds", 1);
-        File cacheFile = instance.getImageFile(ops);
-        cacheFile.createNewFile();
-        assertTrue(instance.getImageInputStream(ops) instanceof FileInputStream);
-
-        Thread.sleep(1100);
-        assertNull(instance.getImageInputStream(ops));
-        assertFalse(cacheFile.exists());
-    }
-
-    /* getImageOutputStream(OperationList) */
-
-    public void testGetImageOutputStream() throws Exception {
-        OperationList ops = TestUtil.newOperationList();
-        assertTrue(instance.getImageOutputStream(ops) instanceof FileOutputStream);
-    }
-
-    public void testImageOutputStreamCreatesFolder() throws IOException {
-        FileUtils.deleteDirectory(imagePath);
-
-        OperationList ops = TestUtil.newOperationList();
-        instance.getImageOutputStream(ops);
-        assertTrue(imagePath.exists());
-    }
-
     /* getImageFile(OperationList) */
 
     public void testGetImageFile() {
@@ -295,6 +258,59 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
                 rotate.toString().replaceAll(search, replacement),
                 filter.toString().toLowerCase(), format);
         assertEquals(new File(expected), instance.getImageFile(ops));
+    }
+
+    /* getImageFiles(Identifier) */
+
+    public void testGetImageFiles() throws Exception {
+        Identifier identifier = new Identifier("dogs");
+
+        OperationList ops = TestUtil.newOperationList();
+        ops.setIdentifier(identifier);
+        instance.getImageFile(ops).createNewFile();
+        ops.add(new Rotate(15));
+        instance.getImageFile(ops).createNewFile();
+        ops.add(Filter.GRAY);
+        instance.getImageFile(ops).createNewFile();
+
+        assertEquals(3, instance.getImageFiles(identifier).size());
+    }
+
+    /* getImageInputStream(OperationList) */
+
+    public void testGetImageInputStreamWithZeroTtl() throws Exception {
+        OperationList ops = TestUtil.newOperationList();
+        assertNull(instance.getImageInputStream(ops));
+
+        instance.getImageFile(ops).createNewFile();
+        assertTrue(instance.getImageInputStream(ops) instanceof FileInputStream);
+    }
+
+    public void testGetImageInputStreamWithNonzeroTtl() throws Exception {
+        OperationList ops = TestUtil.newOperationList();
+        Application.getConfiguration().setProperty("FilesystemCache.ttl_seconds", 1);
+        File cacheFile = instance.getImageFile(ops);
+        cacheFile.createNewFile();
+        assertTrue(instance.getImageInputStream(ops) instanceof FileInputStream);
+
+        Thread.sleep(1100);
+        assertNull(instance.getImageInputStream(ops));
+        assertFalse(cacheFile.exists());
+    }
+
+    /* getImageOutputStream(OperationList) */
+
+    public void testGetImageOutputStream() throws Exception {
+        OperationList ops = TestUtil.newOperationList();
+        assertTrue(instance.getImageOutputStream(ops) instanceof FileOutputStream);
+    }
+
+    public void testImageOutputStreamCreatesFolder() throws IOException {
+        FileUtils.deleteDirectory(imagePath);
+
+        OperationList ops = TestUtil.newOperationList();
+        instance.getImageOutputStream(ops);
+        assertTrue(imagePath.exists());
     }
 
     /* putDimension(Identifier, Dimension) */

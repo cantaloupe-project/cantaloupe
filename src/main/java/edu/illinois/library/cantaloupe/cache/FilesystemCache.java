@@ -16,10 +16,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -422,6 +424,30 @@ class FilesystemCache implements Cache {
                     ops.getOutputFormat().getExtension());
         }
         return null;
+    }
+
+    /**
+     * @param identifier
+     * @return All cached image files deriving from the image with the given
+     * identifier.
+     */
+    public List<File> getImageFiles(Identifier identifier) {
+        class IdentifierFilter implements FilenameFilter {
+            private Identifier identifier;
+
+            public IdentifierFilter(Identifier identifier) {
+                this.identifier = identifier;
+            }
+
+            public boolean accept(File dir, String name) {
+                return name.startsWith(filenameSafe(identifier));
+            }
+        }
+
+        final File cachePathname = new File(getImagePathname());
+        final File[] files = cachePathname.
+                listFiles(new IdentifierFilter(identifier));
+        return new ArrayList<>(Arrays.asList(files));
     }
 
     @Override
