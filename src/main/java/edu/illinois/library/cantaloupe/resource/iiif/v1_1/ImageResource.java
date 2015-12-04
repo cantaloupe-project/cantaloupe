@@ -59,11 +59,25 @@ public class ImageResource extends AbstractResource {
     @Get
     public OutputRepresentation doGet() throws Exception {
         final Map<String,Object> attrs = this.getRequest().getAttributes();
+        final Identifier identifier =
+                new Identifier((String) attrs.get("identifier"));
 
         final Resolver resolver = ResolverFactory.getResolver();
         // Determine the format of the source image
-        final SourceFormat sourceFormat = resolver.getSourceFormat(
-                new Identifier((String) attrs.get("identifier")));
+        SourceFormat sourceFormat = SourceFormat.UNKNOWN;
+        try {
+            sourceFormat = resolver.getSourceFormat(identifier);
+        } catch (FileNotFoundException e) {
+            if (Application.getConfiguration().
+                    getBoolean(FLUSH_MISSING_CONFIG_KEY, false)) {
+                // if the image was not found, flush it from the cache
+                final Cache cache = CacheFactory.getInstance();
+                if (cache != null) {
+                    cache.flush(identifier);
+                }
+            }
+            throw e;
+        }
         if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
             throw new UnsupportedSourceFormatException();
         }
@@ -164,53 +178,41 @@ public class ImageResource extends AbstractResource {
                                                    Resolver resolver,
                                                    Processor proc)
             throws Exception {
-        try {
-            final MediaType mediaType = new MediaType(
-                    ops.getOutputFormat().getMediaType());
-            // FileResolver -> StreamProcessor: OK, using FileInputStream
-            // FileResolver -> FileProcessor: OK, using File
-            // StreamResolver -> StreamProcessor: OK, using InputStream
-            // StreamResolver -> FileProcessor: NOPE
-            if (!(resolver instanceof FileResolver) &&
-                    !(proc instanceof StreamProcessor)) {
-                // FileProcessors can't work with StreamResolvers
-                throw new UnsupportedSourceFormatException(
-                        String.format("%s is not compatible with %s",
-                                proc.getClass().getSimpleName(),
-                                resolver.getClass().getSimpleName()));
-            } else if (resolver instanceof FileResolver &&
-                    proc instanceof FileProcessor) {
-                logger.debug("Using {} as a FileProcessor",
-                        proc.getClass().getSimpleName());
-                File inputFile = ((FileResolver) resolver).
-                        getFile(ops.getIdentifier());
-                return new ImageRepresentation(mediaType, sourceFormat, ops,
-                        inputFile);
-            } else if (resolver instanceof StreamResolver) {
-                logger.debug("Using {} as a StreamProcessor",
-                        proc.getClass().getSimpleName());
-                StreamResolver sres = (StreamResolver) resolver;
-                if (proc instanceof StreamProcessor) {
-                    StreamProcessor sproc = (StreamProcessor) proc;
-                    InputStream inputStream = sres.
-                            getInputStream(ops.getIdentifier());
-                    Dimension fullSize = sproc.getSize(inputStream, sourceFormat);
-                    // avoid reusing the stream
-                    inputStream = sres.getInputStream(ops.getIdentifier());
-                    return new ImageRepresentation(mediaType, sourceFormat, fullSize,
-                            ops, inputStream);
-                }
+        final MediaType mediaType = new MediaType(
+                ops.getOutputFormat().getMediaType());
+        // FileResolver -> StreamProcessor: OK, using FileInputStream
+        // FileResolver -> FileProcessor: OK, using File
+        // StreamResolver -> StreamProcessor: OK, using InputStream
+        // StreamResolver -> FileProcessor: NOPE
+        if (!(resolver instanceof FileResolver) &&
+                !(proc instanceof StreamProcessor)) {
+            // FileProcessors can't work with StreamResolvers
+            throw new UnsupportedSourceFormatException(
+                    String.format("%s is not compatible with %s",
+                            proc.getClass().getSimpleName(),
+                            resolver.getClass().getSimpleName()));
+        } else if (resolver instanceof FileResolver &&
+                proc instanceof FileProcessor) {
+            logger.debug("Using {} as a FileProcessor",
+                    proc.getClass().getSimpleName());
+            File inputFile = ((FileResolver) resolver).
+                    getFile(ops.getIdentifier());
+            return new ImageRepresentation(mediaType, sourceFormat, ops,
+                    inputFile);
+        } else if (resolver instanceof StreamResolver) {
+            logger.debug("Using {} as a StreamProcessor",
+                    proc.getClass().getSimpleName());
+            StreamResolver sres = (StreamResolver) resolver;
+            if (proc instanceof StreamProcessor) {
+                StreamProcessor sproc = (StreamProcessor) proc;
+                InputStream inputStream = sres.
+                        getInputStream(ops.getIdentifier());
+                Dimension fullSize = sproc.getSize(inputStream, sourceFormat);
+                // avoid reusing the stream
+                inputStream = sres.getInputStream(ops.getIdentifier());
+                return new ImageRepresentation(mediaType, sourceFormat, fullSize,
+                        ops, inputStream);
             }
-        } catch (FileNotFoundException e) {
-            if (Application.getConfiguration().
-                    getBoolean(FLUSH_MISSING_CONFIG_KEY, false)) {
-                // if the image was not found, flush it from the cache
-                final Cache cache = CacheFactory.getInstance();
-                if (cache != null) {
-                    cache.flush(ops.getIdentifier());
-                }
-            }
-            throw e;
         }
         return null; // should never happen
     }

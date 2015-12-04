@@ -149,15 +149,15 @@ public class ImageResourceTest extends ResourceTest {
 
     public void testFlushFromCacheWhenSourceIsMissingAndOptionIsFalse()
             throws Exception {
-        doFlushFromCacheWhenSourceIsMissingAnd(false);
+        doFlushFromCacheWhenSourceIsMissing(false);
     }
 
     public void testFlushFromCacheWhenSourceIsMissingAndOptionIsTrue()
             throws Exception {
-        doFlushFromCacheWhenSourceIsMissingAnd(true);
+        doFlushFromCacheWhenSourceIsMissing(true);
     }
 
-    private void doFlushFromCacheWhenSourceIsMissingAnd(boolean flushMissing)
+    private void doFlushFromCacheWhenSourceIsMissing(boolean flushMissing)
             throws Exception {
         File cacheFolder = TestUtil.getTempFolder();
         cacheFolder = new File(cacheFolder.getAbsolutePath() + "/cache");
@@ -186,12 +186,8 @@ public class ImageResourceTest extends ResourceTest {
             assertEquals(0, cacheFolder.listFiles().length);
 
             // request an image to cache it
-            ClientResource imageClient =
-                    getClientForUriPath("/jpg/full/full/0/default.jpg");
-            imageClient.get();
-            ClientResource infoClient =
-                    getClientForUriPath("/jpg/info.json");
-            infoClient.get();
+            getClientForUriPath("/jpg/full/full/0/default.jpg").get();
+            getClientForUriPath("/jpg/info.json").get();
 
             // assert that it has been cached
             assertEquals(1, imageCacheFolder.listFiles().length);
@@ -208,13 +204,7 @@ public class ImageResourceTest extends ResourceTest {
 
             // request the same image which is now cached but underlying is 404
             try {
-                imageClient.get();
-                fail("Expected exception");
-            } catch (ResourceException e) {
-                // noop
-            }
-            try {
-                infoClient.get();
+                getClientForUriPath("/jpg/full/full/0/default.jpg").get();
                 fail("Expected exception");
             } catch (ResourceException e) {
                 // noop
