@@ -208,9 +208,9 @@ public class ImageResource extends AbstractResource {
                 final Cache cache = CacheFactory.getInstance();
                 if (cache != null) {
                     cache.flush(ops);
-                    throw e;
                 }
             }
+            throw e;
         }
         return null; // should never happen
     }
