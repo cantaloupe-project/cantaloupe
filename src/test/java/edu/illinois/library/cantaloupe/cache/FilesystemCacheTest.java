@@ -58,13 +58,13 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
     public void testFlush() throws Exception {
         OperationList ops = TestUtil.newOperationList();
-        instance.getCachedImageFile(ops).createNewFile();
-        instance.getCachedInfoFile(ops.getIdentifier()).createNewFile();
+        instance.getImageFile(ops).createNewFile();
+        instance.getDimensionFile(ops.getIdentifier()).createNewFile();
 
         ops.setIdentifier(new Identifier("dogs"));
         ops.add(new Rotate(15));
-        instance.getCachedImageFile(ops).createNewFile();
-        instance.getCachedInfoFile(ops.getIdentifier()).createNewFile();
+        instance.getImageFile(ops).createNewFile();
+        instance.getDimensionFile(ops.getIdentifier()).createNewFile();
 
         instance.flush();
         assertEquals(0, imagePath.listFiles().length);
@@ -74,8 +74,8 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     public void testFlushFailureThrowsException() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         // create an unwritable image cache file
-        File imageFile = instance.getCachedImageFile(ops);
-        File infoFile = instance.getCachedInfoFile(ops.getIdentifier());
+        File imageFile = instance.getImageFile(ops);
+        File infoFile = instance.getDimensionFile(ops.getIdentifier());
         imageFile.createNewFile();
         infoFile.createNewFile();
         imageFile.getParentFile().setWritable(false);
@@ -102,8 +102,8 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
     public void testFlushWithOperationList() throws Exception {
         OperationList ops = TestUtil.newOperationList();
-        instance.getCachedImageFile(ops).createNewFile();
-        instance.getCachedInfoFile(ops.getIdentifier()).createNewFile();
+        instance.getImageFile(ops).createNewFile();
+        instance.getDimensionFile(ops.getIdentifier()).createNewFile();
         instance.flush(ops);
         assertEquals(0, imagePath.listFiles().length);
         assertEquals(0, infoPath.listFiles().length);
@@ -112,8 +112,8 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     public void testFlushWithOperationListFailureThrowsException()
             throws Exception {
         OperationList ops = TestUtil.newOperationList();
-        File imageFile = instance.getCachedImageFile(ops);
-        File dimensionFile = instance.getCachedInfoFile(ops.getIdentifier());
+        File imageFile = instance.getImageFile(ops);
+        File dimensionFile = instance.getDimensionFile(ops.getIdentifier());
         imageFile.createNewFile();
         dimensionFile.createNewFile();
         imageFile.getParentFile().setWritable(false);
@@ -147,14 +147,14 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         scale.setMode(Scale.Mode.FULL);
 
         OperationList ops = TestUtil.newOperationList();
-        instance.getCachedImageFile(ops).createNewFile();
-        instance.getCachedInfoFile(ops.getIdentifier()).createNewFile();
+        instance.getImageFile(ops).createNewFile();
+        instance.getDimensionFile(ops.getIdentifier()).createNewFile();
 
         Thread.sleep(2000);
 
         ops.setIdentifier(new Identifier("dogs"));
-        instance.getCachedImageFile(ops).createNewFile();
-        instance.getCachedInfoFile(ops.getIdentifier()).createNewFile();
+        instance.getImageFile(ops).createNewFile();
+        instance.getDimensionFile(ops.getIdentifier()).createNewFile();
 
         instance.flushExpired();
         assertEquals(1, imagePath.listFiles().length);
@@ -166,8 +166,8 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
         OperationList ops = TestUtil.newOperationList();
         // create an unwritable image cache file
-        File imageFile = instance.getCachedImageFile(ops);
-        File infoFile = instance.getCachedInfoFile(ops.getIdentifier());
+        File imageFile = instance.getImageFile(ops);
+        File infoFile = instance.getDimensionFile(ops.getIdentifier());
         imageFile.createNewFile();
         infoFile.createNewFile();
         imageFile.getParentFile().setWritable(false);
@@ -228,14 +228,14 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         OperationList ops = TestUtil.newOperationList();
         assertNull(instance.getImageInputStream(ops));
 
-        instance.getCachedImageFile(ops).createNewFile();
+        instance.getImageFile(ops).createNewFile();
         assertTrue(instance.getImageInputStream(ops) instanceof FileInputStream);
     }
 
     public void testGetImageInputStreamWithNonzeroTtl() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         Application.getConfiguration().setProperty("FilesystemCache.ttl_seconds", 1);
-        File cacheFile = instance.getCachedImageFile(ops);
+        File cacheFile = instance.getImageFile(ops);
         cacheFile.createNewFile();
         assertTrue(instance.getImageInputStream(ops) instanceof FileInputStream);
 
@@ -259,9 +259,9 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         assertTrue(imagePath.exists());
     }
 
-    /* getCachedImageFile(OperationList) */
+    /* getImageFile(OperationList) */
 
-    public void testGetCachedImageFile() {
+    public void testGetImageFile() {
         String pathname = Application.getConfiguration().
                 getString("FilesystemCache.pathname");
 
@@ -294,7 +294,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
                 scale.toString().replaceAll(search, replacement),
                 rotate.toString().replaceAll(search, replacement),
                 filter.toString().toLowerCase(), format);
-        assertEquals(new File(expected), instance.getCachedImageFile(ops));
+        assertEquals(new File(expected), instance.getImageFile(ops));
     }
 
     /* putDimension(Identifier, Dimension) */
@@ -308,7 +308,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
     public void testPutDimensionFailureThrowsException() throws IOException {
         final Identifier identifier = new Identifier("cats");
-        final File cacheFile = instance.getCachedInfoFile(identifier);
+        final File cacheFile = instance.getDimensionFile(identifier);
         cacheFile.getParentFile().setWritable(false);
         try {
             try {

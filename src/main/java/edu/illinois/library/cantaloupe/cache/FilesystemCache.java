@@ -266,13 +266,13 @@ class FilesystemCache implements Cache {
 
         try {
             imagesBeingFlushed.add(ops);
-            File imageFile = getCachedImageFile(ops);
+            File imageFile = getImageFile(ops);
             if (imageFile != null && imageFile.exists()) {
                 if (!imageFile.delete()) {
                     throw new IOException("Unable to delete " + imageFile);
                 }
             }
-            File dimensionFile = getCachedInfoFile(ops.getIdentifier());
+            File dimensionFile = getDimensionFile(ops.getIdentifier());
             if (dimensionFile != null && dimensionFile.exists()) {
                 if (!dimensionFile.delete()) {
                     throw new IOException("Unable to delete " + imageFile);
@@ -353,7 +353,7 @@ class FilesystemCache implements Cache {
 
         try {
             dimensionsBeingRead.add(identifier);
-            File cacheFile = getCachedInfoFile(identifier);
+            File cacheFile = getDimensionFile(identifier);
             if (cacheFile != null && cacheFile.exists()) {
                 if (!isExpired(cacheFile)) {
                     logger.debug("Hit for dimension: {}", cacheFile.getName());
@@ -380,7 +380,7 @@ class FilesystemCache implements Cache {
 
     @Override
     public InputStream getImageInputStream(OperationList ops) {
-        File cacheFile = getCachedImageFile(ops);
+        File cacheFile = getImageFile(ops);
         if (cacheFile != null && cacheFile.exists()) {
             if (!isExpired(cacheFile)) {
                 try {
@@ -411,7 +411,7 @@ class FilesystemCache implements Cache {
         }
         imagesBeingWritten.add(ops); // will be removed by ConcurrentNullOutputStream.close()
         logger.debug("Miss; caching {}", ops);
-        File cacheFile = getCachedImageFile(ops);
+        File cacheFile = getImageFile(ops);
         if (!cacheFile.getParentFile().exists()) {
             if (!cacheFile.getParentFile().mkdirs() ||
                     !cacheFile.createNewFile()) {
@@ -427,7 +427,7 @@ class FilesystemCache implements Cache {
      * @return File corresponding to the given parameters, or null if
      * <code>FilesystemCache.pathname</code> is not set in the configuration.
      */
-    public File getCachedImageFile(OperationList ops) {
+    public File getImageFile(OperationList ops) {
         final String cachePathname = getImagePathname();
         if (cachePathname != null) {
             List<String> parts = new ArrayList<>();
@@ -449,7 +449,7 @@ class FilesystemCache implements Cache {
      * @return File corresponding to the given parameters, or null if
      * <code>FilesystemCache.pathname</code> is not set in the configuration.
      */
-    public File getCachedInfoFile(Identifier identifier) {
+    public File getDimensionFile(Identifier identifier) {
         final String cachePathname = getInfoPathname();
         if (cachePathname != null) {
             final String pathname =
@@ -478,7 +478,7 @@ class FilesystemCache implements Cache {
 
         try {
             dimensionsBeingWritten.add(identifier);
-            final File cacheFile = getCachedInfoFile(identifier);
+            final File cacheFile = getDimensionFile(identifier);
             if (cacheFile != null) {
                 logger.debug("Caching dimension: {}", identifier);
                 if (!cacheFile.getParentFile().exists() &&
