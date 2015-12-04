@@ -70,6 +70,23 @@ public class InformationResourceTest extends ResourceTest {
         }
     }
 
+    public void testEndpointDisabled() {
+        Configuration config = Application.getConfiguration();
+        ClientResource client = getClientForUriPath("/jpg/full/full/0/native.jpg");
+
+        config.setProperty("endpoint.iiif.1.1.enabled", true);
+        client.get();
+        assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        config.setProperty("endpoint.iiif.1.1.enabled", false);
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_FORBIDDEN, client.getStatus());
+        }
+    }
+
     public void testFlushFromCacheWhenSourceIsMissingAndOptionIsFalse()
             throws Exception {
         doFlushFromCacheWhenSourceIsMissing(false);

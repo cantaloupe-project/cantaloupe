@@ -28,6 +28,14 @@ base_uri =
 print_stack_trace_on_error_pages = true
 
 ###############
+# ENDPOINTS
+###############
+
+endpoint.iiif.1.1.enabled = true
+
+endpoint.iiif.2.0.enabled = true
+
+###############
 # RESOLVERS
 ###############
 

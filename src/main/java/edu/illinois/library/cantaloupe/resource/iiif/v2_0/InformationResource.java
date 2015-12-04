@@ -28,8 +28,10 @@ import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
+import org.restlet.data.Status;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
+import org.restlet.resource.ResourceException;
 
 /**
  * Handles IIIF information requests.
@@ -48,6 +50,16 @@ public class InformationResource extends AbstractResource {
         SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.CANONICAL_LINK_HEADER);
         SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.CORS);
         SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.JSON_LD_MEDIA_TYPE);
+    }
+
+    @Override
+    protected void doInit() throws ResourceException {
+        if (!Application.getConfiguration().
+                getBoolean("endpoint.iiif.2.0.enabled", true)) {
+            throw new ResourceException(Status.CLIENT_ERROR_FORBIDDEN,
+                    "The IIIF Image API 2.0 endpoint is disabled.");
+        }
+        super.doInit();
     }
 
     /**

@@ -24,8 +24,10 @@ import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
+import org.restlet.data.Status;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
+import org.restlet.resource.ResourceException;
 
 /**
  * Handles IIIF Image API 1.1 information requests.
@@ -34,6 +36,16 @@ import org.restlet.resource.Get;
  * Requests</a>
  */
 public class InformationResource extends AbstractResource {
+
+    @Override
+    protected void doInit() throws ResourceException {
+        if (!Application.getConfiguration().
+                getBoolean("endpoint.iiif.1.1.enabled", true)) {
+            throw new ResourceException(Status.CLIENT_ERROR_FORBIDDEN,
+                    "The IIIF Image API 1.1 endpoint is disabled.");
+        }
+        super.doInit();
+    }
 
     /**
      * Responds to information requests.

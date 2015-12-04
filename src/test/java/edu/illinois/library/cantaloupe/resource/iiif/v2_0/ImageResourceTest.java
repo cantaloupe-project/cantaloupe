@@ -147,6 +147,23 @@ public class ImageResourceTest extends ResourceTest {
                 client.getResponseEntity().getDisposition().getFilename());
     }
 
+    public void testEndpointDisabled() {
+        Configuration config = Application.getConfiguration();
+        ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
+
+        config.setProperty("endpoint.iiif.2.0.enabled", true);
+        client.get();
+        assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        config.setProperty("endpoint.iiif.2.0.enabled", false);
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_FORBIDDEN, client.getStatus());
+        }
+    }
+
     public void testFlushFromCacheWhenSourceIsMissingAndOptionIsFalse()
             throws Exception {
         doFlushFromCacheWhenSourceIsMissing(false);

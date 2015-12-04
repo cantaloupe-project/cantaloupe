@@ -51,6 +51,8 @@ class CantaloupeStatusService extends StatusService {
                 throwable.printStackTrace(new PrintWriter(sw));
                 stackTrace = sw.toString();
             }
+        } else if (status.getDescription() != null) {
+            message = status.getDescription();
         } else if (status == Status.CLIENT_ERROR_NOT_FOUND) {
             message = "No resource exists at this URL.";
         }
