@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.lang3.StringUtils;
 
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,6 +62,32 @@ public class OperationListTest extends CantaloupeTestCase {
         OperationList ops2 = TestUtil.newOperationList();
         ops2.add(new Rotate(1));
         assertFalse(ops1.equals(ops2));
+    }
+
+    public void testGetResultingSize() {
+        Dimension fullSize = new Dimension(300, 200);
+        ops = new OperationList();
+        Crop crop = new Crop();
+        crop.setFull(true);
+        Scale scale = new Scale();
+        scale.setMode(Scale.Mode.FULL);
+        Rotate rotate = new Rotate();
+        ops.add(crop);
+        ops.add(scale);
+        ops.add(rotate);
+        assertEquals(fullSize, ops.getResultingSize(fullSize));
+
+        ops = new OperationList();
+        crop = new Crop();
+        crop.setUnit(Crop.Unit.PERCENT);
+        crop.setWidth(0.5f);
+        crop.setHeight(0.5f);
+        scale = new Scale();
+        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        scale.setPercent(0.5f);
+        ops.add(crop);
+        ops.add(scale);
+        assertEquals(new Dimension(75, 50), ops.getResultingSize(fullSize));
     }
 
     public void testIsNoOp1() {

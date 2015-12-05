@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.image;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -57,6 +58,19 @@ public class OperationList implements Comparable<OperationList>,
 
     public OutputFormat getOutputFormat() {
         return outputFormat;
+    }
+
+    /**
+     * @param fullSize
+     * @return Resulting dimensions when all operations are applied in sequence
+     * to an image of the given full size.
+     */
+    public Dimension getResultingSize(Dimension fullSize) {
+        Dimension size = new Dimension(fullSize.width, fullSize.height);
+        for (Operation op : this) {
+            size = op.getResultingSize(size);
+        }
+        return size;
     }
 
     /**
