@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import com.zaxxer.hikari.HikariDataSource;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -14,7 +15,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -64,6 +64,11 @@ class JdbcCache implements Cache {
                 throw new IOException(e.getMessage(), e);
             } finally {
                 outputStream.close();
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    logger.error(e.getMessage(), e);
+                }
             }
         }
 
@@ -107,11 +112,10 @@ class JdbcCache implements Cache {
     public static final String TTL_CONFIG_KEY = "JdbcCache.ttl_seconds";
     public static final String USER_CONFIG_KEY = "JdbcCache.user";
 
-    private static Connection connection;
+    private static HikariDataSource dataSource;
 
     static {
-        try {
-            Connection connection = getConnection();
+        try (Connection connection = getConnection()) {
             logger.info("Using {} {}", connection.getMetaData().getDriverName(),
                     connection.getMetaData().getDriverVersion());
             Configuration config = Application.getConfiguration();
@@ -119,23 +123,30 @@ class JdbcCache implements Cache {
                     config.getString(CONNECTION_STRING_CONFIG_KEY));
             createTables();
         } catch (IOException | SQLException e) {
-            logger.error("Failed to establish a database connection", e);
+            logger.error(e.getMessage(), e);
         }
     }
 
-    public static synchronized void createTables() throws IOException {
-        createImageTable();
-        createInfoTable();
+    public static synchronized void createTables()
+            throws IOException, SQLException {
+        try (Connection connection = getConnection()) {
+            createImageTable(connection);
+            createInfoTable(connection);
+        }
     }
 
-    private static void createImageTable() throws IOException {
+    /**
+     * @param connection Will not be closed.
+     * @throws IOException
+     */
+    private static void createImageTable(Connection connection)
+            throws IOException {
         Configuration config = Application.getConfiguration();
         String tableName = config.getString(IMAGE_TABLE_CONFIG_KEY, "");
         if (tableName != null && tableName.length() > 0) {
             try {
-                Connection conn = getConnection();
                 String sql;
-                if (conn.getMetaData().getDriverName().toLowerCase().
+                if (connection.getMetaData().getDriverName().toLowerCase().
                         contains("postgresql")) {
                     sql = String.format("CREATE TABLE IF NOT EXISTS %s (" +
                                     "%s VARCHAR(4096) NOT NULL, " +
@@ -155,7 +166,7 @@ class JdbcCache implements Cache {
                             IMAGE_TABLE_IMAGE_COLUMN,
                             IMAGE_TABLE_LAST_MODIFIED_COLUMN);
                 }
-                PreparedStatement statement = conn.prepareStatement(sql);
+                PreparedStatement statement = connection.prepareStatement(sql);
                 logger.debug(sql);
                 statement.execute();
                 logger.info("Created table (if not already existing): {}",
@@ -168,14 +179,18 @@ class JdbcCache implements Cache {
         }
     }
 
-    private static void createInfoTable() throws IOException {
+    /**
+     * @param connection Will not be closed.
+     * @throws IOException
+     */
+    private static void createInfoTable(Connection connection)
+            throws IOException {
         Configuration config = Application.getConfiguration();
         String tableName = config.getString(INFO_TABLE_CONFIG_KEY, "");
         if (tableName != null && tableName.length() > 0) {
             try {
-                Connection conn = getConnection();
                 String sql;
-                if (conn.getMetaData().getDriverName().toLowerCase().
+                if (connection.getMetaData().getDriverName().toLowerCase().
                         contains("postgresql")) {
                     sql = String.format(
                             "CREATE TABLE IF NOT EXISTS %s (" +
@@ -197,7 +212,7 @@ class JdbcCache implements Cache {
                             INFO_TABLE_WIDTH_COLUMN, INFO_TABLE_HEIGHT_COLUMN,
                             INFO_TABLE_LAST_MODIFIED_COLUMN);
                 }
-                PreparedStatement statement = conn.prepareStatement(sql);
+                PreparedStatement statement = connection.prepareStatement(sql);
                 logger.debug(sql);
                 statement.execute();
                 logger.info("Created table (if not already existing): {}",
@@ -210,17 +225,23 @@ class JdbcCache implements Cache {
         }
     }
 
-    public static synchronized void dropTables() throws IOException {
-        dropImageTable();
-        dropInfoTable();
+    public static synchronized void dropTables()
+            throws IOException, SQLException {
+        try (Connection connection = getConnection()) {
+            dropImageTable(connection);
+            dropInfoTable(connection);
+        }
     }
 
-    private static void dropImageTable() throws IOException {
+    /**
+     * @param conn Will not be closed.
+     * @throws IOException
+     */
+    private static void dropImageTable(Connection conn) throws IOException {
         Configuration config = Application.getConfiguration();
         String tableName = config.getString(IMAGE_TABLE_CONFIG_KEY, "");
         if (tableName != null && tableName.length() > 0) {
             try {
-                Connection conn = getConnection();
                 String sql = "DROP TABLE " + tableName;
                 PreparedStatement statement = conn.prepareStatement(sql);
                 logger.debug(sql);
@@ -234,12 +255,15 @@ class JdbcCache implements Cache {
         }
     }
 
-    private static void dropInfoTable() throws IOException {
+    /**
+     * @param conn Will not be closed.
+     * @throws IOException
+     */
+    private static void dropInfoTable(Connection conn) throws IOException {
         Configuration config = Application.getConfiguration();
         String tableName = config.getString(INFO_TABLE_CONFIG_KEY, "");
         if (tableName != null && tableName.length() > 0) {
             try {
-                Connection conn = getConnection();
                 String sql = "DROP TABLE " + tableName;
                 PreparedStatement statement = conn.prepareStatement(sql);
                 logger.debug(sql);
@@ -253,32 +277,46 @@ class JdbcCache implements Cache {
         }
     }
 
+    /**
+     * @return Connection from the connection pool. Clients must
+     * <code>close()</code> it when they are done with it.
+     * @throws SQLException
+     */
     public static synchronized Connection getConnection() throws SQLException {
-        if (connection == null) {
-            Configuration config = Application.getConfiguration();
+        if (dataSource == null) {
+            final Configuration config = Application.getConfiguration();
             final String connectionString = config.
                     getString(CONNECTION_STRING_CONFIG_KEY, "");
             final String user = config.getString(USER_CONFIG_KEY, "");
             final String password = config.getString(PASSWORD_CONFIG_KEY, "");
-            connection = DriverManager.getConnection(connectionString, user,
-                    password);
+
+            dataSource = new HikariDataSource();
+            dataSource.setJdbcUrl(connectionString);
+            dataSource.setUsername(user);
+            dataSource.setPassword(password);
+            dataSource.setPoolName("JdbcCachePool");
+            dataSource.setMaximumPoolSize(10); // TODO: make this configurable
+            dataSource.setConnectionTimeout(10000); // TODO: make this configurable
+            //dataSource.addDataSourceProperty("cachePrepStmts", "true");
+            //dataSource.addDataSourceProperty("prepStmtCacheSize", "250");
+            //dataSource.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
         }
-        return connection;
+        return dataSource.getConnection();
     }
 
     @Override
     public Dimension getDimension(Identifier identifier) throws IOException {
         final Timestamp oldestDate = oldestValidDate();
-        Configuration config = Application.getConfiguration();
-        String tableName = config.getString(INFO_TABLE_CONFIG_KEY, "");
+        final Configuration config = Application.getConfiguration();
+        final String tableName = config.getString(INFO_TABLE_CONFIG_KEY, "");
         if (tableName != null && tableName.length() > 0) {
-            try {
-                String sql = String.format(
+            try (Connection connection = getConnection()) {
+                final String sql = String.format(
                         "SELECT %s, %s, %s FROM %s WHERE %s = ?",
                         INFO_TABLE_WIDTH_COLUMN, INFO_TABLE_HEIGHT_COLUMN,
                         INFO_TABLE_LAST_MODIFIED_COLUMN, tableName,
                         INFO_TABLE_IDENTIFIER_COLUMN);
-                PreparedStatement statement = getConnection().prepareStatement(sql);
+                PreparedStatement statement = connection.prepareStatement(sql);
                 statement.setString(1, identifier.toString());
                 logger.debug(sql);
                 ResultSet resultSet = statement.executeQuery();
@@ -290,7 +328,7 @@ class JdbcCache implements Cache {
                                 resultSet.getInt(INFO_TABLE_HEIGHT_COLUMN));
                     } else {
                         logger.debug("Miss for dimension: {}", identifier);
-                        purgeInfo(identifier);
+                        purgeInfo(identifier, connection);
                     }
                 }
             } catch (SQLException e) {
@@ -306,11 +344,10 @@ class JdbcCache implements Cache {
     public InputStream getImageInputStream(OperationList ops) {
         InputStream inputStream = null;
         final Timestamp oldestDate = oldestValidDate();
-        Configuration config = Application.getConfiguration();
-        String tableName = config.getString(IMAGE_TABLE_CONFIG_KEY, "");
+        final Configuration config = Application.getConfiguration();
+        final String tableName = config.getString(IMAGE_TABLE_CONFIG_KEY, "");
         if (tableName != null && tableName.length() > 0) {
-            try {
-                Connection conn = getConnection();
+            try (Connection conn = getConnection()) {
                 String sql = String.format(
                         "SELECT %s, %s FROM %s WHERE %s = ?",
                         IMAGE_TABLE_IMAGE_COLUMN,
@@ -326,7 +363,7 @@ class JdbcCache implements Cache {
                         inputStream = resultSet.getBinaryStream(1);
                     } else {
                         logger.debug("Miss for image: {}", ops);
-                        purgeImage(ops);
+                        purgeImage(ops, conn);
                     }
                 }
             } catch (IOException | SQLException e) {
@@ -342,8 +379,8 @@ class JdbcCache implements Cache {
     public OutputStream getImageOutputStream(OperationList ops)
             throws IOException {
         logger.debug("Miss; caching {}", ops);
-        Configuration config = Application.getConfiguration();
-        String tableName = config.getString(IMAGE_TABLE_CONFIG_KEY, "");
+        final Configuration config = Application.getConfiguration();
+        final String tableName = config.getString(IMAGE_TABLE_CONFIG_KEY, "");
         if (tableName != null && tableName.length() > 0) {
             try {
                 return new JdbcImageOutputStream(getConnection(), ops);
@@ -362,8 +399,8 @@ class JdbcCache implements Cache {
     }
 
     public Timestamp oldestValidDate() {
-        Configuration config = Application.getConfiguration();
-        long ttl = config.getLong(TTL_CONFIG_KEY, 0);
+        final Configuration config = Application.getConfiguration();
+        final long ttl = config.getLong(TTL_CONFIG_KEY, 0);
         if (ttl > 0) {
             final Instant oldestInstant = Instant.now().
                     minus(Duration.ofSeconds(ttl));
@@ -375,9 +412,9 @@ class JdbcCache implements Cache {
 
     @Override
     public void purge() throws IOException {
-        try {
-            int numDeletedImages = purgeImages();
-            int numDeletedInfos = purgeInfos();
+        try (Connection connection = getConnection()) {
+            final int numDeletedImages = purgeImages(connection);
+            final int numDeletedInfos = purgeInfos(connection);
             logger.info("Deleted {} cached image(s) and {} cached dimension(s)",
                     numDeletedImages, numDeletedInfos);
         } catch (SQLException e) {
@@ -387,9 +424,9 @@ class JdbcCache implements Cache {
 
     @Override
     public void purge(Identifier identifier) throws IOException {
-        try {
-            int numDeletedImages = purgeImages(identifier);
-            int numDeletedDimensions = purgeInfo(identifier);
+        try (Connection connection = getConnection()) {
+            final int numDeletedImages = purgeImages(identifier, connection);
+            final int numDeletedDimensions = purgeInfo(identifier, connection);
             logger.info("Deleted {} cached image(s) and {} cached dimension(s)",
                     numDeletedImages, numDeletedDimensions);
         } catch (SQLException e) {
@@ -399,9 +436,10 @@ class JdbcCache implements Cache {
 
     @Override
     public void purge(OperationList ops) throws IOException {
-        try {
-            int numDeletedImages = purgeImage(ops);
-            int numDeletedDimensions = purgeInfo(ops.getIdentifier());
+        try (Connection connection = getConnection()) {
+            final int numDeletedImages = purgeImage(ops, connection);
+            final int numDeletedDimensions = purgeInfo(ops.getIdentifier(),
+                    connection);
             logger.info("Deleted {} cached image(s) and {} cached dimension(s)",
                     numDeletedImages, numDeletedDimensions);
         } catch (SQLException e) {
@@ -411,9 +449,9 @@ class JdbcCache implements Cache {
 
     @Override
     public void purgeExpired() throws IOException {
-        try {
-            int numDeletedImages = purgeExpiredImages();
-            int numDeletedInfos = purgeExpiredInfos();
+        try (Connection connection = getConnection()) {
+            final int numDeletedImages = purgeExpiredImages(connection);
+            final int numDeletedInfos = purgeExpiredInfos(connection);
             logger.info("Deleted {} cached image(s) and {} cached dimension(s)",
                     numDeletedImages, numDeletedInfos);
         } catch (SQLException e) {
@@ -421,9 +459,15 @@ class JdbcCache implements Cache {
         }
     }
 
-    private int purgeExpiredImages() throws SQLException, IOException {
+    /**
+     * @param conn Will not be closed.
+     * @return
+     * @throws SQLException
+     * @throws IOException
+     */
+    private int purgeExpiredImages(Connection conn)
+            throws SQLException, IOException {
         Configuration config = Application.getConfiguration();
-        Connection conn = getConnection();
 
         final String imageTableName = config.getString(IMAGE_TABLE_CONFIG_KEY);
         if (imageTableName != null && imageTableName.length() > 0) {
@@ -438,9 +482,15 @@ class JdbcCache implements Cache {
         }
     }
 
-    private int purgeExpiredInfos() throws SQLException, IOException {
+    /**
+     * @param conn Will not be closed.
+     * @return
+     * @throws SQLException
+     * @throws IOException
+     */
+    private int purgeExpiredInfos(Connection conn)
+            throws SQLException, IOException {
         Configuration config = Application.getConfiguration();
-        Connection conn = getConnection();
 
         final String infoTableName = config.getString(INFO_TABLE_CONFIG_KEY);
         if (infoTableName != null && infoTableName.length() > 0) {
@@ -457,13 +507,14 @@ class JdbcCache implements Cache {
 
     /**
      * @param ops
+     * @param conn Will not be closed.
      * @return The number of purged images
      * @throws SQLException
      * @throws IOException
      */
-    private int purgeImage(OperationList ops) throws SQLException, IOException {
+    private int purgeImage(OperationList ops, Connection conn)
+            throws SQLException, IOException {
         Configuration config = Application.getConfiguration();
-        Connection conn = getConnection();
 
         final String imageTableName = config.getString(IMAGE_TABLE_CONFIG_KEY);
         if (imageTableName != null && imageTableName.length() > 0) {
@@ -479,13 +530,13 @@ class JdbcCache implements Cache {
     }
 
     /**
+     * @param conn Will not be closed.
      * @return The number of purged images
      * @throws SQLException
      * @throws IOException
      */
-    private int purgeImages() throws SQLException, IOException {
+    private int purgeImages(Connection conn) throws SQLException, IOException {
         Configuration config = Application.getConfiguration();
-        Connection conn = getConnection();
 
         final String imageTableName = config.getString(IMAGE_TABLE_CONFIG_KEY);
         if (imageTableName != null && imageTableName.length() > 0) {
@@ -500,14 +551,14 @@ class JdbcCache implements Cache {
 
     /**
      * @param identifier
+     * @param conn Will not be closed.
      * @return The number of purged images
      * @throws SQLException
      * @throws IOException
      */
-    private int purgeImages(Identifier identifier)
+    private int purgeImages(Identifier identifier, Connection conn)
             throws SQLException, IOException {
         Configuration config = Application.getConfiguration();
-        Connection conn = getConnection();
 
         final String imageTableName = config.getString(IMAGE_TABLE_CONFIG_KEY);
         if (imageTableName != null && imageTableName.length() > 0) {
@@ -524,13 +575,14 @@ class JdbcCache implements Cache {
 
     /**
      * @param identifier
+     * @param conn Will not be closed.
      * @return The number of purged infos
      * @throws SQLException
      * @throws IOException
      */
-    private int purgeInfo(Identifier identifier) throws SQLException, IOException {
+    private int purgeInfo(Identifier identifier, Connection conn)
+            throws SQLException, IOException {
         Configuration config = Application.getConfiguration();
-        Connection conn = getConnection();
 
         final String infoTableName = config.getString(INFO_TABLE_CONFIG_KEY);
         if (infoTableName != null && infoTableName.length() > 0) {
@@ -546,13 +598,13 @@ class JdbcCache implements Cache {
     }
 
     /**
+     * @param conn Will not be closed.
      * @return The number of purged infos
      * @throws SQLException
      * @throws IOException
      */
-    private int purgeInfos() throws SQLException, IOException {
+    private int purgeInfos(Connection conn) throws SQLException, IOException {
         Configuration config = Application.getConfiguration();
-        Connection conn = getConnection();
 
         final String infoTableName = config.getString(INFO_TABLE_CONFIG_KEY);
         if (infoTableName != null && infoTableName.length() > 0) {
@@ -571,8 +623,7 @@ class JdbcCache implements Cache {
         Configuration config = Application.getConfiguration();
         String tableName = config.getString(INFO_TABLE_CONFIG_KEY, "");
         if (tableName != null && tableName.length() > 0) {
-            try {
-                Connection conn = getConnection();
+            try (Connection conn = getConnection()) {
                 String sql = String.format(
                         "INSERT INTO %s (%s, %s, %s, %s) VALUES (?, ?, ?, ?)",
                         tableName, INFO_TABLE_IDENTIFIER_COLUMN,

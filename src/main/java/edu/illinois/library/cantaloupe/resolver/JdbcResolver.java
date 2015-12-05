@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resolver;
 
+import com.zaxxer.hikari.HikariDataSource;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -15,7 +16,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -35,11 +35,10 @@ class JdbcResolver implements StreamResolver {
     private static final String PASSWORD_CONFIG_KEY = "JdbcResolver.password";
     private static final String USER_CONFIG_KEY = "JdbcResolver.user";
 
-    private static Connection connection;
+    private static HikariDataSource dataSource;
 
     static {
-        try {
-            Connection connection = getConnection();
+        try (Connection connection = getConnection()) {
             logger.info("Using {} {}", connection.getMetaData().getDriverName(),
                     connection.getMetaData().getDriverVersion());
             Configuration config = Application.getConfiguration();
@@ -50,23 +49,37 @@ class JdbcResolver implements StreamResolver {
         }
     }
 
+    /**
+     * @return Connection from the connection pool. Clients must
+     * <code>close()</code> it when they are done with it.
+     * @throws SQLException
+     */
     public static synchronized Connection getConnection() throws SQLException {
-        if (connection == null) {
-            Configuration config = Application.getConfiguration();
+        if (dataSource == null) {
+            final Configuration config = Application.getConfiguration();
             final String connectionString = config.
                     getString(CONNECTION_STRING_CONFIG_KEY, "");
             final String user = config.getString(USER_CONFIG_KEY, "");
             final String password = config.getString(PASSWORD_CONFIG_KEY, "");
-            connection = DriverManager.getConnection(connectionString, user,
-                    password);
+
+            dataSource = new HikariDataSource();
+            dataSource.setJdbcUrl(connectionString);
+            dataSource.setUsername(user);
+            dataSource.setPassword(password);
+            dataSource.setPoolName("JdbcCachePool");
+            dataSource.setMaximumPoolSize(10); // TODO: make this configurable
+            dataSource.setConnectionTimeout(10000); // TODO: make this configurable
+            //dataSource.addDataSourceProperty("cachePrepStmts", "true");
+            //dataSource.addDataSourceProperty("prepStmtCacheSize", "250");
+            //dataSource.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
         }
-        return connection;
+        return dataSource.getConnection();
     }
 
     @Override
     public InputStream getInputStream(Identifier identifier)
             throws IOException {
-        try {
+        try (Connection connection = getConnection()) {
             Configuration config = Application.getConfiguration();
             String sql = config.getString(LOOKUP_SQL_CONFIG_KEY);
             if (!sql.contains("?")) {
@@ -75,7 +88,7 @@ class JdbcResolver implements StreamResolver {
             }
             logger.debug(sql);
 
-            PreparedStatement statement = getConnection().prepareStatement(sql);
+            PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, executeGetDatabaseIdentifier(identifier));
             ResultSet result = statement.executeQuery();
             if (result.next()) {
@@ -101,12 +114,14 @@ class JdbcResolver implements StreamResolver {
                 if (functionResult.toUpperCase().contains("SELECT") &&
                         functionResult.toUpperCase().contains("FROM")) {
                     logger.debug(functionResult);
-                    PreparedStatement statement = getConnection().
-                            prepareStatement(functionResult);
-                    statement.setString(1, executeGetDatabaseIdentifier(identifier));
-                    ResultSet resultSet = statement.executeQuery();
-                    if (resultSet.next()) {
-                        mediaType = new MediaType(resultSet.getString(1));
+                    try (Connection connection = getConnection()) {
+                        PreparedStatement statement = connection.
+                                prepareStatement(functionResult);
+                        statement.setString(1, executeGetDatabaseIdentifier(identifier));
+                        ResultSet resultSet = statement.executeQuery();
+                        if (resultSet.next()) {
+                            mediaType = new MediaType(resultSet.getString(1));
+                        }
                     }
                 } else {
                     mediaType = new MediaType(functionResult);

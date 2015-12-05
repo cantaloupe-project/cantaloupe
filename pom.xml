@@ -15,6 +15,7 @@
     <commons-io.version>2.4</commons-io.version>
     <commons-lang3.version>3.4</commons-lang3.version>
     <h2.version>1.4.190</h2.version>
+    <hikari.version>2.4.1</hikari.version>
     <im4java.version>1.4.0</im4java.version>
     <imageio-ext.version>1.1.12</imageio-ext.version>
     <jackson.version>2.6.0</jackson.version>
@@ -40,12 +41,18 @@
       <artifactId>aws-java-sdk-s3</artifactId>
       <version>${amazon-s3.version}</version>
     </dependency>
-    <!-- Used by JdbcResolverTest -->
+    <!-- Used by JdbcResolverTest and JdbcCacheTest -->
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
       <version>${h2.version}</version>
       <scope>test</scope>
+    </dependency>
+    <!-- Provides a JDBC connection pool for JdbcResolver and JdbcCache -->
+    <dependency>
+      <groupId>com.zaxxer</groupId>
+      <artifactId>HikariCP</artifactId>
+      <version>${hikari.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-configuration</groupId>
