@@ -54,13 +54,6 @@ class KakaduProcessor implements FileProcessor {
         JAI, JAVA2D
     }
 
-    /**
-     * Used to return a reduction factor from getProcessBuilder() by reference.
-     */
-    private class ReductionFactor {
-        public int factor = 0;
-    }
-
     private class StreamCopier implements Runnable {
 
         private final InputStream inputStream;
