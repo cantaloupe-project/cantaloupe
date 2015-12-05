@@ -2,10 +2,10 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
+import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import org.apache.velocity.Template;
 import org.apache.velocity.app.Velocity;
 import org.restlet.data.MediaType;
-import org.restlet.data.Status;
 import org.restlet.ext.velocity.TemplateRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
@@ -22,8 +22,7 @@ public class LandingResource extends AbstractResource {
     protected void doInit() throws ResourceException {
         if (!Application.getConfiguration().
                 getBoolean("endpoint.iiif.2.0.enabled", true)) {
-            throw new ResourceException(Status.CLIENT_ERROR_FORBIDDEN,
-                    "The IIIF Image API 2.0 endpoint is disabled.");
+            throw new EndpointDisabledException();
         }
         super.doInit();
     }

@@ -16,11 +16,11 @@ import edu.illinois.library.cantaloupe.resolver.FileResolver;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
+import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.MediaType;
-import org.restlet.data.Status;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Variant;
 import org.restlet.resource.Get;
@@ -57,8 +57,7 @@ public class ImageResource extends AbstractResource {
     protected void doInit() throws ResourceException {
         if (!Application.getConfiguration().
                 getBoolean("endpoint.iiif.1.1.enabled", true)) {
-            throw new ResourceException(Status.CLIENT_ERROR_FORBIDDEN,
-                    "The IIIF Image API 1.1 endpoint is disabled.");
+            throw new EndpointDisabledException();
         }
         super.doInit();
     }

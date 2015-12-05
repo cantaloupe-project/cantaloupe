@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.iiif.Feature;
 import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -28,7 +29,6 @@ import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
-import org.restlet.data.Status;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
@@ -56,8 +56,7 @@ public class InformationResource extends AbstractResource {
     protected void doInit() throws ResourceException {
         if (!Application.getConfiguration().
                 getBoolean("endpoint.iiif.2.0.enabled", true)) {
-            throw new ResourceException(Status.CLIENT_ERROR_FORBIDDEN,
-                    "The IIIF Image API 2.0 endpoint is disabled.");
+            throw new EndpointDisabledException();
         }
         super.doInit();
     }
