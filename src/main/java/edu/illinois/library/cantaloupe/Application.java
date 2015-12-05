@@ -47,7 +47,7 @@ public class Application {
         Velocity.init();
     }
 
-    private static void flushCacheAtLaunch() throws IOException {
+    private static void purgeCacheAtLaunch() throws IOException {
         Cache cache = CacheFactory.getInstance();
         if (cache != null) {
             cache.purge();
@@ -57,7 +57,7 @@ public class Application {
         }
     }
 
-    private static void flushExpiredFromCacheAtLaunch() throws IOException {
+    private static void purgeExpiredFromCacheAtLaunch() throws IOException {
         Cache cache = CacheFactory.getInstance();
         if (cache != null) {
             cache.purgeExpired();
@@ -118,10 +118,10 @@ public class Application {
                 runtime.maxMemory() / mb);
         logger.info("Starting Cantaloupe {}", getVersion());
 
-        if (System.getProperty("cantaloupe.cache.flush") != null) {
-            flushCacheAtLaunch();
-        } else if (System.getProperty("cantaloupe.cache.flush_expired") != null) {
-            flushExpiredFromCacheAtLaunch();
+        if (System.getProperty("cantaloupe.cache.purge") != null) {
+            purgeCacheAtLaunch();
+        } else if (System.getProperty("cantaloupe.cache.purge_expired") != null) {
+            purgeExpiredFromCacheAtLaunch();
         } else {
             startServer();
         }

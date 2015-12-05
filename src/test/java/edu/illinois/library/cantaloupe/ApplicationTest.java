@@ -42,8 +42,8 @@ public class ApplicationTest extends CantaloupeTestCase {
 
     public void setUp() {
         Application.setConfiguration(newConfiguration());
-        System.getProperties().remove("cantaloupe.cache.flush");
-        System.getProperties().remove("cantaloupe.cache.flush_expired");
+        System.getProperties().remove("cantaloupe.cache.purge");
+        System.getProperties().remove("cantaloupe.cache.purge_expired");
 
     }
 
@@ -88,7 +88,7 @@ public class ApplicationTest extends CantaloupeTestCase {
         assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
     }
 
-    public void testMainWithFlushCacheArg() throws Exception {
+    public void testMainWithPurgeCacheArg() throws Exception {
         File cacheDir = getCacheDir();
         File imageDir = new File(cacheDir.getAbsolutePath() + File.separator +
                 "image");
@@ -107,7 +107,7 @@ public class ApplicationTest extends CantaloupeTestCase {
         File.createTempFile("bla1", "tmp", imageDir);
         File.createTempFile("bla2", "tmp", infoDir);
 
-        System.setProperty("cantaloupe.cache.flush", "");
+        System.setProperty("cantaloupe.cache.purge", "");
         String[] args = {};
         Application.main(args);
 
@@ -115,7 +115,7 @@ public class ApplicationTest extends CantaloupeTestCase {
         assertEquals(0, infoDir.listFiles().length);
     }
 
-    public void testMainWithFlushExpiredCacheArg() throws Exception {
+    public void testMainWithPurgeExpiredCacheArg() throws Exception {
         File cacheDir = getCacheDir();
         File imageDir = new File(cacheDir.getAbsolutePath() + File.separator +
                 "image");
@@ -137,7 +137,7 @@ public class ApplicationTest extends CantaloupeTestCase {
         File.createTempFile("bla2", "tmp", imageDir);
         File.createTempFile("bla2", "tmp", infoDir);
 
-        System.setProperty("cantaloupe.cache.flush_expired", "");
+        System.setProperty("cantaloupe.cache.purge_expired", "");
         String[] args = {};
         Application.main(args);
 

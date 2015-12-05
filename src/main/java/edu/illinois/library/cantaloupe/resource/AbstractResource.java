@@ -32,8 +32,8 @@ public abstract class AbstractResource extends ServerResource {
     private static Logger logger = LoggerFactory.
             getLogger(AbstractResource.class);
 
-    protected static final String FLUSH_MISSING_CONFIG_KEY =
-            "cache.server.flush_missing";
+    protected static final String PURGE_MISSING_CONFIG_KEY =
+            "cache.server.purge_missing";
     protected static final String RESOLVE_FIRST_CONFIG_KEY =
             "cache.server.resolve_first";
 

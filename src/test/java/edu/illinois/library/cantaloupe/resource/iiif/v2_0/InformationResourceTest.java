@@ -87,17 +87,17 @@ public class InformationResourceTest extends ResourceTest {
         }
     }
 
-    public void testFlushFromCacheWhenSourceIsMissingAndOptionIsFalse()
+    public void testPurgeFromCacheWhenSourceIsMissingAndOptionIsFalse()
             throws Exception {
-        doFlushFromCacheWhenSourceIsMissing(false);
+        doPurgeFromCacheWhenSourceIsMissing(false);
     }
 
-    public void testFlushFromCacheWhenSourceIsMissingAndOptionIsTrue()
+    public void testPurgeFromCacheWhenSourceIsMissingAndOptionIsTrue()
             throws Exception {
-        doFlushFromCacheWhenSourceIsMissing(true);
+        doPurgeFromCacheWhenSourceIsMissing(true);
     }
 
-    private void doFlushFromCacheWhenSourceIsMissing(boolean flushMissing)
+    private void doPurgeFromCacheWhenSourceIsMissing(boolean purgeMissing)
             throws Exception {
         File cacheFolder = TestUtil.getTempFolder();
         cacheFolder = new File(cacheFolder.getAbsolutePath() + "/cache");
@@ -114,7 +114,7 @@ public class InformationResourceTest extends ResourceTest {
         config.setProperty("FilesystemCache.pathname",
                 cacheFolder.getAbsolutePath());
         config.setProperty("FilesystemCache.ttl_seconds", 10);
-        config.setProperty("cache.server.flush_missing", flushMissing);
+        config.setProperty("cache.server.purge_missing", purgeMissing);
 
         File tempImage = File.createTempFile("temp", ".jpg");
         File image = TestUtil.getFixture("jpg");
@@ -150,7 +150,7 @@ public class InformationResourceTest extends ResourceTest {
                 // noop
             }
 
-            if (flushMissing) {
+            if (purgeMissing) {
                 assertNull(cache.getImageInputStream(ops));
                 assertNull(cache.getDimension(ops.getIdentifier()));
             } else {

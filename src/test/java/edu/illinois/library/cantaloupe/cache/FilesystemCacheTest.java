@@ -56,7 +56,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
     /* purge() */
 
-    public void testFlush() throws Exception {
+    public void testPurge() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         instance.getImageFile(ops).createNewFile();
         instance.getDimensionFile(ops.getIdentifier()).createNewFile();
@@ -71,7 +71,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         assertEquals(0, infoPath.listFiles().length);
     }
 
-    public void testFlushFailureThrowsException() throws Exception {
+    public void testPurgeFailureThrowsException() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         // create an unwritable image cache file
         File imageFile = instance.getImageFile(ops);
@@ -100,7 +100,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
     /* purge(Identifier) */
 
-    public void testFlushWithIdentifier() throws Exception {
+    public void testPurgeWithIdentifier() throws Exception {
         Identifier id1 = new Identifier("dogs");
         Identifier id2 = new Identifier("ferrets");
 
@@ -126,7 +126,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
     /* purge(OperationsList) */
 
-    public void testFlushWithOperationList() throws Exception {
+    public void testPurgeWithOperationList() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         instance.getImageFile(ops).createNewFile();
         instance.getDimensionFile(ops.getIdentifier()).createNewFile();
@@ -135,7 +135,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         assertEquals(0, infoPath.listFiles().length);
     }
 
-    public void testFlushWithOperationListFailureThrowsException()
+    public void testPurgeWithOperationListFailureThrowsException()
             throws Exception {
         OperationList ops = TestUtil.newOperationList();
         File imageFile = instance.getImageFile(ops);

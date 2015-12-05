@@ -234,7 +234,7 @@ cache.client.no_transform = true
 # missing, all cached information relating to it (if any) will be deleted.
 # Note: this is effectively always false when cache.server.resolve_first is
 # also false.
-cache.server.flush_missing = false
+cache.server.purge_missing = false
 
 # If true, the source image will be confirmed to exist before a cached copy is
 # returned. If false, the cached copy will be returned without any checking.
