@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.image;
 
+import java.awt.Dimension;
+
 /**
  * Encapsulates a rotation operation.
  */
@@ -21,6 +23,22 @@ public class Rotate implements Operation {
 
     public float getDegrees() {
         return degrees;
+    }
+
+    /**
+     * @param fullSize
+     * @return Resulting dimensions when the scale is applied to the given full
+     * size.
+     */
+    @Override
+    public Dimension getResultingSize(Dimension fullSize) {
+        final int width = (int) Math.round(
+                Math.abs(fullSize.width * Math.cos(this.getDegrees())) +
+                        Math.abs(fullSize.height * Math.sin(this.getDegrees())));
+        final int height = (int) Math.round(
+                Math.abs(fullSize.height * Math.cos(this.getDegrees())) +
+                        Math.abs(fullSize.width * Math.sin(this.getDegrees())));
+        return new Dimension(width, height);
     }
 
     public boolean isNoOp() {

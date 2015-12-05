@@ -41,6 +41,29 @@ public class CropTest extends CantaloupeTestCase {
         assertEquals(new Rectangle(40, 40, 100, 100), crop.getRectangle(fullSize));
     }
 
+    public void testGetResultingSize() {
+        Dimension fullSize = new Dimension(200, 200);
+        // full
+        Crop crop = new Crop();
+        crop.setFull(true);
+        assertEquals(new Dimension(200, 200), crop.getResultingSize(fullSize));
+        // pixels
+        crop = new Crop();
+        crop.setX(20f);
+        crop.setY(20f);
+        crop.setWidth(50f);
+        crop.setHeight(50f);
+        assertEquals(new Dimension(50, 50), crop.getResultingSize(fullSize));
+        // percentage
+        crop = new Crop();
+        crop.setUnit(Crop.Unit.PERCENT);
+        crop.setX(0.2f);
+        crop.setY(0.2f);
+        crop.setWidth(0.5f);
+        crop.setHeight(0.5f);
+        assertEquals(new Dimension(100, 100), crop.getResultingSize(fullSize));
+    }
+
     public void testIsNull() {
         // new instance
         Crop crop = new Crop();

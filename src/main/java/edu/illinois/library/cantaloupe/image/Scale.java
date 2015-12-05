@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.image;
 
+import java.awt.Dimension;
+
 public class Scale implements Operation {
 
     public enum Mode {
@@ -25,6 +27,58 @@ public class Scale implements Operation {
      */
     public Float getPercent() {
         return percent;
+    }
+
+    /**
+     * @param fullSize
+     * @return Resulting dimensions when the scale is applied to the given full
+     * size.
+     */
+    @Override
+    public Dimension getResultingSize(Dimension fullSize) {
+        Dimension size = new Dimension(fullSize.width, fullSize.height);
+        if (this.getPercent() != null) {
+            size.width *= this.getPercent();
+            size.height *= this.getPercent();
+        } else {
+            switch (this.getMode()) {
+                case ASPECT_FIT_HEIGHT:
+                    if (this.getHeight() < size.height) {
+                        double scalePct = this.getHeight() /
+                                (double) size.height;
+                        size.width *= scalePct;
+                        size.height *= scalePct;
+                    }
+                    break;
+                case ASPECT_FIT_WIDTH:
+                    if (this.getWidth() < size.width) {
+                        double scalePct = this.getWidth() /
+                                (double) size.width;
+                        size.width *= scalePct;
+                        size.height *= scalePct;
+                    }
+                    break;
+                case ASPECT_FIT_INSIDE:
+                    if (this.getHeight() < size.height &&
+                            this.getWidth() < size.width) {
+                        double scalePct = Math.min(
+                                this.getWidth() / (double) size.width,
+                                this.getHeight() / (double) size.height);
+                        size.width *= scalePct;
+                        size.height *= scalePct;
+                    }
+                    break;
+                case NON_ASPECT_FILL:
+                    if (this.getWidth() < size.width) {
+                        size.width = this.getWidth();
+                    }
+                    if (this.getHeight() < size.height) {
+                        size.height = this.getHeight();
+                    }
+                    break;
+            }
+        }
+        return size;
     }
 
     public Integer getWidth() {

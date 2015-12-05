@@ -2,12 +2,39 @@ package edu.illinois.library.cantaloupe.image;
 
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 
+import java.awt.Dimension;
+
 public class ScaleTest extends CantaloupeTestCase {
 
     private Scale scale;
 
     public void setUp() {
         this.scale = new Scale();
+    }
+
+    public void testGetEffectiveSize() {
+        final Dimension fullSize = new Dimension(300, 200);
+        scale.setMode(Scale.Mode.FULL);
+        assertEquals(fullSize, scale.getResultingSize(fullSize));
+        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        scale.setWidth(200);
+        scale.setHeight(100);
+        assertEquals(new Dimension(150, 100), scale.getResultingSize(fullSize));
+        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        scale.setWidth(200);
+        scale.setHeight(100);
+        assertEquals(new Dimension(200, 133), scale.getResultingSize(fullSize));
+        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        scale.setWidth(200);
+        scale.setHeight(100);
+        assertEquals(new Dimension(150, 100), scale.getResultingSize(fullSize));
+        scale.setMode(Scale.Mode.NON_ASPECT_FILL);
+        scale.setWidth(200);
+        scale.setHeight(100);
+        assertEquals(new Dimension(200, 100), scale.getResultingSize(fullSize));
+        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        scale.setPercent(0.5f);
+        assertEquals(new Dimension(150, 100), scale.getResultingSize(fullSize));
     }
 
     public void testIsNoOp() {

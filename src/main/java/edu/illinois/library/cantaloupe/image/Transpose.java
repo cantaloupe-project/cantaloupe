@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.image;
 
+import java.awt.Dimension;
+
 /**
  * Encapsulates a transposition (flipping/mirroring) operation on an image.
  */
@@ -9,6 +11,11 @@ public enum Transpose implements Operation {
     HORIZONTAL,
     /** Indicates flipping. */
     VERTICAL;
+
+    @Override
+    public Dimension getResultingSize(Dimension fullSize) {
+        return fullSize;
+    }
 
     public boolean isNoOp() {
         return false;

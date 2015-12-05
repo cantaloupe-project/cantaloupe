@@ -24,7 +24,7 @@ public class Crop implements Operation {
 
     /**
      * @return The height of the operation. If {@link #getUnit()} returns
-     * {@link Unit.PERCENT}, this will be a percentage of the full image height
+     * {@link Unit#PERCENT}, this will be a percentage of the full image height
      * between 0 and 1.
      */
     public float getHeight() {
@@ -57,13 +57,18 @@ public class Crop implements Operation {
         return new Rectangle(x, y, width, height);
     }
 
+    @Override
+    public Dimension getResultingSize(Dimension fullSize) {
+        return getRectangle(fullSize).getSize();
+    }
+
     public Unit getUnit() {
         return unit;
     }
 
     /**
      * @return The width of the operation. If {@link #getUnit()} returns
-     * {@link Unit.PERCENT}, this will be a percentage of the full image width
+     * {@link Unit#PERCENT}, this will be a percentage of the full image width
      * between 0 and 1.
      */
     public float getWidth() {
@@ -72,7 +77,7 @@ public class Crop implements Operation {
 
     /**
      * @return The left bounding coordinate of the operation. If
-     * {@link #getUnit()} returns {@link Unit.PERCENT}, this will be a
+     * {@link #getUnit()} returns {@link Unit#PERCENT}, this will be a
      * percentage of the full image width between 0 and 1.
      */
     public float getX() {
@@ -81,7 +86,7 @@ public class Crop implements Operation {
 
     /**
      * @return The top bounding coordinate of the operation. If
-     * {@link #getUnit()} returns {@link Unit.PERCENT}, this will be a
+     * {@link #getUnit()} returns {@link Unit#PERCENT}, this will be a
      * percentage of the full image height between 0 and 1.
      */
     public float getY() {
