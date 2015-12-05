@@ -8,24 +8,34 @@ layout: default
 
 <h4>CPU</h4>
 
-<p>Generally, response times benefit from multiple fast CPU cores. Even if a particular processor doesn't support multithreading, the operating system is at least likely to schedule different processing threads (from simultaneous requests) on different cores.</p>
+<p>Especially in production, response times benefit from multiple fast CPU cores. Even if a particular processor doesn't support multithreading, the operating system is at least likely to schedule different processing threads (from simultaneous requests) on different cores.</p>
 
-<p>A 64-bit CPU is also important, as it enables Cantaloupe to use more memory.</p>
+<p>The corollary is that the performance of simultaneous requests to processors that do support multithreading will be reduced by the factor of the number of simultaneous requests.</p>
+
+<p>A 64-bit CPU is important, as 32-bit CPUs are limited to 4 GB of memory.</p>
 
 <h4 id="Memory">Memory</h4>
 
-<p>Consider the case of an image server that is asked to render tiles for a 4096x4096 pixel source image that, at 24 bits per pixel, totals 50MB in
+<p>Consider the case of an image server that is asked to render tiles for a 4096x4096 pixel source image that, at 24 bits per pixel, totals 50 MB in
 decompressed size. Multiple clients are simultaneously requesting numerous downscaled tiles. Request handlers do not communicate with each other, so each one is loading this large image and operating on it independently.</p>
 
 <p>Furthermore, some processors are inefficient in that they have to create new images internally at each intermediate step in the processing pipeline (cropping, scaling, rotating, etc.). Each one occupies precious memory.</p>
 
-<p>It's easy to see where RAM becomes a major consideration here. With the processors that do their work in Java, It is completely normal to see transient spikes of hundreds of megabytes of memory use on the Java heap in response to a single zooming-image-viewer request. The JVM will accommodate by dynamically increasing the heap size. From the operating system's perspective, the process is bloating up to a gigabyte in size and beyond, but there is nothing wrong &mdash; most of this is actually unused heap space.</p>
+<p>It's easy to see where RAM becomes a major consideration here. With the processors that do their work in Java, It is completely normal to see transient spikes of hundreds of megabytes of used memory on the Java heap in response to a single zooming-image-viewer request. The JVM will accommodate by dynamically increasing the heap size. From the operating system's perspective, the process is bloating up to a gigabyte in size and beyond, but there is nothing wrong &mdash; most of this is actually unused heap space.</p>
 
-<p>The smaller the available heap space, the larger the source images, and the larger the number of simultaneous requests, the greater the likelihood of OutOfMemoryErrors. In production, it is highly recommended to use the <code>-Xmx</code> flag to increase the maximum heap size to the largest amount possible &mdash; for example, <code>-Xmx8g</code> for 8GB. And, by all means, use caching liberally on both the <a href="client-caching.html">client</a> and <a href="caches.html">server</a>.</p>
+<p>The smaller the available heap space, the larger the source images, and the larger the number of simultaneous requests, the greater the likelihood of OutOfMemoryErrors. In production, it is highly recommended to use the <code>-Xmx</code> flag to increase the maximum heap size to the largest amount possible &mdash; for example, <code>-Xmx8g</code> for 8GB.</p>
 
 <h4>Storage</h4>
 
-<p>Cantaloupe benefits from fast read performance in the underlying storage system, especially as source image size increases.</p>
+<p>Cantaloupe benefits from fast read performance &mdash; in terms of both latency and throughput &mdash; in the underlying storage system. Throughput becomes more important as source image size increases.</p>
+
+<h4>Caching</h4>
+
+<p>In production, caching should be used to the maximum extent possible on both the <a href="client-caching.html">client</a> and <a href="caches.html">server</a>. This will drastically reduce the load on the server and improve performance for the remaining processing that is left to do.</p>
+
+<h3 id="Limiting">Limiting</h3>
+
+<p>Cantaloupe offers a <code>max_pixels</code> configuration option to limit the maximum returned image size. This can prevent clients from attempting to download huge images that would bog down the server.</p>
 
 <h3 id="Proxying">Proxying</h3>
 
