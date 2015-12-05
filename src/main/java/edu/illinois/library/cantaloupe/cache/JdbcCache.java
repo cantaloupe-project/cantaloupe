@@ -135,8 +135,10 @@ class JdbcCache implements Cache {
     public static synchronized void createTables()
             throws IOException, SQLException {
         try (Connection connection = getConnection()) {
+            connection.setAutoCommit(false);
             createImageTable(connection);
             createInfoTable(connection);
+            connection.commit();
         }
     }
 
@@ -233,8 +235,10 @@ class JdbcCache implements Cache {
     public static synchronized void dropTables()
             throws IOException, SQLException {
         try (Connection connection = getConnection()) {
+            connection.setAutoCommit(false);
             dropImageTable(connection);
             dropInfoTable(connection);
+            connection.commit();
         }
     }
 
@@ -418,8 +422,10 @@ class JdbcCache implements Cache {
     @Override
     public void purge() throws IOException {
         try (Connection connection = getConnection()) {
+            connection.setAutoCommit(false);
             final int numDeletedImages = purgeImages(connection);
             final int numDeletedInfos = purgeInfos(connection);
+            connection.commit();
             logger.info("Deleted {} cached image(s) and {} cached dimension(s)",
                     numDeletedImages, numDeletedInfos);
         } catch (SQLException e) {
@@ -430,8 +436,10 @@ class JdbcCache implements Cache {
     @Override
     public void purge(Identifier identifier) throws IOException {
         try (Connection connection = getConnection()) {
+            connection.setAutoCommit(false);
             final int numDeletedImages = purgeImages(identifier, connection);
             final int numDeletedDimensions = purgeInfo(identifier, connection);
+            connection.commit();
             logger.info("Deleted {} cached image(s) and {} cached dimension(s)",
                     numDeletedImages, numDeletedDimensions);
         } catch (SQLException e) {
@@ -442,9 +450,11 @@ class JdbcCache implements Cache {
     @Override
     public void purge(OperationList ops) throws IOException {
         try (Connection connection = getConnection()) {
+            connection.setAutoCommit(false);
             final int numDeletedImages = purgeImage(ops, connection);
             final int numDeletedDimensions = purgeInfo(ops.getIdentifier(),
                     connection);
+            connection.commit();
             logger.info("Deleted {} cached image(s) and {} cached dimension(s)",
                     numDeletedImages, numDeletedDimensions);
         } catch (SQLException e) {
@@ -455,8 +465,10 @@ class JdbcCache implements Cache {
     @Override
     public void purgeExpired() throws IOException {
         try (Connection connection = getConnection()) {
+            connection.setAutoCommit(false);
             final int numDeletedImages = purgeExpiredImages(connection);
             final int numDeletedInfos = purgeExpiredInfos(connection);
+            connection.commit();
             logger.info("Deleted {} cached image(s) and {} cached dimension(s)",
                     numDeletedImages, numDeletedInfos);
         } catch (SQLException e) {
