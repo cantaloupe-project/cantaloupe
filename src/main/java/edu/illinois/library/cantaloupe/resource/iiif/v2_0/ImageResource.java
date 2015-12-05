@@ -20,6 +20,7 @@ import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
+import edu.illinois.library.cantaloupe.resource.PayloadTooLargeException;
 import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.resource.Get;
@@ -143,6 +144,9 @@ public class ImageResource extends AbstractResource {
             throws Exception {
         final MediaType mediaType = new MediaType(
                 ops.getOutputFormat().getMediaType());
+        final long maxAllowedSize = Application.getConfiguration().
+                getLong("max_pixels", 0);
+
         // FileResolver -> StreamProcessor: OK, using FileInputStream
         // FileResolver -> FileProcessor: OK, using File
         // StreamResolver -> StreamProcessor: OK, using InputStream
@@ -158,19 +162,32 @@ public class ImageResource extends AbstractResource {
                 proc instanceof FileProcessor) {
             logger.debug("Using {} as a FileProcessor",
                     proc.getClass().getSimpleName());
-            File inputFile = ((FileResolver) resolver).
+            final FileProcessor fproc = (FileProcessor) proc;
+            final File inputFile = ((FileResolver) resolver).
                     getFile(ops.getIdentifier());
-            return new ImageRepresentation(mediaType, sourceFormat, ops,
-                    inputFile);
+            final Dimension fullSize = fproc.getSize(inputFile, sourceFormat);
+            final Dimension effectiveSize = ops.getResultingSize(fullSize);
+            if (maxAllowedSize > 0 &&
+                    effectiveSize.width * effectiveSize.height > maxAllowedSize) {
+                throw new PayloadTooLargeException();
+            }
+            return new ImageRepresentation(mediaType, sourceFormat, fullSize,
+                    ops, inputFile);
         } else if (resolver instanceof StreamResolver) {
             logger.debug("Using {} as a StreamProcessor",
                     proc.getClass().getSimpleName());
             final StreamResolver sres = (StreamResolver) resolver;
             if (proc instanceof StreamProcessor) {
-                StreamProcessor sproc = (StreamProcessor) proc;
+                final StreamProcessor sproc = (StreamProcessor) proc;
                 InputStream inputStream = sres.
                         getInputStream(ops.getIdentifier());
-                Dimension fullSize = sproc.getSize(inputStream, sourceFormat);
+                final Dimension fullSize = sproc.getSize(inputStream,
+                        sourceFormat);
+                final Dimension effectiveSize = ops.getResultingSize(fullSize);
+                if (maxAllowedSize > 0 &&
+                        effectiveSize.width * effectiveSize.height > maxAllowedSize) {
+                    throw new PayloadTooLargeException();
+                }
                 // avoid reusing the stream
                 inputStream = sres.getInputStream(ops.getIdentifier());
                 return new ImageRepresentation(mediaType, sourceFormat,

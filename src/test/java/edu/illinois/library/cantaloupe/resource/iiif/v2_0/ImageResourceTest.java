@@ -262,6 +262,23 @@ public class ImageResourceTest extends ResourceTest {
         assertTrue(header.getValue().startsWith("<https://example.org/"));
     }
 
+    public void testMaxPixels() {
+        Configuration config = Application.getConfiguration();
+        ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
+
+        config.setProperty("max_pixels", 100000000);
+        client.get();
+        assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        config.setProperty("max_pixels", 1000);
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.SERVER_ERROR_INTERNAL, client.getStatus());
+        }
+    }
+
     public void testNotFound() throws IOException {
         ClientResource client = getClientForUriPath("/invalid/info.json");
         try {

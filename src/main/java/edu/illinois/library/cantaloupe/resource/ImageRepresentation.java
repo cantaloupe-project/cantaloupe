@@ -65,14 +65,18 @@ public class ImageRepresentation extends AbstractImageRepresentation {
      *
      * @param mediaType
      * @param sourceFormat
+     * @param fullSize
      * @param ops
      * @param file
      */
     public ImageRepresentation(MediaType mediaType,
                                SourceFormat sourceFormat,
-                               OperationList ops, File file) {
+                               Dimension fullSize,
+                               OperationList ops,
+                               File file) {
         super(mediaType, ops.getIdentifier(), ops.getOutputFormat());
         this.file = file;
+        this.fullSize = fullSize;
         this.ops = ops;
         this.sourceFormat = sourceFormat;
     }
@@ -164,9 +168,7 @@ public class ImageRepresentation extends AbstractImageRepresentation {
                         getProcessor(this.sourceFormat);
                 if (this.file != null) {
                     FileProcessor fproc = (FileProcessor) proc;
-                    Dimension size = fproc.getSize(this.file,
-                            this.sourceFormat);
-                    fproc.process(this.ops, this.sourceFormat, size,
+                    fproc.process(this.ops, this.sourceFormat, this.fullSize,
                             this.file, outputStream);
                 } else {
                     StreamProcessor sproc = (StreamProcessor) proc;

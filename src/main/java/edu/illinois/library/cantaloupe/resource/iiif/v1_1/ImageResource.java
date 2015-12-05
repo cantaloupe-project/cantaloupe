@@ -18,7 +18,7 @@ import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
-import org.apache.commons.configuration.Configuration;
+import edu.illinois.library.cantaloupe.resource.PayloadTooLargeException;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
@@ -111,15 +111,6 @@ public class ImageResource extends AbstractResource {
             outputFormat = getOutputFormat(availableOutputFormats).getExtension();
         }
 
-        // Assemble the URI parameters into a Parameters object
-        final Parameters params = new Parameters(
-                (String) attrs.get("identifier"),
-                (String) attrs.get("region"),
-                (String) attrs.get("size"),
-                (String) attrs.get("rotation"),
-                qualityAndFormat[0],
-                outputFormat);
-
         final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
                 proc.getSupportedFeatures(sourceFormat),
                 proc.getSupportedIiif1_1Qualities(sourceFormat),
@@ -127,9 +118,17 @@ public class ImageResource extends AbstractResource {
         this.addHeader("Link", String.format("<%s>;rel=\"profile\";",
                 complianceLevel.getUri()));
 
+        // Assemble the URI parameters into an OperationList objects
+        final OperationList ops = new Parameters(
+                (String) attrs.get("identifier"),
+                (String) attrs.get("region"),
+                (String) attrs.get("size"),
+                (String) attrs.get("rotation"),
+                qualityAndFormat[0],
+                outputFormat).toOperationList();
+
         // Find out whether the processor supports that source format by
         // asking it whether it offers any output formats for it
-        final OperationList ops = params.toOperationList();
         if (!availableOutputFormats.contains(ops.getOutputFormat())) {
             String msg = String.format("%s does not support the \"%s\" output format",
                     proc.getClass().getSimpleName(),
@@ -192,6 +191,9 @@ public class ImageResource extends AbstractResource {
             throws Exception {
         final MediaType mediaType = new MediaType(
                 ops.getOutputFormat().getMediaType());
+        final long maxAllowedSize = Application.getConfiguration().
+                getLong("max_pixels", 0);
+
         // FileResolver -> StreamProcessor: OK, using FileInputStream
         // FileResolver -> FileProcessor: OK, using File
         // StreamResolver -> StreamProcessor: OK, using InputStream
@@ -207,23 +209,36 @@ public class ImageResource extends AbstractResource {
                 proc instanceof FileProcessor) {
             logger.debug("Using {} as a FileProcessor",
                     proc.getClass().getSimpleName());
-            File inputFile = ((FileResolver) resolver).
+            final FileProcessor fproc = (FileProcessor) proc;
+            final File inputFile = ((FileResolver) resolver).
                     getFile(ops.getIdentifier());
-            return new ImageRepresentation(mediaType, sourceFormat, ops,
-                    inputFile);
+            final Dimension fullSize = fproc.getSize(inputFile, sourceFormat);
+            final Dimension effectiveSize = ops.getResultingSize(fullSize);
+            if (maxAllowedSize > 0 &&
+                    effectiveSize.width * effectiveSize.height > maxAllowedSize) {
+                throw new PayloadTooLargeException();
+            }
+            return new ImageRepresentation(mediaType, sourceFormat, fullSize,
+                    ops, inputFile);
         } else if (resolver instanceof StreamResolver) {
             logger.debug("Using {} as a StreamProcessor",
                     proc.getClass().getSimpleName());
-            StreamResolver sres = (StreamResolver) resolver;
+            final StreamResolver sres = (StreamResolver) resolver;
             if (proc instanceof StreamProcessor) {
-                StreamProcessor sproc = (StreamProcessor) proc;
+                final StreamProcessor sproc = (StreamProcessor) proc;
                 InputStream inputStream = sres.
                         getInputStream(ops.getIdentifier());
-                Dimension fullSize = sproc.getSize(inputStream, sourceFormat);
+                final Dimension fullSize = sproc.getSize(inputStream,
+                        sourceFormat);
+                final Dimension effectiveSize = ops.getResultingSize(fullSize);
+                if (maxAllowedSize > 0 &&
+                        effectiveSize.width * effectiveSize.height > maxAllowedSize) {
+                    throw new PayloadTooLargeException();
+                }
                 // avoid reusing the stream
                 inputStream = sres.getInputStream(ops.getIdentifier());
-                return new ImageRepresentation(mediaType, sourceFormat, fullSize,
-                        ops, inputStream);
+                return new ImageRepresentation(mediaType, sourceFormat,
+                        fullSize, ops, inputStream);
             }
         }
         return null; // should never happen
