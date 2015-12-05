@@ -20,37 +20,6 @@ import java.io.OutputStream;
 public interface Cache {
 
     /**
-     * Deletes the entire cache contents.
-     *
-     * @throws IOException If any part of the process fails.
-     */
-    void flush() throws IOException;
-
-    /**
-     * Deletes all cached content corresponding to the image with the given
-     * identifier.
-     *
-     * @param identifier
-     * @throws IOException If any part of the process fails.
-     */
-    void flush(Identifier identifier) throws IOException;
-
-    /**
-     * Deletes the cached image corresponding to the given operation list.
-     *
-     * @param ops
-     * @throws IOException If any part of the process fails.
-     */
-    void flush(OperationList ops) throws IOException;
-
-    /**
-     * Deletes expired images and dimensions from the cache.
-     *
-     * @throws IOException If any part of the process fails.
-     */
-    void purgeExpired() throws IOException;
-
-    /**
      * <p>Reads cached dimension information.</p>
      *
      * <p>If a dimension corresponding to the given identifier exists in the
@@ -85,6 +54,37 @@ public interface Cache {
      * reason.
      */
     OutputStream getImageOutputStream(OperationList opList) throws IOException;
+
+    /**
+     * Deletes the entire cache contents.
+     *
+     * @throws IOException If any part of the process fails.
+     */
+    void purge() throws IOException;
+
+    /**
+     * Deletes all cached content corresponding to the image with the given
+     * identifier.
+     *
+     * @param identifier
+     * @throws IOException If any part of the process fails.
+     */
+    void purge(Identifier identifier) throws IOException;
+
+    /**
+     * Deletes the cached image corresponding to the given operation list.
+     *
+     * @param opList
+     * @throws IOException If any part of the process fails.
+     */
+    void purge(OperationList opList) throws IOException;
+
+    /**
+     * Deletes expired images and dimensions from the cache.
+     *
+     * @throws IOException If any part of the process fails.
+     */
+    void purgeExpired() throws IOException;
 
     /**
      * Adds an image's dimension information to the cache.

@@ -145,7 +145,7 @@ public class ImageRepresentation extends AbstractImageRepresentation {
             doWrite(outputStream);
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
-            cache.flush(this.ops);
+            cache.purge(this.ops);
         }
     }
 

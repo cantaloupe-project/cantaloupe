@@ -54,7 +54,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         FileUtils.deleteDirectory(fixturePath);
     }
 
-    /* flush() */
+    /* purge() */
 
     public void testFlush() throws Exception {
         OperationList ops = TestUtil.newOperationList();
@@ -66,7 +66,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         instance.getImageFile(ops).createNewFile();
         instance.getDimensionFile(ops.getIdentifier()).createNewFile();
 
-        instance.flush();
+        instance.purge();
         assertEquals(0, imagePath.listFiles().length);
         assertEquals(0, infoPath.listFiles().length);
     }
@@ -82,14 +82,14 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         infoFile.getParentFile().setWritable(false);
         try {
             try {
-                instance.flush();
+                instance.purge();
                 fail("Expected exception");
             } catch (IOException e) {
                 assertTrue(e.getMessage().startsWith("Unable to delete"));
             }
             imageFile.getParentFile().setWritable(true);
             infoFile.getParentFile().setWritable(true);
-            instance.flush();
+            instance.purge();
             assertEquals(0, imagePath.listFiles().length);
             assertEquals(0, infoPath.listFiles().length);
         } finally {
@@ -98,7 +98,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         }
     }
 
-    /* flush(Identifier) */
+    /* purge(Identifier) */
 
     public void testFlushWithIdentifier() throws Exception {
         Identifier id1 = new Identifier("dogs");
@@ -116,21 +116,21 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
         assertEquals(2, imagePath.listFiles().length);
         assertEquals(2, infoPath.listFiles().length);
-        instance.flush(id1);
+        instance.purge(id1);
         assertEquals(1, imagePath.listFiles().length);
         assertEquals(1, infoPath.listFiles().length);
-        instance.flush(id2);
+        instance.purge(id2);
         assertEquals(0, imagePath.listFiles().length);
         assertEquals(0, infoPath.listFiles().length);
     }
 
-    /* flush(OperationsList) */
+    /* purge(OperationsList) */
 
     public void testFlushWithOperationList() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         instance.getImageFile(ops).createNewFile();
         instance.getDimensionFile(ops.getIdentifier()).createNewFile();
-        instance.flush(ops);
+        instance.purge(ops);
         assertEquals(0, imagePath.listFiles().length);
         assertEquals(0, infoPath.listFiles().length);
     }
@@ -146,14 +146,14 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         dimensionFile.getParentFile().setWritable(false);
         try {
             try {
-                instance.flush(ops);
+                instance.purge(ops);
                 fail("Expected exception");
             } catch (IOException e) {
                 assertTrue(e.getMessage().startsWith("Unable to delete"));
             }
             imageFile.getParentFile().setWritable(true);
             dimensionFile.getParentFile().setWritable(true);
-            instance.flush(ops);
+            instance.purge(ops);
             assertEquals(0, imagePath.listFiles().length);
             assertEquals(0, infoPath.listFiles().length);
         } finally {

@@ -50,7 +50,7 @@ public class Application {
     private static void flushCacheAtLaunch() throws IOException {
         Cache cache = CacheFactory.getInstance();
         if (cache != null) {
-            cache.flush();
+            cache.purge();
         } else {
             System.out.println("Cache is not specified or is improperly configured.");
             System.exit(-1);

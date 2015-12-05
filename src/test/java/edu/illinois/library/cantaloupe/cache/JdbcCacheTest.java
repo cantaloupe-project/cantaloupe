@@ -130,15 +130,15 @@ public class JdbcCacheTest extends CantaloupeTestCase {
      * Clears the persistent store.
      */
     public void tearDown() throws IOException {
-        instance.flush();
+        instance.purge();
     }
 
-    /* flush() */
+    /* purge() */
 
     public void testFlush() throws Exception {
         Configuration config = Application.getConfiguration();
 
-        instance.flush();
+        instance.purge();
 
         // assert that the images and infos were flushed
         String sql = String.format("SELECT COUNT(%s) AS count FROM %s",
@@ -158,13 +158,13 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         assertEquals(0, resultSet.getInt("count"));
     }
 
-    /* flush(Identifier) */
+    /* purge(Identifier) */
 
     public void testFlushWithIdentifier() throws Exception {
         Configuration config = Application.getConfiguration();
 
         Identifier id1 = new Identifier("cats");
-        instance.flush(id1);
+        instance.purge(id1);
 
         // assert that the images and infos were flushed
         String sql = String.format("SELECT COUNT(%s) AS count FROM %s",
@@ -184,12 +184,12 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         assertEquals(2, resultSet.getInt("count"));
     }
 
-    /* flush(OperationList) */
+    /* purge(OperationList) */
 
     public void testFlushWithOperations() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
-        instance.flush(ops);
+        instance.purge(ops);
 
         Configuration config = Application.getConfiguration();
 

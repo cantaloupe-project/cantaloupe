@@ -99,10 +99,10 @@ public class ImageResource extends AbstractResource {
         } catch (FileNotFoundException e) {
             if (Application.getConfiguration().
                     getBoolean(FLUSH_MISSING_CONFIG_KEY, false)) {
-                // if the image was not found, flush it from the cache
+                // if the image was not found, purge it from the cache
                 final Cache cache = CacheFactory.getInstance();
                 if (cache != null) {
-                    cache.flush(ops.getIdentifier());
+                    cache.purge(ops.getIdentifier());
                 }
             }
             throw e;

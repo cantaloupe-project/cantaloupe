@@ -135,22 +135,22 @@ class FilesystemCache implements Cache {
 
     private static final ObjectMapper infoMapper = new ObjectMapper();
 
-    private final AtomicBoolean flushingInProgress = new AtomicBoolean(false);
-
     /** Set of identifiers for which info files are currently being read. */
     private final Set<Identifier> dimensionsBeingRead =
             new ConcurrentSkipListSet<>();
     /** Set of identifiers for which info files are currently being written. */
     private final Set<Identifier> dimensionsBeingWritten =
             new ConcurrentSkipListSet<>();
-    /** Set of Operations for which image files are currently being flushed by
-     * flush(OperationList). */
-    private final Set<OperationList> imagesBeingFlushed =
+    /** Set of Operations for which image files are currently being purged by
+     * purge(OperationList). */
+    private final Set<OperationList> imagesBeingPurged =
             new ConcurrentSkipListSet<>();
     /** Set of operation lists for which image files are currently being
      * written. */
     private final Set<OperationList> imagesBeingWritten =
             new ConcurrentSkipListSet<>();
+
+    private final AtomicBoolean purgingInProgress = new AtomicBoolean(false);
 
     /** Lock object for synchronization */
     private final Object lock1 = new Object();
@@ -205,165 +205,6 @@ class FilesystemCache implements Cache {
                 getLong("FilesystemCache.ttl_seconds", 0);
         return (ttlMsec > 0) && file.isFile() &&
                 System.currentTimeMillis() - file.lastModified() >= ttlMsec;
-    }
-
-    @Override
-    public void flush() throws IOException {
-        synchronized (lock4) {
-            while (flushingInProgress.get() || !imagesBeingFlushed.isEmpty()) {
-                try {
-                    lock4.wait();
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-        }
-
-        try {
-            flushingInProgress.set(true);
-            final String imagePathname = getImagePathname();
-            final String infoPathname = getInfoPathname();
-            if (imagePathname != null && infoPathname != null) {
-                long imageCount = 0;
-                final File imageDir = new File(imagePathname);
-                if (imageDir.isDirectory()) {
-                    for (File file : imageDir.listFiles()) {
-                        if (file.isFile()) {
-                            if (file.delete()) {
-                                imageCount++;
-                            } else {
-                                throw new IOException("Unable to delete " +
-                                        file.getAbsolutePath());
-                            }
-                        }
-                    }
-                }
-                long infoCount = 0;
-                final File infoDir = new File(infoPathname);
-                if (infoDir.isDirectory()) {
-                    for (File file : infoDir.listFiles()) {
-                        if (file.isFile()) {
-                            if (file.delete()) {
-                                infoCount++;
-                            } else {
-                                throw new IOException("Unable to delete " +
-                                        file.getAbsolutePath());
-                            }
-                        }
-                    }
-                }
-                logger.info("Flushed {} images and {} dimensions", imageCount,
-                        infoCount);
-            } else {
-                throw new IOException(PATHNAME_CONFIG_KEY + " is not set");
-            }
-        } finally {
-            flushingInProgress.set(false);
-        }
-    }
-
-    @Override
-    public void flush(Identifier identifier) throws IOException {
-        for (File imageFile : getImageFiles(identifier)) {
-            logger.debug("Deleting {}", imageFile);
-            if (!imageFile.delete()) {
-                throw new IOException("Failed to delete " + imageFile);
-            }
-        }
-        File dimensionFile = getDimensionFile(identifier);
-        if (dimensionFile.exists()) {
-            logger.debug("Deleting {}", dimensionFile);
-            if (!dimensionFile.delete()) {
-                throw new IOException("Failed to delete " + dimensionFile);
-            }
-        }
-    }
-
-    @Override
-    public void flush(OperationList ops) throws IOException {
-        synchronized (lock1) {
-            while (flushingInProgress.get() || imagesBeingFlushed.contains(ops)) {
-                try {
-                    lock1.wait();
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-        }
-
-        try {
-            imagesBeingFlushed.add(ops);
-            File imageFile = getImageFile(ops);
-            if (imageFile != null && imageFile.exists()) {
-                if (!imageFile.delete()) {
-                    throw new IOException("Unable to delete " + imageFile);
-                }
-            }
-            File dimensionFile = getDimensionFile(ops.getIdentifier());
-            if (dimensionFile != null && dimensionFile.exists()) {
-                if (!dimensionFile.delete()) {
-                    throw new IOException("Unable to delete " + imageFile);
-                }
-            }
-            logger.info("Flushed {}", ops);
-        } finally {
-            imagesBeingFlushed.remove(ops);
-        }
-    }
-
-    @Override
-    public void purgeExpired() throws IOException {
-        synchronized (lock4) {
-            while (flushingInProgress.get() || !imagesBeingFlushed.isEmpty()) {
-                try {
-                    lock4.wait();
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-        }
-
-        try {
-            flushingInProgress.set(true);
-            final String imagePathname = getImagePathname();
-            final String infoPathname = getInfoPathname();
-            if (imagePathname != null && infoPathname != null) {
-                long imageCount = 0;
-                final File imageDir = new File(imagePathname);
-                if (imageDir.isDirectory()) {
-                    for (File file : imageDir.listFiles()) {
-                        if (file.isFile() && isExpired(file)) {
-                            if (file.delete()) {
-                                imageCount++;
-                            } else {
-                                throw new IOException("Unable to delete " +
-                                        file.getAbsolutePath());
-                            }
-                        }
-                    }
-                }
-                long infoCount = 0;
-                final File infoDir = new File(infoPathname);
-                if (infoDir.isDirectory()) {
-                    for (File file : infoDir.listFiles()) {
-                        if (file.isFile() && isExpired(file)) {
-                            if (file.delete()) {
-                                infoCount++;
-                            } else {
-                                throw new IOException("Unable to delete " +
-                                        file.getAbsolutePath());
-                            }
-                        }
-                    }
-                }
-                logger.info("Flushed {} expired images and {} expired dimensions",
-                        imageCount, infoCount);
-            } else {
-                throw new IOException(PATHNAME_CONFIG_KEY + " is not set");
-            }
-        } finally {
-            flushingInProgress.set(false);
-        }
     }
 
     @Override
@@ -511,6 +352,165 @@ class FilesystemCache implements Cache {
         }
         return new ConcurrentFileOutputStream(cacheFile, imagesBeingWritten,
                 ops);
+    }
+
+    @Override
+    public void purge() throws IOException {
+        synchronized (lock4) {
+            while (purgingInProgress.get() || !imagesBeingPurged.isEmpty()) {
+                try {
+                    lock4.wait();
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        }
+
+        try {
+            purgingInProgress.set(true);
+            final String imagePathname = getImagePathname();
+            final String infoPathname = getInfoPathname();
+            if (imagePathname != null && infoPathname != null) {
+                long imageCount = 0;
+                final File imageDir = new File(imagePathname);
+                if (imageDir.isDirectory()) {
+                    for (File file : imageDir.listFiles()) {
+                        if (file.isFile()) {
+                            if (file.delete()) {
+                                imageCount++;
+                            } else {
+                                throw new IOException("Unable to delete " +
+                                        file.getAbsolutePath());
+                            }
+                        }
+                    }
+                }
+                long infoCount = 0;
+                final File infoDir = new File(infoPathname);
+                if (infoDir.isDirectory()) {
+                    for (File file : infoDir.listFiles()) {
+                        if (file.isFile()) {
+                            if (file.delete()) {
+                                infoCount++;
+                            } else {
+                                throw new IOException("Unable to delete " +
+                                        file.getAbsolutePath());
+                            }
+                        }
+                    }
+                }
+                logger.info("Purged {} images and {} dimensions", imageCount,
+                        infoCount);
+            } else {
+                throw new IOException(PATHNAME_CONFIG_KEY + " is not set");
+            }
+        } finally {
+            purgingInProgress.set(false);
+        }
+    }
+
+    @Override
+    public void purge(Identifier identifier) throws IOException {
+        for (File imageFile : getImageFiles(identifier)) {
+            logger.debug("Deleting {}", imageFile);
+            if (!imageFile.delete()) {
+                throw new IOException("Failed to delete " + imageFile);
+            }
+        }
+        File dimensionFile = getDimensionFile(identifier);
+        if (dimensionFile.exists()) {
+            logger.debug("Deleting {}", dimensionFile);
+            if (!dimensionFile.delete()) {
+                throw new IOException("Failed to delete " + dimensionFile);
+            }
+        }
+    }
+
+    @Override
+    public void purge(OperationList ops) throws IOException {
+        synchronized (lock1) {
+            while (purgingInProgress.get() || imagesBeingPurged.contains(ops)) {
+                try {
+                    lock1.wait();
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        }
+
+        try {
+            imagesBeingPurged.add(ops);
+            File imageFile = getImageFile(ops);
+            if (imageFile != null && imageFile.exists()) {
+                if (!imageFile.delete()) {
+                    throw new IOException("Unable to delete " + imageFile);
+                }
+            }
+            File dimensionFile = getDimensionFile(ops.getIdentifier());
+            if (dimensionFile != null && dimensionFile.exists()) {
+                if (!dimensionFile.delete()) {
+                    throw new IOException("Unable to delete " + imageFile);
+                }
+            }
+            logger.info("Purged {}", ops);
+        } finally {
+            imagesBeingPurged.remove(ops);
+        }
+    }
+
+    @Override
+    public void purgeExpired() throws IOException {
+        synchronized (lock4) {
+            while (purgingInProgress.get() || !imagesBeingPurged.isEmpty()) {
+                try {
+                    lock4.wait();
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        }
+
+        try {
+            purgingInProgress.set(true);
+            final String imagePathname = getImagePathname();
+            final String infoPathname = getInfoPathname();
+            if (imagePathname != null && infoPathname != null) {
+                long imageCount = 0;
+                final File imageDir = new File(imagePathname);
+                if (imageDir.isDirectory()) {
+                    for (File file : imageDir.listFiles()) {
+                        if (file.isFile() && isExpired(file)) {
+                            if (file.delete()) {
+                                imageCount++;
+                            } else {
+                                throw new IOException("Unable to delete " +
+                                        file.getAbsolutePath());
+                            }
+                        }
+                    }
+                }
+                long infoCount = 0;
+                final File infoDir = new File(infoPathname);
+                if (infoDir.isDirectory()) {
+                    for (File file : infoDir.listFiles()) {
+                        if (file.isFile() && isExpired(file)) {
+                            if (file.delete()) {
+                                infoCount++;
+                            } else {
+                                throw new IOException("Unable to delete " +
+                                        file.getAbsolutePath());
+                            }
+                        }
+                    }
+                }
+                logger.info("Purged {} expired images and {} expired dimensions",
+                        imageCount, infoCount);
+            } else {
+                throw new IOException(PATHNAME_CONFIG_KEY + " is not set");
+            }
+        } finally {
+            purgingInProgress.set(false);
+        }
     }
 
     @Override
