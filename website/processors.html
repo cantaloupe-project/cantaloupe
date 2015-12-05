@@ -53,9 +53,9 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 
 <p>Kakadu is not free and the SDK is not included with Cantaloupe.</p>
 
-<p><em>Note 1: KakaduProcessor does not work in Windows, as it requires access to <span class="filename">/dev/stdout</span>.</em></p>
+<div class="alert alert-info">Note: KakaduProcessor does not work in Windows, as it requires access to <span class="filename">/dev/stdout</span>.</div>
 
-<p><em>Note 2: KakaduProcessor only works with FilesystemResolver.</em></p>
+<div class="alert alert-info">Note: KakaduProcessor only works with <a href="resolvers.html#FilesystemResolver">FilesystemResolver</a>.</div>
 
 <h3 id="JaiProcessor">JaiProcessor</h3>
 
@@ -67,7 +67,7 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 
 <p>Years ago, Sun published <a href="http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-java-client-419417.html">platform-native accelerator JARs</a> called <a href="http://www.oracle.com/technetwork/java/install-1-1-2-135866.html">mediaLib</a> for Windows, Linux, and Solaris, which improved JAI's performance. It is unknown whether these still work on modern platforms, but perhaps they are something to try.</p>
 
-<p><em>Note: if mediaLib is not installed, an error message will be generated saying, "Could not find mediaLib accelerator wrapper classes. Continuing in pure Java mode." This is harmless, but can be suppressed anyway by launching Cantaloupe with the <code>-Dcom.sun.media.jai.disableMediaLib=true</code> option.</em></p>
+<div class="alert alert-info">Note: if mediaLib is not installed, an error message will be generated saying, "Could not find mediaLib accelerator wrapper classes. Continuing in pure Java mode." This is harmless, but can be suppressed anyway by launching Cantaloupe with the <code>-Dcom.sun.media.jai.disableMediaLib=true</code> option.</div>
 
 <h3 id="FfmpegProcessor">FfmpegProcessor</h3>
 
@@ -83,7 +83,7 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 
 <p>If the <code>time</code> parameter is not present in the URL, the first frame will be returned.</p>
 
-<p>Note that the <code>time</code> parameter is nonstandard and Cantaloupe-specific.</p>
+<div class="alert alert-info">Note: the <code>time</code> parameter is nonstandard and Cantaloupe-specific.</div>
 
 <h3 id="Compatibility">Processor/Resolver Compatibility</h3>
 

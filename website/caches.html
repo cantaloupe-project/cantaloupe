@@ -46,7 +46,9 @@ layout: default
   <dd>Time-to-live of the cached images and information responses, in seconds.</dd>
 </dl>
 
-<p><em>Note: JdbcCache has been tested with PostgreSQL 9.4 and H2 1.4. Other databases may work, but are untested. In particular, the database needs to support <code>CREATE TABLE IF NOT EXISTS</code> syntax, which in the case of PostgreSQL, arrived in version 9.1.</em></p>
+<div class="alert alert-info">Note: JdbcCache has been tested with PostgreSQL 9.4 and H2 1.4. Other databases may work, but are untested. In particular, the database needs to support <code>CREATE TABLE IF NOT EXISTS</code> syntax, which in the case of PostgreSQL, arrived in version 9.1.</div>
+
+<div class="alert alert-warning">Note: JdbcCache is inefficient in that it buffers generated images in memory before flushing them to the database. The Cantaloupe cache API couples poorly with the JDBC API.</div>
 
 <h3 id="Purging">Purging the Cache</h3>
 
