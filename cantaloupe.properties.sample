@@ -95,6 +95,13 @@ JdbcResolver.connection_string = jdbc:postgresql://localhost:5432/my_database
 JdbcResolver.user = postgres
 JdbcResolver.password = postgres
 
+# Maximum number of connections allowed in the connection pool. A good starting
+# point is (number of CPU cores * 2) + 1.
+JdbcResolver.max_pool_size = 10
+
+# Connection timeout in seconds.
+JdbcResolver.connection_timeout = 10
+
 # JavaScript function that takes in an unencoded identifier and returns the
 # value that will be used in prepared statements.
 JdbcResolver.function.identifier = function getDatabaseIdentifier(url_identifier) {\
@@ -261,6 +268,13 @@ FilesystemCache.ttl_seconds = 2592000
 JdbcCache.connection_string = jdbc:postgresql://localhost:5432/cantaloupe
 JdbcCache.user = postgres
 JdbcCache.password =
+
+# Maximum number of connections allowed in the connection pool. A good starting
+# point is (number of CPU cores * 2) + 1.
+JdbcCache.max_pool_size = 10
+
+# Connection timeout in seconds.
+JdbcCache.connection_timeout = 10
 
 # These will be created automatically.
 JdbcCache.image_table = image_cache

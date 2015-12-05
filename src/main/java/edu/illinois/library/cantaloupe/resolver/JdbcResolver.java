@@ -26,10 +26,14 @@ class JdbcResolver implements StreamResolver {
 
     private static final String CONNECTION_STRING_CONFIG_KEY =
             "JdbcResolver.connection_string";
+    public static final String CONNECTION_TIMEOUT_CONFIG_KEY =
+            "JdbcResolver.connection_timeout";
     private static final String IDENTIFIER_FUNCTION_CONFIG_KEY =
             "JdbcResolver.function.identifier";
     private static final String LOOKUP_SQL_CONFIG_KEY =
             "JdbcResolver.lookup_sql";
+    public static final String MAX_POOL_SIZE_CONFIG_KEY =
+            "JdbcResolver.max_pool_size";
     private static final String MEDIA_TYPE_FUNCTION_CONFIG_KEY =
             "JdbcResolver.function.media_type";
     private static final String PASSWORD_CONFIG_KEY = "JdbcResolver.password";
@@ -59,6 +63,9 @@ class JdbcResolver implements StreamResolver {
             final Configuration config = Application.getConfiguration();
             final String connectionString = config.
                     getString(CONNECTION_STRING_CONFIG_KEY, "");
+            final int connectionTimeout = 1000 *
+                    config.getInt(CONNECTION_TIMEOUT_CONFIG_KEY, 10);
+            final int maxPoolSize = config.getInt(MAX_POOL_SIZE_CONFIG_KEY, 10);
             final String user = config.getString(USER_CONFIG_KEY, "");
             final String password = config.getString(PASSWORD_CONFIG_KEY, "");
 
@@ -66,12 +73,9 @@ class JdbcResolver implements StreamResolver {
             dataSource.setJdbcUrl(connectionString);
             dataSource.setUsername(user);
             dataSource.setPassword(password);
-            dataSource.setPoolName("JdbcCachePool");
-            dataSource.setMaximumPoolSize(10); // TODO: make this configurable
-            dataSource.setConnectionTimeout(10000); // TODO: make this configurable
-            //dataSource.addDataSourceProperty("cachePrepStmts", "true");
-            //dataSource.addDataSourceProperty("prepStmtCacheSize", "250");
-            //dataSource.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+            dataSource.setPoolName("JdbcResolverPool");
+            dataSource.setMaximumPoolSize(maxPoolSize);
+            dataSource.setConnectionTimeout(connectionTimeout);
         }
         return dataSource.getConnection();
     }

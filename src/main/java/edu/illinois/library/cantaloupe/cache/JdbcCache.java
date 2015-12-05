@@ -105,10 +105,15 @@ class JdbcCache implements Cache {
     public static final String INFO_TABLE_LAST_MODIFIED_COLUMN = "last_modified";
     public static final String INFO_TABLE_WIDTH_COLUMN = "width";
 
-    public static final String CONNECTION_STRING_CONFIG_KEY = "JdbcCache.connection_string";
+    public static final String CONNECTION_STRING_CONFIG_KEY =
+            "JdbcCache.connection_string";
+    public static final String CONNECTION_TIMEOUT_CONFIG_KEY =
+            "JdbcCache.connection_timeout";
     public static final String PASSWORD_CONFIG_KEY = "JdbcCache.password";
     public static final String IMAGE_TABLE_CONFIG_KEY = "JdbcCache.image_table";
     public static final String INFO_TABLE_CONFIG_KEY = "JdbcCache.info_table";
+    public static final String MAX_POOL_SIZE_CONFIG_KEY =
+            "JdbcCache.max_pool_size";
     public static final String TTL_CONFIG_KEY = "JdbcCache.ttl_seconds";
     public static final String USER_CONFIG_KEY = "JdbcCache.user";
 
@@ -287,6 +292,9 @@ class JdbcCache implements Cache {
             final Configuration config = Application.getConfiguration();
             final String connectionString = config.
                     getString(CONNECTION_STRING_CONFIG_KEY, "");
+            final int connectionTimeout = 1000 *
+                    config.getInt(CONNECTION_TIMEOUT_CONFIG_KEY, 10);
+            final int maxPoolSize = config.getInt(MAX_POOL_SIZE_CONFIG_KEY, 10);
             final String user = config.getString(USER_CONFIG_KEY, "");
             final String password = config.getString(PASSWORD_CONFIG_KEY, "");
 
@@ -295,11 +303,8 @@ class JdbcCache implements Cache {
             dataSource.setUsername(user);
             dataSource.setPassword(password);
             dataSource.setPoolName("JdbcCachePool");
-            dataSource.setMaximumPoolSize(10); // TODO: make this configurable
-            dataSource.setConnectionTimeout(10000); // TODO: make this configurable
-            //dataSource.addDataSourceProperty("cachePrepStmts", "true");
-            //dataSource.addDataSourceProperty("prepStmtCacheSize", "250");
-            //dataSource.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+            dataSource.setMaximumPoolSize(maxPoolSize);
+            dataSource.setConnectionTimeout(connectionTimeout);
         }
         return dataSource.getConnection();
     }
