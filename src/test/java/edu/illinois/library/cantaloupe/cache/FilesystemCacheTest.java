@@ -162,9 +162,9 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         }
     }
 
-    /* flushExpired() */
+    /* purgeExpired() */
 
-    public void testFlushExpired() throws Exception {
+    public void testPurgeExpired() throws Exception {
         Application.getConfiguration().setProperty("FilesystemCache.ttl_seconds", 1);
 
         Crop crop = new Crop();
@@ -182,12 +182,12 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         instance.getImageFile(ops).createNewFile();
         instance.getDimensionFile(ops.getIdentifier()).createNewFile();
 
-        instance.flushExpired();
+        instance.purgeExpired();
         assertEquals(1, imagePath.listFiles().length);
         assertEquals(1, infoPath.listFiles().length);
     }
 
-    public void testFlushExpiredFailureThrowsException() throws Exception {
+    public void testPurgeExpiredFailureThrowsException() throws Exception {
         Application.getConfiguration().setProperty("FilesystemCache.ttl_seconds", 1);
 
         OperationList ops = TestUtil.newOperationList();
@@ -203,14 +203,14 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
         try {
             try {
-                instance.flushExpired();
+                instance.purgeExpired();
                 fail("Expected exception");
             } catch (IOException e) {
                 assertTrue(e.getMessage().startsWith("Unable to delete"));
             }
             imageFile.getParentFile().setWritable(true);
             infoFile.getParentFile().setWritable(true);
-            instance.flushExpired();
+            instance.purgeExpired();
             assertEquals(0, imagePath.listFiles().length);
             assertEquals(0, infoPath.listFiles().length);
         } finally {

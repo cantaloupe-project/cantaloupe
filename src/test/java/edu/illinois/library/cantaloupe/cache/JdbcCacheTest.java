@@ -211,9 +211,9 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         assertEquals(2, resultSet.getInt("count"));
     }
 
-    /* flushExpired() */
+    /* purgeExpired() */
 
-    public void testFlushExpired() throws Exception {
+    public void testPurgeExpired() throws Exception {
         Application.getConfiguration().setProperty(JdbcCache.TTL_CONFIG_KEY, 1);
 
         // wait for the seed data to invalidate
@@ -228,7 +228,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         os.close();
         instance.putDimension(new Identifier("bees"), new Dimension(50, 40));
 
-        instance.flushExpired();
+        instance.purgeExpired();
 
         // assert that only the expired images and infos were flushed
         Configuration config = Application.getConfiguration();

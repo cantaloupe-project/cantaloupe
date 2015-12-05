@@ -48,7 +48,7 @@ public interface Cache {
      *
      * @throws IOException If any part of the process fails.
      */
-    void flushExpired() throws IOException;
+    void purgeExpired() throws IOException;
 
     /**
      * <p>Reads cached dimension information.</p>

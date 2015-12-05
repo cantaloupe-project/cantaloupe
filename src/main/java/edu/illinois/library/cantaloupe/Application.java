@@ -60,7 +60,7 @@ public class Application {
     private static void flushExpiredFromCacheAtLaunch() throws IOException {
         Cache cache = CacheFactory.getInstance();
         if (cache != null) {
-            cache.flushExpired();
+            cache.purgeExpired();
         } else {
             System.out.println("Cache is not specified or is improperly configured.");
             System.exit(-1);

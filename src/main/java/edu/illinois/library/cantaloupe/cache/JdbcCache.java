@@ -413,7 +413,7 @@ class JdbcCache implements Cache {
     }
 
     @Override
-    public void flushExpired() throws IOException {
+    public void purgeExpired() throws IOException {
         try {
             int numDeletedImages = flushExpiredImages();
             int numDeletedInfos = flushExpiredInfos();

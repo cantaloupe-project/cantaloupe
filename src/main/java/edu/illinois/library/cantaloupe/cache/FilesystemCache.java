@@ -312,7 +312,7 @@ class FilesystemCache implements Cache {
     }
 
     @Override
-    public void flushExpired() throws IOException {
+    public void purgeExpired() throws IOException {
         synchronized (lock4) {
             while (flushingInProgress.get() || !imagesBeingFlushed.isEmpty()) {
                 try {
