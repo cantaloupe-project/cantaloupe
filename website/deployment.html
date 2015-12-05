@@ -41,7 +41,8 @@ decompressed size. Multiple clients are simultaneously requesting numerous downs
 
 <pre>&lt;VirtualHost *:80&gt;
     ServerName www.example.org
-    ProxyPass /images/ http://image-server.example.org:8182/
+    AllowEncodedSlashes NoDecode
+    ProxyPass /images/ http://image-server.example.org:8182/ nocanon
     ProxyPassReverse /images/ http://image-server.example.org:8182/
     ProxyPassReverseCookiePath / /
     ProxyPassReverseCookieDomain image-server.example.org:8182 localhost
