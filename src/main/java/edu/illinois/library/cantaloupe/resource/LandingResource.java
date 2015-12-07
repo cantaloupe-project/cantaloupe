@@ -49,20 +49,6 @@ public class LandingResource extends AbstractResource {
         return vars;
     }
 
-    private class ProcessorComparator implements Comparator<Processor> {
-        public int compare(Processor o1, Processor o2) {
-            return o1.getClass().getSimpleName().
-                    compareTo(o2.getClass().getSimpleName());
-        }
-    }
-
-    private class SourceFormatComparator implements Comparator<SourceFormat> {
-        public int compare(SourceFormat o1, SourceFormat o2) {
-            return o1.getPreferredExtension().
-                    compareTo(o2.getPreferredExtension());
-        }
-    }
-
     @Override
     protected void doInit() throws ResourceException {
         super.doInit();
@@ -94,7 +80,7 @@ public class LandingResource extends AbstractResource {
         vars.put("resolverName", resolverStr);
 
         // cache name
-        String cacheStr = "None";
+        String cacheStr = "Disabled";
         try {
             Cache cache = CacheFactory.getInstance();
             if (cache != null) {
@@ -129,6 +115,12 @@ public class LandingResource extends AbstractResource {
         }
         vars.put("processorAssignments", assignments);
 
+        class SourceFormatComparator implements Comparator<SourceFormat> {
+            public int compare(SourceFormat o1, SourceFormat o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        }
+
         // image source formats
         List<SourceFormat> imageFormats = new ArrayList<>();
         for (SourceFormat sourceFormat : SourceFormat.values()) {
@@ -152,6 +144,12 @@ public class LandingResource extends AbstractResource {
         vars.put("videoSourceFormats", videoFormats);
 
         // processors
+        class ProcessorComparator implements Comparator<Processor> {
+            public int compare(Processor o1, Processor o2) {
+                return o1.getClass().getSimpleName().
+                        compareTo(o2.getClass().getSimpleName());
+            }
+        }
         List<Processor> sortedProcessors =
                 new ArrayList<>(ProcessorFactory.getAllProcessors());
         Collections.sort(sortedProcessors, new ProcessorComparator());

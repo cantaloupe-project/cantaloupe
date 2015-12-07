@@ -13,20 +13,19 @@
         #parse("header.vm")
 
         <section>
-            <h3>Endpoints</h3>
-            <ul>
-                <li><a href="$baseUri/iiif/1.1">IIIF Image API 1.1</a></li>
-                <li><a href="$baseUri/iiif/2.0">IIIF Image API 2.0</a></li>
-            </ul>
-        </section>
-
-        <section>
             <div class="row">
-                <div class="col-sm-6">
+                <div class="col-sm-4">
+                    <h3>Endpoints</h3>
+                    <ul>
+                        <li><a href="$baseUri/iiif/1.1">IIIF Image API 1.1</a></li>
+                        <li><a href="$baseUri/iiif/2.0">IIIF Image API 2.0</a></li>
+                    </ul>
+                </div>
+                <div class="col-sm-4">
                     <h3>Resolver</h3>
                     <p>$resolverName</p>
                 </div>
-                <div class="col-sm-6">
+                <div class="col-sm-4">
                     <h3>Cache</h3>
                     <p>$cacheName</p>
                 </div>

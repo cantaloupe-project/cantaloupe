@@ -32,35 +32,34 @@ dd {
     font-size: 0.9em;
 }
 
-ul {
-    margin-left: 1.2em;
-    padding-left: 0px;
-}
-
 .tab-content {
     padding-top: 0.8em;
+}
+
+header {
+    padding-bottom: 1.8em;
+}
+
+header h1 {
+    margin-bottom: 0.3em;
+}
+
+header img {
+    margin: 0em 1.2em 0em 0;
+}
+
+header a {
+    font-size: 0.8em;
+}
+
+header .col-sm-3 {
+    padding-top: 2em;
 }
 
 /* landing page */
 
 body#cl-landing table.cl-source-format-assignments td:first-child {
     text-align: right;
-}
-
-body#cl-landing header {
-    padding-bottom: 1.8em;
-}
-
-body#cl-landing header h1 {
-    margin-bottom: 0.3em;
-}
-
-body#cl-landing header img {
-    margin: 0em 1.2em 1em 0;
-}
-
-body#cl-landing header a {
-    font-size: 0.8em;
 }
 
 body#cl-landing section {
