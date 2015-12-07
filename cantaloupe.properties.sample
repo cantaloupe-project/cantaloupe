@@ -296,15 +296,12 @@ JdbcCache.ttl_seconds = 2592000
 log.application.level = debug
 
 log.application.ConsoleAppender.enabled = true
-log.application.ConsoleAppender.pattern = %d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
 
 log.application.FileAppender.enabled = false
 log.application.FileAppender.pathname = /path/to/logs/cantaloupe.log
-log.application.FileAppender.pattern = %date %level [%thread] %logger{10} [%file:%line] %msg%n
 
 log.application.RollingFileAppender.enabled = false
 log.application.RollingFileAppender.pathname = /path/to/logs/cantaloupe.log
-log.application.RollingFileAppender.pattern = %date %level [%thread] %logger{10} [%file:%line] %msg%n
 log.application.RollingFileAppender.policy = TimeBasedRollingPolicy
 log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/cantaloupe-%d{yyyy-MM-dd}.log
 log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30

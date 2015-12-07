@@ -4,9 +4,7 @@
     <appender name="AppConsoleLog" class="ch.qos.logback.core.ConsoleAppender">
         <filter class="edu.illinois.library.cantaloupe.logging.ApplicationLogFilter" />
         <encoder>
-            <pattern>
-                ${log.application.ConsoleAppender.pattern}
-            </pattern>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -16,7 +14,7 @@
                 <filter class="edu.illinois.library.cantaloupe.logging.ApplicationLogFilter" />
                 <file>${log.application.FileAppender.pathname}</file>
                 <encoder>
-                    <pattern>${log.application.FileAppender.pattern}</pattern>
+                    <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
                 </encoder>
             </appender>
         </then>
@@ -36,7 +34,7 @@
                     </then>
                 </if>
                 <encoder>
-                    <pattern>${log.application.RollingFileAppender.pattern}</pattern>
+                    <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
                 </encoder>
             </appender>
         </then>
