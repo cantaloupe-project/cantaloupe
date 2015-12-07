@@ -4,38 +4,41 @@ layout: default
 
 <h2>Logging</h2>
 
-<p>Cantaloupe maintains two types of logs &mdash; application and access &mdash; which are independently configurable.
+<p>Cantaloupe maintains two types of logs &mdash; application and access &mdash; which are independently configurable.</p>
 
 <h3 id="Application Log">Application Log</h3>
 
-<pre># `trace`, `debug`, `info`, `warn`, `error`, `all`, or `off`
-log.application.level = debug
+<h4>Log Levels</h4>
 
-log.application.ConsoleAppender.enabled = true
-log.application.ConsoleAppender.pattern = %d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+<p>The <code>log.application.level</code> configuration key specifies the severity threshold beneath which log messages will be discarded. Available values, in order of importance, are: <code>trace</code>, <code>debug</code>, <code>info</code>, <code>warn</code>, and <code>error</code>.</p>
 
-log.application.FileAppender.enabled = false
-log.application.FileAppender.pathname = /path/to/logs/cantaloupe.log
-log.application.FileAppender.pattern = %date %level [%thread] %logger{10} [%file:%line] %msg%n
+<p>Additionally, <code>all</code> can be used to log absolutely everything.</p>
 
-log.application.RollingFileAppender.enabled = false
-log.application.RollingFileAppender.pathname = /path/to/logs/cantaloupe.log
-log.application.RollingFileAppender.pattern = %date %level [%thread] %logger{10} [%file:%line] %msg%n
-log.application.RollingFileAppender.policy = TimeBasedRollingPolicy
-log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/cantaloupe-%d{yyyy-MM-dd}.log
-log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30</pre>
+<p>To completely disable the application log, use <code>off</code>.</p>
+
+<h4>Appenders</h4>
+
+<p>Appenders direct log messages to various destinations, like files and/or the console. (The default configuration file logs only to the console.) There are three available appenders &mdash; ConsoleAppender, FileAppender, and RollingFileAppender &mdash; which can be enabled or disabled in any combination.</p>
+
+<h5>ConsoleAppender</h5>
+
+<p>ConsoleAppender logs to the console. Set the <code>log.application.ConsoleAppender.enabled</code> configuration key to <code>true</code> or <code>false</code> to enable or disable.</p>
+
+<h5>FileAppender</h5>
+
+<p>FileAppender logs to a single file. Use the <code>log.application.FileAppender.enabled</code> key to enable or disable, and the <code>log.application.FileAppender.pathname</code> key to set the absolute pathname of the log file.</p>
+
+<div class="alert alert-warning">Note: log files can become very large with this appender.</div>
+
+<h5>RollingFileAppender</h5>
+
+<p>RollingFileAppender logs to a file that rolls over periodically (to avoid creating a single huge file). Use the <code>log.application.RollingFileAppender.enabled</code> key to enable or disable, and the <code>log.application.RollingFileAppender.pathname</code> key to set the absolute pathname of the primary log file.</p>
+
+<p>Currently, the only available rolling policy (<code>log.application.RollingFileAppender.policy</code>) is <code>TimeBasedRollingPolicy</code>, which rolls over the log file based on the value of <code>log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern</code>. <code>log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history</code> defines how many rolled-over log files will be kept.</p>
 
 <h3 id="Access Log">Access Log</h3>
 
-<p>Access logs are written in the <a href="http://www.w3.org/TR/WD-logfile.html">W3C Extended Log File Format</a>.
+<p>Access logs are written in the <a href="http://www.w3.org/TR/WD-logfile.html">W3C Extended Log File Format</a>. To enable or disable the access log, set the value of <code>log.access.ConsoleAppender.enabled</code> to <code>true</code> or <code>false</code>.</p>
 
-<pre>log.access.ConsoleAppender.enabled = true
 
-log.access.FileAppender.enabled = false
-log.access.FileAppender.pathname = /path/to/logs/access.log
-
-log.access.RollingFileAppender.enabled = false
-log.access.RollingFileAppender.pathname = /path/to/logs/access.log
-log.access.RollingFileAppender.policy = TimeBasedRollingPolicy
-log.access.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/access-%d{yyyy-MM-dd}.log
-log.access.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30</pre>
+Access log appenders work the same as <a href="#Application%20Log">application log</a> appenders.</p>
