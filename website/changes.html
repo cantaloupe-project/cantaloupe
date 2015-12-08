@@ -11,12 +11,13 @@ layout: default
   <li>Added an IIIF Image API 1.1 endpoint, moving the 2.0 endpoint to <span class="filename">/iiif/2.0</span> to accommodate it.</li>
   <li>API endpoints can be independently enabled or disabled.</li>
   <li>Java2dProcessor implements FileProcessor, making it potentially faster in some scenarios.</li>
+  <li>Added pyramidal TIFF support to Java2dProcessor's TIFFImageDecoder.</li>
   <li>Improved the robustness of FilesystemCache.</li>
   <li>JdbcResolver and JdbcCache use a JDBC connection pool.</li>
   <li>JdbcCache uses transactions for nonatomic operations.</li>
   <li>All cache-related "flushing" terminology changed to "purging."</li>
-  <li>Added an option to auto-purge missing images from the cache.</li>
-  <li>Added an option to limit the size of returned images to prevent overloading the server.</li>
+  <li>Added an option to auto-purge missing (HTTP 404) images from the cache.</li>
+  <li>Added an option to limit the pixel count of returned images to prevent overloading the server.</li>
 </ul>
 
 <h3>1.2</h3>
@@ -81,5 +82,5 @@ layout: default
 <h3>1.0-beta1</h3>
 
 <ul>
-  <li>First version.</li>
+  <li>First public version.</li>
 </ul>

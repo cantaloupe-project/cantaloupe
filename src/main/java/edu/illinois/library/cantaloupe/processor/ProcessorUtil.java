@@ -376,7 +376,11 @@ abstract class ProcessorUtil {
                     image = readWithTiffImageReader(inputSource, ops,
                             fullSize, reductionFactor);
                 } else {
-                    image = readWithTiffImageDecoder(inputSource);
+                    RenderedImage ri = readWithTiffImageDecoder(inputSource,
+                            ops, fullSize, reductionFactor);
+                    image = new BufferedImage(ri.getWidth(),
+                            ri.getHeight(), BufferedImage.TYPE_INT_RGB);
+                    image.setData(ri.getData());
                 }
                 break;
             default:
@@ -403,6 +407,55 @@ abstract class ProcessorUtil {
                     ops.getIdentifier());
         }
         return rgbImage;
+    }
+
+    /**
+     * Reads a TIFF image using JAI TIFFImageDecoder.
+     *
+     * @param inputSource {@link InputStream} or {@link File}
+     * @param ops
+     * @param fullSize
+     * @param reductionFactor
+     * @return
+     * @throws IOException
+     * @throws IllegalArgumentException if <code>inputSource</code> is invalid
+     */
+    private static RenderedImage readWithTiffImageDecoder(
+            Object inputSource, OperationList ops, Dimension fullSize,
+            ReductionFactor reductionFactor) throws IOException {
+        RenderedImage image = null;
+        try {
+            ImageDecoder dec;
+            if (inputSource instanceof InputStream) {
+                dec = ImageCodec.createImageDecoder("tiff",
+                        (InputStream) inputSource, null);
+            } else if (inputSource instanceof File) {
+                dec = ImageCodec.createImageDecoder("tiff",
+                        (File) inputSource, null);
+            } else {
+                throw new IllegalArgumentException("Invalid inputSource parameter");
+            }
+            if (dec != null) {
+                Crop crop = new Crop();
+                crop.setFull(true);
+                Scale scale = new Scale();
+                scale.setMode(Scale.Mode.FULL);
+                for (Operation op : ops) {
+                    if (op instanceof Crop) {
+                        crop = (Crop) op;
+                    } else if (op instanceof Scale) {
+                        scale = (Scale) op;
+                    }
+                }
+                image = getSmallestUsableImage(dec, fullSize, crop, scale,
+                        reductionFactor);
+            }
+        } finally {
+            if (inputSource instanceof InputStream) {
+                ((InputStream) inputSource).close();
+            }
+        }
+        return image;
     }
 
     /**
@@ -482,41 +535,69 @@ abstract class ProcessorUtil {
     }
 
     /**
-     * Loads a TIFF image using JAI TIFFImageDecoder. Currently not optimized
-     * for pyramidal TIFFs.
+     * Returns the smallest image fitting the requested size from the given
+     * reader. Useful for e.g. pyramidal TIFF.
      *
-     * @param inputSource {@link File} or {@link InputStream}
+     * @param decoder ImageDecoder with input source already set
+     * @param fullSize
+     * @param crop Requested crop
+     * @param scale Requested scale
+     * @param rf Set by reference
      * @return
      * @throws IOException
-     * @throws IllegalArgumentException if <code>inputSource</code> is invalid
      */
-    private static BufferedImage readWithTiffImageDecoder(
-            Object inputSource) throws IOException {
-        BufferedImage image = null;
-        try {
-            ImageDecoder dec;
-            if (inputSource instanceof InputStream) {
-                dec = ImageCodec.createImageDecoder("tiff",
-                        (InputStream) inputSource, null);
-            } else if (inputSource instanceof File) {
-                dec = ImageCodec.createImageDecoder("tiff",
-                        (File) inputSource, null);
-            } else {
-                throw new IllegalArgumentException("Invalid inputSource parameter");
-            }
-            if (dec != null) {
-                RenderedImage op = dec.decodeAsRenderedImage();
-                BufferedImage rgbImage = new BufferedImage(op.getWidth(),
-                        op.getHeight(), BufferedImage.TYPE_INT_RGB);
-                rgbImage.setData(op.getData());
-                image = rgbImage;
-            }
-        } finally {
-            if (inputSource instanceof InputStream) {
-                ((InputStream) inputSource).close();
+    private static RenderedImage getSmallestUsableImage(ImageDecoder decoder,
+                                                        Dimension fullSize,
+                                                        Crop crop,
+                                                        Scale scale,
+                                                        ReductionFactor rf)
+            throws IOException {
+        RenderedImage bestImage = null;
+        if (scale.getMode() != Scale.Mode.FULL) {
+            // Pyramidal TIFFs will have > 1 "page," each half the dimensions of
+            // the next larger.
+            int numImages = decoder.getNumPages();
+            if (numImages > 1) {
+                logger.debug("Detected pyramidal TIFF with {} levels",
+                        numImages);
+                final Rectangle regionRect = crop.getRectangle(fullSize);
+
+                // Loop through the tiles from smallest to largest to find the
+                // first one that fits the requested scale
+                for (int i = numImages - 1; i >= 0; i--) {
+                    final RenderedImage tile = decoder.decodeAsRenderedImage(i);
+                    final double tileScale = (double) tile.getWidth() /
+                            (double) fullSize.width;
+                    boolean fits = false;
+                    if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+                        fits = (scale.getWidth() / (float) regionRect.width <= tileScale);
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
+                        fits = (scale.getHeight() / (float) regionRect.height <= tileScale);
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
+                        fits = (scale.getWidth() / (float) regionRect.width <= tileScale &&
+                                scale.getHeight() / (float) regionRect.height <= tileScale);
+                    } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
+                        fits = (scale.getWidth() / (float) regionRect.width <= tileScale &&
+                                scale.getHeight() / (float) regionRect.height <= tileScale);
+                    } else if (scale.getPercent() != null) {
+                        float pct = scale.getPercent();
+                        fits = ((pct * fullSize.width) / (float) regionRect.width <= tileScale &&
+                                (pct * fullSize.height) / (float) regionRect.height <= tileScale);
+                    }
+                    if (fits) {
+                        rf.factor = ProcessorUtil.getReductionFactor(tileScale, 0);
+                        logger.debug("Using a {}x{} source tile ({}x reduction factor)",
+                                tile.getWidth(), tile.getHeight(), rf.factor);
+                        bestImage = tile;
+                        break;
+                    }
+                }
             }
         }
-        return image;
+        if (bestImage == null) {
+            bestImage = decoder.decodeAsRenderedImage();
+        }
+        return bestImage;
     }
 
     /**
