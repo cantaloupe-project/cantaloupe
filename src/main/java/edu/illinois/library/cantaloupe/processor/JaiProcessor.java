@@ -14,12 +14,9 @@ import it.geosolutions.jaiext.JAIExt;
 import org.restlet.data.MediaType;
 
 import javax.imageio.ImageIO;
-import javax.media.jai.ImageLayout;
-import javax.media.jai.JAI;
-import javax.media.jai.ParameterBlockJAI;
 import javax.media.jai.RenderedOp;
 import java.awt.Dimension;
-import java.awt.RenderingHints;
+import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -165,21 +162,21 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
 
     @Override
     public void process(OperationList ops, SourceFormat sourceFormat,
-                        Dimension sourceSize, File inputFile,
+                        Dimension fullSize, File inputFile,
                         OutputStream outputStream) throws ProcessorException {
-        doProcess(ops, sourceFormat, inputFile, outputStream);
+        doProcess(ops, sourceFormat, fullSize, inputFile, outputStream);
     }
 
     @Override
     public void process(OperationList ops, SourceFormat sourceFormat,
                         Dimension fullSize, InputStream inputStream,
                         OutputStream outputStream) throws ProcessorException {
-        doProcess(ops, sourceFormat, inputStream, outputStream);
+        doProcess(ops, sourceFormat, fullSize, inputStream, outputStream);
     }
 
     private void doProcess(OperationList ops, SourceFormat sourceFormat,
-                           Object input, OutputStream outputStream)
-            throws ProcessorException {
+                           Dimension fullSize, Object input,
+                           OutputStream outputStream) throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -189,35 +186,43 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
         }
 
         try {
-            RenderedOp image = readImage(input);
-            for (Operation op : ops) {
-                if (op instanceof Crop) {
-                    image = ProcessorUtil.cropImage(image, (Crop) op);
-                } else if (op instanceof Scale) {
-                    image = ProcessorUtil.scaleImage(image, (Scale) op);
-                } else if (op instanceof Transpose) {
-                    image = ProcessorUtil.transposeImage(image, (Transpose) op);
-                } else if (op instanceof Rotate) {
-                    image = ProcessorUtil.rotateImage(image, (Rotate) op);
-                } else if (op instanceof Filter) {
-                    image = ProcessorUtil.filterImage(image, (Filter) op);
-                }
+            RenderedImage renderedImage = null;
+            ReductionFactor rf = new ReductionFactor();
+            if (input instanceof InputStream) {
+                renderedImage = ProcessorUtil.readImageWithJai(
+                        (InputStream) input, sourceFormat, ops, fullSize, rf);
+            } else if (input instanceof File) {
+                renderedImage = ProcessorUtil.readImageWithJai(
+                        (File) input, sourceFormat, ops, fullSize, rf);
             }
-            ProcessorUtil.writeImage(image, ops.getOutputFormat(),
-                    outputStream);
+            if (renderedImage != null) {
+                RenderedOp renderedOp = ProcessorUtil.reformatImage(
+                        RenderedOp.wrapRenderedImage(renderedImage),
+                        new Dimension(JAI_TILE_SIZE, JAI_TILE_SIZE));
+                for (Operation op : ops) {
+                    if (op instanceof Crop) {
+                        renderedOp = ProcessorUtil.
+                                cropImage(renderedOp, (Crop) op, rf.factor);
+                    } else if (op instanceof Scale) {
+                        renderedOp = ProcessorUtil.
+                                scaleImage(renderedOp, (Scale) op, rf.factor);
+                    } else if (op instanceof Transpose) {
+                        renderedOp = ProcessorUtil.
+                                transposeImage(renderedOp, (Transpose) op);
+                    } else if (op instanceof Rotate) {
+                        renderedOp = ProcessorUtil.
+                                rotateImage(renderedOp, (Rotate) op);
+                    } else if (op instanceof Filter) {
+                        renderedOp = ProcessorUtil.
+                                filterImage(renderedOp, (Filter) op);
+                    }
+                }
+                ProcessorUtil.writeImage(renderedOp, ops.getOutputFormat(),
+                        outputStream);
+            }
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
-    }
-
-    private RenderedOp readImage(Object input) {
-        ParameterBlockJAI pbj = new ParameterBlockJAI("ImageRead");
-        ImageLayout layout = new ImageLayout();
-        layout.setTileWidth(JAI_TILE_SIZE);
-        layout.setTileHeight(JAI_TILE_SIZE);
-        RenderingHints hints = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, layout);
-        pbj.setParameter("Input", input);
-        return JAI.create("ImageRead", pbj, hints);
     }
 
 }

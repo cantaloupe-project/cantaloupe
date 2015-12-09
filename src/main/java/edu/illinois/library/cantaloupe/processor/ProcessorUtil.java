@@ -27,11 +27,14 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
+import javax.media.jai.ImageLayout;
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
 import javax.media.jai.OpImage;
+import javax.media.jai.ParameterBlockJAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
+import javax.media.jai.TileCache;
 import javax.media.jai.operator.TransposeDescriptor;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
@@ -46,12 +49,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
 /**
- * A collection of helper methods.
+ * A collection of helper methods for reading, writing, and performing
+ * operations on images using the Java 2D, ImageIO, and JAI frameworks.
  */
 abstract class ProcessorUtil {
 
@@ -80,27 +85,36 @@ abstract class ProcessorUtil {
         return outImage;
     }
 
+    /**
+     * @param inImage Image to crop
+     * @param crop Crop operation
+     * @return Cropped image, or the input image if the given operation is a
+     * no-op.
+     */
     public static BufferedImage cropImage(BufferedImage inImage,
                                           Crop crop) {
         return cropImage(inImage, crop, 0);
     }
 
     /**
-     * Crops the given image taking into account a reduction factor (rf). In
-     * other words, the dimensions of the input image have already been halved
-     * rf times but the given region is relative to the full-sized image.
+     * Crops the given image taking into account a reduction factor
+     * (<code>reductionFactor</code>). In other words, the dimensions of the
+     * input image have already been halved <code>reductionFactor</code> times
+     * but the given region is relative to the full-sized image.
      *
-     * @param inImage
-     * @param crop
-     * @param reductionFactor
-     * @return
+     * @param inImage Image to crop
+     * @param crop Crop operation
+     * @param reductionFactor Number of times the dimensions of
+     *                        <code>inImage</code> have already been halved
+     *                        relative to the full-sized version
+     * @return Cropped image, or the input image if the given operation is a
+     * no-op.
      */
     public static BufferedImage cropImage(BufferedImage inImage,
-                                          Crop crop, int reductionFactor) {
-        BufferedImage croppedImage;
-        if (crop.isFull()) {
-            croppedImage = inImage;
-        } else {
+                                          Crop crop,
+                                          int reductionFactor) {
+        BufferedImage croppedImage = inImage;
+        if (!crop.isNoOp()) {
             final double scale = getScale(reductionFactor);
             final double regionX = crop.getX() * scale;
             final double regionY = crop.getY() * scale;
@@ -128,66 +142,101 @@ abstract class ProcessorUtil {
                     inImage.getWidth() - x : requestedWidth;
             croppedHeight = (y + requestedHeight > inImage.getHeight()) ?
                     inImage.getHeight() - y : requestedHeight;
-            croppedImage = inImage.getSubimage(x, y, croppedWidth, croppedHeight);
+            croppedImage = inImage.getSubimage(x, y, croppedWidth,
+                    croppedHeight);
         }
         return croppedImage;
     }
 
+    /**
+     * @param inImage Image to crop
+     * @param crop Crop operation
+     * @return Cropped image, or the input image if the given operation is a
+     * no-op.
+     */
     public static RenderedOp cropImage(RenderedOp inImage, Crop crop) {
-        RenderedOp croppedImage;
-        if (crop.isFull()) {
-            croppedImage = inImage;
-        } else {
-            // calculate the region x, y, and actual width/height
-            float x, y, requestedWidth, requestedHeight, actualWidth, actualHeight;
-            if (crop.getUnit().equals(Crop.Unit.PERCENT)) {
-                x = crop.getX() * inImage.getWidth();
-                y = crop.getY() * inImage.getHeight();
-                requestedWidth = crop.getWidth() * inImage.getWidth();
-                requestedHeight = crop.getHeight() * inImage.getHeight();
-            } else {
-                x = crop.getX();
-                y = crop.getY();
-                requestedWidth = crop.getWidth();
-                requestedHeight = crop.getHeight();
-            }
-            actualWidth = (x + requestedWidth > inImage.getWidth()) ?
-                    inImage.getWidth() - x : requestedWidth;
-            actualHeight = (y + requestedHeight > inImage.getHeight()) ?
-                    inImage.getHeight() - y : requestedHeight;
+        return cropImage(inImage, crop, 0);
+    }
 
-            ParameterBlock pb = new ParameterBlock();
+    /**
+     * Crops the given image taking into account a reduction factor
+     * (<code>reductionFactor</code>). In other words, the dimensions of the
+     * input image have already been halved <code>reductionFactor</code> times
+     * but the given region is relative to the full-sized image.
+     *
+     * @param inImage Image to crop
+     * @param crop Crop operation
+     * @param reductionFactor Number of times the dimensions of
+     *                        <code>inImage</code> have already been halved
+     *                        relative to the full-sized version
+     * @return Cropped image, or the input image if the given operation is a
+     * no-op.
+     */
+    public static RenderedOp cropImage(RenderedOp inImage,
+                                       Crop crop,
+                                       int reductionFactor) {
+        RenderedOp croppedImage = inImage;
+        if (!crop.isNoOp()) {
+            // calculate the region x, y, and actual width/height
+            final double scale = getScale(reductionFactor);
+            final double regionX = crop.getX() * scale;
+            final double regionY = crop.getY() * scale;
+            final double regionWidth = crop.getWidth() * scale;
+            final double regionHeight = crop.getHeight() * scale;
+
+            float x, y, requestedWidth, requestedHeight, croppedWidth,
+                    croppedHeight;
+            if (crop.getUnit().equals(Crop.Unit.PERCENT)) {
+                x = (int) Math.round(regionX * inImage.getWidth());
+                y = (int) Math.round(regionY * inImage.getHeight());
+                requestedWidth = (int) Math.round(regionWidth *
+                        inImage.getWidth());
+                requestedHeight = (int) Math.round(regionHeight *
+                        inImage.getHeight());
+            } else {
+                x = (int) Math.round(regionX);
+                y = (int) Math.round(regionY);
+                requestedWidth = (int) Math.round(regionWidth);
+                requestedHeight = (int) Math.round(regionHeight);
+            }
+            // prevent width/height from exceeding the image bounds
+            croppedWidth = (x + requestedWidth > inImage.getWidth()) ?
+                    inImage.getWidth() - x : requestedWidth;
+            croppedHeight = (y + requestedHeight > inImage.getHeight()) ?
+                    inImage.getHeight() - y : requestedHeight;
+            final ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
             pb.add(x);
             pb.add(y);
-            pb.add(actualWidth);
-            pb.add(actualHeight);
+            pb.add(croppedWidth);
+            pb.add(croppedHeight);
             croppedImage = JAI.create("crop", pb);
         }
         return croppedImage;
     }
 
-    private static Dimension doGetSize(Object input, SourceFormat sourceFormat)
-            throws ProcessorException {
-        Iterator<ImageReader> iter = ImageIO.
-                getImageReadersBySuffix(sourceFormat.getPreferredExtension());
-        if (iter.hasNext()) {
-            ImageReader reader = iter.next();
-            int width, height;
-            try {
-                reader.setInput(ImageIO.createImageInputStream(input));
-                width = reader.getWidth(reader.getMinIndex());
-                height = reader.getHeight(reader.getMinIndex());
-            } catch (IOException e) {
-                throw new ProcessorException(e.getMessage(), e);
-            } finally {
-                reader.dispose();
-            }
-            return new Dimension(width, height);
-        }
-        return null;
+    private static RenderingHints defaultRenderingHints(Dimension tileSize) {
+        final ImageLayout tileLayout = new ImageLayout();
+        tileLayout.setTileWidth(tileSize.width);
+        tileLayout.setTileHeight(tileSize.height);
+
+        final TileCache tileCache = JAI.getDefaultInstance().getTileCache();
+        tileCache.setMemoryCapacity(0);
+
+        final HashMap<RenderingHints.Key, Object> map = new HashMap<>();
+        map.put(JAI.KEY_TILE_CACHE, tileCache);
+        map.put(JAI.KEY_IMAGE_LAYOUT, tileLayout);
+        map.put(JAI.KEY_INTERPOLATION,
+                Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
+        return new RenderingHints(map);
     }
 
+    /**
+     * @param inImage Image to filter
+     * @param filter Filter operation
+     * @return Filtered image, or the input image if the given filter operation
+     * is a no-op.
+     */
     public static BufferedImage filterImage(BufferedImage inImage,
                                             Filter filter) {
         BufferedImage filteredImage = inImage;
@@ -210,11 +259,16 @@ abstract class ProcessorUtil {
         return filteredImage;
     }
 
+    /**
+     * @param inImage Image to filter
+     * @param filter Filter operation
+     * @return Filtered image, or the input image if the given filter operation
+     * is a no-op.
+     */
     @SuppressWarnings({"deprecation"}) // really, JAI itself is basically deprecated
-    public static RenderedOp filterImage(RenderedOp inImage,
-                                         Filter filter) {
+    public static RenderedOp filterImage(RenderedOp inImage, Filter filter) {
         RenderedOp filteredImage = inImage;
-        if (filter != Filter.NONE) {
+        if (!filter.isNoOp()) {
             // convert to grayscale
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
@@ -243,6 +297,7 @@ abstract class ProcessorUtil {
      * @param scalePercent Scale percentage between 0 and 1
      * @param maxFactor 0 for no max
      * @return
+     * @see #getScale
      */
     public static int getReductionFactor(double scalePercent, int maxFactor) {
         if (maxFactor == 0) {
@@ -260,6 +315,7 @@ abstract class ProcessorUtil {
     /**
      * @param reductionFactor Reduction factor (0 for no reduction)
      * @return Scale corresponding to the given reduction factor (1/(2^rf)).
+     * @see #getReductionFactor
      */
     public static double getScale(int reductionFactor) {
         double scale = 1f;
@@ -267,6 +323,20 @@ abstract class ProcessorUtil {
             scale /= 2;
         }
         return scale;
+    }
+
+    /**
+     * Efficiently reads the width & height of an image without reading the
+     * entire image into memory.
+     *
+     * @param inputFile
+     * @param sourceFormat
+     * @return Dimensions in pixels
+     * @throws ProcessorException
+     */
+    public static Dimension getSize(File inputFile, SourceFormat sourceFormat)
+            throws ProcessorException {
+        return doGetSize(inputFile, sourceFormat);
     }
 
     /**
@@ -285,22 +355,39 @@ abstract class ProcessorUtil {
     }
 
     /**
-     * Efficiently reads the width & height of an image without reading the
-     * entire image into memory.
-     *
-     * @param inputFile
+     * @param input Object that can be passed to
+     * {@link ImageIO#createImageInputStream(Object)}
      * @param sourceFormat
-     * @return Dimensions in pixels
+     * @return
      * @throws ProcessorException
      */
-    public static Dimension getSize(File inputFile, SourceFormat sourceFormat)
+    private static Dimension doGetSize(Object input, SourceFormat sourceFormat)
             throws ProcessorException {
-        return doGetSize(inputFile, sourceFormat);
+        Iterator<ImageReader> iter = ImageIO.
+                getImageReadersBySuffix(sourceFormat.getPreferredExtension());
+        if (iter.hasNext()) {
+            ImageReader reader = iter.next();
+            int width, height;
+            try {
+                reader.setInput(ImageIO.createImageInputStream(input));
+                width = reader.getWidth(reader.getMinIndex());
+                height = reader.getHeight(reader.getMinIndex());
+            } catch (IOException e) {
+                throw new ProcessorException(e.getMessage(), e);
+            } finally {
+                reader.dispose();
+            }
+            return new Dimension(width, height);
+        }
+        return null;
     }
 
+    /**
+     * @return Set of all output formats supported by ImageIO.
+     */
     public static Set<OutputFormat> imageIoOutputFormats() {
         final String[] writerMimeTypes = ImageIO.getWriterMIMETypes();
-        Set<OutputFormat> outputFormats = new HashSet<>();
+        final Set<OutputFormat> outputFormats = new HashSet<>();
         for (OutputFormat outputFormat : OutputFormat.values()) {
             for (String mimeType : writerMimeTypes) {
                 if (outputFormat.getMediaType().equals(mimeType.toLowerCase())) {
@@ -311,28 +398,13 @@ abstract class ProcessorUtil {
         return outputFormats;
     }
 
-    public static RenderedOp rotateImage(RenderedOp inImage,
-                                         Rotate rotate) {
-        RenderedOp rotatedImage = inImage;
-        if (rotate.getDegrees() > 0) {
-            ParameterBlock pb = new ParameterBlock();
-            pb.addSource(rotatedImage);
-            pb.add(inImage.getWidth() / 2.0f);
-            pb.add(inImage.getHeight() / 2.0f);
-            pb.add((float) Math.toRadians(rotate.getDegrees()));
-            pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
-            rotatedImage = JAI.create("rotate", pb);
-        }
-        return rotatedImage;
-    }
-
     public static BufferedImage readImage(File inputFile,
                                           SourceFormat sourceFormat,
                                           OperationList ops,
                                           Dimension fullSize,
                                           ReductionFactor reductionFactor)
             throws IOException, ProcessorException {
-        return doReadImage(inputFile, sourceFormat, ops, fullSize,
+        return doReadImageWithImageIo(inputFile, sourceFormat, ops, fullSize,
                 reductionFactor);
     }
 
@@ -342,7 +414,49 @@ abstract class ProcessorUtil {
                                           Dimension fullSize,
                                           ReductionFactor reductionFactor)
             throws IOException, ProcessorException {
-        return doReadImage(inputStream, sourceFormat, ops, fullSize,
+        return doReadImageWithImageIo(inputStream, sourceFormat, ops, fullSize,
+                reductionFactor);
+    }
+
+    /**
+     * @param inputFile
+     * @param sourceFormat
+     * @param ops
+     * @param fullSize
+     * @param reductionFactor
+     * @return The read image. Use {@link #reformatImage} to convert into a
+     * RenderedOp.
+     * @throws IOException
+     * @throws ProcessorException
+     */
+    public static RenderedImage readImageWithJai(File inputFile,
+                                                 SourceFormat sourceFormat,
+                                                 OperationList ops,
+                                                 Dimension fullSize,
+                                                 ReductionFactor reductionFactor)
+            throws IOException, ProcessorException {
+        return doReadImageWithJai(inputFile, sourceFormat, ops, fullSize,
+                reductionFactor);
+    }
+
+    /**
+     * @param inputStream
+     * @param sourceFormat
+     * @param ops
+     * @param fullSize
+     * @param reductionFactor
+     * @return The read image. Use {@link #reformatImage} to convert into a
+     * RenderedOp.
+     * @throws IOException
+     * @throws ProcessorException
+     */
+    public static RenderedImage readImageWithJai(InputStream inputStream,
+                                                 SourceFormat sourceFormat,
+                                                 OperationList ops,
+                                                 Dimension fullSize,
+                                                 ReductionFactor reductionFactor)
+            throws IOException, ProcessorException {
+        return doReadImageWithJai(inputStream, sourceFormat, ops, fullSize,
                 reductionFactor);
     }
 
@@ -356,11 +470,12 @@ abstract class ProcessorUtil {
      * @throws IOException
      * @throws ProcessorException
      */
-    private static BufferedImage doReadImage(Object inputSource,
-                                             SourceFormat sourceFormat,
-                                             OperationList ops,
-                                             Dimension fullSize,
-                                             ReductionFactor reductionFactor)
+    private static BufferedImage doReadImageWithImageIo(
+            Object inputSource,
+            SourceFormat sourceFormat,
+            OperationList ops,
+            Dimension fullSize,
+            ReductionFactor reductionFactor)
             throws IOException, ProcessorException {
         BufferedImage image = null;
         switch (sourceFormat) {
@@ -410,7 +525,42 @@ abstract class ProcessorUtil {
     }
 
     /**
-     * Reads a TIFF image using JAI TIFFImageDecoder.
+     * @param inputSource {@link InputStream} or {@link File}
+     * @param sourceFormat
+     * @param ops
+     * @param fullSize
+     * @param reductionFactor
+     * @return
+     * @throws IOException
+     * @throws UnsupportedSourceFormatException
+     */
+    private static RenderedImage doReadImageWithJai(Object inputSource,
+                                                    SourceFormat sourceFormat,
+                                                    OperationList ops,
+                                                    Dimension fullSize,
+                                                    ReductionFactor reductionFactor)
+            throws IOException, UnsupportedSourceFormatException {
+        RenderedImage image;
+        switch (sourceFormat) {
+            case TIF:
+                image = readWithTiffImageDecoder(inputSource, ops, fullSize,
+                        reductionFactor);
+                break;
+            default:
+                final ParameterBlockJAI pbj = new ParameterBlockJAI("ImageRead");
+                pbj.setParameter("Input", inputSource);
+                image = JAI.create("ImageRead", pbj,
+                        defaultRenderingHints(new Dimension(512, 512)));
+                break;
+        }
+        if (image == null) {
+            throw new UnsupportedSourceFormatException(sourceFormat);
+        }
+        return image;
+    }
+
+    /**
+     * Reads a TIFF image using the JAI TIFFImageDecoder.
      *
      * @param inputSource {@link InputStream} or {@link File}
      * @param ops
@@ -459,7 +609,7 @@ abstract class ProcessorUtil {
     }
 
     /**
-     * <p>Uses TIFFImageReader to load a TIFF from an InputStream.</p>
+     * <p>Uses TIFFImageReader to load a TIFF.</p>
      *
      * <p>The TIFFImageReader class currently being used,
      * it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader, has several
@@ -470,7 +620,7 @@ abstract class ProcessorUtil {
      *     which necessitates an expensive redraw into a new BufferedImage of
      *     <code>TYPE_RGB</code>. Though, we seem to be able to work around
      *     this (see inline commentary in
-     *     <code>getSmallestUsableImage()</code>).</li>
+     *     {@link #getSmallestUsableImage}).</li>
      *     <li>It throws an ArrayIndexOutOfBoundsException when a TIFF file
      *     contains a tag value greater than 6. (To inspect tag values, run
      *     <code>$ tiffdump &lt;file&gt;</code>.) (The Sun TIFFImageReader
@@ -478,8 +628,6 @@ abstract class ProcessorUtil {
      *     IllegalArgumentException instead.)</li>
      *     <li>It renders some TIFFs with improper colors.</li>
      * </ul>
-     *
-     * <p>Most of these are probably fixable with some clever workarounds.</p>
      *
      * <p><code>ImageIO.read()</code> would be an alternative, but it is not
      * usable because it also suffers from the <code>TYPE_CUSTOM</code> issue.
@@ -553,7 +701,7 @@ abstract class ProcessorUtil {
                                                         ReductionFactor rf)
             throws IOException {
         RenderedImage bestImage = null;
-        if (scale.getMode() != Scale.Mode.FULL) {
+        if (!scale.isNoOp()) {
             // Pyramidal TIFFs will have > 1 "page," each half the dimensions of
             // the next larger.
             int numImages = decoder.getNumPages();
@@ -634,7 +782,7 @@ abstract class ProcessorUtil {
         // param.setDestinationType(ImageTypeSpecifier.
         //        createFromBufferedImageType(BufferedImage.TYPE_INT_RGB));
         reader.read(0, param);
-        if (scale.getMode() != Scale.Mode.FULL) {
+        if (!scale.isNoOp()) {
             // Pyramidal TIFFs will have > 1 image, each half the dimensions of
             // the next larger. The "true" parameter tells getNumImages() to
             // scan for images, which seems to be necessary for at least some
@@ -683,10 +831,28 @@ abstract class ProcessorUtil {
         return bestImage;
     }
 
+    /**
+     * @param inImage Image to reformat
+     * @param tileSize JAI tile size
+     * @return Reformatted image
+     */
+    public static RenderedOp reformatImage(PlanarImage inImage,
+                                           Dimension tileSize) {
+        final ParameterBlock pb = new ParameterBlock();
+        pb.addSource(inImage);
+        return JAI.create("format", pb, defaultRenderingHints(tileSize));
+    }
+
+    /**
+     * @param inImage Image to rotate
+     * @param rotate Rotate operation
+     * @return Rotated image, or the input image if the given rotation is a
+     * no-op.
+     */
     public static BufferedImage rotateImage(BufferedImage inImage,
                                             Rotate rotate) {
         BufferedImage rotatedImage = inImage;
-        if (rotate.getDegrees() > 0) {
+        if (!rotate.isNoOp()) {
             double radians = Math.toRadians(rotate.getDegrees());
             int sourceWidth = inImage.getWidth();
             int sourceHeight = inImage.getHeight();
@@ -718,67 +884,52 @@ abstract class ProcessorUtil {
         return rotatedImage;
     }
 
-    public static RenderedOp scaleImage(RenderedOp inImage, Scale scale) {
-        RenderedOp scaledImage;
-        if (scale.getMode() == Scale.Mode.FULL) {
-            scaledImage = inImage;
-        } else {
-            final double sourceWidth = inImage.getWidth();
-            final double sourceHeight = inImage.getHeight();
-            double xScale = 1.0f;
-            double yScale = 1.0f;
-            if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                xScale = yScale = scale.getWidth() / sourceWidth;
-            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                xScale = yScale = scale.getHeight() / sourceHeight;
-            } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
-                xScale = scale.getWidth() / sourceWidth;
-                yScale = scale.getHeight() / sourceHeight;
-            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                double hScale = scale.getWidth() / sourceWidth;
-                double vScale = scale.getHeight() / sourceHeight;
-                xScale = (sourceWidth * Math.min(hScale, vScale));
-                yScale = (sourceHeight * Math.min(hScale, vScale));
-            } else if (scale.getPercent() != null) {
-                xScale = yScale = scale.getPercent() / 100.0f;
-            }
+    /**
+     * @param inImage Image to rotate
+     * @param rotate Rotate operation
+     * @return Rotated image, or the input image if the given rotate operation
+     * is a no-op.
+     */
+    public static RenderedOp rotateImage(RenderedOp inImage,
+                                         Rotate rotate) {
+        RenderedOp rotatedImage = inImage;
+        if (!rotate.isNoOp()) {
             ParameterBlock pb = new ParameterBlock();
-            pb.addSource(inImage);
-            pb.add((float) xScale);
-            pb.add((float) yScale);
-            pb.add(0.0f);
-            pb.add(0.0f);
+            pb.addSource(rotatedImage);
+            pb.add(inImage.getWidth() / 2.0f);
+            pb.add(inImage.getHeight() / 2.0f);
+            pb.add((float) Math.toRadians(rotate.getDegrees()));
             pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
-            scaledImage = JAI.create("scale", pb);
+            rotatedImage = JAI.create("rotate", pb);
         }
-        return scaledImage;
+        return rotatedImage;
+    }
+
+    /**
+     * @param inImage Image to scale
+     * @param scale Scale operation
+     * @return Scaled image, or the input image if the given scale is a no-op.
+     */
+    public static RenderedOp scaleImage(RenderedOp inImage, Scale scale) {
+        return scaleImage(inImage, scale, 0);
     }
 
     /**
      * Scales an image using JAI, taking an already-applied reduction factor
-     * into account. In other words, the dimensions of the input image have
-     * already been halved rf times but the given size is relative to the
-     * full-sized image.
+     * into account. (In other words, the dimensions of the input image have
+     * already been halved <code>reductionFactor</code> times but the given
+     * size is relative to the full-sized image.)
      *
-     * @param inImage The input image
+     * @param inImage Image to scale
      * @param scale Requested size ignoring any reduction factor
      * @param reductionFactor Reduction factor that has already been applied to
      *                        <code>inImage</code>
-     * @return Scaled image
+     * @return Scaled image, or the input image if the given scale is a no-op.
      */
-    public static RenderedOp scaleImage(PlanarImage inImage, Scale scale,
+    public static RenderedOp scaleImage(RenderedOp inImage, Scale scale,
                                         int reductionFactor) {
-        RenderedOp scaledImage;
-        if (scale.getMode() == Scale.Mode.FULL) {
-            ParameterBlock pb = new ParameterBlock();
-            pb.addSource(inImage);
-            pb.add(1.0f);
-            pb.add(1.0f);
-            pb.add(0.0f);
-            pb.add(0.0f);
-            pb.add(Interpolation.getInstance(Interpolation.INTERP_NEAREST));
-            scaledImage = JAI.create("scale", pb);
-        } else {
+        RenderedOp scaledImage = inImage;
+        if (!scale.isNoOp()) {
             final double sourceWidth = inImage.getWidth();
             final double sourceHeight = inImage.getHeight();
             double xScale = 1.0f;
@@ -820,10 +971,8 @@ abstract class ProcessorUtil {
      */
     public static BufferedImage scaleImageWithAffineTransform(
             BufferedImage inImage, Scale scale) {
-        BufferedImage scaledImage;
-        if (scale.getMode() == Scale.Mode.FULL) {
-            scaledImage = inImage;
-        } else {
+        BufferedImage scaledImage = inImage;
+        if (!scale.isNoOp()) {
             double xScale = 0.0f, yScale = 0.0f;
             if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                 xScale = scale.getWidth() / (double) inImage.getWidth();
@@ -884,10 +1033,8 @@ abstract class ProcessorUtil {
     public static BufferedImage scaleImageWithG2d(BufferedImage inImage,
                                                   Scale scale,
                                                   int reductionFactor) {
-        BufferedImage scaledImage;
-        if (scale.getMode() == Scale.Mode.FULL) {
-            scaledImage = inImage;
-        } else {
+        BufferedImage scaledImage = inImage;
+        if (!scale.isNoOp()) {
             final int sourceWidth = inImage.getWidth();
             final int sourceHeight = inImage.getHeight();
             int width = 0, height = 0;
@@ -927,6 +1074,12 @@ abstract class ProcessorUtil {
         return scaledImage;
     }
 
+    /**
+     * @param inImage Image to transpose.
+     * @param transpose The transpose operation.
+     * @return Transposed image, or the input image if the given transpose
+     * operation is a no-op.
+     */
     public static BufferedImage transposeImage(BufferedImage inImage,
                                                Transpose transpose) {
         AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
@@ -935,7 +1088,7 @@ abstract class ProcessorUtil {
                 tx.translate(-inImage.getWidth(null), 0);
                 break;
             case VERTICAL:
-                tx.translate(0, -inImage.getHeight(null)); // TODO: test this
+                tx.translate(0, -inImage.getHeight(null));
                 break;
         }
         AffineTransformOp op = new AffineTransformOp(tx,
@@ -943,6 +1096,12 @@ abstract class ProcessorUtil {
         return op.filter(inImage, null);
     }
 
+    /**
+     * @param inImage Image to transpose.
+     * @param transpose The transpose operation.
+     * @return Transposed image, or the input image if the given transpose
+     * operation is a no-op.
+     */
     public static RenderedOp transposeImage(RenderedOp inImage,
                                             Transpose transpose) {
         ParameterBlock pb = new ParameterBlock();
@@ -1037,10 +1196,19 @@ abstract class ProcessorUtil {
         }
     }
 
-    public static void writeImage(RenderedOp image, OutputFormat format,
+    /**
+     * Writes an image to the given output stream.
+     *
+     * @param image Image to write
+     * @param outputFormat Format of the output image
+     * @param outputStream Stream to which to write the image
+     * @throws IOException
+     */
+    public static void writeImage(RenderedOp image,
+                                  OutputFormat outputFormat,
                                   OutputStream outputStream)
             throws IOException {
-        switch (format) {
+        switch (outputFormat) {
             case GIF:
                 // TODO: this and ImageIO.write() frequently don't work
                 Iterator writers = ImageIO.getImageWritersByFormatName("GIF");
@@ -1086,7 +1254,7 @@ abstract class ProcessorUtil {
             case PNG:
                 // ImageIO.write() seems to be more efficient than
                 // PNGImageEncoder
-                ImageIO.write(image, format.getExtension(), outputStream);
+                ImageIO.write(image, outputFormat.getExtension(), outputStream);
                 /* PNGEncodeParam pngParam = new PNGEncodeParam.RGB();
                 ImageEncoder pngEncoder = ImageCodec.createImageEncoder("PNG",
                         outputStream, pngParam);
