@@ -97,8 +97,8 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
                                 // (see ProcessorUtil.writeImage(RenderedOp))
                                 continue;
                             }
-                            for (i = 0, length = writerMimeTypes.length; i < length; i++) {
-                                if (outputFormat.getMediaType().equals(writerMimeTypes[i].toLowerCase())) {
+                            for (int i2 = 0, length2 = writerMimeTypes.length; i2 < length2; i2++) {
+                                if (outputFormat.getMediaType().equals(writerMimeTypes[i2].toLowerCase())) {
                                     outputFormats.add(outputFormat);
                                 }
                             }
