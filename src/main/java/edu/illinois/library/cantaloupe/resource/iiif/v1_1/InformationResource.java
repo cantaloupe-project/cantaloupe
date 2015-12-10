@@ -55,21 +55,21 @@ public class InformationResource extends AbstractResource {
     @Get("json")
     public StringRepresentation doGet() throws Exception {
         Map<String,Object> attrs = this.getRequest().getAttributes();
-        String identifier = (String) attrs.get("identifier");
-        Identifier internalId = new Identifier(identifier);
+        Identifier identifier = new Identifier(
+                Reference.decode((String) attrs.get("identifier")));
         // Get the resolver
         Resolver resolver = ResolverFactory.getResolver();
         SourceFormat sourceFormat = SourceFormat.UNKNOWN;
         try {
             // Determine the format of the source image
-            sourceFormat = resolver.getSourceFormat(internalId);
+            sourceFormat = resolver.getSourceFormat(identifier);
         } catch (FileNotFoundException e) {
             if (Application.getConfiguration().
                     getBoolean(PURGE_MISSING_CONFIG_KEY, false)) {
                 // if the image was not found, purge it from the cache
                 final Cache cache = CacheFactory.getInstance();
                 if (cache != null) {
-                    cache.purge(internalId);
+                    cache.purge(identifier);
                 }
             }
             throw e;
@@ -86,8 +86,8 @@ public class InformationResource extends AbstractResource {
                 proc.getSupportedFeatures(sourceFormat),
                 proc.getSupportedIiif1_1Qualities(sourceFormat),
                 proc.getAvailableOutputFormats(sourceFormat));
-        ImageInfo imageInfo = getImageInfo(internalId,
-                getSize(internalId, proc, resolver, sourceFormat),
+        ImageInfo imageInfo = getImageInfo(identifier,
+                getSize(identifier, proc, resolver, sourceFormat),
                 complianceLevel,
                 proc.getSupportedIiif1_1Qualities(sourceFormat),
                 proc.getAvailableOutputFormats(sourceFormat));
