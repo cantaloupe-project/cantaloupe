@@ -66,6 +66,22 @@ public class ApplicationTest extends CantaloupeTestCase {
         }
     }
 
+    public void testGetConfigurationFile() {
+        try {
+            File directory = new File(".");
+            String cwd = directory.getCanonicalPath();
+            Path testPath = Paths.get(cwd, "src", "test", "java", "edu",
+                    "illinois", "library", "cantaloupe", "test");
+
+            String goodProps = testPath + File.separator + "cantaloupe.properties";
+            System.setProperty("cantaloupe.config", goodProps);
+            assertEquals(new File(cwd + "/src/test/java/edu/illinois/library/cantaloupe/test/cantaloupe.properties"),
+                    Application.getConfigurationFile());
+        } catch (IOException e) {
+            fail("Failed to set cantaloupe.config");
+        }
+    }
+
     /**
      * getVersion() is only partially testable as it checks whether the app is
      * running from a jar

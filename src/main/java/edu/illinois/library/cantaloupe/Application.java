@@ -14,11 +14,13 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
+import org.apache.velocity.runtime.resource.loader.FileResourceLoader;
 import org.restlet.Component;
 import org.restlet.data.Protocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -45,6 +47,71 @@ public class Application {
         Velocity.setProperty("runtime.log.logsystem.class",
                 Slf4jLogChute.class.getCanonicalName());
         Velocity.init();
+    }
+
+    /**
+     * @return Application-wide Configuration object.
+     */
+    public static Configuration getConfiguration() {
+        if (config == null) {
+            try {
+                File configFile = getConfigurationFile();
+                if (configFile != null) {
+                    PropertiesConfiguration propConfig = new PropertiesConfiguration();
+                    propConfig.load(configFile);
+                    config = propConfig;
+                }
+            } catch (ConfigurationException e) {
+                // The logger has probably not been initialized yet, as it
+                // depends on a working configuration.
+                System.out.println(e.getMessage());
+            }
+        }
+        return config;
+    }
+
+    /**
+     * @return File object corresponding to the active configuration file.
+     */
+    public static File getConfigurationFile() {
+        String configFilePath = System.getProperty("cantaloupe.config");
+        if (configFilePath != null) {
+            try {
+                configFilePath = configFilePath.replaceFirst("^~",
+                                System.getProperty("user.home"));
+                logger.info("Using config file: {}", configFilePath);
+                return new File(configFilePath).getCanonicalFile();
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return The application version from manifest.mf, or a string like
+     * "Non-Release" if running from a jar.
+     */
+    public static String getVersion() {
+        String versionStr = "Non-Release";
+        Class clazz = Application.class;
+        String className = clazz.getSimpleName() + ".class";
+        String classPath = clazz.getResource(className).toString();
+        if (classPath.startsWith("jar")) {
+            String manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1) +
+                    "/META-INF/MANIFEST.MF";
+            try {
+                Manifest manifest = new Manifest(new URL(manifestPath).openStream());
+                Attributes attr = manifest.getMainAttributes();
+                String version = attr.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
+                if (version != null) {
+                    versionStr = version;
+                }
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+        return versionStr;
     }
 
     private static void purgeCacheAtLaunch() throws IOException {
@@ -128,59 +195,10 @@ public class Application {
     }
 
     /**
-     * @return The application-wide Configuration object.
-     */
-    public static Configuration getConfiguration() {
-        if (config == null) {
-            try {
-                String configFilePath = System.getProperty("cantaloupe.config");
-                if (configFilePath != null) {
-                    configFilePath = configFilePath.replaceFirst("^~",
-                            System.getProperty("user.home"));
-                    PropertiesConfiguration propConfig = new PropertiesConfiguration();
-                    propConfig.load(configFilePath);
-                    config = propConfig;
-                }
-            } catch (ConfigurationException e) {
-                // The logger has probably not been initialized yet, as it
-                // depends on a working configuration.
-                System.out.println(e.getMessage());
-            }
-        }
-        return config;
-    }
-
-    /**
      * Overrides the configuration, mainly for testing purposes.
      */
     public static void setConfiguration(Configuration c) {
         config = c;
-    }
-
-    /**
-     * @return The application version from manifest.mf, or a string like
-     * "Non-Release" if running from a jar.
-     */
-    public static String getVersion() {
-        String versionStr = "Non-Release";
-        Class clazz = Application.class;
-        String className = clazz.getSimpleName() + ".class";
-        String classPath = clazz.getResource(className).toString();
-        if (classPath.startsWith("jar")) {
-            String manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1) +
-                    "/META-INF/MANIFEST.MF";
-            try {
-                Manifest manifest = new Manifest(new URL(manifestPath).openStream());
-                Attributes attr = manifest.getMainAttributes();
-                String version = attr.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
-                if (version != null) {
-                    versionStr = version;
-                }
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-        return versionStr;
     }
 
     public static void startServer() throws Exception {
