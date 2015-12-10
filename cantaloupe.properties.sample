@@ -1,11 +1,14 @@
-#############################################################################
+###########################################################################
 # Sample Cantaloupe configuration file
 #
 # Copy this file to `cantaloupe.properties` and edit as desired. Then, launch
 # Cantaloupe with the `-Dcantaloupe.config=cantaloupe.properties` option.
 #
-# Note that backslashes need to be doubled, like this: \\
-#############################################################################
+# This is a Java Properties file. Note that backslashes need to be doubled,
+# like this: \\
+# Also, each line in a multi-line value except the last needs to end with a
+# single backslash.
+###########################################################################
 
 # TCP port to bind the web server to.
 http.port = 8182
@@ -24,7 +27,7 @@ http.content_disposition = inline
 # URI needs to override the local URI. Leave blank to use the default.
 base_uri =
 
-# Maximum number of image pixels to return in a single request, to prevent
+# Maximum number of image pixels to return in a response, to prevent
 # overloading the server. Requests for more pixels than this will receive an
 # HTTP 4xx response. Comment out or set to 0 for no maximum.
 max_pixels = 400000000
@@ -32,26 +35,26 @@ max_pixels = 400000000
 # Helpful in development
 print_stack_trace_on_error_pages = true
 
-###############
+###########################################################################
 # ENDPOINTS
-###############
+###########################################################################
 
 endpoint.iiif.1.1.enabled = true
 
 endpoint.iiif.2.0.enabled = true
 
-###############
+###########################################################################
 # RESOLVERS
-###############
+###########################################################################
 
 # The resolver that translates the identifier in the URL to an image source.
 # Available values are `FilesystemResolver`, `HttpResolver`, `JdbcResolver`,
 # and `AmazonS3Resolver`.
 resolver = FilesystemResolver
 
-###
+#----------------------------------------
 # FilesystemResolver
-###
+#----------------------------------------
 
 # Server-side path that will be prefixed to the identifier in the URL.
 # Trailing slash is important.
@@ -68,9 +71,9 @@ FilesystemResolver.path_suffix =
 # percent-encoded version in IIIF URLs.
 #FilesystemResolver.path_separator =
 
-###
+#----------------------------------------
 # HttpResolver
-###
+#----------------------------------------
 
 # URL that will be prefixed to the identifier in the request URL. Trailing
 # slash is important.
@@ -87,9 +90,9 @@ HttpResolver.url_suffix =
 HttpResolver.auth.basic.username =
 HttpResolver.auth.basic.secret =
 
-###
+#----------------------------------------
 # JdbcResolver
-###
+#----------------------------------------
 
 JdbcResolver.connection_string = jdbc:postgresql://localhost:5432/my_database
 JdbcResolver.user = postgres
@@ -129,9 +132,9 @@ JdbcResolver.lookup_sql = SELECT image \
     FROM item \
     WHERE filename = ?
 
-###
+#----------------------------------------
 # AmazonS3Resolver
-###
+#----------------------------------------
 
 # See: http://aws.amazon.com/security-credentials
 # Access key ID associated with your AWS account.
@@ -146,9 +149,9 @@ AmazonS3Resolver.bucket.name =
 # Can be commented out or left blank.
 #AmazonS3Resolver.bucket.region = us-east-1
 
-###############
+###########################################################################
 # PROCESSORS
-###############
+###########################################################################
 
 # Image processors to use for various source formats. Available values are
 # `Java2dProcessor`, `GraphicsMagickProcessor`, `ImageMagickProcessor`,
@@ -166,30 +169,30 @@ processor.webm = FfmpegProcessor
 # Fall back to this processor for any formats not assigned above.
 processor.fallback = Java2dProcessor
 
-###
+#----------------------------------------
 # FfmpegProcessor
-###
+#----------------------------------------
 
 # Optional; overrides the PATH
 #FfmpegProcessor.path_to_binaries = /usr/local/bin
 
-###
+#----------------------------------------
 # GraphicsMagickProcessor
-###
+#----------------------------------------
 
 # Optional; overrides the PATH
 #GraphicsMagickProcessor.path_to_binaries = /usr/local/bin
 
-###
+#----------------------------------------
 # ImageMagickProcessor
-###
+#----------------------------------------
 
 # Optional; overrides the PATH
 #ImageMagickProcessor.path_to_binaries = /usr/local/bin
 
-###
+#----------------------------------------
 # Java2dProcessor
-###
+#----------------------------------------
 
 # JPEG output quality. Should be a number between 0-1 ending in "f"
 Java2dProcessor.jpg.quality = 0.7f
@@ -198,9 +201,9 @@ Java2dProcessor.jpg.quality = 0.7f
 # If you notice any issues with TIFFs, try switching.
 Java2dProcessor.tif.reader = TIFFImageReader
 
-###
+#----------------------------------------
 # KakaduProcessor
-###
+#----------------------------------------
 
 # Optional; overrides the PATH
 #KakaduProcessor.path_to_binaries = /usr/local/bin
@@ -213,9 +216,9 @@ KakaduProcessor.path_to_stdout_symlink = /path/to/stdout.ppm
 # Available values are `jai` and `java2d`.
 KakaduProcessor.post_processor = java2d
 
-###############
-# CACHING
-###############
+###########################################################################
+# CLIENT-SIDE CACHING
+###########################################################################
 
 # Whether to enable the response Cache-Control header.
 cache.client.enabled = true
@@ -231,6 +234,10 @@ cache.client.no_store = false
 cache.client.must_revalidate = false
 cache.client.proxy_revalidate = false
 cache.client.no_transform = true
+
+###########################################################################
+# SERVER-SIDE CACHING
+###########################################################################
 
 # The only available value is `FilesystemCache`. Comment out or set blank
 # to disable caching.
@@ -249,9 +256,9 @@ cache.server.purge_missing = false
 # always true.
 cache.server.resolve_first = true
 
-###
+#----------------------------------------
 # FilesystemCache
-###
+#----------------------------------------
 
 # If this directory does not exist, it will be created automatically.
 FilesystemCache.pathname = /var/cache/cantaloupe
@@ -260,9 +267,9 @@ FilesystemCache.pathname = /var/cache/cantaloupe
 # blank or 0 for "forever"
 FilesystemCache.ttl_seconds = 2592000
 
-###
+#----------------------------------------
 # JdbcCache
-###
+#----------------------------------------
 
 JdbcCache.connection_string = jdbc:postgresql://localhost:5432/cantaloupe
 JdbcCache.user = postgres
@@ -283,13 +290,13 @@ JdbcCache.info_table = info_cache
 # blank or 0 for "forever"
 JdbcCache.ttl_seconds = 2592000
 
-###############
+###########################################################################
 # LOGGING
-###############
+###########################################################################
 
-###
+#----------------------------------------
 # Application Log
-###
+#----------------------------------------
 
 # `trace`, `debug`, `info`, `warn`, `error`, `all`, or `off`
 log.application.level = debug
@@ -305,9 +312,9 @@ log.application.RollingFileAppender.policy = TimeBasedRollingPolicy
 log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/cantaloupe-%d{yyyy-MM-dd}.log
 log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30
 
-###
+#----------------------------------------
 # Access Log
-###
+#----------------------------------------
 
 log.access.ConsoleAppender.enabled = true
 
