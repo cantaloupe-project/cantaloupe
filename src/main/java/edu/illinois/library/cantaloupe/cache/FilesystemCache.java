@@ -75,7 +75,7 @@ class FilesystemCache implements Cache {
      * Returned by {@link FilesystemCache#getImageOutputStream} when an
      * output stream for the same operation list has been returned in another
      * thread but has not yet been closed. Allows that thread to keep writing
-     * without the current thread interfering.
+     * without other threads interfering.
      */
     private static class ConcurrentNullOutputStream extends OutputStream {
 
@@ -161,12 +161,8 @@ class FilesystemCache implements Cache {
     /** Lock object for synchronization */
     private final Object lock4 = new Object();
 
-    private static String filenameSafe(Identifier identifier) {
-        return identifier.toString().replaceAll(FILENAME_SAFE_CHARACTERS, "_");
-    }
-
-    private static String filenameSafe(Operation op) {
-        return op.toString().replaceAll(FILENAME_SAFE_CHARACTERS, "_");
+    private static String filenameSafe(String inputString) {
+        return inputString.replaceAll(FILENAME_SAFE_CHARACTERS, "_");
     }
 
     /**
@@ -256,7 +252,7 @@ class FilesystemCache implements Cache {
         if (cachePathname != null) {
             final String pathname =
                     StringUtils.stripEnd(cachePathname, File.separator) +
-                            File.separator + filenameSafe(identifier) +
+                            File.separator + filenameSafe(identifier.toString()) +
                             INFO_EXTENSION;
             return new File(pathname);
         }
@@ -273,10 +269,10 @@ class FilesystemCache implements Cache {
         if (cachePathname != null) {
             List<String> parts = new ArrayList<>();
             parts.add(StringUtils.stripEnd(cachePathname, File.separator) +
-                    File.separator + filenameSafe(ops.getIdentifier()));
+                    File.separator + filenameSafe(ops.getIdentifier().toString()));
             for (Operation op : ops) {
                 if (!op.isNoOp()) {
-                    parts.add(filenameSafe(op));
+                    parts.add(filenameSafe(op.toString()));
                 }
             }
             final String baseName = StringUtils.join(parts, "_");
@@ -300,7 +296,7 @@ class FilesystemCache implements Cache {
             }
 
             public boolean accept(File dir, String name) {
-                return name.startsWith(filenameSafe(identifier));
+                return name.startsWith(filenameSafe(identifier.toString()));
             }
         }
 
