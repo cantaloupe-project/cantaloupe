@@ -22,6 +22,8 @@ layout: default
 
 <pre>$ java -Dcantaloupe.config=/path/to/cantaloupe.properties -Xmx2g -jar Cantaloupe-x.x.x.jar</pre>
 
+<div class="alert alert-info">Note: -Xmx2g tells the JVM to use up to 2GB of heap space (RAM). Without this argument, some JVMs will default to a much smaller amount, leading to OutOfMemoryErrors.</div>
+
 <p>Assuming the <code>http.port</code> option has not been changed, it is now running at: <a href="http://localhost:8182/">http://localhost:8182/</a></p>
 
 <div class="alert alert-info">Note: On OS X, a "java" icon will appear in the Dock. This can be disabled by adding the <code>-Djava.awt.headless=true</code> argument to the command.</div>
