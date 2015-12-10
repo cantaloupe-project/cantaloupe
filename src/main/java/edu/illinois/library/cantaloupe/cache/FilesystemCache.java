@@ -353,7 +353,8 @@ class FilesystemCache implements Cache {
     @Override
     public void purge() throws IOException {
         synchronized (lock4) {
-            while (purgingInProgress.get() || !imagesBeingPurged.isEmpty()) {
+            while (purgingInProgress.get() || !imagesBeingPurged.isEmpty() ||
+                    !imagesBeingWritten.isEmpty()) {
                 try {
                     lock4.wait();
                 } catch (InterruptedException e) {
@@ -407,6 +408,7 @@ class FilesystemCache implements Cache {
 
     @Override
     public void purge(Identifier identifier) throws IOException {
+        // TODO: improve concurrency
         for (File imageFile : getImageFiles(identifier)) {
             logger.debug("Deleting {}", imageFile);
             if (!imageFile.delete()) {
@@ -425,7 +427,8 @@ class FilesystemCache implements Cache {
     @Override
     public void purge(OperationList ops) throws IOException {
         synchronized (lock1) {
-            while (purgingInProgress.get() || imagesBeingPurged.contains(ops)) {
+            while (purgingInProgress.get() || imagesBeingPurged.contains(ops) ||
+                    imagesBeingWritten.contains(ops)) {
                 try {
                     lock1.wait();
                 } catch (InterruptedException e) {
@@ -457,7 +460,8 @@ class FilesystemCache implements Cache {
     @Override
     public void purgeExpired() throws IOException {
         synchronized (lock4) {
-            while (purgingInProgress.get() || !imagesBeingPurged.isEmpty()) {
+            while (purgingInProgress.get() || !imagesBeingPurged.isEmpty() ||
+                    !imagesBeingWritten.isEmpty()) {
                 try {
                     lock4.wait();
                 } catch (InterruptedException e) {
