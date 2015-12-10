@@ -144,7 +144,7 @@ public class ImageRepresentation extends AbstractImageRepresentation {
         try {
             doWrite(outputStream);
         } catch (IOException e) {
-            logger.error(e.getMessage(), e);
+            logger.debug(e.getMessage(), e);
             cache.purge(this.ops);
         }
     }
@@ -152,8 +152,8 @@ public class ImageRepresentation extends AbstractImageRepresentation {
     private void doWrite(OutputStream outputStream) throws IOException {
         try {
             final long msec = System.currentTimeMillis();
-            // if the parameters request an unmodified source image, it can
-            // be streamed right through
+            // If the operations are effectively a no-op, the source image can
+            // be streamed directly.
             if (this.ops.isNoOp()) {
                 if (this.file != null) {
                     IOUtils.copy(new FileInputStream(this.file),
