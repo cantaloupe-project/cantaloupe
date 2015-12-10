@@ -58,6 +58,9 @@ class KakaduProcessor implements FileProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(KakaduProcessor.class);
 
+    private static final String POST_PROCESSOR_CONFIG_KEY =
+            "KakaduProcessor.post_processor";
+
     private static final short MAX_REDUCTION_FACTOR = 5;
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
@@ -102,7 +105,7 @@ class KakaduProcessor implements FileProcessor {
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
 
         if (Application.getConfiguration().
-                getString("KakaduProcessor.post_processor", "java2d").
+                getString(POST_PROCESSOR_CONFIG_KEY, "java2d").
                 toLowerCase().equals("jai")) {
             postProcessor = PostProcessor.JAI;
             logger.info("Will post-process using JAI");
