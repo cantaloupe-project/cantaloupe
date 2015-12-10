@@ -40,6 +40,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Processor using the Kakadu kdu_expand and kdu_jp2info command-line tools.
@@ -54,26 +56,6 @@ class KakaduProcessor implements FileProcessor {
         JAI, JAVA2D
     }
 
-    private class StreamCopier implements Runnable {
-
-        private final InputStream inputStream;
-        private final OutputStream outputStream;
-
-        public StreamCopier(InputStream is, OutputStream os) {
-            inputStream = is;
-            outputStream = os;
-        }
-
-        public void run() {
-            try {
-                IOUtils.copy(inputStream, outputStream);
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-
-    }
-
     private static Logger logger = LoggerFactory.getLogger(KakaduProcessor.class);
 
     private static final short MAX_REDUCTION_FACTOR = 5;
@@ -83,6 +65,9 @@ class KakaduProcessor implements FileProcessor {
             SUPPORTED_IIIF_1_1_QUALITIES = new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality>
             SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
+
+    private static final ExecutorService executorService =
+            Executors.newCachedThreadPool();
     private static PostProcessor postProcessor;
 
     static {
@@ -256,6 +241,24 @@ class KakaduProcessor implements FileProcessor {
             throw new UnsupportedOutputFormatException();
         }
 
+        class StreamCopier implements Runnable {
+            private final InputStream inputStream;
+            private final OutputStream outputStream;
+
+            public StreamCopier(InputStream is, OutputStream os) {
+                inputStream = is;
+                outputStream = os;
+            }
+
+            public void run() {
+                try {
+                    IOUtils.copy(inputStream, outputStream);
+                } catch (IOException e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+        }
+
         final ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
@@ -264,8 +267,10 @@ class KakaduProcessor implements FileProcessor {
                     fullSize, reduction);
             final Process process = pb.start();
 
-            new Thread(new StreamCopier(process.getInputStream(), outputBucket)).start();
-            new Thread(new StreamCopier(process.getErrorStream(), errorBucket)).start();
+            executorService.submit(
+                    new StreamCopier(process.getInputStream(), outputBucket));
+            executorService.submit(
+                    new StreamCopier(process.getErrorStream(), errorBucket));
 
             try {
                 int code = process.waitFor();

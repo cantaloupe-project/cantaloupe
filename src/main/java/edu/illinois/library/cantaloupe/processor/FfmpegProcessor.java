@@ -36,6 +36,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Processor that uses the ffmpeg command-line tool to extract video frames,
@@ -74,6 +76,9 @@ class FfmpegProcessor implements FileProcessor {
             SUPPORTED_IIIF_1_1_QUALITIES = new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality>
             SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
+
+    private static final ExecutorService executorService =
+            Executors.newCachedThreadPool();
 
     static {
         SUPPORTED_IIIF_1_1_QUALITIES.add(
@@ -213,8 +218,10 @@ class FfmpegProcessor implements FileProcessor {
             logger.debug("Executing {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
-            new Thread(new StreamCopier(process.getInputStream(), outputBucket)).start();
-            new Thread(new StreamCopier(process.getErrorStream(), errorBucket)).start();
+            executorService.submit(
+                    new StreamCopier(process.getInputStream(), outputBucket));
+            executorService.submit(
+                    new StreamCopier(process.getErrorStream(), errorBucket));
             new StreamCopier(inputStream, process.getOutputStream()).run();
 
             try {
@@ -302,8 +309,10 @@ class FfmpegProcessor implements FileProcessor {
             logger.debug("Executing {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
-            new Thread(new StreamCopier(process.getInputStream(), outputBucket)).start();
-            new Thread(new StreamCopier(process.getErrorStream(), errorBucket)).start();
+            executorService.submit(
+                    new StreamCopier(process.getInputStream(), outputBucket));
+            executorService.submit(
+                    new StreamCopier(process.getErrorStream(), errorBucket));
 
             try {
                 int code = process.waitFor();
@@ -333,7 +342,7 @@ class FfmpegProcessor implements FileProcessor {
         }
     }
 
-    public void process(OperationList ops, SourceFormat sourceFormat,
+    public void process(OperationList ops, SourceFormat sourceFormat, // TODO: get rid of this
                         Dimension fullSize, InputStream inputStream,
                         OutputStream outputStream)
             throws ProcessorException {
@@ -352,8 +361,10 @@ class FfmpegProcessor implements FileProcessor {
             logger.debug("Executing {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
-            new Thread(new StreamCopier(process.getInputStream(), outputStream)).start();
-            new Thread(new StreamCopier(process.getErrorStream(), errorBucket)).start();
+            executorService.submit(
+                    new StreamCopier(process.getInputStream(), outputStream));
+            executorService.submit(
+                    new StreamCopier(process.getErrorStream(), errorBucket));
             new StreamCopier(inputStream, process.getOutputStream()).run();
 
             try {
