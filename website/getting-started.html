@@ -40,13 +40,33 @@ layout: default
 </div>
 
 <ul>
-  <li>Add the <code>max_pixels</code> key from the sample configuration.</li>
-  <li>Add the <code>endpoint.iiif.1.1.enabled</code> key from the sample configuration.</li>
-  <li>Add the <code>endpoint.iiif.2.0.enabled</code> key from the sample configuration.</li>
-  <li>Add the <code>JdbcResolver.connection_timeout</code> and <code>JdbcResolver.max_pool_size</code> keys from the sample configuration.</li>
-  <li>Add the <code>cache.server.purge_missing</code> key from the sample configuration.</li>
-  <li>Add the <code>JdbcCache.connection_timeout</code> and <code>JdbcCache.max_pool_size</code> keys from the sample configuration.</li>
-  <li>Remove the <code>log.application.ConsoleAppender.pattern</code>, <code>log.application.FileAppender.pattern</code>, and <code>log.application.RollingFileAppender.pattern</code> keys from your existing configuration.</li>
+  <li>Add the following new keys from the sample configuration:
+    <ul>
+      <li><code>max_pixels</code></li>
+      <li><code>endpoint.iiif.1.1.enabled</code></li>
+      <li><code>endpoint.iiif.2.0.enabled</code></li>
+      <li><code>FilesystemResolver.lookup_strategy</code></li>
+      <li><code>FilesystemResolver.ScriptLookupStrategy.script</code></li>
+      <li><code>JdbcResolver.connection_timeout</code></li>
+      <li><code>JdbcResolver.max_pool_size</code></li>
+      <li><code>cache.server.purge_missing</code></li>
+      <li><code>JdbcCache.connection_timeout</code></li>
+      <li><code>JdbcCache.max_pool_size</code></li>
+    </ul>
+  </li>
+  <li>Rename the following keys:
+    <ul>
+      <li><code>FilesystemResolver.path_prefix</code> to <code>FilesystemResolver.BasicLookupStrategy.path_prefix</code>
+      <li><code>FilesystemResolver.path_suffix</code> to <code>FilesystemResolver.BasicLookupStrategy.path_suffix</code>
+    </ul>
+  </li>
+  <li>Delete the following obsolete keys:
+    <ul>
+      <li><code>log.application.ConsoleAppender.pattern</code></li>
+      <li><code>log.application.FileAppender.pattern</code></li>
+      <li><code>log.application.RollingFileAppender.pattern</code></li>
+    </ul>
+  </li>
   <li>Because the cache naming format has changed, it will be necessary to <a href="caches.html#Purging">purge your cache</a> before using this version.</li>
 </ul>
 

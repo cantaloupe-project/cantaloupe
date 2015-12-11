@@ -54,7 +54,10 @@ public class ConformanceTest extends CantaloupeTestCase {
             config.setProperty("http.port", PORT);
             config.setProperty("processor.fallback", "Java2dProcessor");
             config.setProperty("resolver", "FilesystemResolver");
-            config.setProperty("FilesystemResolver.path_prefix", fixturePath + File.separator);
+            config.setProperty("FilesystemResolver.lookup_strategy",
+                    "BasicLookupStrategy");
+            config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",
+                    fixturePath + File.separator);
         } catch (Exception e) {
             fail("Failed to get the configuration");
         }
@@ -114,7 +117,8 @@ public class ConformanceTest extends CantaloupeTestCase {
         String cwd = directory.getCanonicalPath();
         Path path = Paths.get(cwd, "src", "test");
         BaseConfiguration config = newConfiguration();
-        config.setProperty("FilesystemResolver.path_prefix", path + File.separator);
+        config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",
+                path + File.separator);
         Application.setConfiguration(config);
 
         String identifier = Reference.encode("resources/" + IMAGE);

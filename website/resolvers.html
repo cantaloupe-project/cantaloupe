@@ -12,17 +12,63 @@ layout: default
 
 <p>For images with extensions that are missing or unrecognized, this resolver will check the "magic number" to determine type, which will add some overhead. It is therefore slightly more efficient to serve images with extensions.</p>
 
-<h4>Prefix and Suffix</h4>
+<p>FilesystemResolver supports two distinct modes of operation, or "lookup strategies." The lookup strategy is set with the <code>FilesystemResolver.lookup_strategy</code> configuration option.</p>
 
-<p>The <code>FilesystemResolver.path_prefix</code> and <code>path_suffix</code> configuration options are optional and intended to make URLs shorter, more stable, and hide sensitive information. For example, with these options set as such:</p>
+<h4>BasicLookupStrategy</h4>
 
-<pre>FilesystemResolver.path_prefix = /usr/local/images/
-FilesystemResolver.path_suffix =</pre>
+<p>BasicLookupStrategy locates images by prepending and/or appending a pre-defined path prefix and/or suffix. For example, with the following configuration options set:</p>
+
+<pre># Note trailing slash!
+FilesystemResolver.BasicLookupStrategy.path_prefix = /usr/local/images/
+FilesystemResolver.BasicLookupStrategy.path_suffix =</pre>
 
 <p>An identifier of <code>image.jpg</code> in the URL will resolve to
 <span class="filename">/usr/local/images/image.jpg</span>.</p>
 
 <div class="alert alert-danger">Note: it is dangerous to <strong>not</strong> use <code>path_prefix</code>. The shallower the path, the more of the filesystem that will be exposed.</div>
+
+<h4>ScriptLookupStrategy</h4>
+
+<p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple locations, or perhaps your identifiers are opaque and you need to run a database or web service request to locate the corresponding images. With this lookup strategy, you can tell FilesystemResolver to run your own custom Ruby script and capture the pathname it returns.</p>
+
+<p>The script can be named anything, but it must have a <span class="filename">.rb</span> extension. Then, it can be referenced by the <code>FilesystemResolver.ScriptLookupStrategy.script</code> option, like:</p>
+
+<pre># Option 1: absolute pathname
+FilesystemResolver.ScriptLookupStrategy.script = /path/to/lookup.rb
+
+# Option 2: filename only; will be expected to be located in the
+# same folder as the config file, or the current working directory
+FilesystemResolver.ScriptLookupStrategy.script = lookup.rb
+</pre>
+
+<p>This file must contain a function called <code>get_pathname(identifier)</code>, which takes in an identifier and returns a pathname, both as strings. Inside this function, anything goes. A web service query, for example, could look something like:</p>
+
+<pre>require 'json'
+require 'net/http'
+
+def get_pathname(identifier)
+  uri = 'http://example.org/webservice.json?id=' + CGI::escape(identifier)
+  uri = URI.parse(uri)
+
+  http = Net::HTTP.new(uri.host, uri.port)
+  request = Net::HTTP::Get.new(uri.request_uri)
+
+  response = http.request(request)
+  return nil if response.code >= 400
+
+  JSON.parse(response.body)['pathname']
+end
+
+# Uncomment to test on the command line (`ruby lookup.rb`)
+# puts get_pathname('identifier-to-test')</pre>
+
+<p>The <code>get_pathname()</code> function will be called for each image request.</p>
+
+<div class="alert alert-danger">Note: the <code>get_pathname()</code> function's return value is not validated. Be very careful to ensure that it always returns either the correct pathname, or <code>nil</code>.</div>
+
+<div class="alert alert-info">Note: to improve performance, the script contents are cached upon first load. Any changes will require a restart of Cantaloupe.</div>
+
+<div class="alert alert-info">Note: the first time it runs, the script will take a few seconds to execute. That is just JRuby loading. Subsequent runs will be much faster.</div>
 
 <h4>Path Separator</h4>
 
@@ -31,6 +77,8 @@ FilesystemResolver.path_suffix =</pre>
 <p>If you are unable to configure your reverse proxy to stop decoding slashes, the <code>FilesystemResolver.path_separator</code> configuration option will enable you to use an alternate string as a path separator in an identifier. (Be sure to supply the non-percent-encoded string, and then percent-encode it in URLs if it contains any URL-unsafe characters.)</p>
 
 <p>To prevent arbitrary directory traversal, FilesystemResolver will strip out <code>..{path separator}</code> and <code>{path separator}..</code> from identifiers before resolving the path.</p>
+
+<hr>
 
 <h3 id="HttpResolver">HttpResolver</h3>
 
@@ -53,6 +101,8 @@ HttpResolver.url_suffix =</pre>
 <p>The IIIF Image API 2.0 specification mandates that identifiers in URLs be percent-encoded, which changes slashes to <code>%2F</code>. Some proxy servers automatically decode this into <code>/</code> before passing on the request. This will cause HTTP 404 errors in Cantaloupe.
 
 <p>If you are unable to configure your proxy to stop decoding slashes, the <code>HttpResolver.path_separator</code> configuration option will enable you to use an alternate string as a path separator in an identifier. (Be sure to supply the non-percent-encoded string, and then percent-encode it in URLs if it contains any URL-unsafe characters.)</p>
+
+<hr>
 
 <h3 id="JdbcResolver">JdbcResolver</h3>
 
@@ -115,6 +165,8 @@ jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre
 <pre><code>JdbcResolver.lookup_sql = SELECT image_blob_column \
     FROM some_table \
     WHERE some_identifier = ?</code></pre>
+
+<hr>
 
 <h3 id="AmazonS3Resolver">AmazonS3Resolver</h3>
 

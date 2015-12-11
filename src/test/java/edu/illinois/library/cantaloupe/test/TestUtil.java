@@ -12,14 +12,18 @@ import java.nio.file.Paths;
 
 public abstract class TestUtil {
 
+    public static File getCurrentWorkingDirectory() throws IOException {
+        File directory = new File(".");
+        return directory.getCanonicalFile();
+    }
+
     public static File getFixture(String filename) throws IOException {
         return new File(getFixturePath() + File.separator + filename);
     }
 
     public static Path getFixturePath() throws IOException {
-        File directory = new File(".");
-        String cwd = directory.getCanonicalPath();
-        return Paths.get(cwd, "src", "test", "resources");
+        return Paths.get(getCurrentWorkingDirectory().getAbsolutePath(),
+                "src", "test", "resources");
     }
 
     public static Integer getOpenPort() {

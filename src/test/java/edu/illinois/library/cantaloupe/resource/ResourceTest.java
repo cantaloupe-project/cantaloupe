@@ -26,7 +26,9 @@ public abstract class ResourceTest extends CantaloupeTestCase {
         config.setProperty("http.content_disposition", "none");
         config.setProperty("processor.fallback", "Java2dProcessor");
         config.setProperty("resolver", "FilesystemResolver");
-        config.setProperty("FilesystemResolver.path_prefix",
+        config.setProperty("FilesystemResolver.lookup_strategy",
+                "BasicLookupStrategy");
+        config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",
                 TestUtil.getFixturePath() + File.separator);
         return config;
     }
