@@ -71,12 +71,14 @@ public class Application {
     }
 
     /**
-     * @return File object corresponding to the active configuration file.
+     * @return File object corresponding to the active configuration file, or
+     * null if there is no configuration file.
      */
     public static File getConfigurationFile() {
         String configFilePath = System.getProperty("cantaloupe.config");
         if (configFilePath != null) {
             try {
+                // expand paths that start with "~"
                 configFilePath = configFilePath.replaceFirst("^~",
                                 System.getProperty("user.home"));
                 logger.info("Using config file: {}", configFilePath);
