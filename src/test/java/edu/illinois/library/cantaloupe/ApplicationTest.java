@@ -25,15 +25,10 @@ public class ApplicationTest extends CantaloupeTestCase {
     private static BaseConfiguration newConfiguration() {
         BaseConfiguration config = new BaseConfiguration();
         try {
-            File directory = new File(".");
-            String cwd = directory.getCanonicalPath();
-            Path fixturePath = Paths.get(cwd, "src", "test", "resources");
             config.setProperty("print_stack_trace_on_error_pages", false);
             config.setProperty("http.port", PORT);
-            config.setProperty("processor.fallback", "Java2dProcessor");
             config.setProperty("resolver", "FilesystemResolver");
-            config.setProperty("FilesystemResolver.path_prefix", fixturePath +
-                    File.separator);
+            config.setProperty("processor.fallback", "Java2dProcessor");
         } catch (Exception e) {
             fail("Failed to get the configuration");
         }
@@ -94,6 +89,22 @@ public class ApplicationTest extends CantaloupeTestCase {
         Configuration newConfig = newConfiguration();
         Application.setConfiguration(newConfig);
         assertSame(newConfig, Application.getConfiguration());
+    }
+
+    public void testMainWithInvalidConfigExits() throws Exception {
+        /* TODO: implement this once migrated to junit 4
+        http://stackoverflow.com/questions/6141252/dealing-with-system-exit0-in-junit-tests
+        exit.expectSystemExitWithStatus(-1);
+        String[] args = {};
+        Configuration config = newConfiguration();
+        config.setProperty("resolver", null);
+        Application.setConfiguration(config);
+        try {
+            Application.main(args);
+            fail("Expected exception");
+        } catch (Exception e) {
+            // pass
+        } */
     }
 
     public void testMainWithNoArgsStartsServer() throws Exception {

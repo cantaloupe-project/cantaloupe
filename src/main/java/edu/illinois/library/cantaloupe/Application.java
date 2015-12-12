@@ -8,13 +8,18 @@ import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.logging.AccessLogService;
 import edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute;
+import edu.illinois.library.cantaloupe.processor.Processor;
+import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.processor.StreamProcessor;
+import edu.illinois.library.cantaloupe.resolver.FileResolver;
+import edu.illinois.library.cantaloupe.resolver.Resolver;
+import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
-import org.apache.velocity.runtime.resource.loader.FileResourceLoader;
 import org.restlet.Component;
 import org.restlet.data.Protocol;
 import org.slf4j.Logger;
@@ -174,11 +179,14 @@ public class Application {
     }
 
     public static void main(String[] args) throws Exception {
-        if (getConfiguration() == null) {
-            System.out.println("No configuration file specified. Try again " +
-                    "with the -Dcantaloupe.config=/path/to/cantaloupe.properties option.");
-            System.exit(0);
+        try {
+            validateConfiguration();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            System.out.println("Exiting.");
+            System.exit(-1);
         }
+
         final int mb = 1024 * 1024;
         Runtime runtime = Runtime.getRuntime();
         logger.info(System.getProperty("java.vm.name") + " / " +
@@ -218,6 +226,38 @@ public class Application {
         if (component != null) {
             component.stop();
             component = null;
+        }
+    }
+
+    /**
+     * @throws Exception If the configuration is invalid.
+     */
+    private static void validateConfiguration() throws Exception {
+        // check that a configuration file exists
+        if (getConfiguration() == null) {
+            throw new edu.illinois.library.cantaloupe.ConfigurationException(
+                    "No configuration file specified. Try again with the " +
+                            "-Dcantaloupe.config=/path/to/cantaloupe.properties argument.");
+        }
+
+        // A ConfigurationException will be thrown if no resolver is specified
+        // in the configuration.
+        Resolver resolver = ResolverFactory.getResolver();
+
+        // Make sure the resolver is compatible with all of the processors in
+        // use.
+        // FileResolver -> StreamProcessor: OK, using FileInputStream
+        // FileResolver -> FileProcessor: OK, using File
+        // StreamResolver -> StreamProcessor: OK, using InputStream
+        // StreamResolver -> FileProcessor: NOPE
+        for (Processor proc : ProcessorFactory.getAllProcessors()) {
+            if (!(resolver instanceof FileResolver) &&
+                    !(proc instanceof StreamProcessor)) {
+                throw new edu.illinois.library.cantaloupe.ConfigurationException(
+                        String.format("%s is not compatible with %s",
+                                proc.getClass().getSimpleName(),
+                                resolver.getClass().getSimpleName()));
+            }
         }
     }
 
