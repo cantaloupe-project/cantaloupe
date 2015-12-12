@@ -24,17 +24,17 @@ layout: default
 
 <pre>$ java -Dcantaloupe.config=/path/to/cantaloupe.properties -Xmx2g -jar Cantaloupe-x.x.x.jar</pre>
 
-<p><code>-Xmx2g</code> tells the JVM to use up to 2GB of heap space (RAM). Without this argument, some JVMs will default to a much smaller amount, leading to OutOfMemoryErrors.</p>
+<p><code>-Xmx2g</code> tells the JVM to use up to 2GB of heap space (RAM). Without this argument, some JVMs will default to a much smaller amount, potentially leading to OutOfMemoryErrors.</p>
 
-<div class="alert alert-info">Note: on OS X, a "java" icon will appear in the Dock. This can be prevented by adding the <code>-Djava.awt.headless=true</code> argument to the command.</div>
-
-<p>Assuming the <code>http.port</code> option has not been changed, it is now running at: <a href="http://localhost:8182/">http://localhost:8182/</a>. To test, assuming you have an image named <span class="filename">image.tif</span>:</p>
+<p>Assuming the <code>http.port</code> option has not been changed, Cantaloupe is now running at: <a href="http://localhost:8182/">http://localhost:8182/</a>. To test, assuming you have an image named <span class="filename">image.tif</span>:</p>
 
 <p><a href="http://localhost:8182/iiif/2.0/image.tif/full/pct:20/0/default.jpg">http://localhost:8182/iiif/2.0/image.tif/full/pct:20/0/default.jpg</a></p>
 
+<div class="alert alert-info">Note: on OS X, a "java" icon will appear in the Dock. This can be prevented by adding the <code>-Djava.awt.headless=true</code> argument to the command.</div>
+
 <h3 id="Upgrading">Upgrading</h3>
 
-<p>Upgrading is usually just a matter of downloading a new version and running it. Since instances are self-contained, new versions can run happily alongside existing ones, with each using its own config file. Sometimes there are backwards-incompatible changes to the configuration file structure, though, so check below to see if there is anything more to be done.</p>
+<p>Upgrading is usually just a matter of downloading a new version and running it. Since instances are self-contained, new versions can run happily alongside existing ones, with each using its own configuration file. Sometimes there are backwards-incompatible changes to the file structure, though, so check below to see if there is anything more to be done.</p>
 
 <h4>1.2 to 2.0</h4>
 

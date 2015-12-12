@@ -12,11 +12,11 @@ layout: default
 
 <p>For images with extensions that are missing or unrecognized, this resolver will check the "magic number" to determine type, which will add some overhead. It is therefore slightly more efficient to serve images with extensions.</p>
 
-<p>FilesystemResolver supports two distinct modes of operation, or "lookup strategies." The lookup strategy is set with the <code>FilesystemResolver.lookup_strategy</code> configuration option.</p>
+<p>FilesystemResolver supports two distinct lookup strategies, defined by the <code>FilesystemResolver.lookup_strategy</code> configuration option.</p>
 
 <h4>BasicLookupStrategy</h4>
 
-<p>BasicLookupStrategy locates images by prepending and/or appending a pre-defined path prefix and/or suffix. For example, with the following configuration options set:</p>
+<p>BasicLookupStrategy locates images by concatenating a pre-defined path prefix and/or suffix. For example, with the following configuration options set:</p>
 
 <pre># Note trailing slash!
 FilesystemResolver.BasicLookupStrategy.path_prefix = /usr/local/images/
@@ -31,7 +31,7 @@ FilesystemResolver.BasicLookupStrategy.path_suffix =</pre>
 
 <h4 id="FilesystemResolverScriptLookupStrategy">ScriptLookupStrategy</h4>
 
-<p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple locations, or perhaps your identifiers are opaque and you need to run a database or web service request to locate the corresponding images. With this lookup strategy, you can tell FilesystemResolver to invoke your own custom Ruby script and capture the pathname it returns.</p>
+<p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple locations, or perhaps your identifiers are opaque and you need to perform a database or web service request to locate the corresponding images. With this lookup strategy, you can tell FilesystemResolver to invoke your own custom Ruby function and capture the pathname it returns.</p>
 
 <p>The script can be named anything, but it must have a <span class="filename">.rb</span> extension. Then, it can be referenced by the <code>FilesystemResolver.ScriptLookupStrategy.script</code> option, like:</p>
 
@@ -43,33 +43,32 @@ FilesystemResolver.ScriptLookupStrategy.script = /path/to/lookup.rb
 FilesystemResolver.ScriptLookupStrategy.script = lookup.rb
 </pre>
 
-<p>This file must contain a function called <code>get_pathname(identifier)</code>, which takes in an identifier and returns a pathname, if available, or <code>nil</code>, if not. Inside this function, anything goes. A Solr query, for example, could look like:</p>
+<p>This file must contain a function called <code>get_pathname(identifier)</code>, which takes in an identifier and returns a pathname, if available, or <code>nil</code>, if not. A Solr query, for example, could look like:</p>
 
 <pre># lookup.rb
 require 'net/http'
-require 'uri'
 
 def get_pathname(identifier)
-  uri = 'http://localhost:8983/solr/peartree/select?q='
-  uri += URI.escape('id:"' + identifier + '"')
-  uri += '&amp;fl=pathname_si&amp;wt=ruby'
+  uri = 'http://localhost:8983/solr/collection1/select?q=' +
+      URI.escape('id:"' + identifier + '"') +
+      '&amp;fl=pathname_si&amp;wt=ruby'
   uri = URI.parse(uri)
 
   http = Net::HTTP.new(uri.host, uri.port)
   request = Net::HTTP::Get.new(uri.request_uri)
-
   response = http.request(request)
   return nil if response.code.to_i >= 400
 
-  eval(response.body)['response']['docs'][0]['pathname_si']
+  results = eval(response.body)['response']['docs']
+  results.any? ? results.first['pathname_si'] : nil
 end
 
 # Uncomment to test on the command line (`ruby lookup.rb`)
 # puts get_pathname('identifier-to-test')</pre>
 
-<p>Because the <code>get_pathname()</code> function will be called upon each image request, it should be written with efficiency in mind.</p>
+<p>Inside this function, anything goes. You can even use any (non-platform-native) gems that you have installed with <code>gem install</code>. Because it will be called upon each image request, though, it should be written with efficiency in mind.</p>
 
-<div class="alert alert-danger">Note: neither the <code>identifier</code> argument to <code>get_pathname()</code>, nor its return value, are validated. Be very careful to write resilient code that always returns either the correct pathname, or <code>nil</code>, keeping injection risks in mind.</div>
+<div class="alert alert-danger">Note: neither the <code>identifier</code> argument to <code>get_pathname()</code>, nor its return value, are validated. Be very careful to write defensive, injection-aware code that always returns either the correct pathname, or <code>nil</code>.</div>
 
 <div class="alert alert-info">Note: to improve performance, the script contents are cached upon first load. Any changes will require a restart of Cantaloupe.</div>
 
@@ -89,13 +88,11 @@ end
 
 <p>It is preferable to use this resolver with source images with recognizable file extensions. For images with an extension that is missing or unrecognizable, it will issue an HTTP HEAD request to the server to check the <code>Content-Type</code> header. If the type cannot be inferred from that, an HTTP 415 response will be returned.</p>
 
-<p>HttpResolver supports two distinct modes of operation, or "lookup strategies." The lookup strategy is set with the <code>HttpResolver.lookup_strategy</code> configuration option.</p>
+<p>HttpResolver supports two distinct lookup strategies, defined by the <code>HttpResolver.lookup_strategy</code> configuration option.</p>
 
 <h4>BasicLookupStrategy</h4>
 
-<h5>Prefix and Suffix</h5>
-
-<p>The <code>HttpResolver.url_prefix</code> and <code>url_suffix</code> configuration options are optional and intended to make URLs shorter, more stable, and hide sensitive information. For example, with these options set as such:</p>
+<p>BasicLookupStrategy locates images by concatenating a pre-defined URL prefix and/or suffix. For example, with the following configuration options set:</p>
 
 <pre># Note trailing slash!
 HttpResolver.url_prefix = http://example.org/images/
@@ -120,7 +117,7 @@ HttpResolver.ScriptLookupStrategy.script = lookup.rb
 
 <p>This file must contain a function called <code>get_url(identifier)</code>, which takes in an identifier and returns a URL, if available, or <code>nil</code>, if not.</p>
 
-<p>See the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for more information on this script. All the rules are the same, except the function must be named <code>get_url</code> instead of <code>get_pathname</code>, and it must return a URL instead of a pathname. (If you want, it is fine to put both functions inside the same file.)</p>
+<p>See the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for more information on this script. All the rules are the same, except the function must be named <code>get_url</code> instead of <code>get_pathname</code>, and it must return a URL instead of a pathname.</p>
 
 <h4>Path Separator</h4>
 

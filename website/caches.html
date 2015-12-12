@@ -6,17 +6,30 @@ layout: default
 
 <p>Caches cache generated images on the server. They are pluggable, to enable different caching mechanisms.</p>
 
-<p>Caching is optional. To enable it, set <code>cache.server</code> to the name of a cache, such as <a href="#FilesystemCache">FilesystemCache</a>. To disable it, comment it out or set it to an empty value.</p>
+<p>Server-side caching is highly recommended, as it will drastically reduce load on the server and improve response times for the remaining processing that is left to do. There are other ways of caching on the server, but the Cantaloupe cache is simple and custom-tailored.</p>
 
-<p>Currently, requests for full-sized, unaltered source images are not cached, and are instead streamed through with no processing.</p>
+<h3>Enabling</h3>
+
+<p>Caching is optional, and disabled by default. To enable it, set <code>cache.server</code> to the name of a cache, such as <a href="#FilesystemCache">FilesystemCache</a>.</p>
 
 <p>The cache can be configured to operate in one of two ways:</p>
-<ol>
-  <li>By setting <code>cache.server.resolve_first</code> to <code>true</code>, resources are looked up before cached representations are returned. This precludes returning a cached resource representation when the underlying resource no longer exists, but also impairs response times by anywhere from less than a millsecond to a few hundred, depending on the resolver. This is the default.</li>
-  <li>By setting <code>cache.server.resolve_first</code> to <code>false</code>, cached representations are returned immediately, if available. This is faster, but it can lead to inconsistency between the cache and the underlying source image storage.</li>
-</ol>
+<dl>
+  <dt>Conservative (<code>cache.server.resolve_first = true</code>)</dt>
+  <dd>Source images are looked up and verified to exist before cached representations are returned. This precludes returning a cached representation when the underlying resource no longer exists, but also impairs response times by a variable amount, depending on the resolver.</dd>
+  <dt>Aggressive (<code>cache.server.resolve_first = false</code>)</dt>
+  <dd>Cached representations are returned immediately, if available. This is faster, but it can lead to inconsistency between the cache and the underlying source image storage.</dd>
+</dl>
 
-<div class="alert alert-warning">Note: caches are thread-safe, but not process-safe. To avoid cache corruption, multiple simultaneously-running instances of Cantaloupe should not be pointed at the same cache.</div>
+<h3>Notes</h3>
+
+<ul>
+  <li>Caching can be very effective at improving performance, but it cannot reduce load to zero. Consider a caching reverse proxy and/or clustering when massive traffic is anticipated.</li>
+  <li>Currently, requests for full-sized, unaltered source images are not cached, and are instead streamed through with no processing.</li>
+  <li>Cantaloupe does not cache entire IIIF information response representations &mdash; only image dimensions, which are the only expensive part to generate. This means it is possible to change other configuration options that would affect the contents of information responses without having to purge the cache.</li>
+  <li>The cache is shared across API endpoints. Requests for the same image from different endpoints will return the same cached image.</li>
+  <li>Caches are thread-safe, but not process-safe. To avoid corruption, multiple simultaneously-running instances of Cantaloupe should not be pointed at the same cache.</li>
+  <li>Server-side caching can be augmented by <a href="client-caching.html">client-side caching</a>.</li>
+</ul>
 
 <h3 id="FilesystemCache">FilesystemCache</h3>
 
@@ -24,9 +37,9 @@ layout: default
 
 <dl>
   <dt><code>FilesystemCache.pathname</code></dt>
-  <dd>Absolute path of the folder in which cached images and information responses will be stored.</dd>
+  <dd>Absolute path of the folder in which cached images and dimensions will be stored.</dd>
   <dt><code>FilesystemCache.ttl_seconds</code></dt>
-  <dd>Time-to-live of the cached images and information responses, in seconds.</dd>
+  <dd>Time-to-live of the cached content, in seconds.</dd>
 </dl>
 
 <h3 id="JdbcCache">JdbcCache</h3>
@@ -35,7 +48,7 @@ layout: default
 
 <dl>
   <dt><code>JdbcCache.connection_string</code></dt>
-  <dd>A valid JDBC connection string; for example, <code>jdbc:postgresql://localhost:5432/mydatabase</code>.</dd>
+  <dd>JDBC connection string; for example, <code>jdbc:postgresql://localhost:5432/mydatabase</code>.</dd>
   <dt><code>JdbcCache.user</code></dt>
   <dd>User to connect to the database as.</dd>
   <dt><code>JdbcCache.password</code></dt>
@@ -50,21 +63,10 @@ layout: default
 
 <div class="alert alert-info">Note: JdbcCache has been tested with PostgreSQL 9.4 and H2 1.4. Other databases may work, but are untested. In particular, the database needs to support <code>CREATE TABLE IF NOT EXISTS</code> syntax, which in the case of PostgreSQL, arrived in version 9.1.</div>
 
-<div class="alert alert-warning">Note: JdbcCache is inefficient in that it buffers generated images in memory before flushing them to the database. (This is currently unavoidable, as the JDBC API couples poorly with the Cantaloupe cache API.)</div>
+<div class="alert alert-warning">Note: JdbcCache is inefficient in that it buffers generated images in memory before flushing them to the database, as opposed to streaming them. (This is currently unavoidable, as the JDBC API couples poorly with the Cantaloupe cache API.)</div>
 
 <h3 id="Purging">Purging the Cache</h3>
 
 <p>To purge expired images only, start Cantaloupe with the <code>-Dcantaloupe.cache.purge_expired</code> option.</p>
 
 <p>To purge all images, start Cantaloupe with the <code>-Dcantaloupe.cache.purge</code> option.</p>
-
-<h3 id="Considerations">Considerations</h3>
-
-<ul>
-  <li>Caching can be very effective at improving performance, but it cannot reduce load to zero. Consider a caching reverse proxy when massive traffic is anticipated.</li>
-  <li>Cantaloupe does not cache entire IIIF information response representations &mdash; only image dimensions, which are the only expensive part to generate. This means it is possible to change other configuration options that would affect the contents of information responses without having to purge the cache.</li>
-  <!--
-  <li>The cache is shared across API endpoints. Requests for the same image from different endpoints will return the same cached image.</li>
-  -->
-  <li>Server-side caching can be augmented by <a href="client-caching.html">client-side caching</a>.</li>
-</ul>
