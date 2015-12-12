@@ -138,7 +138,7 @@ class HttpResolver implements StreamResolver {
             throws IOException {
         SourceFormat format = getSourceFormatFromIdentifier(identifier);
         if (format == SourceFormat.UNKNOWN) {
-            format = getSourceFormatFromServer(identifier);
+            format = getSourceFormatFromContentTypeHeader(identifier);
         }
         getInputStream(identifier); // throws IOException if not found etc.
         return format;
@@ -197,7 +197,7 @@ class HttpResolver implements StreamResolver {
      * @return A source format, or {@link SourceFormat#UNKNOWN} if unknown.
      * @throws IOException
      */
-    private SourceFormat getSourceFormatFromServer(Identifier identifier)
+    private SourceFormat getSourceFormatFromContentTypeHeader(Identifier identifier)
             throws IOException {
         SourceFormat sourceFormat = SourceFormat.UNKNOWN;
         String contentType = "";
