@@ -162,8 +162,8 @@ public class FilesystemResolverTest extends CantaloupeTestCase {
 
         // filename of script, located in cwd
         config.setProperty(FilesystemResolver.LOOKUP_SCRIPT_CONFIG_KEY,
-                "lookup.rb");
-        final File tempFile = new File("./lookup.rb");
+                "lookup_test.rb");
+        final File tempFile = new File("./lookup_test.rb");
         try {
             FileUtils.copyFile(TestUtil.getFixture("lookup.rb"), tempFile);
             assertEquals("/bla/" + IDENTIFIER,

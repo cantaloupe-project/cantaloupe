@@ -133,14 +133,14 @@ public class HttpResolverTest extends CantaloupeTestCase {
 
         // filename of script, located in cwd
         config.setProperty(HttpResolver.LOOKUP_SCRIPT_CONFIG_KEY,
-                "lookup.rb");
-        final File tempFile = new File("./lookup.rb");
+                "lookup_test.rb");
+        final File tempFile = new File("./lookup_test.rb");
         try {
             FileUtils.copyFile(TestUtil.getFixture("lookup.rb"), tempFile);
             assertEquals(new Reference("http://example.org/bla/" + IDENTIFIER),
                     instance.getUrl(IDENTIFIER));
         } finally {
-            //FileUtils.forceDelete(tempFile);
+            FileUtils.forceDelete(tempFile);
         }
     }
 
