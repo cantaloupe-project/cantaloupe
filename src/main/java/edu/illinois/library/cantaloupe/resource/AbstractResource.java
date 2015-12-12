@@ -8,8 +8,8 @@ import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
+import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.processor.StreamProcessor;
-import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.FileResolver;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -143,7 +144,7 @@ public abstract class AbstractResource extends ServerResource {
                                                     SourceFormat sourceFormat,
                                                     Resolver resolver,
                                                     Processor proc)
-            throws Exception {
+            throws IOException, ProcessorException {
         final MediaType mediaType = new MediaType(
                 ops.getOutputFormat().getMediaType());
         final long maxAllowedSize = Application.getConfiguration().
@@ -155,11 +156,8 @@ public abstract class AbstractResource extends ServerResource {
         // StreamResolver -> FileProcessor: NOPE
         if (!(resolver instanceof FileResolver) &&
                 !(proc instanceof StreamProcessor)) {
-            // FileProcessors can't work with StreamResolvers
-            throw new UnsupportedSourceFormatException(
-                    String.format("%s is not compatible with %s",
-                            proc.getClass().getSimpleName(),
-                            resolver.getClass().getSimpleName()));
+            // This is supposed to be caught at startup. If it's ever true
+            // here, it's a bug.
         } else if (resolver instanceof FileResolver &&
                 proc instanceof FileProcessor) {
             logger.debug("Using {} as a FileProcessor",
