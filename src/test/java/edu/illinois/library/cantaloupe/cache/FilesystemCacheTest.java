@@ -43,8 +43,9 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         }
 
         BaseConfiguration config = new BaseConfiguration();
-        config.setProperty("FilesystemCache.pathname", fixturePath.toString());
-        config.setProperty("FilesystemCache.ttl_seconds", 0);
+        config.setProperty(FilesystemCache.PATHNAME_CONFIG_KEY,
+                fixturePath.toString());
+        config.setProperty(FilesystemCache.TTL_CONFIG_KEY, 0);
         Application.setConfiguration(config);
 
         instance = new FilesystemCache();
@@ -165,7 +166,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     /* purgeExpired() */
 
     public void testPurgeExpired() throws Exception {
-        Application.getConfiguration().setProperty("FilesystemCache.ttl_seconds", 1);
+        Application.getConfiguration().setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
 
         Crop crop = new Crop();
         crop.setFull(true);
@@ -188,7 +189,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     }
 
     public void testPurgeExpiredFailureThrowsException() throws Exception {
-        Application.getConfiguration().setProperty("FilesystemCache.ttl_seconds", 1);
+        Application.getConfiguration().setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
 
         OperationList ops = TestUtil.newOperationList();
         // create an unwritable image cache file
@@ -235,7 +236,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
     }
 
     public void testGetDimensionWithNonZeroTtl() throws Exception {
-        Application.getConfiguration().setProperty("FilesystemCache.ttl_seconds", 1);
+        Application.getConfiguration().setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
         Identifier identifier = new Identifier("test");
         File file = new File(infoPath + File.separator + identifier + ".json");
         ObjectMapper mapper = new ObjectMapper();
@@ -258,7 +259,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
     public void testGetImageFile() {
         String pathname = Application.getConfiguration().
-                getString("FilesystemCache.pathname");
+                getString(FilesystemCache.PATHNAME_CONFIG_KEY);
 
         Identifier identifier = new Identifier("cats_~!@#$%^&*()");
         Crop crop = new Crop();
@@ -294,7 +295,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
     public void testGetImageFileWithNoOpOperations() {
         String pathname = Application.getConfiguration().
-                getString("FilesystemCache.pathname");
+                getString(FilesystemCache.PATHNAME_CONFIG_KEY);
 
         Identifier identifier = new Identifier("cats_~!@#$%^&*()");
         Crop crop = new Crop();
@@ -350,7 +351,8 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
     public void testGetImageInputStreamWithNonzeroTtl() throws Exception {
         OperationList ops = TestUtil.newOperationList();
-        Application.getConfiguration().setProperty("FilesystemCache.ttl_seconds", 1);
+        Application.getConfiguration().
+                setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
         File cacheFile = instance.getImageFile(ops);
         cacheFile.createNewFile();
         assertTrue(instance.getImageInputStream(ops) instanceof FileInputStream);
@@ -377,7 +379,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
     public void testGetCachedImageFileWithNoOpOperations() {
         String pathname = Application.getConfiguration().
-                getString("FilesystemCache.pathname");
+                getString(FilesystemCache.PATHNAME_CONFIG_KEY);
 
         Identifier identifier = new Identifier("cats_~!@#$%^&*()");
         Crop crop = new Crop();

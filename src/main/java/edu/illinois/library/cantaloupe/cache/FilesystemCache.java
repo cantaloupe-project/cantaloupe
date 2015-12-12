@@ -123,6 +123,9 @@ class FilesystemCache implements Cache {
     private static final Logger logger = LoggerFactory.
             getLogger(FilesystemCache.class);
 
+    public static final String PATHNAME_CONFIG_KEY = "FilesystemCache.pathname";
+    public static final String TTL_CONFIG_KEY = "FilesystemCache.ttl_seconds";
+
     /**
      * @see <a href="https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations">
      *     Comparison of filename limitations</a>
@@ -131,7 +134,6 @@ class FilesystemCache implements Cache {
     private static final String IMAGE_FOLDER = "image";
     private static final String INFO_FOLDER = "info";
     private static final String INFO_EXTENSION = ".json";
-    private static final String PATHNAME_CONFIG_KEY = "FilesystemCache.pathname";
 
     private static final ObjectMapper infoMapper = new ObjectMapper();
 
@@ -174,7 +176,7 @@ class FilesystemCache implements Cache {
 
     /**
      * @return Pathname of the image cache folder, or null if
-     * <code>FilesystemCache.pathname</code> is not set.
+     * {@link #PATHNAME_CONFIG_KEY} is not set.
      */
     private static String getImagePathname() {
         final String pathname = getCachePathname();
@@ -186,7 +188,7 @@ class FilesystemCache implements Cache {
 
     /**
      * @return Pathname of the info cache folder, or null if
-     * <code>FilesystemCache.pathname</code> is not set.
+     * {@link #PATHNAME_CONFIG_KEY} is not set.
      */
     private static String getInfoPathname() {
         final String pathname = getCachePathname();
@@ -198,7 +200,7 @@ class FilesystemCache implements Cache {
 
     private static boolean isExpired(File file) {
         final long ttlMsec = 1000 * Application.getConfiguration().
-                getLong("FilesystemCache.ttl_seconds", 0);
+                getLong(TTL_CONFIG_KEY, 0);
         return (ttlMsec > 0) && file.isFile() &&
                 System.currentTimeMillis() - file.lastModified() >= ttlMsec;
     }
@@ -229,7 +231,6 @@ class FilesystemCache implements Cache {
                     logger.debug("Deleting stale cache file: {}",
                             cacheFile.getName());
                     if (!cacheFile.delete()) {
-                        // TODO: should this be an IOException?
                         logger.error("Unable to delete {}", cacheFile);
                     }
                 }
@@ -245,7 +246,7 @@ class FilesystemCache implements Cache {
     /**
      * @param identifier
      * @return File corresponding to the given parameters, or null if
-     * <code>FilesystemCache.pathname</code> is not set in the configuration.
+     * {@link #PATHNAME_CONFIG_KEY} is not set.
      */
     public File getDimensionFile(Identifier identifier) {
         final String cachePathname = getInfoPathname();
@@ -262,7 +263,7 @@ class FilesystemCache implements Cache {
     /**
      * @param ops
      * @return File corresponding to the given operation list, or null if
-     * <code>FilesystemCache.pathname</code> is not set in the configuration.
+     * {@link #PATHNAME_CONFIG_KEY} is not set.
      */
     public File getImageFile(OperationList ops) {
         final String cachePathname = getImagePathname();
@@ -321,7 +322,6 @@ class FilesystemCache implements Cache {
                 logger.debug("Deleting stale cache file: {}",
                         cacheFile.getName());
                 if (!cacheFile.delete()) {
-                    // TODO: should this be an IOException?
                     logger.error("Unable to delete {}", cacheFile);
                 }
             }
