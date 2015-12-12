@@ -1,17 +1,21 @@
 package edu.illinois.library.cantaloupe.image;
 
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
+import static org.junit.Assert.*;
+
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OperationListTest extends CantaloupeTestCase {
+public class OperationListTest {
 
     private OperationList ops;
 
+    @Before
     public void setUp() {
         ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier.jpg"));
@@ -28,6 +32,9 @@ public class OperationListTest extends CantaloupeTestCase {
         assertNotNull(ops.getOptions());
     }
 
+    /* add(Operation) */
+
+    @Test
     public void testAdd() {
         ops = new OperationList();
         assertFalse(ops.iterator().hasNext());
@@ -35,6 +42,9 @@ public class OperationListTest extends CantaloupeTestCase {
         assertTrue(ops.iterator().hasNext());
     }
 
+    /* compareTo(OperationList) */
+
+    @Test
     public void testCompareTo() {
         OperationList ops2 = new OperationList();
         ops2.setIdentifier(new Identifier("identifier.jpg"));
@@ -50,6 +60,9 @@ public class OperationListTest extends CantaloupeTestCase {
         assertEquals(0, ops2.compareTo(this.ops));
     }
 
+    /* equals(Object) */
+
+    @Test
     public void testEqualsWithEqualOperationList() {
         OperationList ops1 = TestUtil.newOperationList();
         OperationList ops2 = TestUtil.newOperationList();
@@ -57,6 +70,7 @@ public class OperationListTest extends CantaloupeTestCase {
         assertTrue(ops1.equals(ops2));
     }
 
+    @Test
     public void testEqualsWithUnequalOperationList() {
         OperationList ops1 = TestUtil.newOperationList();
         OperationList ops2 = TestUtil.newOperationList();
@@ -64,6 +78,9 @@ public class OperationListTest extends CantaloupeTestCase {
         assertFalse(ops1.equals(ops2));
     }
 
+    /* getResultingSize(Dimension) */
+
+    @Test
     public void testGetResultingSize() {
         Dimension fullSize = new Dimension(300, 200);
         ops = new OperationList();
@@ -90,6 +107,9 @@ public class OperationListTest extends CantaloupeTestCase {
         assertEquals(new Dimension(75, 50), ops.getResultingSize(fullSize));
     }
 
+    /* isNoOp() */
+
+    @Test
     public void testIsNoOp1() {
         Crop crop = new Crop();
         crop.setFull(true);
@@ -108,6 +128,7 @@ public class OperationListTest extends CantaloupeTestCase {
         assertFalse(ops.isNoOp());
     }
 
+    @Test
     public void testIsNoOp2() {
         Crop crop = new Crop();
         crop.setFull(true);
@@ -123,6 +144,7 @@ public class OperationListTest extends CantaloupeTestCase {
         assertFalse(ops.isNoOp()); // false because the identifier has no discernible source format
     }
 
+    @Test
     public void testIsNoOp3() {
         Crop crop = new Crop();
         crop.setFull(true);
@@ -138,6 +160,7 @@ public class OperationListTest extends CantaloupeTestCase {
         assertTrue(ops.isNoOp());
     }
 
+    @Test
     public void testIsNoOp4() {
         Crop crop = new Crop();
         crop.setFull(false);
@@ -157,6 +180,7 @@ public class OperationListTest extends CantaloupeTestCase {
         assertFalse(ops.isNoOp());
     }
 
+    @Test
     public void testIsNoOp5() {
         Crop crop = new Crop();
         crop.setFull(true);
@@ -172,6 +196,7 @@ public class OperationListTest extends CantaloupeTestCase {
         assertTrue(ops.isNoOp());
     }
 
+    @Test
     public void testIsNoOp6() {
         Crop crop = new Crop();
         crop.setFull(true);
@@ -188,6 +213,7 @@ public class OperationListTest extends CantaloupeTestCase {
         assertFalse(ops.isNoOp());
     }
 
+    @Test
     public void testIsNoOp7() {
         Crop crop = new Crop();
         crop.setFull(true);
@@ -203,6 +229,7 @@ public class OperationListTest extends CantaloupeTestCase {
         assertFalse(ops.isNoOp());
     }
 
+    @Test
     public void testIsNoOp8() {
         Crop crop = new Crop();
         crop.setFull(true);
@@ -218,6 +245,7 @@ public class OperationListTest extends CantaloupeTestCase {
         assertTrue(ops.isNoOp());
     }
 
+    @Test
     public void testIsNoOp9() {
         Crop crop = new Crop();
         crop.setFull(true);
@@ -233,6 +261,26 @@ public class OperationListTest extends CantaloupeTestCase {
         assertTrue(ops.isNoOp());
     }
 
+    /* isNoOp(SourceFormat) */
+
+    @Test
+    public void testIsNoOpWithSourceFormat() {
+        // same format
+        ops = new OperationList();
+        ops.setIdentifier(new Identifier("identifier.gif"));
+        ops.setOutputFormat(OutputFormat.GIF);
+        assertTrue(ops.isNoOp(SourceFormat.GIF));
+
+        // different formats
+        ops = new OperationList();
+        ops.setIdentifier(new Identifier("identifier.jpg"));
+        ops.setOutputFormat(OutputFormat.GIF);
+        assertFalse(ops.isNoOp(SourceFormat.JPG));
+    }
+
+    /* toString() */
+
+    @Test
     public void testToString() {
         List<String> parts = new ArrayList<>();
         parts.add(ops.getIdentifier().toString());

@@ -74,12 +74,28 @@ public class OperationList implements Comparable<OperationList>,
     }
 
     /**
+     * Determines whether the operations are effectively calling for the
+     * unmodified source image, guessing the source format based on the
+     * identifier. {@link #isNoOp(SourceFormat)} should be used instead, if
+     * possible.
+     *
      * @return Whether the operations are effectively calling for the
      * unmodified source image.
      */
     public boolean isNoOp() {
-        if (!this.getOutputFormat().isEqual(
-                SourceFormat.getSourceFormat(this.getIdentifier()))) {
+        return isNoOp(SourceFormat.getSourceFormat(this.getIdentifier()));
+    }
+
+    /**
+     * Determines whether the operations are effectively calling for the
+     * unmodified source image, based on the given source format.
+     *
+     * @param sourceFormat
+     * @return Whether the operations are effectively calling for the
+     * unmodified source image.
+     */
+    public boolean isNoOp(SourceFormat sourceFormat) {
+        if (!this.getOutputFormat().isEqual(sourceFormat)) {
             return false;
         }
         for (Operation op : this) {
