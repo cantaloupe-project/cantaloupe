@@ -27,7 +27,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.AccessDeniedException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 class HttpResolver implements StreamResolver {
@@ -52,7 +54,7 @@ class HttpResolver implements StreamResolver {
     private static final Set<String> SUPPORTED_SCRIPT_EXTENSIONS =
             new HashSet<>();
 
-    private static Client client = new Client(new Context(), Protocol.HTTP); // TODO: HTTPS
+    private static Client client;
 
     // Caches the lookup script for improved performance.
     private static String lookupScriptContents;
@@ -62,6 +64,11 @@ class HttpResolver implements StreamResolver {
 
     static {
         SUPPORTED_SCRIPT_EXTENSIONS.add("rb");
+
+        List<Protocol> protocols = new ArrayList<>();
+        protocols.add(Protocol.HTTP);
+        protocols.add(Protocol.HTTPS);
+        client = new Client(protocols);
     }
 
     /**
