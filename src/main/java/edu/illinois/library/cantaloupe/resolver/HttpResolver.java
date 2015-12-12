@@ -19,8 +19,6 @@ import org.restlet.resource.ResourceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -93,17 +91,12 @@ class HttpResolver implements StreamResolver {
                     lookupScriptContents = FileUtils.readFileToString(script);
                 }
             }
-            final ScriptEngineManager manager = new ScriptEngineManager();
-
             switch (extension) {
                 case "rb":
-                    final String idParam = StringUtils.replace(
-                            identifier.toString(), "'", "\\'");
-                    final String statement = String.format("%s\nget_url('%s')",
-                            lookupScriptContents, idParam);
-                    final ScriptEngine engine = manager.getEngineByName("jruby");
+                    final String[] args = { identifier.toString() };
                     final long msec = System.currentTimeMillis();
-                    final String result = (String) engine.eval(statement);
+                    final String result = ResolverUtil.executeRubyFunction(
+                            lookupScriptContents, "get_url", args);
                     logger.debug("Lookup function execution time: {} msec",
                             System.currentTimeMillis() - msec);
                     return result;
@@ -136,7 +129,7 @@ class HttpResolver implements StreamResolver {
     @Override
     public SourceFormat getSourceFormat(final Identifier identifier)
             throws IOException {
-        SourceFormat format = getSourceFormatFromIdentifier(identifier);
+        SourceFormat format = ResolverUtil.inferSourceFormat(identifier);
         if (format == SourceFormat.UNKNOWN) {
             format = getSourceFormatFromContentTypeHeader(identifier);
         }
@@ -162,31 +155,6 @@ class HttpResolver implements StreamResolver {
                 throw new IOException(LOOKUP_STRATEGY_CONFIG_KEY +
                         " is invalid or not set");
         }
-    }
-
-    /**
-     * @param identifier
-     * @return A source format, or {@link SourceFormat#UNKNOWN} if unknown.
-     */
-    private SourceFormat getSourceFormatFromIdentifier(Identifier identifier) {
-        // try to get the source format based on a filename extension in the
-        // identifier
-        String idStr = identifier.toString().toLowerCase();
-        String extension = null;
-        SourceFormat sourceFormat = SourceFormat.UNKNOWN;
-        int i = idStr.lastIndexOf('.');
-        if (i > 0) {
-            extension = idStr.substring(i + 1);
-        }
-        if (extension != null) {
-            for (SourceFormat enumValue : SourceFormat.values()) {
-                if (enumValue.getExtensions().contains(extension)) {
-                    sourceFormat = enumValue;
-                    break;
-                }
-            }
-        }
-        return sourceFormat;
     }
 
     /**
@@ -296,13 +264,12 @@ class HttpResolver implements StreamResolver {
      * @return
      */
     private Identifier replacePathSeparators(final Identifier identifier) {
-        final Configuration config = Application.getConfiguration();
-        String idStr = identifier.toString();
-        final String separator = config.getString(PATH_SEPARATOR_CONFIG_KEY, "");
+        final String separator = Application.getConfiguration().
+                getString(PATH_SEPARATOR_CONFIG_KEY, "");
         if (separator.length() > 0) {
-            idStr = StringUtils.replace(idStr, separator, "/");
+            return ResolverUtil.replacePathSeparators(identifier, separator, "/");
         }
-        return new Identifier(idStr);
+        return identifier;
     }
 
 }

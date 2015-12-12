@@ -12,8 +12,6 @@ import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -79,17 +77,12 @@ class FilesystemResolver implements FileResolver, StreamResolver {
                     lookupScriptContents = FileUtils.readFileToString(script);
                 }
             }
-            final ScriptEngineManager manager = new ScriptEngineManager();
-
             switch (extension) {
                 case "rb":
-                    final String idParam = StringUtils.replace(
-                            identifier.toString(), "'", "\\'");
-                    final String statement = String.format("%s\nget_pathname('%s')",
-                            lookupScriptContents, idParam);
-                    final ScriptEngine engine = manager.getEngineByName("jruby");
+                    final String[] args = { identifier.toString() };
                     final long msec = System.currentTimeMillis();
-                    final String result = (String) engine.eval(statement);
+                    final String result = ResolverUtil.executeRubyFunction(
+                            lookupScriptContents, "get_pathname", args);
                     logger.debug("Lookup function execution time: {} msec",
                             System.currentTimeMillis() - msec);
                     return result;
@@ -195,7 +188,7 @@ class FilesystemResolver implements FileResolver, StreamResolver {
     @Override
     public SourceFormat getSourceFormat(Identifier identifier)
             throws IOException {
-        SourceFormat sourceFormat = inferSourceFormat(identifier);
+        SourceFormat sourceFormat = ResolverUtil.inferSourceFormat(identifier);
         if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
             File file = new File(getPathname(identifier, File.separator));
             checkAccess(file, identifier);
@@ -237,33 +230,6 @@ class FilesystemResolver implements FileResolver, StreamResolver {
     }
 
     /**
-     * Guesses the source format of a file based on the filename extension in
-     * the given identifier.
-     *
-     * @param identifier
-     * @return Inferred source format, or {@link SourceFormat#UNKNOWN} if
-     * unknown.
-     */
-    private SourceFormat inferSourceFormat(Identifier identifier) {
-        String idStr = identifier.toString().toLowerCase();
-        String extension = null;
-        SourceFormat sourceFormat = SourceFormat.UNKNOWN;
-        int i = idStr.lastIndexOf('.');
-        if (i > 0) {
-            extension = idStr.substring(i + 1);
-        }
-        if (extension != null) {
-            for (SourceFormat enumValue : SourceFormat.values()) {
-                if (enumValue.getExtensions().contains(extension)) {
-                    sourceFormat = enumValue;
-                    break;
-                }
-            }
-        }
-        return sourceFormat;
-    }
-
-    /**
      * Some web servers have issues dealing with encoded slashes (%2F) in URL
      * identifiers. This method enables the use of an alternate string as a
      * path separator via {@link #PATH_SEPARATOR_CONFIG_KEY}.
@@ -274,13 +240,13 @@ class FilesystemResolver implements FileResolver, StreamResolver {
      */
     private Identifier replacePathSeparators(final Identifier identifier,
                                              final String fileSeparator) {
-        final Configuration config = Application.getConfiguration();
-        String idStr = identifier.toString();
-        final String separator = config.getString(PATH_SEPARATOR_CONFIG_KEY, "");
+        final String separator = Application.getConfiguration().
+                getString(PATH_SEPARATOR_CONFIG_KEY, "");
         if (separator.length() > 0) {
-            idStr = StringUtils.replace(idStr, separator, fileSeparator);
+            return ResolverUtil.replacePathSeparators(identifier, separator,
+                    fileSeparator);
         }
-        return new Identifier(idStr);
+        return identifier;
     }
 
     /**
