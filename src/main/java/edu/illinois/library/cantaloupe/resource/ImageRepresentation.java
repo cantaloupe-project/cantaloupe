@@ -154,7 +154,7 @@ public class ImageRepresentation extends AbstractImageRepresentation {
             final long msec = System.currentTimeMillis();
             // If the operations are effectively a no-op, the source image can
             // be streamed directly.
-            if (this.ops.isNoOp()) {
+            if (this.ops.isNoOp(this.sourceFormat)) {
                 if (this.file != null) {
                     IOUtils.copy(new FileInputStream(this.file),
                             outputStream);

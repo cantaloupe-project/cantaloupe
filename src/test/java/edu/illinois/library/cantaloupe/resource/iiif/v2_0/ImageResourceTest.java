@@ -264,7 +264,7 @@ public class ImageResourceTest extends ResourceTest {
 
     public void testMaxPixels() {
         Configuration config = Application.getConfiguration();
-        ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
+        ClientResource client = getClientForUriPath("/png/full/full/0/default.jpg");
 
         config.setProperty("max_pixels", 100000000);
         client.get();
@@ -277,6 +277,14 @@ public class ImageResourceTest extends ResourceTest {
         } catch (ResourceException e) {
             assertEquals(Status.SERVER_ERROR_INTERNAL, client.getStatus());
         }
+    }
+
+    public void testMaxPixelsIgnoredWhenStreamingSource() {
+        Configuration config = Application.getConfiguration();
+        ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
+        config.setProperty("max_pixels", 1000);
+        client.get();
+        assertEquals(Status.SUCCESS_OK, client.getStatus());
     }
 
     public void testNotFound() throws IOException {

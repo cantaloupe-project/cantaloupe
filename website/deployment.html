@@ -31,7 +31,9 @@ decompressed size. Multiple clients are simultaneously requesting numerous downs
 
 <h3 id="Limiting">Limiting</h3>
 
-<p>Cantaloupe offers a <code>max_pixels</code> configuration option to limit the maximum returned image size. This is a "safety net" to prevent clients from downloading huge images that would swamp the server.</p>
+<p>Cantaloupe offers a <code>max_pixels</code> configuration option to limit the maximum returned size of processed images. This is a "safety net" to prevent clients from bogging down the server.</p>
+
+<p>(This does not affect requests for full-sized unmodified images, which do not significantly load the server because they are streamed through with no processing.)</p>
 
 <h3 id="Reverse-Proxying">Reverse-Proxying</h3>
 

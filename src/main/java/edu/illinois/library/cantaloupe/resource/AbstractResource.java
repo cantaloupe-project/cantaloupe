@@ -147,8 +147,9 @@ public abstract class AbstractResource extends ServerResource {
             throws IOException, ProcessorException {
         final MediaType mediaType = new MediaType(
                 ops.getOutputFormat().getMediaType());
-        final long maxAllowedSize = Application.getConfiguration().
-                getLong(MAX_PIXELS_CONFIG_KEY, 0);
+        // Max allowed size is ignored when the processing is a no-op.
+        final long maxAllowedSize = (ops.isNoOp(sourceFormat)) ?
+                0 : Application.getConfiguration().getLong(MAX_PIXELS_CONFIG_KEY, 0);
 
         // FileResolver -> StreamProcessor: OK, using FileInputStream
         // FileResolver -> FileProcessor: OK, using File

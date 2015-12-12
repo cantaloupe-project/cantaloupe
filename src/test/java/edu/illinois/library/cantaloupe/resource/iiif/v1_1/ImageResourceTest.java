@@ -163,6 +163,41 @@ public class ImageResourceTest extends ResourceTest {
         }
     }
 
+    public void testMaxPixels() {
+        Configuration config = Application.getConfiguration();
+        ClientResource client = getClientForUriPath("/png/full/full/0/native.jpg");
+
+        config.setProperty("max_pixels", 100000000);
+        client.get();
+        assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        config.setProperty("max_pixels", 1000);
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.SERVER_ERROR_INTERNAL, client.getStatus());
+        }
+    }
+
+    public void testMaxPixelsIgnoredWhenStreamingSource() {
+        Configuration config = Application.getConfiguration();
+        ClientResource client = getClientForUriPath("/jpg/full/full/0/native.jpg");
+        config.setProperty("max_pixels", 1000);
+        client.get();
+        assertEquals(Status.SUCCESS_OK, client.getStatus());
+    }
+
+    public void testNotFound() throws IOException {
+        ClientResource client = getClientForUriPath("/invalid/info.json");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_NOT_FOUND, client.getStatus());
+        }
+    }
+
     public void testPurgeFromCacheWhenSourceIsMissingAndOptionIsFalse()
             throws Exception {
         doPurgeFromCacheWhenSourceIsMissing(false);
@@ -240,33 +275,6 @@ public class ImageResourceTest extends ResourceTest {
             if (tempImage.exists() && !image.exists()) {
                 FileUtils.moveFile(tempImage, image);
             }
-        }
-    }
-
-    public void testMaxPixels() {
-        Configuration config = Application.getConfiguration();
-        ClientResource client = getClientForUriPath("/jpg/full/full/0/native.jpg");
-
-        config.setProperty("max_pixels", 100000000);
-        client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
-
-        config.setProperty("max_pixels", 1000);
-        try {
-            client.get();
-            fail("Expected exception");
-        } catch (ResourceException e) {
-            assertEquals(Status.SERVER_ERROR_INTERNAL, client.getStatus());
-        }
-    }
-
-    public void testNotFound() throws IOException {
-        ClientResource client = getClientForUriPath("/invalid/info.json");
-        try {
-            client.get();
-            fail("Expected exception");
-        } catch (ResourceException e) {
-            assertEquals(Status.CLIENT_ERROR_NOT_FOUND, client.getStatus());
         }
     }
 
