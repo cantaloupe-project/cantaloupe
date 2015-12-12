@@ -25,22 +25,6 @@ import java.io.InputStream;
  */
 class AmazonS3Resolver implements StreamResolver {
 
-    private static class ConfigFileCredentials implements AWSCredentials {
-
-        @Override
-        public String getAWSAccessKeyId() {
-            Configuration config = Application.getConfiguration();
-            return config.getString(ACCESS_KEY_ID_CONFIG_KEY);
-        }
-
-        @Override
-        public String getAWSSecretKey() {
-            Configuration config = Application.getConfiguration();
-            return config.getString(SECRET_KEY_CONFIG_KEY);
-        }
-
-    }
-
     private static Logger logger = LoggerFactory.
             getLogger(AmazonS3Resolver.class);
 
@@ -59,6 +43,20 @@ class AmazonS3Resolver implements StreamResolver {
 
     private static AmazonS3 getClientInstance() {
         if (client == null) {
+            class ConfigFileCredentials implements AWSCredentials {
+                @Override
+                public String getAWSAccessKeyId() {
+                    Configuration config = Application.getConfiguration();
+                    return config.getString(ACCESS_KEY_ID_CONFIG_KEY);
+                }
+
+                @Override
+                public String getAWSSecretKey() {
+                    Configuration config = Application.getConfiguration();
+                    return config.getString(SECRET_KEY_CONFIG_KEY);
+                }
+            }
+
             AWSCredentials credentials = new ConfigFileCredentials();
             client = new AmazonS3Client(credentials);
             Configuration config = Application.getConfiguration();
@@ -89,8 +87,8 @@ class AmazonS3Resolver implements StreamResolver {
         final String bucketName = config.getString(BUCKET_NAME_CONFIG_KEY);
         logger.debug("Using bucket: {}", bucketName);
         final String objectKey = identifier.toString();
-        logger.debug("Requesting {}", objectKey);
         try {
+            logger.debug("Requesting {}", objectKey);
             S3Object object = s3.getObject(new GetObjectRequest(bucketName, objectKey));
             return object.getObjectContent();
         } catch (AmazonS3Exception e) {
