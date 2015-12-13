@@ -41,6 +41,10 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         config.setProperty(JdbcCache.TTL_CONFIG_KEY, 0);
         Application.setConfiguration(config);
 
+        try (Connection connection = JdbcCache.getConnection()) {
+            createTables(connection);
+        }
+
         instance = new JdbcCache();
 
         // persist some images
@@ -134,6 +138,35 @@ public class JdbcCacheTest extends CantaloupeTestCase {
      */
     public void tearDown() throws IOException {
         instance.purge();
+    }
+
+    private void createTables(Connection connection) throws Exception {
+        // image table
+        String sql = String.format("CREATE TABLE IF NOT EXISTS %s (" +
+                "%s VARCHAR(4096) NOT NULL, " +
+                "%s BLOB, " +
+                "%s DATETIME);",
+                JdbcCache.getImageTableName(),
+                JdbcCache.IMAGE_TABLE_OPERATIONS_COLUMN,
+                JdbcCache.IMAGE_TABLE_IMAGE_COLUMN,
+                JdbcCache.IMAGE_TABLE_LAST_MODIFIED_COLUMN);
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.execute();
+
+        // info table
+        sql = String.format(
+                "CREATE TABLE IF NOT EXISTS %s (" +
+                        "%s VARCHAR(4096) NOT NULL, " +
+                        "%s INTEGER, " +
+                        "%s INTEGER, " +
+                        "%s DATETIME);",
+                JdbcCache.getInfoTableName(),
+                JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN,
+                JdbcCache.INFO_TABLE_WIDTH_COLUMN,
+                JdbcCache.INFO_TABLE_HEIGHT_COLUMN,
+                JdbcCache.INFO_TABLE_LAST_MODIFIED_COLUMN);
+        statement = connection.prepareStatement(sql);
+        statement.execute();
     }
 
     /* purge() */

@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -121,174 +122,29 @@ class JdbcCache implements Cache {
 
     static {
         try (Connection connection = getConnection()) {
-            logger.info("Using {} {}", connection.getMetaData().getDriverName(),
-                    connection.getMetaData().getDriverVersion());
-            Configuration config = Application.getConfiguration();
-            logger.info("Connection string: {}",
+            final DatabaseMetaData metadata = connection.getMetaData();
+            logger.info("Using {} {}", metadata.getDriverName(),
+                    metadata.getDriverVersion());
+            final Configuration config = Application.getConfiguration();
+            logger.info("Connection URL: {}",
                     config.getString(CONNECTION_STRING_CONFIG_KEY));
-            createTables();
+
+            final String imageTableName = getImageTableName();
+            final String infoTableName = getInfoTableName();
+            if (!tableExists(connection, imageTableName)) {
+                logger.error("Missing table: {}", imageTableName);
+            }
+            if (!tableExists(connection, infoTableName)) {
+                logger.error("Missing table: {}", infoTableName);
+            }
         } catch (IOException | SQLException e) {
             logger.error(e.getMessage(), e);
         }
     }
 
-    public static synchronized void createTables()
-            throws IOException, SQLException {
-        try (Connection connection = getConnection()) {
-            connection.setAutoCommit(false);
-            createImageTable(connection);
-            createInfoTable(connection);
-            connection.commit();
-        }
-    }
-
     /**
-     * @param connection Will not be closed.
-     * @throws IOException
-     */
-    private static void createImageTable(Connection connection)
-            throws IOException {
-        Configuration config = Application.getConfiguration();
-        String tableName = config.getString(IMAGE_TABLE_CONFIG_KEY, "");
-        if (tableName != null && tableName.length() > 0) {
-            try {
-                String sql;
-                if (connection.getMetaData().getDriverName().toLowerCase().
-                        contains("postgresql")) {
-                    sql = String.format("CREATE TABLE IF NOT EXISTS %s (" +
-                                    "%s VARCHAR(4096) NOT NULL, " +
-                                    "%s BYTEA, " +
-                                    "%s TIMESTAMP);",
-                            tableName,
-                            IMAGE_TABLE_OPERATIONS_COLUMN,
-                            IMAGE_TABLE_IMAGE_COLUMN,
-                            IMAGE_TABLE_LAST_MODIFIED_COLUMN);
-                } else {
-                    sql = String.format("CREATE TABLE IF NOT EXISTS %s (" +
-                                    "%s VARCHAR(4096) NOT NULL, " +
-                                    "%s BLOB, " +
-                                    "%s DATETIME);",
-                            tableName,
-                            IMAGE_TABLE_OPERATIONS_COLUMN,
-                            IMAGE_TABLE_IMAGE_COLUMN,
-                            IMAGE_TABLE_LAST_MODIFIED_COLUMN);
-                }
-                PreparedStatement statement = connection.prepareStatement(sql);
-                logger.debug(sql);
-                statement.execute();
-                logger.info("Created table (if not already existing): {}",
-                        tableName);
-            } catch (SQLException e) {
-                throw new IOException(e.getMessage(), e);
-            }
-        } else {
-            throw new IOException(IMAGE_TABLE_CONFIG_KEY + " is not set");
-        }
-    }
-
-    /**
-     * @param connection Will not be closed.
-     * @throws IOException
-     */
-    private static void createInfoTable(Connection connection)
-            throws IOException {
-        Configuration config = Application.getConfiguration();
-        String tableName = config.getString(INFO_TABLE_CONFIG_KEY, "");
-        if (tableName != null && tableName.length() > 0) {
-            try {
-                String sql;
-                if (connection.getMetaData().getDriverName().toLowerCase().
-                        contains("postgresql")) {
-                    sql = String.format(
-                            "CREATE TABLE IF NOT EXISTS %s (" +
-                                    "%s VARCHAR(4096) NOT NULL, " +
-                                    "%s INTEGER, " +
-                                    "%s INTEGER, " +
-                                    "%s TIMESTAMP);",
-                            tableName, INFO_TABLE_IDENTIFIER_COLUMN,
-                            INFO_TABLE_WIDTH_COLUMN, INFO_TABLE_HEIGHT_COLUMN,
-                            INFO_TABLE_LAST_MODIFIED_COLUMN);
-                } else {
-                    sql = String.format(
-                            "CREATE TABLE IF NOT EXISTS %s (" +
-                                    "%s VARCHAR(4096) NOT NULL, " +
-                                    "%s INTEGER, " +
-                                    "%s INTEGER, " +
-                                    "%s DATETIME);",
-                            tableName, INFO_TABLE_IDENTIFIER_COLUMN,
-                            INFO_TABLE_WIDTH_COLUMN, INFO_TABLE_HEIGHT_COLUMN,
-                            INFO_TABLE_LAST_MODIFIED_COLUMN);
-                }
-                PreparedStatement statement = connection.prepareStatement(sql);
-                logger.debug(sql);
-                statement.execute();
-                logger.info("Created table (if not already existing): {}",
-                        tableName);
-            } catch (SQLException e) {
-                throw new IOException(e.getMessage(), e);
-            }
-        } else {
-            throw new IOException(INFO_TABLE_CONFIG_KEY + " is not set");
-        }
-    }
-
-    public static synchronized void dropTables()
-            throws IOException, SQLException {
-        try (Connection connection = getConnection()) {
-            connection.setAutoCommit(false);
-            dropImageTable(connection);
-            dropInfoTable(connection);
-            connection.commit();
-        }
-    }
-
-    /**
-     * @param conn Will not be closed.
-     * @throws IOException
-     */
-    private static void dropImageTable(Connection conn) throws IOException {
-        Configuration config = Application.getConfiguration();
-        String tableName = config.getString(IMAGE_TABLE_CONFIG_KEY, "");
-        if (tableName != null && tableName.length() > 0) {
-            try {
-                String sql = "DROP TABLE " + tableName;
-                PreparedStatement statement = conn.prepareStatement(sql);
-                logger.debug(sql);
-                statement.execute();
-                logger.info("Dropped table: {}", tableName);
-            } catch (SQLException e) {
-                throw new IOException(e.getMessage(), e);
-            }
-        } else {
-            throw new IOException(IMAGE_TABLE_CONFIG_KEY + " is not set");
-        }
-    }
-
-    /**
-     * @param conn Will not be closed.
-     * @throws IOException
-     */
-    private static void dropInfoTable(Connection conn) throws IOException {
-        Configuration config = Application.getConfiguration();
-        String tableName = config.getString(INFO_TABLE_CONFIG_KEY, "");
-        if (tableName != null && tableName.length() > 0) {
-            try {
-                String sql = "DROP TABLE " + tableName;
-                PreparedStatement statement = conn.prepareStatement(sql);
-                logger.debug(sql);
-                statement.execute();
-                logger.info("Dropped table: {}", tableName);
-            } catch (SQLException e) {
-                throw new IOException(e.getMessage(), e);
-            }
-        } else {
-            throw new IOException(INFO_TABLE_CONFIG_KEY + " is not set");
-        }
-    }
-
-    /**
-     * @return Connection from the connection pool. Clients must
-     * <code>close()</code> it when they are done with it.
+     * @return Connection from the connection pool. Clients must call
+     * {@link Connection#close} when they are done with it.
      * @throws SQLException
      */
     public static synchronized Connection getConnection() throws SQLException {
@@ -338,6 +194,18 @@ class JdbcCache implements Cache {
         }
         return name;
     }
+
+    /**
+     * @param connection Will not be closed.
+     * @throws SQLException
+     */
+    private static boolean tableExists(Connection connection, String tableName)
+            throws SQLException {
+        DatabaseMetaData dbm = connection.getMetaData();
+        ResultSet rs = dbm.getTables(null, null, tableName.toUpperCase(), null);
+        return rs.next();
+    }
+
     @Override
     public Dimension getDimension(Identifier identifier) throws IOException {
         final Timestamp oldestDate = oldestValidDate();
