@@ -133,15 +133,21 @@
 
 <p>From the command prompt:</p>
 
-<pre>$ java -Dcantaloupe.config=/path/to/cantaloupe.properties -jar Cantaloupe-x.x.x.jar</pre>
+<pre>$ java -Dcantaloupe.config=/path/to/cantaloupe.properties -Xmx2g -jar Cantaloupe-x.x.x.jar</pre>
 
 <p>Assuming the <code>http.port</code> option has not been changed, it is now running at: <a href="http://localhost:8182/iiif">http://localhost:8182/iiif</a></p>
+
+<p>Note: <code>-Xmx2g</code> tells the JVM to use up to 2GB of heap space (RAM). Without this argument, some JVMs will default to a much smaller amount, leading to OutOfMemoryErrors.</p>
 
 <p><em>Note: On OS X, a "java" icon will appear in the Dock while Cantaloupe is running. This can be disabled by adding <code>-Djava.awt.headless=true</code> to the command.</em></p>
 
 <h3 id="Upgrading">Upgrading</h3>
 
 <p>Upgrading is usually just a matter of downloading a new version and running it. Since instances are self-contained, new versions can run happily alongside existing ones, with each using its own config file. Sometimes there are backwards-incompatible changes to the configuration file structure, though, so check below to see if there is anything more to be done.</p>
+
+<h4>1.2 to 1.2.1</h4>
+
+<p>Nothing to do.</p>
 
 <h4>1.1 to 1.2</h4>
 
