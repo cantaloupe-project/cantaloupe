@@ -323,22 +323,24 @@ class KakaduProcessor implements FileProcessor {
         // is ASPECT_FIT_* and either the percent is <=50, or the height/width
         // are <=50% of full size. The smaller the scale, the bigger the win.
         final Size size = params.getSize();
+        final Dimension tileSize = params.getRegion().getRectangle(fullSize).
+                getSize();
         if (size.getScaleMode() != Size.ScaleMode.FULL) {
             if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_WIDTH) {
                 double scale = (double) size.getWidth() /
-                        (double) fullSize.width;
+                        (double) tileSize.width;
                 reduction.factor = ProcessorUtil.getReductionFactor(scale,
                         MAX_REDUCTION_FACTOR);
             } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_HEIGHT) {
                 double scale = (double) size.getHeight() /
-                        (double) fullSize.height;
+                        (double) tileSize.height;
                 reduction.factor = ProcessorUtil.getReductionFactor(scale,
                         MAX_REDUCTION_FACTOR);
             } else if (size.getScaleMode() == Size.ScaleMode.ASPECT_FIT_INSIDE) {
                 double hScale = (double) size.getWidth() /
-                        (double) fullSize.width;
+                        (double) tileSize.width;
                 double vScale = (double) size.getHeight() /
-                        (double) fullSize.height;
+                        (double) tileSize.height;
                 reduction.factor = ProcessorUtil.getReductionFactor(
                         Math.min(hScale, vScale), MAX_REDUCTION_FACTOR);
             } else if (size.getPercent() != null) {
