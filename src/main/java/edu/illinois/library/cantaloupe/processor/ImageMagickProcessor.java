@@ -255,14 +255,14 @@ class ImageMagickProcessor implements StreamProcessor {
         for (Operation op : ops) {
             if (op instanceof Crop) {
                 Crop crop = (Crop) op;
-                if (!crop.isFull()) {
+                if (!crop.isNoOp()) {
                     if (crop.getUnit().equals(Crop.Unit.PERCENT)) {
                         // im4java doesn't support cropping x/y by percentage
                         // (only width/height), so we have to calculate them.
                         int x = Math.round(crop.getX() * fullSize.width);
                         int y = Math.round(crop.getY() * fullSize.height);
-                        int width = Math.round(crop.getWidth());
-                        int height = Math.round(crop.getHeight());
+                        int width = Math.round(crop.getWidth() * 100);
+                        int height = Math.round(crop.getHeight() * 100);
                         imOp.crop(width, height, x, y, "%");
                     } else {
                         imOp.crop(Math.round(crop.getWidth()),
@@ -273,23 +273,22 @@ class ImageMagickProcessor implements StreamProcessor {
                 }
             } else if (op instanceof Scale) {
                 Scale scale = (Scale) op;
-                if (scale.getMode() != Scale.Mode.FULL) {
+                if (!scale.isNoOp()) {
                     if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                         imOp.resize(scale.getWidth());
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                         imOp.resize(null, scale.getHeight());
                     } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
-                        imOp.resize(scale.getWidth(), scale.getHeight(), "!".charAt(0));
+                        imOp.resize(scale.getWidth(), scale.getHeight(), "!");
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
                         imOp.resize(scale.getWidth(), scale.getHeight());
                     } else if (scale.getPercent() != null) {
-                        imOp.resize(Math.round(scale.getPercent()),
-                                Math.round(scale.getPercent()), "%");
+                        imOp.resize(Math.round(scale.getPercent() * 100),
+                                Math.round(scale.getPercent() * 100), "%");
                     }
                 }
             } else if (op instanceof Transpose) {
-                Transpose transpose = (Transpose) op;
-                switch (transpose) {
+                switch ((Transpose) op) {
                     case HORIZONTAL:
                         imOp.flop();
                         break;
@@ -299,7 +298,7 @@ class ImageMagickProcessor implements StreamProcessor {
                 }
             } else if (op instanceof Rotate) {
                 Rotate rotate = (Rotate) op;
-                if (rotate.getDegrees() != 0) {
+                if (!rotate.isNoOp()) {
                     imOp.rotate((double) rotate.getDegrees());
                 }
             } else if (op instanceof Filter) {
