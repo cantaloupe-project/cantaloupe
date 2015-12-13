@@ -2,6 +2,10 @@
 layout: default
 ---
 
+<script type="text/javascript">
+    $(document).ready(function() { getLatestReleaseInfo(); });
+</script>
+
 <h2>Getting Started</h2>
 
 <h3 id="Requirements">Requirements</h3>
@@ -10,7 +14,11 @@ layout: default
 
 <h3 id="Download">Download</h3>
 
-<p><a href="https://github.com/medusa-project/cantaloupe/releases">Download the latest release from GitHub.</a></p>
+<a id="download-button" href="https://github.com/medusa-project/cantaloupe/releases" class="btn btn-success">
+  <span class="fa fa-download"></span> Download Latest Release</a>
+
+<a href="https://github.com/medusa-project/cantaloupe/releases.atom" class="btn btn-info">
+  <span class="fa fa-rss"></span> Subscribe to Releases</a>
 
 <h3 id="Configuration">Configuration</h3>
 
