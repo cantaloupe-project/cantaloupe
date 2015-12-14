@@ -3,6 +3,8 @@ package edu.illinois.library.cantaloupe.resolver;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.script.ScriptEngine;
+import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import eu.medsea.mimeutil.MimeUtil;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
@@ -79,10 +81,12 @@ class FilesystemResolver implements FileResolver, StreamResolver {
             }
             switch (extension) {
                 case "rb":
-                    final String[] args = { identifier.toString() };
+                    final ScriptEngine engine = ScriptEngineFactory.
+                            getScriptEngine("jruby");
                     final long msec = System.currentTimeMillis();
-                    final String result = ResolverUtil.executeRubyFunction(
-                            lookupScriptContents, "get_pathname", args);
+                    engine.load(lookupScriptContents);
+                    final String[] args = { identifier.toString() };
+                    final String result = engine.invoke("get_pathname", args);
                     logger.debug("Lookup function execution time: {} msec",
                             System.currentTimeMillis() - msec);
                     return result;

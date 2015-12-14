@@ -4,50 +4,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-import java.util.ArrayList;
-import java.util.List;
-
 abstract class ResolverUtil {
-
-    /**
-     * @param code Ruby code containing the function to execute
-     * @param functionName Name of the function to execute
-     * @param args String arguments to pass to the function
-     * @return Return value of the function
-     * @throws ScriptException If the script failed to execute
-     */
-    public static String executeRubyFunction(final String code,
-                                             final String functionName,
-                                             final String[] args)
-            throws ScriptException {
-        final List<String> escapedArgs = new ArrayList<>();
-        for (String arg : args) {
-            escapedArgs.add("'" + StringUtils.replace(arg, "'", "\\'") + "'");
-        }
-        final String argsList = StringUtils.join(escapedArgs, ", ");
-        return executeRubyScript(String.format("%s\n%s(%s)", code,
-                functionName, argsList));
-    }
-
-    /**
-     * Passes the given identifier to a function in the given script.
-     *
-     * @param code
-     * @return Script result
-     * @throws ScriptException If the script failed to execute
-     */
-    public static String executeRubyScript(String code) throws ScriptException {
-        final ScriptEngineManager manager = new ScriptEngineManager();
-        final ScriptEngine engine = manager.getEngineByName("jruby");
-        try {
-            return (String) engine.eval(code);
-        } catch (Error e) {
-            throw new ScriptException(e.getMessage());
-        }
-    }
 
     /**
      * Guesses the source format of a file based on the filename extension in
