@@ -1,13 +1,16 @@
 package edu.illinois.library.cantaloupe.resolver;
 
+import static org.junit.Assert.*;
+
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
+import org.junit.Before;
+import org.junit.Test;
 
 import javax.script.ScriptException;
 import java.io.File;
@@ -15,7 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 
-public class FilesystemResolverTest extends CantaloupeTestCase {
+public class FilesystemResolverTest {
 
     private static final Identifier IDENTIFIER = new Identifier("escher_lego.jpg");
 
@@ -32,11 +35,13 @@ public class FilesystemResolverTest extends CantaloupeTestCase {
         return config;
     }
 
+    @Before
     public void setUp() throws IOException {
         Application.setConfiguration(newConfiguration());
         instance = new FilesystemResolver();
     }
 
+    @Test
     public void testExecuteLookupScript() throws Exception {
         // valid script
         File script = TestUtil.getFixture("lookup.rb");
@@ -53,6 +58,7 @@ public class FilesystemResolverTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testGetFile() throws Exception {
         // present, readable file
         try {
@@ -86,6 +92,7 @@ public class FilesystemResolverTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testGetInputStream() throws Exception {
         try {
             assertNotNull(instance.getInputStream(IDENTIFIER));
@@ -103,6 +110,7 @@ public class FilesystemResolverTest extends CantaloupeTestCase {
 
     // getPathname(Identifier)
 
+    @Test
     public void testGetPathnameWithBasicLookupStrategy() throws IOException {
         Configuration config = Application.getConfiguration();
         config.setProperty(FilesystemResolver.LOOKUP_STRATEGY_CONFIG_KEY,
@@ -131,6 +139,7 @@ public class FilesystemResolverTest extends CantaloupeTestCase {
         assertEquals("\\id", instance.getPathname(new Identifier("\\..\\id"), "\\"));
     }
 
+    @Test
     public void testGetPathnameWithScriptLookupStrategyAndAbsolutePath()
             throws IOException {
         Configuration config = Application.getConfiguration();
@@ -154,6 +163,7 @@ public class FilesystemResolverTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testGetPathnameWithScriptLookupStrategyAndRelativePath()
             throws IOException {
         Configuration config = Application.getConfiguration();
@@ -173,6 +183,7 @@ public class FilesystemResolverTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testGetPathnameWithScriptLookupStrategyAndPathSeparator()
             throws IOException {
         Configuration config = Application.getConfiguration();
@@ -190,6 +201,7 @@ public class FilesystemResolverTest extends CantaloupeTestCase {
         assertEquals(expected, actual);
     }
 
+    @Test
     public void testGetSourceFormatByDetection() throws IOException {
         assertEquals(SourceFormat.BMP,
                 instance.getSourceFormat(new Identifier("bmp")));
@@ -209,6 +221,7 @@ public class FilesystemResolverTest extends CantaloupeTestCase {
                 instance.getSourceFormat(new Identifier("txt")));
     }
 
+    @Test
     public void testGetSourceFormatByInference() throws IOException {
         assertEquals(SourceFormat.BMP,
                 instance.getSourceFormat(new Identifier("bla.bmp")));

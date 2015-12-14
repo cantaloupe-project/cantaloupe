@@ -1,13 +1,16 @@
 package edu.illinois.library.cantaloupe.resolver;
 
+import static org.junit.Assert.*;
+
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
+import org.junit.Before;
+import org.junit.Test;
 import org.restlet.data.Reference;
 
 import javax.script.ScriptException;
@@ -15,12 +18,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-public class HttpResolverTest extends CantaloupeTestCase {
+public class HttpResolverTest {
 
     private static final Identifier IDENTIFIER = new Identifier("14405804_o1.jpg");
 
     private HttpResolver instance;
 
+    @Before
     public void setUp() throws IOException {
         BaseConfiguration config = new BaseConfiguration();
         config.setProperty(HttpResolver.LOOKUP_STRATEGY_CONFIG_KEY,
@@ -32,6 +36,7 @@ public class HttpResolverTest extends CantaloupeTestCase {
         instance = new HttpResolver();
     }
 
+    @Test
     public void testExecuteLookupScript() throws Exception {
         // valid script
         File script = TestUtil.getFixture("lookup.rb");
@@ -48,6 +53,7 @@ public class HttpResolverTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testGetInputStream() {
         // present, readable image
         try {
@@ -68,6 +74,7 @@ public class HttpResolverTest extends CantaloupeTestCase {
         // TODO: write this
     }
 
+    @Test
     public void testGetSourceFormat() throws IOException {
         assertEquals(SourceFormat.JPG, instance.getSourceFormat(IDENTIFIER));
         try {
@@ -84,6 +91,7 @@ public class HttpResolverTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testGetUrlWithBasicLookupStrategy() throws Exception {
         BaseConfiguration config = (BaseConfiguration) Application.getConfiguration();
         // with prefix
@@ -102,6 +110,7 @@ public class HttpResolverTest extends CantaloupeTestCase {
                 instance.getUrl(new Identifier("http://example.org/images/image.jpg")).toString());
     }
 
+    @Test
     public void testGetUrlWithScriptLookupStrategyAndAbsolutePath()
             throws Exception {
         Configuration config = Application.getConfiguration();
@@ -125,6 +134,7 @@ public class HttpResolverTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testGetUrlWithScriptLookupStrategyAndRelativePath()
             throws Exception {
         Configuration config = Application.getConfiguration();
@@ -144,6 +154,7 @@ public class HttpResolverTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testGetUrlWithScriptLookupStrategyAndPathSeparator()
             throws Exception {
         Configuration config = Application.getConfiguration();
