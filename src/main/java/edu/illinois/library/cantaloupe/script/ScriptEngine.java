@@ -17,7 +17,7 @@ public interface ScriptEngine {
      * @return Function result
      * @throws ScriptException
      */
-    String invoke(String functionName, String[] args) throws ScriptException;
+    Object invoke(String functionName, String[] args) throws ScriptException;
 
     /**
      * @param code Code to load into the script interpreter.

@@ -23,11 +23,11 @@ class RubyScriptEngine implements ScriptEngine {
      * @throws ScriptException
      */
     @Override
-    public String invoke(String functionName, String[] args)
+    public Object invoke(String functionName, String[] args)
             throws ScriptException {
         final String invocationString = String.format("%s(%s)",
                 functionName, formattedArgumentList(args));
-        return (String) scriptEngine.eval(invocationString);
+        return scriptEngine.eval(invocationString);
     }
 
     @Override

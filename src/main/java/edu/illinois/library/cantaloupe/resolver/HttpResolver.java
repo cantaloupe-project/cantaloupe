@@ -55,12 +55,6 @@ class HttpResolver implements StreamResolver {
 
     private static Client client;
 
-    // Caches the lookup script for improved performance.
-    private static String lookupScriptContents;
-
-    // lock object for synchronization
-    private final Object lock = new Object();
-
     static {
         SUPPORTED_SCRIPT_EXTENSIONS.add("rb");
 
@@ -81,27 +75,26 @@ class HttpResolver implements StreamResolver {
      * @throws ScriptException If the script failed to execute
      * @throws ScriptException If the script is of an unsupported type
      */
-    public String executeLookupScript(Identifier identifier, File script)
+    public Object executeLookupScript(Identifier identifier, File script)
             throws IOException, ScriptException {
         final String extension = FilenameUtils.getExtension(script.getName());
 
         if (SUPPORTED_SCRIPT_EXTENSIONS.contains(extension)) {
             logger.debug("Using lookup script: {}", script);
-            if (lookupScriptContents == null) {
-                synchronized (lock) {
-                    lookupScriptContents = FileUtils.readFileToString(script);
-                }
-            }
             switch (extension) {
                 case "rb":
                     final ScriptEngine engine = ScriptEngineFactory.
                             getScriptEngine("jruby");
                     final long msec = System.currentTimeMillis();
-                    engine.load(lookupScriptContents);
+                    engine.load(FileUtils.readFileToString(script));
                     final String[] args = { identifier.toString() };
-                    final String result = engine.invoke("get_url", args);
-                    logger.debug("Lookup function execution time: {} msec",
+                    final Object result = engine.invoke("get_url", args);
+                    logger.debug("Lookup function load+exec time: {} msec",
                             System.currentTimeMillis() - msec);
+                    if (result == null) {
+                        throw new FileNotFoundException(
+                                "Lookup script returned nil for " + identifier);
+                    }
                     return result;
             }
         }
@@ -236,7 +229,7 @@ class HttpResolver implements StreamResolver {
             throw new FileNotFoundException("Does not exist: " +
                     script.getAbsolutePath());
         }
-        return new Reference(executeLookupScript(identifier, script));
+        return new Reference((String) executeLookupScript(identifier, script));
     }
 
     /**

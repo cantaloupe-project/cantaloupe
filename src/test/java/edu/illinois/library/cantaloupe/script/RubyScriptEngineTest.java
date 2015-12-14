@@ -16,7 +16,7 @@ public class RubyScriptEngineTest {
 
         for (int i = 0; i < 3; i++) {
             String[] args = { String.valueOf(i) };
-            String result = instance.invoke(function, args);
+            String result = (String) instance.invoke(function, args);
             assertEquals(String.valueOf(i), result);
         }
     }

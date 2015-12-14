@@ -45,7 +45,7 @@ public class FilesystemResolverTest {
     public void testExecuteLookupScript() throws Exception {
         // valid script
         File script = TestUtil.getFixture("lookup.rb");
-        String result = instance.executeLookupScript(IDENTIFIER, script);
+        String result = (String) instance.executeLookupScript(IDENTIFIER, script);
         assertEquals("/bla/" + IDENTIFIER, result);
 
         // unsupported script
@@ -55,6 +55,15 @@ public class FilesystemResolverTest {
             fail("Expected exception");
         } catch (ScriptException e) {
             assertEquals("Unsupported script type: js", e.getMessage());
+        }
+
+        // script returns nil
+        script = TestUtil.getFixture("lookup_nil.rb");
+        try {
+            instance.executeLookupScript(IDENTIFIER, script);
+            fail("Expected exception");
+        } catch (FileNotFoundException e) {
+            // pass
         }
     }
 

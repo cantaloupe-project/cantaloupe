@@ -45,12 +45,6 @@ class FilesystemResolver implements FileResolver, StreamResolver {
     private static final Set<String> SUPPORTED_SCRIPT_EXTENSIONS =
             new HashSet<>();
 
-    // Caches the lookup script for improved performance.
-    private static String lookupScriptContents;
-
-    // lock object for synchronization
-    private final Object lock = new Object();
-
     static {
         MimeUtil.registerMimeDetector(
                 "eu.medsea.mimeutil.detector.MagicMimeMimeDetector");
@@ -63,32 +57,32 @@ class FilesystemResolver implements FileResolver, StreamResolver {
      * @param identifier
      * @param script
      * @return Pathname of the image file corresponding to the given identifier,
-     * as reported by the lookup script.
+     * as reported by the lookup script, or null.
      * @throws IOException If the lookup script configuration key is undefined
      * @throws ScriptException If the script failed to execute
      * @throws ScriptException If the script is of an unsupported type
+     * @throws FileNotFoundException If the script returned null
      */
-    public String executeLookupScript(Identifier identifier, File script)
+    public Object executeLookupScript(Identifier identifier, File script)
             throws IOException, ScriptException {
         final String extension = FilenameUtils.getExtension(script.getName());
 
         if (SUPPORTED_SCRIPT_EXTENSIONS.contains(extension)) {
             logger.debug("Using lookup script: {}", script);
-            if (lookupScriptContents == null) {
-                synchronized (lock) {
-                    lookupScriptContents = FileUtils.readFileToString(script);
-                }
-            }
             switch (extension) {
                 case "rb":
                     final ScriptEngine engine = ScriptEngineFactory.
                             getScriptEngine("jruby");
                     final long msec = System.currentTimeMillis();
-                    engine.load(lookupScriptContents);
+                    engine.load(FileUtils.readFileToString(script));
                     final String[] args = { identifier.toString() };
-                    final String result = engine.invoke("get_pathname", args);
-                    logger.debug("Lookup function execution time: {} msec",
+                    final Object result = engine.invoke("get_pathname", args);
+                    logger.debug("Lookup function load+exec time: {} msec",
                             System.currentTimeMillis() - msec);
+                    if (result == null) {
+                        throw new FileNotFoundException(
+                                "Lookup script returned nil for " + identifier);
+                    }
                     return result;
             }
         }
@@ -186,7 +180,7 @@ class FilesystemResolver implements FileResolver, StreamResolver {
             throw new FileNotFoundException("Does not exist: " +
                     script.getAbsolutePath());
         }
-        return executeLookupScript(identifier, script);
+        return (String) executeLookupScript(identifier, script);
     }
 
     @Override
