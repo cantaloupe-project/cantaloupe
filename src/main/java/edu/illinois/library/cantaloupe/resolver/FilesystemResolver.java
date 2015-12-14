@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.script.ScriptUtil;
 import eu.medsea.mimeutil.MimeUtil;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
@@ -163,19 +164,7 @@ class FilesystemResolver implements FileResolver, StreamResolver {
         // The script name may be an absolute path or a filename.
         final String scriptValue = config.
                 getString(LOOKUP_SCRIPT_CONFIG_KEY);
-        File script = new File(scriptValue);
-        if (!script.isAbsolute()) {
-            // Search for it in the same folder as the application
-            // config (if available), or the current working
-            // directory if not.
-            final File configFile = Application.getConfigurationFile();
-            if (configFile != null) {
-                script = new File(configFile.getParent() + "/" +
-                        script.getName());
-            } else {
-                script = new File("./" + script.getName());
-            }
-        }
+        File script = ScriptUtil.findScript(scriptValue);
         if (!script.exists()) {
             throw new FileNotFoundException("Does not exist: " +
                     script.getAbsolutePath());
