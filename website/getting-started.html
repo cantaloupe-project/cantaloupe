@@ -57,6 +57,7 @@ layout: default
       <li><code>max_pixels</code></li>
       <li><code>endpoint.iiif.1.1.enabled</code></li>
       <li><code>endpoint.iiif.2.0.enabled</code></li>
+      <li><code>resolver.chooser_script</code></li>
       <li><code>FilesystemResolver.lookup_strategy</code></li>
       <li><code>FilesystemResolver.ScriptLookupStrategy.script</code></li>
       <li><code>HttpResolver.lookup_strategy</code></li>
@@ -70,6 +71,7 @@ layout: default
   </li>
   <li>Rename the following keys:
     <ul>
+      <li><code>resolver</code> to <code>resolver.static</code>
       <li><code>FilesystemResolver.path_prefix</code> to <code>FilesystemResolver.BasicLookupStrategy.path_prefix</code>
       <li><code>FilesystemResolver.path_suffix</code> to <code>FilesystemResolver.BasicLookupStrategy.path_suffix</code>
       <li><code>HttpResolver.url_prefix</code> to <code>HttpResolver.BasicLookupStrategy.url_prefix</code>

@@ -1,28 +1,47 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.ConfigurationException;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
+import org.junit.Test;
 
-public class ResolverFactoryTest extends CantaloupeTestCase {
+import static org.junit.Assert.*;
 
-    public void testGetResolver() throws Exception {
+public class ResolverFactoryTest {
+
+    @Test
+    public void testGetResolverWithChooserScript() throws Exception {
         BaseConfiguration config = new BaseConfiguration();
+        config.setProperty("resolver.chooser_script",
+                TestUtil.getFixture("get_resolver.rb").getAbsolutePath());
         Application.setConfiguration(config);
 
-        // FilesystemResolver
-        config.setProperty("resolver", "FilesystemResolver");
-        assertTrue(ResolverFactory.getResolver() instanceof FilesystemResolver);
+        // identifier-resolver match
+        Identifier identifier = new Identifier("http");
+        assertTrue(ResolverFactory.getResolver(identifier) instanceof HttpResolver);
+    }
 
-        // HttpResolver
-        config.setProperty("resolver", "HttpResolver");
-        assertTrue(ResolverFactory.getResolver() instanceof HttpResolver);
+    @Test
+    public void testGetResolverWithStaticResolver() throws Exception {
+        BaseConfiguration config = new BaseConfiguration();
+        Application.setConfiguration(config);
+        Identifier identifier = new Identifier("jdbc");
+
+        config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
+                "FilesystemResolver");
+        assertTrue(ResolverFactory.getResolver(identifier) instanceof FilesystemResolver);
+
+        config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
+                "HttpResolver");
+        assertTrue(ResolverFactory.getResolver(identifier) instanceof HttpResolver);
 
         // invalid resolver
         try {
-            config.setProperty("resolver", "bogus");
-            ResolverFactory.getResolver();
+            config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
+                    "bogus");
+            ResolverFactory.getResolver(identifier);
             fail("Expected exception");
         } catch (ClassNotFoundException e) {
             // pass
@@ -30,12 +49,24 @@ public class ResolverFactoryTest extends CantaloupeTestCase {
 
         // no resolver
         try {
-            config.setProperty("resolver", null);
-            ResolverFactory.getResolver();
+            config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY, null);
+            ResolverFactory.getResolver(identifier);
             fail("Expected exception");
         } catch (ConfigurationException e) {
             // pass
         }
+    }
+
+    @Test
+    public void testGetResolverPrefersChooserScript() throws Exception {
+        BaseConfiguration config = new BaseConfiguration();
+        config.setProperty("resolver.", "JdbcResolver");
+        config.setProperty("resolver.chooser_script",
+                TestUtil.getFixture("get_resolver.rb").getAbsolutePath());
+        Application.setConfiguration(config);
+
+        Identifier identifier = new Identifier("http");
+        assertTrue(ResolverFactory.getResolver(identifier) instanceof HttpResolver);
     }
 
 }

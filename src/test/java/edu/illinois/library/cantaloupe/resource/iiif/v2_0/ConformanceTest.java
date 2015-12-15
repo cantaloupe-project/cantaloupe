@@ -52,7 +52,7 @@ public class ConformanceTest extends CantaloupeTestCase {
             config.setProperty("print_stack_trace_on_error_pages", false);
             config.setProperty("http.port", PORT);
             config.setProperty("processor.fallback", "Java2dProcessor");
-            config.setProperty("resolver", "FilesystemResolver");
+            config.setProperty("resolver.static", "FilesystemResolver");
             config.setProperty("FilesystemResolver.lookup_strategy",
                     "BasicLookupStrategy");
             config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",

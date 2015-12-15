@@ -58,7 +58,7 @@ public class InformationResource extends AbstractResource {
         Identifier identifier = new Identifier(
                 Reference.decode((String) attrs.get("identifier")));
         // Get the resolver
-        Resolver resolver = ResolverFactory.getResolver();
+        Resolver resolver = ResolverFactory.getResolver(identifier);
         SourceFormat sourceFormat = SourceFormat.UNKNOWN;
         try {
             // Determine the format of the source image

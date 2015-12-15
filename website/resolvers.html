@@ -6,7 +6,43 @@ layout: default
 
 <p>Resolvers locate a source image based on the image identifier in a request URL. In Java-speak, they take in an identifier and return an InputStream or File object from which the corresponding image can be read by a <a href="processors.html">processor</a>.</p>
 
-<p>This distinction is important because not all processors can work with all resolvers. (See the <a href="processors.html#Compatibility">processor/resolver compatibility table</a>.)</p>
+<p>(This distinction is important because <a href="processors.html#Compatibility">not all processors can work with all resolvers</a>.)</p>
+
+<p>The resolution process can be configured to be <a href="#Static%20Resolution">static</a> &mdash; with all requests using the same resolver &mdash; or <a href="#Dynamic%20Resolution">dynamic</a>, with images being served from different resolvers depending on their identifier.</p>
+
+<h3 id="Static Resolution">Static Resolution</h3>
+
+<p>By default, the <code>resolver.static</code> configuration key is set to <code>FilesystemResolver</code>, which tells Cantaloupe to use <a href="#FilesystemResolver">FilesystemResolver</a> for all requests. This is simple and works in many, if not most, scenarios.</p>
+
+<h3 id="Dynamic Resolution">Dynamic Resolution</h3>
+
+<p>It is possible to serve images from different data sources simultaneously. For example, you may have images some stored on a filesystem, and others stored on Amazon S3. <em>If you can differentiate their locations based on their identifier</em> &mdash; either by analyzing the identifier string, or performing some kind of service request in code &mdash; you can write a simple Ruby function to tell Cantaloupe which resolver to use.</p>
+
+<p>The script can be named anything, but it must have a <span class="filename">.rb</span> extension. Then, it can be referenced by the <code>resolver.chooser_script</code> option, like:</p>
+
+<pre># Option 1: absolute pathname
+resolver.chooser_script = /path/to/functions.rb
+
+# Option 2: filename only; will be expected to be located in the
+# same folder as the config file, or the current working directory
+resolver.chooser_script = functions.rb
+</pre>
+
+<p>This file must contain a function called <code>get_resolver(identifier)</code>, which takes in an identifier and returns a resolver name (such as FilesystemResolver, HttpResolver, etc.; see below.) A Solr query, for example, could look like:</p>
+
+<pre># functions.rb
+
+def get_resolver(identifier)
+  # Here, you would perform some kind of analysis on `identifier`:
+  # analyze it, look it up in a web service or database...
+  # and then return the name of the resolver to use to serve it.
+  'FilesystemResolver'
+end
+
+# Uncomment to test on the command line (`ruby functions.rb`)
+# puts get_resolver('identifier-to-test')</pre>
+
+<p>See <a href="scripts.html">Custom Scripts</a> for general information about custom scripts in Cantaloupe.</p>
 
 <h3 id="FilesystemResolver">FilesystemResolver</h3>
 
@@ -33,26 +69,27 @@ FilesystemResolver.BasicLookupStrategy.path_suffix =</pre>
 
 <h4 id="FilesystemResolverScriptLookupStrategy">ScriptLookupStrategy</h4>
 
-<p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple locations, or perhaps your identifiers are opaque and you need to perform a database or web service request to locate the corresponding images. With this lookup strategy, you can tell FilesystemResolver to invoke your own custom Ruby function and capture the pathname it returns.</p>
+<p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple filesystems, or perhaps your identifiers are opaque and you need to perform a database or web service request to locate the corresponding images. With this lookup strategy, you can tell FilesystemResolver to invoke your own custom Ruby function and capture the pathname it returns.</p>
 
 <p>The script can be named anything, but it must have a <span class="filename">.rb</span> extension. Then, it can be referenced by the <code>FilesystemResolver.ScriptLookupStrategy.script</code> option, like:</p>
 
 <pre># Option 1: absolute pathname
-FilesystemResolver.ScriptLookupStrategy.script = /path/to/lookup.rb
+FilesystemResolver.ScriptLookupStrategy.script = /path/to/functions.rb
 
 # Option 2: filename only; will be expected to be located in the
 # same folder as the config file, or the current working directory
-FilesystemResolver.ScriptLookupStrategy.script = lookup.rb
+FilesystemResolver.ScriptLookupStrategy.script = functions.rb
 </pre>
 
 <p>This file must contain a function called <code>get_pathname(identifier)</code>, which takes in an identifier and returns a pathname, if available, or <code>nil</code>, if not. A Solr query, for example, could look like:</p>
 
-<pre># lookup.rb
+<pre># functions.rb
 require 'net/http'
+require 'cgi'
 
 def get_pathname(identifier)
   uri = 'http://localhost:8983/solr/collection1/select?q=' +
-      URI.escape('id:"' + identifier + '"') +
+      CGI.escape('id:"' + identifier + '"') +
       '&amp;fl=pathname_si&amp;wt=ruby'
   uri = URI.parse(uri)
 
@@ -65,16 +102,10 @@ def get_pathname(identifier)
   results.any? ? results.first['pathname_si'] : nil
 end
 
-# Uncomment to test on the command line (`ruby lookup.rb`)
+# Uncomment to test on the command line (`ruby functions.rb`)
 # puts get_pathname('identifier-to-test')</pre>
 
-<p>Inside this function, anything goes. You can even use any (non-platform-native) gems that you have installed with <code>gem install</code>. Because it will be called upon each image request, though, it should be written with efficiency in mind.</p>
-
-<div class="alert alert-danger">Note: neither the <code>identifier</code> argument to <code>get_pathname()</code>, nor its return value, are validated. Be very careful to write defensive, injection-aware code that always returns either the correct pathname, or <code>nil</code>.</div>
-
-<div class="alert alert-info">Note: to improve performance, the script contents are cached upon first load. Any changes will require a restart of Cantaloupe.</div>
-
-<div class="alert alert-info">Note: the first time it runs, the script will take a few seconds to execute. That is just JRuby loading. Subsequent runs will be much faster.</div>
+<p>See <a href="scripts.html">Custom Scripts</a> for general information about custom scripts in Cantaloupe.</p>
 
 <h4>Path Separator</h4>
 
@@ -110,16 +141,16 @@ HttpResolver.url_suffix =</pre>
 <p>The script can be named anything, but it must have a <span class="filename">.rb</span> extension. Then, it can be referenced by the <code>HttpResolver.ScriptLookupStrategy.script</code> option, like:</p>
 
 <pre># Option 1: absolute pathname
-HttpResolver.ScriptLookupStrategy.script = /path/to/lookup.rb
+HttpResolver.ScriptLookupStrategy.script = /path/to/functions.rb
 
 # Option 2: filename only; will be expected to be located in the
 # same folder as the config file, or the current working directory
-HttpResolver.ScriptLookupStrategy.script = lookup.rb
+HttpResolver.ScriptLookupStrategy.script = functions.rb
 </pre>
 
 <p>This file must contain a function called <code>get_url(identifier)</code>, which takes in an identifier and returns a URL, if available, or <code>nil</code>, if not.</p>
 
-<p>See the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for more information on this script. All the rules are the same, except the function must be named <code>get_url</code> instead of <code>get_pathname</code>, and it must return a URL instead of a pathname.</p>
+<p>See <a href="scripts.html">Custom Scripts</a> for general information about custom scripts in Cantaloupe, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for an example of a similar script.</p>
 
 <h4>Path Separator</h4>
 

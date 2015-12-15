@@ -65,7 +65,7 @@ public class ImageResource extends AbstractResource {
         final Identifier identifier =
                 new Identifier((String) attrs.get("identifier"));
 
-        final Resolver resolver = ResolverFactory.getResolver();
+        final Resolver resolver = ResolverFactory.getResolver(identifier);
         // Determine the format of the source image
         SourceFormat sourceFormat = SourceFormat.UNKNOWN;
         try {

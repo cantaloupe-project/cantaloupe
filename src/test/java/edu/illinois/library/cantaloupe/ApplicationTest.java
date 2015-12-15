@@ -27,7 +27,7 @@ public class ApplicationTest extends CantaloupeTestCase {
         try {
             config.setProperty("print_stack_trace_on_error_pages", false);
             config.setProperty("http.port", PORT);
-            config.setProperty("resolver", "FilesystemResolver");
+            config.setProperty("resolver.static", "FilesystemResolver");
             config.setProperty("processor.fallback", "Java2dProcessor");
         } catch (Exception e) {
             fail("Failed to get the configuration");
@@ -97,7 +97,7 @@ public class ApplicationTest extends CantaloupeTestCase {
         exit.expectSystemExitWithStatus(-1);
         String[] args = {};
         Configuration config = newConfiguration();
-        config.setProperty("resolver", null);
+        config.setProperty("resolver.static", null);
         Application.setConfiguration(config);
         try {
             Application.main(args);

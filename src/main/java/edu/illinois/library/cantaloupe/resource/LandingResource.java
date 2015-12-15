@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
+import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.app.Velocity;
@@ -65,18 +66,15 @@ public class LandingResource extends AbstractResource {
     }
 
     private Map<String,Object> getTemplateVars() throws Exception {
-        Map<String, Object> vars = getCommonTemplateVars();
+        final Configuration config = Application.getConfiguration();
+        final Map<String, Object> vars = getCommonTemplateVars();
 
         // resolver name
-        String resolverStr = "None";
-        try {
-            Resolver resolver = ResolverFactory.getResolver();
-            if (resolver != null) {
-                resolverStr = resolver.getClass().getSimpleName();
-            }
-        } catch (Exception e) {
-            // noop
-        }
+        final String chooserScript = config.getString(
+                ResolverFactory.CHOOSER_SCRIPT_CONFIG_KEY);
+        String resolverStr = config.getString(
+                ResolverFactory.STATIC_RESOLVER_CONFIG_KEY, "None");
+        resolverStr = chooserScript != null ? "Dynamic Script" : resolverStr;
         vars.put("resolverName", resolverStr);
 
         // cache name

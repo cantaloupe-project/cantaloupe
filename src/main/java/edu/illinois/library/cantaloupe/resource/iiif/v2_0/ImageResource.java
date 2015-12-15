@@ -83,7 +83,7 @@ public class ImageResource extends AbstractResource {
             }
         }
 
-        Resolver resolver = ResolverFactory.getResolver();
+        Resolver resolver = ResolverFactory.getResolver(ops.getIdentifier());
         // Determine the format of the source image
         SourceFormat sourceFormat = SourceFormat.UNKNOWN;
         try {
