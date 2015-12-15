@@ -97,6 +97,9 @@ public class InformationResource extends AbstractResource {
         // Obtain an instance of the processor assigned to that format in
         // the config file
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
+
+        checkProcessorResolverCompatibility(resolver, proc);
+
         // Get an ImageInfo instance corresponding to the source image
         ImageInfo imageInfo = getImageInfo(identifier,
                 getSize(identifier, proc, resolver, sourceFormat),

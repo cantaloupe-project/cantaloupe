@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.ConfigurationException;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -68,6 +69,23 @@ public abstract class AbstractResource extends ServerResource {
                     put("org.restlet.http.headers", responseHeaders);
         }
         responseHeaders.add(new Header(key, value));
+    }
+
+    /**
+     * Should be called by all relevant resource implementations.
+     *
+     * @throws ConfigurationException If the given resolver and processor are
+     * incompatible.
+     */
+    protected void checkProcessorResolverCompatibility(Resolver resolver,
+                                                       Processor processor)
+            throws ConfigurationException {
+        if (!resolver.isCompatible(processor)) {
+            throw new ConfigurationException(
+                    String.format("%s is not compatible with %s",
+                            processor.getClass().getSimpleName(),
+                            resolver.getClass().getSimpleName()));
+        }
     }
 
     protected List<CacheDirective> getCacheDirectives() {
@@ -151,15 +169,7 @@ public abstract class AbstractResource extends ServerResource {
         final long maxAllowedSize = (ops.isNoOp(sourceFormat)) ?
                 0 : Application.getConfiguration().getLong(MAX_PIXELS_CONFIG_KEY, 0);
 
-        // FileResolver -> StreamProcessor: OK, using FileInputStream
-        // FileResolver -> FileProcessor: OK, using File
-        // StreamResolver -> StreamProcessor: OK, using InputStream
-        // StreamResolver -> FileProcessor: NOPE
-        if (!(resolver instanceof FileResolver) &&
-                !(proc instanceof StreamProcessor)) {
-            // This is supposed to be caught at startup. If it's ever true
-            // here, it's a bug.
-        } else if (resolver instanceof FileResolver &&
+        if (resolver instanceof FileResolver &&
                 proc instanceof FileProcessor) {
             logger.debug("Using {} as a FileProcessor",
                     proc.getClass().getSimpleName());

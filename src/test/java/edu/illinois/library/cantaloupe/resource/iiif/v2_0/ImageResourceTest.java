@@ -297,6 +297,26 @@ public class ImageResourceTest extends ResourceTest {
         }
     }
 
+    /* TODO: fix this and add to IIIF 1.1 and 2.0 endpoints
+    public void testResolverProcessorCompatibility() throws Exception {
+        Configuration config = newConfiguration();
+        config.setProperty("resolver.static", "HttpResolver");
+        config.setProperty("HttpResolver.lookup_strategy", "BasicLookupStrategy");
+        config.setProperty("HttpResolver.BasicLookupStrategy.url_prefix",
+                "https://ia601502.us.archive.org/4/items/14405804O1_201507/");
+        config.setProperty("processor.jp2", "KakaduProcessor");
+        Application.setConfiguration(config);
+
+        ClientResource client = getClientForUriPath("/jp2/full/full/0/default.jpg");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            // pass
+            System.out.println(e.getMessage());
+        }
+    }*/
+
     public void testUnavailableSourceFormat() throws IOException {
         ClientResource client = getClientForUriPath("/text.txt/full/full/0/default.jpg");
         try {

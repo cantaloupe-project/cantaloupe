@@ -106,6 +106,8 @@ public class ImageResource extends AbstractResource {
         // the config file
         Processor proc = ProcessorFactory.getProcessor(sourceFormat);
 
+        checkProcessorResolverCompatibility(resolver, proc);
+
         // Find out whether the processor supports that source format by
         // asking it whether it offers any output formats for it
         Set<OutputFormat> availableOutputFormats =

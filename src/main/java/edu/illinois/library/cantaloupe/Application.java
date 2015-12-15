@@ -239,26 +239,6 @@ public class Application {
                     "No configuration file specified. Try again with the " +
                             "-Dcantaloupe.config=/path/to/cantaloupe.properties argument.");
         }
-
-        // A ConfigurationException will be thrown if no resolver is specified
-        // in the configuration.
-        Resolver resolver = ResolverFactory.getResolver();
-
-        // Make sure the resolver is compatible with all of the processors in
-        // use.
-        // FileResolver -> StreamProcessor: OK, using FileInputStream
-        // FileResolver -> FileProcessor: OK, using File
-        // StreamResolver -> StreamProcessor: OK, using InputStream
-        // StreamResolver -> FileProcessor: NOPE
-        for (Processor proc : ProcessorFactory.getAllProcessors()) {
-            if (!(resolver instanceof FileResolver) &&
-                    !(proc instanceof StreamProcessor)) {
-                throw new edu.illinois.library.cantaloupe.ConfigurationException(
-                        String.format("%s is not compatible with %s",
-                                proc.getClass().getSimpleName(),
-                                resolver.getClass().getSimpleName()));
-            }
-        }
     }
 
 }
