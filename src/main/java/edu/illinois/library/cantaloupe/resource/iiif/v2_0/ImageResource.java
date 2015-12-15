@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.ImageServerApplication;
+import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -128,7 +128,7 @@ public class ImageResource extends AbstractResource {
     private void addLinkHeader(Parameters params) {
         this.addHeader("Link", String.format("<%s%s/%s>;rel=\"canonical\"",
                 getPublicRootRef().toString(),
-                ImageServerApplication.IIIF_2_0_PATH, params.toString()));
+                WebApplication.IIIF_2_0_PATH, params.toString()));
     }
 
 }

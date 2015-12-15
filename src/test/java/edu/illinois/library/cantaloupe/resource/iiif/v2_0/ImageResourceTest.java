@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.ImageServerApplication;
+import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -31,7 +31,7 @@ public class ImageResourceTest extends ResourceTest {
 
     @Override
     protected ClientResource getClientForUriPath(String path) {
-        return super.getClientForUriPath(ImageServerApplication.IIIF_2_0_PATH + path);
+        return super.getClientForUriPath(WebApplication.IIIF_2_0_PATH + path);
     }
 
     public void testBasicAuth() throws Exception {

@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.ImageServerApplication;
+import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -30,7 +30,7 @@ public class InformationResourceTest extends ResourceTest {
 
     @Override
     protected ClientResource getClientForUriPath(String path) {
-        return super.getClientForUriPath(ImageServerApplication.IIIF_1_1_PATH + path);
+        return super.getClientForUriPath(WebApplication.IIIF_1_1_PATH + path);
     }
 
     public void testCacheHeaders() {
@@ -178,7 +178,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertTrue(info.id.startsWith("http://") &&
-                info.id.contains(ImageServerApplication.IIIF_1_1_PATH + "/escher_lego.jpg"));
+                info.id.contains(WebApplication.IIIF_1_1_PATH + "/escher_lego.jpg"));
 
         Configuration config = Application.getConfiguration();
         config.setProperty("base_uri", "http://example.org/");

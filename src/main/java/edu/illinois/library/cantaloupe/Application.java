@@ -8,12 +8,6 @@ import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.logging.AccessLogService;
 import edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute;
-import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.processor.StreamProcessor;
-import edu.illinois.library.cantaloupe.resolver.FileResolver;
-import edu.illinois.library.cantaloupe.resolver.Resolver;
-import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -217,7 +211,7 @@ public class Application {
         Integer port = getConfiguration().getInteger("http.port", 8182);
         component.getServers().add(Protocol.HTTP, port);
         component.getClients().add(Protocol.CLAP);
-        component.getDefaultHost().attach("", new ImageServerApplication());
+        component.getDefaultHost().attach("", new WebApplication());
         component.setLogService(new AccessLogService());
         component.start();
     }

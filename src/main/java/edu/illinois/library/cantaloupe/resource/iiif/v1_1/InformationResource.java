@@ -9,7 +9,7 @@ import java.util.Set;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.ImageServerApplication;
+import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.Filter;
@@ -155,7 +155,7 @@ public class InformationResource extends AbstractResource {
     }
 
     private String getImageUri(Identifier identifier) {
-        return getPublicRootRef() + ImageServerApplication.IIIF_1_1_PATH +
+        return getPublicRootRef() + WebApplication.IIIF_1_1_PATH +
                 "/" + Reference.encode(identifier.toString());
     }
 

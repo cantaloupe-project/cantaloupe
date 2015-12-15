@@ -18,14 +18,18 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 
-public class ImageServerApplication extends Application {
+/**
+ * Restlet Application implementation. Creates endpoint routes and connects
+ * them to Resources.
+ */
+public class WebApplication extends Application {
 
     public static final String IIIF_PATH = "/iiif";
     public static final String IIIF_1_1_PATH = "/iiif/1.1";
     public static final String IIIF_2_0_PATH = "/iiif/2.0";
     public static final String STATIC_ROOT_PATH = "/static";
 
-    public ImageServerApplication() {
+    public WebApplication() {
         super();
         this.setStatusService(new CantaloupeStatusService());
     }

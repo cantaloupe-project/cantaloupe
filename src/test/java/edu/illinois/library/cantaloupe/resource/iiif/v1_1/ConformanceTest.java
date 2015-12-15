@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
-import edu.illinois.library.cantaloupe.ImageServerApplication;
+import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
@@ -72,8 +72,7 @@ public class ConformanceTest extends CantaloupeTestCase {
     }
 
     private String getBaseUri() {
-        return "http://localhost:" + PORT +
-                ImageServerApplication.IIIF_1_1_PATH;
+        return "http://localhost:" + PORT + WebApplication.IIIF_1_1_PATH;
     }
 
     public void setUp() throws Exception {

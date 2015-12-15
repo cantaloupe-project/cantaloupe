@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.logging;
 
-import edu.illinois.library.cantaloupe.ImageServerApplication;
+import edu.illinois.library.cantaloupe.WebApplication;
 import org.restlet.Request;
 import org.restlet.service.LogService;
 
@@ -18,7 +18,7 @@ public class AccessLogService extends LogService {
     @Override
     public boolean isLoggable(Request request) {
         // exclude requests to /static from the log
-        final String path = ImageServerApplication.STATIC_ROOT_PATH;
+        final String path = WebApplication.STATIC_ROOT_PATH;
         return !request.getResourceRef().getPath().startsWith(path);
     }
 
