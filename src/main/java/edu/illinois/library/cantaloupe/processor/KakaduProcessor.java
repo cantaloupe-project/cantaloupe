@@ -109,9 +109,10 @@ class KakaduProcessor implements FileProcessor {
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH);
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
 
-        if (Application.getConfiguration().
-                getString(POST_PROCESSOR_CONFIG_KEY, "java2d").
-                toLowerCase().equals("jai")) {
+        if (Application.getConfiguration() != null &&
+                Application.getConfiguration().
+                        getString(POST_PROCESSOR_CONFIG_KEY, "java2d").
+                        toLowerCase().equals("jai")) {
             postProcessor = PostProcessor.JAI;
             logger.info("Will post-process using JAI");
         } else {
