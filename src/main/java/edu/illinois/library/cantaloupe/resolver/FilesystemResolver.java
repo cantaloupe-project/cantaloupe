@@ -27,7 +27,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-class FilesystemResolver implements FileResolver, StreamResolver {
+class FilesystemResolver extends AbstractResolver
+        implements FileResolver, StreamResolver {
 
     private static Logger logger = LoggerFactory.
             getLogger(FilesystemResolver.class);

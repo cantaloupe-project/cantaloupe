@@ -23,7 +23,7 @@ import java.io.InputStream;
  * @see <a href="http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/welcome.html">
  *     AWS SDK for Java</a>
  */
-class AmazonS3Resolver implements StreamResolver {
+class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
     private static Logger logger = LoggerFactory.
             getLogger(AmazonS3Resolver.class);

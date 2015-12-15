@@ -20,7 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-class JdbcResolver implements StreamResolver {
+class JdbcResolver extends AbstractResolver implements StreamResolver {
 
     private static Logger logger = LoggerFactory.getLogger(JdbcResolver.class);
 
