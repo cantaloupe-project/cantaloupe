@@ -4,8 +4,7 @@
 .idea/*
 *.iml
 nbactions.xml
-# FilesystemResolver lookup scripts
-lookup.*
+functions.rb
 
 /target
 /website/javadoc
