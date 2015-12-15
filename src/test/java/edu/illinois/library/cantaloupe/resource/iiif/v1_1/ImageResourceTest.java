@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import edu.illinois.library.cantaloupe.test.WebServer;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
 import org.restlet.data.CacheDirective;
@@ -275,6 +276,38 @@ public class ImageResourceTest extends ResourceTest {
             if (tempImage.exists() && !image.exists()) {
                 FileUtils.moveFile(tempImage, image);
             }
+        }
+    }
+
+    /**
+     * Checks that the server responds with HTTP 500 when a non-FileResolver is
+     * used with a non-StreamProcessor.
+     *
+     * @throws Exception
+     */
+    public void testResolverProcessorCompatibility() throws Exception {
+        WebServer server = new WebServer();
+
+        Configuration config = newConfiguration();
+        config.setProperty("resolver.static", "HttpResolver");
+        config.setProperty("HttpResolver.lookup_strategy", "BasicLookupStrategy");
+        config.setProperty("HttpResolver.BasicLookupStrategy.url_prefix",
+                server.getUri() + "/");
+        config.setProperty("processor.jp2", "KakaduProcessor");
+        Application.setConfiguration(config);
+
+        try {
+            server.start();
+            ClientResource client = getClientForUriPath(
+                    "/escher_lego.jp2/full/full/0/native.jpg");
+            try {
+                client.get();
+                fail("Expected exception");
+            } catch (ResourceException e) {
+                assertEquals(Status.SERVER_ERROR_INTERNAL, e.getStatus());
+            }
+        } finally {
+            server.stop();
         }
     }
 

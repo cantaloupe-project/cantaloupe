@@ -5,10 +5,12 @@ import static org.junit.Assert.*;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.test.WebServer;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.restlet.data.Reference;
@@ -17,23 +19,33 @@ import javax.script.ScriptException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 
 public class HttpResolverTest {
 
-    private static final Identifier IDENTIFIER = new Identifier("14405804_o1.jpg");
+    private static final Identifier IDENTIFIER = new Identifier("escher_lego.jpg");
 
     private HttpResolver instance;
+    private WebServer server;
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws Exception {
+        server = new WebServer();
+        server.start();
+
         BaseConfiguration config = new BaseConfiguration();
         config.setProperty(HttpResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "BasicLookupStrategy");
         config.setProperty(HttpResolver.URL_PREFIX_CONFIG_KEY,
-                "https://ia601502.us.archive.org/4/items/14405804O1_201507/");
+                "http://localhost:" + server.getPort() + "/");
         Application.setConfiguration(config);
 
         instance = new HttpResolver();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        server.stop();
     }
 
     @Test
@@ -63,7 +75,7 @@ public class HttpResolverTest {
     }
 
     @Test
-    public void testGetInputStream() {
+    public void testGetInputStream() throws IOException {
         // present, readable image
         try {
             assertNotNull(instance.getInputStream(IDENTIFIER));
@@ -80,7 +92,16 @@ public class HttpResolverTest {
             fail("Expected FileNotFoundException");
         }
         // present, unreadable image
-        // TODO: write this
+        File image = TestUtil.getFixture("gif");
+        try {
+            image.setReadable(false);
+            instance.getInputStream(new Identifier("gif"));
+            fail("Expected exception");
+        } catch (AccessDeniedException e) {
+            // pass
+        } finally {
+            image.setReadable(true);
+        }
     }
 
     @Test
