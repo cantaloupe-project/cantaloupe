@@ -17,5 +17,11 @@ function getLatestReleaseInfo() {
         var releaseInfo = release.name + " was updated " + timeAgo +
             " and downloaded " + downloadCount.toLocaleString() + " times.";
         $('#download-button').attr('href', asset.browser_download_url);
+
+        // display the version in the download button
+        var parts = release.html_url.split('/')
+        var version = parts[parts.length - 1];
+        $('#download-button').html(
+          '<span class="fa fa-download"></span> Download ' + version);
     });
 }
