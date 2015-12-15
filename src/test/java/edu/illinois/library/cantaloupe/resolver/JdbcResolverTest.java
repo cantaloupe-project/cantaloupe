@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.resolver;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.request.Identifier;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 
@@ -31,32 +31,34 @@ public class JdbcResolverTest extends CantaloupeTestCase {
                 "function getMediaType(identifier) { return \"SELECT media_type FROM items WHERE filename = ?\" }");
         Application.setConfiguration(config);
 
-        // create the table
-        Connection conn = JdbcResolver.getConnection();
-        String sql = "CREATE TABLE items (" +
-                "filename VARCHAR(255)," +
-                "media_type VARCHAR(255)," +
-                "image BLOB);";
-        PreparedStatement statement = conn.prepareStatement(sql);
-        statement.execute();
+        try (Connection conn = JdbcResolver.getConnection()) {
+            // create the table
+            String sql = "CREATE TABLE items (" +
+                    "filename VARCHAR(255)," +
+                    "media_type VARCHAR(255)," +
+                    "image BLOB);";
+            PreparedStatement statement = conn.prepareStatement(sql);
+            statement.execute();
 
-        // insert some images
-        sql = "INSERT INTO items (filename, media_type, image) VALUES (?, ?, ?)";
-        statement = conn.prepareStatement(sql);
-        statement.setString(1, "jpg.jpg");
-        statement.setString(2, "image/jpeg");
-        statement.setBinaryStream(3,
-                new FileInputStream(TestUtil.getFixture("jpg")));
-        statement.executeUpdate();
+            // insert some images
+            sql = "INSERT INTO items (filename, media_type, image) VALUES (?, ?, ?)";
+            statement = conn.prepareStatement(sql);
+            statement.setString(1, "jpg.jpg");
+            statement.setString(2, "image/jpeg");
+            statement.setBinaryStream(3,
+                    new FileInputStream(TestUtil.getFixture("jpg")));
+            statement.executeUpdate();
 
-        instance = new JdbcResolver();
+            instance = new JdbcResolver();
+        }
     }
 
     public void tearDown() throws Exception {
-        Connection conn = JdbcResolver.getConnection();
-        String sql = "DROP TABLE items;";
-        PreparedStatement statement = conn.prepareStatement(sql);
-        statement.execute();
+        try (Connection conn = JdbcResolver.getConnection()) {
+            String sql = "DROP TABLE items;";
+            PreparedStatement statement = conn.prepareStatement(sql);
+            statement.execute();
+        }
     }
 
     public void testGetInputStream() {

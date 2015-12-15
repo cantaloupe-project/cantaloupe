@@ -1,0 +1,6 @@
+<header>
+    <img src="$baseUri/static/cantaloupe.jpg" alt="Cantaloupe icon"
+         width="154" height="82" style="float:left">
+    <h1>Cantaloupe Image Server <small>$version</small></h1>
+    <a href="https://medusa-project.github.io/cantaloupe/">Home (GitHub)</a>
+</header>

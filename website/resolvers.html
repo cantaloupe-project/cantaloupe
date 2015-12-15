@@ -4,69 +4,173 @@ layout: default
 
 <h2>Resolvers</h2>
 
-<p>Resolvers locate a source image based on the identifier in an IIIF URL. In Java-speak, they take in an identifier and return an InputStream and/or File object from which the corresponding image can be read by a <a href="processors.html">processor</a>.</p>
+<p>Resolvers locate a source image based on the image identifier in a request URL. In Java-speak, they take in an identifier and return an InputStream or File object from which the corresponding image can be read by a <a href="processors.html">processor</a>.</p>
+
+<p>(This distinction is important because <a href="processors.html#Compatibility">not all processors can work with all resolvers</a>.)</p>
+
+<p>The resolution process can be configured to be <a href="#Static%20Resolver">static</a> &mdash; with all requests using the same resolver &mdash; or <a href="#Dynamic%20Resolvers">dynamic</a>, with images being served from different resolvers depending on their identifier.</p>
+
+<h3 id="Static Resolver">Static Resolver</h3>
+
+<p>By default, the <code>resolver.static</code> configuration key is set to <code>FilesystemResolver</code>, which tells Cantaloupe to use <a href="#FilesystemResolver">FilesystemResolver</a> for all requests. This is simple and works in most scenarios.</p>
+
+<h3 id="Dynamic Resolvers">Dynamic Resolvers</h3>
+
+<p>It is possible to serve images from different data sources simultaneously. For example, you may have images some stored on a filesystem, and others stored on Amazon S3. <em>If you can differentiate their locations based on their identifier</em> &mdash; either by analyzing the identifier string, or performing some kind of service request in code &mdash; you can write a simple Ruby function to tell Cantaloupe which resolver to use for a given request.</p>
+
+<p>The script can be named anything, but it must have a <span class="filename">.rb</span> extension. Then, it can be referenced by the <code>resolver.chooser_script</code> option, like:</p>
+
+<pre># Option 1: absolute pathname
+resolver.chooser_script = /path/to/functions.rb
+
+# Option 2: filename only; will be expected to be located in the
+# same folder as the config file, or the current working directory
+resolver.chooser_script = functions.rb
+</pre>
+
+<p>This file must contain a function called <code>get_resolver(identifier)</code>, which takes in an identifier and returns a resolver name (such as FilesystemResolver, HttpResolver, etc.) For example:</p>
+
+<pre># functions.rb
+
+def get_resolver(identifier)
+  # Here, you would perform some kind of analysis on `identifier`:
+  # analyze it, look it up in a web service or database...
+  # and then return the name of the resolver to use to serve it.
+  'FilesystemResolver'
+end
+
+# Uncomment to test on the command line (`ruby functions.rb`)
+# puts get_resolver('identifier-to-test')</pre>
+
+<p>See <a href="scripts.html">Custom Scripts</a> for general information about custom scripts in Cantaloupe.</p>
 
 <h3 id="FilesystemResolver">FilesystemResolver</h3>
 
-<p>FilesystemResolver maps an identifier from an IIIF URL to a filesystem path, for retrieving images on a local or attached filesystem.</p>
+<p>FilesystemResolver maps a URL identifier to a filesystem path, for retrieving images on a local or attached filesystem.</p>
 
 <p>For images with extensions that are missing or unrecognized, this resolver will check the "magic number" to determine type, which will add some overhead. It is therefore slightly more efficient to serve images with extensions.</p>
 
-<h4>Prefix and Suffix</h4>
+<p>FilesystemResolver supports two distinct lookup strategies, defined by the <code>FilesystemResolver.lookup_strategy</code> configuration option.</p>
 
-<p>The <code>FilesystemResolver.path_prefix</code> and <code>path_suffix</code> configuration options are optional and intended to make URLs shorter, more stable, and hide sensitive information. For example, with these options set as such:</p>
+<h4>BasicLookupStrategy</h4>
 
-<pre>FilesystemResolver.path_prefix = /usr/local/images/
-FilesystemResolver.path_suffix =</pre>
+<p>BasicLookupStrategy locates images by concatenating a pre-defined path prefix and/or suffix. For example, with the following configuration options set:</p>
+
+<pre># Note trailing slash!
+FilesystemResolver.BasicLookupStrategy.path_prefix = /usr/local/images/
+FilesystemResolver.BasicLookupStrategy.path_suffix =</pre>
 
 <p>An identifier of <code>image.jpg</code> in the URL will resolve to
 <span class="filename">/usr/local/images/image.jpg</span>.</p>
 
-<p><em>Note: it is dangerous to <strong>not</strong> use <code>path_prefix</code>. The shallower the path, the more of the filesystem that will be exposed.</em></p>
+<div class="alert alert-danger">Note: it is dangerous to <strong>not</strong> use <code>path_prefix</code>. The shallower the path, the more of the filesystem that will be exposed.</div>
+
+<div class="alert alert-info">To prevent arbitrary directory traversal, BasicLookupStrategy will strip out <code>..{path separator}</code> and <code>{path separator}..</code> from identifiers before resolving the path.</div>
+
+<h4 id="FilesystemResolverScriptLookupStrategy">ScriptLookupStrategy</h4>
+
+<p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple filesystems, or perhaps your identifiers are opaque and you need to perform a database or web service request to locate the corresponding images. With this lookup strategy, you can tell FilesystemResolver to invoke your own custom Ruby function and capture the pathname it returns.</p>
+
+<p>The script can be named anything, but it must have a <span class="filename">.rb</span> extension. Then, it can be referenced by the <code>FilesystemResolver.ScriptLookupStrategy.script</code> option, like:</p>
+
+<pre># Option 1: absolute pathname
+FilesystemResolver.ScriptLookupStrategy.script = /path/to/functions.rb
+
+# Option 2: filename only; will be expected to be located in the
+# same folder as the config file, or the current working directory
+FilesystemResolver.ScriptLookupStrategy.script = functions.rb
+</pre>
+
+<p>This file must contain a function called <code>get_pathname(identifier)</code>, which takes in an identifier and returns a pathname, if available, or <code>nil</code>, if not. A Solr query, for example, could look like:</p>
+
+<pre># functions.rb
+require 'net/http'
+require 'cgi'
+
+def get_pathname(identifier)
+  uri = 'http://localhost:8983/solr/collection1/select?q=' +
+      CGI.escape('id:"' + identifier + '"') +
+      '&amp;fl=pathname_si&amp;wt=ruby'
+  uri = URI.parse(uri)
+
+  http = Net::HTTP.new(uri.host, uri.port)
+  request = Net::HTTP::Get.new(uri.request_uri)
+  response = http.request(request)
+  return nil if response.code.to_i >= 400
+
+  results = eval(response.body)['response']['docs']
+  results.any? ? results.first['pathname_si'] : nil
+end
+
+# Uncomment to test on the command line (`ruby functions.rb`)
+# puts get_pathname('identifier-to-test')</pre>
+
+<p>See <a href="scripts.html">Custom Scripts</a> for general information about custom scripts in Cantaloupe.</p>
 
 <h4>Path Separator</h4>
 
-<p>The IIIF Image API 2.0 specification mandates that identifiers in URLs be percent-encoded, which changes slashes to <code>%2F</code>. Some reverse-proxy servers automatically decode this into <code>/</code> before passing on the request. This will cause HTTP 404 errors in Cantaloupe.</p>
+<p>The IIIF Image API specifications mandate that identifiers in URLs be percent-encoded, which changes slashes to <code>%2F</code>. Some reverse-proxy servers automatically decode this into <code>/</code> before passing on the request. This will cause HTTP 404 errors in Cantaloupe.</p>
 
 <p>If you are unable to configure your reverse proxy to stop decoding slashes, the <code>FilesystemResolver.path_separator</code> configuration option will enable you to use an alternate string as a path separator in an identifier. (Be sure to supply the non-percent-encoded string, and then percent-encode it in URLs if it contains any URL-unsafe characters.)</p>
 
-<p>To prevent arbitrary directory traversal, FilesystemResolver will strip out <code>..{path separator}</code> and <code>{path separator}..</code> from identifiers before resolving the path.</p>
+<hr>
 
 <h3 id="HttpResolver">HttpResolver</h3>
 
-<p>HttpResolver maps an identifier from an IIIF URL to an HTTP resource. Image access via HTTP may be slower than via a filesystem, though this varies depending on the relative performance of both, as well as the particular source image format and processor.</p>
+<p>HttpResolver maps a URL identifier to an HTTP resource, for retrieving images from a web server.</p>
 
 <p>It is preferable to use this resolver with source images with recognizable file extensions. For images with an extension that is missing or unrecognizable, it will issue an HTTP HEAD request to the server to check the <code>Content-Type</code> header. If the type cannot be inferred from that, an HTTP 415 response will be returned.</p>
 
-<h4>Prefix and Suffix</h4>
+<p>HttpResolver supports two distinct lookup strategies, defined by the <code>HttpResolver.lookup_strategy</code> configuration option.</p>
 
-<p>The <code>HttpResolver.url_prefix</code> and <code>url_suffix</code> configuration options are optional and intended to make URLs shorter, more stable, and hide sensitive information. For example, with these options set as such:</p>
+<h4>BasicLookupStrategy</h4>
 
-<pre>HttpResolver.url_prefix = http://example.org/images/
+<p>BasicLookupStrategy locates images by concatenating a pre-defined URL prefix and/or suffix. For example, with the following configuration options set:</p>
+
+<pre># Note trailing slash!
+HttpResolver.url_prefix = http://example.org/images/
 HttpResolver.url_suffix =</pre>
 
 <p>An identifier of <code>image.jpg</code> in the URL will resolve to
 <span class="filename">http://example.org/images/image.jpg</span>.
 
+<h4>ScriptLookupStrategy</h4>
+
+<p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple URLs, or perhaps your identifiers are opaque and you need to run a database or web service request to locate them. With this lookup strategy, you can tell HttpResolver to invoke your own custom Ruby script and capture the URL it returns.</p>
+
+<p>The script can be named anything, but it must have a <span class="filename">.rb</span> extension. Then, it can be referenced by the <code>HttpResolver.ScriptLookupStrategy.script</code> option, like:</p>
+
+<pre># Option 1: absolute pathname
+HttpResolver.ScriptLookupStrategy.script = /path/to/functions.rb
+
+# Option 2: filename only; will be expected to be located in the
+# same folder as the config file, or the current working directory
+HttpResolver.ScriptLookupStrategy.script = functions.rb
+</pre>
+
+<p>This file must contain a function called <code>get_url(identifier)</code>, which takes in an identifier and returns a URL, if available, or <code>nil</code>, if not.</p>
+
+<p>See <a href="scripts.html">Custom Scripts</a> for general information about custom scripts in Cantaloupe, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for an example of a similar script.</p>
+
 <h4>Path Separator</h4>
 
-<p>The IIIF Image API 2.0 specification mandates that identifiers in URLs be percent-encoded, which changes slashes to <code>%2F</code>. Some proxy servers automatically decode this into <code>/</code> before passing on the request. This will cause HTTP 404 errors in Cantaloupe.
+<p>The IIIF Image API specifications mandate that identifiers in URLs be percent-encoded, which changes slashes to <code>%2F</code>. Some proxy servers automatically decode this into <code>/</code> before passing on the request. This will cause HTTP 404 errors in Cantaloupe.
 
 <p>If you are unable to configure your proxy to stop decoding slashes, the <code>HttpResolver.path_separator</code> configuration option will enable you to use an alternate string as a path separator in an identifier. (Be sure to supply the non-percent-encoded string, and then percent-encode it in URLs if it contains any URL-unsafe characters.)</p>
 
+<hr>
+
 <h3 id="JdbcResolver">JdbcResolver</h3>
 
-<p>JdbcResolver maps an identifier from an IIIF URL to an RDBMS BLOB field, for retrieving images from a relational database.</p>
+<p>JdbcResolver maps a URL identifier to an RDBMS BLOB field, for retrieving images from a relational database.</p>
 
 <p>Cantaloupe does not include any JDBC drivers, so a driver JAR for the desired database must be obtained separately and saved somewhere on the classpath.</p>
 
 <p>The JDBC connection is initialized by the <code>JdbcResolver.connection_string</code>, <code>JdbcResolver.user</code>, and <code>JdbcResolver.password</code> configuration options. If the user or password are not necessary, they can be left blank. The connection string must use your driver's JDBC syntax:</p>
 
-<p>
-  <pre><code>jdbc:postgresql://localhost:5432/my_database
+<pre><code>jdbc:postgresql://localhost:5432/my_database
 jdbc:mysql://localhost:3306/my_database
 jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre>
-</p>
 
 <p>Consult the driver's documentation for details.</p>
 
@@ -106,7 +210,7 @@ jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre
           "WHERE some_identifier = ?"\
   }</code></pre>
 
-<p>If the IIIF URL identifier will <strong>always</strong> have a known, valid image extension, like <span class="filename">.jpg</span>, <span class="filename">.tif</span>, etc., the entire <code>JdbcResolver.function.media_type</code> option can be commented out, and Cantaloupe will infer the media type from the extension.</p>
+<p>If the URL identifier will <strong>always</strong> have a known, valid image extension, like <span class="filename">.jpg</span>, <span class="filename">.tif</span>, etc., the entire <code>JdbcResolver.function.media_type</code> option can be commented out, and Cantaloupe will infer the media type from the extension.</p>
 
 <h4 id="JdbcResolverBlobSQL">BLOB Retrieval SQL</h4>
 
@@ -116,9 +220,11 @@ jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre
     FROM some_table \
     WHERE some_identifier = ?</code></pre>
 
+<hr>
+
 <h3 id="AmazonS3Resolver">AmazonS3Resolver</h3>
 
-<p>AmazonS3Resolver maps an identifier in an IIIF URL to an Amazon S3 object. The identifier is passed as-is to S3.</p>
+<p>AmazonS3Resolver maps a URL identifier to an Amazon S3 object. The identifier is passed as-is to S3.</p>
 
 <p>AmazonS3Resolver currently only supports images with recognizable filename extensions. For images with extensions that are missing or unrecognized, an HTTP 404 error will be returned.</p>
 

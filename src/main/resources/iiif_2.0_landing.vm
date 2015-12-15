@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    #parse("head_common.vm")
+
+    <title>Cantaloupe Image Server</title>
+</head>
+
+<body id="cl-landing">
+    <div class="container-fluid">
+        #parse("header.vm")
+
+        <ol class="breadcrumb">
+            <li><a href="$baseUri/">Home</a></li>
+            <li class="active">IIIF Image API 2.0 Endpoint</li>
+        </ol>
+
+        <h2>IIIF Image API 2.0 Endpoint</h2>
+
+        <ul>
+            <li><a href="http://iiif.io/api/image/2.0/">IIIF Image API 2.0</a></li>
+        </ul>
+    </div>
+</body>
+</html>

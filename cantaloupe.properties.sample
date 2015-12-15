@@ -1,11 +1,14 @@
-#############################################################################
+###########################################################################
 # Sample Cantaloupe configuration file
 #
 # Copy this file to `cantaloupe.properties` and edit as desired. Then, launch
 # Cantaloupe with the `-Dcantaloupe.config=cantaloupe.properties` option.
 #
-# Note that backslashes need to be doubled, like this: \\
-#############################################################################
+# This is a Java Properties file. Note that backslashes need to be doubled,
+# like this: \\
+# Also, each line in a multi-line value except the last needs to end with a
+# single backslash.
+###########################################################################
 
 # TCP port to bind the web server to.
 http.port = 8182
@@ -24,48 +27,96 @@ http.content_disposition = inline
 # URI needs to override the local URI. Leave blank to use the default.
 base_uri =
 
+# Maximum number of image pixels to return in a response, to prevent
+# overloading the server. Requests for more pixels than this will receive an
+# HTTP 4xx response. Comment out or set to 0 for no maximum.
+# Note: this is ignored when requesting an unmodified source image.
+max_pixels = 400000000
+
 # Helpful in development
 print_stack_trace_on_error_pages = true
 
-###############
+###########################################################################
+# ENDPOINTS
+###########################################################################
+
+endpoint.iiif.1.1.enabled = true
+
+endpoint.iiif.2.0.enabled = true
+
+###########################################################################
 # RESOLVERS
-###############
+###########################################################################
 
 # The resolver that translates the identifier in the URL to an image source.
 # Available values are `FilesystemResolver`, `HttpResolver`, `JdbcResolver`,
 # and `AmazonS3Resolver`.
-resolver = FilesystemResolver
+resolver.static = FilesystemResolver
 
-###
+# The name of a Ruby file containing a function called
+# get_resolver(identifier), which takes in an identifier and returns the
+# name of a resolver to use to get it. Must never return nil.
+# This can be an absolute path, or a filename; if only a filename is
+# specified, it will be searched for in the same folder as this file, and then
+# the current working directory.
+# If defined, this will take precedence over the `resolver` key.
+resolver.chooser_script = functions.rb
+
+#----------------------------------------
 # FilesystemResolver
-###
+#----------------------------------------
+
+# Tells FilesystemResolver how to look up files. Allowed values are
+# `BasicLookupStrategy` and `ScriptLookupStrategy`.
+FilesystemResolver.lookup_strategy = BasicLookupStrategy
 
 # Server-side path that will be prefixed to the identifier in the URL.
 # Trailing slash is important.
-FilesystemResolver.path_prefix = /home/myself/images/
+FilesystemResolver.BasicLookupStrategy.path_prefix = /home/myself/images/
 
-# Server-side path or extension that will be suffixed to the identifier
-# in the URL.
-FilesystemResolver.path_suffix =
+# Server-side path or extension that will be suffixed to the identifier in
+# the URL.
+FilesystemResolver.BasicLookupStrategy.path_suffix =
+
+# The name of a Ruby file containing a function called
+# get_pathname(identifier), which takes in an identifier and returns the
+# absolute pathname of the corresponding source file, or nil if it can't find
+# one.
+# This can be an absolute path, or a filename; if only a filename is
+# specified, it will be searched for in the same folder as this file, and then
+# the current working directory.
+FilesystemResolver.ScriptLookupStrategy.script = functions.rb
 
 # Normally, slashes in an identifier must be percent-encoded as "%2F". If
 # your proxy is incapable of passing these through un-decoded, you can
 # define an alternate character or character sequence to represent a path
 # separator. Supply the non-percent-encoded version here, and use the
-# percent-encoded version in IIIF URLs.
+# percent-encoded version in URLs.
 #FilesystemResolver.path_separator =
 
-###
+#----------------------------------------
 # HttpResolver
-###
+#----------------------------------------
+
+# Tells HttpResolver how to look up resources. Allowed values are
+# `BasicLookupStrategy` and `ScriptLookupStrategy`.
+HttpResolver.lookup_strategy = BasicLookupStrategy
 
 # URL that will be prefixed to the identifier in the request URL. Trailing
 # slash is important.
-HttpResolver.url_prefix = http://localhost/images/
+HttpResolver.BasicLookupStrategy.url_prefix = http://localhost/images/
 
 # Path, extension, query string, etc. that will be suffixed to the
 # identifier in the request URL.
-HttpResolver.url_suffix =
+HttpResolver.BasicLookupStrategy.url_suffix =
+
+# The name of a Ruby file containing a function called
+# get_url(identifier), which takes in an identifier and returns the
+# URL of the corresponding resource, or nil if it can't find one.
+# This can be an absolute path, or a filename; if only a filename is
+# specified, it will be searched for in the same folder as this file, and then
+# the current working directory.
+HttpResolver.ScriptLookupStrategy.script = functions.rb
 
 # See FilesystemResolver.path_separator for an explanation of this.
 #HttpResolver.path_separator =
@@ -74,13 +125,20 @@ HttpResolver.url_suffix =
 HttpResolver.auth.basic.username =
 HttpResolver.auth.basic.secret =
 
-###
+#----------------------------------------
 # JdbcResolver
-###
+#----------------------------------------
 
 JdbcResolver.connection_string = jdbc:postgresql://localhost:5432/my_database
 JdbcResolver.user = postgres
 JdbcResolver.password = postgres
+
+# Maximum number of connections allowed in the connection pool. A good starting
+# point is (number of CPU cores * 2) + 1.
+JdbcResolver.max_pool_size = 10
+
+# Connection timeout in seconds.
+JdbcResolver.connection_timeout = 10
 
 # JavaScript function that takes in an unencoded identifier and returns the
 # value that will be used in prepared statements.
@@ -109,9 +167,9 @@ JdbcResolver.lookup_sql = SELECT image \
     FROM item \
     WHERE filename = ?
 
-###
+#----------------------------------------
 # AmazonS3Resolver
-###
+#----------------------------------------
 
 # See: http://aws.amazon.com/security-credentials
 # Access key ID associated with your AWS account.
@@ -126,9 +184,9 @@ AmazonS3Resolver.bucket.name =
 # Can be commented out or left blank.
 #AmazonS3Resolver.bucket.region = us-east-1
 
-###############
+###########################################################################
 # PROCESSORS
-###############
+###########################################################################
 
 # Image processors to use for various source formats. Available values are
 # `Java2dProcessor`, `GraphicsMagickProcessor`, `ImageMagickProcessor`,
@@ -146,42 +204,41 @@ processor.webm = FfmpegProcessor
 # Fall back to this processor for any formats not assigned above.
 processor.fallback = Java2dProcessor
 
-###
+#----------------------------------------
 # FfmpegProcessor
-###
+#----------------------------------------
 
 # Optional; overrides the PATH
 #FfmpegProcessor.path_to_binaries = /usr/local/bin
 
-###
+#----------------------------------------
 # GraphicsMagickProcessor
-###
+#----------------------------------------
 
 # Optional; overrides the PATH
 #GraphicsMagickProcessor.path_to_binaries = /usr/local/bin
 
-###
+#----------------------------------------
 # ImageMagickProcessor
-###
+#----------------------------------------
 
 # Optional; overrides the PATH
 #ImageMagickProcessor.path_to_binaries = /usr/local/bin
 
-###
+#----------------------------------------
 # Java2dProcessor
-###
+#----------------------------------------
 
 # JPEG output quality. Should be a number between 0-1 ending in "f"
 Java2dProcessor.jpg.quality = 0.7f
 
 # Available values are `TIFFImageReader` and `TIFFImageDecoder`.
-# TIFFImageReader is optimized for pyramidal TIFFs, but both are flaky in
-# their own ways. If you notice any issues, try switching.
+# If you notice any issues with TIFFs, try switching.
 Java2dProcessor.tif.reader = TIFFImageReader
 
-###
+#----------------------------------------
 # KakaduProcessor
-###
+#----------------------------------------
 
 # Optional; overrides the PATH
 #KakaduProcessor.path_to_binaries = /usr/local/bin
@@ -194,9 +251,9 @@ KakaduProcessor.path_to_stdout_symlink = /path/to/stdout.ppm
 # Available values are `jai` and `java2d`.
 KakaduProcessor.post_processor = java2d
 
-###############
-# CACHING
-###############
+###########################################################################
+# CLIENT-SIDE CACHING
+###########################################################################
 
 # Whether to enable the response Cache-Control header.
 cache.client.enabled = true
@@ -213,18 +270,30 @@ cache.client.must_revalidate = false
 cache.client.proxy_revalidate = false
 cache.client.no_transform = true
 
+###########################################################################
+# SERVER-SIDE CACHING
+###########################################################################
+
 # The only available value is `FilesystemCache`. Comment out or set blank
 # to disable caching.
 #cache.server = FilesystemCache
 
-# If true, the source image will be checked to make sure it exists before a
-# cached copy is returned. If false, the cached copy will be returned without
-# any checking. Resolving first is safer but slower.
+# If true, when the resolver reports that the requested source image has gone
+# missing, all cached information relating to it (if any) will be deleted.
+# Note: this is effectively always false when cache.server.resolve_first is
+# also false.
+cache.server.purge_missing = false
+
+# If true, the source image will be confirmed to exist before a cached copy is
+# returned. If false, the cached copy will be returned without any checking.
+# Resolving first is slower but safer.
+# Note: this has no effect with the IIIF 1.1 endpoint -- it is effectively
+# always true.
 cache.server.resolve_first = true
 
-###
+#----------------------------------------
 # FilesystemCache
-###
+#----------------------------------------
 
 # If this directory does not exist, it will be created automatically.
 FilesystemCache.pathname = /var/cache/cantaloupe
@@ -233,13 +302,20 @@ FilesystemCache.pathname = /var/cache/cantaloupe
 # blank or 0 for "forever"
 FilesystemCache.ttl_seconds = 2592000
 
-###
+#----------------------------------------
 # JdbcCache
-###
+#----------------------------------------
 
 JdbcCache.connection_string = jdbc:postgresql://localhost:5432/cantaloupe
 JdbcCache.user = postgres
 JdbcCache.password =
+
+# Maximum number of connections allowed in the connection pool. A good starting
+# point is (number of CPU cores * 2) + 1.
+JdbcCache.max_pool_size = 10
+
+# Connection timeout in seconds.
+JdbcCache.connection_timeout = 10
 
 # These will be created automatically.
 JdbcCache.image_table = image_cache
@@ -249,34 +325,31 @@ JdbcCache.info_table = info_cache
 # blank or 0 for "forever"
 JdbcCache.ttl_seconds = 2592000
 
-###############
+###########################################################################
 # LOGGING
-###############
+###########################################################################
 
-###
+#----------------------------------------
 # Application Log
-###
+#----------------------------------------
 
 # `trace`, `debug`, `info`, `warn`, `error`, `all`, or `off`
 log.application.level = debug
 
 log.application.ConsoleAppender.enabled = true
-log.application.ConsoleAppender.pattern = %d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
 
 log.application.FileAppender.enabled = false
 log.application.FileAppender.pathname = /path/to/logs/cantaloupe.log
-log.application.FileAppender.pattern = %date %level [%thread] %logger{10} [%file:%line] %msg%n
 
 log.application.RollingFileAppender.enabled = false
 log.application.RollingFileAppender.pathname = /path/to/logs/cantaloupe.log
-log.application.RollingFileAppender.pattern = %date %level [%thread] %logger{10} [%file:%line] %msg%n
 log.application.RollingFileAppender.policy = TimeBasedRollingPolicy
 log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/cantaloupe-%d{yyyy-MM-dd}.log
 log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30
 
-###
+#----------------------------------------
 # Access Log
-###
+#----------------------------------------
 
 log.access.ConsoleAppender.enabled = true
 

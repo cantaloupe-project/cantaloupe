@@ -9,8 +9,8 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.request.Identifier;
 import org.apache.commons.configuration.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,23 +23,7 @@ import java.io.InputStream;
  * @see <a href="http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/welcome.html">
  *     AWS SDK for Java</a>
  */
-class AmazonS3Resolver implements StreamResolver {
-
-    private static class ConfigFileCredentials implements AWSCredentials {
-
-        @Override
-        public String getAWSAccessKeyId() {
-            Configuration config = Application.getConfiguration();
-            return config.getString(ACCESS_KEY_ID_CONFIG_KEY);
-        }
-
-        @Override
-        public String getAWSSecretKey() {
-            Configuration config = Application.getConfiguration();
-            return config.getString(SECRET_KEY_CONFIG_KEY);
-        }
-
-    }
+class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
     private static Logger logger = LoggerFactory.
             getLogger(AmazonS3Resolver.class);
@@ -59,6 +43,20 @@ class AmazonS3Resolver implements StreamResolver {
 
     private static AmazonS3 getClientInstance() {
         if (client == null) {
+            class ConfigFileCredentials implements AWSCredentials {
+                @Override
+                public String getAWSAccessKeyId() {
+                    Configuration config = Application.getConfiguration();
+                    return config.getString(ACCESS_KEY_ID_CONFIG_KEY);
+                }
+
+                @Override
+                public String getAWSSecretKey() {
+                    Configuration config = Application.getConfiguration();
+                    return config.getString(SECRET_KEY_CONFIG_KEY);
+                }
+            }
+
             AWSCredentials credentials = new ConfigFileCredentials();
             client = new AmazonS3Client(credentials);
             Configuration config = Application.getConfiguration();
@@ -88,9 +86,9 @@ class AmazonS3Resolver implements StreamResolver {
         Configuration config = Application.getConfiguration();
         final String bucketName = config.getString(BUCKET_NAME_CONFIG_KEY);
         logger.debug("Using bucket: {}", bucketName);
-        final String objectKey = identifier.getValue();
-        logger.debug("Requesting {}", objectKey);
+        final String objectKey = identifier.toString();
         try {
+            logger.debug("Requesting {}", objectKey);
             S3Object object = s3.getObject(new GetObjectRequest(bucketName, objectKey));
             return object.getObjectContent();
         } catch (AmazonS3Exception e) {

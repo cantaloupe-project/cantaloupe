@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resolver;
 
-import edu.illinois.library.cantaloupe.request.Identifier;
+import edu.illinois.library.cantaloupe.image.Identifier;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -9,12 +9,12 @@ import java.nio.file.AccessDeniedException;
 
 /**
  * Interface to be implemented by all resolvers that support access to source
- * images via streams.
+ * images via input streams.
  */
 public interface StreamResolver extends Resolver {
 
     /**
-     * @param identifier IIIF identifier.
+     * @param identifier
      * @return Stream for reading the source image; never null.
      * @throws FileNotFoundException if the image corresponding to the given
      * identifier does not exist

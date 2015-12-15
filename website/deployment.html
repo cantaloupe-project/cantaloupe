@@ -1,0 +1,62 @@
+---
+layout: default
+---
+
+<h2>Deployment</h2>
+
+<p>This page gathers some miscellaneous notes on production deployment. It is not intended to be comprehensive, and there is plenty of relevant information in other sections.</p>
+
+<h3 id="Hardware">Hardware</h3>
+
+<h4 id="HardwareCPU">CPU</h4>
+
+<p>Response times benefit from multiple fast CPU cores. Even if a particular processor doesn't support multithreading, the operating system is at least likely to schedule different processing threads (from simultaneous requests) on different cores.</p>
+
+<p>A 64-bit CPU is also important, in order to be able to address more than 4GB of RAM.</p>
+
+<h4 id="HardwareMemory">Memory</h4>
+
+<p>Consider the case of an image server that is asked to render tiles for a 4096&times;4096 pixel source image that, at 24 bits per pixel, totals 50 MB in
+decompressed size. Multiple clients are simultaneously requesting numerous downscaled tiles. For each request, a request handler needs to load this large image and operate on it independently.</p>
+
+<p>Furthermore, some processors are inefficient in that they have to create new images internally at each intermediate step in the processing pipeline &mdash; cropping, scaling, rotating, etc. Each one occupies precious memory.</p>
+
+<p>It's easy to see how RAM becomes a major consideration here. With the processors that do their work in Java (as opposed to forking out to an external process), It is normal to see transient spikes of hundreds of megabytes of used memory on the Java heap in response to a single zooming-image-viewer action. The JVM will accommodate by dynamically increasing the heap size &mdash; the amount of RAM available to the application. From the operating system's perspective, the Java process is bloating up to immense size, but there is nothing wrong &mdash; most of this is actually unused heap space.</p>
+
+<p>The smaller the available heap space, the larger the source images, and the larger the number of simultaneous requests, the greater the likelihood of OutOfMemoryErrors. Unlike an OS-native application, a Java application is only able to access as much memory as its container (the JVM) allows it to. In production, it is highly recommended to use the <code>-Xmx</code> flag to increase the maximum heap size to the largest amount possible &mdash; for example, <code>-Xmx8g</code> for 8GB.</p>
+
+<h4 id="HardwareStorage">Storage</h4>
+
+<p>Cantaloupe benefits from fast read performance &mdash; in terms of both latency and throughput &mdash; in the underlying storage system. Throughput becomes more important as source image size increases.</p>
+
+<h3 id="Limiting">Limiting</h3>
+
+<p>Cantaloupe offers a <code>max_pixels</code> configuration option to limit the maximum returned size of processed images. This is a "safety net" to prevent clients from bogging down the server.</p>
+
+<p>(This does not affect requests for full-sized unmodified images, which do not significantly load the server because they are streamed through with no processing.)</p>
+
+<h3 id="Reverse-Proxying">Reverse-Proxying</h3>
+
+<p>Cantaloupe can be set up to run behind a reverse-proxy web server like Apache or nginx.</p>
+
+<h4>Apache</h4>
+
+<p>The following is an example of an Apache reverse proxy setup. It assumes that Cantaloupe is running on a server called <span class="filename">image-server.example.org</span> on port 8182; the reverse proxy is running on <span class="filename">www.example.org</span>; and Cantaloupe is to be made available at the <span class="filename">/images</span> base path.</p>
+
+<p>First, set <code>base_uri</code> in the Cantaloupe configuration file to the publicly-visible base URI:
+
+<pre>base_uri = http://www.example.org/images</pre>
+
+<p>Then, add something like the following to the Apache reverse proxy configuration:</p>
+
+<pre>&lt;VirtualHost *:80&gt;
+    ServerName www.example.org
+    AllowEncodedSlashes NoDecode
+    ProxyPass /images/ http://image-server.example.org:8182/ nocanon
+    ProxyPassReverse /images/ http://image-server.example.org:8182/
+    ProxyPassReverseCookiePath / /
+    ProxyPassReverseCookieDomain image-server.example.org:8182 localhost
+&lt;/VirtualHost&gt;
+</pre>
+
+<p><span class="filename">http://www.example.org/images/</span> now displays the Cantaloupe landing page.</p>

@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.request.OutputFormat;
-import edu.illinois.library.cantaloupe.request.Quality;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -47,20 +47,6 @@ public class Java2dProcessorTest extends ProcessorTest {
         expectedFeatures = new HashSet<>();
         assertEquals(expectedFeatures,
                 instance.getSupportedFeatures(SourceFormat.UNKNOWN));
-    }
-
-    public void testGetSupportedQualities() {
-        Set<Quality> expectedQualities = new HashSet<>();
-        expectedQualities.add(Quality.BITONAL);
-        expectedQualities.add(Quality.COLOR);
-        expectedQualities.add(Quality.DEFAULT);
-        expectedQualities.add(Quality.GRAY);
-        assertEquals(expectedQualities,
-                instance.getSupportedQualities(getAnySupportedSourceFormat(instance)));
-
-        expectedQualities = new HashSet<>();
-        assertEquals(expectedQualities,
-                instance.getSupportedQualities(SourceFormat.UNKNOWN));
     }
 
 }

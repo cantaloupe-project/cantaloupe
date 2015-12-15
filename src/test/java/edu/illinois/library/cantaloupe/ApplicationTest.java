@@ -25,15 +25,10 @@ public class ApplicationTest extends CantaloupeTestCase {
     private static BaseConfiguration newConfiguration() {
         BaseConfiguration config = new BaseConfiguration();
         try {
-            File directory = new File(".");
-            String cwd = directory.getCanonicalPath();
-            Path fixturePath = Paths.get(cwd, "src", "test", "resources");
             config.setProperty("print_stack_trace_on_error_pages", false);
             config.setProperty("http.port", PORT);
+            config.setProperty("resolver.static", "FilesystemResolver");
             config.setProperty("processor.fallback", "Java2dProcessor");
-            config.setProperty("resolver", "FilesystemResolver");
-            config.setProperty("FilesystemResolver.path_prefix", fixturePath +
-                    File.separator);
         } catch (Exception e) {
             fail("Failed to get the configuration");
         }
@@ -42,8 +37,8 @@ public class ApplicationTest extends CantaloupeTestCase {
 
     public void setUp() {
         Application.setConfiguration(newConfiguration());
-        System.getProperties().remove("cantaloupe.cache.flush");
-        System.getProperties().remove("cantaloupe.cache.flush_expired");
+        System.getProperties().remove("cantaloupe.cache.purge");
+        System.getProperties().remove("cantaloupe.cache.purge_expired");
 
     }
 
@@ -66,6 +61,22 @@ public class ApplicationTest extends CantaloupeTestCase {
         }
     }
 
+    public void testGetConfigurationFile() {
+        try {
+            File directory = new File(".");
+            String cwd = directory.getCanonicalPath();
+            Path testPath = Paths.get(cwd, "src", "test", "java", "edu",
+                    "illinois", "library", "cantaloupe", "test");
+
+            String goodProps = testPath + File.separator + "cantaloupe.properties";
+            System.setProperty("cantaloupe.config", goodProps);
+            assertEquals(new File(cwd + "/src/test/java/edu/illinois/library/cantaloupe/test/cantaloupe.properties"),
+                    Application.getConfigurationFile());
+        } catch (IOException e) {
+            fail("Failed to set cantaloupe.config");
+        }
+    }
+
     /**
      * getVersion() is only partially testable as it checks whether the app is
      * running from a jar
@@ -80,15 +91,31 @@ public class ApplicationTest extends CantaloupeTestCase {
         assertSame(newConfig, Application.getConfiguration());
     }
 
+    public void testMainWithInvalidConfigExits() throws Exception {
+        /* TODO: implement this once migrated to junit 4
+        http://stackoverflow.com/questions/6141252/dealing-with-system-exit0-in-junit-tests
+        exit.expectSystemExitWithStatus(-1);
+        String[] args = {};
+        Configuration config = newConfiguration();
+        config.setProperty("resolver.static", null);
+        Application.setConfiguration(config);
+        try {
+            Application.main(args);
+            fail("Expected exception");
+        } catch (Exception e) {
+            // pass
+        } */
+    }
+
     public void testMainWithNoArgsStartsServer() throws Exception {
         String[] args = {};
         Application.main(args);
-        ClientResource resource = getClientForUriPath("/iiif");
+        ClientResource resource = getClientForUriPath("/");
         resource.get();
         assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
     }
 
-    public void testMainWithFlushCacheArg() throws Exception {
+    public void testMainWithPurgeCacheArg() throws Exception {
         File cacheDir = getCacheDir();
         File imageDir = new File(cacheDir.getAbsolutePath() + File.separator +
                 "image");
@@ -107,7 +134,7 @@ public class ApplicationTest extends CantaloupeTestCase {
         File.createTempFile("bla1", "tmp", imageDir);
         File.createTempFile("bla2", "tmp", infoDir);
 
-        System.setProperty("cantaloupe.cache.flush", "");
+        System.setProperty("cantaloupe.cache.purge", "");
         String[] args = {};
         Application.main(args);
 
@@ -115,7 +142,7 @@ public class ApplicationTest extends CantaloupeTestCase {
         assertEquals(0, infoDir.listFiles().length);
     }
 
-    public void testMainWithFlushExpiredCacheArg() throws Exception {
+    public void testMainWithPurgeExpiredCacheArg() throws Exception {
         File cacheDir = getCacheDir();
         File imageDir = new File(cacheDir.getAbsolutePath() + File.separator +
                 "image");
@@ -137,7 +164,7 @@ public class ApplicationTest extends CantaloupeTestCase {
         File.createTempFile("bla2", "tmp", imageDir);
         File.createTempFile("bla2", "tmp", infoDir);
 
-        System.setProperty("cantaloupe.cache.flush_expired", "");
+        System.setProperty("cantaloupe.cache.purge_expired", "");
         String[] args = {};
         Application.main(args);
 
@@ -148,7 +175,7 @@ public class ApplicationTest extends CantaloupeTestCase {
     public void testStart() throws Exception {
         Application.setConfiguration(newConfiguration());
         Application.startServer();
-        ClientResource resource = getClientForUriPath("/iiif");
+        ClientResource resource = getClientForUriPath("/");
         resource.get();
         assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
     }

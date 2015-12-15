@@ -8,6 +8,12 @@ import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.logging.AccessLogService;
 import edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute;
+import edu.illinois.library.cantaloupe.processor.Processor;
+import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.processor.StreamProcessor;
+import edu.illinois.library.cantaloupe.resolver.FileResolver;
+import edu.illinois.library.cantaloupe.resolver.Resolver;
+import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -19,6 +25,7 @@ import org.restlet.data.Protocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -47,20 +54,87 @@ public class Application {
         Velocity.init();
     }
 
-    private static void flushCacheAtLaunch() throws IOException {
+    /**
+     * @return Application-wide Configuration object.
+     */
+    public static Configuration getConfiguration() {
+        if (config == null) {
+            try {
+                File configFile = getConfigurationFile();
+                if (configFile != null) {
+                    PropertiesConfiguration propConfig = new PropertiesConfiguration();
+                    propConfig.load(configFile);
+                    config = propConfig;
+                }
+            } catch (ConfigurationException e) {
+                // The logger has probably not been initialized yet, as it
+                // depends on a working configuration.
+                System.out.println(e.getMessage());
+            }
+        }
+        return config;
+    }
+
+    /**
+     * @return File object corresponding to the active configuration file, or
+     * null if there is no configuration file.
+     */
+    public static File getConfigurationFile() {
+        String configFilePath = System.getProperty("cantaloupe.config");
+        if (configFilePath != null) {
+            try {
+                // expand paths that start with "~"
+                configFilePath = configFilePath.replaceFirst("^~",
+                                System.getProperty("user.home"));
+                logger.info("Using config file: {}", configFilePath);
+                return new File(configFilePath).getCanonicalFile();
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return The application version from manifest.mf, or a string like
+     * "Non-Release" if running from a jar.
+     */
+    public static String getVersion() {
+        String versionStr = "Non-Release";
+        Class clazz = Application.class;
+        String className = clazz.getSimpleName() + ".class";
+        String classPath = clazz.getResource(className).toString();
+        if (classPath.startsWith("jar")) {
+            String manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1) +
+                    "/META-INF/MANIFEST.MF";
+            try {
+                Manifest manifest = new Manifest(new URL(manifestPath).openStream());
+                Attributes attr = manifest.getMainAttributes();
+                String version = attr.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
+                if (version != null) {
+                    versionStr = version;
+                }
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+        return versionStr;
+    }
+
+    private static void purgeCacheAtLaunch() throws IOException {
         Cache cache = CacheFactory.getInstance();
         if (cache != null) {
-            cache.flush();
+            cache.purge();
         } else {
             System.out.println("Cache is not specified or is improperly configured.");
             System.exit(-1);
         }
     }
 
-    private static void flushExpiredFromCacheAtLaunch() throws IOException {
+    private static void purgeExpiredFromCacheAtLaunch() throws IOException {
         Cache cache = CacheFactory.getInstance();
         if (cache != null) {
-            cache.flushExpired();
+            cache.purgeExpired();
         } else {
             System.out.println("Cache is not specified or is improperly configured.");
             System.exit(-1);
@@ -105,11 +179,14 @@ public class Application {
     }
 
     public static void main(String[] args) throws Exception {
-        if (getConfiguration() == null) {
-            System.out.println("No configuration file specified. Try again " +
-                    "with the -Dcantaloupe.config=/path/to/cantaloupe.properties option.");
-            System.exit(0);
+        try {
+            validateConfiguration();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            System.out.println("Exiting.");
+            System.exit(-1);
         }
+
         final int mb = 1024 * 1024;
         Runtime runtime = Runtime.getRuntime();
         logger.info(System.getProperty("java.vm.name") + " / " +
@@ -118,36 +195,13 @@ public class Application {
                 runtime.maxMemory() / mb);
         logger.info("Starting Cantaloupe {}", getVersion());
 
-        if (System.getProperty("cantaloupe.cache.flush") != null) {
-            flushCacheAtLaunch();
-        } else if (System.getProperty("cantaloupe.cache.flush_expired") != null) {
-            flushExpiredFromCacheAtLaunch();
+        if (System.getProperty("cantaloupe.cache.purge") != null) {
+            purgeCacheAtLaunch();
+        } else if (System.getProperty("cantaloupe.cache.purge_expired") != null) {
+            purgeExpiredFromCacheAtLaunch();
         } else {
             startServer();
         }
-    }
-
-    /**
-     * @return The application-wide Configuration object.
-     */
-    public static Configuration getConfiguration() {
-        if (config == null) {
-            try {
-                String configFilePath = System.getProperty("cantaloupe.config");
-                if (configFilePath != null) {
-                    configFilePath = configFilePath.replaceFirst("^~",
-                            System.getProperty("user.home"));
-                    PropertiesConfiguration propConfig = new PropertiesConfiguration();
-                    propConfig.load(configFilePath);
-                    config = propConfig;
-                }
-            } catch (ConfigurationException e) {
-                // The logger has probably not been initialized yet, as it
-                // depends on a working configuration.
-                System.out.println(e.getMessage());
-            }
-        }
-        return config;
     }
 
     /**
@@ -155,32 +209,6 @@ public class Application {
      */
     public static void setConfiguration(Configuration c) {
         config = c;
-    }
-
-    /**
-     * @return The application version from manifest.mf, or a string like
-     * "Non-Release" if running from a jar.
-     */
-    public static String getVersion() {
-        String versionStr = "Non-Release";
-        Class clazz = Application.class;
-        String className = clazz.getSimpleName() + ".class";
-        String classPath = clazz.getResource(className).toString();
-        if (classPath.startsWith("jar")) {
-            String manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1) +
-                    "/META-INF/MANIFEST.MF";
-            try {
-                Manifest manifest = new Manifest(new URL(manifestPath).openStream());
-                Attributes attr = manifest.getMainAttributes();
-                String version = attr.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
-                if (version != null) {
-                    versionStr = version;
-                }
-            } catch (IOException e) {
-                // noop
-            }
-        }
-        return versionStr;
     }
 
     public static void startServer() throws Exception {
@@ -198,6 +226,18 @@ public class Application {
         if (component != null) {
             component.stop();
             component = null;
+        }
+    }
+
+    /**
+     * @throws Exception If the configuration is invalid.
+     */
+    private static void validateConfiguration() throws Exception {
+        // check that a configuration file exists
+        if (getConfiguration() == null) {
+            throw new edu.illinois.library.cantaloupe.ConfigurationException(
+                    "No configuration file specified. Try again with the " +
+                            "-Dcantaloupe.config=/path/to/cantaloupe.properties argument.");
         }
     }
 

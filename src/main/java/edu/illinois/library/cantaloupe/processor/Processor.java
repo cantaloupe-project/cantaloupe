@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.request.OutputFormat;
-import edu.illinois.library.cantaloupe.request.Quality;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
 import java.util.Set;
 
@@ -32,6 +32,15 @@ public interface Processor {
      * @return All qualities supported by the processor for the given source
      * format.
      */
-    Set<Quality> getSupportedQualities(SourceFormat sourceFormat);
+    Set<edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality>
+    getSupportedIiif1_1Qualities(SourceFormat sourceFormat);
+
+    /**
+     * @param sourceFormat
+     * @return All qualities supported by the processor for the given source
+     * format.
+     */
+    Set<edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality>
+    getSupportedIiif2_0Qualities(SourceFormat sourceFormat);
 
 }

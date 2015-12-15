@@ -1,7 +1,10 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.request.Identifier;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.processor.FileProcessor;
+import edu.illinois.library.cantaloupe.processor.Processor;
+import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -14,9 +17,9 @@ import java.nio.file.AccessDeniedException;
 public interface Resolver {
 
     /**
-     * @param identifier IIIF identifier.
+     * @param identifier
      * @return The expected source format of the image corresponding with the
-     * given identifier, or <code>SourceFormat.UNKNOWN</code> if unknown;
+     * given identifier, or {@link SourceFormat#UNKNOWN} if unknown;
      * never null.
      * @throws FileNotFoundException if an image corresponding to the given
      * identifier does not exist
@@ -25,5 +28,22 @@ public interface Resolver {
      * @throws IOException if there is some other issue accessing the image
      */
     SourceFormat getSourceFormat(Identifier identifier) throws IOException;
+
+    /**
+     * <dl>
+     *     <dt>{@link FileResolver} &rarr; {@link StreamProcessor}</dt>
+     *     <dd>OK, using {@link java.io.FileInputStream}</dd>
+     *     <dt>{@link FileResolver} &rarr; {@link FileProcessor}</dt>
+     *     <dd>OK, using {@link java.io.File}</dd>
+     *     <dt>{@link StreamResolver} &rarr; {@link StreamProcessor}</dt>
+     *     <dd>OK, using {@link java.io.InputStream}</dd>
+     *     <dt>{@link StreamResolver} &rarr; {@link FileProcessor}</dt>
+     *     <dd>Incompatible</dd>
+     * </dl>
+     *
+     * @param processor
+     * @return Whether the instance is compatible with the given processor.
+     */
+    boolean isCompatible(Processor processor);
 
 }

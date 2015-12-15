@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.request.Parameters;
+import edu.illinois.library.cantaloupe.image.OperationList;
 
 import java.awt.Dimension;
 import java.io.InputStream;
@@ -16,23 +16,31 @@ public interface StreamProcessor extends Processor {
     /**
      * @param inputStream Source image. Implementations should not close it.
      * @param sourceFormat Format of the source image
-     * @return Size of the source image in pixels.
+     * @return Scale of the source image in pixels.
      * @throws ProcessorException
      */
     Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
             throws ProcessorException;
 
     /**
-     * <p>Uses the supplied parameters to process an image from the supplied
-     * InputStream, and writes the result to the given OutputStream.</p>
+     * <p>Performs the supplied operations on an image, reading it from the
+     * supplied InputStream, and writing the result to the supplied
+     * OutputStream.</p>
+     *
+     * <p>Operations should be applied in the order they appear in the
+     * OperationList iterator. For the sake of efficiency, implementations
+     * might want to check whether each one is a no-op
+     * ({@link edu.illinois.library.cantaloupe.image.Operation#isNoOp()})
+     * before performing it.</p>
      *
      * <p>Implementations should use the sourceSize parameter and not their
-     * own <code>getSize()</code> method to avoid reusing a potentially
+     * own <code>getScale()</code> method to avoid reusing a potentially
      * unreusable InputStream.</p>
      *
-     * @param params Parameters of the output image
-     * @param sourceFormat Format of the source image
-     * @param sourceSize Size of the source image
+     * @param ops OperationList of the image to process.
+     * @param sourceFormat Format of the source image. Will never be
+     * {@link SourceFormat#UNKNOWN}.
+     * @param sourceSize Scale of the source image
      * @param inputStream Stream from which to read the image. Implementations
      *                    should not close it.
      * @param outputStream Stream to which to write the image. Implementations
@@ -41,7 +49,7 @@ public interface StreamProcessor extends Processor {
      * @throws UnsupportedSourceFormatException
      * @throws ProcessorException
      */
-    void process(Parameters params, SourceFormat sourceFormat,
+    void process(OperationList ops, SourceFormat sourceFormat,
                  Dimension sourceSize, InputStream inputStream,
                  OutputStream outputStream) throws ProcessorException;
 

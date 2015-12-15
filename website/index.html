@@ -6,7 +6,7 @@ layout: default
 
 <p>Cantaloupe is an open-source image server developed at the <a href="http://www.library.illinois.edu/">University of Illinois at Urbana-Champaign Library</a>. By combining the basic operations of cropping, scaling, rotation, flipping, color filtering, and format conversion, it can support on-the-fly derivative image generation and deep zooming into high-resolution source images.</p>
 
-<p>The <a href="http://iiif.io/api/image/2.0/">IIIF Image API</a> is an open standard intended to promote interoperability between clients &mdash; like zooming image viewers &mdash; and image servers. Cantaloupe itself and most of its processors meet the highest possible compliance level, and should work with any <a href="http://iiif.io/apps-demos.html">IIIF-compatible client software</a>.</p>
+<p>The <a href="http://iiif.io/api/image/">IIIF Image API</a> is an open standard intended to promote interoperability between clients &mdash; like zooming image viewers &mdash; and image servers. Cantaloupe supports versions 1.1 and 2.0 of this API. Most of its processors meet the highest compliance level, and should work with any <a href="http://iiif.io/apps-demos.html">IIIF-compliant client software</a>.</p>
 
 <p>Cantaloupe features a configurable processing pipeline based on:</p>
 
@@ -24,12 +24,12 @@ layout: default
   <li>Easy to get working</li>
   <li>Self-contained</li>
   <li>Pluggable resolvers for filesystem, database, HTTP, and Amazon S3 sources</li>
-  <li>Pluggable processors to support a wide variety of source image formats, including TIFF and JPEG2000 &mdash; as well as video formats</li>
-  <li>Lean and efficient with no application server overhead</li>
+  <li>Pluggable processors to support a variety of source image formats, including JPEG, TIFF, and JPEG2000 &mdash; as well as still-frame extraction from videos in a variety of formats</li>
   <li>Configurable server- and client-side caching</li>
-  <li>Available authentication</li>
+  <li>Multiple endpoints</li>
+  <li>Available built-in authentication</li>
 </ul>
 
 <h2 id="Download">Download</h2>
 
-<a href="https://github.com/medusa-project/cantaloupe">Source code</a> and <a href="https://github.com/medusa-project/cantaloupe/releases">releases</a> are available from GitHub.
+<p><a href="https://github.com/medusa-project/cantaloupe/releases">Download the latest release from GitHub.</a></p>
