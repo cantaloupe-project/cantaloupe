@@ -229,6 +229,10 @@ processor.fallback = Java2dProcessor
 # Java2dProcessor
 #----------------------------------------
 
+# Available values are `quality` and `speed`. `speed` is ~10-20% faster at the
+# expense of visible aliasing at small scales.
+Java2dProcessor.scale_mode = speed
+
 # JPEG output quality. Should be a number between 0-1 ending in "f"
 Java2dProcessor.jpg.quality = 0.7f
 
@@ -250,6 +254,10 @@ KakaduProcessor.path_to_stdout_symlink = /path/to/stdout.ppm
 
 # Available values are `jai` and `java2d`.
 KakaduProcessor.post_processor = java2d
+
+# Available values are `quality` and `speed`. `speed` is ~10-20% faster at the
+# expense of visible aliasing at small scales.
+KakaduProcessor.post_processor.java2d.scale_mode = speed
 
 ###########################################################################
 # CLIENT-SIDE CACHING

@@ -357,7 +357,7 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
         scale.setWidth(50);
         int reductionFactor = 1;
         BufferedImage outImage = ProcessorUtil.scaleImageWithG2d(inImage, scale,
-                reductionFactor);
+                reductionFactor, true);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
@@ -367,7 +367,7 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
         scale.setHeight(50);
         reductionFactor = 1;
         outImage = ProcessorUtil.scaleImageWithG2d(inImage, scale,
-                reductionFactor);
+                reductionFactor, false);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
@@ -378,7 +378,7 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
         scale.setHeight(50);
         reductionFactor = 1;
         outImage = ProcessorUtil.scaleImageWithG2d(inImage, scale,
-                reductionFactor);
+                reductionFactor, true);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
     }

@@ -38,6 +38,7 @@ import javax.media.jai.TileCache;
 import javax.media.jai.operator.TransposeDescriptor;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
@@ -485,7 +486,7 @@ abstract class ProcessorUtil {
                 break;
             case TIF:
                 String tiffReader = Application.getConfiguration().
-                        getString(Java2dProcessor.CONFIG_KEY_TIF_READER,
+                        getString(Java2dProcessor.TIF_READER_CONFIG_KEY,
                                 "TIFFImageReader");
                 if (tiffReader.equals("TIFFImageReader")) {
                     image = readWithTiffImageReader(inputSource, ops,
@@ -1015,7 +1016,21 @@ abstract class ProcessorUtil {
      */
     public static BufferedImage scaleImageWithG2d(BufferedImage inImage,
                                                   Scale scale) {
-        return scaleImageWithG2d(inImage, scale, 0);
+        return scaleImageWithG2d(inImage, scale, 0, false);
+    }
+
+    /**
+     * Scales an image using Graphics2D.
+     *
+     * @param inImage
+     * @param scale
+     * @param highQuality
+     * @return
+     */
+    public static BufferedImage scaleImageWithG2d(BufferedImage inImage,
+                                                  Scale scale,
+                                                  boolean highQuality) {
+        return scaleImageWithG2d(inImage, scale, 0, highQuality);
     }
 
     /**
@@ -1028,11 +1043,13 @@ abstract class ProcessorUtil {
      * @param scale Requested size ignoring any reduction factor
      * @param reductionFactor Reduction factor that has already been applied to
      *                        <code>inImage</code>
+     * @param highQuality
      * @return Scaled image
      */
     public static BufferedImage scaleImageWithG2d(BufferedImage inImage,
                                                   Scale scale,
-                                                  int reductionFactor) {
+                                                  int reductionFactor,
+                                                  boolean highQuality) {
         BufferedImage scaledImage = inImage;
         if (!scale.isNoOp()) {
             final int sourceWidth = inImage.getWidth();
@@ -1063,12 +1080,23 @@ abstract class ProcessorUtil {
             }
             scaledImage = new BufferedImage(width, height,
                     inImage.getType());
-            Graphics2D g2d = scaledImage.createGraphics();
-            RenderingHints hints = new RenderingHints(
-                    RenderingHints.KEY_INTERPOLATION,
-                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-            g2d.setRenderingHints(hints);
-            g2d.drawImage(inImage, 0, 0, width, height, null);
+
+            final Graphics2D g2d = scaledImage.createGraphics();
+            // The "non-high-quality" technique results in images that are
+            // noticeably pixelated.
+            // See: https://community.oracle.com/docs/DOC-983611
+            // http://stackoverflow.com/a/34266703/177529
+            if (highQuality) {
+                g2d.drawImage(
+                        inImage.getScaledInstance(width, height, Image.SCALE_SMOOTH),
+                        0, 0, width, height, null);
+            } else {
+                final RenderingHints hints = new RenderingHints(
+                        RenderingHints.KEY_INTERPOLATION,
+                        RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                g2d.setRenderingHints(hints);
+                g2d.drawImage(inImage, 0, 0, width, height, null);
+            }
             g2d.dispose();
         }
         return scaledImage;
@@ -1150,7 +1178,7 @@ abstract class ProcessorUtil {
                     ImageWriteParam param = writer.getDefaultWriteParam();
                     param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
                     param.setCompressionQuality(Application.getConfiguration().
-                            getFloat(Java2dProcessor.CONFIG_KEY_JPG_QUALITY, 0.7f));
+                            getFloat(Java2dProcessor.JPG_QUALITY_CONFIG_KEY, 0.7f));
                     param.setCompressionType("JPEG");
                     ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
                     writer.setOutput(os);

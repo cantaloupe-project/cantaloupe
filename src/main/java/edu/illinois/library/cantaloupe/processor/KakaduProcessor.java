@@ -59,6 +59,8 @@ class KakaduProcessor implements FileProcessor {
     private static Logger logger = LoggerFactory.
             getLogger(KakaduProcessor.class);
 
+    public static final String JAVA2D_SCALE_MODE_CONFIG_KEY =
+            "KakaduProcessor.post_processor.java2d.scale_mode";
     public static final String PATH_TO_BINARIES_CONFIG_KEY =
             "KakaduProcessor.path_to_binaries";
     public static final String PATH_TO_STDOUT_SYMLINK_CONFIG_KEY =
@@ -455,8 +457,11 @@ class KakaduProcessor implements FileProcessor {
         BufferedImage image = pnmImage.getBufferedImage();
         for (Operation op : opList) {
             if (op instanceof Scale) {
+                final boolean highQuality = Application.getConfiguration().
+                        getString(JAVA2D_SCALE_MODE_CONFIG_KEY, "speed").
+                        equals("quality");
                 image = ProcessorUtil.scaleImageWithG2d(image,
-                        (Scale) op, reductionFactor.factor);
+                        (Scale) op, reductionFactor.factor, highQuality);
             } else if (op instanceof Transpose) {
                 image = ProcessorUtil.transposeImage(image,
                         (Transpose) op);

@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
@@ -28,8 +29,9 @@ import java.util.Set;
  */
 class Java2dProcessor implements StreamProcessor, FileProcessor {
 
-    public static final String CONFIG_KEY_JPG_QUALITY = "Java2dProcessor.jpg.quality";
-    public static final String CONFIG_KEY_TIF_READER = "Java2dProcessor.tif.reader";
+    public static final String JPG_QUALITY_CONFIG_KEY = "Java2dProcessor.jpg.quality";
+    public static final String SCALE_MODE_CONFIG_KEY = "Java2dProcessor.scale_mode";
+    public static final String TIF_READER_CONFIG_KEY = "Java2dProcessor.tif.reader";
 
     private static final HashMap<SourceFormat,Set<OutputFormat>> FORMATS =
             getAvailableOutputFormats();
@@ -179,8 +181,11 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
                     image = ProcessorUtil.cropImage(image, (Crop) op,
                             reductionFactor.factor);
                 } else if (op instanceof Scale) {
+                    final boolean highQuality = Application.getConfiguration().
+                            getString(SCALE_MODE_CONFIG_KEY, "speed").
+                            equals("quality");
                     image = ProcessorUtil.scaleImageWithG2d(image, (Scale) op,
-                            reductionFactor.factor);
+                            reductionFactor.factor, highQuality);
                 } else if (op instanceof Transpose) {
                     image = ProcessorUtil.transposeImage(image, (Transpose) op);
                 } else if (op instanceof Rotate) {
@@ -217,8 +222,11 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
                     image = ProcessorUtil.cropImage(image, (Crop) op,
                             reductionFactor.factor);
                 } else if (op instanceof Scale) {
+                    final boolean highQuality = Application.getConfiguration().
+                            getString(SCALE_MODE_CONFIG_KEY, "speed").
+                            equals("quality");
                     image = ProcessorUtil.scaleImageWithG2d(image, (Scale) op,
-                            reductionFactor.factor);
+                            reductionFactor.factor, highQuality);
                 } else if (op instanceof Transpose) {
                     image = ProcessorUtil.transposeImage(image, (Transpose) op);
                 } else if (op instanceof Rotate) {
