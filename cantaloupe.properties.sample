@@ -59,8 +59,8 @@ resolver.static = FilesystemResolver
 # This can be an absolute path, or a filename; if only a filename is
 # specified, it will be searched for in the same folder as this file, and then
 # the current working directory.
-# If defined, this will take precedence over the `resolver` key.
-resolver.chooser_script = functions.rb
+# If defined, this will override the `resolver.static` key.
+#resolver.chooser_script = functions.rb
 
 #----------------------------------------
 # FilesystemResolver
