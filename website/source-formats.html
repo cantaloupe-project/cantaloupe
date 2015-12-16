@@ -8,14 +8,14 @@ Various Cantaloupe processors support several other formats than those listed he
 
 <h3 id="JPEG">JPEG</h3>
 
-<p>It should be possible to use TurboJPEG (high-level API over <a href="http://www.libjpeg-turbo.org">libjpeg-turbo</a> with Java2dProcessor to hardware-accelerate JPEG coding. To do so, include the <a href="https://github.com/geosolutions-it/imageio-ext/wiki/TurboJPEG-plugin">TurboJPEG plugin JAR</a> in your classpath, and compile libjpeg-turbo with Java support (using the <code>--with-java</code>
+<p>It should be possible to use TurboJPEG (high-level API over <a href="http://www.libjpeg-turbo.org">libjpeg-turbo</a>) with Java2dProcessor to hardware-accelerate JPEG coding. To do so, include the <a href="https://github.com/geosolutions-it/imageio-ext/wiki/TurboJPEG-plugin">TurboJPEG plugin JAR</a> in your classpath, and compile libjpeg-turbo with Java support (using the <code>--with-java</code>
 configuration option). (The author has not tried this.)</p>
 
 <h3 id="JPEG2000">JPEG2000</h3>
 
 <p>JPEG2000 uses advanced compression techniques to enable fast reduced-scale and region-of-interest decoding. In theory, and with a performant decoder, JPEG2000 is well-suited for extremely large source images. Unfortunately, there are few performant decoders available for this format.</p>
 
-<p><a href="processors.html#KakaduProcessor">KakaduProcessor</a> is by far the most efficient processor for this format, and it performs very well, even with images in the hundreds-of-megapixels range.</p>
+<p><a href="processors.html#KakaduProcessor">KakaduProcessor</a> is by far the most efficient processor for this format, and it performs very well, even with images in the range of hundreds of megapixels.</p>
 
 <p><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> can read/write JPEG2000 using JasPer, and <a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a> using OpenJPEG. Both of these are extremely slow.</p>
 
@@ -23,11 +23,11 @@ configuration option). (The author has not tried this.)</p>
 
 <h3 id="TIFF">TIFF</h3>
 
-<p><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> and <a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a> can both handle TIFF if the necessary delegate or plugin is installed. (See the <a href="getting-started.html#Running">Cantaloupe landing page</a>.)</p>
+<p>Most processors can read this format, though some have trouble with its special cases. <a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> and <a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a> can both handle TIFF if the necessary delegate or plugin is installed. (Go to the Cantaloupe landing page to check.)</p>
 
 <h4>Pyramidal TIFF</h4>
 
-<p>Pyramidal TIFF is a special type of TIFF file that improves TIFF's suitability for deep zooming applications. In addition to the main image, a pyramidal TIFF file contains a sequence of progressively half-sized sub-images: for example, a 10000&times;10000 pixel main image would include derivatives of 5000&times;5000 pixels, 2500&times;2500 pixels, 1250&times;1250 pixels, and so on, all embedded inside the same file. These smaller images are more efficient to read at small scales (shallow zoom levels).</p>
+<p>Pyramidal TIFF is a special type of TIFF file that improves TIFF's suitability for deep zooming applications. In addition to the main image, it contains a sequence of progressively half-sized sub-images: for example, a 10000&times;10000 pixel main image would include derivatives of 5000&times;5000 pixels, 2500&times;2500 pixels, 1250&times;1250 pixels, and so on, all embedded inside the same file. These smaller images are more efficient to read at small scales (shallow zoom levels).</p>
 
 <p><a href="processors.html#Java2dProcessor">Java2dProcessor</a> and <a href="processors.html#JaiProcessor">JaiProcessor</a> both support pyramidal TIFF, which is to say that they actually do read the embedded sub-images and choose the smallest one that can fulfill the request.</p>
 

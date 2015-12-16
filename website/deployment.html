@@ -19,7 +19,7 @@ layout: default
 <p>Consider the case of an image server that is asked to render tiles for a 4096&times;4096 pixel source image that, at 24 bits per pixel, totals 50 MB in
 decompressed size. Multiple clients are simultaneously requesting numerous downscaled tiles. For each request, a request handler needs to load this large image and operate on it independently.</p>
 
-<p>Furthermore, some processors are inefficient in that they have to create new images internally at each intermediate step in the processing pipeline &mdash; cropping, scaling, rotating, etc. Each one occupies precious memory.</p>
+<p>Furthermore, some processors are inefficient in that they have to create new images internally at each intermediate step in the processing pipeline &mdash; cropping, scaling, rotating, etc. Each one consumes precious memory.</p>
 
 <p>It's easy to see how RAM becomes a major consideration here. With the processors that do their work in Java (as opposed to forking out to an external process), It is normal to see transient spikes of hundreds of megabytes of used memory on the Java heap in response to a single zooming-image-viewer action. The JVM will accommodate by dynamically increasing the heap size &mdash; the amount of RAM available to the application. From the operating system's perspective, the Java process is bloating up to immense size, but there is nothing wrong &mdash; most of this is actually unused heap space.</p>
 

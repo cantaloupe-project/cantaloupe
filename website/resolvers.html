@@ -16,7 +16,7 @@ layout: default
 
 <h3 id="Dynamic Resolvers">Dynamic Resolvers</h3>
 
-<p>It is possible to serve images from different data sources simultaneously. For example, you may have images some stored on a filesystem, and others stored on Amazon S3. <em>If you can differentiate their locations based on their identifier</em> &mdash; either by analyzing the identifier string, or performing some kind of service request in code &mdash; you can write a simple Ruby function to tell Cantaloupe which resolver to use for a given request.</p>
+<p>It is possible to serve images from different sources simultaneously. For example, you may have images some stored on a filesystem, and others stored on Amazon S3. <em>If you can differentiate their sources based on their identifier in code</em> &mdash; either by analyzing the identifier string, or performing some kind of service request &mdash; you can write a simple Ruby function to tell Cantaloupe which resolver to use for a given request.</p>
 
 <p>The script can be named anything, but it must have a <span class="filename">.rb</span> extension. Then, it can be referenced by the <code>resolver.chooser_script</code> option, like:</p>
 
@@ -198,7 +198,7 @@ jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre
         return url_identifier + "-something";\
     }</code></pre>
 
-<p><em>Note that in properties files, all lines in multi-line strings except the last need to end with a backslash (\).</em></p>
+<div class="alert alert-info">Note that in properties files, all lines in multi-line strings except the last need to end with a backslash (\).</div>
 
 <h4 id="JdbcResolverMediaTypeFunction">Media Type Retrieval Function</h4>
 

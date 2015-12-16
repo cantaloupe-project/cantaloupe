@@ -10,7 +10,7 @@ layout: default
 
 <p>Supported source formats depend on the processor, and possibly installed
 libraries/delegates, etc., as well. Lists of these are displayed on the
-landing page, at <span class="filename">/iiif</span>. A list of output formats supported <em>for a given source format</em> is contained within the response to an information request (<span class="filename">/iiif/{identifier}/info.json</span>).</p>
+landing page. A list of output formats supported <em>for a given source format</em> is contained within the response to an information request (such as <span class="filename">/iiif/2.0/{identifier}/info.json</span>).</p>
 
 <p>For all of the rest of the source formats you would like to serve, it's a good idea to experiment with different processors, comparing their performance, resource usage, and output quality.</p>
 
@@ -108,8 +108,8 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 
 <h3 id="KakaduProcessor">KakaduProcessor</h3>
 
-<p>KakaduProcessor uses the <span class="filename">kdu_expand</span> and <span class="filename">kdu_jp2info</span> binaries &mdash; part of the
-<a href="http://www.kakadusoftware.com">Kakadu</a> SDK &mdash; to efficiently extract regions of JPEG2000 source images. This processor is capable of performing well even with large JP2s.</p>
+<p>KakaduProcessor uses the <span class="filename">kdu_expand</span> and <span class="filename">kdu_jp2info</span> binaries from the
+<a href="http://www.kakadusoftware.com">Kakadu</a> SDK to efficiently decode JPEG2000 source images. This processor is capable of performing well even with large JP2s.</p>
 
 <p>Although it does support some other operations, <span class="filename">kdu_expand</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. The rest of the IIIF operations (differential scaling, rotation, etc.) are performed using either the Java 2D or JAI APIs (configurable).</p>
 
@@ -135,7 +135,7 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 
 <h3 id="FfmpegProcessor">FfmpegProcessor</h3>
 
-<p>FfmpegProcessor uses the <a href="http://www.ffmpeg.org">FFmpeg</a> tool to extract still frames from video files. It can be used for video thumbnail generation á la YouTube, as well as deep zooming of high-resolution still frames.</p>
+<p>FfmpegProcessor uses the <a href="http://www.ffmpeg.org">FFmpeg</a> tool to extract still frames from video files. It can be used for thumbnail generation á la YouTube, as well as for deep zooming of high-resolution still frames.</p>
 
 <p>FfmpegProcessor has been tested with FFmpeg version 2.8. Other versions may or may not work.</p>
 
@@ -143,6 +143,6 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 
 <p>FFmpegProcessor supports a <code>time</code> URL query parameter (which is nonstandard and Cantaloupe-specific) which can be used to return a frame at a particular second in the source video. The value of this parameter should be in <code>hh:mm:ss</code> format, like:</p>
 
-<pre>http://example.org/iiif/video.mp4/full/full/0/default.jpg?time=00:02:15</pre>
+<pre>http://example.org/iiif/2.0/video.mp4/full/full/0/default.jpg?time=00:02:15</pre>
 
 <p>If the <code>time</code> parameter is not present, the first frame will be returned.</p>

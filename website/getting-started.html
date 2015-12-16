@@ -15,7 +15,7 @@ layout: default
 <h3 id="Download">Download</h3>
 
 <p>
-  <a id="download-button" href="https://github.com/medusa-project/cantaloupe/releases" class="btn btn-success">Loading&hellip;</a>
+  <a id="download-button" href="https://github.com/medusa-project/cantaloupe/releases" class="btn btn-success"><span class="fa fa-download"></span> Download</a>
 
   <a href="https://github.com/medusa-project/cantaloupe/releases.atom" class="btn btn-default">
   <span class="fa fa-rss"></span> Subscribe to Releases</a>
@@ -50,6 +50,10 @@ layout: default
 <div class="alert alert-warning">
   <p>Note that the Image API 2.0 endpoint, which used to be located at <span class="filename">/iiif</span>, has moved to <span class="filename">/iiif/2.0</a>.</p>
   <p>Likewise, the landing page, which used to be located at <span class="filename">/iiif</span>, has moved to <span class="filename">/</span>.</p>
+</div>
+
+<div class="alert alert-info">
+  <p>Because the cache naming format has changed, it will be necessary to <a href="caches.html#Purging">purge your cache</a> before using this version.</p>
 </div>
 
 <ul>
@@ -88,7 +92,6 @@ layout: default
       <li><code>log.application.RollingFileAppender.pattern</code></li>
     </ul>
   </li>
-  <li>Because the cache naming format has changed, it will be necessary to <a href="caches.html#Purging">purge your cache</a> before using this version.</li>
 </ul>
 
 <h4>1.2 to 1.2.1</h4>
@@ -146,8 +149,9 @@ layout: default
 
 <ul>
   <li>Your Cantaloupe version</li>
-  <li>Your JVM's heap size (this is printed on the landing page as well as in the first few lines of console output)</li>
+  <li>Your JVM's heap size (this is printed on the landing page as well as in the first few lines of application log output [which, by default, goes to the console])</li>
   <li>The request URL</li>
+  <li>Information about the source image (format, size, etc.)</li>
   <li>The effective processor, resolver, and cache</li>
   <li>Log output in debug mode</li>
   <li>Configuration options with sensitive information removed</li>

@@ -4,13 +4,13 @@ layout: default
 
 <h2>Caches</h2>
 
-<p>Caches cache generated images on the server. They are pluggable, to enable different caching mechanisms.</p>
+<p>Caches cache generated images in order to spare the computational expense of processing the same image request over and over again. Caches are pluggable, to enable different caching mechanisms.</p>
 
-<p>Server-side caching is highly recommended, as it will drastically reduce load on the server and improve response times for the remaining processing that is left to do. There are other ways of caching on the server, but the Cantaloupe cache is simple and custom-tailored.</p>
+<p>Server-side caching is highly recommended, as it will drastically reduce load on the server and improve response times for the remaining processing that is left to do. There are other ways of caching on the server-side, but the Cantaloupe cache is custom-tailored for this application and easy enough to set up.</p>
 
 <h3>Enabling</h3>
 
-<p>Caching is optional, and disabled by default. To enable it, set <code>cache.server</code> to the name of a cache, such as <a href="#FilesystemCache">FilesystemCache</a>.</p>
+<p>Caching is disabled by default. To enable it, set <code>cache.server</code> to the name of a cache, such as <a href="#FilesystemCache">FilesystemCache</a>.</p>
 
 <p>The cache can be configured to operate in one of two ways:</p>
 <dl>
@@ -20,6 +20,12 @@ layout: default
   <dd>Cached representations are returned immediately, if available. This is faster, but it can lead to inconsistency between the cache and the underlying source image storage.</dd>
 </dl>
 
+<h3 id="Purging">Purging</h3>
+
+<p>To purge expired images only, start Cantaloupe with the <code>-Dcantaloupe.cache.purge_expired</code> option.</p>
+
+<p>To purge all images, start Cantaloupe with the <code>-Dcantaloupe.cache.purge</code> option.</p>
+
 <h3>Notes</h3>
 
 <ul>
@@ -27,8 +33,7 @@ layout: default
   <li>Currently, requests for full-sized, unaltered source images are not cached, and are instead streamed through with no processing.</li>
   <li>Cantaloupe does not cache entire IIIF information response representations &mdash; only image dimensions, which are the only expensive part to generate. This means it is possible to change other configuration options that would affect the contents of information responses without having to purge the cache.</li>
   <li>The cache is shared across API endpoints. Requests for the same image from different endpoints will return the same cached image.</li>
-  <li>Caches are thread-safe, but not process-safe. To avoid corruption, multiple simultaneously-running instances of Cantaloupe should not be pointed at the same cache.</li>
-  <li>Server-side caching can be augmented by <a href="client-caching.html">client-side caching</a>.</li>
+  <li>Caches are thread-safe, but not process-safe. To avoid corruption, simultaneous instances of Cantaloupe should not be pointed at the same cache.</li>
 </ul>
 
 <h3 id="FilesystemCache">FilesystemCache</h3>
@@ -71,17 +76,11 @@ layout: default
 
 CREATE TABLE IF NOT EXISTS {JdbcCache.info_table} (
   identifier VARCHAR(4096) NOT NULL, " +
-  width INTEGER,
-  height INTEGER,
+  width DECIMAL(5,0),
+  height DECIMAL(5,0),
   last_modified DATETIME
 );</pre>
 
 <div class="alert alert-info">Note: JdbcCache has been tested with PostgreSQL 9.4 and H2 1.4. Other databases may work, but are untested.</div>
 
 <div class="alert alert-warning">Note: JdbcCache is inefficient in that it buffers generated images in memory before flushing them to the database, as opposed to streaming them. (This is currently unavoidable, as the JDBC API couples poorly with the Cantaloupe cache API.)</div>
-
-<h3 id="Purging">Purging the Cache</h3>
-
-<p>To purge expired images only, start Cantaloupe with the <code>-Dcantaloupe.cache.purge_expired</code> option.</p>
-
-<p>To purge all images, start Cantaloupe with the <code>-Dcantaloupe.cache.purge</code> option.</p>

@@ -4,7 +4,7 @@ layout: default
 
 <h2>Custom Scripts</h2>
 
-<p>Several aspects of Cantaloupe offer the ability to use custom Ruby functions as "hooks" to provide dynamic information back to the image server. While the exact details of each script vary, all scripts do have to obey some general rules.</p>
+<p>Several aspects of Cantaloupe offer the ability to use custom Ruby functions as "hooks" to provide dynamic information back to the image server. While the exact details of each function will vary, all scripts do have to obey some general rules.</p>
 
 <h3>Naming</h3>
 
@@ -17,16 +17,19 @@ some_key = /path/to/functions.rb
 # same folder as the config file, or the current working directory
 some_key = functions.rb</pre>
 
+<p>A single <span class="filename">.rb</span> file can contain any number of functions. It is also fine to put each function in its own file.</p>
+
 <h3>Example</h3>
 
-<p>A script file must contain a function, but the name, parameters, and return value will vary. Here is an example of a script used by <a href="resolvers.html#FilesystemResolver">FilesystemResolver</a> that performs a Solr query to return a pathname based on an identifier:</p>
+<p>Here is an example of a script used by <a href="resolvers.html#FilesystemResolver">FilesystemResolver</a> that performs a Solr query to return a pathname based on an identifier. The documentation in that section describes the rules that this function must abide by &mdash; its name, parameters, and return value.</p>
 
 <pre># functions.rb
+require 'cgi'
 require 'net/http'
 
 def get_pathname(identifier)
   uri = 'http://localhost:8983/solr/collection1/select?q=' +
-      URI.escape('id:"' + identifier + '"') +
+      CGI.escape('id:"' + identifier + '"') +
       '&amp;fl=pathname_si&amp;wt=ruby'
   uri = URI.parse(uri)
 
@@ -42,10 +45,8 @@ end
 # Uncomment to test on the command line (`ruby functions.rb`)
 # puts get_pathname('identifier-to-test')</pre>
 
-<p>Inside a function, anything goes &mdash; it will be interpreted by the JRuby interpreter built into Cantaloupe, so you can even use any (non-platform-native) gems that you have installed with <code>gem install</code>. Because it will be called upon each image request, though, it should be written with efficiency in mind.</p>
+<p>Inside a function, anything goes &mdash; it will be interpreted by a JRuby interpreter built into Cantaloupe, so you can even use any (non-platform-native) gems that you have installed with <code>gem install</code>. Because it will be called upon each image request, though, it should be written with efficiency in mind.</p>
 
-<div class="alert alert-danger">Note: typically, neither function arguments nor return values are sanitized or validated. <strong>Be very careful to write defensive, injection-aware, well-tested code.</strong></div>
-
-<div class="alert alert-info">Note: the first time a script runs, it will take a long time to execute. That is just JRuby loading. Subsequent runs will be much faster.</div>
+<div class="alert alert-danger">Note: typically, neither function arguments nor return values are sanitized or validated. <strong>Be very careful to write defensive, injection-aware code.</strong></div>
 
 <div class="alert alert-success">Note: scripts will be re-read on each request, so they can be edited without restarting.</div>

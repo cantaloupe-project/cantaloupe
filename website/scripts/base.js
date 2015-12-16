@@ -1,5 +1,6 @@
 function getLatestReleaseInfo() {
-    $.getJSON("https://api.github.com/repos/medusa-project/cantaloupe/releases/latest").done(function (release) {
+    var release_url = 'https://api.github.com/repos/medusa-project/cantaloupe/releases/latest';
+    $.getJSON(release_url).done(function (release) {
         var asset = release.assets[0];
         var downloadCount = 0;
         for (var i = 0; i < release.assets.length; i++) {
@@ -18,10 +19,13 @@ function getLatestReleaseInfo() {
             " and downloaded " + downloadCount.toLocaleString() + " times.";
         $('#download-button').attr('href', asset.browser_download_url);
 
-        // display the version in the download button
+        // display the latest version number in the download button
         var parts = release.html_url.split('/')
         var version = parts[parts.length - 1];
-        $('#download-button').html(
-          '<span class="fa fa-download"></span> Download ' + version);
+        // but not betas
+        if (version.indexOf('beta') == -1) {
+            $('#download-button').html($('#download-button').html() + ' ' +
+                version);
+        }
     });
 }
