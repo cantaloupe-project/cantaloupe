@@ -26,7 +26,6 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import java.awt.Dimension;
 import java.awt.Rectangle;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -45,28 +44,6 @@ import java.util.concurrent.Executors;
  * versions untested).
  */
 class FfmpegProcessor implements FileProcessor {
-
-    private class StreamCopier implements Runnable {
-
-        private final InputStream inputStream;
-        private final OutputStream outputStream;
-
-        public StreamCopier(InputStream is, OutputStream os) {
-            inputStream = is;
-            outputStream = os;
-        }
-
-        public void run() {
-            try {
-                IOUtils.copy(inputStream, outputStream);
-            } catch (IOException e) {
-                if (!e.getMessage().startsWith("Broken pipe")) {
-                    logger.error(e.getMessage(), e);
-                }
-            }
-        }
-
-    }
 
     private static Logger logger = LoggerFactory.getLogger(FfmpegProcessor.class);
 
@@ -237,7 +214,26 @@ class FfmpegProcessor implements FileProcessor {
             throw new UnsupportedOutputFormatException();
         }
 
-        final ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
+        class StreamCopier implements Runnable {
+            private final InputStream inputStream;
+            private final OutputStream outputStream;
+
+            public StreamCopier(InputStream is, OutputStream os) {
+                inputStream = is;
+                outputStream = os;
+            }
+
+            public void run() {
+                try {
+                    IOUtils.copy(inputStream, outputStream);
+                } catch (IOException e) {
+                    if (!e.getMessage().startsWith("Broken pipe")) {
+                        logger.error(e.getMessage(), e);
+                    }
+                }
+            }
+        }
+
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
             final ProcessBuilder pb = getProcessBuilder(ops, fullSize,
@@ -246,10 +242,9 @@ class FfmpegProcessor implements FileProcessor {
             final Process process = pb.start();
 
             executorService.submit(
-                    new StreamCopier(process.getInputStream(), outputBucket));
+                    new StreamCopier(process.getInputStream(), outputStream));
             executorService.submit(
                     new StreamCopier(process.getErrorStream(), errorBucket));
-
             try {
                 int code = process.waitFor();
                 if (code != 0) {
@@ -259,9 +254,6 @@ class FfmpegProcessor implements FileProcessor {
                         throw new ProcessorException(errorStr);
                     }
                 }
-                final ByteArrayInputStream bais = new ByteArrayInputStream(
-                        outputBucket.toByteArray());
-                IOUtils.copy(bais, outputStream);
             } finally {
                 process.getInputStream().close();
                 process.getOutputStream().close();
