@@ -399,6 +399,11 @@ abstract class ProcessorUtil {
         return outputFormats;
     }
 
+    public static BufferedImage readImage(InputStream inputStream)
+            throws IOException {
+        return ProcessorUtil.convertToRgb(ImageIO.read(inputStream));
+    }
+
     public static BufferedImage readImage(File inputFile,
                                           SourceFormat sourceFormat,
                                           OperationList ops,
@@ -417,6 +422,17 @@ abstract class ProcessorUtil {
             throws IOException, ProcessorException {
         return doReadImageWithImageIo(inputStream, sourceFormat, ops, fullSize,
                 reductionFactor);
+    }
+
+    /**
+     * @param inputStream
+     * @return
+     */
+    public static RenderedImage readImageWithJai(InputStream inputStream) {
+        final ParameterBlockJAI pbj = new ParameterBlockJAI("ImageRead");
+        pbj.setParameter("Input", inputStream);
+        return JAI.create("ImageRead", pbj,
+                defaultRenderingHints(new Dimension(512, 512)));
     }
 
     /**

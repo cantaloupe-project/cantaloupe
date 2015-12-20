@@ -11,7 +11,7 @@ import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
-import info.freelibrary.djatoka.io.PNMImage;
+import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -29,7 +29,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
+import java.awt.image.RenderedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -44,17 +44,17 @@ import java.util.concurrent.Executors;
 
 /**
  * Processor using the Kakadu kdu_expand and kdu_jp2info command-line tools.
- * Written for version 7.7, but may work with other versions.
+ * Written for version 7.7, but may work with other versions. Uses kdu_expand
+ * for cropping and an initial scale reduction factor, and either Java 2D or
+ * JAI for all remaining processing steps. kdu_expand generates BMP output
+ * which is streamed directly to the ImageIO/JAI reader. (These are really fast
+ * with BMP for some reason).
  *
  * @see <a href="http://kakadusoftware.com/wp-content/uploads/2014/06/Usage_Examples-v7_7.txt">
  *     Usage Examples for the Demonstration Applications Supplied with Kakadu
  *     V7.7</a>
  */
 class KakaduProcessor implements FileProcessor {
-
-    private enum PostProcessor {
-        JAI, JAVA2D
-    }
 
     private static Logger logger = LoggerFactory.
             getLogger(KakaduProcessor.class);
@@ -78,7 +78,6 @@ class KakaduProcessor implements FileProcessor {
 
     private static final ExecutorService executorService =
             Executors.newCachedThreadPool();
-    private static PostProcessor postProcessor;
 
     static {
         SUPPORTED_IIIF_1_1_QUALITIES.add(
@@ -110,17 +109,6 @@ class KakaduProcessor implements FileProcessor {
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_PERCENT);
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH);
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
-
-        if (Application.getConfiguration() != null &&
-                Application.getConfiguration().
-                        getString(POST_PROCESSOR_CONFIG_KEY, "java2d").
-                        toLowerCase().equals("jai")) {
-            postProcessor = PostProcessor.JAI;
-            logger.info("Will post-process using JAI");
-        } else {
-            postProcessor = PostProcessor.JAVA2D;
-            logger.info("Will post-process using Java2D");
-        }
     }
 
     /**
@@ -189,7 +177,7 @@ class KakaduProcessor implements FileProcessor {
         try {
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.redirectErrorStream(true);
-            logger.debug("Executing {}", StringUtils.join(pb.command(), " "));
+            logger.debug("Invoking {}", StringUtils.join(pb.command(), " "));
             Process process = pb.start();
 
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -271,20 +259,31 @@ class KakaduProcessor implements FileProcessor {
             }
         }
 
-        final ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
+        // will receive stderr output from kdu_expand
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
             final ReductionFactor reductionFactor = new ReductionFactor();
             final ProcessBuilder pb = getProcessBuilder(inputFile, ops,
                     fullSize, reductionFactor);
-            logger.debug("Executing {}", StringUtils.join(pb.command(), " "));
+            logger.debug("Invoking {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
             executorService.submit(
-                    new StreamCopier(process.getInputStream(), outputBucket));
-            executorService.submit(
                     new StreamCopier(process.getErrorStream(), errorBucket));
 
+            Configuration config = Application.getConfiguration();
+            switch (config.getString(POST_PROCESSOR_CONFIG_KEY, "java2d").toLowerCase()) {
+                case "jai":
+                    logger.debug("Post-processing using JAI");
+                    postProcessUsingJai(process.getInputStream(), ops,
+                            reductionFactor, outputStream);
+                    break;
+                default:
+                    logger.debug("Post-processing using Java2D");
+                    postProcessUsingJava2d(process.getInputStream(), ops,
+                            reductionFactor, outputStream);
+                    break;
+            }
             try {
                 final int code = process.waitFor();
                 if (code != 0) {
@@ -293,19 +292,6 @@ class KakaduProcessor implements FileProcessor {
                     if (errorStr != null && errorStr.length() > 0) {
                         throw new ProcessorException(errorStr);
                     }
-                }
-                final ByteArrayInputStream bais = new ByteArrayInputStream(
-                        outputBucket.toByteArray());
-                final PNMImage pnmImage = new PNMImage(bais);
-                switch (postProcessor) {
-                    case JAI:
-                        postProcessUsingJai(pnmImage, ops, reductionFactor,
-                                outputStream);
-                        break;
-                    default:
-                        postProcessUsingJava2d(pnmImage, ops, reductionFactor,
-                                outputStream);
-                        break;
                 }
             } finally {
                 process.getInputStream().close();
@@ -328,14 +314,14 @@ class KakaduProcessor implements FileProcessor {
      *
      * @param inputFile
      * @param opList
-     * @param fullSize The full size of the source image
+     * @param imageSize The full size of the source image
      * @param reduction {@link ReductionFactor#factor} property modified by
      * reference
      * @return Command string
      */
     private ProcessBuilder getProcessBuilder(final File inputFile,
                                              final OperationList opList,
-                                             final Dimension fullSize,
+                                             final Dimension imageSize,
                                              final ReductionFactor reduction) {
         final List<String> command = new ArrayList<>();
         command.add(getPath("kdu_expand"));
@@ -348,10 +334,10 @@ class KakaduProcessor implements FileProcessor {
             if (op instanceof Crop) {
                 final Crop crop = (Crop) op;
                 if (!crop.isFull()) {
-                    final double x = crop.getX() / fullSize.width;
-                    final double y = crop.getY() / fullSize.height;
-                    final double width = crop.getWidth() / fullSize.width;
-                    final double height = crop.getHeight() / fullSize.height;
+                    final double x = crop.getX() / imageSize.width;
+                    final double y = crop.getY() / imageSize.height;
+                    final double width = crop.getWidth() / imageSize.width;
+                    final double height = crop.getHeight() / imageSize.height;
                     command.add("-region");
                     command.add(String.format("{%.7f,%.7f},{%.7f,%.7f}",
                             y, x, height, width));
@@ -364,7 +350,7 @@ class KakaduProcessor implements FileProcessor {
                 // percent is <=50, or the height/width are <=50% of full size.
                 // The smaller the scale, the bigger the win.
                 final Scale scale = (Scale) op;
-                final Dimension tileSize = getCroppedSize(opList, fullSize);
+                final Dimension tileSize = getCroppedSize(opList, imageSize);
                 if (scale.getMode() != Scale.Mode.FULL) {
                     if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                         double hvScale = (double) scale.getWidth() /
@@ -422,39 +408,40 @@ class KakaduProcessor implements FileProcessor {
         return tileSize;
     }
 
-    private void postProcessUsingJai(final PNMImage pnmImage,
+    private void postProcessUsingJai(final InputStream processInputStream,
                                      final OperationList opList,
                                      final ReductionFactor reductionFactor,
                                      final OutputStream outputStream)
-            throws IOException {
-        RenderedOp image = ProcessorUtil.reformatImage(
-                RenderedOp.wrapRenderedImage(pnmImage.getBufferedImage()),
+            throws IOException, ProcessorException {
+        RenderedImage renderedImage =
+                ProcessorUtil.readImageWithJai(processInputStream);
+        RenderedOp renderedOp = ProcessorUtil.reformatImage(
+                RenderedOp.wrapRenderedImage(renderedImage),
                 new Dimension(512, 512));
         for (Operation op : opList) {
             if (op instanceof Scale) {
-                image = ProcessorUtil.scaleImage(image, (Scale) op,
+                renderedOp = ProcessorUtil.scaleImage(renderedOp, (Scale) op,
                         reductionFactor.factor);
             } else if (op instanceof Transpose) {
-                image = ProcessorUtil.transposeImage(image,
+                renderedOp = ProcessorUtil.transposeImage(renderedOp,
                         (Transpose) op);
             } else if (op instanceof Rotate) {
-                image = ProcessorUtil.rotateImage(image,
-                        (Rotate) op);
+                renderedOp = ProcessorUtil.rotateImage(renderedOp, (Rotate) op);
             } else if (op instanceof Filter) {
-                image = ProcessorUtil.filterImage(image,
-                        (Filter) op);
+                renderedOp = ProcessorUtil.filterImage(renderedOp, (Filter) op);
             }
         }
-        ImageIO.write(image, opList.getOutputFormat().getExtension(),
+        ImageIO.write(renderedOp, opList.getOutputFormat().getExtension(),
                 outputStream);
     }
 
-    private void postProcessUsingJava2d(final PNMImage pnmImage,
+    private void postProcessUsingJava2d(final InputStream processInputStream,
                                         final OperationList opList,
                                         final ReductionFactor reductionFactor,
                                         final OutputStream outputStream)
-            throws IOException {
-        BufferedImage image = pnmImage.getBufferedImage();
+            throws IOException, ProcessorException {
+        BufferedImage image =
+                ProcessorUtil.readImage(processInputStream);
         for (Operation op : opList) {
             if (op instanceof Scale) {
                 final boolean highQuality = Application.getConfiguration().

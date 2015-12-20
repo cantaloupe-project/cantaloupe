@@ -20,7 +20,7 @@ public class KakaduProcessorTest extends ProcessorTest {
                 "KakaduProcessor.path_to_binaries", "/usr/local/bin");
         Application.getConfiguration().setProperty(
                 "KakaduProcessor.path_to_stdout_symlink",
-                "/Users/alexd/Projects/Cantaloupe/stdout.ppm");
+                "/Users/alexd/Projects/Cantaloupe/stdout.bmp");
     }
 
     protected Processor getProcessor() {
