@@ -29,18 +29,18 @@ public interface StreamProcessor extends Processor {
      *
      * <p>Operations should be applied in the order they appear in the
      * OperationList iterator. For the sake of efficiency, implementations
-     * might want to check whether each one is a no-op
+     * should check whether each one is a no-op
      * ({@link edu.illinois.library.cantaloupe.image.Operation#isNoOp()})
      * before performing it.</p>
      *
      * <p>Implementations should use the sourceSize parameter and not their
-     * own <code>getScale()</code> method to avoid reusing a potentially
-     * unreusable InputStream.</p>
+     * own {#link #getSize} method to avoid reusing a potentially unreusable
+     * InputStream.</p>
      *
      * @param ops OperationList of the image to process.
      * @param sourceFormat Format of the source image. Will never be
      * {@link SourceFormat#UNKNOWN}.
-     * @param sourceSize Scale of the source image
+     * @param sourceSize Scale of the source image.
      * @param inputStream Stream from which to read the image. Implementations
      *                    should not close it.
      * @param outputStream Stream to which to write the image. Implementations

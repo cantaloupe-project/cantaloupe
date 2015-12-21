@@ -28,13 +28,13 @@ public interface FileProcessor extends Processor {
      *
      * <p>Operations should be applied in the order they appear in the
      * OperationList iterator. For the sake of efficiency, implementations
-     * might want to check whether each one is a no-op
+     * should check whether each one is a no-op
      * ({@link edu.illinois.library.cantaloupe.image.Operation#isNoOp()})
      * before performing it.</p>
      *
      * <p>Implementations should use the sourceSize parameter and not their
-     * own <code>getScale()</code> method to avoid reusing a potentially
-     * unreusable InputStream.</p>
+     * own {#link #getScale} method to avoid reusing a potentially unreusable
+     * InputStream.</p>
      *
      * @param ops OperationList of the output image
      * @param sourceFormat Format of the source image. Will never be
