@@ -18,12 +18,15 @@ import org.slf4j.LoggerFactory;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 
 /**
  * @see <a href="http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/welcome.html">
  *     AWS SDK for Java</a>
  */
-class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
+class AmazonS3Resolver extends AbstractResolver
+        implements ChannelResolver, StreamResolver {
 
     private static Logger logger = LoggerFactory.
             getLogger(AmazonS3Resolver.class);
@@ -77,6 +80,12 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
             }
         }
         return client;
+    }
+
+    @Override
+    public ReadableByteChannel getChannel(Identifier identifier)
+            throws IOException {
+        return Channels.newChannel(getInputStream(identifier));
     }
 
     @Override

@@ -1,17 +1,20 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
+import static org.junit.Assert.*;
 
 /**
  * <p>Tests AmazonS3Resolver against Amazon S3 -- the actual AWS S3, not a
@@ -27,11 +30,12 @@ import java.io.IOException;
  *
  * <p>Also, the bucket must contain an image called f50.jpg.</p>
  */
-public class AmazonS3ResolverTest extends CantaloupeTestCase {
+public class AmazonS3ResolverTest {
 
     private static final Identifier IMAGE = new Identifier("f50.jpg");
     AmazonS3Resolver instance;
 
+    @Before
     public void setUp() throws IOException {
         FileInputStream fis = new FileInputStream(new File(
                 System.getProperty("user.home") + "/.s3/cantaloupe"));
@@ -53,6 +57,28 @@ public class AmazonS3ResolverTest extends CantaloupeTestCase {
         instance = new AmazonS3Resolver();
     }
 
+    @Test
+    public void testGetChannel() {
+        // present, readable image
+        try {
+            assertNotNull(instance.getChannel(IMAGE));
+        } catch (IOException e) {
+            fail();
+        }
+        // missing image
+        try {
+            instance.getChannel(new Identifier("bogus"));
+            fail("Expected exception");
+        } catch (FileNotFoundException e) {
+            // pass
+        } catch (IOException e) {
+            fail("Expected FileNotFoundException");
+        }
+        // present, unreadable image
+        // TODO: write this
+    }
+
+    @Test
     public void testGetInputStream() {
         // present, readable image
         try {
@@ -73,6 +99,7 @@ public class AmazonS3ResolverTest extends CantaloupeTestCase {
         // TODO: write this
     }
 
+    @Test
     public void testGetSourceFormat() throws IOException {
         assertEquals(SourceFormat.JPG, instance.getSourceFormat(IMAGE));
         try {

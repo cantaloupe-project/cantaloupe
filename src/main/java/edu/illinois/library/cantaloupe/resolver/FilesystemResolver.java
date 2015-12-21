@@ -22,13 +22,15 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.file.AccessDeniedException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 class FilesystemResolver extends AbstractResolver
-        implements FileResolver, StreamResolver {
+        implements ChannelResolver, FileResolver, StreamResolver {
 
     private static Logger logger = LoggerFactory.
             getLogger(FilesystemResolver.class);
@@ -89,6 +91,12 @@ class FilesystemResolver extends AbstractResolver
             }
         }
         throw new ScriptException("Unsupported script type: " + extension);
+    }
+
+    @Override
+    public ReadableByteChannel getChannel(Identifier identifier)
+            throws IOException {
+        return Channels.newChannel(getInputStream(identifier));
     }
 
     @Override

@@ -15,12 +15,15 @@ import javax.script.ScriptException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-class JdbcResolver extends AbstractResolver implements StreamResolver {
+class JdbcResolver extends AbstractResolver
+        implements ChannelResolver, StreamResolver {
 
     private static Logger logger = LoggerFactory.getLogger(JdbcResolver.class);
 
@@ -78,6 +81,12 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
             dataSource.setConnectionTimeout(connectionTimeout);
         }
         return dataSource.getConnection();
+    }
+
+    @Override
+    public ReadableByteChannel getChannel(Identifier identifier)
+            throws IOException {
+        return Channels.newChannel(getInputStream(identifier));
     }
 
     @Override

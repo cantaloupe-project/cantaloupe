@@ -26,13 +26,16 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-class HttpResolver extends AbstractResolver implements StreamResolver {
+class HttpResolver extends AbstractResolver
+        implements ChannelResolver, StreamResolver {
 
     private static Logger logger = LoggerFactory.getLogger(HttpResolver.class);
 
@@ -100,6 +103,12 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
             }
         }
         throw new ScriptException("Unsupported script type: " + extension);
+    }
+
+    @Override
+    public ReadableByteChannel getChannel(Identifier identifier)
+            throws IOException {
+        return Channels.newChannel(getInputStream(identifier));
     }
 
     @Override
