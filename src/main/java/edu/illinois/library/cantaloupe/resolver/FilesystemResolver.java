@@ -98,8 +98,8 @@ class FilesystemResolver extends AbstractResolver
             checkAccess(file, identifier);
             logger.debug("Resolved {} to {}", identifier,
                     file.getAbsolutePath());
-        } catch (IOException e) {
-            logger.warn(e.getMessage(), e);
+        } catch (FileNotFoundException | AccessDeniedException e) {
+            logger.info(e.getMessage());
             throw e;
         }
         return file;
