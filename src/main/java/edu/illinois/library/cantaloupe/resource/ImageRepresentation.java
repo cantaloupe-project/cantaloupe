@@ -119,15 +119,13 @@ public class ImageRepresentation extends AbstractImageRepresentation {
                 doWrite(outputStream);
             }
         } finally {
-            /*
-            TODO: doesn't work with Java2dProcessor.process() - try in release()?
             try {
                 if (this.inputStream != null) {
                     this.inputStream.close();
                 }
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
-            } */
+            }
         }
     }
 
