@@ -47,8 +47,8 @@ import java.util.concurrent.Executors;
  * Written for version 7.7, but may work with other versions. Uses kdu_expand
  * for cropping and an initial scale reduction factor, and either Java 2D or
  * JAI for all remaining processing steps. kdu_expand generates BMP output
- * which is streamed directly to the ImageIO/JAI reader. (These are really fast
- * with BMP for some reason).
+ * which is streamed directly to the ImageIO or JAI reader, which are really
+ * fast with BMP for some reason.
  *
  * @see <a href="http://kakadusoftware.com/wp-content/uploads/2014/06/Usage_Examples-v7_7.txt">
  *     Usage Examples for the Demonstration Applications Supplied with Kakadu
@@ -119,29 +119,10 @@ class KakaduProcessor implements FileProcessor {
         String path = Application.getConfiguration().
                 getString(PATH_TO_BINARIES_CONFIG_KEY);
         if (path != null) {
-            path = StringUtils.stripEnd(path, File.separator) + File.separator +
-                    binaryName;
+            path = StringUtils.stripEnd(path, File.separator) +
+                    File.separator + binaryName;
         } else {
             path = binaryName;
-        }
-        return path;
-    }
-
-    private static String getStdoutSymlinkPath() {
-        return StringUtils.stripEnd(
-                Application.getConfiguration().getString(PATH_TO_STDOUT_SYMLINK_CONFIG_KEY),
-                File.separator);
-    }
-
-    /**
-     * Quotes command-line parameters with spaces.
-     *
-     * @param path
-     * @return
-     */
-    private static String quote(String path) {
-        if (path.contains(" ")) {
-            path = "\"" + path + "\"";
         }
         return path;
     }
@@ -384,7 +365,8 @@ class KakaduProcessor implements FileProcessor {
         }
 
         command.add("-o");
-        command.add(quote(getStdoutSymlinkPath()));
+        command.add(Application.getConfiguration().
+                getString(PATH_TO_STDOUT_SYMLINK_CONFIG_KEY));
 
         return new ProcessBuilder(command);
     }

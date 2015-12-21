@@ -101,19 +101,6 @@ class FfmpegProcessor implements FileProcessor {
         return path;
     }
 
-    /**
-     * Quotes command-line parameters with spaces.
-     *
-     * @param path
-     * @return
-     */
-    private static String quote(String path) {
-        if (path.trim().contains(" ")) {
-            path = "\"" + path + "\"";
-        }
-        return path;
-    }
-
     @Override
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
         Set<OutputFormat> outputFormats = new HashSet<>();
@@ -298,7 +285,7 @@ class FfmpegProcessor implements FileProcessor {
         }
 
         command.add("-i");
-        command.add(quote(inputFile.getAbsolutePath()));
+        command.add(inputFile.getAbsolutePath());
         command.add("-nostdin");
         command.add("-v");
         command.add("quiet");
