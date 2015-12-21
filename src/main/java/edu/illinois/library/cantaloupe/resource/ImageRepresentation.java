@@ -8,8 +8,8 @@ import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.StreamProcessor;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.TeeOutputStream;
+import edu.illinois.library.cantaloupe.util.IOUtils;
+import edu.illinois.library.cantaloupe.util.TeeWritableByteChannel;
 import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +20,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * Restlet representation for images.
@@ -84,39 +87,39 @@ public class ImageRepresentation extends AbstractImageRepresentation {
     /**
      * Writes the source image to the given output stream.
      *
-     * @param outputStream Response body output stream supplied by Restlet
+     * @param writableChannel Response body channel supplied by Restlet
      * @throws IOException
      */
     @Override
-    public void write(OutputStream outputStream) throws IOException {
+    public void write(WritableByteChannel writableChannel) throws IOException {
         Cache cache = CacheFactory.getInstance();
         try {
             if (cache != null) {
-                OutputStream cacheOutputStream = null;
-                try (InputStream cacheInputStream =
-                             cache.getImageInputStream(this.ops)) {
-                    if (cacheInputStream != null) {
+                WritableByteChannel cacheWritableChannel = null;
+                try (ReadableByteChannel cacheReadableChannel =
+                             cache.getImageReadableChannel(this.ops)) {
+                    if (cacheReadableChannel != null) {
                         // a cached image is available; write it to the
                         // response output stream.
-                        IOUtils.copy(cacheInputStream, outputStream);
+                        IOUtils.copy(cacheReadableChannel, writableChannel);
                     } else {
                         // create a TeeOutputStream to write to both the
                         // response output stream and the cache simultaneously.
-                        cacheOutputStream = cache.
-                                getImageOutputStream(this.ops);
-                        TeeOutputStream tos = new TeeOutputStream(
-                                outputStream, cacheOutputStream);
-                        doCacheAwareWrite(tos, cache);
+                        cacheWritableChannel = cache.getImageWritableChannel(this.ops);
+                        TeeWritableByteChannel teeChannel = new TeeWritableByteChannel(
+                                writableChannel, cacheWritableChannel);
+                        doCacheAwareWrite(teeChannel, cache);
                     }
                 } catch (Exception e) {
                     throw new IOException(e);
                 } finally {
-                    if (cacheOutputStream != null) {
-                        cacheOutputStream.close();
+                    if (cacheWritableChannel != null &&
+                            cacheWritableChannel.isOpen()) {
+                        cacheWritableChannel.close();
                     }
                 }
             } else {
-                doWrite(outputStream);
+                doWrite(writableChannel);
             }
         } finally {
             try {
@@ -133,31 +136,32 @@ public class ImageRepresentation extends AbstractImageRepresentation {
      * Variant of doWrite() that cleans up incomplete cached images when
      * the connection has been broken.
      *
-     * @param outputStream
+     * @param writableChannel
      * @param cache
      * @throws IOException
      */
-    private void doCacheAwareWrite(TeeOutputStream outputStream,
+    private void doCacheAwareWrite(TeeWritableByteChannel writableChannel,
                                    Cache cache) throws IOException {
         try {
-            doWrite(outputStream);
+            doWrite(writableChannel);
         } catch (IOException e) {
             logger.debug(e.getMessage(), e);
             cache.purge(this.ops);
         }
     }
 
-    private void doWrite(OutputStream outputStream) throws IOException {
+    private void doWrite(WritableByteChannel writableChannel) throws IOException {
         try {
             final long msec = System.currentTimeMillis();
             // If the operations are effectively a no-op, the source image can
             // be streamed directly.
             if (this.ops.isNoOp(this.sourceFormat)) {
                 if (this.file != null) {
-                    IOUtils.copy(new FileInputStream(this.file),
-                            outputStream);
+                    IOUtils.copy(new FileInputStream(this.file).getChannel(),
+                            writableChannel);
                 } else {
-                    IOUtils.copy(this.inputStream, outputStream);
+                    IOUtils.copy(Channels.newChannel(this.inputStream),
+                            writableChannel);
                 }
                 logger.debug("Streamed with no processing in {} msec",
                         System.currentTimeMillis() - msec);
@@ -167,11 +171,11 @@ public class ImageRepresentation extends AbstractImageRepresentation {
                 if (this.file != null) {
                     FileProcessor fproc = (FileProcessor) proc;
                     fproc.process(this.ops, this.sourceFormat, this.fullSize,
-                            this.file, outputStream);
+                            this.file, writableChannel);
                 } else {
                     StreamProcessor sproc = (StreamProcessor) proc;
                     sproc.process(this.ops, this.sourceFormat,
-                            this.fullSize, this.inputStream, outputStream);
+                            this.fullSize, this.inputStream, writableChannel);
                 }
                 logger.debug("{} processed in {} msec",
                         proc.getClass().getSimpleName(),

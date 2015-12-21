@@ -19,6 +19,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -118,7 +120,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
                         StreamProcessor proc = (StreamProcessor) getProcessor();
                         Dimension size = proc.getSize(sizeInputStream, sourceFormat);
                         proc.process(ops, sourceFormat, size,
-                                processInputStream, new NullOutputStream());
+                                processInputStream, new NullWritableByteChannel());
                         fail("Expected exception");
                     } catch (ProcessorException e) {
                         assertEquals("Unsupported source format: " +
@@ -136,7 +138,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
                                 sourceFormat.getPreferredExtension());
                         Dimension size = proc.getSize(file, sourceFormat);
                         proc.process(ops, sourceFormat, size,
-                                file, new NullOutputStream());
+                                file, new NullWritableByteChannel());
                         fail("Expected exception");
                     } catch (ProcessorException e) {
                         assertEquals("Unsupported source format: " +
@@ -305,8 +307,9 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
                         Dimension size = proc.getSize(sizeInputStream,
                                 sourceFormat);
                         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                        WritableByteChannel outputChannel = Channels.newChannel(outputStream);
                         proc.process(ops, sourceFormat, size,
-                                processInputStream, outputStream);
+                                processInputStream, outputChannel);
                         assertTrue(outputStream.toByteArray().length > 100); // TODO: actually read this
                     } finally {
                         sizeInputStream.close();
@@ -318,7 +321,8 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
                     File file = TestUtil.getFixture(sourceFormat.getPreferredExtension());
                     Dimension size = proc.getSize(file, sourceFormat);
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                    proc.process(ops, sourceFormat, size, file, outputStream);
+                    WritableByteChannel outputChannel = Channels.newChannel(outputStream);
+                    proc.process(ops, sourceFormat, size, file, outputChannel);
                     assertTrue(outputStream.toByteArray().length > 100); // TODO: actually read this
                 }
             }

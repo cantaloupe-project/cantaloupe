@@ -16,14 +16,14 @@ import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import org.restlet.data.MediaType;
-import org.restlet.representation.OutputRepresentation;
+import org.restlet.representation.WritableRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.nio.channels.ReadableByteChannel;
 import java.util.Map;
 import java.util.Set;
 
@@ -54,7 +54,7 @@ public class ImageResource extends AbstractResource {
      * @throws Exception
      */
     @Get
-    public OutputRepresentation doGet() throws Exception {
+    public WritableRepresentation doGet() throws Exception {
         Map<String,Object> attrs = this.getRequest().getAttributes();
         // Assemble the URI parameters into a Parameters object
         Parameters params = new Parameters(
@@ -73,12 +73,13 @@ public class ImageResource extends AbstractResource {
                 getBoolean(RESOLVE_FIRST_CONFIG_KEY, true)) {
             Cache cache = CacheFactory.getInstance();
             if (cache != null) {
-                InputStream inputStream = cache.getImageInputStream(ops);
-                if (inputStream != null) {
+                ReadableByteChannel readableChannel =
+                        cache.getImageReadableChannel(ops);
+                if (readableChannel != null) {
                     this.addLinkHeader(params);
                     return new CachedImageRepresentation(
                             new MediaType(params.getOutputFormat().getMediaType()),
-                            ops, inputStream);
+                            ops, readableChannel);
                 }
             }
         }

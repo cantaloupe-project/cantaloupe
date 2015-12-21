@@ -49,7 +49,9 @@ import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -399,9 +401,10 @@ abstract class ProcessorUtil {
         return outputFormats;
     }
 
-    public static BufferedImage readImage(InputStream inputStream)
+    public static BufferedImage readImage(ReadableByteChannel readableChannel)
             throws IOException {
-        return ProcessorUtil.convertToRgb(ImageIO.read(inputStream));
+        return ProcessorUtil.convertToRgb(ImageIO.read(
+                ImageIO.createImageInputStream(readableChannel)));
     }
 
     public static BufferedImage readImage(File inputFile,
@@ -425,12 +428,13 @@ abstract class ProcessorUtil {
     }
 
     /**
-     * @param inputStream
+     * @param readableChannel
      * @return
      */
-    public static RenderedImage readImageWithJai(InputStream inputStream) {
+    public static RenderedImage readImageWithJai(
+            ReadableByteChannel readableChannel) throws IOException {
         final ParameterBlockJAI pbj = new ParameterBlockJAI("ImageRead");
-        pbj.setParameter("Input", inputStream);
+        pbj.setParameter("Input", ImageIO.createImageInputStream(readableChannel));
         return JAI.create("ImageRead", pbj,
                 defaultRenderingHints(new Dimension(512, 512)));
     }
@@ -1166,12 +1170,12 @@ abstract class ProcessorUtil {
      *
      * @param image Image to write
      * @param outputFormat Format of the output image
-     * @param outputStream Stream to which to write the image
+     * @param writableChannel Channel to write the image to
      * @throws IOException
      */
     public static void writeImage(BufferedImage image,
                                   OutputFormat outputFormat,
-                                  OutputStream outputStream)
+                                  WritableByteChannel writableChannel)
             throws IOException {
         switch (outputFormat) {
             case JPG:
@@ -1196,7 +1200,7 @@ abstract class ProcessorUtil {
                     param.setCompressionQuality(Application.getConfiguration().
                             getFloat(Java2dProcessor.JPG_QUALITY_CONFIG_KEY, 0.7f));
                     param.setCompressionType("JPEG");
-                    ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
+                    ImageOutputStream os = ImageIO.createImageOutputStream(writableChannel);
                     writer.setOutput(os);
                     IIOImage iioImage = new IIOImage(image, null, null);
                     writer.write(null, iioImage, param);
@@ -1206,7 +1210,7 @@ abstract class ProcessorUtil {
                 break;
             /*case PNG: // an alternative in case ImageIO.write() ever causes problems
                 writer = ImageIO.getImageWritersByFormatName("png").next();
-                ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
+                ImageOutputStream os = ImageIO.createImageOutputStream(writableChannel);
                 writer.setOutput(os);
                 writer.write(image);
                 break;*/
@@ -1221,7 +1225,7 @@ abstract class ProcessorUtil {
                             ImageWriteParam param = writer.getDefaultWriteParam();
                             param.setDestinationType(ImageTypeSpecifier.
                                     createFromBufferedImageType(BufferedImage.TYPE_INT_RGB));
-                            ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
+                            ImageOutputStream os = ImageIO.createImageOutputStream(writableChannel);
                             writer.setOutput(os);
                             IIOImage iioImage = new IIOImage(image, null, null);
                             writer.write(null, iioImage, param);
@@ -1235,7 +1239,7 @@ abstract class ProcessorUtil {
             default:
                 // TODO: jp2 doesn't seem to work
                 ImageIO.write(image, outputFormat.getExtension(),
-                        outputStream);
+                        ImageIO.createImageOutputStream(writableChannel));
                 break;
         }
     }
@@ -1245,12 +1249,12 @@ abstract class ProcessorUtil {
      *
      * @param image Image to write
      * @param outputFormat Format of the output image
-     * @param outputStream Stream to which to write the image
+     * @param writableChannel Channel to write the image to
      * @throws IOException
      */
     public static void writeImage(RenderedOp image,
                                   OutputFormat outputFormat,
-                                  OutputStream outputStream)
+                                  WritableByteChannel writableChannel)
             throws IOException {
         switch (outputFormat) {
             case GIF:
@@ -1265,7 +1269,8 @@ abstract class ProcessorUtil {
                     image = JAI.create("translate", pb);
 
                     ImageWriter writer = (ImageWriter) writers.next();
-                    ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
+                    ImageOutputStream os = ImageIO.
+                            createImageOutputStream(writableChannel);
                     writer.setOutput(os);
                     writer.write(image);
                 }
@@ -1282,7 +1287,8 @@ abstract class ProcessorUtil {
                     j2Param.setCodeBlockSize(new int[]{128, 8});
                     j2Param.setTilingMode(ImageWriteParam.MODE_DISABLED);
                     j2Param.setProgressionType("res");
-                    ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
+                    ImageOutputStream os = ImageIO.
+                            createImageOutputStream(writableChannel);
                     writer.setOutput(os);
                     writer.write(null, iioImage, j2Param);
                 }
@@ -1292,13 +1298,14 @@ abstract class ProcessorUtil {
                 // ImageIO.write()
                 JPEGEncodeParam jParam = new JPEGEncodeParam();
                 ImageEncoder encoder = ImageCodec.createImageEncoder("JPEG",
-                        outputStream, jParam);
+                        Channels.newOutputStream(writableChannel), jParam);
                 encoder.encode(image);
                 break;
             case PNG:
                 // ImageIO.write() seems to be more efficient than
                 // PNGImageEncoder
-                ImageIO.write(image, outputFormat.getExtension(), outputStream);
+                ImageIO.write(image, outputFormat.getExtension(),
+                        ImageIO.createImageOutputStream(writableChannel));
                 /* PNGEncodeParam pngParam = new PNGEncodeParam.RGB();
                 ImageEncoder pngEncoder = ImageCodec.createImageEncoder("PNG",
                         outputStream, pngParam);
@@ -1307,8 +1314,8 @@ abstract class ProcessorUtil {
             case TIF:
                 // TIFFImageEncoder seems to be more efficient than
                 // ImageIO.write();
-                ImageEncoder tiffEnc = new TIFFImageEncoder(outputStream,
-                        null);
+                ImageEncoder tiffEnc = new TIFFImageEncoder(
+                        Channels.newOutputStream(writableChannel), null);
                 tiffEnc.encode(image);
                 break;
         }

@@ -26,7 +26,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -214,19 +215,15 @@ class GraphicsMagickProcessor implements StreamProcessor {
         return qualities;
     }
 
-    public void process(OperationList ops, SourceFormat sourceFormat,
-                        Dimension fullSize, File file,
-                        OutputStream outputStream) throws ProcessorException {
-        doProcess(file.getAbsolutePath(), null, ops, sourceFormat, fullSize,
-                outputStream);
-    }
-
     @Override
-    public void process(OperationList ops, SourceFormat sourceFormat,
-                        Dimension fullSize, InputStream inputStream,
-                        OutputStream outputStream) throws ProcessorException {
+    public void process(final OperationList ops,
+                        final SourceFormat sourceFormat,
+                        final Dimension fullSize,
+                        final InputStream inputStream,
+                        final WritableByteChannel writableChannel)
+            throws ProcessorException {
         doProcess(sourceFormat.getPreferredExtension() + ":-", inputStream,
-                ops, sourceFormat, fullSize, outputStream);
+                ops, sourceFormat, fullSize, writableChannel);
     }
 
     private void assembleOperation(IMOperation imOp, OperationList ops,
@@ -326,12 +323,15 @@ class GraphicsMagickProcessor implements StreamProcessor {
      * @param ops
      * @param sourceFormat
      * @param fullSize
-     * @param outputStream Stream to write to
+     * @param writableChannel Stream to write to
      * @throws ProcessorException
      */
-    private void doProcess(String inputPath, InputStream inputStream,
-                           OperationList ops, SourceFormat sourceFormat,
-                           Dimension fullSize, OutputStream outputStream)
+    private void doProcess(final String inputPath,
+                           final InputStream inputStream,
+                           final OperationList ops,
+                           final SourceFormat sourceFormat,
+                           final Dimension fullSize,
+                           final WritableByteChannel writableChannel)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
@@ -358,7 +358,8 @@ class GraphicsMagickProcessor implements StreamProcessor {
             if (inputStream != null) {
                 convert.setInputProvider(new Pipe(inputStream, null));
             }
-            convert.setOutputConsumer(new Pipe(null, outputStream));
+            convert.setOutputConsumer(
+                    new Pipe(null, Channels.newOutputStream(writableChannel)));
             convert.run(op);
         } catch (InterruptedException | IM4JavaException | IOException e) {
             throw new ProcessorException(e.getMessage(), e);

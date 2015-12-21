@@ -19,13 +19,13 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.channels.WritableByteChannel;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Processor using the Java2D framework.
+ * Processor using the Java 2D framework.
  */
 class Java2dProcessor implements StreamProcessor, FileProcessor {
 
@@ -161,9 +161,12 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
     }
 
     @Override
-    public void process(OperationList ops, SourceFormat sourceFormat,
-                        Dimension fullSize, File inputFile,
-                        OutputStream outputStream) throws ProcessorException {
+    public void process(final OperationList ops,
+                        final SourceFormat sourceFormat,
+                        final Dimension fullSize,
+                        final File inputFile,
+                        final WritableByteChannel writableChannel)
+            throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -195,16 +198,19 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
                 }
             }
             ProcessorUtil.writeImage(image, ops.getOutputFormat(),
-                    outputStream);
+                    writableChannel);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void process(OperationList ops, SourceFormat sourceFormat,
-                        Dimension fullSize, InputStream inputStream,
-                        OutputStream outputStream) throws ProcessorException {
+    public void process(final OperationList ops,
+                        final SourceFormat sourceFormat,
+                        final Dimension fullSize,
+                        final InputStream inputStream,
+                        final WritableByteChannel writableChannel)
+            throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -236,7 +242,7 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
                 }
             }
             ProcessorUtil.writeImage(image, ops.getOutputFormat(),
-                    outputStream);
+                    writableChannel);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }

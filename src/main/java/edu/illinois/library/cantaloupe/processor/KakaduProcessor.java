@@ -11,8 +11,8 @@ import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
+import edu.illinois.library.cantaloupe.util.IOUtils;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +33,9 @@ import java.awt.image.RenderedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -211,9 +212,12 @@ class KakaduProcessor implements FileProcessor {
     }
 
     @Override
-    public void process(OperationList ops, SourceFormat sourceFormat,
-                        Dimension fullSize, File inputFile,
-                        OutputStream outputStream) throws ProcessorException {
+    public void process(final OperationList ops,
+                        final SourceFormat sourceFormat,
+                        final Dimension fullSize,
+                        final File inputFile,
+                        final WritableByteChannel writableChannel)
+            throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -222,26 +226,29 @@ class KakaduProcessor implements FileProcessor {
             throw new UnsupportedOutputFormatException();
         }
 
-        class StreamCopier implements Runnable {
-            private final InputStream inputStream;
-            private final OutputStream outputStream;
+        class ChannelCopier implements Runnable {
+            private final ReadableByteChannel inputChannel;
+            private final WritableByteChannel outputChannel;
 
-            public StreamCopier(InputStream is, OutputStream os) {
-                inputStream = is;
-                outputStream = os;
+            public ChannelCopier(ReadableByteChannel in, WritableByteChannel out) {
+                inputChannel = in;
+                outputChannel = out;
             }
 
             public void run() {
                 try {
-                    IOUtils.copy(inputStream, outputStream);
+                    IOUtils.copy(inputChannel, outputChannel);
                 } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
+                    if (!e.getMessage().startsWith("Broken pipe")) {
+                        logger.error(e.getMessage(), e);
+                    }
                 }
             }
         }
 
         // will receive stderr output from kdu_expand
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
+        final WritableByteChannel errorBucketChannel = Channels.newChannel(errorBucket);
         try {
             final ReductionFactor reductionFactor = new ReductionFactor();
             final ProcessBuilder pb = getProcessBuilder(inputFile, ops,
@@ -250,19 +257,23 @@ class KakaduProcessor implements FileProcessor {
             final Process process = pb.start();
 
             executorService.submit(
-                    new StreamCopier(process.getErrorStream(), errorBucket));
+                    new ChannelCopier(
+                            Channels.newChannel(process.getErrorStream()),
+                            errorBucketChannel));
 
             Configuration config = Application.getConfiguration();
             switch (config.getString(POST_PROCESSOR_CONFIG_KEY, "java2d").toLowerCase()) {
                 case "jai":
                     logger.debug("Post-processing using JAI");
-                    postProcessUsingJai(process.getInputStream(), ops,
-                            reductionFactor, outputStream);
+                    postProcessUsingJai(
+                            Channels.newChannel(process.getInputStream()), ops,
+                            reductionFactor, writableChannel);
                     break;
                 default:
                     logger.debug("Post-processing using Java2D");
-                    postProcessUsingJava2d(process.getInputStream(), ops,
-                            reductionFactor, outputStream);
+                    postProcessUsingJava2d(
+                            Channels.newChannel(process.getInputStream()), ops,
+                            reductionFactor, writableChannel);
                     break;
             }
             try {
@@ -390,13 +401,13 @@ class KakaduProcessor implements FileProcessor {
         return tileSize;
     }
 
-    private void postProcessUsingJai(final InputStream processInputStream,
+    private void postProcessUsingJai(final ReadableByteChannel readableChannel,
                                      final OperationList opList,
                                      final ReductionFactor reductionFactor,
-                                     final OutputStream outputStream)
+                                     final WritableByteChannel writableChannel)
             throws IOException, ProcessorException {
         RenderedImage renderedImage =
-                ProcessorUtil.readImageWithJai(processInputStream);
+                ProcessorUtil.readImageWithJai(readableChannel);
         RenderedOp renderedOp = ProcessorUtil.reformatImage(
                 RenderedOp.wrapRenderedImage(renderedImage),
                 new Dimension(512, 512));
@@ -414,16 +425,15 @@ class KakaduProcessor implements FileProcessor {
             }
         }
         ImageIO.write(renderedOp, opList.getOutputFormat().getExtension(),
-                outputStream);
+                ImageIO.createImageOutputStream(writableChannel));
     }
 
-    private void postProcessUsingJava2d(final InputStream processInputStream,
+    private void postProcessUsingJava2d(final ReadableByteChannel readableChannel,
                                         final OperationList opList,
                                         final ReductionFactor reductionFactor,
-                                        final OutputStream outputStream)
+                                        final WritableByteChannel writableChannel)
             throws IOException, ProcessorException {
-        BufferedImage image =
-                ProcessorUtil.readImage(processInputStream);
+        BufferedImage image = ProcessorUtil.readImage(readableChannel);
         for (Operation op : opList) {
             if (op instanceof Scale) {
                 final boolean highQuality = Application.getConfiguration().
@@ -443,7 +453,7 @@ class KakaduProcessor implements FileProcessor {
             }
         }
         ProcessorUtil.writeImage(image, opList.getOutputFormat(),
-                outputStream);
+                writableChannel);
         image.flush();
     }
 

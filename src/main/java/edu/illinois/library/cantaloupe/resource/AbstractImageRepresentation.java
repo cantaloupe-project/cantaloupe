@@ -5,12 +5,12 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import org.restlet.data.Disposition;
 import org.restlet.data.MediaType;
-import org.restlet.representation.OutputRepresentation;
+import org.restlet.representation.WritableRepresentation;
 
 /**
  * Restlet representation for images.
  */
-abstract class AbstractImageRepresentation extends OutputRepresentation {
+abstract class AbstractImageRepresentation extends WritableRepresentation {
 
     public AbstractImageRepresentation(MediaType mediaType,
                                        Identifier identifier,

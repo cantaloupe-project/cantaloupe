@@ -246,7 +246,7 @@ public class ImageResourceTest extends ResourceTest {
             assertEquals(1, imageCacheFolder.listFiles().length);
             assertEquals(1, infoCacheFolder.listFiles().length);
             Cache cache = CacheFactory.getInstance();
-            assertNotNull(cache.getImageInputStream(ops));
+            assertNotNull(cache.getImageReadableChannel(ops));
             assertNotNull(cache.getDimension(ops.getIdentifier()));
 
             // move the source image out of the way
@@ -265,10 +265,10 @@ public class ImageResourceTest extends ResourceTest {
             }
 
             if (purgeMissing) {
-                assertNull(cache.getImageInputStream(ops));
+                assertNull(cache.getImageReadableChannel(ops));
                 assertNull(cache.getDimension(ops.getIdentifier()));
             } else {
-                assertNotNull(cache.getImageInputStream(ops));
+                assertNotNull(cache.getImageReadableChannel(ops));
                 assertNotNull(cache.getDimension(ops.getIdentifier()));
             }
         } finally {

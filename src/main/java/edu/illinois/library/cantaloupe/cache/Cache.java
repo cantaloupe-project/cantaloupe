@@ -7,6 +7,8 @@ import java.awt.Dimension;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * <p>Interface to be implemented by all caches. A cache stores and retrieves
@@ -32,28 +34,29 @@ public interface Cache {
     Dimension getDimension(Identifier identifier) throws IOException;
 
     /**
-     * <p>Returns an InputStream corresponding to the given OperationList.</p>
+     * <p>Returns a readable byte channel corresponding to the given
+     * OperationList.</p>
      *
      * <p>If an image corresponding to the given parameters exists in the
      * cache but is expired, implementations should delete it.</p>
      *
      * @param opList Operation list for which to retrieve an input stream, for
      *               reading from the cache.
-     * @return An input stream corresponding to the given parameters, or null
-     * if a non-expired image corresponding to the given parameters does not
-     * exist in the cache.
+     * @return Readable byte channel corresponding to the given operation list,
+     * or null if a non-expired image corresponding to the given operation list
+     * does not exist in the cache.
      */
-    InputStream getImageInputStream(OperationList opList);
+    ReadableByteChannel getImageReadableChannel(OperationList opList);
 
     /**
      * @param opList Operation list for which to retrieve an output stream, for
      *               writing to the cache.
-     * @return OutputStream to which an image corresponding to the supplied
-     * parameters can be written.
-     * @throws IOException If an output stream cannot be returned for any
-     * reason.
+     * @return Writable byte channel to which an image corresponding to the
+     * given parameters can be written.
+     * @throws IOException If a channel cannot be returned for any reason.
      */
-    OutputStream getImageOutputStream(OperationList opList) throws IOException;
+    WritableByteChannel getImageWritableChannel(OperationList opList)
+            throws IOException;
 
     /**
      * Deletes the entire cache contents.

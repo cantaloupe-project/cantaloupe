@@ -13,9 +13,9 @@ import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatExceptio
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
+import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.MediaType;
-import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Variant;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
@@ -60,7 +60,7 @@ public class ImageResource extends AbstractResource {
      * @throws Exception
      */
     @Get
-    public OutputRepresentation doGet() throws Exception {
+    public ImageRepresentation doGet() throws Exception {
         final Map<String,Object> attrs = this.getRequest().getAttributes();
         final Identifier identifier =
                 new Identifier((String) attrs.get("identifier"));

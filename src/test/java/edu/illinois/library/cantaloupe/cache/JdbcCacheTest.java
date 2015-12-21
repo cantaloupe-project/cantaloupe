@@ -10,14 +10,14 @@ import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import edu.illinois.library.cantaloupe.util.IOUtils;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.io.IOUtils;
 
 import java.awt.Dimension;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.nio.channels.WritableByteChannel;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -51,9 +51,9 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
 
-        OutputStream os = instance.getImageOutputStream(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
-        os.close();
+        WritableByteChannel bc = instance.getImageWritableChannel(ops);
+        IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")).getChannel(), bc);
+        bc.close();
 
         Identifier identifier = new Identifier("dogs");
         Crop crop = new Crop();
@@ -74,9 +74,9 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         ops.add(filter);
         ops.setOutputFormat(format);
 
-        os = instance.getImageOutputStream(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
-        os.close();
+        bc = instance.getImageWritableChannel(ops);
+        IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")).getChannel(), bc);
+        bc.close();
 
         identifier = new Identifier("bunnies");
         crop = new Crop();
@@ -98,9 +98,9 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         ops.add(filter);
         ops.setOutputFormat(format);
 
-        os = instance.getImageOutputStream(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
-        os.close();
+        bc = instance.getImageWritableChannel(ops);
+        IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")).getChannel(), bc);
+        bc.close();
 
         // persist some corresponding dimensions
         instance.putDimension(new Identifier("cats"), new Dimension(50, 40));
@@ -265,9 +265,9 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
 
-        OutputStream os = instance.getImageOutputStream(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
-        os.close();
+        WritableByteChannel bc = instance.getImageWritableChannel(ops);
+        IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")).getChannel(), bc);
+        bc.close();
         instance.putDimension(new Identifier("bees"), new Dimension(50, 40));
 
         instance.purgeExpired();
@@ -316,8 +316,8 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("bees"));
 
-        IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")),
-                instance.getImageOutputStream(ops));
+        IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")).getChannel(),
+                instance.getImageWritableChannel(ops));
         instance.putDimension(new Identifier("bees"), new Dimension(50, 40));
 
         // existing, non-expired image
@@ -337,7 +337,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
     public void testGetImageInputStreamWithZeroTtl() {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
-        assertNotNull(instance.getImageInputStream(ops));
+        assertNotNull(instance.getImageReadableChannel(ops));
     }
 
     public void testGetImageInputStreamWithNonzeroTtl() throws Exception {
@@ -350,29 +350,29 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("bees"));
 
-        OutputStream os = instance.getImageOutputStream(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")), os);
-        os.close();
+        WritableByteChannel bc = instance.getImageWritableChannel(ops);
+        IOUtils.copy(new FileInputStream(TestUtil.getFixture("jpg")).getChannel(), bc);
+        bc.close();
         instance.putDimension(new Identifier("bees"), new Dimension(50, 40));
 
         // existing, non-expired image
-        assertNotNull(instance.getImageInputStream(ops));
+        assertNotNull(instance.getImageReadableChannel(ops));
 
         // existing, expired image
         ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
-        assertNull(instance.getImageInputStream(ops));
+        assertNull(instance.getImageReadableChannel(ops));
 
         // nonexistent image
         ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("bogus"));
-        assertNull(instance.getImageInputStream(ops));
+        assertNull(instance.getImageReadableChannel(ops));
     }
 
     public void testGetImageOutputStream() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
-        assertNotNull(instance.getImageOutputStream(ops));
+        assertNotNull(instance.getImageWritableChannel(ops));
     }
 
     public void testOldestValidDate() {

@@ -5,7 +5,7 @@ import edu.illinois.library.cantaloupe.image.OperationList;
 
 import java.awt.Dimension;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * Interface to be implemented by image processors that support input via
@@ -43,14 +43,14 @@ public interface StreamProcessor extends Processor {
      * @param sourceSize Scale of the source image.
      * @param inputStream Stream from which to read the image. Implementations
      *                    should not close it.
-     * @param outputStream Stream to which to write the image. Implementations
-     *                     should not close it.
+     * @param writableChannel Writable channel to write the image to.
+     *                        Implementations should not close it.
      * @throws UnsupportedOutputFormatException
      * @throws UnsupportedSourceFormatException
      * @throws ProcessorException
      */
     void process(OperationList ops, SourceFormat sourceFormat,
                  Dimension sourceSize, InputStream inputStream,
-                 OutputStream outputStream) throws ProcessorException;
+                 WritableByteChannel writableChannel) throws ProcessorException;
 
 }

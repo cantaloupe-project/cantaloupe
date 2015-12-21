@@ -16,8 +16,6 @@ import org.apache.commons.io.FileUtils;
 
 import java.awt.Dimension;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
 
@@ -341,39 +339,39 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
     /* getImageInputStream(OperationList) */
 
-    public void testGetImageInputStreamWithZeroTtl() throws Exception {
+    public void testGetImageReadableChannelWithZeroTtl() throws Exception {
         OperationList ops = TestUtil.newOperationList();
-        assertNull(instance.getImageInputStream(ops));
+        assertNull(instance.getImageReadableChannel(ops));
 
         instance.getImageFile(ops).createNewFile();
-        assertTrue(instance.getImageInputStream(ops) instanceof FileInputStream);
+        assertNotNull(instance.getImageReadableChannel(ops));
     }
 
-    public void testGetImageInputStreamWithNonzeroTtl() throws Exception {
+    public void testGetImageReadableChannelWithNonzeroTtl() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         Application.getConfiguration().
                 setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
         File cacheFile = instance.getImageFile(ops);
         cacheFile.createNewFile();
-        assertTrue(instance.getImageInputStream(ops) instanceof FileInputStream);
+        assertNotNull(instance.getImageReadableChannel(ops));
 
         Thread.sleep(1100);
-        assertNull(instance.getImageInputStream(ops));
+        assertNull(instance.getImageReadableChannel(ops));
         assertFalse(cacheFile.exists());
     }
 
-    /* getImageOutputStream(OperationList) */
+    /* getImageWritableChannel(OperationList) */
 
-    public void testGetImageOutputStream() throws Exception {
+    public void testGetImageWritableChannel() throws Exception {
         OperationList ops = TestUtil.newOperationList();
-        assertTrue(instance.getImageOutputStream(ops) instanceof FileOutputStream);
+        assertNotNull(instance.getImageWritableChannel(ops));
     }
 
-    public void testImageOutputStreamCreatesFolder() throws IOException {
+    public void testImageWritableChannelCreatesFolder() throws IOException {
         FileUtils.deleteDirectory(imagePath);
 
         OperationList ops = TestUtil.newOperationList();
-        instance.getImageOutputStream(ops);
+        instance.getImageWritableChannel(ops);
         assertTrue(imagePath.exists());
     }
 

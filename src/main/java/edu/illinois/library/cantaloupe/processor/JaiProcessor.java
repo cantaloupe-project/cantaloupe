@@ -20,7 +20,7 @@ import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.channels.WritableByteChannel;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -161,22 +161,31 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
     }
 
     @Override
-    public void process(OperationList ops, SourceFormat sourceFormat,
-                        Dimension fullSize, File inputFile,
-                        OutputStream outputStream) throws ProcessorException {
-        doProcess(ops, sourceFormat, fullSize, inputFile, outputStream);
+    public void process(final OperationList ops,
+                        final SourceFormat sourceFormat,
+                        final Dimension fullSize,
+                        final File inputFile,
+                        final WritableByteChannel writableChannel)
+            throws ProcessorException {
+        doProcess(ops, sourceFormat, fullSize, inputFile, writableChannel);
     }
 
     @Override
-    public void process(OperationList ops, SourceFormat sourceFormat,
-                        Dimension fullSize, InputStream inputStream,
-                        OutputStream outputStream) throws ProcessorException {
-        doProcess(ops, sourceFormat, fullSize, inputStream, outputStream);
+    public void process(final OperationList ops,
+                        final SourceFormat sourceFormat,
+                        final Dimension fullSize,
+                        final InputStream inputStream,
+                        final WritableByteChannel writableChannel)
+            throws ProcessorException {
+        doProcess(ops, sourceFormat, fullSize, inputStream, writableChannel);
     }
 
-    private void doProcess(OperationList ops, SourceFormat sourceFormat,
-                           Dimension fullSize, Object input,
-                           OutputStream outputStream) throws ProcessorException {
+    private void doProcess(final OperationList ops,
+                           final SourceFormat sourceFormat,
+                           final Dimension fullSize,
+                           final Object input,
+                           final WritableByteChannel writableChannel)
+            throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -218,7 +227,7 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
                     }
                 }
                 ProcessorUtil.writeImage(renderedOp, ops.getOutputFormat(),
-                        outputStream);
+                        writableChannel);
             }
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);

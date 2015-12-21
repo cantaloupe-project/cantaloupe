@@ -5,7 +5,7 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 
 import java.awt.Dimension;
 import java.io.File;
-import java.io.OutputStream;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * Interface to be implemented by processors that support input via direct
@@ -41,14 +41,14 @@ public interface FileProcessor extends Processor {
      * {@link SourceFormat#UNKNOWN}.
      * @param inputFile File from which to read the image. Implementations
      *                  should not close it.
-     * @param outputStream Stream to which to write the image. Implementations
-     *                     should not close it.
+     * @param writableChannel Writable channel to which to write the image.
+     *                        Implementations should not close it.
      * @throws UnsupportedOutputFormatException
      * @throws UnsupportedSourceFormatException
      * @throws ProcessorException
      */
     void process(OperationList ops, SourceFormat sourceFormat,
                  Dimension sourceSize, File inputFile,
-                 OutputStream outputStream) throws ProcessorException;
+                 WritableByteChannel writableChannel) throws ProcessorException;
 
 }

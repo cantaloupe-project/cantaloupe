@@ -14,6 +14,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -238,7 +241,7 @@ class JdbcCache implements Cache {
     }
 
     @Override
-    public InputStream getImageInputStream(OperationList ops) {
+    public ReadableByteChannel getImageReadableChannel(OperationList ops) {
         InputStream inputStream = null;
         try {
             final String tableName = getImageTableName();
@@ -268,15 +271,15 @@ class JdbcCache implements Cache {
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
-        return inputStream;
+        return (inputStream != null) ? Channels.newChannel(inputStream) : null;
     }
 
     @Override
-    public OutputStream getImageOutputStream(OperationList ops)
+    public WritableByteChannel getImageWritableChannel(OperationList ops)
             throws IOException {
         logger.debug("Miss; caching {}", ops);
         try {
-            return new JdbcImageOutputStream(getConnection(), ops);
+            return Channels.newChannel(new JdbcImageOutputStream(getConnection(), ops));
         } catch (SQLException e) {
             throw new IOException(e.getMessage(), e);
         }

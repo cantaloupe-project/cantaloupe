@@ -26,7 +26,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -213,9 +214,12 @@ class ImageMagickProcessor implements StreamProcessor {
     }
 
     @Override
-    public void process(OperationList ops, SourceFormat sourceFormat,
-                        Dimension fullSize, InputStream inputStream,
-                        OutputStream outputStream) throws ProcessorException {
+    public void process(final OperationList ops,
+                        final SourceFormat sourceFormat,
+                        final Dimension fullSize,
+                        final InputStream inputStream,
+                        final WritableByteChannel writableChannel)
+            throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -233,7 +237,8 @@ class ImageMagickProcessor implements StreamProcessor {
             op.addImage(ops.getOutputFormat().getExtension() + ":-"); // write to stdout
 
             Pipe pipeIn = new Pipe(inputStream, null);
-            Pipe pipeOut = new Pipe(null, outputStream);
+            Pipe pipeOut = new Pipe(null,
+                    Channels.newOutputStream(writableChannel));
 
             ConvertCmd convert = new ConvertCmd();
 

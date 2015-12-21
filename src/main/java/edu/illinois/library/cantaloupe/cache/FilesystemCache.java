@@ -18,8 +18,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,8 +35,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 class FilesystemCache implements Cache {
 
     /**
-     * Returned by {@link FilesystemCache#getImageOutputStream} when an image
-     * for a given operation list can be cached.
+     * Returned by
+     * {@link FilesystemCache#getImageWritableChannel(OperationList)} when an
+     * image for a given operation list can be cached.
      */
     private static class ConcurrentFileOutputStream extends FileOutputStream {
 
@@ -72,12 +74,14 @@ class FilesystemCache implements Cache {
     }
 
     /**
-     * Returned by {@link FilesystemCache#getImageOutputStream} when an
+     * Returned by
+     * {@link FilesystemCache#getImageWritableChannel(OperationList)} when an
      * output stream for the same operation list has been returned in another
      * thread but has not yet been closed. Allows that thread to keep writing
      * without other threads interfering.
      */
-    private static class ConcurrentNullOutputStream extends OutputStream {
+    private static class ConcurrentNullWritableByteChannel
+            implements WritableByteChannel {
 
         private Set<OperationList> imagesBeingWritten;
         private OperationList opsList;
@@ -87,8 +91,9 @@ class FilesystemCache implements Cache {
          *                           currently being written.
          * @param opsList
          */
-        public ConcurrentNullOutputStream(Set<OperationList> imagesBeingWritten,
-                                          OperationList opsList) {
+        public ConcurrentNullWritableByteChannel(
+                final Set<OperationList> imagesBeingWritten,
+                final OperationList opsList) {
             this.imagesBeingWritten = imagesBeingWritten;
             this.opsList = opsList;
         }
@@ -96,12 +101,16 @@ class FilesystemCache implements Cache {
         @Override
         public void close() throws IOException {
             imagesBeingWritten.remove(opsList);
-            super.close();
         }
 
         @Override
-        public void write(int b) throws IOException {
-            // noop
+        public boolean isOpen() {
+            return false;
+        }
+
+        @Override
+        public int write(ByteBuffer src) throws IOException {
+            return 0;
         }
 
     }
@@ -308,13 +317,13 @@ class FilesystemCache implements Cache {
     }
 
     @Override
-    public InputStream getImageInputStream(OperationList ops) {
+    public ReadableByteChannel getImageReadableChannel(OperationList ops) {
         File cacheFile = getImageFile(ops);
         if (cacheFile != null && cacheFile.exists()) {
             if (!isExpired(cacheFile)) {
                 try {
                     logger.debug("Hit for image: {}", ops);
-                    return new FileInputStream(cacheFile);
+                    return new FileInputStream(cacheFile).getChannel();
                 } catch (FileNotFoundException e) {
                     logger.error(e.getMessage(), e);
                 }
@@ -330,12 +339,12 @@ class FilesystemCache implements Cache {
     }
 
     @Override
-    public OutputStream getImageOutputStream(OperationList ops)
+    public WritableByteChannel getImageWritableChannel(OperationList ops)
             throws IOException {
         if (imagesBeingWritten.contains(ops)) {
             logger.debug("Miss, but cache file for {} is being written in " +
                     "another thread, so not caching", ops);
-            return new ConcurrentNullOutputStream(imagesBeingWritten, ops);
+            return new ConcurrentNullWritableByteChannel(imagesBeingWritten, ops);
         }
         imagesBeingWritten.add(ops); // will be removed by ConcurrentNullOutputStream.close()
         logger.debug("Miss; caching {}", ops);
@@ -347,7 +356,7 @@ class FilesystemCache implements Cache {
             }
         }
         return new ConcurrentFileOutputStream(cacheFile, imagesBeingWritten,
-                ops);
+                ops).getChannel();
     }
 
     @Override

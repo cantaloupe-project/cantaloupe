@@ -11,7 +11,7 @@ import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
-import org.apache.commons.io.IOUtils;
+import edu.illinois.library.cantaloupe.util.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,8 +29,9 @@ import java.awt.Rectangle;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -190,9 +191,12 @@ class FfmpegProcessor implements FileProcessor {
     }
 
     @Override
-    public void process(OperationList ops, SourceFormat sourceFormat,
-                        Dimension fullSize, File inputFile,
-                        OutputStream outputStream) throws ProcessorException {
+    public void process(final OperationList ops,
+                        final SourceFormat sourceFormat,
+                        final Dimension fullSize,
+                        final File inputFile,
+                        final WritableByteChannel writableChannel)
+            throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -201,18 +205,18 @@ class FfmpegProcessor implements FileProcessor {
             throw new UnsupportedOutputFormatException();
         }
 
-        class StreamCopier implements Runnable {
-            private final InputStream inputStream;
-            private final OutputStream outputStream;
+        class ChannelCopier implements Runnable {
+            private final ReadableByteChannel inputChannel;
+            private final WritableByteChannel outputChannel;
 
-            public StreamCopier(InputStream is, OutputStream os) {
-                inputStream = is;
-                outputStream = os;
+            public ChannelCopier(ReadableByteChannel in, WritableByteChannel out) {
+                inputChannel = in;
+                outputChannel = out;
             }
 
             public void run() {
                 try {
-                    IOUtils.copy(inputStream, outputStream);
+                    IOUtils.copy(inputChannel, outputChannel);
                 } catch (IOException e) {
                     if (!e.getMessage().startsWith("Broken pipe")) {
                         logger.error(e.getMessage(), e);
@@ -222,6 +226,7 @@ class FfmpegProcessor implements FileProcessor {
         }
 
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
+        final WritableByteChannel errorBucketChannel = Channels.newChannel(errorBucket);
         try {
             final ProcessBuilder pb = getProcessBuilder(ops, fullSize,
                     inputFile);
@@ -229,9 +234,13 @@ class FfmpegProcessor implements FileProcessor {
             final Process process = pb.start();
 
             executorService.submit(
-                    new StreamCopier(process.getInputStream(), outputStream));
+                    new ChannelCopier(
+                            Channels.newChannel(process.getInputStream()),
+                            writableChannel));
             executorService.submit(
-                    new StreamCopier(process.getErrorStream(), errorBucket));
+                    new ChannelCopier(
+                            Channels.newChannel(process.getErrorStream()),
+                            errorBucketChannel));
             try {
                 int code = process.waitFor();
                 if (code != 0) {
