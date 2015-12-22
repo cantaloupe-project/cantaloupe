@@ -8,23 +8,27 @@
 # like this: \\
 # Also, each line in a multi-line value except the last needs to end with a
 # single backslash.
+#
+# Most changes will take effect without restarting. Those that won't are
+# marked with "!!".
+#
 ###########################################################################
 
-# TCP port to bind the web server to.
+# !! TCP port to bind the web server to.
 http.port = 8182
 
-# Uncomment to require HTTP Basic authentication.
+# !! Uncomment to require HTTP Basic authentication.
 #http.auth.basic = true
 #http.auth.basic.username = myself
 #http.auth.basic.secret = password
 
-# Controls the response Content-Disposition header for images. Allowed values
-# are `inline`, `attachment`, and `none`.
+# Controls the response Content-Disposition header for images. Allowed
+# values are `inline`, `attachment`, and `none`.
 http.content_disposition = inline
 
-# The base URI to use for internal links, such as Link headers and JSON-LD @id
-# values. This is mainly needed in reverse-proxy scenarios, where a public base
-# URI needs to override the local URI. Leave blank to use the default.
+# Base URI to use for internal links, such as Link headers and JSON-LD @id
+# values. This is mainly needed in reverse-proxy scenarios, where a public
+# base URI needs to override the local URI. Leave blank to use the default.
 base_uri =
 
 # Maximum number of image pixels to return in a response, to prevent
@@ -57,8 +61,8 @@ resolver.static = FilesystemResolver
 # get_resolver(identifier), which takes in an identifier and returns the
 # name of a resolver to use to get it. Must never return nil.
 # This can be an absolute path, or a filename; if only a filename is
-# specified, it will be searched for in the same folder as this file, and then
-# the current working directory.
+# specified, it will be searched for in the same folder as this file, and
+# then the current working directory.
 # If defined, this will override the `resolver.static` key.
 #resolver.chooser_script = functions.rb
 
@@ -83,8 +87,8 @@ FilesystemResolver.BasicLookupStrategy.path_suffix =
 # absolute pathname of the corresponding source file, or nil if it can't find
 # one.
 # This can be an absolute path, or a filename; if only a filename is
-# specified, it will be searched for in the same folder as this file, and then
-# the current working directory.
+# specified, it will be searched for in the same folder as this file, and
+# then the current working directory.
 FilesystemResolver.ScriptLookupStrategy.script = functions.rb
 
 # Normally, slashes in an identifier must be percent-encoded as "%2F". If
@@ -129,19 +133,22 @@ HttpResolver.auth.basic.secret =
 # JdbcResolver
 #----------------------------------------
 
+# !!
 JdbcResolver.connection_string = jdbc:postgresql://localhost:5432/my_database
+# !!
 JdbcResolver.user = postgres
+# !!
 JdbcResolver.password = postgres
 
-# Maximum number of connections allowed in the connection pool. A good starting
-# point is (number of CPU cores * 2) + 1.
+# !! Maximum number of connections allowed in the connection pool. A good
+# starting point is (number of CPU cores * 2) + 1.
 JdbcResolver.max_pool_size = 10
 
-# Connection timeout in seconds.
+# !! Connection timeout in seconds.
 JdbcResolver.connection_timeout = 10
 
-# JavaScript function that takes in an unencoded identifier and returns the
-# value that will be used in prepared statements.
+# JavaScript function that takes in an unencoded identifier and returns
+# the value that will be used in prepared statements.
 JdbcResolver.function.identifier = function getDatabaseIdentifier(url_identifier) {\
       // return the un-altered identifier\
       return url_identifier;\
@@ -171,17 +178,17 @@ JdbcResolver.lookup_sql = SELECT image \
 # AmazonS3Resolver
 #----------------------------------------
 
+# !! Access key ID associated with your AWS account.
 # See: http://aws.amazon.com/security-credentials
-# Access key ID associated with your AWS account.
 AmazonS3Resolver.access_key_id =
-# Secret key associated with your AWS account.
+# !! Secret key associated with your AWS account.
 AmazonS3Resolver.secret_key =
 
-# Name of a bucket containing images.
+# !! Name of a bucket containing images.
 AmazonS3Resolver.bucket.name =
 
+# !! Can be commented out or left blank.
 # See: http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
-# Can be commented out or left blank.
 #AmazonS3Resolver.bucket.region = us-east-1
 
 ###########################################################################
@@ -309,15 +316,18 @@ FilesystemCache.ttl_seconds = 2592000
 # JdbcCache
 #----------------------------------------
 
+# !!
 JdbcCache.connection_string = jdbc:postgresql://localhost:5432/cantaloupe
+# !!
 JdbcCache.user = postgres
+# !!
 JdbcCache.password =
 
-# Maximum number of JDBC connections allowed in the pool. A good starting
+# !! Maximum number of JDBC connections allowed in the pool. A good starting
 # point is (# of CPU cores * 2) + 1.
 JdbcCache.max_pool_size = 9
 
-# Connection timeout in seconds.
+# !! Connection timeout in seconds.
 JdbcCache.connection_timeout = 10
 
 # These must be created manually; see the website documentation for the
@@ -334,7 +344,7 @@ JdbcCache.ttl_seconds = 2592000
 ###########################################################################
 
 #----------------------------------------
-# Application Log
+# !! Application Log
 #----------------------------------------
 
 # `trace`, `debug`, `info`, `warn`, `error`, `all`, or `off`
@@ -352,7 +362,7 @@ log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /p
 log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30
 
 #----------------------------------------
-# Access Log
+# !! Access Log
 #----------------------------------------
 
 log.access.ConsoleAppender.enabled = true
