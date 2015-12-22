@@ -20,7 +20,6 @@ import org.restlet.data.CacheDirective;
 import org.restlet.data.Header;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
-import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
 import org.restlet.util.Series;
 import org.slf4j.Logger;
@@ -44,14 +43,6 @@ public abstract class AbstractResource extends ServerResource {
             "cache.server.purge_missing";
     protected static final String RESOLVE_FIRST_CONFIG_KEY =
             "cache.server.resolve_first";
-
-    @Override
-    protected void doInit() throws ResourceException {
-        super.doInit();
-        // override the Server header
-        // TODO: this doesn't affect redirecting responses
-        this.getServerInfo().setAgent("Cantaloupe/" + Application.getVersion());
-    }
 
     /**
      * Convenience method that adds a response header.
@@ -254,19 +245,19 @@ public abstract class AbstractResource extends ServerResource {
         Dimension size = null;
         if (resolver instanceof FileResolver) {
             if (proc instanceof FileProcessor) {
-                size = ((FileProcessor)proc).getSize(
+                size = ((FileProcessor) proc).getSize(
                         ((FileResolver) resolver).getFile(identifier),
                         sourceFormat);
             } else if (proc instanceof ChannelProcessor) {
-                size = ((ChannelProcessor)proc).getSize(
+                size = ((ChannelProcessor) proc).getSize(
                         ((ChannelResolver) resolver).getChannel(identifier),
                         sourceFormat);
             }
         } else if (resolver instanceof ChannelResolver) {
             if (!(proc instanceof ChannelProcessor)) {
-                // StreamResolvers don't support FileProcessors
+                // ChannelResolvers and FileProcessors are incompatible
             } else {
-                size = ((ChannelProcessor)proc).getSize(
+                size = ((ChannelProcessor) proc).getSize(
                         ((ChannelResolver) resolver).getChannel(identifier),
                         sourceFormat);
             }
