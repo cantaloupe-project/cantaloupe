@@ -287,9 +287,9 @@ cache.client.no_transform = true
 # also false.
 cache.server.purge_missing = false
 
-# If true, the source image will be confirmed to exist before a cached copy is
-# returned. If false, the cached copy will be returned without any checking.
-# Resolving first is slower but safer.
+# If true, the source image will be confirmed to exist before a cached copy
+# is returned. If false, the cached copy will be returned without any
+# checking. Resolving first is slower but safer.
 # Note: this has no effect with the IIIF 1.1 endpoint -- it is effectively
 # always true.
 cache.server.resolve_first = true
@@ -313,14 +313,15 @@ JdbcCache.connection_string = jdbc:postgresql://localhost:5432/cantaloupe
 JdbcCache.user = postgres
 JdbcCache.password =
 
-# Maximum number of connections allowed in the connection pool. A good starting
-# point is (number of CPU cores * 2) + 1.
-JdbcCache.max_pool_size = 10
+# Maximum number of JDBC connections allowed in the pool. A good starting
+# point is (# of CPU cores * 2) + 1.
+JdbcCache.max_pool_size = 9
 
 # Connection timeout in seconds.
 JdbcCache.connection_timeout = 10
 
-# These will be created automatically.
+# These must be created manually; see the website documentation for the
+# schemas.
 JdbcCache.image_table = image_cache
 JdbcCache.info_table = info_cache
 
