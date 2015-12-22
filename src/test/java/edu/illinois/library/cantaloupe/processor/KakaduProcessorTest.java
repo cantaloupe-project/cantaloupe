@@ -18,9 +18,6 @@ public class KakaduProcessorTest extends ProcessorTest {
     public void setUp() {
         Application.getConfiguration().setProperty(
                 "KakaduProcessor.path_to_binaries", "/usr/local/bin");
-        Application.getConfiguration().setProperty(
-                "KakaduProcessor.path_to_stdout_symlink",
-                "/Users/alexd/Projects/Cantaloupe/stdout.bmp");
     }
 
     protected Processor getProcessor() {

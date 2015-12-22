@@ -56,44 +56,7 @@ layout: default
   <p>Because the cache naming format has changed, it will be necessary to <a href="caches.html#Purging">purge your cache</a> before using this version.</p>
 </div>
 
-<ul>
-  <li>If you are using KakaduProcessor, rename your <span class="filename">stdout.ppm</span> file to <span class="filename">stdout.bmp</span> and update your <code>KakaduProcessor.path_to_stdout_symlink</code> key.</li>
-  <li>Add the following new keys from the sample configuration:
-    <ul>
-      <li><code>max_pixels</code></li>
-      <li><code>endpoint.iiif.1.1.enabled</code></li>
-      <li><code>endpoint.iiif.2.0.enabled</code></li>
-      <li><code>resolver.chooser_script</code></li>
-      <li><code>FilesystemResolver.lookup_strategy</code></li>
-      <li><code>FilesystemResolver.ScriptLookupStrategy.script</code></li>
-      <li><code>HttpResolver.lookup_strategy</code></li>
-      <li><code>HttpResolver.ScriptLookupStrategy.script</code></li>
-      <li><code>JdbcResolver.connection_timeout</code></li>
-      <li><code>JdbcResolver.max_pool_size</code></li>
-      <li><code>Java2dProcessor.scale_mode</code></li>
-      <li><code>KakaduProcessor.post_processor.java2d.scale_mode</code></li>
-      <li><code>cache.server.purge_missing</code></li>
-      <li><code>JdbcCache.connection_timeout</code></li>
-      <li><code>JdbcCache.max_pool_size</code></li>
-    </ul>
-  </li>
-  <li>Rename the following keys:
-    <ul>
-      <li><code>resolver</code> to <code>resolver.static</code>
-      <li><code>FilesystemResolver.path_prefix</code> to <code>FilesystemResolver.BasicLookupStrategy.path_prefix</code>
-      <li><code>FilesystemResolver.path_suffix</code> to <code>FilesystemResolver.BasicLookupStrategy.path_suffix</code>
-      <li><code>HttpResolver.url_prefix</code> to <code>HttpResolver.BasicLookupStrategy.url_prefix</code>
-      <li><code>HttpResolver.url_suffix</code> to <code>HttpResolver.BasicLookupStrategy.url_suffix</code>
-    </ul>
-  </li>
-  <li>Delete the following obsolete keys:
-    <ul>
-      <li><code>log.application.ConsoleAppender.pattern</code></li>
-      <li><code>log.application.FileAppender.pattern</code></li>
-      <li><code>log.application.RollingFileAppender.pattern</code></li>
-    </ul>
-  </li>
-</ul>
+<p>There are so many new and renamed configuration keys in this version that it is recommended to start over with a new configuration file. The inline comments, which serve as the primary source of configuration documentation, have also been updated.</p>
 
 <h4>1.2 to 1.2.1</h4>
 

@@ -36,10 +36,15 @@ import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -64,8 +69,6 @@ class KakaduProcessor implements FileProcessor {
             "KakaduProcessor.post_processor.java2d.scale_mode";
     public static final String PATH_TO_BINARIES_CONFIG_KEY =
             "KakaduProcessor.path_to_binaries";
-    public static final String PATH_TO_STDOUT_SYMLINK_CONFIG_KEY =
-            "KakaduProcessor.path_to_stdout_symlink";
     public static final String POST_PROCESSOR_CONFIG_KEY =
             "KakaduProcessor.post_processor";
 
@@ -79,6 +82,8 @@ class KakaduProcessor implements FileProcessor {
 
     private static final ExecutorService executorService =
             Executors.newCachedThreadPool();
+
+    private static Path stdoutSymlink;
 
     static {
         SUPPORTED_IIIF_1_1_QUALITIES.add(
@@ -110,6 +115,34 @@ class KakaduProcessor implements FileProcessor {
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_PERCENT);
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH);
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
+
+        // Due to a quirk of kdu_expand, this processor requires access to
+        // /dev/stdout.
+        final File devStdout = new File("/dev/stdout");
+        if (devStdout.exists() && devStdout.canWrite()) {
+            // Due to another quirk of kdu_expand, we need to create a symlink
+            // from {temp path}/stdout.bmp to /dev/stdout, to tell kdu_expand
+            // what format to write.
+            try {
+                stdoutSymlink = createStdoutSymlink();
+                logger.info("Using stdout symlink at {}", stdoutSymlink);
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
+        } else {
+            logger.error("Sorry, but KakaduProcessor won't work on this " +
+                    "platform as it requires access to /dev/stdout.");
+        }
+    }
+
+    private static Path createStdoutSymlink() throws IOException {
+        File tempDir = new File(System.getProperty("java.io.tmpdir"));
+        final File link = new File(tempDir.getAbsolutePath() + "/cantaloupe-" +
+                UUID.randomUUID() + ".bmp");
+        link.deleteOnExit();
+        final File devStdout = new File("/dev/stdout");
+        return Files.createSymbolicLink(Paths.get(link.getAbsolutePath()),
+                Paths.get(devStdout.getAbsolutePath()));
     }
 
     /**
@@ -376,8 +409,7 @@ class KakaduProcessor implements FileProcessor {
         }
 
         command.add("-o");
-        command.add(Application.getConfiguration().
-                getString(PATH_TO_STDOUT_SYMLINK_CONFIG_KEY));
+        command.add(stdoutSymlink.toString());
 
         return new ProcessBuilder(command);
     }
