@@ -19,6 +19,7 @@ import java.awt.image.RenderedImage;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.ReadableByteChannel;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -163,8 +164,10 @@ public class ProcessorUtilTest extends CantaloupeTestCase {
 
     public void testGetSizeWithInputStream() throws Exception {
         Dimension expected = new Dimension(100, 88);
-        InputStream inputStream = new FileInputStream(TestUtil.getFixture("jpg"));
-        Dimension actual = ProcessorUtil.getSize(inputStream, SourceFormat.JPG);
+        ReadableByteChannel readableChannel =
+                new FileInputStream(TestUtil.getFixture("jpg")).getChannel();
+        Dimension actual = ProcessorUtil.getSize(readableChannel,
+                SourceFormat.JPG);
         assertEquals(expected, actual);
     }
 

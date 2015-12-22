@@ -19,7 +19,7 @@ import java.awt.Dimension;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * Processor using the Java Advanced Imaging (JAI) framework.
  */
-class JaiProcessor implements FileProcessor, StreamProcessor {
+class JaiProcessor implements FileProcessor, ChannelProcessor {
 
     // TODO: this should be used in conjunction with tile offset to match the crop region
     private static final int JAI_TILE_SIZE = 512;
@@ -123,9 +123,10 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
     }
 
     @Override
-    public Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
+    public Dimension getSize(final ReadableByteChannel readableChannel,
+                             final SourceFormat sourceFormat)
             throws ProcessorException {
-        return ProcessorUtil.getSize(inputStream, sourceFormat);
+        return ProcessorUtil.getSize(readableChannel, sourceFormat);
     }
 
     @Override
@@ -174,10 +175,10 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
     public void process(final OperationList ops,
                         final SourceFormat sourceFormat,
                         final Dimension fullSize,
-                        final InputStream inputStream,
+                        final ReadableByteChannel readableChannel,
                         final WritableByteChannel writableChannel)
             throws ProcessorException {
-        doProcess(ops, sourceFormat, fullSize, inputStream, writableChannel);
+        doProcess(ops, sourceFormat, fullSize, readableChannel, writableChannel);
     }
 
     private void doProcess(final OperationList ops,
@@ -197,9 +198,10 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
         try {
             RenderedImage renderedImage = null;
             ReductionFactor rf = new ReductionFactor();
-            if (input instanceof InputStream) {
+            if (input instanceof ReadableByteChannel) {
                 renderedImage = ProcessorUtil.readImageWithJai(
-                        (InputStream) input, sourceFormat, ops, fullSize, rf);
+                        (ReadableByteChannel) input, sourceFormat, ops,
+                        fullSize, rf);
             } else if (input instanceof File) {
                 renderedImage = ProcessorUtil.readImageWithJai(
                         (File) input, sourceFormat, ops, fullSize, rf);

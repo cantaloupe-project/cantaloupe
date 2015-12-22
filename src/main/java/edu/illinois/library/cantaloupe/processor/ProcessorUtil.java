@@ -346,15 +346,15 @@ abstract class ProcessorUtil {
      * Efficiently reads the width & height of an image without reading the
      * entire image into memory.
      *
-     * @param inputStream
+     * @param readableChannel
      * @param sourceFormat
      * @return Dimensions in pixels
      * @throws ProcessorException
      */
-    public static Dimension getSize(InputStream inputStream,
+    public static Dimension getSize(ReadableByteChannel readableChannel,
                                     SourceFormat sourceFormat)
             throws ProcessorException {
-        return doGetSize(inputStream, sourceFormat);
+        return doGetSize(readableChannel, sourceFormat);
     }
 
     /**
@@ -417,14 +417,14 @@ abstract class ProcessorUtil {
                 reductionFactor);
     }
 
-    public static BufferedImage readImage(InputStream inputStream,
+    public static BufferedImage readImage(ReadableByteChannel readableChannel,
                                           SourceFormat sourceFormat,
                                           OperationList ops,
                                           Dimension fullSize,
                                           ReductionFactor reductionFactor)
             throws IOException, ProcessorException {
-        return doReadImageWithImageIo(inputStream, sourceFormat, ops, fullSize,
-                reductionFactor);
+        return doReadImageWithImageIo(readableChannel, sourceFormat, ops,
+                fullSize, reductionFactor);
     }
 
     /**
@@ -461,7 +461,7 @@ abstract class ProcessorUtil {
     }
 
     /**
-     * @param inputStream
+     * @param readableChannel
      * @param sourceFormat
      * @param ops
      * @param fullSize
@@ -471,13 +471,13 @@ abstract class ProcessorUtil {
      * @throws IOException
      * @throws ProcessorException
      */
-    public static RenderedImage readImageWithJai(InputStream inputStream,
+    public static RenderedImage readImageWithJai(ReadableByteChannel readableChannel,
                                                  SourceFormat sourceFormat,
                                                  OperationList ops,
                                                  Dimension fullSize,
                                                  ReductionFactor reductionFactor)
             throws IOException, ProcessorException {
-        return doReadImageWithJai(inputStream, sourceFormat, ops, fullSize,
+        return doReadImageWithJai(readableChannel, sourceFormat, ops, fullSize,
                 reductionFactor);
     }
 
@@ -597,9 +597,9 @@ abstract class ProcessorUtil {
         RenderedImage image = null;
         try {
             ImageDecoder dec;
-            if (inputSource instanceof InputStream) {
+            if (inputSource instanceof ReadableByteChannel) {
                 dec = ImageCodec.createImageDecoder("tiff",
-                        (InputStream) inputSource, null);
+                        Channels.newInputStream((ReadableByteChannel) inputSource), null);
             } else if (inputSource instanceof File) {
                 dec = ImageCodec.createImageDecoder("tiff",
                         (File) inputSource, null);

@@ -10,7 +10,8 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
-import edu.illinois.library.cantaloupe.processor.StreamProcessor;
+import edu.illinois.library.cantaloupe.processor.ChannelProcessor;
+import edu.illinois.library.cantaloupe.resolver.ChannelResolver;
 import edu.illinois.library.cantaloupe.resolver.FileResolver;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
@@ -30,6 +31,7 @@ import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -184,25 +186,25 @@ public abstract class AbstractResource extends ServerResource {
             }
             return new ImageRepresentation(mediaType, sourceFormat, fullSize,
                     ops, inputFile);
-        } else if (resolver instanceof StreamResolver) {
-            logger.debug("Using {} as a StreamProcessor",
+        } else if (resolver instanceof ChannelResolver) {
+            logger.debug("Using {} as a ChannelProcessor",
                     proc.getClass().getSimpleName());
-            final StreamResolver sres = (StreamResolver) resolver;
-            if (proc instanceof StreamProcessor) {
-                final StreamProcessor sproc = (StreamProcessor) proc;
-                InputStream inputStream = sres.
-                        getInputStream(ops.getIdentifier());
-                final Dimension fullSize = sproc.getSize(inputStream,
+            final ChannelResolver chRes = (ChannelResolver) resolver;
+            if (proc instanceof ChannelProcessor) {
+                final ChannelProcessor sproc = (ChannelProcessor) proc;
+                ReadableByteChannel readableChannel = chRes.
+                        getChannel(ops.getIdentifier());
+                final Dimension fullSize = sproc.getSize(readableChannel,
                         sourceFormat);
                 final Dimension effectiveSize = ops.getResultingSize(fullSize);
                 if (maxAllowedSize > 0 &&
                         effectiveSize.width * effectiveSize.height > maxAllowedSize) {
                     throw new PayloadTooLargeException();
                 }
-                // avoid reusing the stream
-                inputStream = sres.getInputStream(ops.getIdentifier());
+                // avoid reusing the channel
+                readableChannel = chRes.getChannel(ops.getIdentifier());
                 return new ImageRepresentation(mediaType, sourceFormat,
-                        fullSize, ops, inputStream);
+                        fullSize, ops, readableChannel);
             }
         }
         return null; // should never happen
@@ -257,17 +259,17 @@ public abstract class AbstractResource extends ServerResource {
                 size = ((FileProcessor)proc).getSize(
                         ((FileResolver) resolver).getFile(identifier),
                         sourceFormat);
-            } else if (proc instanceof StreamProcessor) {
-                size = ((StreamProcessor)proc).getSize(
-                        ((StreamResolver) resolver).getInputStream(identifier),
+            } else if (proc instanceof ChannelProcessor) {
+                size = ((ChannelProcessor)proc).getSize(
+                        ((ChannelResolver) resolver).getChannel(identifier),
                         sourceFormat);
             }
-        } else if (resolver instanceof StreamResolver) {
-            if (!(proc instanceof StreamProcessor)) {
+        } else if (resolver instanceof ChannelResolver) {
+            if (!(proc instanceof ChannelProcessor)) {
                 // StreamResolvers don't support FileProcessors
             } else {
-                size = ((StreamProcessor)proc).getSize(
-                        ((StreamResolver) resolver).getInputStream(identifier),
+                size = ((ChannelProcessor)proc).getSize(
+                        ((ChannelResolver) resolver).getChannel(identifier),
                         sourceFormat);
             }
         }

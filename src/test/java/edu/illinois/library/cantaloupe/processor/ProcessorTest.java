@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -50,11 +51,11 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
 
     public void testGetSize() throws Exception {
         Dimension expectedSize = new Dimension(594, 522);
-        if (getProcessor() instanceof StreamProcessor) {
-            StreamProcessor proc = (StreamProcessor) getProcessor();
-            try (InputStream inputStream = new FileInputStream(
-                    TestUtil.getFixture(IMAGE))) {
-                Dimension actualSize = proc.getSize(inputStream,
+        if (getProcessor() instanceof ChannelProcessor) {
+            ChannelProcessor proc = (ChannelProcessor) getProcessor();
+            try (ReadableByteChannel readableChannel = new FileInputStream(
+                    TestUtil.getFixture(IMAGE)).getChannel()) {
+                Dimension actualSize = proc.getSize(readableChannel,
                         SourceFormat.JPG);
                 assertEquals(expectedSize, actualSize);
             }
@@ -111,24 +112,26 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         ops.setOutputFormat(OutputFormat.JPG);
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             if (getProcessor().getAvailableOutputFormats(sourceFormat).size() == 0) {
-                if (getProcessor() instanceof StreamProcessor) {
-                    InputStream sizeInputStream = new FileInputStream(
-                            TestUtil.getFixture(sourceFormat.getPreferredExtension()));
-                    InputStream processInputStream = new FileInputStream(
-                            TestUtil.getFixture(sourceFormat.getPreferredExtension()));
+                if (getProcessor() instanceof ChannelProcessor) {
+                    ReadableByteChannel sizeReadableChannel = new FileInputStream(
+                            TestUtil.getFixture(sourceFormat.getPreferredExtension())).getChannel();
+                    ReadableByteChannel processReadableChannel = new FileInputStream(
+                            TestUtil.getFixture(sourceFormat.getPreferredExtension())).getChannel();
                     try {
-                        StreamProcessor proc = (StreamProcessor) getProcessor();
-                        Dimension size = proc.getSize(sizeInputStream, sourceFormat);
+                        ChannelProcessor proc = (ChannelProcessor) getProcessor();
+                        Dimension size = proc.getSize(sizeReadableChannel,
+                                sourceFormat);
                         proc.process(ops, sourceFormat, size,
-                                processInputStream, new NullWritableByteChannel());
+                                processReadableChannel,
+                                new NullWritableByteChannel());
                         fail("Expected exception");
                     } catch (ProcessorException e) {
                         assertEquals("Unsupported source format: " +
                                         sourceFormat.getPreferredExtension(),
                                 e.getMessage());
                     } finally {
-                        sizeInputStream.close();
-                        processInputStream.close();
+                        sizeReadableChannel.close();
+                        processReadableChannel.close();
                     }
                 }
                 if (getProcessor() instanceof FileProcessor) {
@@ -297,23 +300,23 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
     private void doProcessTest(OperationList ops) throws Exception {
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {
-                if (getProcessor() instanceof StreamProcessor) {
-                    InputStream sizeInputStream = new FileInputStream(
-                            TestUtil.getFixture(sourceFormat.getPreferredExtension()));
-                    InputStream processInputStream = new FileInputStream(
-                            TestUtil.getFixture(sourceFormat.getPreferredExtension()));
+                if (getProcessor() instanceof ChannelProcessor) {
+                    ReadableByteChannel sizeReadableChannel = new FileInputStream(
+                            TestUtil.getFixture(sourceFormat.getPreferredExtension())).getChannel();
+                    ReadableByteChannel processReadableChannel = new FileInputStream(
+                            TestUtil.getFixture(sourceFormat.getPreferredExtension())).getChannel();
                     try {
-                        StreamProcessor proc = (StreamProcessor) getProcessor();
-                        Dimension size = proc.getSize(sizeInputStream,
+                        ChannelProcessor proc = (ChannelProcessor) getProcessor();
+                        Dimension size = proc.getSize(sizeReadableChannel,
                                 sourceFormat);
                         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                         WritableByteChannel outputChannel = Channels.newChannel(outputStream);
                         proc.process(ops, sourceFormat, size,
-                                processInputStream, outputChannel);
+                                processReadableChannel, outputChannel);
                         assertTrue(outputStream.toByteArray().length > 100); // TODO: actually read this
                     } finally {
-                        sizeInputStream.close();
-                        processInputStream.close();
+                        sizeReadableChannel.close();
+                        processReadableChannel.close();
                     }
                 }
                 if (getProcessor() instanceof FileProcessor) {

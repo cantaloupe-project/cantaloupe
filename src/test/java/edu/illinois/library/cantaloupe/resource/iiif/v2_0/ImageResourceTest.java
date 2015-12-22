@@ -300,7 +300,7 @@ public class ImageResourceTest extends ResourceTest {
 
     /**
      * Checks that the server responds with HTTP 500 when a non-FileResolver is
-     * used with a non-StreamProcessor.
+     * used with a non-ChannelProcessor.
      *
      * @throws Exception
      */

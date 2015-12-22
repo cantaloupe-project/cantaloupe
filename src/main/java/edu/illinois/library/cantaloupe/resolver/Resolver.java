@@ -4,7 +4,7 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.processor.StreamProcessor;
+import edu.illinois.library.cantaloupe.processor.ChannelProcessor;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -31,11 +31,11 @@ public interface Resolver {
 
     /**
      * <dl>
-     *     <dt>{@link FileResolver} &rarr; {@link StreamProcessor}</dt>
+     *     <dt>{@link FileResolver} &rarr; {@link ChannelProcessor}</dt>
      *     <dd>OK, using {@link java.io.FileInputStream}</dd>
      *     <dt>{@link FileResolver} &rarr; {@link FileProcessor}</dt>
      *     <dd>OK, using {@link java.io.File}</dd>
-     *     <dt>{@link StreamResolver} &rarr; {@link StreamProcessor}</dt>
+     *     <dt>{@link StreamResolver} &rarr; {@link ChannelProcessor}</dt>
      *     <dd>OK, using {@link java.io.InputStream}</dd>
      *     <dt>{@link StreamResolver} &rarr; {@link FileProcessor}</dt>
      *     <dd>Incompatible</dd>

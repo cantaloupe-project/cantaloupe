@@ -4,10 +4,10 @@ import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.processor.ChannelProcessor;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import edu.illinois.library.cantaloupe.util.IOUtils;
 import edu.illinois.library.cantaloupe.util.TeeWritableByteChannel;
 import org.restlet.data.MediaType;
@@ -18,9 +18,6 @@ import java.awt.Dimension;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
@@ -38,7 +35,7 @@ public class ImageRepresentation extends AbstractImageRepresentation {
 
     private File file;
     private Dimension fullSize;
-    private InputStream inputStream;
+    private ReadableByteChannel readableChannel;
     private OperationList ops;
     private SourceFormat sourceFormat;
 
@@ -49,15 +46,15 @@ public class ImageRepresentation extends AbstractImageRepresentation {
      * @param sourceFormat
      * @param fullSize
      * @param ops
-     * @param inputStream
+     * @param readableChannel
      */
-    public ImageRepresentation(MediaType mediaType,
-                               SourceFormat sourceFormat,
-                               Dimension fullSize,
-                               OperationList ops,
-                               InputStream inputStream) {
+    public ImageRepresentation(final MediaType mediaType,
+                               final SourceFormat sourceFormat,
+                               final Dimension fullSize,
+                               final OperationList ops,
+                               final ReadableByteChannel readableChannel) {
         super(mediaType, ops.getIdentifier(), ops.getOutputFormat());
-        this.inputStream = inputStream;
+        this.readableChannel = readableChannel;
         this.ops = ops;
         this.sourceFormat = sourceFormat;
         this.fullSize = fullSize;
@@ -123,8 +120,8 @@ public class ImageRepresentation extends AbstractImageRepresentation {
             }
         } finally {
             try {
-                if (this.inputStream != null) {
-                    this.inputStream.close();
+                if (readableChannel != null && readableChannel.isOpen()) {
+                    readableChannel.close();
                 }
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
@@ -160,8 +157,7 @@ public class ImageRepresentation extends AbstractImageRepresentation {
                     IOUtils.copy(new FileInputStream(this.file).getChannel(),
                             writableChannel);
                 } else {
-                    IOUtils.copy(Channels.newChannel(this.inputStream),
-                            writableChannel);
+                    IOUtils.copy(readableChannel, writableChannel);
                 }
                 logger.debug("Streamed with no processing in {} msec",
                         System.currentTimeMillis() - msec);
@@ -173,9 +169,9 @@ public class ImageRepresentation extends AbstractImageRepresentation {
                     fproc.process(this.ops, this.sourceFormat, this.fullSize,
                             this.file, writableChannel);
                 } else {
-                    StreamProcessor sproc = (StreamProcessor) proc;
+                    ChannelProcessor sproc = (ChannelProcessor) proc;
                     sproc.process(this.ops, this.sourceFormat,
-                            this.fullSize, this.inputStream, writableChannel);
+                            this.fullSize, readableChannel, writableChannel);
                 }
                 logger.debug("{} processed in {} msec",
                         proc.getClass().getSimpleName(),

@@ -4,7 +4,7 @@ layout: default
 
 <h2>Resolvers</h2>
 
-<p>Resolvers locate a source image based on the image identifier in a request URL. In Java-speak, they take in an identifier and return an InputStream or File object from which the corresponding image can be read by a <a href="processors.html">processor</a>.</p>
+<p>Resolvers locate a source image based on the image identifier in a request URL. In Java-speak, they take in an identifier and return a File or ReadableByteChannel object from which the corresponding image can be read by a <a href="processors.html">processor</a>.</p>
 
 <p>(This distinction is important because <a href="processors.html#Compatibility">not all processors can work with all resolvers</a>.)</p>
 

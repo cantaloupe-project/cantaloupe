@@ -18,7 +18,7 @@ import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,7 +27,7 @@ import java.util.Set;
 /**
  * Processor using the Java 2D framework.
  */
-class Java2dProcessor implements StreamProcessor, FileProcessor {
+class Java2dProcessor implements ChannelProcessor, FileProcessor {
 
     public static final String JPG_QUALITY_CONFIG_KEY = "Java2dProcessor.jpg.quality";
     public static final String SCALE_MODE_CONFIG_KEY = "Java2dProcessor.scale_mode";
@@ -123,9 +123,10 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
     }
 
     @Override
-    public Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
+    public Dimension getSize(ReadableByteChannel readableChannel,
+                             SourceFormat sourceFormat)
             throws ProcessorException {
-        return ProcessorUtil.getSize(inputStream, sourceFormat);
+        return ProcessorUtil.getSize(readableChannel, sourceFormat);
     }
 
     @Override
@@ -208,7 +209,7 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
     public void process(final OperationList ops,
                         final SourceFormat sourceFormat,
                         final Dimension fullSize,
-                        final InputStream inputStream,
+                        final ReadableByteChannel readableChannel,
                         final WritableByteChannel writableChannel)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
@@ -221,7 +222,7 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
 
         try {
             ReductionFactor reductionFactor = new ReductionFactor();
-            BufferedImage image = ProcessorUtil.readImage(inputStream,
+            BufferedImage image = ProcessorUtil.readImage(readableChannel,
                     sourceFormat, ops, fullSize, reductionFactor);
             for (Operation op : ops) {
                 if (op instanceof Crop) {

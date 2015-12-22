@@ -24,9 +24,9 @@ import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,7 +38,7 @@ import java.util.Set;
  * <p>Does not implement <code>FileProcessor</code> because testing indicates
  * that input streams are significantly faster.</p>
  */
-class GraphicsMagickProcessor implements StreamProcessor {
+class GraphicsMagickProcessor implements ChannelProcessor {
 
     private static Logger logger = LoggerFactory.
             getLogger(GraphicsMagickProcessor.class);
@@ -177,10 +177,11 @@ class GraphicsMagickProcessor implements StreamProcessor {
     }
 
     @Override
-    public Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
+    public Dimension getSize(ReadableByteChannel readableChannel,
+                             SourceFormat sourceFormat)
             throws ProcessorException {
         return doGetSize(sourceFormat.getPreferredExtension() + ":-",
-                inputStream, sourceFormat);
+                readableChannel, sourceFormat);
     }
 
     @Override
@@ -219,10 +220,10 @@ class GraphicsMagickProcessor implements StreamProcessor {
     public void process(final OperationList ops,
                         final SourceFormat sourceFormat,
                         final Dimension fullSize,
-                        final InputStream inputStream,
+                        final ReadableByteChannel readableChannel,
                         final WritableByteChannel writableChannel)
             throws ProcessorException {
-        doProcess(sourceFormat.getPreferredExtension() + ":-", inputStream,
+        doProcess(sourceFormat.getPreferredExtension() + ":-", readableChannel,
                 ops, sourceFormat, fullSize, writableChannel);
     }
 
@@ -292,21 +293,23 @@ class GraphicsMagickProcessor implements StreamProcessor {
 
     /**
      * @param inputPath Absolute filename pathname or "-" to use a stream
-     * @param inputStream Can be null
+     * @param readableChannel Can be null
      * @param sourceFormat
      * @return
      * @throws ProcessorException
      */
-    private Dimension doGetSize(String inputPath, InputStream inputStream,
-                                SourceFormat sourceFormat)
+    private Dimension doGetSize(final String inputPath,
+                                final ReadableByteChannel readableChannel,
+                                final SourceFormat sourceFormat)
             throws ProcessorException {
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
             throw new UnsupportedSourceFormatException(sourceFormat);
         }
         try {
             Info sourceInfo;
-            if (inputStream != null) {
-                sourceInfo = new Info(inputPath, inputStream, true);
+            if (readableChannel != null) {
+                sourceInfo = new Info(inputPath,
+                        Channels.newInputStream(readableChannel), true);
             } else {
                 sourceInfo = new Info(inputPath, true);
             }
@@ -319,7 +322,7 @@ class GraphicsMagickProcessor implements StreamProcessor {
 
     /**
      * @param inputPath Absolute filename pathname or "-" to use a stream
-     * @param inputStream Can be null
+     * @param readableChannel Can be null
      * @param ops
      * @param sourceFormat
      * @param fullSize
@@ -327,7 +330,7 @@ class GraphicsMagickProcessor implements StreamProcessor {
      * @throws ProcessorException
      */
     private void doProcess(final String inputPath,
-                           final InputStream inputStream,
+                           final ReadableByteChannel readableChannel,
                            final OperationList ops,
                            final SourceFormat sourceFormat,
                            final Dimension fullSize,
@@ -355,8 +358,9 @@ class GraphicsMagickProcessor implements StreamProcessor {
             if (binaryPath.length() > 0) {
                 convert.setSearchPath(binaryPath);
             }
-            if (inputStream != null) {
-                convert.setInputProvider(new Pipe(inputStream, null));
+            if (readableChannel != null) {
+                convert.setInputProvider(new Pipe(
+                        Channels.newInputStream(readableChannel), null));
             }
             convert.setOutputConsumer(
                     new Pipe(null, Channels.newOutputStream(writableChannel)));

@@ -24,9 +24,9 @@ import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,7 +35,7 @@ import java.util.Set;
 /**
  * Processor using the ImageMagick `convert` and `identify` command-line tools.
  */
-class ImageMagickProcessor implements StreamProcessor {
+class ImageMagickProcessor implements ChannelProcessor {
 
     private static Logger logger = LoggerFactory.
             getLogger(ImageMagickProcessor.class);
@@ -166,14 +166,15 @@ class ImageMagickProcessor implements StreamProcessor {
     }
 
     @Override
-    public Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
+    public Dimension getSize(final ReadableByteChannel readableChannel,
+                             final SourceFormat sourceFormat)
             throws ProcessorException {
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
             throw new UnsupportedSourceFormatException(sourceFormat);
         }
         try {
-            Info sourceInfo = new Info(sourceFormat.getPreferredExtension() + ":-",
-                    inputStream, true);
+            Info sourceInfo = new Info(sourceFormat.getPreferredExtension() +
+                    ":-", Channels.newInputStream(readableChannel), true);
             return new Dimension(sourceInfo.getImageWidth(),
                     sourceInfo.getImageHeight());
         } catch (IM4JavaException e) {
@@ -217,7 +218,7 @@ class ImageMagickProcessor implements StreamProcessor {
     public void process(final OperationList ops,
                         final SourceFormat sourceFormat,
                         final Dimension fullSize,
-                        final InputStream inputStream,
+                        final ReadableByteChannel readableChannel,
                         final WritableByteChannel writableChannel)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
@@ -236,7 +237,8 @@ class ImageMagickProcessor implements StreamProcessor {
             // format transformation
             op.addImage(ops.getOutputFormat().getExtension() + ":-"); // write to stdout
 
-            Pipe pipeIn = new Pipe(inputStream, null);
+            Pipe pipeIn = new Pipe(
+                    Channels.newInputStream(readableChannel), null);
             Pipe pipeOut = new Pipe(null,
                     Channels.newOutputStream(writableChannel));
 

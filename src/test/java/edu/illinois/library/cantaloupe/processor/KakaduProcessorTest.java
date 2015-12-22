@@ -36,10 +36,10 @@ public class KakaduProcessorTest extends ProcessorTest {
     @Override
     public void testGetSize() throws Exception {
         Dimension expectedSize = new Dimension(100, 88);
-        if (getProcessor() instanceof StreamProcessor) {
-            StreamProcessor proc = (StreamProcessor) getProcessor();
+        if (getProcessor() instanceof ChannelProcessor) {
+            ChannelProcessor proc = (ChannelProcessor) getProcessor();
             Dimension actualSize = proc.getSize(
-                    new FileInputStream(TestUtil.getFixture("jp2")),
+                    new FileInputStream(TestUtil.getFixture("jp2")).getChannel(),
                     SourceFormat.JP2);
             assertEquals(expectedSize, actualSize);
         }
