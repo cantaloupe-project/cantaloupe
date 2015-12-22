@@ -16,14 +16,15 @@ abstract class AbstractImageRepresentation extends WritableRepresentation {
                                        Identifier identifier,
                                        OutputFormat outputFormat) {
         super(mediaType);
-        Disposition disposition = new Disposition();
         switch (Application.getConfiguration().
                 getString(ImageRepresentation.CONTENT_DISPOSITION_CONFIG_KEY, "none")) {
             case "inline":
+                Disposition disposition = new Disposition();
                 disposition.setType(Disposition.TYPE_INLINE);
                 this.setDisposition(disposition);
                 break;
             case "attachment":
+                disposition = new Disposition();
                 disposition.setType(Disposition.TYPE_ATTACHMENT);
                 disposition.setFilename(
                         identifier.toString().replaceAll(
