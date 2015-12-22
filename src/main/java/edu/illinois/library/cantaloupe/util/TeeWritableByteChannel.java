@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
+/**
+ * WritableByteChannel that wraps two WritableByteChannels, for
+ * pseudo-simultaneous writing.
+ */
 public class TeeWritableByteChannel implements WritableByteChannel {
 
     private final WritableByteChannel channel1;
@@ -18,12 +22,15 @@ public class TeeWritableByteChannel implements WritableByteChannel {
     @Override
     public void close() throws IOException {
         try {
-            this.channel1.close();
+            channel1.close();
         } finally {
-            this.channel2.close();
+            channel2.close();
         }
     }
 
+    /**
+     * @return True if either of the wrapped channels is open.
+     */
     @Override
     public boolean isOpen() {
         return (channel1.isOpen() || channel2.isOpen());
@@ -32,8 +39,11 @@ public class TeeWritableByteChannel implements WritableByteChannel {
     @Override
     public int write(ByteBuffer src) throws IOException {
         final int position = src.position();
-        channel1.write(src);
-        src.position(position);
-        return channel2.write(src);
+        try {
+            return channel1.write(src);
+        } finally {
+            src.position(position);
+            channel2.write(src);
+        }
     }
 }
