@@ -17,7 +17,7 @@ some_key = /path/to/functions.rb
 # same folder as the config file, or the current working directory
 some_key = functions.rb</pre>
 
-<p>A single <span class="filename">.rb</span> file can contain any number of functions. It is also fine to put each function in its own file.</p>
+<p>A single <span class="filename">.rb</span> file can contain any number of functions. It is also fine to put each function in its own file. Each function must be inside a <code>Cantaloupe</code> module.</p>
 
 <h3>Example</h3>
 
@@ -27,23 +27,25 @@ some_key = functions.rb</pre>
 require 'cgi'
 require 'net/http'
 
-def get_pathname(identifier)
-  uri = 'http://localhost:8983/solr/collection1/select?q=' +
-      CGI.escape('id:"' + identifier + '"') +
-      '&amp;fl=pathname_si&amp;wt=ruby'
-  uri = URI.parse(uri)
+module Cantaloupe
+  def self.get_pathname(identifier)
+    uri = 'http://localhost:8983/solr/collection1/select?q=' +
+        CGI.escape('id:"' + identifier + '"') +
+        '&amp;fl=pathname_si&amp;wt=ruby'
+    uri = URI.parse(uri)
 
-  http = Net::HTTP.new(uri.host, uri.port)
-  request = Net::HTTP::Get.new(uri.request_uri)
-  response = http.request(request)
-  return nil if response.code.to_i >= 400
+    http = Net::HTTP.new(uri.host, uri.port)
+    request = Net::HTTP::Get.new(uri.request_uri)
+    response = http.request(request)
+    return nil if response.code.to_i >= 400
 
-  results = eval(response.body)['response']['docs']
-  results.any? ? results.first['pathname_si'] : nil
+    results = eval(response.body)['response']['docs']
+    results.any? ? results.first['pathname_si'] : nil
+  end
 end
 
 # Uncomment to test on the command line (`ruby functions.rb`)
-# puts get_pathname('identifier-to-test')</pre>
+# puts Cantaloupe::get_pathname('identifier-to-test')</pre>
 
 <p>Inside a function, anything goes &mdash; it will be interpreted by a JRuby interpreter built into Cantaloupe, so you can even use any (non-platform-native) gems that you have installed with <code>gem install</code>. Because it will be called upon each image request, though, it should be written with efficiency in mind.</p>
 

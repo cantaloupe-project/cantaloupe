@@ -28,19 +28,21 @@ resolver.chooser_script = /path/to/functions.rb
 resolver.chooser_script = functions.rb
 </pre>
 
-<p>This file must contain a function called <code>get_resolver(identifier)</code>, which takes in an identifier and returns a resolver name (such as FilesystemResolver, HttpResolver, etc.) For example:</p>
+<p>This file must contain a module called <code>Cantaloupe</code>, and inside that, a function called <code>get_resolver(identifier)</code>, which takes in an identifier and returns a resolver name (such as FilesystemResolver, HttpResolver, etc.) For example:</p>
 
 <pre># functions.rb
 
-def get_resolver(identifier)
-  # Here, you would perform some kind of analysis on `identifier`:
-  # analyze it, look it up in a web service or database...
-  # and then return the name of the resolver to use to serve it.
-  'FilesystemResolver'
+module Cantaloupe
+  def self.get_resolver(identifier)
+    # Here, you would perform some kind of analysis on `identifier`:
+    # analyze it, look it up in a web service or database...
+    # and then return the name of the resolver to use to serve it.
+    'FilesystemResolver'
+  end
 end
 
 # Uncomment to test on the command line (`ruby functions.rb`)
-# puts get_resolver('identifier-to-test')</pre>
+# puts Cantaloupe::get_resolver('identifier-to-test')</pre>
 
 <p>See <a href="scripts.html">Custom Scripts</a> for general information about custom scripts in Cantaloupe.</p>
 
@@ -81,29 +83,31 @@ FilesystemResolver.ScriptLookupStrategy.script = /path/to/functions.rb
 FilesystemResolver.ScriptLookupStrategy.script = functions.rb
 </pre>
 
-<p>This file must contain a function called <code>get_pathname(identifier)</code>, which takes in an identifier and returns a pathname, if available, or <code>nil</code>, if not. A Solr query, for example, could look like:</p>
+<p>This file must contain a module called <code>Cantaloupe</code>, and inside that, a function called <code>get_pathname(identifier)</code>, which takes in an identifier and returns a pathname, if available, or <code>nil</code>, if not. A Solr query, for example, could look like:</p>
 
 <pre># functions.rb
 require 'net/http'
 require 'cgi'
 
-def get_pathname(identifier)
-  uri = 'http://localhost:8983/solr/collection1/select?q=' +
-      CGI.escape('id:"' + identifier + '"') +
-      '&amp;fl=pathname_si&amp;wt=ruby'
-  uri = URI.parse(uri)
+module Cantaloupe
+  def self.get_pathname(identifier)
+    uri = 'http://localhost:8983/solr/collection1/select?q=' +
+        CGI.escape('id:"' + identifier + '"') +
+        '&amp;fl=pathname_si&amp;wt=ruby'
+    uri = URI.parse(uri)
 
-  http = Net::HTTP.new(uri.host, uri.port)
-  request = Net::HTTP::Get.new(uri.request_uri)
-  response = http.request(request)
-  return nil if response.code.to_i >= 400
+    http = Net::HTTP.new(uri.host, uri.port)
+    request = Net::HTTP::Get.new(uri.request_uri)
+    response = http.request(request)
+    return nil if response.code.to_i >= 400
 
-  results = eval(response.body)['response']['docs']
-  results.any? ? results.first['pathname_si'] : nil
+    results = eval(response.body)['response']['docs']
+    results.any? ? results.first['pathname_si'] : nil
+  end
 end
 
 # Uncomment to test on the command line (`ruby functions.rb`)
-# puts get_pathname('identifier-to-test')</pre>
+# puts Cantaloupe::get_pathname('identifier-to-test')</pre>
 
 <p>See <a href="scripts.html">Custom Scripts</a> for general information about custom scripts in Cantaloupe.</p>
 
@@ -148,7 +152,7 @@ HttpResolver.ScriptLookupStrategy.script = /path/to/functions.rb
 HttpResolver.ScriptLookupStrategy.script = functions.rb
 </pre>
 
-<p>This file must contain a function called <code>get_url(identifier)</code>, which takes in an identifier and returns a URL, if available, or <code>nil</code>, if not.</p>
+<p>This file must contain a module called <code>Cantaloupe</code>, and inside that, a function called <code>get_url(identifier)</code>, which takes in an identifier and returns a URL, if available, or <code>nil</code>, if not.</p>
 
 <p>See <a href="scripts.html">Custom Scripts</a> for general information about custom scripts in Cantaloupe, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for an example of a similar script.</p>
 

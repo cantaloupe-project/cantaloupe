@@ -1,7 +1,11 @@
-def get_pathname(identifier)
-  nil
-end
+module Cantaloupe
 
-def get_url(identifier)
-  nil
+  def self.get_pathname(identifier)
+    nil
+  end
+
+  def self.get_url(identifier)
+    nil
+  end
+
 end

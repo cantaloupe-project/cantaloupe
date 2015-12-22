@@ -89,7 +89,8 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
                     final long msec = System.currentTimeMillis();
                     engine.load(FileUtils.readFileToString(script));
                     final String[] args = { identifier.toString() };
-                    final Object result = engine.invoke("get_url", args);
+                    final Object result = engine.
+                            invoke("Cantaloupe::get_url", args);
                     logger.debug("Lookup function load+exec time: {} msec",
                             System.currentTimeMillis() - msec);
                     if (result == null) {

@@ -77,7 +77,8 @@ class FilesystemResolver extends AbstractResolver
                     final long msec = System.currentTimeMillis();
                     engine.load(FileUtils.readFileToString(script));
                     final String[] args = { identifier.toString() };
-                    final Object result = engine.invoke("get_pathname", args);
+                    final Object result = engine.
+                            invoke("Cantaloupe::get_pathname", args);
                     logger.debug("Lookup function load+exec time: {} msec",
                             System.currentTimeMillis() - msec);
                     if (result == null) {

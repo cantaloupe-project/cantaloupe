@@ -112,7 +112,7 @@ public abstract class ResolverFactory {
                             getScriptEngine("jruby");
                     final long msec = System.currentTimeMillis();
                     engine.load(FileUtils.readFileToString(script));
-                    final String functionName = "get_resolver";
+                    final String functionName = "Cantaloupe::get_resolver";
                     final String[] args = { identifier.toString() };
                     final Object result = engine.invoke(functionName, args);
                     logger.debug("{} load+exec time: {} msec",

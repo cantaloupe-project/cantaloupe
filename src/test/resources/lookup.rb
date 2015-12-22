@@ -1,9 +1,13 @@
 require 'uri'
 
-def get_pathname(identifier)
-  '/bla/' + identifier
-end
+module Cantaloupe
 
-def get_url(identifier)
-  'http://example.org/bla/' + URI.escape(identifier)
+    def self.get_pathname(identifier)
+      '/bla/' + identifier
+    end
+
+    def self.get_url(identifier)
+      'http://example.org/bla/' + URI.escape(identifier)
+    end
+
 end
