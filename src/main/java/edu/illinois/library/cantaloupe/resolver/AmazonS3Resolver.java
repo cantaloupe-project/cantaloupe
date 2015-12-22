@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
@@ -25,8 +24,7 @@ import java.nio.channels.ReadableByteChannel;
  * @see <a href="http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/welcome.html">
  *     AWS SDK for Java</a>
  */
-class AmazonS3Resolver extends AbstractResolver
-        implements ChannelResolver, StreamResolver {
+class AmazonS3Resolver extends AbstractResolver implements ChannelResolver {
 
     private static Logger logger = LoggerFactory.
             getLogger(AmazonS3Resolver.class);
@@ -85,11 +83,6 @@ class AmazonS3Resolver extends AbstractResolver
     @Override
     public ReadableByteChannel getChannel(Identifier identifier)
             throws IOException {
-        return Channels.newChannel(getInputStream(identifier));
-    }
-
-    @Override
-    public InputStream getInputStream(Identifier identifier) throws IOException {
         AmazonS3 s3 = getClientInstance();
 
         Configuration config = Application.getConfiguration();
@@ -99,7 +92,7 @@ class AmazonS3Resolver extends AbstractResolver
         try {
             logger.debug("Requesting {}", objectKey);
             S3Object object = s3.getObject(new GetObjectRequest(bucketName, objectKey));
-            return object.getObjectContent();
+            return Channels.newChannel(object.getObjectContent());
         } catch (AmazonS3Exception e) {
             if (e.getErrorCode().equals("NoSuchKey")) {
                 throw new FileNotFoundException(e.getMessage());
@@ -111,7 +104,7 @@ class AmazonS3Resolver extends AbstractResolver
 
     @Override
     public SourceFormat getSourceFormat(Identifier identifier) throws IOException {
-        getInputStream(identifier); // throw exception if not found etc.
+        getChannel(identifier); // throw exception if not found etc.
         return SourceFormat.getSourceFormat(identifier);
     }
 

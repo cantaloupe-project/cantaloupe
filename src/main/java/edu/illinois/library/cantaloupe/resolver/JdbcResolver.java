@@ -14,7 +14,6 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.sql.Connection;
@@ -22,8 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-class JdbcResolver extends AbstractResolver
-        implements ChannelResolver, StreamResolver {
+class JdbcResolver extends AbstractResolver implements ChannelResolver {
 
     private static Logger logger = LoggerFactory.getLogger(JdbcResolver.class);
 
@@ -86,12 +84,6 @@ class JdbcResolver extends AbstractResolver
     @Override
     public ReadableByteChannel getChannel(Identifier identifier)
             throws IOException {
-        return Channels.newChannel(getInputStream(identifier));
-    }
-
-    @Override
-    public InputStream getInputStream(Identifier identifier)
-            throws IOException {
         try (Connection connection = getConnection()) {
             Configuration config = Application.getConfiguration();
             String sql = config.getString(LOOKUP_SQL_CONFIG_KEY);
@@ -105,7 +97,7 @@ class JdbcResolver extends AbstractResolver
             statement.setString(1, executeGetDatabaseIdentifier(identifier));
             ResultSet result = statement.executeQuery();
             if (result.next()) {
-                return result.getBinaryStream(1);
+                return Channels.newChannel(result.getBinaryStream(1));
             }
         } catch (ScriptException | SQLException e) {
             throw new IOException(e.getMessage(), e);

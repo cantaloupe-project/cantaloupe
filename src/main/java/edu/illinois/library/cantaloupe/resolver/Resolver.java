@@ -35,9 +35,9 @@ public interface Resolver {
      *     <dd>OK, using {@link java.io.FileInputStream}</dd>
      *     <dt>{@link FileResolver} &rarr; {@link FileProcessor}</dt>
      *     <dd>OK, using {@link java.io.File}</dd>
-     *     <dt>{@link StreamResolver} &rarr; {@link ChannelProcessor}</dt>
+     *     <dt>{@link ChannelResolver} &rarr; {@link ChannelProcessor}</dt>
      *     <dd>OK, using {@link java.io.InputStream}</dd>
-     *     <dt>{@link StreamResolver} &rarr; {@link FileProcessor}</dt>
+     *     <dt>{@link ChannelResolver} &rarr; {@link FileProcessor}</dt>
      *     <dd>Incompatible</dd>
      * </dl>
      *

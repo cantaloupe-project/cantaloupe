@@ -25,8 +25,6 @@ import javax.script.ScriptException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
@@ -34,8 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-class HttpResolver extends AbstractResolver
-        implements ChannelResolver, StreamResolver {
+class HttpResolver extends AbstractResolver implements ChannelResolver {
 
     private static Logger logger = LoggerFactory.getLogger(HttpResolver.class);
 
@@ -108,18 +105,12 @@ class HttpResolver extends AbstractResolver
     @Override
     public ReadableByteChannel getChannel(Identifier identifier)
             throws IOException {
-        return Channels.newChannel(getInputStream(identifier));
-    }
-
-    @Override
-    public InputStream getInputStream(final Identifier identifier)
-            throws IOException {
         Reference url = getUrl(identifier);
         logger.debug("Resolved {} to {}", identifier, url);
         ClientResource resource = newClientResource(url);
         resource.setNext(client);
         try {
-            return resource.get().getStream();
+            return resource.get().getChannel();
         } catch (ResourceException e) {
             if (e.getStatus().equals(Status.CLIENT_ERROR_NOT_FOUND) ||
                     e.getStatus().equals(Status.CLIENT_ERROR_GONE)) {
@@ -139,7 +130,7 @@ class HttpResolver extends AbstractResolver
         if (format == SourceFormat.UNKNOWN) {
             format = getSourceFormatFromContentTypeHeader(identifier);
         }
-        getInputStream(identifier); // throws IOException if not found etc.
+        getChannel(identifier); // throws IOException if not found etc.
         return format;
     }
 

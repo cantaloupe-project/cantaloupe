@@ -120,22 +120,6 @@ public class FilesystemResolverTest {
         }
     }
 
-    @Test
-    public void testGetInputStream() throws Exception {
-        try {
-            assertNotNull(instance.getInputStream(IDENTIFIER));
-        } catch (FileNotFoundException e) {
-            fail();
-        }
-
-        try {
-            assertNull(instance.getInputStream(new Identifier("bogus")));
-            fail();
-        } catch (FileNotFoundException e) {
-            // pass
-        }
-    }
-
     // getPathname(Identifier)
 
     @Test

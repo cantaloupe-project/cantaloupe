@@ -16,13 +16,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.AccessDeniedException;
 import java.util.Collection;
@@ -30,7 +27,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 class FilesystemResolver extends AbstractResolver
-        implements ChannelResolver, FileResolver, StreamResolver {
+        implements ChannelResolver, FileResolver {
 
     private static Logger logger = LoggerFactory.
             getLogger(FilesystemResolver.class);
@@ -96,7 +93,7 @@ class FilesystemResolver extends AbstractResolver
     @Override
     public ReadableByteChannel getChannel(Identifier identifier)
             throws IOException {
-        return Channels.newChannel(getInputStream(identifier));
+        return new FileInputStream(getFile(identifier)).getChannel();
     }
 
     @Override
@@ -111,12 +108,6 @@ class FilesystemResolver extends AbstractResolver
             throw e;
         }
         return file;
-    }
-
-    @Override
-    public InputStream getInputStream(Identifier identifier)
-            throws IOException {
-        return new BufferedInputStream(new FileInputStream(getFile(identifier)));
     }
 
     /**

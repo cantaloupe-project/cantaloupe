@@ -79,27 +79,6 @@ public class AmazonS3ResolverTest {
     }
 
     @Test
-    public void testGetInputStream() {
-        // present, readable image
-        try {
-            assertNotNull(instance.getInputStream(IMAGE));
-        } catch (IOException e) {
-            fail();
-        }
-        // missing image
-        try {
-            instance.getInputStream(new Identifier("bogus"));
-            fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
-        } catch (IOException e) {
-            fail("Expected FileNotFoundException");
-        }
-        // present, unreadable image
-        // TODO: write this
-    }
-
-    @Test
     public void testGetSourceFormat() throws IOException {
         assertEquals(SourceFormat.JPG, instance.getSourceFormat(IMAGE));
         try {

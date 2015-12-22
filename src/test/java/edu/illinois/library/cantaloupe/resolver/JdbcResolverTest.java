@@ -86,25 +86,6 @@ public class JdbcResolverTest {
     }
 
     @Test
-    public void testGetInputStream() {
-        // present image
-        try {
-            assertNotNull(instance.getInputStream(new Identifier("jpg.jpg")));
-        } catch (IOException e) {
-            fail();
-        }
-        // missing image
-        try {
-            instance.getInputStream(new Identifier("bogus"));
-            fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
-        } catch (IOException e) {
-            fail("Expected FileNotFoundException");
-        }
-    }
-
-    @Test
     public void testGetSourceFormat() throws IOException {
         // JdbcResolver.function.media_type returns SQL
         assertEquals(SourceFormat.JPG,

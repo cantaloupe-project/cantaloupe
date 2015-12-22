@@ -105,36 +105,6 @@ public class HttpResolverTest {
     }
 
     @Test
-    public void testGetInputStream() throws IOException {
-        // present, readable image
-        try {
-            assertNotNull(instance.getInputStream(IDENTIFIER));
-        } catch (IOException e) {
-            fail();
-        }
-        // missing image
-        try {
-            instance.getInputStream(new Identifier("bogus"));
-            fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
-        } catch (IOException e) {
-            fail("Expected FileNotFoundException");
-        }
-        // present, unreadable image
-        File image = TestUtil.getFixture("gif");
-        try {
-            image.setReadable(false);
-            instance.getInputStream(new Identifier("gif"));
-            fail("Expected exception");
-        } catch (AccessDeniedException e) {
-            // pass
-        } finally {
-            image.setReadable(true);
-        }
-    }
-
-    @Test
     public void testGetSourceFormat() throws IOException {
         assertEquals(SourceFormat.JPG, instance.getSourceFormat(IDENTIFIER));
         try {
