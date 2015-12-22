@@ -1085,16 +1085,18 @@ abstract class ProcessorUtil {
                 width = scale.getWidth();
                 height = scale.getHeight();
             } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                double hScale = (double) scale.getWidth() / (double) sourceWidth;
-                double vScale = (double) scale.getHeight() / (double) sourceHeight;
+                final double hScale = (double) scale.getWidth() /
+                        (double) sourceWidth;
+                final double vScale = (double) scale.getHeight() /
+                        (double) sourceHeight;
                 width = (int) Math.round(sourceWidth *
                         Math.min(hScale, vScale));
                 height = (int) Math.round(sourceHeight *
                         Math.min(hScale, vScale));
             } else if (scale.getPercent() != null) {
-                double reqScale = scale.getPercent();
-                int reqRf = getReductionFactor(reqScale, 0);
-                double pct = getScale(reqRf - reductionFactor);
+                final double reqScale = scale.getPercent();
+                final double appliedScale = getScale(reductionFactor);
+                final double pct = reqScale / appliedScale;
                 width = (int) Math.round(sourceWidth * pct);
                 height = (int) Math.round(sourceHeight * pct);
             }
@@ -1102,8 +1104,8 @@ abstract class ProcessorUtil {
                     inImage.getType());
 
             final Graphics2D g2d = scaledImage.createGraphics();
-            // The "non-high-quality" technique results in images that are
-            // noticeably pixelated.
+            // The "non-high-quality" technique results in images with
+            // noticeable aliasing at small scales.
             // See: https://community.oracle.com/docs/DOC-983611
             // http://stackoverflow.com/a/34266703/177529
             if (highQuality) {
