@@ -110,7 +110,7 @@ class FilesystemCache implements Cache {
 
         @Override
         public int write(ByteBuffer src) throws IOException {
-            return 0;
+            return src.array().length;
         }
 
     }

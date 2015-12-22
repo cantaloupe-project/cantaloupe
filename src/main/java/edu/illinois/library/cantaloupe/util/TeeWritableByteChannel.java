@@ -26,12 +26,14 @@ public class TeeWritableByteChannel implements WritableByteChannel {
 
     @Override
     public boolean isOpen() {
-        return (channel1.isOpen() && channel2.isOpen());
+        return (channel1.isOpen() || channel2.isOpen());
     }
 
     @Override
     public int write(ByteBuffer src) throws IOException {
+        final int position = src.position();
         channel1.write(src);
-        return channel2.write(src); // TODO: will the channels ever have different return values?
+        src.position(position);
+        return channel2.write(src);
     }
 }
