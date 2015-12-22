@@ -230,7 +230,7 @@ processor.fallback = Java2dProcessor
 #----------------------------------------
 
 # Available values are `quality` and `speed`. `speed` is ~10-20% faster at the
-# expense of visible aliasing at small scales.
+# expense of visible aliasing at thumbnail sizes.
 Java2dProcessor.scale_mode = speed
 
 # JPEG output quality. Should be a number between 0-1 ending in "f"
@@ -251,7 +251,7 @@ Java2dProcessor.tif.reader = TIFFImageReader
 KakaduProcessor.post_processor = java2d
 
 # Available values are `quality` and `speed`. `speed` is ~10-20% faster at the
-# expense of visible aliasing at small scales.
+# expense of visible aliasing at thumbnail sizes.
 KakaduProcessor.post_processor.java2d.scale_mode = speed
 
 ###########################################################################
