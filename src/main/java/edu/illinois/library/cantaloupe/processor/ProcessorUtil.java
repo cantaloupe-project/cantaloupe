@@ -787,34 +787,42 @@ abstract class ProcessorUtil {
                                                         Scale scale,
                                                         ReductionFactor rf)
             throws IOException {
-        // The goal here is to get a BufferedImage of TYPE_INT_RGB rather
-        // than TYPE_CUSTOM, which would need to be redrawn into a new
-        // BufferedImage of TYPE_INT_RGB at huge expense. For an explanation of
-        // this strategy:
-        // https://lists.apple.com/archives/java-dev/2005/Apr/msg00456.html
-        ImageReadParam param = reader.getDefaultReadParam();
-        BufferedImage bestImage = new BufferedImage(fullSize.width,
-                fullSize.height, BufferedImage.TYPE_INT_RGB);
-        param.setDestination(bestImage);
-        // An alternative would apparently be to use setDestinationType() and
-        // then allow ImageReader.read() to create the BufferedImage itself.
-        // But, that results in, "Destination type from ImageReadParam does not
-        // match!" during writing.
-        // param.setDestinationType(ImageTypeSpecifier.
-        //        createFromBufferedImageType(BufferedImage.TYPE_INT_RGB));
-        reader.read(0, param);
-        if (!scale.isNoOp()) {
+        BufferedImage bestImage = null;
+        final ImageReadParam param = reader.getDefaultReadParam();
+        if (scale.isNoOp()) {
+            // ImageIO loves to read TIFFs into BufferedImages of type
+            // TYPE_CUSTOM, which need to be redrawn into a new image of type
+            // TYPE_INT_RGB at huge expense. The goal here is to directly get
+            // a BufferedImage of TYPE_INT_RGB instead For an explanation of
+            // this strategy, which may not even work anyway:
+            // https://lists.apple.com/archives/java-dev/2005/Apr/msg00456.html
+            bestImage = new BufferedImage(fullSize.width,
+                    fullSize.height, BufferedImage.TYPE_INT_RGB);
+            param.setDestination(bestImage);
+            // An alternative would apparently be to use setDestinationType()
+            // and then allow ImageReader.read() to create the BufferedImage
+            // itself. But, that results in, "Destination type from
+            // ImageReadParam does not match!" during writing.
+            // param.setDestinationType(ImageTypeSpecifier.
+            //        createFromBufferedImageType(BufferedImage.TYPE_INT_RGB));
+            reader.read(0, param);
+        } else {
             // Pyramidal TIFFs will have > 1 image, each half the dimensions of
             // the next larger. The "true" parameter tells getNumImages() to
             // scan for images, which seems to be necessary for at least some
-            // files, but is a little bit expensive.
+            // files, but is O^n with source image size.
             int numImages = reader.getNumImages(false);
-            if (numImages == -1) {
-                numImages = reader.getNumImages(true);
-            }
             if (numImages > 1) {
                 logger.debug("Detected pyramidal TIFF with {} levels",
                         numImages);
+            } else if (numImages == -1) {
+                numImages = reader.getNumImages(true);
+                if (numImages > 1) {
+                    logger.debug("Scan revealed pyramidal TIFF with {} levels",
+                            numImages);
+                }
+            }
+            if (numImages > 1) {
                 final Rectangle regionRect = crop.getRectangle(fullSize);
 
                 // Loop through the tiles from smallest to largest to find the
