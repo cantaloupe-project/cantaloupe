@@ -109,10 +109,9 @@ class JdbcCache implements Cache {
     public static final String INFO_TABLE_LAST_MODIFIED_COLUMN = "last_modified";
     public static final String INFO_TABLE_WIDTH_COLUMN = "width";
 
-    public static final String CONNECTION_STRING_CONFIG_KEY =
-            "JdbcCache.connection_string";
     public static final String CONNECTION_TIMEOUT_CONFIG_KEY =
             "JdbcCache.connection_timeout";
+    public static final String JDBC_URL_CONFIG_KEY = "JdbcCache.url";
     public static final String PASSWORD_CONFIG_KEY = "JdbcCache.password";
     public static final String IMAGE_TABLE_CONFIG_KEY = "JdbcCache.image_table";
     public static final String INFO_TABLE_CONFIG_KEY = "JdbcCache.info_table";
@@ -130,7 +129,7 @@ class JdbcCache implements Cache {
                     metadata.getDriverVersion());
             final Configuration config = Application.getConfiguration();
             logger.info("Connection URL: {}",
-                    config.getString(CONNECTION_STRING_CONFIG_KEY));
+                    config.getString(JDBC_URL_CONFIG_KEY));
 
             final String imageTableName = getImageTableName();
             final String infoTableName = getInfoTableName();
@@ -154,7 +153,7 @@ class JdbcCache implements Cache {
         if (dataSource == null) {
             final Configuration config = Application.getConfiguration();
             final String connectionString = config.
-                    getString(CONNECTION_STRING_CONFIG_KEY, "");
+                    getString(JDBC_URL_CONFIG_KEY, "");
             final int connectionTimeout = 1000 *
                     config.getInt(CONNECTION_TIMEOUT_CONFIG_KEY, 10);
             final int maxPoolSize = config.getInt(MAX_POOL_SIZE_CONFIG_KEY, 10);

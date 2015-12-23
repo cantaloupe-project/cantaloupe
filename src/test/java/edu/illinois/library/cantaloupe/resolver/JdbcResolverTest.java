@@ -24,14 +24,14 @@ public class JdbcResolverTest {
     public void setUp() throws Exception {
         BaseConfiguration config = new BaseConfiguration();
         // use an in-memory H2 database
-        config.setProperty("JdbcResolver.connection_string", "jdbc:h2:mem:test");
-        config.setProperty("JdbcResolver.user", "sa");
-        config.setProperty("JdbcResolver.password", "");
-        config.setProperty("JdbcResolver.function.identifier",
+        config.setProperty(JdbcResolver.JDBC_URL_CONFIG_KEY, "jdbc:h2:mem:test");
+        config.setProperty(JdbcResolver.USER_CONFIG_KEY, "sa");
+        config.setProperty(JdbcResolver.PASSWORD_CONFIG_KEY, "");
+        config.setProperty(JdbcResolver.IDENTIFIER_FUNCTION_CONFIG_KEY,
                 "function getDatabaseIdentifier(url_identifier) { return url_identifier; }");
-        config.setProperty("JdbcResolver.lookup_sql",
+        config.setProperty(JdbcResolver.LOOKUP_SQL_CONFIG_KEY,
                 "SELECT image FROM items WHERE filename = ?");
-        config.setProperty("JdbcResolver.function.media_type",
+        config.setProperty(JdbcResolver.MEDIA_TYPE_FUNCTION_CONFIG_KEY,
                 "function getMediaType(identifier) { return \"SELECT media_type FROM items WHERE filename = ?\" }");
         Application.setConfiguration(config);
 

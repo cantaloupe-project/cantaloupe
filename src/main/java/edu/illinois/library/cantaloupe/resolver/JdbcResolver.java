@@ -25,20 +25,19 @@ class JdbcResolver extends AbstractResolver implements ChannelResolver {
 
     private static Logger logger = LoggerFactory.getLogger(JdbcResolver.class);
 
-    private static final String CONNECTION_STRING_CONFIG_KEY =
-            "JdbcResolver.connection_string";
     public static final String CONNECTION_TIMEOUT_CONFIG_KEY =
             "JdbcResolver.connection_timeout";
-    private static final String IDENTIFIER_FUNCTION_CONFIG_KEY =
+    public static final String IDENTIFIER_FUNCTION_CONFIG_KEY =
             "JdbcResolver.function.identifier";
-    private static final String LOOKUP_SQL_CONFIG_KEY =
+    public static final String JDBC_URL_CONFIG_KEY = "JdbcResolver.url";
+    public static final String LOOKUP_SQL_CONFIG_KEY =
             "JdbcResolver.lookup_sql";
     public static final String MAX_POOL_SIZE_CONFIG_KEY =
             "JdbcResolver.max_pool_size";
-    private static final String MEDIA_TYPE_FUNCTION_CONFIG_KEY =
+    public static final String MEDIA_TYPE_FUNCTION_CONFIG_KEY =
             "JdbcResolver.function.media_type";
-    private static final String PASSWORD_CONFIG_KEY = "JdbcResolver.password";
-    private static final String USER_CONFIG_KEY = "JdbcResolver.user";
+    public static final String PASSWORD_CONFIG_KEY = "JdbcResolver.password";
+    public static final String USER_CONFIG_KEY = "JdbcResolver.user";
 
     private static HikariDataSource dataSource;
 
@@ -48,7 +47,7 @@ class JdbcResolver extends AbstractResolver implements ChannelResolver {
                     connection.getMetaData().getDriverVersion());
             Configuration config = Application.getConfiguration();
             logger.info("Connection string: {}",
-                    config.getString(CONNECTION_STRING_CONFIG_KEY));
+                    config.getString(JDBC_URL_CONFIG_KEY));
         } catch (SQLException e) {
             logger.error("Failed to establish a database connection", e);
         }
@@ -63,7 +62,7 @@ class JdbcResolver extends AbstractResolver implements ChannelResolver {
         if (dataSource == null) {
             final Configuration config = Application.getConfiguration();
             final String connectionString = config.
-                    getString(CONNECTION_STRING_CONFIG_KEY, "");
+                    getString(JDBC_URL_CONFIG_KEY, "");
             final int connectionTimeout = 1000 *
                     config.getInt(CONNECTION_TIMEOUT_CONFIG_KEY, 10);
             final int maxPoolSize = config.getInt(MAX_POOL_SIZE_CONFIG_KEY, 10);

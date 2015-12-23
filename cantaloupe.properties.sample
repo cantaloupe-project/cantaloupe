@@ -129,7 +129,7 @@ HttpResolver.auth.basic.secret =
 # JdbcResolver
 #----------------------------------------
 
-JdbcResolver.connection_string = jdbc:postgresql://localhost:5432/my_database
+JdbcResolver.url = jdbc:postgresql://localhost:5432/my_database
 JdbcResolver.user = postgres
 JdbcResolver.password = postgres
 
@@ -309,7 +309,7 @@ FilesystemCache.ttl_seconds = 2592000
 # JdbcCache
 #----------------------------------------
 
-JdbcCache.connection_string = jdbc:postgresql://localhost:5432/cantaloupe
+JdbcCache.url = jdbc:postgresql://localhost:5432/cantaloupe
 JdbcCache.user = postgres
 JdbcCache.password =
 

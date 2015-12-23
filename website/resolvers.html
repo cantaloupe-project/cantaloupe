@@ -170,7 +170,7 @@ HttpResolver.ScriptLookupStrategy.script = functions.rb
 
 <p>Cantaloupe does not include any JDBC drivers, so a driver JAR for the desired database must be obtained separately and saved somewhere on the classpath.</p>
 
-<p>The JDBC connection is initialized by the <code>JdbcResolver.connection_string</code>, <code>JdbcResolver.user</code>, and <code>JdbcResolver.password</code> configuration options. If the user or password are not necessary, they can be left blank. The connection string must use your driver's JDBC syntax:</p>
+<p>The JDBC connection is initialized by the <code>JdbcResolver.url</code>, <code>JdbcResolver.user</code>, and <code>JdbcResolver.password</code> configuration options. If the user or password are not necessary, they can be left blank. The connection string must use your driver's JDBC syntax:</p>
 
 <pre><code>jdbc:postgresql://localhost:5432/my_database
 jdbc:mysql://localhost:3306/my_database

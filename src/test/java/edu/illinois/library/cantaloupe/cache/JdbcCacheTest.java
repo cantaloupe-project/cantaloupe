@@ -32,8 +32,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
     public void setUp() throws Exception {
         BaseConfiguration config = new BaseConfiguration();
         // use an in-memory H2 database
-        config.setProperty(JdbcCache.CONNECTION_STRING_CONFIG_KEY,
-                "jdbc:h2:mem:test");
+        config.setProperty(JdbcCache.JDBC_URL_CONFIG_KEY, "jdbc:h2:mem:test");
         config.setProperty(JdbcCache.USER_CONFIG_KEY, "sa");
         config.setProperty(JdbcCache.PASSWORD_CONFIG_KEY, "");
         config.setProperty(JdbcCache.IMAGE_TABLE_CONFIG_KEY, "image_cache");
