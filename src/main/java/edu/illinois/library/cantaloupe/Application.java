@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
@@ -49,22 +50,13 @@ public class Application {
     }
 
     /**
-     * @return Application-wide Configuration object.
+     * @return Application-wide Configuration object. Will be loaded from a
+     * file at startup (see {@link #getConfigurationFile}), but can also be
+     * overridden by {@link #setConfiguration}.
      */
     public static Configuration getConfiguration() {
         if (config == null) {
-            try {
-                File configFile = getConfigurationFile();
-                if (configFile != null) {
-                    PropertiesConfiguration propConfig = new PropertiesConfiguration();
-                    propConfig.load(configFile);
-                    config = propConfig;
-                }
-            } catch (ConfigurationException e) {
-                // The logger has probably not been initialized yet, as it
-                // depends on a working configuration.
-                System.out.println(e.getMessage());
-            }
+            reloadConfigurationFile();
         }
         return config;
     }
@@ -80,7 +72,6 @@ public class Application {
                 // expand paths that start with "~"
                 configFilePath = configFilePath.replaceFirst("^~",
                                 System.getProperty("user.home"));
-                logger.info("Using config file: {}", configFilePath);
                 return new File(configFilePath).getCanonicalFile();
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
@@ -181,6 +172,31 @@ public class Application {
             System.exit(-1);
         }
 
+        // Use FilesystemWatcher to listen for changes to the directory
+        // containing the configuration file. When the config file is found to
+        // have been changed, reload it.
+        Thread configWatcher = new Thread() {
+            public void run() {
+                FilesystemWatcher.Callback callback = new FilesystemWatcher.Callback() {
+                    public void created(Path path) { handle(path); }
+                    public void deleted(Path path) {}
+                    public void modified(Path path) { handle(path); }
+                    private void handle(Path path) {
+                        if (path.toFile().equals(getConfigurationFile())) {
+                            reloadConfigurationFile();
+                        }
+                    }
+                };
+                try {
+                    Path path = getConfigurationFile().toPath().getParent();
+                    new FilesystemWatcher(path, callback).processEvents();
+                } catch (IOException e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+        };
+        configWatcher.start();
+
         final int mb = 1024 * 1024;
         Runtime runtime = Runtime.getRuntime();
         logger.info(System.getProperty("java.vm.name") + " / " +
@@ -195,6 +211,28 @@ public class Application {
             purgeExpiredFromCacheAtLaunch();
         } else {
             startServer();
+        }
+    }
+
+    public static void reloadConfigurationFile() {
+        try {
+            File configFile = getConfigurationFile();
+            if (configFile != null) {
+                if (config != null) {
+                    logger.info("Reloading configuration file: {}", configFile);
+                } else {
+                    // the logger has probably not been initialized yet
+                    System.out.println("Loading configuration file: " +
+                            configFile);
+                }
+                PropertiesConfiguration propConfig = new PropertiesConfiguration();
+                propConfig.load(configFile);
+                config = propConfig;
+            }
+        } catch (ConfigurationException e) {
+            // The logger has probably not been initialized yet, as it
+            // depends on a working configuration.
+            System.out.println(e.getMessage());
         }
     }
 
