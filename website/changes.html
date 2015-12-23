@@ -10,6 +10,7 @@ layout: default
   <li>Redesigned internal APIs to abstract internal processing operations away from request processing directives.</li>
   <li>Added an IIIF Image API 1.1 endpoint, moving the 2.0 endpoint to <span class="filename">/iiif/2.0</span> to accommodate it.</li>
   <li>Java NIO channels are used internally (where possible) to improve efficiency.</li>
+  <li>Most configuration file changes are auto-detected and applied without restarting.</li>
   <li>Resolvers can be chosen dynamically using a custom Ruby script.</li>
   <li>FilesystemResolver and HttpResolver can use a custom Ruby lookup script.</li>
   <li>Java2dProcessor implements FileProcessor, making it potentially faster in some scenarios.</li>
