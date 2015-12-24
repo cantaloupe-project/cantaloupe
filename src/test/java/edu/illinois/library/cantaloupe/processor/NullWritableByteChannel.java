@@ -18,7 +18,7 @@ class NullWritableByteChannel implements WritableByteChannel {
 
     @Override
     public int write(ByteBuffer src) throws IOException {
-        return 0;
+        return src.array().length;
     }
 
 }

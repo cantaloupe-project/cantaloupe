@@ -173,11 +173,15 @@ public class ApplicationTest extends CantaloupeTestCase {
     }
 
     public void testStart() throws Exception {
-        Application.setConfiguration(newConfiguration());
-        Application.startServer();
-        ClientResource resource = getClientForUriPath("/");
-        resource.get();
-        assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
+        try {
+            Application.setConfiguration(newConfiguration());
+            Application.startServer();
+            ClientResource resource = getClientForUriPath("/");
+            resource.get();
+            assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
+        } finally {
+            Application.stopServer();
+        }
     }
 
     public void testStop() throws Exception {

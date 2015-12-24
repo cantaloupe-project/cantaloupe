@@ -177,7 +177,7 @@ public class FilesystemResolverTest {
 
     @Test
     public void testGetPathnameWithScriptLookupStrategyAndRelativePath()
-            throws IOException {
+            throws Exception {
         Configuration config = Application.getConfiguration();
         config.setProperty(FilesystemResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
@@ -188,6 +188,7 @@ public class FilesystemResolverTest {
         final File tempFile = new File("./lookup_test.rb");
         try {
             FileUtils.copyFile(TestUtil.getFixture("lookup.rb"), tempFile);
+            Thread.sleep(50);
             assertEquals("/bla/" + IDENTIFIER,
                     instance.getPathname(IDENTIFIER, File.separator));
         } finally {

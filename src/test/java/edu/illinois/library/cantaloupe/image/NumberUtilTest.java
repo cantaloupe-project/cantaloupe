@@ -1,9 +1,12 @@
 package edu.illinois.library.cantaloupe.image;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
-public class NumberUtilTest extends TestCase {
+import static org.junit.Assert.*;
 
+public class NumberUtilTest {
+
+    @Test
     public void testRemoveTrailingZeroes() {
         assertEquals("0", NumberUtil.removeTrailingZeroes(0.0f));
         assertEquals("0.5", NumberUtil.removeTrailingZeroes(0.5f));

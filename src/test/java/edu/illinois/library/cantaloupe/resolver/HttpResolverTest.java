@@ -75,14 +75,16 @@ public class HttpResolverTest {
     }
 
     @Test
-    public void testGetChannel() throws IOException {
-        // present, readable image
+    public void testGetChannelWithPresentReadableImage() throws IOException {
         try {
             assertNotNull(instance.getChannel(IDENTIFIER));
         } catch (IOException e) {
             fail();
         }
-        // missing image
+    }
+
+    @Test
+    public void testGetChannelWithMissingImage() throws IOException {
         try {
             instance.getChannel(new Identifier("bogus"));
             fail("Expected exception");
@@ -91,7 +93,10 @@ public class HttpResolverTest {
         } catch (IOException e) {
             fail("Expected FileNotFoundException");
         }
-        // present, unreadable image
+    }
+
+    @Test
+    public void testGetChannelWithPresentUnreadableImage() throws IOException {
         File image = TestUtil.getFixture("gif");
         try {
             image.setReadable(false);
