@@ -1304,12 +1304,8 @@ abstract class ProcessorUtil {
                 }
                 break;
             case JPG:
-                // JPEGImageEncoder seems to be slightly more efficient than
-                // ImageIO.write()
-                JPEGEncodeParam jParam = new JPEGEncodeParam();
-                ImageEncoder encoder = ImageCodec.createImageEncoder("JPEG",
-                        Channels.newOutputStream(writableChannel), jParam);
-                encoder.encode(image);
+                JAI.create("encode", image.getAsBufferedImage(),
+                        Channels.newOutputStream(writableChannel), "JPEG", null);
                 break;
             case PNG:
                 // ImageIO.write() seems to be more efficient than
