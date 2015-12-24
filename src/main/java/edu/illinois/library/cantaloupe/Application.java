@@ -82,7 +82,7 @@ public class Application {
 
     /**
      * @return The application version from manifest.mf, or a string like
-     * "Non-Release" if running from a jar.
+     * "Non-Release" if not running from a jar.
      */
     public static String getVersion() {
         String versionStr = "Non-Release";
@@ -214,7 +214,7 @@ public class Application {
         }
     }
 
-    public static void reloadConfigurationFile() {
+    public static synchronized void reloadConfigurationFile() {
         try {
             File configFile = getConfigurationFile();
             if (configFile != null) {
@@ -239,11 +239,11 @@ public class Application {
     /**
      * Overrides the configuration, mainly for testing purposes.
      */
-    public static void setConfiguration(Configuration c) {
+    public static synchronized void setConfiguration(Configuration c) {
         config = c;
     }
 
-    public static void startServer() throws Exception {
+    public static synchronized void startServer() throws Exception {
         stopServer();
         component = new Component();
         Integer port = getConfiguration().getInteger("http.port", 8182);
@@ -254,7 +254,7 @@ public class Application {
         component.start();
     }
 
-    public static void stopServer() throws Exception {
+    public static synchronized void stopServer() throws Exception {
         if (component != null) {
             component.stop();
             component = null;
