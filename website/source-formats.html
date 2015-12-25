@@ -17,7 +17,7 @@ configuration option). (The author has not tried this.)</p>
 
 <p><a href="processors.html#KakaduProcessor">KakaduProcessor</a> is by far the most efficient processor for this format, and it performs very well, even with images in the range of hundreds of megapixels.</p>
 
-<p><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a> uses the open-source OpenJPEG decoder, generally considered (as of this writing) to be the fastest open-source JPEG2000 decoder. <a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a> also uses OpenJPEG if the necessary delegate is installed. So, either of these processors will use the same underlying library to do their work.</p>
+<p><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a> uses the open-source OpenJPEG decoder, generally considered, as of this writing, to be the fastest open-source JPEG2000 decoder. <a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a>'s JPEG2000 delegate, if installed, also uses the OpenJPEG library.</p>
 
 <p><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> can read and write JPEG2000 using JasPer, if the necessary plugin is installed. This may or may not be fast enough to be usable.</p>
 
