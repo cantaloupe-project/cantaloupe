@@ -199,36 +199,36 @@ class JaiProcessor implements FileProcessor, ChannelProcessor {
             RenderedImage renderedImage = null;
             ReductionFactor rf = new ReductionFactor();
             if (input instanceof ReadableByteChannel) {
-                renderedImage = ProcessorUtil.readImageWithJai(
+                renderedImage = JaiUtil.readImage(
                         (ReadableByteChannel) input, sourceFormat, ops,
                         fullSize, rf);
             } else if (input instanceof File) {
-                renderedImage = ProcessorUtil.readImageWithJai(
+                renderedImage = JaiUtil.readImage(
                         (File) input, sourceFormat, ops, fullSize, rf);
             }
             if (renderedImage != null) {
-                RenderedOp renderedOp = ProcessorUtil.reformatImage(
+                RenderedOp renderedOp = JaiUtil.reformatImage(
                         RenderedOp.wrapRenderedImage(renderedImage),
                         new Dimension(JAI_TILE_SIZE, JAI_TILE_SIZE));
                 for (Operation op : ops) {
                     if (op instanceof Crop) {
-                        renderedOp = ProcessorUtil.
+                        renderedOp = JaiUtil.
                                 cropImage(renderedOp, (Crop) op, rf.factor);
                     } else if (op instanceof Scale) {
-                        renderedOp = ProcessorUtil.
+                        renderedOp = JaiUtil.
                                 scaleImage(renderedOp, (Scale) op, rf.factor);
                     } else if (op instanceof Transpose) {
-                        renderedOp = ProcessorUtil.
+                        renderedOp = JaiUtil.
                                 transposeImage(renderedOp, (Transpose) op);
                     } else if (op instanceof Rotate) {
-                        renderedOp = ProcessorUtil.
+                        renderedOp = JaiUtil.
                                 rotateImage(renderedOp, (Rotate) op);
                     } else if (op instanceof Filter) {
-                        renderedOp = ProcessorUtil.
+                        renderedOp = JaiUtil.
                                 filterImage(renderedOp, (Filter) op);
                     }
                 }
-                ProcessorUtil.writeImage(renderedOp, ops.getOutputFormat(),
+                JaiUtil.writeImage(renderedOp, ops.getOutputFormat(),
                         writableChannel);
             }
         } catch (IOException e) {

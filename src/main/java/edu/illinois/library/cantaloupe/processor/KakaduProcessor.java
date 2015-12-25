@@ -439,21 +439,21 @@ class KakaduProcessor implements FileProcessor {
                                      final WritableByteChannel writableChannel)
             throws IOException, ProcessorException {
         RenderedImage renderedImage =
-                ProcessorUtil.readImageWithJai(readableChannel);
-        RenderedOp renderedOp = ProcessorUtil.reformatImage(
+                JaiUtil.readImage(readableChannel);
+        RenderedOp renderedOp = JaiUtil.reformatImage(
                 RenderedOp.wrapRenderedImage(renderedImage),
                 new Dimension(512, 512));
         for (Operation op : opList) {
             if (op instanceof Scale) {
-                renderedOp = ProcessorUtil.scaleImage(renderedOp, (Scale) op,
+                renderedOp = JaiUtil.scaleImage(renderedOp, (Scale) op,
                         reductionFactor.factor);
             } else if (op instanceof Transpose) {
-                renderedOp = ProcessorUtil.transposeImage(renderedOp,
+                renderedOp = JaiUtil.transposeImage(renderedOp,
                         (Transpose) op);
             } else if (op instanceof Rotate) {
-                renderedOp = ProcessorUtil.rotateImage(renderedOp, (Rotate) op);
+                renderedOp = JaiUtil.rotateImage(renderedOp, (Rotate) op);
             } else if (op instanceof Filter) {
-                renderedOp = ProcessorUtil.filterImage(renderedOp, (Filter) op);
+                renderedOp = JaiUtil.filterImage(renderedOp, (Filter) op);
             }
         }
         ImageIO.write(renderedOp, opList.getOutputFormat().getExtension(),
