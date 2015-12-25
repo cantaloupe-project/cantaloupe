@@ -56,7 +56,7 @@ abstract class JaiUtil {
      * no-op.
      */
     public static RenderedOp cropImage(RenderedOp inImage, Crop crop) {
-        return cropImage(inImage, crop, 0);
+        return cropImage(inImage, crop, new ReductionFactor(0));
     }
 
     /**
@@ -67,19 +67,19 @@ abstract class JaiUtil {
      *
      * @param inImage Image to crop
      * @param crop Crop operation
-     * @param reductionFactor Number of times the dimensions of
-     *                        <code>inImage</code> have already been halved
-     *                        relative to the full-sized version
+     * @param rf Number of times the dimensions of
+     *           <code>inImage</code> have already been halved
+     *           relative to the full-sized version
      * @return Cropped image, or the input image if the given operation is a
      * no-op.
      */
     public static RenderedOp cropImage(RenderedOp inImage,
                                        Crop crop,
-                                       int reductionFactor) {
+                                       ReductionFactor rf) {
         RenderedOp croppedImage = inImage;
         if (!crop.isNoOp()) {
             // calculate the region x, y, and actual width/height
-            final double scale = ProcessorUtil.getScale(reductionFactor);
+            final double scale = ProcessorUtil.getScale(rf);
             final double regionX = crop.getX() * scale;
             final double regionY = crop.getY() * scale;
             final double regionWidth = crop.getWidth() * scale;
@@ -353,7 +353,8 @@ abstract class JaiUtil {
                                 (pct * fullSize.height) / (float) regionRect.height <= tileScale);
                     }
                     if (fits) {
-                        rf.factor = ProcessorUtil.getReductionFactor(tileScale, 0);
+                        rf.factor = ProcessorUtil.
+                                getReductionFactor(tileScale, 0).factor;
                         logger.debug("Using a {}x{} source tile ({}x reduction factor)",
                                 tile.getWidth(), tile.getHeight(), rf.factor);
                         bestImage = tile;
@@ -407,7 +408,7 @@ abstract class JaiUtil {
      * @return Scaled image, or the input image if the given scale is a no-op.
      */
     public static RenderedOp scaleImage(RenderedOp inImage, Scale scale) {
-        return scaleImage(inImage, scale, 0);
+        return scaleImage(inImage, scale, new ReductionFactor(0));
     }
 
     /**
@@ -418,12 +419,12 @@ abstract class JaiUtil {
      *
      * @param inImage Image to scale
      * @param scale Requested size ignoring any reduction factor
-     * @param reductionFactor Reduction factor that has already been applied to
+     * @param rf Reduction factor that has already been applied to
      *                        <code>inImage</code>
      * @return Scaled image, or the input image if the given scale is a no-op.
      */
     public static RenderedOp scaleImage(RenderedOp inImage, Scale scale,
-                                        int reductionFactor) {
+                                        ReductionFactor rf) {
         RenderedOp scaledImage = inImage;
         if (!scale.isNoOp()) {
             final double sourceWidth = inImage.getWidth();
@@ -443,8 +444,10 @@ abstract class JaiUtil {
                 xScale = sourceWidth * Math.min(hScale, vScale);
                 yScale = sourceHeight * Math.min(hScale, vScale);
             } else if (scale.getPercent() != null) {
-                int reqRf = ProcessorUtil.getReductionFactor(scale.getPercent(), 0);
-                xScale = yScale = ProcessorUtil.getScale(reqRf - reductionFactor);
+                int reqRf = ProcessorUtil.
+                        getReductionFactor(scale.getPercent(), 0).factor;
+                xScale = yScale = ProcessorUtil.getScale(
+                        new ReductionFactor(reqRf - rf.factor));
             }
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);

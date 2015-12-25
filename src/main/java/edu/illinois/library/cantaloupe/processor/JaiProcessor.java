@@ -213,10 +213,10 @@ class JaiProcessor implements FileProcessor, ChannelProcessor {
                 for (Operation op : ops) {
                     if (op instanceof Crop) {
                         renderedOp = JaiUtil.
-                                cropImage(renderedOp, (Crop) op, rf.factor);
+                                cropImage(renderedOp, (Crop) op, rf);
                     } else if (op instanceof Scale) {
                         renderedOp = JaiUtil.
-                                scaleImage(renderedOp, (Scale) op, rf.factor);
+                                scaleImage(renderedOp, (Scale) op, rf);
                     } else if (op instanceof Transpose) {
                         renderedOp = JaiUtil.
                                 transposeImage(renderedOp, (Transpose) op);

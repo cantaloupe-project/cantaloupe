@@ -19,7 +19,7 @@ import static org.junit.Assert.*;
 public class JaiUtilTest {
 
     @Test
-    public void testCropImageWithRenderedOp() throws Exception {
+    public void testCropImage() throws Exception {
         RenderedOp image = getFixture("jpg");
 
         // test with no-op crop
@@ -40,12 +40,12 @@ public class JaiUtilTest {
     }
 
     @Test
-    public void testCropImageWithRenderedOpAndReductionFactor() {
+    public void testCropImageWithReductionFactor() {
         // TODO: write this
     }
 
     @Test
-    public void testFilterImageWithRenderedOp() {
+    public void testFilterImage() {
         // TODO: write this
     }
 
@@ -75,7 +75,7 @@ public class JaiUtilTest {
     }
 
     @Test
-    public void testRotateImageWithRenderedOp() throws Exception {
+    public void testRotateImage() throws Exception {
         RenderedOp inImage = getFixture("jpg");
 
         // test with no-op rotate
@@ -103,7 +103,7 @@ public class JaiUtilTest {
     }
 
     @Test
-    public void testScaleImageWithRenderedOp() throws Exception {
+    public void testScaleImage() throws Exception {
         RenderedOp image = getFixture("jpg");
 
         // test with no-op scale
@@ -121,7 +121,7 @@ public class JaiUtilTest {
     }
 
     @Test
-    public void testScaleImageWithRenderedOpWithReductionFactor() {
+    public void testScaleImageWithReductionFactor() {
         // TODO: write this
     }
 

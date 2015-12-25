@@ -33,7 +33,7 @@ public class Java2dUtilTest {
     }
 
     @Test
-    public void testCropImageWithBufferedImage() {
+    public void testCropImage() {
         BufferedImage inImage = new BufferedImage(100, 100,
                 BufferedImage.TYPE_INT_RGB);
         // full
@@ -63,24 +63,23 @@ public class Java2dUtilTest {
     }
 
     @Test
-    public void testCropImageWithBufferedImageAndReductionFactor() {
+    public void testCropImageWithReductionFactor() {
         BufferedImage inImage = new BufferedImage(100, 100,
                 BufferedImage.TYPE_INT_RGB);
 
         // full crop
         Crop crop = new Crop();
         crop.setFull(true);
-        int reductionFactor = 1;
-        BufferedImage outImage = Java2dUtil.cropImage(inImage, crop,
-                reductionFactor);
+        ReductionFactor rf = new ReductionFactor(1);
+        BufferedImage outImage = Java2dUtil.cropImage(inImage, crop, rf);
         assertSame(inImage, outImage);
 
         // pixel crop
         crop = new Crop();
         crop.setWidth(50f);
         crop.setHeight(50f);
-        reductionFactor = 1;
-        outImage = Java2dUtil.cropImage(inImage, crop, reductionFactor);
+        rf = new ReductionFactor(1);
+        outImage = Java2dUtil.cropImage(inImage, crop, rf);
         assertEquals(25, outImage.getWidth());
         assertEquals(25, outImage.getHeight());
 
@@ -91,14 +90,14 @@ public class Java2dUtilTest {
         crop.setY(0.5f);
         crop.setWidth(0.5f);
         crop.setHeight(0.5f);
-        reductionFactor = 1;
-        outImage = Java2dUtil.cropImage(inImage, crop, reductionFactor);
+        rf = new ReductionFactor(1);
+        outImage = Java2dUtil.cropImage(inImage, crop, rf);
         assertEquals(25, outImage.getWidth());
         assertEquals(25, outImage.getHeight());
     }
 
     @Test
-    public void testFilterImageWithBufferedImage() {
+    public void testFilterImage() {
         // TODO: write this
     }
 
@@ -118,17 +117,17 @@ public class Java2dUtilTest {
     }
 
     @Test
-    public void testReadImageIntoBufferedImageWithFile() {
+    public void testReadImageWithFile() {
         // this will be tested in ProcessorTest
     }
 
     @Test
-    public void testReadImageIntoBufferedImageWithInputStream() {
+    public void testReadImageWithReadableByteChannel() {
         // this will be tested in ProcessorTest
     }
 
     @Test
-    public void testRotateImageWithBufferedImage() {
+    public void testRotateImage() {
         BufferedImage inImage = new BufferedImage(200, 100,
                 BufferedImage.TYPE_INT_RGB);
         final int sourceWidth = inImage.getWidth();
@@ -226,9 +225,9 @@ public class Java2dUtilTest {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
         scale.setWidth(50);
-        int reductionFactor = 1;
+        ReductionFactor rf = new ReductionFactor(1);
         BufferedImage outImage = Java2dUtil.scaleImageWithG2d(inImage, scale,
-                reductionFactor, true);
+                rf, true);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
@@ -236,9 +235,8 @@ public class Java2dUtilTest {
         scale = new Scale();
         scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
         scale.setHeight(50);
-        reductionFactor = 1;
-        outImage = Java2dUtil.scaleImageWithG2d(inImage, scale,
-                reductionFactor, false);
+        rf = new ReductionFactor(1);
+        outImage = Java2dUtil.scaleImageWithG2d(inImage, scale, rf, false);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
@@ -247,9 +245,8 @@ public class Java2dUtilTest {
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setWidth(50);
         scale.setHeight(50);
-        reductionFactor = 1;
-        outImage = Java2dUtil.scaleImageWithG2d(inImage, scale,
-                reductionFactor, true);
+        rf = new ReductionFactor(1);
+        outImage = Java2dUtil.scaleImageWithG2d(inImage, scale, rf, true);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
     }

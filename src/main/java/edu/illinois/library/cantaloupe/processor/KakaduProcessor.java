@@ -380,22 +380,22 @@ class KakaduProcessor implements FileProcessor {
                         double hvScale = (double) scale.getWidth() /
                                 (double) tileSize.width;
                         reduction.factor = ProcessorUtil.getReductionFactor(
-                                hvScale, MAX_REDUCTION_FACTOR);
+                                hvScale, MAX_REDUCTION_FACTOR).factor;
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                         double hvScale = (double) scale.getHeight() /
                                 (double) tileSize.height;
                         reduction.factor = ProcessorUtil.getReductionFactor(
-                                hvScale, MAX_REDUCTION_FACTOR);
+                                hvScale, MAX_REDUCTION_FACTOR).factor;
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
                         double hScale = (double) scale.getWidth() /
                                 (double) tileSize.width;
                         double vScale = (double) scale.getHeight() /
                                 (double) tileSize.height;
                         reduction.factor = ProcessorUtil.getReductionFactor(
-                                Math.min(hScale, vScale), MAX_REDUCTION_FACTOR);
+                                Math.min(hScale, vScale), MAX_REDUCTION_FACTOR).factor;
                     } else if (scale.getPercent() != null) {
                         reduction.factor = ProcessorUtil.getReductionFactor(
-                                scale.getPercent(), MAX_REDUCTION_FACTOR);
+                                scale.getPercent(), MAX_REDUCTION_FACTOR).factor;
                     } else {
                         reduction.factor = 0;
                     }
@@ -445,7 +445,7 @@ class KakaduProcessor implements FileProcessor {
         for (Operation op : opList) {
             if (op instanceof Scale) {
                 renderedOp = JaiUtil.scaleImage(renderedOp, (Scale) op,
-                        reductionFactor.factor);
+                        reductionFactor);
             } else if (op instanceof Transpose) {
                 renderedOp = JaiUtil.transposeImage(renderedOp,
                         (Transpose) op);
@@ -471,7 +471,7 @@ class KakaduProcessor implements FileProcessor {
                         getString(JAVA2D_SCALE_MODE_CONFIG_KEY, "speed").
                         equals("quality");
                 image = Java2dUtil.scaleImageWithG2d(image,
-                        (Scale) op, reductionFactor.factor, highQuality);
+                        (Scale) op, reductionFactor, highQuality);
             } else if (op instanceof Transpose) {
                 image = Java2dUtil.transposeImage(image,
                         (Transpose) op);

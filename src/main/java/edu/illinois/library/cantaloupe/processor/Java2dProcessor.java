@@ -183,13 +183,13 @@ class Java2dProcessor implements ChannelProcessor, FileProcessor {
             for (Operation op : ops) {
                 if (op instanceof Crop) {
                     image = Java2dUtil.cropImage(image, (Crop) op,
-                            reductionFactor.factor);
+                            reductionFactor);
                 } else if (op instanceof Scale) {
                     final boolean highQuality = Application.getConfiguration().
                             getString(SCALE_MODE_CONFIG_KEY, "speed").
                             equals("quality");
                     image = Java2dUtil.scaleImageWithG2d(image, (Scale) op,
-                            reductionFactor.factor, highQuality);
+                            reductionFactor, highQuality);
                 } else if (op instanceof Transpose) {
                     image = Java2dUtil.transposeImage(image, (Transpose) op);
                 } else if (op instanceof Rotate) {
@@ -227,13 +227,13 @@ class Java2dProcessor implements ChannelProcessor, FileProcessor {
             for (Operation op : ops) {
                 if (op instanceof Crop) {
                     image = Java2dUtil.cropImage(image, (Crop) op,
-                            reductionFactor.factor);
+                            reductionFactor);
                 } else if (op instanceof Scale) {
                     final boolean highQuality = Application.getConfiguration().
                             getString(SCALE_MODE_CONFIG_KEY, "speed").
                             equals("quality");
                     image = Java2dUtil.scaleImageWithG2d(image, (Scale) op,
-                            reductionFactor.factor, highQuality);
+                            reductionFactor, highQuality);
                 } else if (op instanceof Transpose) {
                     image = Java2dUtil.transposeImage(image, (Transpose) op);
                 } else if (op instanceof Rotate) {

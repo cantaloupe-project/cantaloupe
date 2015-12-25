@@ -43,19 +43,19 @@ abstract class Java2dUtil {
     private static Logger logger = LoggerFactory.getLogger(Java2dUtil.class);
 
     /**
-     * <p>BufferedImages with a type of <code>TYPE_CUSTOM</code> won't work
-     * with various operations, so this method copies them into a new image of
-     * type RGB.</p>
+     * <p>Copies the given BufferedImage into a new image of type
+     * {@link BufferedImage#TYPE_INT_RGB}, to make it compatible with the
+     * rest of the application image operation pipeline.</p>
      *
      * <p>This is extremely expensive and should be avoided if possible.</p>
      *
      * @param inImage Image to convert
      * @return A new BufferedImage of type RGB, or the input image if it
-     * already is RGB
+     * already is RGB.
      */
     public static BufferedImage convertToRgb(BufferedImage inImage) {
         BufferedImage outImage = inImage;
-        if (inImage != null && inImage.getType() == BufferedImage.TYPE_CUSTOM) {
+        if (inImage != null && inImage.getType() != BufferedImage.TYPE_INT_RGB) {
             outImage = new BufferedImage(inImage.getWidth(),
                     inImage.getHeight(), BufferedImage.TYPE_INT_RGB);
             Graphics2D g = outImage.createGraphics();
@@ -71,9 +71,8 @@ abstract class Java2dUtil {
      * @return Cropped image, or the input image if the given operation is a
      * no-op.
      */
-    public static BufferedImage cropImage(BufferedImage inImage,
-                                          Crop crop) {
-        return cropImage(inImage, crop, 0);
+    public static BufferedImage cropImage(BufferedImage inImage, Crop crop) {
+        return cropImage(inImage, crop, new ReductionFactor());
     }
 
     /**
@@ -84,18 +83,18 @@ abstract class Java2dUtil {
      *
      * @param inImage Image to crop
      * @param crop Crop operation
-     * @param reductionFactor Number of times the dimensions of
-     *                        <code>inImage</code> have already been halved
-     *                        relative to the full-sized version
+     * @param rf Number of times the dimensions of
+     *           <code>inImage</code> have already been halved
+     *           relative to the full-sized version
      * @return Cropped image, or the input image if the given operation is a
      * no-op.
      */
     public static BufferedImage cropImage(BufferedImage inImage,
                                           Crop crop,
-                                          int reductionFactor) {
+                                          ReductionFactor rf) {
         BufferedImage croppedImage = inImage;
         if (!crop.isNoOp()) {
-            final double scale = ProcessorUtil.getScale(reductionFactor);
+            final double scale = ProcessorUtil.getScale(rf);
             final double regionX = crop.getX() * scale;
             final double regionY = crop.getY() * scale;
             final double regionWidth = crop.getWidth() * scale;
@@ -415,7 +414,8 @@ abstract class Java2dUtil {
                                 (pct * fullSize.height) / (float) regionRect.height <= tileScale);
                     }
                     if (fits) {
-                        rf.factor = ProcessorUtil.getReductionFactor(tileScale, 0);
+                        rf.factor = ProcessorUtil.
+                                getReductionFactor(tileScale, 0).factor;
                         logger.debug("Using a {}x{} source tile ({}x reduction factor)",
                                 tile.getWidth(), tile.getHeight(), rf.factor);
                         bestImage = tile;
@@ -521,7 +521,7 @@ abstract class Java2dUtil {
      */
     public static BufferedImage scaleImageWithG2d(BufferedImage inImage,
                                                   Scale scale) {
-        return scaleImageWithG2d(inImage, scale, 0, false);
+        return scaleImageWithG2d(inImage, scale, new ReductionFactor(0), false);
     }
 
     /**
@@ -535,7 +535,8 @@ abstract class Java2dUtil {
     public static BufferedImage scaleImageWithG2d(BufferedImage inImage,
                                                   Scale scale,
                                                   boolean highQuality) {
-        return scaleImageWithG2d(inImage, scale, 0, highQuality);
+        return scaleImageWithG2d(inImage, scale, new ReductionFactor(0),
+                highQuality);
     }
 
     /**
@@ -546,14 +547,14 @@ abstract class Java2dUtil {
      *
      * @param inImage The input image
      * @param scale Requested size ignoring any reduction factor
-     * @param reductionFactor Reduction factor that has already been applied to
+     * @param rf Reduction factor that has already been applied to
      *                        <code>inImage</code>
      * @param highQuality
      * @return Scaled image
      */
     public static BufferedImage scaleImageWithG2d(BufferedImage inImage,
                                                   Scale scale,
-                                                  int reductionFactor,
+                                                  ReductionFactor rf,
                                                   boolean highQuality) {
         BufferedImage scaledImage = inImage;
         if (!scale.isNoOp()) {
@@ -580,8 +581,7 @@ abstract class Java2dUtil {
                         Math.min(hScale, vScale));
             } else if (scale.getPercent() != null) {
                 final double reqScale = scale.getPercent();
-                final double appliedScale = ProcessorUtil.
-                        getScale(reductionFactor);
+                final double appliedScale = ProcessorUtil.getScale(rf);
                 final double pct = reqScale / appliedScale;
                 width = (int) Math.round(sourceWidth * pct);
                 height = (int) Math.round(sourceHeight * pct);
