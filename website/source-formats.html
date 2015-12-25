@@ -13,11 +13,13 @@ configuration option). (The author has not tried this.)</p>
 
 <h3 id="JPEG2000">JPEG2000</h3>
 
-<p>JPEG2000 uses advanced compression techniques to enable fast reduced-scale and region-of-interest decoding. In theory, and with a performant decoder, JPEG2000 is well-suited for extremely large source images. Unfortunately, there are few performant decoders available for this format.</p>
+<p>JPEG2000 uses advanced compression techniques to enable fast reduced-scale and region-of-interest decoding. In theory, and with a performant decoder, JPEG2000 is well-suited for extremely large source images.</p>
 
 <p><a href="processors.html#KakaduProcessor">KakaduProcessor</a> is by far the most efficient processor for this format, and it performs very well, even with images in the range of hundreds of megapixels.</p>
 
-<p><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> can read/write JPEG2000 using JasPer, and <a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a> using OpenJPEG. Both of these are extremely slow.</p>
+<p><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a> uses the open-source OpenJPEG decoder, generally considered (as of this writing) to be the fastest open-source JPEG2000 decoder. <a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a> also uses OpenJPEG if the necessary delegate is installed. So, either of these processors will use the same underlying library to do their work.</p>
+
+<p><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> can read and write JPEG2000 using JasPer, if the necessary plugin is installed. This may or may not be fast enough to be usable.</p>
 
 <p>See <a href="processors.html#JaiProcessor">JaiProcessor</a> for notes on the mediaLib accelerator.</p>
 

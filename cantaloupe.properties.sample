@@ -197,12 +197,14 @@ AmazonS3Resolver.bucket.name =
 
 # Image processors to use for various source formats. Available values are
 # `Java2dProcessor`, `GraphicsMagickProcessor`, `ImageMagickProcessor`,
-# `KakaduProcessor`, `JaiProcessor`, and `FfmpegProcessor`.
+# `KakaduProcessor`, `OpenJpegProcessor`, ``JaiProcessor`, and
+# `FfmpegProcessor`.
 
 # These extension-specific definitions are optional.
 processor.avi = FfmpegProcessor
 #processor.jpg = ImageMagickProcessor
 #processor.jp2 = KakaduProcessor
+#processor.jp2 = OpenJpegProcessor
 processor.mov = FfmpegProcessor
 processor.mp4 = FfmpegProcessor
 #processor.tif = GraphicsMagickProcessor
@@ -260,6 +262,20 @@ KakaduProcessor.post_processor = java2d
 # Available values are `quality` and `speed`. `speed` is ~10-20% faster at the
 # expense of visible aliasing at thumbnail sizes.
 KakaduProcessor.post_processor.java2d.scale_mode = speed
+
+#----------------------------------------
+# OpenJpegProcessor
+#----------------------------------------
+
+# Optional; overrides the PATH
+#OpenJpegProcessor.path_to_binaries = /usr/local/bin
+
+# Available values are `jai` and `java2d`.
+OpenJpegProcessor.post_processor = java2d
+
+# Available values are `quality` and `speed`. `speed` is ~10-20% faster at the
+# expense of visible aliasing at thumbnail sizes.
+OpenJpegProcessor.post_processor.java2d.scale_mode = speed
 
 ###########################################################################
 # CLIENT-SIDE CACHING

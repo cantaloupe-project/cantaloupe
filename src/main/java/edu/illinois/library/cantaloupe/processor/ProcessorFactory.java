@@ -23,6 +23,7 @@ public abstract class ProcessorFactory {
         processors.add(new JaiProcessor());
         processors.add(new Java2dProcessor());
         processors.add(new KakaduProcessor());
+        processors.add(new OpenJpegProcessor());
         return processors;
     }
 

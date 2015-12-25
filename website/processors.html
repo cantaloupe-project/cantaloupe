@@ -68,6 +68,13 @@ landing page. A list of output formats supported <em>for a given source format</
     <td class="bg-danger"></td>
     <td class="bg-danger"></td>
   </tr>
+  <tr>
+    <td><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a></td>
+    <td class="bg-danger"></td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+  </tr>
 </table>
 
 <hr>
@@ -106,6 +113,20 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 
 <hr>
 
+<h3 id="JaiProcessor">JaiProcessor</h3>
+
+<p>Java Advanced Imaging (JAI) is a sophisticated image processing library developed by Sun until around 2006. JaiProcessor uses an updated fork called <a href="https://github.com/geosolutions-it/jai-ext">JAI-EXT</a>.</p>
+
+<p>JAI offers several theoretical advantages over Java 2D for this application: a more efficient rendering pipeline that should reduce memory usage, and capability of region-of-interest decoding with some formats. Whether these advantages play out in reality is an open question; the author's own profiling seems to indicate maybe not.</p>
+
+<p>JaiProcessor can read and write the same formats as Java2dProcessor.</p>
+
+<p>Years ago, Sun published <a href="http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-java-client-419417.html">platform-native accelerator JARs</a> called <a href="http://www.oracle.com/technetwork/java/install-1-1-2-135866.html">mediaLib</a> for Windows, Linux, and Solaris, which improved JAI's performance. It is unknown whether these still work on modern platforms, but perhaps they are something to try.</p>
+
+<div class="alert alert-info">Note: if mediaLib is not installed, an error message will be generated saying, "Could not find mediaLib accelerator wrapper classes. Continuing in pure Java mode." This is harmless, but can be suppressed anyway by launching Cantaloupe with the <code>-Dcom.sun.media.jai.disableMediaLib=true</code> option.</div>
+
+<hr>
+
 <h3 id="KakaduProcessor">KakaduProcessor</h3>
 
 <p>KakaduProcessor uses the <span class="filename">kdu_expand</span> and <span class="filename">kdu_jp2info</span> binaries from the
@@ -119,17 +140,14 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 
 <hr>
 
-<h3 id="JaiProcessor">JaiProcessor</h3>
+<h3 id="OpenJpegProcessor">OpenJpegProcessor</h3>
 
-<p>Java Advanced Imaging (JAI) is a sophisticated image processing library developed by Sun until around 2006. JaiProcessor uses an updated fork called <a href="https://github.com/geosolutions-it/jai-ext">JAI-EXT</a>.</p>
+<p>OpenJpegProcessor uses the <span class="filename">opj_decompress</span> and <span class="filename">opj_dump</span> tools from the open-source
+<a href="http://www.openjpeg.org">OpenJPEG</a> project to decode JPEG2000 source images.</p>
 
-<p>JAI offers several theoretical advantages over Java 2D for this application: a more efficient rendering pipeline that should reduce memory usage, and capability of region-of-interest decoding with some formats. Whether these advantages play out in reality is an open question; the author's own profiling seems to indicate maybe not.</p>
+<p>Although it does support some other operations, <span class="filename">opj_decompress</span> is mainly an aptly-named decompression tool, and Cantaloupe uses only its cropping and level-reduction features. The rest of the IIIF operations (differential scaling, rotation, etc.) are performed using either the Java 2D or JAI APIs (configurable).</p>
 
-<p>JaiProcessor can read and write the same formats as Java2dProcessor.</p>
-
-<p>Years ago, Sun published <a href="http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-java-client-419417.html">platform-native accelerator JARs</a> called <a href="http://www.oracle.com/technetwork/java/install-1-1-2-135866.html">mediaLib</a> for Windows, Linux, and Solaris, which improved JAI's performance. It is unknown whether these still work on modern platforms, but perhaps they are something to try.</p>
-
-<div class="alert alert-info">Note: if mediaLib is not installed, an error message will be generated saying, "Could not find mediaLib accelerator wrapper classes. Continuing in pure Java mode." This is harmless, but can be suppressed anyway by launching Cantaloupe with the <code>-Dcom.sun.media.jai.disableMediaLib=true</code> option.</div>
+<div class="alert alert-warning">Note: OpenJpegProcessor does not work in Windows, as it requires access to <span class="filename">/dev/stdout</span>.</div>
 
 <hr>
 
