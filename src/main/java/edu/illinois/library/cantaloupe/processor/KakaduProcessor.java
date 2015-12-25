@@ -42,7 +42,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -165,7 +164,7 @@ class KakaduProcessor implements FileProcessor {
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
         Set<OutputFormat> outputFormats = new HashSet<>();
         if (sourceFormat == SourceFormat.JP2) {
-            outputFormats.addAll(ProcessorUtil.imageIoOutputFormats());
+            outputFormats.addAll(Java2dUtil.imageIoOutputFormats());
         }
         return outputFormats;
     }
@@ -465,26 +464,26 @@ class KakaduProcessor implements FileProcessor {
                                         final ReductionFactor reductionFactor,
                                         final WritableByteChannel writableChannel)
             throws IOException, ProcessorException {
-        BufferedImage image = ProcessorUtil.readImage(readableChannel);
+        BufferedImage image = Java2dUtil.readImage(readableChannel);
         for (Operation op : opList) {
             if (op instanceof Scale) {
                 final boolean highQuality = Application.getConfiguration().
                         getString(JAVA2D_SCALE_MODE_CONFIG_KEY, "speed").
                         equals("quality");
-                image = ProcessorUtil.scaleImageWithG2d(image,
+                image = Java2dUtil.scaleImageWithG2d(image,
                         (Scale) op, reductionFactor.factor, highQuality);
             } else if (op instanceof Transpose) {
-                image = ProcessorUtil.transposeImage(image,
+                image = Java2dUtil.transposeImage(image,
                         (Transpose) op);
             } else if (op instanceof Rotate) {
-                image = ProcessorUtil.rotateImage(image,
+                image = Java2dUtil.rotateImage(image,
                         (Rotate) op);
             } else if (op instanceof Filter) {
-                image = ProcessorUtil.filterImage(image,
+                image = Java2dUtil.filterImage(image,
                         (Filter) op);
             }
         }
-        ProcessorUtil.writeImage(image, opList.getOutputFormat(),
+        Java2dUtil.writeImage(image, opList.getOutputFormat(),
                 writableChannel);
         image.flush();
     }

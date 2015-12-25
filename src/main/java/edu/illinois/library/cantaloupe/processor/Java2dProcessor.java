@@ -178,27 +178,27 @@ class Java2dProcessor implements ChannelProcessor, FileProcessor {
 
         try {
             ReductionFactor reductionFactor = new ReductionFactor();
-            BufferedImage image = ProcessorUtil.readImage(inputFile,
+            BufferedImage image = Java2dUtil.readImage(inputFile,
                     sourceFormat, ops, fullSize, reductionFactor);
             for (Operation op : ops) {
                 if (op instanceof Crop) {
-                    image = ProcessorUtil.cropImage(image, (Crop) op,
+                    image = Java2dUtil.cropImage(image, (Crop) op,
                             reductionFactor.factor);
                 } else if (op instanceof Scale) {
                     final boolean highQuality = Application.getConfiguration().
                             getString(SCALE_MODE_CONFIG_KEY, "speed").
                             equals("quality");
-                    image = ProcessorUtil.scaleImageWithG2d(image, (Scale) op,
+                    image = Java2dUtil.scaleImageWithG2d(image, (Scale) op,
                             reductionFactor.factor, highQuality);
                 } else if (op instanceof Transpose) {
-                    image = ProcessorUtil.transposeImage(image, (Transpose) op);
+                    image = Java2dUtil.transposeImage(image, (Transpose) op);
                 } else if (op instanceof Rotate) {
-                    image = ProcessorUtil.rotateImage(image, (Rotate) op);
+                    image = Java2dUtil.rotateImage(image, (Rotate) op);
                 } else if (op instanceof Filter) {
-                    image = ProcessorUtil.filterImage(image, (Filter) op);
+                    image = Java2dUtil.filterImage(image, (Filter) op);
                 }
             }
-            ProcessorUtil.writeImage(image, ops.getOutputFormat(),
+            Java2dUtil.writeImage(image, ops.getOutputFormat(),
                     writableChannel);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
@@ -222,27 +222,27 @@ class Java2dProcessor implements ChannelProcessor, FileProcessor {
 
         try {
             ReductionFactor reductionFactor = new ReductionFactor();
-            BufferedImage image = ProcessorUtil.readImage(readableChannel,
+            BufferedImage image = Java2dUtil.readImage(readableChannel,
                     sourceFormat, ops, fullSize, reductionFactor);
             for (Operation op : ops) {
                 if (op instanceof Crop) {
-                    image = ProcessorUtil.cropImage(image, (Crop) op,
+                    image = Java2dUtil.cropImage(image, (Crop) op,
                             reductionFactor.factor);
                 } else if (op instanceof Scale) {
                     final boolean highQuality = Application.getConfiguration().
                             getString(SCALE_MODE_CONFIG_KEY, "speed").
                             equals("quality");
-                    image = ProcessorUtil.scaleImageWithG2d(image, (Scale) op,
+                    image = Java2dUtil.scaleImageWithG2d(image, (Scale) op,
                             reductionFactor.factor, highQuality);
                 } else if (op instanceof Transpose) {
-                    image = ProcessorUtil.transposeImage(image, (Transpose) op);
+                    image = Java2dUtil.transposeImage(image, (Transpose) op);
                 } else if (op instanceof Rotate) {
-                    image = ProcessorUtil.rotateImage(image, (Rotate) op);
+                    image = Java2dUtil.rotateImage(image, (Rotate) op);
                 } else if (op instanceof Filter) {
-                    image = ProcessorUtil.filterImage(image, (Filter) op);
+                    image = Java2dUtil.filterImage(image, (Filter) op);
                 }
             }
-            ProcessorUtil.writeImage(image, ops.getOutputFormat(),
+            Java2dUtil.writeImage(image, ops.getOutputFormat(),
                     writableChannel);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
