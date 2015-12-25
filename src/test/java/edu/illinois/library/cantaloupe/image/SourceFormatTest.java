@@ -53,6 +53,7 @@ public class SourceFormatTest extends CantaloupeTestCase {
         assertTrue(SourceFormat.BMP.getExtensions().contains("bmp"));
         assertTrue(SourceFormat.GIF.getExtensions().contains("gif"));
         assertTrue(SourceFormat.JP2.getExtensions().contains("jp2"));
+        assertTrue(SourceFormat.JP2.getExtensions().contains("j2k"));
         assertTrue(SourceFormat.JPG.getExtensions().contains("jpg"));
         assertTrue(SourceFormat.JPG.getExtensions().contains("jpeg"));
         assertTrue(SourceFormat.MOV.getExtensions().contains("mov"));

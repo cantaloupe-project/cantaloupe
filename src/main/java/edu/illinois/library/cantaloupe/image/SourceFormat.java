@@ -98,6 +98,7 @@ public enum SourceFormat {
                 break;
             case "jp2":
                 extensions.add("jp2");
+                extensions.add("j2k");
                 break;
             case "jpg":
                 extensions.add("jpg");
