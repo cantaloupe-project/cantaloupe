@@ -1,12 +1,16 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import org.apache.commons.configuration.BaseConfiguration;
+import org.junit.Before;
+import org.junit.Test;
 
-public class ProcessorFactoryTest extends CantaloupeTestCase {
+import static org.junit.Assert.*;
 
+public class ProcessorFactoryTest {
+
+    @Before
     public void setUp() {
         BaseConfiguration config = new BaseConfiguration();
         config.setProperty("GraphicsMagickProcessor.path_to_binaries", "/usr/local/bin");
@@ -14,8 +18,9 @@ public class ProcessorFactoryTest extends CantaloupeTestCase {
         Application.setConfiguration(config);
     }
 
+    @Test
     public void testGetAllProcessors() {
-        assertEquals(6, ProcessorFactory.getAllProcessors().size());
+        assertEquals(7, ProcessorFactory.getAllProcessors().size());
     }
 
     /**
@@ -24,6 +29,7 @@ public class ProcessorFactoryTest extends CantaloupeTestCase {
      *
      * @throws Exception
      */
+    @Test
     public void testGetProcessorWithSupportedAssignedFormat() throws Exception {
         Application.getConfiguration().
                 setProperty("processor.jpg", "GraphicsMagickProcessor");
@@ -40,6 +46,7 @@ public class ProcessorFactoryTest extends CantaloupeTestCase {
      *
      * @throws Exception
      */
+    @Test
     public void testGetProcessorWithUnsupportedAssignedFormat() throws Exception {
         Application.getConfiguration().
                 setProperty("processor.webp", "Java2dProcessor");
@@ -60,6 +67,7 @@ public class ProcessorFactoryTest extends CantaloupeTestCase {
      *
      * @throws Exception
      */
+    @Test
     public void testGetProcessorWithFormatSupportedByFallback() throws Exception {
         Application.getConfiguration().
                 setProperty("processor.fallback", "Java2dProcessor");
@@ -73,6 +81,7 @@ public class ProcessorFactoryTest extends CantaloupeTestCase {
      *
      * @throws Exception
      */
+    @Test
     public void testGetProcessorWithFormatUnsupportedByFallback() throws Exception {
         Application.getConfiguration().
                 setProperty("processor.fallback", "Java2dProcessor");
@@ -91,6 +100,7 @@ public class ProcessorFactoryTest extends CantaloupeTestCase {
      *
      * @throws Exception
      */
+    @Test
     public void testGetProcessorWithFormatUnsupportedByFallbackAndNoFallback() throws Exception {
         try {
             ProcessorFactory.getProcessor(SourceFormat.WEBP);
@@ -106,6 +116,7 @@ public class ProcessorFactoryTest extends CantaloupeTestCase {
      *
      * @throws Exception
      */
+    @Test
     public void testGetProcessorWithUnknownProcessor() throws Exception {
         Application.getConfiguration().
                 setProperty("processor.jpg", "AmazingFakeProcessor");
@@ -124,6 +135,7 @@ public class ProcessorFactoryTest extends CantaloupeTestCase {
      *
      * @throws Exception
      */
+    @Test
     public void testGetProcessorWithUnknownFallbackProcessor() throws Exception {
         Application.getConfiguration().
                 setProperty("processor.fallback", "AmazingFakeProcessor");
