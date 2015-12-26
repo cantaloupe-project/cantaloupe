@@ -723,8 +723,7 @@ abstract class Java2dUtil {
     /**
      * @param inImage Image to transpose.
      * @param transpose The transpose operation.
-     * @return Transposed image, or the input image if the given transpose
-     * operation is a no-op.
+     * @return Transposed image.
      */
     public static BufferedImage transposeImage(final BufferedImage inImage,
                                                final Transpose transpose) {
@@ -743,7 +742,7 @@ abstract class Java2dUtil {
     }
 
     /**
-     * Writes an image to the given output stream.
+     * Writes an image to the given byte channel.
      *
      * @param image Image to write
      * @param outputFormat Format of the output image
@@ -760,11 +759,7 @@ abstract class Java2dUtil {
                 // client will interpret as CMYK
                 if (image.getColorModel().hasAlpha()) {
                     logger.warn("Converting RGBA BufferedImage to RGB (this is very expensive)");
-                    BufferedImage rgbImage = new BufferedImage(
-                            image.getWidth(), image.getHeight(),
-                            BufferedImage.TYPE_INT_RGB);
-                    rgbImage.createGraphics().drawImage(image, null, 0, 0);
-                    image = rgbImage;
+                    image = convertToRgb(image);
                 }
                 // TurboJpegImageWriter is used automatically if libjpeg-turbo
                 // is available in java.library.path:
@@ -791,24 +786,6 @@ abstract class Java2dUtil {
                 writer.setOutput(os);
                 writer.write(image);
                 break;*/
-          /*  case TIF: TODO: try this
-                Iterator<ImageWriter> it = ImageIO.
-                        getImageWritersByMIMEType("image/tiff");
-                if (it.hasNext()) {
-                    writer = it.next();
-                    try {
-                        ImageWriteParam param = writer.getDefaultWriteParam();
-                        param.setDestinationType(ImageTypeSpecifier.
-                                createFromBufferedImageType(BufferedImage.TYPE_INT_RGB));
-                        ImageOutputStream os = ImageIO.createImageOutputStream(writableChannel);
-                        writer.setOutput(os);
-                        IIOImage iioImage = new IIOImage(image, null, null);
-                        writer.write(null, iioImage, param);
-                    } finally {
-                        writer.dispose();
-                    }
-                }
-                break; */
             default:
                 // TODO: jp2 doesn't seem to work
                 ImageIO.write(image, outputFormat.getExtension(),
