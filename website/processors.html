@@ -85,8 +85,9 @@ landing page. A list of output formats supported <em>for a given source format</
 
 <p>ImageIO, as its name implies, is simply an I/O interface that does not care about image formats, and therefore the list of formats supported by this processor varies depending on the codec JARs available in the classpath. Cantaloupe includes support for some common ones.</p>
 
-<p>Java2dProcessor buffers entire source images in RAM, and is therefore
-memory-intensive. (See the section on <a href="deployment.html#HardwareMemory">memory considerations</a>.)</p>
+<p>Java2dProcessor's image-reading code has been written to be as efficient as possible. Special attention has been paid to its handling of tiled images, such as tile-encoded TIFFs, for which it reads only the necessary tiles for a given request. It is also capable of reading the sub-images contained within pyramidal TIFF images. (Striped TIFF images work, too, but are much less efficient and not recommended except at small sizes.)</p>
+
+<p>Because Java2dProcessor does all its work in Java, it places a burden on the Java heap. Although it tries to be efficient at reading images, it does have to create derivative images at every processing step (scaling, rotating, etc.), which have to be temporarily buffered in RAM. (See the section on <a href="deployment.html#HardwareMemory">memory considerations</a>.)</p>
 
 <hr>
 
@@ -97,7 +98,9 @@ memory-intensive. (See the section on <a href="deployment.html#HardwareMemory">m
 
 <p>GraphicsMagick produces high-quality output and supports all of the IIIF transforms and all IIIF output formats (assuming the necessary libraries are installed; see <a href="http://www.graphicsmagick.org/formats.html">Supported Formats</a>).</p>
 
-<p>GraphicsMagickProcessor is a good fallback processor, as it supports a wide range of source formats and is generally faster than <a href="#ImageMagickProcessor">ImageMagickProcessor</a>. It is recommended to find or compile a "Q8" version of GraphicsMagick, as its memory use will be halved.</p>
+<p>GraphicsMagickProcessor supports a wide range of source formats and is generally faster than <a href="#ImageMagickProcessor">ImageMagickProcessor</a>. For this reason, it should generally be preferred over ImageMagickProcessor. However, like ImageMagickProcessor, it deals poorly with large images.</p>
+
+<div class="alert alert-info">It is recommended to find or compile a "Q8" version of GraphicsMagick, as its memory use will be halved.</div>
 
 <hr>
 
@@ -109,7 +112,9 @@ memory-intensive. (See the section on <a href="deployment.html#HardwareMemory">m
 <p>ImageMagick produces high-quality output and supports all of the IIIF
 transforms and all IIIF output formats, assuming the necessary delegates are installed. It also supports a wide array of source formats.</p>
 
-<p>ImageMagick is not known for being particularly fast or efficient, but it is generally usable. It is recommended to find or compile a "Q8" version of ImageMagick, as its memory use will be halved.</p>
+<p>ImageMagick is not known for being particularly fast or efficient, but it is generally usable with small images (into the low tens of megapixels).</p>
+
+<div class="alert alert-info">It is recommended to find or compile a "Q8" version of ImageMagick, as its memory use will be halved.</div>
 
 <hr>
 
@@ -145,7 +150,7 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 <p>OpenJpegProcessor uses the <span class="filename">opj_decompress</span> and <span class="filename">opj_dump</span> tools from the open-source
 <a href="http://www.openjpeg.org">OpenJPEG</a> project to decode JPEG2000 source images.</p>
 
-<p>Although it does support some other operations, <span class="filename">opj_decompress</span> is mainly an aptly-named decompression tool, and Cantaloupe uses only its cropping and level-reduction features. The rest of the IIIF operations (differential scaling, rotation, etc.) are performed using either the Java 2D or JAI APIs (configurable).</p>
+<p>Although it does support some other operations, <span class="filename">opj_decompress</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. The rest of the IIIF operations (differential scaling, rotation, etc.) are performed using either the Java 2D or JAI APIs (configurable).</p>
 
 <div class="alert alert-warning">Note: OpenJpegProcessor does not work in Windows, as it requires access to <span class="filename">/dev/stdout</span>.</div>
 

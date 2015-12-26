@@ -29,7 +29,7 @@ import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
+import java.awt.image.Raster;
 import java.io.File;
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
@@ -38,7 +38,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+/**
+ * A collection of methods for reading, operating on, and writing
+ * {@link BufferedImage}s.
+ */
 abstract class Java2dUtil {
+
+    public enum ReaderHint {
+        ALREADY_CROPPED
+    }
 
     private static Logger logger = LoggerFactory.getLogger(Java2dUtil.class);
 
@@ -53,7 +61,7 @@ abstract class Java2dUtil {
      * @return A new BufferedImage of type RGB, or the input image if it
      * already is RGB.
      */
-    public static BufferedImage convertToRgb(BufferedImage inImage) {
+    public static BufferedImage convertToRgb(final BufferedImage inImage) {
         BufferedImage outImage = inImage;
         if (inImage != null && inImage.getType() != BufferedImage.TYPE_INT_RGB) {
             outImage = new BufferedImage(inImage.getWidth(),
@@ -71,7 +79,8 @@ abstract class Java2dUtil {
      * @return Cropped image, or the input image if the given operation is a
      * no-op.
      */
-    public static BufferedImage cropImage(BufferedImage inImage, Crop crop) {
+    public static BufferedImage cropImage(final BufferedImage inImage,
+                                          final Crop crop) {
         return cropImage(inImage, crop, new ReductionFactor());
     }
 
@@ -83,15 +92,14 @@ abstract class Java2dUtil {
      *
      * @param inImage Image to crop
      * @param crop Crop operation
-     * @param rf Number of times the dimensions of
-     *           <code>inImage</code> have already been halved
-     *           relative to the full-sized version
+     * @param rf Number of times the dimensions of <code>inImage</code> have
+     *           already been halved relative to the full-sized version
      * @return Cropped image, or the input image if the given operation is a
      * no-op.
      */
-    public static BufferedImage cropImage(BufferedImage inImage,
-                                          Crop crop,
-                                          ReductionFactor rf) {
+    public static BufferedImage cropImage(final BufferedImage inImage,
+                                          final Crop crop,
+                                          final ReductionFactor rf) {
         BufferedImage croppedImage = inImage;
         if (!crop.isNoOp()) {
             final double scale = ProcessorUtil.getScale(rf);
@@ -133,8 +141,8 @@ abstract class Java2dUtil {
      * @return Filtered image, or the input image if the given filter operation
      * is a no-op.
      */
-    public static BufferedImage filterImage(BufferedImage inImage,
-                                            Filter filter) {
+    public static BufferedImage filterImage(final BufferedImage inImage,
+                                            final Filter filter) {
         BufferedImage filteredImage = inImage;
         switch (filter) {
             case GRAY:
@@ -171,79 +179,165 @@ abstract class Java2dUtil {
         return outputFormats;
     }
 
+    /**
+     * Simple and not necessarily efficient method wrapping
+     * {@link ImageIO#read}.
+     *
+     * @param readableChannel Image channel to read.
+     * @return RGB BufferedImage
+     * @throws IOException
+     */
     public static BufferedImage readImage(ReadableByteChannel readableChannel)
             throws IOException {
-        return Java2dUtil.convertToRgb(ImageIO.read(
-                ImageIO.createImageInputStream(readableChannel)));
-    }
-
-    public static BufferedImage readImage(File inputFile,
-                                          SourceFormat sourceFormat,
-                                          OperationList ops,
-                                          Dimension fullSize,
-                                          ReductionFactor reductionFactor)
-            throws IOException, ProcessorException {
-        return doReadImageWithImageIo(inputFile, sourceFormat, ops, fullSize,
-                reductionFactor);
-    }
-
-    public static BufferedImage readImage(ReadableByteChannel readableChannel,
-                                          SourceFormat sourceFormat,
-                                          OperationList ops,
-                                          Dimension fullSize,
-                                          ReductionFactor reductionFactor)
-            throws IOException, ProcessorException {
-        return doReadImageWithImageIo(readableChannel, sourceFormat, ops,
-                fullSize, reductionFactor);
+        final BufferedImage image = ImageIO.read(
+                ImageIO.createImageInputStream(readableChannel));
+        final BufferedImage rgbImage = Java2dUtil.convertToRgb(image);
+        if (rgbImage != image) {
+            logger.warn("Converted image to RGB (this is very expensive)");
+        }
+        return rgbImage;
     }
 
     /**
-     * @param inputSource {@link ReadableByteChannel} or {@link File}
+     * <p>Attempts to reads an image as efficiently as possible, utilizing its
+     * tile layout and/or sub-images, if possible.</p>
+     *
+     * <p>After reading, clients should check the reader hints to see whether
+     * the returned image will require cropping.</p>
+     *
+     * @param imageFile Image file to read.
      * @param sourceFormat
      * @param ops
-     * @param fullSize
-     * @param reductionFactor
-     * @return
+     * @param fullSize Full size of the source image.
+     * @param reductionFactor {@link ReductionFactor#factor} property will be
+     *                        modified to reflect the reduction factor of the
+     *                        returned image.
+     * @param hints Will be populated by information returned by the reader.
+     * @return RGB BufferedImage best matching the given parameters. Clients
+     * should check the hints set to see whether they need to perform
+     * additional cropping.
      * @throws IOException
      * @throws ProcessorException
      */
-    private static BufferedImage doReadImageWithImageIo(
-            Object inputSource,
-            SourceFormat sourceFormat,
-            OperationList ops,
-            Dimension fullSize,
-            ReductionFactor reductionFactor)
+    public static BufferedImage readImage(final File imageFile,
+                                          final SourceFormat sourceFormat,
+                                          final OperationList ops,
+                                          final Dimension fullSize,
+                                          final ReductionFactor reductionFactor,
+                                          final Set<ReaderHint> hints)
+            throws IOException, ProcessorException {
+        return doReadImage(imageFile, sourceFormat, ops, fullSize,
+                reductionFactor, hints);
+    }
+
+    /**
+     * @see #readImage(File, SourceFormat, OperationList, Dimension,
+     * ReductionFactor, Set< ReaderHint >)
+     *
+     * @param readableChannel Image channel to read.
+     * @param sourceFormat
+     * @param ops
+     * @param fullSize Full size of the source image.
+     * @param reductionFactor {@link ReductionFactor#factor} property will be
+     *                        modified to reflect the reduction factor of the
+     *                        returned image.
+     * @param hints Will be populated by information returned by the reader.
+     * @return RGB BufferedImage best matching the given parameters. Clients
+     * should check the hints set to see whether they need to perform
+     * additional cropping.
+     * @throws IOException
+     * @throws ProcessorException
+     */
+    public static BufferedImage readImage(final ReadableByteChannel readableChannel,
+                                          final SourceFormat sourceFormat,
+                                          final OperationList ops,
+                                          final Dimension fullSize,
+                                          final ReductionFactor reductionFactor,
+                                          final Set<ReaderHint> hints)
+            throws IOException, ProcessorException {
+        return doReadImage(readableChannel, sourceFormat, ops,
+                fullSize, reductionFactor, hints);
+    }
+
+    /**
+     * @see #readImage(File, SourceFormat, OperationList, Dimension,
+     * ReductionFactor, Set< ReaderHint >)
+     *
+     * @param inputSource {@link ReadableByteChannel} or {@link File}
+     * @param sourceFormat
+     * @param ops
+     * @param fullSize Full size of the source image.
+     * @param rf {@link ReductionFactor#factor} property will be modified to
+     *           reflect the reduction factor of the returned image.
+     * @param hints Will be populated by information returned by the reader.
+     * @return RGB BufferedImage best matching the given parameters. Clients
+     * should check the hints set to see whether they need to perform
+     * additional cropping.
+     * @throws IOException
+     * @throws ProcessorException
+     */
+    private static BufferedImage doReadImage(final Object inputSource,
+                                             final SourceFormat sourceFormat,
+                                             final OperationList ops,
+                                             final Dimension fullSize,
+                                             final ReductionFactor rf,
+                                             final Set<ReaderHint> hints)
             throws IOException, ProcessorException {
         BufferedImage image = null;
         switch (sourceFormat) {
-            case BMP:
-                ImageInputStream iis = ImageIO.createImageInputStream(inputSource);
-                image = ImageIO.read(iis);
-                break;
             case TIF:
-                String tiffReader = Application.getConfiguration().
-                        getString(Java2dProcessor.TIF_READER_CONFIG_KEY,
-                                "TIFFImageReader");
-                if (tiffReader.equals("TIFFImageReader")) {
-                    image = readWithTiffImageReader(inputSource, ops,
-                            fullSize, reductionFactor);
-                } else {
-                    RenderedImage ri = JaiUtil.readImageWithTiffImageDecoder(
-                            inputSource, ops, fullSize, reductionFactor);
-                    image = new BufferedImage(ri.getWidth(),
-                            ri.getHeight(), BufferedImage.TYPE_INT_RGB);
-                    image.setData(ri.getData());
-                }
-                break;
-            default:
-                Iterator<ImageReader> it = ImageIO.getImageReadersByMIMEType(
-                        sourceFormat.getPreferredMediaType().toString());
-                while (it.hasNext()) {
+                Iterator<ImageReader> it = ImageIO.
+                        getImageReadersByMIMEType("image/tiff");
+                if (it.hasNext()) {
                     ImageReader reader = it.next();
                     try {
-                        iis = ImageIO.createImageInputStream(inputSource);
+                        Crop crop = new Crop();
+                        crop.setFull(true);
+                        Scale scale = new Scale();
+                        scale.setMode(Scale.Mode.FULL);
+                        for (Operation op : ops) {
+                            if (op instanceof Crop) {
+                                crop = (Crop) op;
+                            } else if (op instanceof Scale) {
+                                scale = (Scale) op;
+                            }
+                        }
+                        ImageInputStream iis =
+                                ImageIO.createImageInputStream(inputSource);
                         reader.setInput(iis);
-                        image = reader.read(0);
+                        image = readSmallestUsableImage(reader, crop, scale,
+                                rf, hints);
+                    } finally {
+                        reader.dispose();
+                    }
+                }
+                break;
+            // This is similar to the TIF case; the main difference is that it
+            // doesn't scan for sub-images, which is costly to do.
+            default:
+                it = ImageIO.getImageReadersByMIMEType(
+                        sourceFormat.getPreferredMediaType().toString());
+                if (it.hasNext()) {
+                    ImageReader reader = it.next();
+                    try {
+                        ImageInputStream iis =
+                                ImageIO.createImageInputStream(inputSource);
+                        reader.setInput(iis);
+
+                        Crop crop = null;
+                        for (Operation op : ops) {
+                            if (op instanceof Crop) {
+                                crop = (Crop) op;
+                                break;
+                            }
+                        }
+                        if (reader.isImageTiled(0) && crop != null) {
+                            image = readImageFromTiles(reader, 0,
+                                    crop.getRectangle(fullSize));
+                            hints.add(ReaderHint.ALREADY_CROPPED);
+                        } else {
+                            image = reader.read(0);
+                        }
                     } finally {
                         reader.dispose();
                     }
@@ -255,112 +349,42 @@ abstract class Java2dUtil {
         }
         BufferedImage rgbImage = Java2dUtil.convertToRgb(image);
         if (rgbImage != image) {
-            logger.warn("Converting {} to RGB (this is very expensive)",
+            logger.warn("Converted {} to RGB (this is very expensive)",
                     ops.getIdentifier());
         }
         return rgbImage;
     }
 
     /**
-     * <p>Uses TIFFImageReader to load a TIFF.</p>
-     *
-     * <p>The TIFFImageReader class currently being used,
-     * it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader, has several
-     * issues:</p>
-     *
-     * <ul>
-     *     <li>It sometimes sets BufferedImages to <code>TYPE_CUSTOM</code>,
-     *     which necessitates an expensive redraw into a new BufferedImage of
-     *     <code>TYPE_RGB</code>. Though, we seem to be able to work around
-     *     this (see inline commentary in
-     *     {@link #getSmallestUsableImage}).</li>
-     *     <li>It throws an ArrayIndexOutOfBoundsException when a TIFF file
-     *     contains a tag value greater than 6. (To inspect tag values, run
-     *     <code>$ tiffdump &lt;file&gt;</code>.) (The Sun TIFFImageReader
-     *     suffers from the same issue except it throws an
-     *     IllegalArgumentException instead.)</li>
-     *     <li>It renders some TIFFs with improper colors.</li>
-     * </ul>
-     *
-     * <p><code>ImageIO.read()</code> would be an alternative, but it is not
-     * usable because it also suffers from the <code>TYPE_CUSTOM</code> issue.
-     * Also, it doesn't allow access to pyramidal TIFF sub-images, and just
-     * generally doesn't provide any control over the reading process.</p>
-     *
-     * @param inputSource {@link ReadableByteChannel} or {@link File}
-     * @param ops
-     * @param fullSize
-     * @param reductionFactor
-     * @return
-     * @throws IOException
-     * @throws ProcessorException
-     * @throws IllegalArgumentException
-     * @see <a href="https://github.com/geosolutions-it/imageio-ext/blob/master/plugin/tiff/src/main/java/it/geosolutions/imageioimpl/plugins/tiff/TIFFImageReader.java">
-     *     TIFFImageReader source</a>
-     */
-    private static BufferedImage readWithTiffImageReader(
-            Object inputSource, OperationList ops, Dimension fullSize,
-            ReductionFactor reductionFactor) throws IOException,
-            ProcessorException {
-        BufferedImage image = null;
-        try {
-            Iterator<ImageReader> it = ImageIO.
-                    getImageReadersByMIMEType("image/tiff");
-            ImageReader reader = it.next();
-            // TODO: figure out why it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader is not found in the packaged jar
-            try {
-                Crop crop = new Crop();
-                crop.setFull(true);
-                Scale scale = new Scale();
-                scale.setMode(Scale.Mode.FULL);
-                for (Operation op : ops) {
-                    if (op instanceof Crop) {
-                        crop = (Crop) op;
-                    } else if (op instanceof Scale) {
-                        scale = (Scale) op;
-                    }
-                }
-                ImageInputStream iis = ImageIO.createImageInputStream(inputSource);
-                reader.setInput(iis);
-                image = getSmallestUsableImage(reader, fullSize, crop, scale,
-                        reductionFactor);
-            } finally {
-                reader.dispose();
-            }
-        } catch (ArrayIndexOutOfBoundsException e) {
-            logger.error("TIFFImageReader failed to read {}",
-                    ops.getIdentifier());
-            throw e;
-        }
-        return image;
-    }
-
-    /**
-     * Returns the smallest image fitting the requested size from the given
-     * reader. Useful for e.g. pyramidal TIFF.
+     * Reads the smallest usable image from a multi-resolution image.
      *
      * @param reader ImageReader with input source already set
-     * @param fullSize
      * @param crop Requested crop
      * @param scale Requested scale
-     * @param rf Set by reference
-     * @return
+     * @param rf {@link ReductionFactor#factor} will be set to the reduction
+     *           factor of the returned image.
+     * @param hints Will be populated by information returned by the reader.
+     * @return The smallest image fitting the requested crop and scale
+     * operations from the given reader.
      * @throws IOException
      */
-    private static BufferedImage getSmallestUsableImage(ImageReader reader,
-                                                        Dimension fullSize,
-                                                        Crop crop,
-                                                        Scale scale,
-                                                        ReductionFactor rf)
-            throws IOException {
+    private static BufferedImage readSmallestUsableImage(
+            final ImageReader reader,
+            final Crop crop,
+            final Scale scale,
+            final ReductionFactor rf,
+            final Set<ReaderHint> hints) throws IOException {
         BufferedImage bestImage = null;
+        final Dimension fullSize = new Dimension(reader.getWidth(0),
+                reader.getHeight(0));
+        final Rectangle regionRect = crop.getRectangle(fullSize);
         final ImageReadParam param = reader.getDefaultReadParam();
         if (scale.isNoOp()) {
-            // ImageIO loves to read TIFFs into BufferedImages of type
+            // ImageReader loves to read TIFFs into BufferedImages of type
             // TYPE_CUSTOM, which need to be redrawn into a new image of type
             // TYPE_INT_RGB at huge expense. The goal here is to directly get
-            // a BufferedImage of TYPE_INT_RGB instead For an explanation of
-            // this strategy, which may not even work anyway:
+            // a BufferedImage of TYPE_INT_RGB instead. An explanation of this
+            // strategy, which may not even work anyway:
             // https://lists.apple.com/archives/java-dev/2005/Apr/msg00456.html
             bestImage = new BufferedImage(fullSize.width,
                     fullSize.height, BufferedImage.TYPE_INT_RGB);
@@ -371,54 +395,66 @@ abstract class Java2dUtil {
             // ImageReadParam does not match!" during writing.
             // param.setDestinationType(ImageTypeSpecifier.
             //        createFromBufferedImageType(BufferedImage.TYPE_INT_RGB));
-            reader.read(0, param);
+            bestImage = readImageFromTiles(reader, 0, regionRect);
+            hints.add(ReaderHint.ALREADY_CROPPED);
+            logger.debug("Using a {}x{} source image (0x reduction factor)",
+                    bestImage.getWidth(), bestImage.getHeight());
         } else {
             // Pyramidal TIFFs will have > 1 image, each half the dimensions of
             // the next larger. The "true" parameter tells getNumImages() to
             // scan for images, which seems to be necessary for at least some
-            // files, but is O^n with source image size.
+            // files, but is slower.
             int numImages = reader.getNumImages(false);
             if (numImages > 1) {
-                logger.debug("Detected pyramidal TIFF with {} levels",
-                        numImages);
+                logger.debug("Detected {} subimage(s)", numImages - 1);
             } else if (numImages == -1) {
                 numImages = reader.getNumImages(true);
                 if (numImages > 1) {
-                    logger.debug("Scan revealed pyramidal TIFF with {} levels",
-                            numImages);
+                    logger.debug("Scan revealed {} subimage(s)", numImages - 1);
                 }
             }
-            if (numImages > 1) {
-                final Rectangle regionRect = crop.getRectangle(fullSize);
-
-                // Loop through the tiles from smallest to largest to find the
-                // first one that fits the requested scale
+            if (numImages == 1) {
+                bestImage = readImageFromTiles(reader, 0, regionRect);
+                hints.add(ReaderHint.ALREADY_CROPPED);
+                logger.debug("Using a {}x{} source image (0x reduction factor)",
+                        bestImage.getWidth(), bestImage.getHeight());
+            } else if (numImages > 1) {
+                // Loop through the reduced images from smallest to largest to
+                // find the first one that can supply the requested scale
                 for (int i = numImages - 1; i >= 0; i--) {
-                    final BufferedImage tile = reader.read(i);
-                    final double tileScale = (double) tile.getWidth() /
+                    final int reducedWidth = reader.getWidth(i);
+                    final int reducedHeight = reader.getHeight(i);
+
+                    final double reducedScale = (double) reducedWidth /
                             (double) fullSize.width;
                     boolean fits = false;
                     if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                        fits = (scale.getWidth() / (float) regionRect.width <= tileScale);
+                        fits = (scale.getWidth() / (float) regionRect.width <= reducedScale);
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                        fits = (scale.getHeight() / (float) regionRect.height <= tileScale);
+                        fits = (scale.getHeight() / (float) regionRect.height <= reducedScale);
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                        fits = (scale.getWidth() / (float) regionRect.width <= tileScale &&
-                                scale.getHeight() / (float) regionRect.height <= tileScale);
+                        fits = (scale.getWidth() / (float) regionRect.width <= reducedScale &&
+                                scale.getHeight() / (float) regionRect.height <= reducedScale);
                     } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
-                        fits = (scale.getWidth() / (float) regionRect.width <= tileScale &&
-                                scale.getHeight() / (float) regionRect.height <= tileScale);
+                        fits = (scale.getWidth() / (float) regionRect.width <= reducedScale &&
+                                scale.getHeight() / (float) regionRect.height <= reducedScale);
                     } else if (scale.getPercent() != null) {
                         float pct = scale.getPercent();
-                        fits = ((pct * fullSize.width) / (float) regionRect.width <= tileScale &&
-                                (pct * fullSize.height) / (float) regionRect.height <= tileScale);
+                        fits = ((pct * fullSize.width) / (float) regionRect.width <= reducedScale &&
+                                (pct * fullSize.height) / (float) regionRect.height <= reducedScale);
                     }
                     if (fits) {
                         rf.factor = ProcessorUtil.
-                                getReductionFactor(tileScale, 0).factor;
-                        logger.debug("Using a {}x{} source tile ({}x reduction factor)",
-                                tile.getWidth(), tile.getHeight(), rf.factor);
-                        bestImage = tile;
+                                getReductionFactor(reducedScale, 0).factor;
+                        logger.debug("Using a {}x{} source image ({}x reduction factor)",
+                                reducedWidth, reducedHeight, rf.factor);
+                        final Rectangle reducedRect = new Rectangle(
+                                (int) Math.round(regionRect.x * reducedScale),
+                                (int) Math.round(regionRect.y * reducedScale),
+                                (int) Math.round(regionRect.width * reducedScale),
+                                (int) Math.round(regionRect.height * reducedScale));
+                        bestImage = readImageFromTiles(reader, i, reducedRect);
+                        hints.add(ReaderHint.ALREADY_CROPPED);
                         break;
                     }
                 }
@@ -428,22 +464,93 @@ abstract class Java2dUtil {
     }
 
     /**
+     * <p>Returns an image for the requested source area by reading the tiles
+     * of the source image and joining them into a single image.</p>
+     *
+     * <p>Clients should check that {@link ImageReader#isImageTiled(int)}
+     * returns <code>true</code> before calling this method.</p>
+     *
+     * <p>This method performs cropping according to the
+     * <code>requestedSourceArea</code> parameter and thus obviates the need
+     * for an immediately-post-read cropping step.</p>
+     *
+     * @param reader ImageReader with input source already set
+     * @param imageIndex Index of the image to read from the ImageReader.
+     * @param requestedSourceArea Source image area to retrieve. The returned
+     *                            image will be this size or smaller if it
+     *                            would overlap the right or bottom edge of the
+     *                            source image.
+     * @return Cropped image
+     * @throws IOException
+     * @throws IllegalArgumentException If the source image is not tiled.
+     */
+    private static BufferedImage readImageFromTiles(
+            final ImageReader reader,
+            final int imageIndex,
+            final Rectangle requestedSourceArea)
+            throws IOException, IllegalArgumentException {
+        final int imageWidth = reader.getWidth(imageIndex);
+        final int imageHeight = reader.getHeight(imageIndex);
+        final int tileWidth = reader.getTileWidth(imageIndex);
+        final int tileHeight = reader.getTileHeight(imageIndex);
+        final int numXTiles = (int) Math.ceil((double) imageWidth /
+                (double) tileWidth);
+        final int numYTiles = (int) Math.ceil((double) imageHeight /
+                (double) tileHeight);
+        final int tileX1 = (int) Math.floor((double) requestedSourceArea.x /
+                (double) tileWidth);
+        final int tileX2 = Math.min((int) Math.ceil((double) (requestedSourceArea.x +
+                requestedSourceArea.width) / (double) tileWidth) - 1, numXTiles - 1);
+        final int tileY1 = (int) Math.floor((double) requestedSourceArea.y /
+                (double) tileHeight);
+        final int tileY2 = Math.min((int) Math.ceil((double) (requestedSourceArea.y +
+                requestedSourceArea.height) / (double) tileHeight) - 1, numYTiles - 1);
+        final int offsetX = requestedSourceArea.x - tileX1 * tileWidth;
+        final int offsetY = requestedSourceArea.y - tileY1 * tileHeight;
+
+        logger.debug("Reading tile rows {}-{} of {} and columns {}-{} of {} " +
+                "({}x{} tiles; {}x{} offset)",
+                tileX1 + 1, tileX2 + 1, numXTiles,
+                tileY1 + 1, tileY2 + 1, numYTiles,
+                tileWidth, tileHeight, offsetX, offsetY);
+
+        final BufferedImage outImage = new BufferedImage(
+                Math.min(requestedSourceArea.width, imageWidth - requestedSourceArea.x),
+                Math.min(requestedSourceArea.height, imageHeight - requestedSourceArea.y),
+                BufferedImage.TYPE_INT_RGB);
+
+        // Copy the tile rasters into outImage
+        for (int tx = tileX1, ix = 0; tx <= tileX2; tx++, ix++) {
+            for (int ty = tileY1, iy = 0; ty <= tileY2; ty++, iy++) {
+                // ImageReader.readTileRaster() doesn't always work, so get a
+                // Raster from the tile's BufferedImage and translate it.
+                final Raster raster = reader.readTile(imageIndex, tx, ty).
+                        getData().createTranslatedChild(
+                        ix * tileWidth - offsetX,
+                        iy * tileHeight - offsetY);
+                outImage.setData(raster);
+            }
+        }
+        return outImage;
+    }
+
+    /**
      * @param inImage Image to rotate
      * @param rotate Rotate operation
      * @return Rotated image, or the input image if the given rotation is a
      * no-op.
      */
-    public static BufferedImage rotateImage(BufferedImage inImage,
-                                            Rotate rotate) {
+    public static BufferedImage rotateImage(final BufferedImage inImage,
+                                            final Rotate rotate) {
         BufferedImage rotatedImage = inImage;
         if (!rotate.isNoOp()) {
-            double radians = Math.toRadians(rotate.getDegrees());
-            int sourceWidth = inImage.getWidth();
-            int sourceHeight = inImage.getHeight();
-            int canvasWidth = (int) Math.round(Math.abs(sourceWidth *
+            final double radians = Math.toRadians(rotate.getDegrees());
+            final int sourceWidth = inImage.getWidth();
+            final int sourceHeight = inImage.getHeight();
+            final int canvasWidth = (int) Math.round(Math.abs(sourceWidth *
                     Math.cos(radians)) + Math.abs(sourceHeight *
                     Math.sin(radians)));
-            int canvasHeight = (int) Math.round(Math.abs(sourceHeight *
+            final int canvasHeight = (int) Math.round(Math.abs(sourceHeight *
                     Math.cos(radians)) + Math.abs(sourceWidth *
                     Math.sin(radians)));
 
@@ -471,9 +578,10 @@ abstract class Java2dUtil {
     /**
      * Scales an image using an AffineTransform.
      *
-     * @param inImage
-     * @param scale
-     * @return
+     * @param inImage Image to scale
+     * @param scale Scale operation
+     * @return Downscaled image, or the input image if the given scale is a
+     * no-op.
      */
     public static BufferedImage scaleImageWithAffineTransform(
             BufferedImage inImage, Scale scale) {
@@ -481,11 +589,9 @@ abstract class Java2dUtil {
         if (!scale.isNoOp()) {
             double xScale = 0.0f, yScale = 0.0f;
             if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                xScale = scale.getWidth() / (double) inImage.getWidth();
-                yScale = xScale;
+                xScale = yScale = scale.getWidth() / (double) inImage.getWidth();
             } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                yScale = scale.getHeight() / (double) inImage.getHeight();
-                xScale = yScale;
+                xScale = yScale = scale.getHeight() / (double) inImage.getHeight();
             } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
                 xScale = scale.getWidth() / (double) inImage.getWidth();
                 yScale = scale.getHeight() / (double) inImage.getHeight();
@@ -497,8 +603,7 @@ abstract class Java2dUtil {
                 xScale = inImage.getWidth() * Math.min(hScale, vScale) / 100f;
                 yScale = inImage.getHeight() * Math.min(hScale, vScale) / 100f;
             } else if (scale.getPercent() != null) {
-                xScale = scale.getPercent();
-                yScale = xScale;
+                xScale = yScale = scale.getPercent();
             }
             int width = (int) Math.round(inImage.getWidth() * xScale);
             int height = (int) Math.round(inImage.getHeight() * yScale);
@@ -515,26 +620,29 @@ abstract class Java2dUtil {
     /**
      * Scales an image using Graphics2D.
      *
-     * @param inImage
-     * @param scale
-     * @return
+     * @param inImage Image to scale
+     * @param scale Scale operation
+     * @return Downscaled image, or the input image if the given scale is a
+     * no-op.
      */
-    public static BufferedImage scaleImageWithG2d(BufferedImage inImage,
-                                                  Scale scale) {
+    public static BufferedImage scaleImageWithG2d(final BufferedImage inImage,
+                                                  final Scale scale) {
         return scaleImageWithG2d(inImage, scale, new ReductionFactor(0), false);
     }
 
     /**
      * Scales an image using Graphics2D.
      *
-     * @param inImage
-     * @param scale
-     * @param highQuality
-     * @return
+     * @param inImage Image to scale.
+     * @param scale Scale operation.
+     * @param highQuality Whether to use a high-quality but more expensive
+     *                    scaling method.
+     * @return Downscaled image, or the input image if the given scale is a
+     * no-op.
      */
-    public static BufferedImage scaleImageWithG2d(BufferedImage inImage,
-                                                  Scale scale,
-                                                  boolean highQuality) {
+    public static BufferedImage scaleImageWithG2d(final BufferedImage inImage,
+                                                  final Scale scale,
+                                                  final boolean highQuality) {
         return scaleImageWithG2d(inImage, scale, new ReductionFactor(0),
                 highQuality);
     }
@@ -545,17 +653,19 @@ abstract class Java2dUtil {
      * have already been halved rf times but the given size is relative to the
      * full-sized image.
      *
-     * @param inImage The input image
+     * @param inImage Image to scale
      * @param scale Requested size ignoring any reduction factor
      * @param rf Reduction factor that has already been applied to
-     *                        <code>inImage</code>
-     * @param highQuality
-     * @return Scaled image
+     *           <code>inImage</code>
+     * @param highQuality Whether to use a high-quality but more expensive
+     *                    scaling method.
+     * @return Downscaled image, or the input image if the given scale is a
+     * no-op.
      */
-    public static BufferedImage scaleImageWithG2d(BufferedImage inImage,
-                                                  Scale scale,
-                                                  ReductionFactor rf,
-                                                  boolean highQuality) {
+    public static BufferedImage scaleImageWithG2d(final BufferedImage inImage,
+                                                  final Scale scale,
+                                                  final ReductionFactor rf,
+                                                  final boolean highQuality) {
         BufferedImage scaledImage = inImage;
         if (!scale.isNoOp()) {
             final int sourceWidth = inImage.getWidth();
@@ -616,8 +726,8 @@ abstract class Java2dUtil {
      * @return Transposed image, or the input image if the given transpose
      * operation is a no-op.
      */
-    public static BufferedImage transposeImage(BufferedImage inImage,
-                                               Transpose transpose) {
+    public static BufferedImage transposeImage(final BufferedImage inImage,
+                                               final Transpose transpose) {
         AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
         switch (transpose) {
             case HORIZONTAL:
@@ -681,25 +791,21 @@ abstract class Java2dUtil {
                 writer.setOutput(os);
                 writer.write(image);
                 break;*/
-          /*  case TIF: TODO: this doesn't write anything
+          /*  case TIF: TODO: try this
                 Iterator<ImageWriter> it = ImageIO.
                         getImageWritersByMIMEType("image/tiff");
-                while (it.hasNext()) {
+                if (it.hasNext()) {
                     writer = it.next();
-                    if (writer instanceof it.geosolutions.imageioimpl.
-                            plugins.tiff.TIFFImageWriter) {
-                        try {
-                            ImageWriteParam param = writer.getDefaultWriteParam();
-                            param.setDestinationType(ImageTypeSpecifier.
-                                    createFromBufferedImageType(BufferedImage.TYPE_INT_RGB));
-                            ImageOutputStream os = ImageIO.createImageOutputStream(writableChannel);
-                            writer.setOutput(os);
-                            IIOImage iioImage = new IIOImage(image, null, null);
-                            writer.write(null, iioImage, param);
-                        } finally {
-                            writer.dispose();
-                        }
-                        break;
+                    try {
+                        ImageWriteParam param = writer.getDefaultWriteParam();
+                        param.setDestinationType(ImageTypeSpecifier.
+                                createFromBufferedImageType(BufferedImage.TYPE_INT_RGB));
+                        ImageOutputStream os = ImageIO.createImageOutputStream(writableChannel);
+                        writer.setOutput(os);
+                        IIOImage iioImage = new IIOImage(image, null, null);
+                        writer.write(null, iioImage, param);
+                    } finally {
+                        writer.dispose();
                     }
                 }
                 break; */

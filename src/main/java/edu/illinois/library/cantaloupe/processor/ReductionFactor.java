@@ -16,4 +16,11 @@ class ReductionFactor {
         this.factor = factor;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ReductionFactor) {
+            return ((ReductionFactor) obj).factor == factor;
+        }
+        return super.equals(obj);
+    }
 }

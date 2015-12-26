@@ -17,20 +17,32 @@ configuration option). (The author has not tried this.)</p>
 
 <p><a href="processors.html#KakaduProcessor">KakaduProcessor</a> is by far the most efficient processor for this format, and it performs very well, even with images in the range of hundreds of megapixels.</p>
 
-<p><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a> uses the open-source OpenJPEG decoder, generally considered, as of this writing, to be the fastest open-source JPEG2000 decoder. <a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a>'s JPEG2000 delegate, if installed, also uses the OpenJPEG library.</p>
+<p><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a> uses the OpenJPEG decoder, which is generally considered, as of this writing, to be the fastest open-source JPEG2000 decoder. (<a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a>'s JPEG2000 delegate, if installed, will also use the OpenJPEG library, but less efficiently as it won't use OpenJPEG's level reduction feature.)</p>
 
-<p><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> can read and write JPEG2000 using JasPer, if the necessary plugin is installed. This may or may not be fast enough to be usable.</p>
+<p><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> can read and write JPEG2000 using JasPer, if the necessary plugin is installed. This will probably not be fast enough to be usable for most purposes.</p>
 
 <p>See <a href="processors.html#JaiProcessor">JaiProcessor</a> for notes on the mediaLib accelerator.</p>
 
 <h3 id="TIFF">TIFF</h3>
 
-<p>Most processors can read this format, though some have trouble with its special cases. <a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> and <a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a> can both handle TIFF if the necessary delegate or plugin is installed. (Go to the Cantaloupe landing page to check.)</p>
+<p>Most processors can read this format, though some have trouble with its special cases. Additionally, there are some conditions that TIFF images must meet in order to be delivered efficiently&mdash;read on for details.</p>
 
-<h4>Pyramidal TIFF</h4>
+<h4>Strip-Based vs. Tile-Based</h4>
 
-<p>Pyramidal TIFF is a special type of TIFF file that improves TIFF's suitability for deep zooming applications. In addition to the main image, it contains a sequence of progressively half-sized sub-images: for example, a 10000&times;10000 pixel main image would include derivatives of 5000&times;5000 pixels, 2500&times;2500 pixels, 1250&times;1250 pixels, and so on, all embedded inside the same file. These smaller images are more efficient to read at small scales (shallow zoom levels).</p>
+<p>The <a href="http://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf">Adobe TIFF 6.0 specification</a> permits arrangements of image data in either strips or tiles. Most TIFF encoders produce strip-based TIFFs unless told to do otherwise. These work fine at small sizes, but are increasingly slow to read as size increases. <strong>High-resolution TIFFs must be tile-based</strong> in order to permit efficient region extraction. An easy way to check is with the <span class="filename">tiffdump</span> utility:</p>
 
-<p><a href="processors.html#Java2dProcessor">Java2dProcessor</a> and <a href="processors.html#JaiProcessor">JaiProcessor</a> both support pyramidal TIFF, which is to say that they actually do read the embedded sub-images and choose the smallest one that can fulfill the request.</p>
+<pre>$ tiffdump image.tif</pre>
 
-<p>All other processors that support TIFF will read pyramidal TIFFs as ordinary TIFFs, ignoring the sub-images.</p>
+<p>For strip-based TIFFs, this will print out some information including <code>StripOffsets</code>, <code>StripByteCounts</code>, and so on. For tile-based TIFFs, it will print <code>TileOffsets</code>, <code>TileByteCounts</code>, and so on, instead.</p>
+
+<h4>Multi-Resolution (Pyramidal) TIFF</h4>
+
+<p>Multi-resolution TIFF is a special type of TIFF file that can improve reader efficiency at reduced scales. In addition to the main image, a multi-resolution TIFF file will contain a sequence of progressively half-sized sub-images: for example, a 10000&times;10000 pixel main image would include derivatives of 5000&times;5000 pixels, 2500&times;2500 pixels, 1250&times;1250 pixels, and so on, all embedded inside the same file.</p>
+
+<p>Each of the levels in a multi-resolution TIFF file is, itself, a TIFF image that can be striped or tiled just like a mono-resolution TIFF file. Tiled and pyramidal encoding are complementary: the former improves efficiency with reduced regions at large scales, and the latter improves efficiency at reduced scales.</p>
+
+<h4>Summary</h4>
+
+<p>For efficient deep zooming, TIFF images need to be pyramidal, and each level of the pyramid should be tiled. The reduced-scale pyramid levels will be used at small scales (shallow zoom levels), while the tiles of the large-scale levels will be used at large scales.</p>
+
+<p><a href="processors.html#Java2dProcessor">Java2dProcessor</a> and <a href="processors.html#JaiProcessor">JaiProcessor</a> both support multi-resolution TIFF, which is to say that they actually do read the embedded sub-images and choose the smallest one that can fulfill the request. Java2dProcessor additionally exploits tiled sub-images, for the best of both worlds.</p>

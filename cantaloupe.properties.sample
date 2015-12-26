@@ -245,10 +245,6 @@ Java2dProcessor.scale_mode = speed
 # JPEG output quality. Should be a number between 0-1 ending in "f"
 Java2dProcessor.jpg.quality = 0.7f
 
-# Available values are `TIFFImageReader` and `TIFFImageDecoder`.
-# If you notice any issues with TIFFs, try switching.
-Java2dProcessor.tif.reader = TIFFImageReader
-
 #----------------------------------------
 # KakaduProcessor
 #----------------------------------------
