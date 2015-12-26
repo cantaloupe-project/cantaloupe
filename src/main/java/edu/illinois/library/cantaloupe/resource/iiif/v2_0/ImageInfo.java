@@ -26,8 +26,6 @@ class ImageInfo {
         public Integer height;
         public Integer width;
 
-        public Size() {}
-
         public Size(Integer width, Integer height) {
             this.width = width;
             this.height = height;
@@ -46,7 +44,7 @@ class ImageInfo {
 
     public final String protocol = "http://iiif.io/api/image";
 
-    public List<Size> sizes = new ArrayList<>();
+    public final List<Size> sizes = new ArrayList<>();
 
     public Integer width;
 
