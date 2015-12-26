@@ -119,6 +119,8 @@ public class ImageResource extends AbstractResource {
                 (String) attrs.get("rotation"),
                 qualityAndFormat[0],
                 outputFormat).toOperationList();
+        ops.getOptions().putAll(
+                this.getReference().getQueryAsForm(true).getValuesMap());
 
         // Find out whether the processor supports that source format by
         // asking it whether it offers any output formats for it

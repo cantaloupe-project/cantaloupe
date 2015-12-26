@@ -65,6 +65,8 @@ public class ImageResource extends AbstractResource {
                 (String) attrs.get("quality"),
                 (String) attrs.get("format"));
         OperationList ops = params.toOperationList();
+        ops.getOptions().putAll(
+                this.getReference().getQueryAsForm(true).getValuesMap());
 
         // If we don't need to resolve first, and are using a cache, and the
         // cache contains an image matching the request, skip all the setup and
