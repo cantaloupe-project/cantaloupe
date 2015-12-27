@@ -32,7 +32,7 @@ public class ImageResourceTest extends ResourceTest {
 
     @Override
     protected ClientResource getClientForUriPath(String path) {
-        return super.getClientForUriPath(WebApplication.IIIF_2_0_PATH + path);
+        return super.getClientForUriPath(WebApplication.IIIF_2_PATH + path);
     }
 
     public void testBasicAuth() throws Exception {

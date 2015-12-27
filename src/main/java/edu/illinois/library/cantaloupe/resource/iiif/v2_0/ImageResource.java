@@ -131,7 +131,7 @@ public class ImageResource extends AbstractResource {
     private void addLinkHeader(Parameters params) {
         this.addHeader("Link", String.format("<%s%s/%s>;rel=\"canonical\"",
                 getPublicRootRef().toString(),
-                WebApplication.IIIF_2_0_PATH, params.toString()));
+                WebApplication.IIIF_2_PATH, params.toString()));
     }
 
 }

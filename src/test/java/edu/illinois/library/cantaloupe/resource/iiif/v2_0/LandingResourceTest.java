@@ -18,7 +18,7 @@ public class LandingResourceTest extends ResourceTest {
     public void testEndpointDisabled() {
         Configuration config = Application.getConfiguration();
         ClientResource client = getClientForUriPath(
-                WebApplication.IIIF_2_0_PATH);
+                WebApplication.IIIF_2_PATH);
 
         config.setProperty("endpoint.iiif.2.enabled", true);
         client.get();
@@ -35,7 +35,7 @@ public class LandingResourceTest extends ResourceTest {
 
     public void testGet() throws IOException {
         ClientResource client = getClientForUriPath(
-                WebApplication.IIIF_2_0_PATH);
+                WebApplication.IIIF_2_PATH);
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
         assertTrue(client.get().getText().contains("Cantaloupe Image"));

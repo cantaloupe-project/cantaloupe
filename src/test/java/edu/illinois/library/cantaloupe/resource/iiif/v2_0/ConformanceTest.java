@@ -71,7 +71,7 @@ public class ConformanceTest extends CantaloupeTestCase {
 
     private String getBaseUri() {
         return "http://localhost:" + PORT +
-                WebApplication.IIIF_2_0_PATH;
+                WebApplication.IIIF_2_PATH;
     }
 
     public void setUp() throws Exception {

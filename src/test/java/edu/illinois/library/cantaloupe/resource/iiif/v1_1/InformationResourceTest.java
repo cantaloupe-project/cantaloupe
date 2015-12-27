@@ -31,7 +31,7 @@ public class InformationResourceTest extends ResourceTest {
 
     @Override
     protected ClientResource getClientForUriPath(String path) {
-        return super.getClientForUriPath(WebApplication.IIIF_1_1_PATH + path);
+        return super.getClientForUriPath(WebApplication.IIIF_1_PATH + path);
     }
 
     public void testCacheHeaders() {
@@ -179,7 +179,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertTrue(info.id.startsWith("http://") &&
-                info.id.contains(WebApplication.IIIF_1_1_PATH + "/escher_lego.jpg"));
+                info.id.contains(WebApplication.IIIF_1_PATH + "/escher_lego.jpg"));
 
         Configuration config = Application.getConfiguration();
         config.setProperty("base_uri", "http://example.org/");

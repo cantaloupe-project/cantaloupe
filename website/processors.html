@@ -10,7 +10,7 @@ layout: default
 
 <p>Supported source formats depend on the processor, and possibly installed
 libraries/delegates, etc., as well. Lists of these are displayed on the
-landing page. A list of output formats supported <em>for a given source format</em> is contained within the response to an information request (such as <span class="filename">/iiif/2.0/{identifier}/info.json</span>).</p>
+landing page. A list of output formats supported <em>for a given source format</em> is contained within the response to an information request (such as <span class="filename">/iiif/2/{identifier}/info.json</span>).</p>
 
 <p>For all of the rest of the source formats you would like to serve, it's a good idea to experiment with different processors, comparing their performance, resource usage, and output quality.</p>
 
@@ -166,6 +166,6 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 
 <p>FFmpegProcessor supports a <code>time</code> URL query parameter (which is nonstandard and Cantaloupe-specific) which can be used to return a frame at a particular second in the source video. The value of this parameter should be in <code>hh:mm:ss</code> format, like:</p>
 
-<pre>http://example.org/iiif/2.0/video.mp4/full/full/0/default.jpg?time=00:02:15</pre>
+<pre>http://example.org/iiif/2/video.mp4/full/full/0/default.jpg?time=00:02:15</pre>
 
 <p>If the <code>time</code> parameter is not present, the first frame will be returned.</p>
