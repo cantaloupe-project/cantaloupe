@@ -203,7 +203,7 @@ public class Application {
                 System.getProperty("java.vm.info"));
         logger.info("Heap total: {}MB; max: {}MB", runtime.totalMemory() / mb,
                 runtime.maxMemory() / mb);
-        logger.info("Starting Cantaloupe {}", getVersion());
+        logger.info("\uD83C\uDF48 Starting Cantaloupe {}", getVersion());
 
         if (System.getProperty("cantaloupe.cache.purge") != null) {
             purgeCacheAtLaunch();
