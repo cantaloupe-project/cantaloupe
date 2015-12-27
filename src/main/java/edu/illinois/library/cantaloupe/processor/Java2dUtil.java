@@ -53,17 +53,18 @@ abstract class Java2dUtil {
     /**
      * <p>Copies the given BufferedImage into a new image of type
      * {@link BufferedImage#TYPE_INT_RGB}, to make it compatible with the
-     * rest of the application image operation pipeline.</p>
+     * rest of the application image operation pipeline, if it is of type
+     * {@link BufferedImage#TYPE_CUSTOM}.</p>
      *
      * <p>This is extremely expensive and should be avoided if possible.</p>
      *
      * @param inImage Image to convert
      * @return A new BufferedImage of type RGB, or the input image if it
-     * already is RGB.
+     * is not of type custom.
      */
     public static BufferedImage convertToRgb(final BufferedImage inImage) {
         BufferedImage outImage = inImage;
-        if (inImage != null && inImage.getType() != BufferedImage.TYPE_INT_RGB) {
+        if (inImage != null && inImage.getType() == BufferedImage.TYPE_CUSTOM) {
             outImage = new BufferedImage(inImage.getWidth(),
                     inImage.getHeight(), BufferedImage.TYPE_INT_RGB);
             Graphics2D g = outImage.createGraphics();
