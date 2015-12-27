@@ -18,7 +18,6 @@ import java.awt.Dimension;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -256,16 +255,16 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
      * must override if they lack support for any of these.
      */
     public void testGetSupportedIiif11Qualities() {
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality>
+        Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
                 expectedQualities = new HashSet<>();
         expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality.BITONAL);
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL);
         expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality.COLOR);
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR);
         expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality.GRAY);
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY);
         expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality.NATIVE);
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE);
         assertEquals(expectedQualities,
                 getProcessor().getSupportedIiif1_1Qualities(getAnySupportedSourceFormat(getProcessor())));
 

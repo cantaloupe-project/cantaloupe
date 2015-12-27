@@ -52,7 +52,7 @@ public class WebApplication extends Application {
 
         // landing page
         router.attach(IIIF_1_PATH,
-                edu.illinois.library.cantaloupe.resource.iiif.v1_1.LandingResource.class);
+                edu.illinois.library.cantaloupe.resource.iiif.v1.LandingResource.class);
 
         // Redirect image identifier to image information
         Redirector redirector = new Redirector(getContext(),
@@ -67,12 +67,12 @@ public class WebApplication extends Application {
 
         // image request
         Class<? extends ServerResource> resource =
-                edu.illinois.library.cantaloupe.resource.iiif.v1_1.ImageResource.class;
+                edu.illinois.library.cantaloupe.resource.iiif.v1.ImageResource.class;
         router.attach(IIIF_1_PATH + "/{identifier}/{region}/{size}/{rotation}/{quality_format}",
                 resource);
 
         // information request
-        resource = edu.illinois.library.cantaloupe.resource.iiif.v1_1.InformationResource.class;
+        resource = edu.illinois.library.cantaloupe.resource.iiif.v1.InformationResource.class;
         router.attach(IIIF_1_PATH + "/{identifier}/info.{format}", resource);
 
         /****************** IIIF Image API 2.0 routes *******************/

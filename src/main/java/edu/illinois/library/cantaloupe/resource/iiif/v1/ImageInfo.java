@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
+package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;

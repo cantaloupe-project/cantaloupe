@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
+package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.Crop;

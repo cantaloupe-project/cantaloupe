@@ -47,7 +47,7 @@ class GraphicsMagickProcessor implements ChannelProcessor {
             "GraphicsMagickProcessor.path_to_binaries";
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
-    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality>
+    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
             SUPPORTED_IIIF_1_1_QUALITIES = new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality>
             SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
@@ -56,13 +56,13 @@ class GraphicsMagickProcessor implements ChannelProcessor {
 
     static {
         SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality.BITONAL);
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL);
         SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality.COLOR);
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR);
         SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality.GRAY);
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY);
         SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality.NATIVE);
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE);
 
         SUPPORTED_IIIF_2_0_QUALITIES.add(
                 edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality.BITONAL);
@@ -195,9 +195,9 @@ class GraphicsMagickProcessor implements ChannelProcessor {
     }
 
     @Override
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality>
+    public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
     getSupportedIiif1_1Qualities(final SourceFormat sourceFormat) {
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v1_1.Quality>
+        Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
                 qualities = new HashSet<>();
         if (getAvailableOutputFormats(sourceFormat).size() > 0) {
             qualities.addAll(SUPPORTED_IIIF_1_1_QUALITIES);
