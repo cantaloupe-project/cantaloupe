@@ -18,7 +18,13 @@
         <h2>IIIF Image API 2.0 Endpoint</h2>
 
         <ul>
-            <li><a href="http://iiif.io/api/image/2.0/">IIIF Image API 2.0</a></li>
+            <li><a href="http://iiif.io/api/image/2.0/">Documentation</a></li>
+            <li>Sample Requests
+                <ul>
+                    <li>$baseUri/iiif/2/{identifier}/info.json</li>
+                    <li>$baseUri/iiif/2/{identifier}/full/full/0/default.jpg</li>
+                </ul>
+            </li>
         </ul>
     </div>
 </body>
