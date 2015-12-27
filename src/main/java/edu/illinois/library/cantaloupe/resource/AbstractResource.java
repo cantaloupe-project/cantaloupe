@@ -20,6 +20,7 @@ import org.restlet.data.CacheDirective;
 import org.restlet.data.Header;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
+import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
 import org.restlet.util.Series;
 import org.slf4j.Logger;
@@ -43,6 +44,12 @@ public abstract class AbstractResource extends ServerResource {
             "cache.server.purge_missing";
     protected static final String RESOLVE_FIRST_CONFIG_KEY =
             "cache.server.resolve_first";
+
+    @Override
+    protected void doInit() throws ResourceException {
+        super.doInit();
+        addHeader("X-Powered-By", "Cantaloupe/" + Application.getVersion());
+    }
 
     /**
      * Convenience method that adds a response header.
