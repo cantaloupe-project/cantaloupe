@@ -76,7 +76,7 @@ class KakaduProcessor implements FileProcessor {
             new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
             SUPPORTED_IIIF_1_1_QUALITIES = new HashSet<>();
-    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality>
+    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
             SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
 
     private static final ExecutorService executorService =
@@ -95,13 +95,13 @@ class KakaduProcessor implements FileProcessor {
                 edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE);
 
         SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality.BITONAL);
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL);
         SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality.COLOR);
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR);
         SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality.DEFAULT);
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT);
         SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality.GRAY);
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY);
 
         SUPPORTED_FEATURES.add(ProcessorFeature.MIRRORING);
         SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PERCENT);
@@ -232,9 +232,9 @@ class KakaduProcessor implements FileProcessor {
     }
 
     @Override
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality>
+    public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
     getSupportedIiif2_0Qualities(final SourceFormat sourceFormat) {
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality>
+        Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
                 qualities = new HashSet<>();
         if (getAvailableOutputFormats(sourceFormat).size() > 0) {
             qualities.addAll(SUPPORTED_IIIF_2_0_QUALITIES);

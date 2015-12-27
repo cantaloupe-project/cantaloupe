@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
+package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;

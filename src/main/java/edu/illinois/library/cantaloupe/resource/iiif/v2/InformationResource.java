@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
+package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import java.awt.Dimension;
 import java.io.FileNotFoundException;

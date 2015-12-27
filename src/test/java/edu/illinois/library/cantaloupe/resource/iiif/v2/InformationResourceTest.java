@@ -1,5 +1,6 @@
-package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
+package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
@@ -7,17 +8,12 @@ import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
 import org.restlet.data.CacheDirective;
-import org.restlet.data.ChallengeResponse;
-import org.restlet.data.ChallengeScheme;
-import org.restlet.data.Disposition;
-import org.restlet.data.Header;
 import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
@@ -28,69 +24,39 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ImageResourceTest extends ResourceTest {
+/**
+ * Functional test of the non-IIIF features of InformationResource.
+ */
+public class InformationResourceTest extends ResourceTest {
 
     @Override
     protected ClientResource getClientForUriPath(String path) {
         return super.getClientForUriPath(WebApplication.IIIF_2_PATH + path);
     }
 
-    public void testBasicAuth() throws Exception {
-        final String username = "user";
-        final String secret = "secret";
-        Application.stopServer();
-        Configuration config = Application.getConfiguration();
-        config.setProperty("http.auth.basic", "true");
-        config.setProperty("http.auth.basic.username", username);
-        config.setProperty("http.auth.basic.secret", secret);
-        Application.startServer();
-
-        // no credentials
-        ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
-        try {
-            client.get();
-            fail("Expected exception");
-        } catch (ResourceException e) {
-            assertEquals(Status.CLIENT_ERROR_UNAUTHORIZED, client.getStatus());
-        }
-
-        // invalid credentials
-        client.setChallengeResponse(
-                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, "invalid", "invalid"));
-        try {
-            client.get();
-            fail("Expected exception");
-        } catch (ResourceException e) {
-            assertEquals(Status.CLIENT_ERROR_UNAUTHORIZED, client.getStatus());
-        }
-
-        // valid credentials
-        client.setChallengeResponse(
-                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, username, secret));
-        client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
-    }
-
-    public void testCacheHeadersWhenCachingEnabled() {
+    public void testCacheHeaders() {
         Configuration config = Application.getConfiguration();
         config.setProperty("cache.client.enabled", "true");
         config.setProperty("cache.client.max_age", "1234");
         config.setProperty("cache.client.shared_max_age", "4567");
-        config.setProperty("cache.client.public", "true");
-        config.setProperty("cache.client.private", "false");
-        config.setProperty("cache.client.no_cache", "false");
-        config.setProperty("cache.client.no_store", "false");
+        config.setProperty("cache.client.public", "false");
+        config.setProperty("cache.client.private", "true");
+        config.setProperty("cache.client.no_cache", "true");
+        config.setProperty("cache.client.no_store", "true");
         config.setProperty("cache.client.must_revalidate", "false");
-        config.setProperty("cache.client.proxy_revalidate", "false");
-        config.setProperty("cache.client.no_transform", "true");
+        config.setProperty("cache.client.proxy_revalidate", "true");
+        config.setProperty("cache.client.no_transform", "false");
 
         Map<String, String> expectedDirectives = new HashMap<>();
         expectedDirectives.put("max-age", "1234");
         expectedDirectives.put("s-maxage", "4567");
-        expectedDirectives.put("public", null);
+        expectedDirectives.put("private", null);
+        expectedDirectives.put("no-cache", null);
+        expectedDirectives.put("no-store", null);
+        expectedDirectives.put("proxy-revalidate", null);
         expectedDirectives.put("no-transform", null);
 
-        ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
+        ClientResource client = getClientForUriPath("/jpg/info.json");
         client.get();
         List<CacheDirective> actualDirectives = client.getResponse().getCacheDirectives();
         for (CacheDirective d : actualDirectives) {
@@ -103,49 +69,6 @@ public class ImageResourceTest extends ResourceTest {
                 }
             }
         }
-    }
-
-    public void testCacheHeadersWhenCachingDisabled() {
-        Configuration config = Application.getConfiguration();
-        config.setProperty("cache.client.enabled", "false");
-        config.setProperty("cache.client.max_age", "1234");
-        config.setProperty("cache.client.shared_max_age", "4567");
-        config.setProperty("cache.client.public", "true");
-        config.setProperty("cache.client.private", "false");
-        config.setProperty("cache.client.no_cache", "false");
-        config.setProperty("cache.client.no_store", "false");
-        config.setProperty("cache.client.must_revalidate", "false");
-        config.setProperty("cache.client.proxy_revalidate", "false");
-        config.setProperty("cache.client.no_transform", "true");
-        Application.setConfiguration(config);
-
-        ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
-        client.get();
-        assertEquals(0, client.getResponse().getCacheDirectives().size());
-    }
-
-    public void testContentDispositionHeader() {
-        // no header
-        ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
-        client.get();
-        assertNull(client.getResponseEntity().getDisposition());
-
-        // inline
-        Configuration config = Application.getConfiguration();
-        config.setProperty(ImageRepresentation.CONTENT_DISPOSITION_CONFIG_KEY,
-                "inline");
-        client.get();
-        assertEquals(Disposition.TYPE_INLINE,
-                client.getResponseEntity().getDisposition().getType());
-
-        // attachment
-        config.setProperty(ImageRepresentation.CONTENT_DISPOSITION_CONFIG_KEY,
-                "attachment");
-        client.get();
-        assertEquals(Disposition.TYPE_ATTACHMENT,
-                client.getResponseEntity().getDisposition().getType());
-        assertEquals("jpg.jpg",
-                client.getResponseEntity().getDisposition().getFilename());
     }
 
     public void testEndpointDisabled() {
@@ -222,7 +145,7 @@ public class ImageResourceTest extends ResourceTest {
 
             // request the same image which is now cached but underlying is 404
             try {
-                getClientForUriPath("/jpg/full/full/0/default.jpg").get();
+                getClientForUriPath("/jpg/info.json").get();
                 fail("Expected exception");
             } catch (ResourceException e) {
                 // noop
@@ -243,49 +166,27 @@ public class ImageResourceTest extends ResourceTest {
         }
     }
 
-    /**
-     * Tests that the Link header respects the <code>base_uri</code>
-     * key in the configuration.
-     */
-    public void testLinkHeader() {
+    public void testJson() throws IOException {
+        // TODO: this could be a lot more thorough; but the aspects of the JSON
+        // response defined in the Image API spec are tested in
+        // ConformanceTest
+
+        // test whether the @id property respects the base_uri configuration
+        // option
+        ClientResource client = getClientForUriPath("/escher_lego.jpg/info.json");
+        client.get();
+        String json = client.getResponse().getEntityAsText();
+        ObjectMapper mapper = new ObjectMapper();
+        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        assertTrue(info.id.startsWith("http://") &&
+                info.id.contains(WebApplication.IIIF_2_PATH + "/escher_lego.jpg"));
+
         Configuration config = Application.getConfiguration();
-        ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
-
-        config.setProperty("base_uri", null);
+        config.setProperty("base_uri", "http://example.org/");
         client.get();
-        Header header = client.getResponse().getHeaders().getFirst("Link");
-        assertTrue(header.getValue().startsWith("<http://localhost"));
-
-        config.setProperty("base_uri", "https://example.org/");
-        client.get();
-        header = client.getResponse().getHeaders().getFirst("Link");
-        System.out.println(header.getValue());
-        assertTrue(header.getValue().startsWith("<https://example.org/"));
-    }
-
-    public void testMaxPixels() {
-        Configuration config = Application.getConfiguration();
-        ClientResource client = getClientForUriPath("/png/full/full/0/default.jpg");
-
-        config.setProperty("max_pixels", 100000000);
-        client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
-
-        config.setProperty("max_pixels", 1000);
-        try {
-            client.get();
-            fail("Expected exception");
-        } catch (ResourceException e) {
-            assertEquals(Status.SERVER_ERROR_INTERNAL, client.getStatus());
-        }
-    }
-
-    public void testMaxPixelsIgnoredWhenStreamingSource() {
-        Configuration config = Application.getConfiguration();
-        ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
-        config.setProperty("max_pixels", 1000);
-        client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
+        json = client.getResponse().getEntityAsText();
+        info = mapper.readValue(json, ImageInfo.class);
+        assertTrue(info.id.startsWith("http://example.org/"));
     }
 
     public void testNotFound() throws IOException {
@@ -317,8 +218,7 @@ public class ImageResourceTest extends ResourceTest {
 
         try {
             server.start();
-            ClientResource client = getClientForUriPath(
-                    "/escher_lego.jp2/full/full/0/default.jpg");
+            ClientResource client = getClientForUriPath("/escher_lego.jp2/info.json");
             try {
                 client.get();
                 fail("Expected exception");
@@ -331,23 +231,13 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     public void testUnavailableSourceFormat() throws IOException {
-        ClientResource client = getClientForUriPath("/text.txt/full/full/0/default.jpg");
+        ClientResource client = getClientForUriPath("/text.txt/info.json");
         try {
             client.get();
             fail("Expected exception");
         } catch (ResourceException e) {
             assertEquals(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE,
                     client.getStatus());
-        }
-    }
-
-    public void testUnavailableOutputFormat() throws IOException {
-        ClientResource client = getClientForUriPath("/escher_logo.jpg/full/full/0/default.bogus");
-        try {
-            client.get();
-            fail("Expected exception");
-        } catch (ResourceException e) {
-            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
         }
     }
 

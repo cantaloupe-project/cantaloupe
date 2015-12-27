@@ -40,7 +40,7 @@ public interface Processor {
      * @return All qualities supported by the processor for the given source
      * format.
      */
-    Set<edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality>
+    Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
     getSupportedIiif2_0Qualities(SourceFormat sourceFormat);
 
 }

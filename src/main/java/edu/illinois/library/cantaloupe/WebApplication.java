@@ -79,7 +79,7 @@ public class WebApplication extends Application {
 
         // landing page
         router.attach(IIIF_2_PATH,
-                edu.illinois.library.cantaloupe.resource.iiif.v2_0.LandingResource.class);
+                edu.illinois.library.cantaloupe.resource.iiif.v2.LandingResource.class);
 
         // Redirect image identifier to image information
         redirector = new Redirector(getContext(),
@@ -93,12 +93,12 @@ public class WebApplication extends Application {
         router.attach(IIIF_2_PATH + "/", redirector);
 
         // image request
-        resource = edu.illinois.library.cantaloupe.resource.iiif.v2_0.ImageResource.class;
+        resource = edu.illinois.library.cantaloupe.resource.iiif.v2.ImageResource.class;
         router.attach(IIIF_2_PATH + "/{identifier}/{region}/{size}/{rotation}/{quality}.{format}",
                 resource);
 
         // information request
-        resource = edu.illinois.library.cantaloupe.resource.iiif.v2_0.InformationResource.class;
+        resource = edu.illinois.library.cantaloupe.resource.iiif.v2.InformationResource.class;
         router.attach(IIIF_2_PATH + "/{identifier}/info.{format}", resource);
 
         // 303-redirect IIIF_PATH to IIIF_2_PATH

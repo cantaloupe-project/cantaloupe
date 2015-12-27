@@ -109,14 +109,14 @@ public class FfmpegProcessorTest extends ProcessorTest {
 
     @Override
     public void testGetSupportedIiif20Qualities() {
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality>
+        Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
                 expectedQualities = new HashSet<>();
         expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality.COLOR);
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR);
         expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality.DEFAULT);
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT);
         expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2_0.Quality.GRAY);
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY);
         assertEquals(expectedQualities,
                 getProcessor().getSupportedIiif2_0Qualities(getAnySupportedSourceFormat(getProcessor())));
 
