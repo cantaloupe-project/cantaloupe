@@ -1,5 +1,6 @@
-package edu.illinois.library.cantaloupe.resource.iiif.v1_1;
+package edu.illinois.library.cantaloupe.resource.iiif.v2_0;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.WebApplication;
@@ -10,7 +11,6 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.lang3.StringUtils;
 import org.restlet.Client;
 import org.restlet.Context;
 import org.restlet.data.MediaType;
@@ -27,17 +27,15 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
- * <p>Functional test of conformance to the IIIF Image API 1.1 spec. Methods
+ * <p>Functional test of conformance to the IIIF Image API 2.0 spec. Methods
  * are implemented in the order of the assertions in the spec document.</p>
  *
- * @see <a href="http://iiif.io/api/image/1.1/#image-info-request">IIIF Image
- * API 1.1</a>
+ * @see <a href="http://iiif.io/api/image/2.0/#image-information">IIIF Image
+ * API 2.0</a>
  */
-public class ConformanceTest extends CantaloupeTestCase {
+public class Version2_0ConformanceTest extends CantaloupeTestCase {
 
     private static final Identifier IMAGE = new Identifier("escher_lego.jpg");
     private static final Integer PORT = TestUtil.getOpenPort();
@@ -72,7 +70,8 @@ public class ConformanceTest extends CantaloupeTestCase {
     }
 
     private String getBaseUri() {
-        return "http://localhost:" + PORT + WebApplication.IIIF_1_PATH;
+        return "http://localhost:" + PORT +
+                WebApplication.IIIF_2_PATH;
     }
 
     public void setUp() throws Exception {
@@ -85,9 +84,9 @@ public class ConformanceTest extends CantaloupeTestCase {
     }
 
     /**
-     * 2.2. "It is recommended that if the image’s base URI is dereferenced,
-     * then the client should either redirect to the information request using
-     * a 303 status code (see Section 6.1), or return the same result."
+     * 2. "When the base URI is dereferenced, the interaction should result in
+     * the Image Information document. It is recommended that the response be a
+     * 303 status redirection to the Image Information document’s URI."
      *
      * @throws IOException
      */
@@ -101,11 +100,10 @@ public class ConformanceTest extends CantaloupeTestCase {
     }
 
     /**
-     * 3. "the identifier MUST be expressed as a string. All special characters
-     * (e.g. ? or #) MUST be URI encoded to avoid unpredictable client
-     * behaviors. The URL syntax relies upon slash (/) separators so any
-     * slashes in the identifier MUST be URI encoded (aka. percent-encoded,
-     * replace / with %2F )."
+     * 3. "All special characters (e.g. ? or #) [in an identifier] must be URI
+     * encoded to avoid unpredictable client behaviors. The URI syntax relies
+     * upon slash (/) separators so any slashes in the identifier must be URI
+     * encoded (also called “percent encoded”).
      *
      * @throws IOException
      */
@@ -132,7 +130,7 @@ public class ConformanceTest extends CantaloupeTestCase {
      * @throws IOException
      */
     public void testFullRegion() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/native.jpg");
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 
@@ -187,8 +185,9 @@ public class ConformanceTest extends CantaloupeTestCase {
 
     /**
      * 4.1. "If the request specifies a region which extends beyond the
-     * dimensions of the source image, then the service should return an image
-     * cropped at the boundary of the source image."
+     * dimensions reported in the Image Information document, then the service
+     * should return an image cropped at the image’s edge, rather than adding
+     * empty space."
      *
      * @throws IOException
      */
@@ -204,15 +203,15 @@ public class ConformanceTest extends CantaloupeTestCase {
     }
 
     /**
-     * 4.1. "If the requested region's height or width is zero, or if the
-     * region is entirely outside the bounds of the source image, then the
-     * server MUST return a 400 (bad request) status code."
+     * 4.1. "If the requested region’s height or width is zero, or if the
+     * region is entirely outside the bounds of the reported dimensions, then
+     * the server should return a 400 status code."
      *
      * @throws IOException
      */
     public void testPixelRegionOutOfBounds() throws IOException {
         // zero width/height
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/0,0,0,0/full/0/native.jpg");
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/0,0,0,0/full/0/default.jpg");
         try {
             client.get();
             fail("Expected exception");
@@ -226,7 +225,7 @@ public class ConformanceTest extends CantaloupeTestCase {
         // (before any processing), which is unnecessarily expensive.
         /*
         // x/y out of bounds
-        client = getClientForUriPath("/" + IMAGE + "/99999,99999,50,50/full/0/native.jpg");
+        client = getClientForUriPath("/" + IMAGE + "/99999,99999,50,50/full/0/default.jpg");
         try {
             client.get();
             fail("Expected exception");
@@ -255,7 +254,7 @@ public class ConformanceTest extends CantaloupeTestCase {
     /**
      * 4.2. "The extracted region should be scaled so that its width is
      * exactly equal to w, and the height will be a calculated value that
-     * maintains the aspect ratio of the requested region."
+     * maintains the aspect ratio of the extracted region."
      *
      * @throws IOException
      */
@@ -273,7 +272,7 @@ public class ConformanceTest extends CantaloupeTestCase {
     /**
      * 4.2. "The extracted region should be scaled so that its height is
      * exactly equal to h, and the width will be a calculated value that
-     * maintains the aspect ratio of the requested region."
+     * maintains the aspect ratio of the extracted region."
      *
      * @throws IOException
      */
@@ -308,7 +307,7 @@ public class ConformanceTest extends CantaloupeTestCase {
 
     /**
      * 4.2. "The width and height of the returned image are exactly w and h.
-     * The aspect ratio of the returned image MAY be different than the
+     * The aspect ratio of the returned image may be different than the
      * extracted region, resulting in a distorted image."
      *
      * @throws IOException
@@ -326,16 +325,16 @@ public class ConformanceTest extends CantaloupeTestCase {
 
     /**
      * 4.2. "The image content is scaled for the best fit such that the
-     * resulting width and height are less than or equal to the requested width
-     * and height. The exact scaling MAY be determined by the service provider,
-     * based on characteristics including image quality and system performance.
-     * The dimensions of the returned image content are calculated to maintain
-     * the aspect ratio of the extracted region."
+     * resulting width and height are less than or equal to the requested
+     * width and height. The exact scaling may be determined by the service
+     * provider, based on characteristics including image quality and system
+     * performance. The dimensions of the returned image content are
+     * calculated to maintain the aspect ratio of the extracted region."
      *
      * @throws IOException
      */
     public void testSizeScaledToFitInside() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/20,20/0/native.jpg");
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/20,20/0/default.jpg");
         client.get();
         Representation rep = client.getResponseEntity();
         BufferedImage image = ImageIO.read(rep.getStream());
@@ -344,7 +343,7 @@ public class ConformanceTest extends CantaloupeTestCase {
     }
 
     /**
-     * 4.2. "If the resulting height or width is zero, then the server MUST
+     * 4.2. "If the resulting height or width is zero, then the server should
      * return a 400 (bad request) status code."
      *
      * @throws IOException
@@ -368,10 +367,7 @@ public class ConformanceTest extends CantaloupeTestCase {
     }
 
     /**
-     * 4.3. "The rotation value represents the number of degrees of clockwise
-     * rotation from the original, and may be any floating point number from 0
-     * to 360. Initially most services will only support 0, 90, 180 or 270 as
-     * valid values."
+     * 4.3. "The degrees of clockwise rotation from 0 up to 360."
      *
      * @throws IOException
      */
@@ -382,43 +378,42 @@ public class ConformanceTest extends CantaloupeTestCase {
     }
 
     /**
-     * IIIF Image API 1.1 doesn't say anything about an invalid rotation
-     * parameter, so we will check for an HTTP 400.
+     * 4.3. "The image should be mirrored and then rotated as above."
      *
      * @throws IOException
      */
-    public void testInvalidRotation() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/-15/native.jpg");
-        try {
-            client.get();
-            fail("Expected exception");
-        } catch (ResourceException e) {
-            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
-        }
-
-        client = getClientForUriPath("/" + IMAGE + "/full/full/385/native.jpg");
-        try {
-            client.get();
-            fail("Expected exception");
-        } catch (ResourceException e) {
-            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
-        }
-    }
-
-    /**
-     * 4.4. "The image is returned at an unspecified bit-depth."
-     *
-     * @throws IOException
-     */
-    public void testNativeQuality() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/native.jpg");
+    public void testMirroredRotation() throws IOException {
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/!15/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
     }
 
     /**
-     * 4.4. "The image is returned in full color, typically using 24 bits per
-     * pixel."
+     * 4.3. "A rotation value that is out of range or unsupported should result
+     * in a 400 status code."
+     *
+     * @throws IOException
+     */
+    public void testInvalidRotation() throws IOException {
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/-15/default.jpg");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
+        }
+
+        client = getClientForUriPath("/" + IMAGE + "/full/full/385/default.jpg");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
+        }
+    }
+
+    /**
+     * 4.4. "The image is returned in full color."
      *
      * @throws IOException
      */
@@ -429,9 +424,8 @@ public class ConformanceTest extends CantaloupeTestCase {
     }
 
     /**
-     * 4.4. "The image is returned in greyscale, where each pixel is black,
-     * white or any degree of grey in between, typically using 8 bits per
-     * pixel."
+     * 4.4. "The image is returned in grayscale, where each pixel is black,
+     * white or any shade of gray in between."
      *
      * @throws IOException
      */
@@ -443,7 +437,7 @@ public class ConformanceTest extends CantaloupeTestCase {
 
     /**
      * 4.4. "The image returned is bitonal, where each pixel is either black or
-     * white, using 1 bit per pixel when the format permits."
+     * white."
      *
      * @throws IOException
      */
@@ -454,8 +448,20 @@ public class ConformanceTest extends CantaloupeTestCase {
     }
 
     /**
-     * The IIIF Image API 1.1 doesn't say anything about unsupported qualities,
-     * so we will check for an HTTP 400.
+     * 4.4. "The image is returned using the server’s default quality (e.g.
+     * color, gray or bitonal) for the image."
+     *
+     * @throws IOException
+     */
+    public void testDefaultQuality() throws IOException {
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.jpg");
+        client.get();
+        assertEquals(Status.SUCCESS_OK, client.getStatus());
+    }
+
+    /**
+     * 4.4. "A quality value that is unsupported should result in a 400 status
+     * code."
      *
      * @throws IOException
      */
@@ -481,11 +487,12 @@ public class ConformanceTest extends CantaloupeTestCase {
         testFormat(OutputFormat.GIF);
         testFormat(OutputFormat.JP2);
         testFormat(OutputFormat.PDF);
+        testFormat(OutputFormat.WEBP);
     }
 
     private void testFormat(OutputFormat format) throws Exception {
         ClientResource client = getClientForUriPath("/" + IMAGE +
-                "/full/full/0/native." + format.getExtension());
+                "/full/full/0/default." + format.getExtension());
 
         // does the current processor support this output format?
         SourceFormat sourceFormat = SourceFormat.getSourceFormat(IMAGE);
@@ -511,7 +518,7 @@ public class ConformanceTest extends CantaloupeTestCase {
      * @throws IOException
      */
     public void testUnsupportedFormat() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/native.bogus");
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.bogus");
         try {
             client.get();
             fail("Expected exception");
@@ -521,43 +528,22 @@ public class ConformanceTest extends CantaloupeTestCase {
     }
 
     /**
-     * 4.5 "If the format is not specified in the URI, then the server SHOULD
-     * use the HTTP Accept header to determine the client’s preferences for the
-     * format. The server may either do 200 (return the representation in the
-     * response) or 30x (redirect to the correct URI with a format extension)
-     * style content negotiation."
+     * 4.7. "When the client requests an image, the server may add a link
+     * header to the response that indicates the canonical URI for that
+     * request."
+     *
+     * @throws IOException
      */
-    public void testFormatInAcceptHeader() {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/native");
-        client.accept(MediaType.IMAGE_PNG);
+    public void testCanonicalUriLinkHeader() throws IOException {
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.jpg");
         client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
-        assertEquals(MediaType.IMAGE_PNG.toString(),
-                client.getResponse().getHeaders().getFirst("Content-Type").getValue());
+        assertEquals("<" + getBaseUri() + "/" + IMAGE +
+                        "/full/full/0/default.jpg>;rel=\"canonical\"",
+                client.getResponse().getHeaders().getFirst("Link").getValue());
     }
 
     /**
-     * 4.5 "If neither [format in URL or in Accept header] are given, then the
-     * server should use a default format of its own choosing."
-     */
-    public void testNoFormat() {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/native");
-        client.accept(MediaType.ALL);
-        client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
-        // TODO: this is kind of brittle
-        List<String> mediaTypes = new ArrayList<>();
-        mediaTypes.add("image/gif");
-        mediaTypes.add("image/jpeg");
-        mediaTypes.add("image/png");
-        mediaTypes.add("image/tiff");
-        assertTrue(mediaTypes.contains(
-                client.getResponse().getHeaders().getFirst("Content-Type").getValue()));
-    }
-
-    /**
-     * 5. "The service MUST return technical information about the requested
-     * image in the JSON format."
+     * 5. "The service must return this information about the image."
      *
      * @throws IOException
      */
@@ -581,7 +567,63 @@ public class ConformanceTest extends CantaloupeTestCase {
     }
 
     /**
-     * 5.
+     * 5. "If the client explicitly wants the JSON-LD content-type, then it
+     * must specify this in an Accept header, otherwise the server must return
+     * the regular JSON content-type."
+     *
+     * @throws IOException
+     */
+    public void testInformationRequestContentTypeJsonLd() throws IOException {
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
+        client.accept(new MediaType("application/ld+json"));
+        client.get();
+        assertEquals("application/ld+json; charset=UTF-8",
+                client.getResponse().getHeaders().getFirst("Content-Type").getValue());
+
+        client = getClientForUriPath("/" + IMAGE + "/info.json");
+        client.accept(new MediaType("application/json"));
+        client.get();
+        assertEquals("application/json; charset=UTF-8",
+                client.getResponse().getHeaders().getFirst("Content-Type").getValue());
+    }
+
+    /**
+     * 5. "If the regular JSON content-type is returned, then it is
+     * recommended that the server provide a link header to the context
+     * document. The syntax for the link header is below, and further
+     * described in section 6.8 of the JSON-LD specification. If the client
+     * requests “application/ld+json”, the link header may still be included."
+     *
+     * @throws IOException
+     */
+    public void testInformationRequestLinkHeaderToContextDocument()
+            throws IOException {
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
+        client.get();
+        assertEquals("<http://iiif.io/api/image/2/context.json>; " +
+                        "rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"",
+                client.getResponse().getHeaders().getFirst("Link").getValue());
+    }
+
+    /**
+     * 5. "Servers should send the Access-Control-Allow-Origin header with the
+     * value * in response to information requests."
+     *
+     * @throws IOException
+     */
+    public void testInformationRequestCorsHeader() throws IOException {
+        /*
+        Restlet is supposedly only going to send the CORS headers when
+        necessary, i.e. not for local requests, making this apparently
+        untestable.
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
+        client.get();
+        assertEquals("*", client.getResponse().getAccessControlAllowOrigin());
+        */
+    }
+
+    /**
+     * 5.1
      *
      * @throws IOException
      */
@@ -590,54 +632,31 @@ public class ConformanceTest extends CantaloupeTestCase {
     }
 
     /**
-     * 6.2 "Requests are limited to 1024 characters."
+     * 5.1. "If any of formats, qualities, or supports have no additional
+     * values beyond those specified in the referenced compliance level, then
+     * the property should be omitted from the response rather than being
+     * present with an empty list."
      *
      * @throws IOException
      */
-    public void testUriTooLong() throws IOException {
+    public void testInformationRequestEmptyJsonProperties() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
-        Reference uri = client.getReference();
-        String uriStr = StringUtils.rightPad(uri.toString(), 1025, "a");
-        client.setReference(new Reference(uriStr));
-
-        try {
-            client.get();
-            fail("Expected exception");
-        } catch (ResourceException e) {
-            assertEquals(Status.CLIENT_ERROR_REQUEST_URI_TOO_LONG,
-                    client.getStatus());
-        }
-
-        client = getClientForUriPath("/" + IMAGE + "/full/full/0/native.jpg");
-        uri = client.getReference();
-        uriStr = StringUtils.rightPad(uri.toString(), 1025, "a");
-        client.setReference(new Reference(uriStr));
-
-        try {
-            client.get();
-            fail("Expected exception");
-        } catch (ResourceException e) {
-            assertEquals(Status.CLIENT_ERROR_REQUEST_URI_TOO_LONG,
-                    client.getStatus());
-        }
+        assertFalse(client.get().getText().contains("null"));
     }
 
     /**
-     * 8. "A service should specify on all responses the extent to which the
-     * API is supported. This is done by including an HTTP Link header
-     * (RFC5988) entry pointing to the description of the highest level of
-     * conformance of which ALL of the requirements are met."
+     * 6. "The Image Information document must ... include a compliance level
+     * URI as the first entry in the profile property."
+     *
+     * @throws IOException
      */
-    public void testComplianceLevelLinkHeader() {
+    public void testComplianceLevel() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
-        client.get();
-        assertEquals("<http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2>;rel=\"profile\";",
-                client.getResponse().getHeaders().getFirst("Link").getValue());
-
-        client = getClientForUriPath("/" + IMAGE + "/full/full/0/native.jpg");
-        client.get();
-        assertEquals("<http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2>;rel=\"profile\";",
-                client.getResponse().getHeaders().getFirst("Link").getValue());
+        String json = client.get().getText();
+        ObjectMapper mapper = new ObjectMapper();
+        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        assertEquals("http://iiif.io/api/image/2/level2.json",
+                info.profile.get(0));
     }
 
 }
