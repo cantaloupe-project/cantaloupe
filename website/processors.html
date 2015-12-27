@@ -87,7 +87,7 @@ landing page. A list of output formats supported <em>for a given source format</
 
 <p>Java2dProcessor's image-reading code has been written to be as efficient as possible. Special attention has been paid to its handling of tiled images, such as tile-encoded TIFFs, for which it reads only the necessary tiles for a given request. It is also capable of reading the sub-images contained within pyramidal TIFF images. (Striped TIFF images work, too, but are much less efficient and not recommended except at small sizes.)</p>
 
-<p>Because Java2dProcessor does all its work in Java, it places a burden on the Java heap. Although it tries to be efficient at reading images, it does have to create derivative images at every processing step (scaling, rotating, etc.), which have to be temporarily buffered in RAM. (See the section on <a href="deployment.html#HardwareMemory">memory considerations</a>.)</p>
+<p>Because Java2dProcessor does all its work in Java, it places a burden on the JVM heap. Although it tries to be efficient at reading images, it does have to create derivative images at every processing step (scaling, rotating, etc.), which have to be temporarily buffered in RAM. (See the section on <a href="deployment.html#HardwareMemory">memory considerations</a>.)</p>
 
 <hr>
 

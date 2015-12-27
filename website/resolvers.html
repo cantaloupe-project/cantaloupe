@@ -8,7 +8,7 @@ layout: default
 
 <p>(This distinction is important because <a href="processors.html#Compatibility">not all processors can work with all resolvers</a>.)</p>
 
-<p>The resolution process can be configured to be <a href="#Static%20Resolver">static</a> &mdash; with all requests using the same resolver &mdash; or <a href="#Dynamic%20Resolvers">dynamic</a>, with images being served from different resolvers depending on their identifier.</p>
+<p>The resolution process can be configured to be <a href="#Static%20Resolver">static</a>&mdash;with all requests using the same resolver&mdash;or <a href="#Dynamic%20Resolvers">dynamic</a>, with images being served from different resolvers depending on their identifier.</p>
 
 <h3 id="Static Resolver">Static Resolver</h3>
 
@@ -16,7 +16,7 @@ layout: default
 
 <h3 id="Dynamic Resolvers">Dynamic Resolvers</h3>
 
-<p>It is possible to serve images from different sources simultaneously. For example, you may have images some stored on a filesystem, and others stored on Amazon S3. <em>If you can differentiate their sources based on their identifier in code</em> &mdash; either by analyzing the identifier string, or performing some kind of service request &mdash; you can write a simple Ruby function to tell Cantaloupe which resolver to use for a given request.</p>
+<p>It is possible to serve images from different sources simultaneously. For example, you may have some images stored on a filesystem, and others stored on Amazon S3. <em>If you can differentiate their sources based on their identifier in code</em>&mdash;either by analyzing the identifier string, or performing some kind of service request&mdash;you can write a simple Ruby function to tell Cantaloupe which resolver to use for a given request.</p>
 
 <p>The script can be named anything, but it must have a <span class="filename">.rb</span> extension. Then, it can be referenced by the <code>resolver.chooser_script</code> option, like:</p>
 
@@ -65,9 +65,9 @@ FilesystemResolver.BasicLookupStrategy.path_suffix =</pre>
 <p>An identifier of <code>image.jpg</code> in the URL will resolve to
 <span class="filename">/usr/local/images/image.jpg</span>.</p>
 
-<div class="alert alert-danger">Note: it is dangerous to <strong>not</strong> use <code>path_prefix</code>. The shallower the path, the more of the filesystem that will be exposed.</div>
+<p>To prevent arbitrary directory traversal, BasicLookupStrategy will strip out <code>..{path separator}</code> and <code>{path separator}..</code> from identifiers before resolving the path.</p>
 
-<div class="alert alert-info">To prevent arbitrary directory traversal, BasicLookupStrategy will strip out <code>..{path separator}</code> and <code>{path separator}..</code> from identifiers before resolving the path.</div>
+<div class="alert alert-danger">Note: it is dangerous to <strong>not</strong> use <code>path_prefix</code>. The shallower the path, the more of the filesystem that will be exposed.</div>
 
 <h4 id="FilesystemResolverScriptLookupStrategy">ScriptLookupStrategy</h4>
 

@@ -6,27 +6,28 @@ layout: default
 
 <p>Cantaloupe is an open-source image server developed at the <a href="http://www.library.illinois.edu/">University of Illinois at Urbana-Champaign Library</a>. By combining the basic operations of cropping, scaling, rotation, flipping, color filtering, and format conversion, it can support on-the-fly derivative image generation and deep zooming into high-resolution source images.</p>
 
-<p>The <a href="http://iiif.io/api/image/">IIIF Image API</a> is an open standard intended to promote interoperability between clients &mdash; like zooming image viewers &mdash; and image servers. Cantaloupe supports versions 1.1 and 2.0 of this API. Most of its processors meet the highest compliance level, and should work with any <a href="http://iiif.io/apps-demos.html">IIIF-compliant client software</a>.</p>
+<p>The <a href="http://iiif.io/api/image/">IIIF Image API</a> is an open standard intended to promote interoperability between clients&mdash;like zooming image viewers&mdash;and image servers. Cantaloupe supports versions 1.1 and 2.0 of this API. Most of its processors meet the highest compliance level, and should work with any <a href="http://iiif.io/apps-demos.html">IIIF-compliant client software</a>.</p>
 
 <p>Cantaloupe features a configurable processing pipeline based on:</p>
 
 <ul>
-  <li><a href="resolvers.html">Resolvers</a>, that locate and retrieve source images;</li>
+  <li><a href="endpoints.html">Endpoints</a>, that intercept client requests;</li>
+  <li><a href="resolvers.html">Resolvers</a>, that locate and retrieve the source images specified in the requests;</li>
   <li><a href="processors.html">Processors</a>, that transform them according to the parameters in an image request; and</li>
   <li><a href="caches.html">Caches</a>, that cache generated images.</li>
 </ul>
 
-<p>This makes it adaptable, while remaining easy to configure and use.</p>
+<p>This makes it highly adaptable, while remaining easy to configure and use.</p>
 
 <h2 id="Features">Features</h2>
 
 <ul>
-  <li>Easy to get working</li>
-  <li>Self-contained for easy prototyping, upgrading, and deployment</li>
-  <li>Pluggable resolvers for filesystem, database, HTTP, and Amazon S3 sources, with scriptable "hooks" to enable dynamic lookup and resolver selection</li>
-  <li>Pluggable processors to support a variety of source image formats, including JPEG, TIFF, and JPEG2000 &mdash; as well as still-frame extraction from videos in a variety of formats</li>
-  <li>Configurable server- and client-side caching</li>
-  <li>Available built-in authentication</li>
+  <li>Easy to get working. Cantaloupe is an uncharacteristically simple Java application with no Servlet containers or XML files to deal with.</li>
+  <li>Self-contained for easy prototyping, deployment, and upgrading.</li>
+  <li>Pluggable resolvers for retrieving images from a <a href="resolvers.html">variety of sources</a>, with scriptable "hooks" to enable dynamic lookup and resolver selection.</li>
+  <li>Pluggable processors to support a variety of source image formats, including JPEG, TIFF, and JPEG2000&mdash;as well as <a href="processors.html#FfmpegProcessor">still-frame extraction from videos</a> in a variety of formats.</li>
+  <li>Optional server-side caching with configurable aggressiveness.</li>
+  <li>Available <a href="access-control.html">built-in authentication</a>.</li>
 </ul>
 
 <h2 id="Download">Download</h2>

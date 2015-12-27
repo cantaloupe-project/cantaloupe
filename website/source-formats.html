@@ -15,9 +15,9 @@ configuration option). (The author has not tried this.)</p>
 
 <p>JPEG2000 uses advanced compression techniques to enable fast reduced-scale and region-of-interest decoding. In theory, and with a performant decoder, JPEG2000 is well-suited for extremely large source images.</p>
 
-<p><a href="processors.html#KakaduProcessor">KakaduProcessor</a> is by far the most efficient processor for this format, and it performs very well, even with images in the range of hundreds of megapixels.</p>
+<p><a href="processors.html#KakaduProcessor">KakaduProcessor</a> is by far the most efficient processor for this format, and it performs very well, even with huge images.</p>
 
-<p><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a> uses the OpenJPEG decoder, which is generally considered, as of this writing, to be the fastest open-source JPEG2000 decoder. (<a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a>'s JPEG2000 delegate, if installed, will also use the OpenJPEG library, but less efficiently as it won't use OpenJPEG's level reduction feature.)</p>
+<p><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a> uses the OpenJPEG decoder, which is generally considered, as of this writing, to be the fastest open-source JPEG2000 decoder. (<a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a>'s JPEG2000 delegate, if installed, will also use the OpenJPEG library, but less efficiently as it won't use OpenJPEG's level-reduction feature.)</p>
 
 <p><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> can read and write JPEG2000 using JasPer, if the necessary plugin is installed. This will probably not be fast enough to be usable for most purposes.</p>
 
@@ -25,7 +25,7 @@ configuration option). (The author has not tried this.)</p>
 
 <h3 id="TIFF">TIFF</h3>
 
-<p>Most processors can read this format, though some have trouble with its special cases. Additionally, there are some conditions that TIFF images must meet in order to be delivered efficiently&mdash;read on for details.</p>
+<p>Most processors can read this format, though some have trouble with its special cases. Additionally, there are some conditions that TIFF images must meet in order to be delivered efficiently.</p>
 
 <h4>Strip-Based vs. Tile-Based</h4>
 
@@ -39,7 +39,7 @@ configuration option). (The author has not tried this.)</p>
 
 <p>Multi-resolution TIFF is a special type of TIFF file that can improve reader efficiency at reduced scales. In addition to the main image, a multi-resolution TIFF file will contain a sequence of progressively half-sized sub-images: for example, a 10000&times;10000 pixel main image would include derivatives of 5000&times;5000 pixels, 2500&times;2500 pixels, 1250&times;1250 pixels, and so on, all embedded inside the same file.</p>
 
-<p>Each of the levels in a multi-resolution TIFF file is, itself, a TIFF image that can be striped or tiled just like a mono-resolution TIFF file. Tiled and pyramidal encoding are complementary: the former improves efficiency with reduced regions at large scales, and the latter improves efficiency at reduced scales.</p>
+<p>Each of the levels in a multi-resolution TIFF file can be striped or tiled just like in a mono-resolution file. Tiled and pyramidal encodings are complementary: the former improves efficiency with reduced regions at large scales, and the latter improves efficiency at reduced scales.</p>
 
 <h4>Summary</h4>
 
