@@ -124,7 +124,6 @@ class KakaduProcessor implements FileProcessor {
             // what format to write.
             try {
                 stdoutSymlink = createStdoutSymlink();
-                logger.info("Using stdout symlink at {}", stdoutSymlink);
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
             }

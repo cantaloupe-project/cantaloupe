@@ -115,7 +115,6 @@ class OpenJpegProcessor implements FileProcessor {
             // opj_decompress what format to write.
             try {
                 stdoutSymlink = createStdoutSymlink();
-                logger.info("Using stdout symlink at {}", stdoutSymlink);
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
             }
