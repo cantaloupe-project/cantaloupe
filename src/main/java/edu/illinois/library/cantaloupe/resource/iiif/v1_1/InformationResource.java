@@ -40,7 +40,7 @@ public class InformationResource extends AbstractResource {
     @Override
     protected void doInit() throws ResourceException {
         if (!Application.getConfiguration().
-                getBoolean("endpoint.iiif.1.1.enabled", true)) {
+                getBoolean("endpoint.iiif.1.enabled", true)) {
             throw new EndpointDisabledException();
         }
         super.doInit();

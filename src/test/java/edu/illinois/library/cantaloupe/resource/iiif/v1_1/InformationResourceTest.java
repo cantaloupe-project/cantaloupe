@@ -75,11 +75,11 @@ public class InformationResourceTest extends ResourceTest {
         Configuration config = Application.getConfiguration();
         ClientResource client = getClientForUriPath("/jpg/full/full/0/native.jpg");
 
-        config.setProperty("endpoint.iiif.1.1.enabled", true);
+        config.setProperty("endpoint.iiif.1.enabled", true);
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 
-        config.setProperty("endpoint.iiif.1.1.enabled", false);
+        config.setProperty("endpoint.iiif.1.enabled", false);
         try {
             client.get();
             fail("Expected exception");

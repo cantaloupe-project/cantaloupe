@@ -20,11 +20,11 @@ public class LandingResourceTest extends ResourceTest {
         ClientResource client = getClientForUriPath(
                 WebApplication.IIIF_1_1_PATH);
 
-        config.setProperty("endpoint.iiif.1.1.enabled", true);
+        config.setProperty("endpoint.iiif.1.enabled", true);
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 
-        config.setProperty("endpoint.iiif.1.1.enabled", false);
+        config.setProperty("endpoint.iiif.1.enabled", false);
         try {
             client.get();
             fail("Expected exception");
