@@ -40,8 +40,6 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
             "HttpResolver.auth.basic.secret";
     public static final String BASIC_AUTH_USERNAME_CONFIG_KEY =
             "HttpResolver.auth.basic.username";
-    public static final String LOOKUP_SCRIPT_CONFIG_KEY =
-            "HttpResolver.ScriptLookupStrategy.script";
     public static final String LOOKUP_STRATEGY_CONFIG_KEY =
             "HttpResolver.lookup_strategy";
     public static final String PATH_SEPARATOR_CONFIG_KEY =
@@ -212,8 +210,7 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
             throws IOException, ScriptException {
         final Configuration config = Application.getConfiguration();
         // The script name may be an absolute path or a filename.
-        final String scriptValue = config.
-                getString(LOOKUP_SCRIPT_CONFIG_KEY);
+        final String scriptValue = config.getString("delegate_script");
         File script = ScriptUtil.findScript(scriptValue);
         if (!script.exists()) {
             throw new FileNotFoundException("Does not exist: " +

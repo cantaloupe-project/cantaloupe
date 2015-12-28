@@ -26,7 +26,7 @@ public class FilesystemResolverTest {
 
     private static Configuration newConfiguration() throws IOException {
         BaseConfiguration config = new BaseConfiguration();
-        config.setProperty(FilesystemResolver.LOOKUP_SCRIPT_CONFIG_KEY,
+        config.setProperty("delegate_script",
                 TestUtil.getFixture("lookup.rb").getAbsolutePath());
         config.setProperty(FilesystemResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "BasicLookupStrategy");
@@ -159,14 +159,14 @@ public class FilesystemResolverTest {
                 "ScriptLookupStrategy");
 
         // valid, present script
-        config.setProperty(FilesystemResolver.LOOKUP_SCRIPT_CONFIG_KEY,
+        config.setProperty("delegate_script",
                 TestUtil.getFixture("lookup.rb").getAbsolutePath());
         assertEquals("/bla/" + IDENTIFIER,
                 instance.getPathname(IDENTIFIER, File.separator));
 
         // missing script
         try {
-            config.setProperty(FilesystemResolver.LOOKUP_SCRIPT_CONFIG_KEY,
+            config.setProperty("delegate_script",
                     TestUtil.getFixture("bogus.rb").getAbsolutePath());
             instance.getPathname(IDENTIFIER, File.separator);
             fail("Expected exception");
@@ -183,8 +183,7 @@ public class FilesystemResolverTest {
                 "ScriptLookupStrategy");
 
         // filename of script, located in cwd
-        config.setProperty(FilesystemResolver.LOOKUP_SCRIPT_CONFIG_KEY,
-                "lookup_test.rb");
+        config.setProperty("delegate_script", "lookup_test.rb");
         final File tempFile = new File("./lookup_test.rb");
         try {
             FileUtils.copyFile(TestUtil.getFixture("lookup.rb"), tempFile);
@@ -202,7 +201,7 @@ public class FilesystemResolverTest {
         Configuration config = Application.getConfiguration();
         config.setProperty(FilesystemResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
-        config.setProperty(FilesystemResolver.LOOKUP_SCRIPT_CONFIG_KEY,
+        config.setProperty("delegate_script",
                 TestUtil.getFixture("lookup.rb").getAbsolutePath());
 
         String separator = "CATS";

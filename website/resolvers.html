@@ -16,26 +16,14 @@ layout: default
 
 <h3 id="Dynamic Resolvers">Dynamic Resolvers</h3>
 
-<p>It is possible to serve images from different sources simultaneously. For example, you may have some images stored on a filesystem, and others stored on Amazon S3. <em>If you can differentiate their sources based on their identifier in code</em>&mdash;either by analyzing the identifier string, or performing some kind of service request&mdash;you can write a simple Ruby function to tell Cantaloupe which resolver to use for a given request.</p>
+<p>It is possible to serve images from different sources simultaneously. For example, you may have some images stored on a filesystem, and others stored on Amazon S3. <em>If you can differentiate their sources based on their identifier in code</em>&mdash;either by analyzing the identifier string, or performing some kind of service request&mdash;you can use the <a href="delegate-script.html">delegate script</a> mechanism to write a simple Ruby function to tell Cantaloupe which resolver to use for a given request.</p>
 
-<p>The script can be named anything, but it must have a <span class="filename">.rb</span> extension. Then, it can be referenced by the <code>resolver.chooser_script</code> option, like:</p>
+<p>The required delegate function is <code>get_resolver(identifier)</code>, which takes in an identifier and returns a resolver name (such as FilesystemResolver, HttpResolver, etc.) For example:</p>
 
-<pre># Option 1: absolute pathname
-resolver.chooser_script = /path/to/functions.rb
-
-# Option 2: filename only; will be expected to be located in the
-# same folder as the config file, or the current working directory
-resolver.chooser_script = functions.rb
-</pre>
-
-<p>This file must contain a module called <code>Cantaloupe</code>, and inside that, a function called <code>get_resolver(identifier)</code>, which takes in an identifier and returns a resolver name (such as FilesystemResolver, HttpResolver, etc.) For example:</p>
-
-<pre># functions.rb
-
-module Cantaloupe
+<pre>module Cantaloupe
   def self.get_resolver(identifier)
     # Here, you would perform some kind of analysis on `identifier`:
-    # analyze it, look it up in a web service or database...
+    # parse it, look it up in a web service or database...
     # and then return the name of the resolver to use to serve it.
     'FilesystemResolver'
   end
@@ -44,7 +32,7 @@ end
 # Uncomment to test on the command line (`ruby functions.rb`)
 # puts Cantaloupe::get_resolver('identifier-to-test')</pre>
 
-<p>See <a href="scripts.html">Custom Scripts</a> for general information about custom scripts in Cantaloupe.</p>
+<p>See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script.</p>
 
 <h3 id="FilesystemResolver">FilesystemResolver</h3>
 
@@ -71,22 +59,11 @@ FilesystemResolver.BasicLookupStrategy.path_suffix =</pre>
 
 <h4 id="FilesystemResolverScriptLookupStrategy">ScriptLookupStrategy</h4>
 
-<p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple filesystems, or perhaps your identifiers are opaque and you need to perform a database or web service request to locate the corresponding images. With this lookup strategy, you can tell FilesystemResolver to invoke your own custom Ruby function and capture the pathname it returns.</p>
+<p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple filesystems, or perhaps your identifiers are opaque and you need to perform a database or web service request to locate the corresponding images. With this lookup strategy, you can tell FilesystemResolver to invoke a function in your <a href="delegate-script.html">delegate script</a> and capture the pathname it returns.</p>
 
-<p>The script can be named anything, but it must have a <span class="filename">.rb</span> extension. Then, it can be referenced by the <code>FilesystemResolver.ScriptLookupStrategy.script</code> option, like:</p>
+<p>The delegate script function, <code>get_pathname(identifier)</code>, will take in an identifier and should return a pathname, if available, or <code>nil</code>, if not. A Solr query, for example, could look like:</p>
 
-<pre># Option 1: absolute pathname
-FilesystemResolver.ScriptLookupStrategy.script = /path/to/functions.rb
-
-# Option 2: filename only; will be expected to be located in the
-# same folder as the config file, or the current working directory
-FilesystemResolver.ScriptLookupStrategy.script = functions.rb
-</pre>
-
-<p>This file must contain a module called <code>Cantaloupe</code>, and inside that, a function called <code>get_pathname(identifier)</code>, which takes in an identifier and returns a pathname, if available, or <code>nil</code>, if not. A Solr query, for example, could look like:</p>
-
-<pre># functions.rb
-require 'net/http'
+<pre>require 'net/http'
 require 'cgi'
 
 module Cantaloupe
@@ -109,7 +86,7 @@ end
 # Uncomment to test on the command line (`ruby functions.rb`)
 # puts Cantaloupe::get_pathname('identifier-to-test')</pre>
 
-<p>See <a href="scripts.html">Custom Scripts</a> for general information about custom scripts in Cantaloupe.</p>
+<p>See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script in Cantaloupe.</p>
 
 <h4>Path Separator</h4>
 
@@ -140,21 +117,9 @@ HttpResolver.url_suffix =</pre>
 
 <h4>ScriptLookupStrategy</h4>
 
-<p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple URLs, or perhaps your identifiers are opaque and you need to run a database or web service request to locate them. With this lookup strategy, you can tell HttpResolver to invoke your own custom Ruby script and capture the URL it returns.</p>
+<p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple URLs, or perhaps your identifiers are opaque and you need to run a database or web service request to locate them.  With this lookup strategy, you can tell FilesystemResolver to invoke a function in your <a href="delegate-script.html">delegate script</a> and capture the URL it returns.</p>
 
-<p>The script can be named anything, but it must have a <span class="filename">.rb</span> extension. Then, it can be referenced by the <code>HttpResolver.ScriptLookupStrategy.script</code> option, like:</p>
-
-<pre># Option 1: absolute pathname
-HttpResolver.ScriptLookupStrategy.script = /path/to/functions.rb
-
-# Option 2: filename only; will be expected to be located in the
-# same folder as the config file, or the current working directory
-HttpResolver.ScriptLookupStrategy.script = functions.rb
-</pre>
-
-<p>This file must contain a module called <code>Cantaloupe</code>, and inside that, a function called <code>get_url(identifier)</code>, which takes in an identifier and returns a URL, if available, or <code>nil</code>, if not.</p>
-
-<p>See <a href="scripts.html">Custom Scripts</a> for general information about custom scripts in Cantaloupe, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for an example of a similar script.</p>
+<p>The delegate script function, <code>get_url(identifier)</code>, will take in an identifier and should return a URL, if available, or <code>nil</code>, if not. See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script in Cantaloupe, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for an example of a similar script.</p>
 
 <h4>Path Separator</h4>
 

@@ -4,7 +4,7 @@
 .idea/*
 *.iml
 nbactions.xml
-functions.rb
+delegates.rb
 
 /target
 /website/javadoc

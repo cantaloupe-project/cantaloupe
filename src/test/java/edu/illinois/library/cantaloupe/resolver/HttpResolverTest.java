@@ -153,14 +153,14 @@ public class HttpResolverTest {
                 "ScriptLookupStrategy");
 
         // valid, present script
-        config.setProperty(HttpResolver.LOOKUP_SCRIPT_CONFIG_KEY,
+        config.setProperty("delegate_script",
                 TestUtil.getFixture("lookup.rb").getAbsolutePath());
         assertEquals(new Reference("http://example.org/bla/" + IDENTIFIER),
                 instance.getUrl(IDENTIFIER));
 
         // missing script
         try {
-            config.setProperty(HttpResolver.LOOKUP_SCRIPT_CONFIG_KEY,
+            config.setProperty("delegate_script",
                     TestUtil.getFixture("bogus.rb").getAbsolutePath());
             instance.getUrl(IDENTIFIER);
             fail("Expected exception");
@@ -177,8 +177,7 @@ public class HttpResolverTest {
                 "ScriptLookupStrategy");
 
         // filename of script, located in cwd
-        config.setProperty(HttpResolver.LOOKUP_SCRIPT_CONFIG_KEY,
-                "lookup_test.rb");
+        config.setProperty("delegate_script", "lookup_test.rb");
         final File tempFile = new File("./lookup_test.rb");
         try {
             FileUtils.copyFile(TestUtil.getFixture("lookup.rb"), tempFile);
@@ -195,7 +194,7 @@ public class HttpResolverTest {
         Configuration config = Application.getConfiguration();
         config.setProperty(HttpResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
-        config.setProperty(HttpResolver.LOOKUP_SCRIPT_CONFIG_KEY,
+        config.setProperty("delegate_script",
                 TestUtil.getFixture("lookup.rb").getAbsolutePath());
 
         String separator = "CATS";

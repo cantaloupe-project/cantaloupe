@@ -32,8 +32,6 @@ class FilesystemResolver extends AbstractResolver
     private static Logger logger = LoggerFactory.
             getLogger(FilesystemResolver.class);
 
-    public static final String LOOKUP_SCRIPT_CONFIG_KEY =
-            "FilesystemResolver.ScriptLookupStrategy.script";
     public static final String LOOKUP_STRATEGY_CONFIG_KEY =
             "FilesystemResolver.lookup_strategy";
     public static final String PATH_PREFIX_CONFIG_KEY =
@@ -163,8 +161,7 @@ class FilesystemResolver extends AbstractResolver
             throws IOException, ScriptException {
         final Configuration config = Application.getConfiguration();
         // The script name may be an absolute path or a filename.
-        final String scriptValue = config.
-                getString(LOOKUP_SCRIPT_CONFIG_KEY);
+        final String scriptValue = config.getString("delegate_script");
         File script = ScriptUtil.findScript(scriptValue);
         if (!script.exists()) {
             throw new FileNotFoundException("Does not exist: " +

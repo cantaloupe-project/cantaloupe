@@ -1,0 +1,55 @@
+---
+layout: default
+---
+
+<h2>Delegate Script</h2>
+
+<p>The delegate script mechanism enables the use of custom Ruby functions as "hooks" to provide dynamic information back to the image server.</p>
+
+<h3>Naming</h3>
+
+<p>The delegate script can be named anything, but it must have a <span class="filename">.rb</span> extension. Then, it can be referenced by the <code>delegate_script</code> configuration option, like:</p>
+
+<pre># Option 1: absolute pathname
+delegate_script = /path/to/functions.rb
+
+# Option 2: filename only; will be expected to be located in the
+# same folder as the config file, or the current working directory
+delegate_script = delegates.rb</pre>
+
+<h3>Rules</h3>
+
+<p>While the arguments and return types of each function will vary, the script itself must contain a <code>Cantaloupe</code> module within which all delegate functions are contained.</p>
+
+<p>Inside a function, anything goes&mdash;it will be interpreted by a JRuby interpreter built into Cantaloupe, so you can even use any (non-platform-native) gems that you have installed with <code>gem install</code>. Because it will be called upon each image request, though, it should be written with efficiency in mind.</p>
+
+<p>Scripts will be re-read on each request, so they can be edited without restarting.</p>
+
+<div class="alert alert-danger">Note: typically, neither function arguments nor return values are sanitized or validated. <strong>Be very careful to write defensive, injection-aware code.</strong></div>
+
+<h3>Example</h3>
+
+<p>Here is an example of a script used by <a href="resolvers.html#FilesystemResolver">FilesystemResolver</a> that performs a Solr query to return a pathname based on an identifier. The documentation in that section describes the contract that this function must abide by: its name, arguments, and return value.</p>
+
+<pre>require 'cgi'
+require 'net/http'
+
+module Cantaloupe
+  def self.get_pathname(identifier)
+    uri = 'http://localhost:8983/solr/collection1/select?q=' +
+        CGI.escape('id:"' + identifier + '"') +
+        '&amp;fl=pathname_si&amp;wt=ruby'
+    uri = URI.parse(uri)
+
+    http = Net::HTTP.new(uri.host, uri.port)
+    request = Net::HTTP::Get.new(uri.request_uri)
+    response = http.request(request)
+    return nil if response.code.to_i >= 400
+
+    results = eval(response.body)['response']['docs']
+    results.any? ? results.first['pathname_si'] : nil
+  end
+end
+
+# Uncomment to test on the command line (`ruby functions.rb`)
+# puts Cantaloupe::get_pathname('identifier-to-test')</pre>
