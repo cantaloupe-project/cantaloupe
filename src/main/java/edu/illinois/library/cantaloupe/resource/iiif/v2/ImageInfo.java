@@ -26,6 +26,9 @@ class ImageInfo {
         public Integer height;
         public Integer width;
 
+        /** No-op constructor needed by Jackson */
+        public Size() {}
+
         public Size(Integer width, Integer height) {
             this.width = width;
             this.height = height;
