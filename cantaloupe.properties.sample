@@ -1,8 +1,9 @@
 ###########################################################################
 # Sample Cantaloupe configuration file
 #
-# Copy this file to `cantaloupe.properties` and edit as desired. Then, launch
-# Cantaloupe with the `-Dcantaloupe.config=cantaloupe.properties` option.
+# Copy this file to `cantaloupe.properties` and edit as desired. Then,
+# launch Cantaloupe with the `-Dcantaloupe.config=cantaloupe.properties`
+# argument.
 #
 # This is a Java Properties file. Note that backslashes need to be doubled,
 # like this: \\
@@ -21,10 +22,6 @@ http.port = 8182
 #http.auth.basic = true
 #http.auth.basic.username = myself
 #http.auth.basic.secret = password
-
-# Controls the response Content-Disposition header for images. Allowed
-# values are `inline`, `attachment`, and `none`.
-http.content_disposition = inline
 
 # Base URI to use for internal links, such as Link headers and JSON-LD @id
 # values. This is mainly needed in reverse-proxy scenarios, where a public
@@ -54,6 +51,10 @@ print_stack_trace_on_error_pages = true
 endpoint.iiif.1.enabled = true
 
 endpoint.iiif.2.enabled = true
+
+# Controls the response Content-Disposition header for images. Allowed
+# values are `inline`, `attachment`, and `none`.
+endpoint.iiif.content_disposition = inline
 
 ###########################################################################
 # RESOLVERS

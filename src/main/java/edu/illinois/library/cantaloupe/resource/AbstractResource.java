@@ -17,6 +17,7 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.CacheDirective;
+import org.restlet.data.Disposition;
 import org.restlet.data.Header;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
@@ -158,6 +159,7 @@ public abstract class AbstractResource extends ServerResource {
 
     protected ImageRepresentation getRepresentation(OperationList ops,
                                                     SourceFormat sourceFormat,
+                                                    Disposition disposition,
                                                     Resolver resolver,
                                                     Processor proc)
             throws IOException, ProcessorException {
@@ -181,7 +183,7 @@ public abstract class AbstractResource extends ServerResource {
                 throw new PayloadTooLargeException();
             }
             return new ImageRepresentation(mediaType, sourceFormat, fullSize,
-                    ops, inputFile);
+                    ops, disposition, inputFile);
         } else if (resolver instanceof ChannelResolver) {
             logger.debug("Using {} as a ChannelProcessor",
                     proc.getClass().getSimpleName());
@@ -200,7 +202,7 @@ public abstract class AbstractResource extends ServerResource {
                 // avoid reusing the channel
                 readableChannel = chRes.getChannel(ops.getIdentifier());
                 return new ImageRepresentation(mediaType, sourceFormat,
-                        fullSize, ops, readableChannel);
+                        fullSize, ops, disposition, readableChannel);
             }
         }
         return null; // should never happen

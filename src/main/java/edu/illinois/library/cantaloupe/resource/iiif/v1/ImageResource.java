@@ -14,7 +14,9 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
+import edu.illinois.library.cantaloupe.resource.iiif.ResourceUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.restlet.data.Disposition;
 import org.restlet.data.MediaType;
 import org.restlet.representation.Variant;
 import org.restlet.resource.Get;
@@ -39,6 +41,9 @@ public class ImageResource extends AbstractResource {
     private static final Logger logger = LoggerFactory.
             getLogger(ImageResource.class);
 
+    public static final String ENDPOINT_ENABLED_CONFIG_KEY =
+            "endpoint.iiif.1.enabled";
+
     /**
      * Format to assume when no extension is present in the URI.
      */
@@ -47,7 +52,7 @@ public class ImageResource extends AbstractResource {
     @Override
     protected void doInit() throws ResourceException {
         if (!Application.getConfiguration().
-                getBoolean("endpoint.iiif.1.enabled", true)) {
+                getBoolean(ENDPOINT_ENABLED_CONFIG_KEY, true)) {
             throw new EndpointDisabledException();
         }
         super.doInit();
@@ -132,12 +137,14 @@ public class ImageResource extends AbstractResource {
             throw new UnsupportedSourceFormatException(msg);
         }
 
-        return getRepresentation(ops, sourceFormat, resolver, proc);
+        Disposition disposition = ResourceUtils.getRepresentationDisposition(
+                ops.getIdentifier(), ops.getOutputFormat());
+        return getRepresentation(ops, sourceFormat, disposition, resolver,
+                proc);
     }
 
     /**
-     * @param limitToFormats Set of OutputFormats to limit the
-     * result to
+     * @param limitToFormats Set of OutputFormats to limit the result to.
      * @return The best output format based on the URI extension, Accept
      * header, or default, as outlined by the Image API 1.1 spec.
      */
@@ -160,8 +167,7 @@ public class ImageResource extends AbstractResource {
     }
 
     /**
-     * @param limitToFormats Set of OutputFormats to limit the
-     * result to
+     * @param limitToFormats Set of OutputFormats to limit the result to.
      * @return Best OutputFormat for the client preferences as specified in the
      * Accept header.
      */

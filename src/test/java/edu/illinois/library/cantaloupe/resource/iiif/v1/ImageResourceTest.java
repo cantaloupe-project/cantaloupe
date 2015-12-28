@@ -7,8 +7,8 @@ import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
+import edu.illinois.library.cantaloupe.resource.iiif.ResourceUtils;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import org.apache.commons.configuration.Configuration;
@@ -131,14 +131,14 @@ public class ImageResourceTest extends ResourceTest {
 
         // inline
         Configuration config = Application.getConfiguration();
-        config.setProperty(ImageRepresentation.CONTENT_DISPOSITION_CONFIG_KEY,
+        config.setProperty(ResourceUtils.CONTENT_DISPOSITION_CONFIG_KEY,
                 "inline");
         client.get();
         assertEquals(Disposition.TYPE_INLINE,
                 client.getResponseEntity().getDisposition().getType());
 
         // attachment
-        config.setProperty(ImageRepresentation.CONTENT_DISPOSITION_CONFIG_KEY,
+        config.setProperty(ResourceUtils.CONTENT_DISPOSITION_CONFIG_KEY,
                 "attachment");
         client.get();
         assertEquals(Disposition.TYPE_ATTACHMENT,

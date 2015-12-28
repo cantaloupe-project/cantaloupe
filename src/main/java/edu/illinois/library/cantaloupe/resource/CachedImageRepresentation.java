@@ -2,7 +2,9 @@ package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.util.IOUtils;
+import org.restlet.data.Disposition;
 import org.restlet.data.MediaType;
+import org.restlet.representation.WritableRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +15,7 @@ import java.nio.channels.WritableByteChannel;
 /**
  * Restlet representation for cached images.
  */
-public class CachedImageRepresentation extends AbstractImageRepresentation {
+public class CachedImageRepresentation extends WritableRepresentation {
 
     private static Logger logger = LoggerFactory.
             getLogger(CachedImageRepresentation.class);
@@ -24,14 +26,15 @@ public class CachedImageRepresentation extends AbstractImageRepresentation {
      * Constructor for images from the cache.
      *
      * @param mediaType
-     * @param ops
+     * @param disposition,
      * @param readableChannel
      */
     public CachedImageRepresentation(MediaType mediaType,
-                                     OperationList ops,
+                                     Disposition disposition,
                                      ReadableByteChannel readableChannel) {
-        super(mediaType, ops.getIdentifier(), ops.getOutputFormat());
+        super(mediaType);
         this.readableChannel = readableChannel;
+        setDisposition(disposition);
     }
 
     /**

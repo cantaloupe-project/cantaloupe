@@ -10,7 +10,9 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.util.IOUtils;
 import edu.illinois.library.cantaloupe.util.TeeWritableByteChannel;
+import org.restlet.data.Disposition;
 import org.restlet.data.MediaType;
+import org.restlet.representation.WritableRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,13 +26,11 @@ import java.nio.channels.WritableByteChannel;
 /**
  * Restlet representation for images.
  */
-public class ImageRepresentation extends AbstractImageRepresentation {
+public class ImageRepresentation extends WritableRepresentation {
 
     private static Logger logger = LoggerFactory.
             getLogger(ImageRepresentation.class);
 
-    public static final String CONTENT_DISPOSITION_CONFIG_KEY =
-            "http.content_disposition";
     public static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
 
     private File file;
@@ -46,18 +46,21 @@ public class ImageRepresentation extends AbstractImageRepresentation {
      * @param sourceFormat
      * @param fullSize
      * @param ops
+     * @param disposition
      * @param readableChannel
      */
     public ImageRepresentation(final MediaType mediaType,
                                final SourceFormat sourceFormat,
                                final Dimension fullSize,
                                final OperationList ops,
+                               final Disposition disposition,
                                final ReadableByteChannel readableChannel) {
-        super(mediaType, ops.getIdentifier(), ops.getOutputFormat());
+        super(mediaType);
         this.readableChannel = readableChannel;
         this.ops = ops;
         this.sourceFormat = sourceFormat;
         this.fullSize = fullSize;
+        this.setDisposition(disposition);
     }
 
     /**
@@ -67,18 +70,21 @@ public class ImageRepresentation extends AbstractImageRepresentation {
      * @param sourceFormat
      * @param fullSize
      * @param ops
+     * @param disposition
      * @param file
      */
     public ImageRepresentation(MediaType mediaType,
                                SourceFormat sourceFormat,
                                Dimension fullSize,
                                OperationList ops,
+                               Disposition disposition,
                                File file) {
-        super(mediaType, ops.getIdentifier(), ops.getOutputFormat());
+        super(mediaType);
         this.file = file;
         this.fullSize = fullSize;
         this.ops = ops;
         this.sourceFormat = sourceFormat;
+        this.setDisposition(disposition);
     }
 
     /**

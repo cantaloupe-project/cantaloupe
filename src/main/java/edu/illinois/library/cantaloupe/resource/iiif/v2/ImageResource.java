@@ -15,6 +15,8 @@ import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
+import edu.illinois.library.cantaloupe.resource.iiif.ResourceUtils;
+import org.restlet.data.Disposition;
 import org.restlet.data.MediaType;
 import org.restlet.representation.WritableRepresentation;
 import org.restlet.resource.Get;
@@ -37,10 +39,15 @@ public class ImageResource extends AbstractResource {
 
     private static Logger logger = LoggerFactory.getLogger(ImageResource.class);
 
+    public static final String CONTENT_DISPOSITION_CONFIG_KEY =
+            "endpoint.iiif.content_disposition";
+    public static final String ENDPOINT_ENABLED_CONFIG_KEY =
+            "endpoint.iiif.2.enabled";
+
     @Override
     protected void doInit() throws ResourceException {
         if (!Application.getConfiguration().
-                getBoolean("endpoint.iiif.2.enabled", true)) {
+                getBoolean(ENDPOINT_ENABLED_CONFIG_KEY, true)) {
             throw new EndpointDisabledException();
         }
         super.doInit();
@@ -55,18 +62,21 @@ public class ImageResource extends AbstractResource {
      */
     @Get
     public WritableRepresentation doGet() throws Exception {
-        Map<String,Object> attrs = this.getRequest().getAttributes();
+        final Map<String,Object> attrs = this.getRequest().getAttributes();
         // Assemble the URI parameters into a Parameters object
-        Parameters params = new Parameters(
+        final Parameters params = new Parameters(
                 (String) attrs.get("identifier"),
                 (String) attrs.get("region"),
                 (String) attrs.get("size"),
                 (String) attrs.get("rotation"),
                 (String) attrs.get("quality"),
                 (String) attrs.get("format"));
-        OperationList ops = params.toOperationList();
+        final OperationList ops = params.toOperationList();
         ops.getOptions().putAll(
                 this.getReference().getQueryAsForm(true).getValuesMap());
+
+        final Disposition disposition = ResourceUtils.getRepresentationDisposition(
+                ops.getIdentifier(), ops.getOutputFormat());
 
         // If we don't need to resolve first, and are using a cache, and the
         // cache contains an image matching the request, skip all the setup and
@@ -81,7 +91,7 @@ public class ImageResource extends AbstractResource {
                     this.addLinkHeader(params);
                     return new CachedImageRepresentation(
                             new MediaType(params.getOutputFormat().getMediaType()),
-                            ops, readableChannel);
+                            disposition, readableChannel);
                 }
             }
         }
@@ -125,7 +135,8 @@ public class ImageResource extends AbstractResource {
 
         this.addLinkHeader(params);
 
-        return getRepresentation(ops, sourceFormat, resolver, proc);
+        return getRepresentation(ops, sourceFormat, disposition, resolver,
+                proc);
     }
 
     private void addLinkHeader(Parameters params) {
