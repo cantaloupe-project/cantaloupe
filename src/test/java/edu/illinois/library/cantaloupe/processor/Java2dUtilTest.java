@@ -24,11 +24,11 @@ public class Java2dUtilTest {
         // test that input image of TYPE_INT_RGB is returned with no conversion
         BufferedImage custom = new BufferedImage(10, 10,
                 BufferedImage.TYPE_INT_RGB);
-        assertSame(custom, Java2dUtil.convertToRgb(custom));
+        assertSame(custom, Java2dUtil.convertCustomToRgb(custom));
 
         // test with image of TYPE_CUSTOM
         custom = ImageIO.read(TestUtil.getFixture("tif"));
-        BufferedImage output = Java2dUtil.convertToRgb(custom);
+        BufferedImage output = Java2dUtil.convertCustomToRgb(custom);
         assertEquals(BufferedImage.TYPE_INT_RGB, output.getType());
     }
 
@@ -124,6 +124,11 @@ public class Java2dUtilTest {
     @Test
     public void testReadImageWithReadableByteChannel() {
         // this will be tested in ProcessorTest
+    }
+
+    @Test
+    public void testRemoveAlpha() {
+        // TODO: write this
     }
 
     @Test

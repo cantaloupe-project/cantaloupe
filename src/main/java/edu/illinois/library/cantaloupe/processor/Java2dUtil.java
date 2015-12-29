@@ -51,18 +51,18 @@ abstract class Java2dUtil {
     private static Logger logger = LoggerFactory.getLogger(Java2dUtil.class);
 
     /**
-     * <p>Copies the given BufferedImage into a new image of type
-     * {@link BufferedImage#TYPE_INT_RGB}, to make it compatible with the
-     * rest of the application image operation pipeline, if it is of type
-     * {@link BufferedImage#TYPE_CUSTOM}.</p>
+     * <p>Copies the given BufferedImage of type
+     * {@link BufferedImage#TYPE_CUSTOM} into a new image of type
+     * {@link BufferedImage#TYPE_INT_RGB}, to make it work with the
+     * rest of the image operation pipeline.</p>
      *
      * <p>This is extremely expensive and should be avoided if possible.</p>
      *
      * @param inImage Image to convert
      * @return A new BufferedImage of type RGB, or the input image if it
-     * is not of type custom.
+     * is not of custom type.
      */
-    public static BufferedImage convertToRgb(final BufferedImage inImage) {
+    public static BufferedImage convertCustomToRgb(final BufferedImage inImage) {
         BufferedImage outImage = inImage;
         if (inImage != null && inImage.getType() == BufferedImage.TYPE_CUSTOM) {
             outImage = new BufferedImage(inImage.getWidth(),
@@ -192,7 +192,7 @@ abstract class Java2dUtil {
             throws IOException {
         final BufferedImage image = ImageIO.read(
                 ImageIO.createImageInputStream(readableChannel));
-        final BufferedImage rgbImage = Java2dUtil.convertToRgb(image);
+        final BufferedImage rgbImage = Java2dUtil.convertCustomToRgb(image);
         if (rgbImage != image) {
             logger.warn("Converted image to RGB (this is very expensive)");
         }
@@ -348,7 +348,7 @@ abstract class Java2dUtil {
         if (image == null) {
             throw new UnsupportedSourceFormatException(sourceFormat);
         }
-        BufferedImage rgbImage = Java2dUtil.convertToRgb(image);
+        BufferedImage rgbImage = Java2dUtil.convertCustomToRgb(image);
         if (rgbImage != image) {
             logger.warn("Converted {} to RGB (this is very expensive)",
                     ops.getIdentifier());
@@ -531,6 +531,29 @@ abstract class Java2dUtil {
                         iy * tileHeight - offsetY);
                 outImage.setData(raster);
             }
+        }
+        return outImage;
+    }
+
+    public static BufferedImage removeAlpha(final BufferedImage inImage) {
+        BufferedImage outImage = inImage;
+        if (inImage.getColorModel().hasAlpha()) {
+            int newType;
+            switch (inImage.getType()) {
+                case BufferedImage.TYPE_4BYTE_ABGR:
+                    newType = BufferedImage.TYPE_INT_BGR;
+                    break;
+                default:
+                    newType = BufferedImage.TYPE_INT_RGB;
+                    break;
+            }
+            logger.warn("Converting BufferedImage type {} to RGB (this is " +
+                    "very expensive)", inImage.getType());
+            outImage = new BufferedImage(inImage.getWidth(),
+                    inImage.getHeight(), newType);
+            Graphics2D g = outImage.createGraphics();
+            g.drawImage(inImage, 0, 0, null);
+            g.dispose();
         }
         return outImage;
     }
@@ -758,13 +781,7 @@ abstract class Java2dUtil {
             case JPG:
                 // JPEG doesn't support alpha, so convert to RGB or else the
                 // client will interpret as CMYK
-                if (image.getColorModel().hasAlpha()) {
-                    logger.warn("Converting RGBA BufferedImage to RGB (this is very expensive)");
-                    image = convertToRgb(image);
-                }
-                // TurboJpegImageWriter is used automatically if libjpeg-turbo
-                // is available in java.library.path:
-                // https://github.com/geosolutions-it/imageio-ext/wiki/TurboJPEG-plugin
+                image = removeAlpha(image);
                 Iterator iter = ImageIO.getImageWritersByFormatName("jpeg");
                 ImageWriter writer = (ImageWriter) iter.next();
                 try {
