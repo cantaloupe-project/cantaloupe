@@ -111,6 +111,14 @@ public class WebApplication extends Application {
         // landing page
         router.attach("/", LandingResource.class);
 
+        // Hook up the static file server (for CSS & images)
+        final Directory dir = new Directory(
+                getContext(), "clap://resources/public_html/");
+        dir.setDeeplyAccessible(true);
+        dir.setListingAllowed(false);
+        dir.setNegotiatingContent(false);
+        router.attach(STATIC_ROOT_PATH, dir);
+
         // Hook up HTTP Basic authentication
         try {
             Configuration config = edu.illinois.library.cantaloupe.Application.
@@ -130,14 +138,6 @@ public class WebApplication extends Application {
         } catch (NoSuchElementException e) {
             getLogger().info("HTTP Basic authentication disabled.");
         }
-
-        // Hook up the static file server (for CSS & images)
-        final Directory dir = new Directory(
-                getContext(), "clap://resources/public_html/");
-        dir.setDeeplyAccessible(true);
-        dir.setListingAllowed(false);
-        dir.setNegotiatingContent(false);
-        router.attach(STATIC_ROOT_PATH, dir);
 
         return corsFilter;
     }
