@@ -612,11 +612,10 @@ public class Version2_0ConformanceTest extends CantaloupeTestCase {
      * @throws IOException
      */
     public void testInformationRequestCorsHeader() throws IOException {
-        /*
-        Restlet is supposedly only going to send the CORS headers when
-        necessary, i.e. not for local requests, making this apparently
-        untestable.
+        /* TODO: possibly a restlet bug:
+         http://restlet-discuss.1400322.n2.nabble.com/How-can-I-set-Origin-and-Access-Control-Request-Method-when-doing-a-request-td7579398.html
         ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
+        client.getRequest().getHeaders().set("Origin", "*");
         client.get();
         assertEquals("*", client.getResponse().getAccessControlAllowOrigin());
         */
