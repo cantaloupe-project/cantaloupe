@@ -588,7 +588,7 @@ abstract class Java2dUtil {
             tx.translate(-sourceWidth / 2, -sourceHeight / 2);
 
             rotatedImage = new BufferedImage(canvasWidth, canvasHeight,
-                    inImage.getType());
+                    BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2d = rotatedImage.createGraphics();
             RenderingHints hints = new RenderingHints(
                     RenderingHints.KEY_INTERPOLATION,
