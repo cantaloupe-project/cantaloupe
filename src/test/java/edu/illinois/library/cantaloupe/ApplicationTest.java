@@ -1,32 +1,50 @@
 package edu.illinois.library.cantaloupe;
 
+import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.restlet.Client;
 import org.restlet.Context;
+import org.restlet.data.Parameter;
 import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
+import org.restlet.util.Series;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class ApplicationTest extends CantaloupeTestCase {
+import static org.junit.Assert.*;
 
-    private static final Integer PORT = 34852;
+public class ApplicationTest {
 
-    private static Client client = new Client(new Context(), Protocol.HTTP);
+    private static final int HTTP_PORT = TestUtil.getOpenPort();
+    private static final int HTTPS_PORT = TestUtil.getOpenPort();
+
+    private static Client httpClient = new Client(new Context(), Protocol.HTTP);
+    private static Client httpsClient = new Client(new Context(), Protocol.HTTPS);
 
     private static BaseConfiguration newConfiguration() {
         BaseConfiguration config = new BaseConfiguration();
         try {
             config.setProperty("print_stack_trace_on_error_pages", false);
-            config.setProperty("http.port", PORT);
+            config.setProperty("http.enabled", true);
+            config.setProperty("http.port", HTTP_PORT);
+            config.setProperty("https.enabled", false);
+            config.setProperty("https.port", HTTPS_PORT);
+            config.setProperty("https.key_store_type", "JKS");
+            config.setProperty("https.key_store_password","password");
+            config.setProperty("https.key_store_path",
+                    TestUtil.getFixture("keystore.jks").getAbsolutePath());
+            config.setProperty("https.key_password", "password");
             config.setProperty("resolver.static", "FilesystemResolver");
             config.setProperty("processor.fallback", "Java2dProcessor");
         } catch (Exception e) {
@@ -35,6 +53,7 @@ public class ApplicationTest extends CantaloupeTestCase {
         return config;
     }
 
+    @Before
     public void setUp() {
         Application.setConfiguration(newConfiguration());
         System.getProperties().remove("cantaloupe.cache.purge");
@@ -42,10 +61,12 @@ public class ApplicationTest extends CantaloupeTestCase {
 
     }
 
+    @After
     public void tearDown() throws IOException {
         deleteCacheDir();
     }
 
+    @Test
     public void testGetConfiguration() {
         try {
             File directory = new File(".");
@@ -54,13 +75,14 @@ public class ApplicationTest extends CantaloupeTestCase {
                     "illinois", "library", "cantaloupe", "test");
 
             String goodProps = testPath + File.separator + "cantaloupe.properties";
-            System.setProperty("cantaloupe.config", goodProps);
+            System.setProperty(Application.CONFIG_FILE_VM_ARGUMENT, goodProps);
             assertNotNull(Application.getConfiguration());
         } catch (IOException e) {
-            fail("Failed to set cantaloupe.config");
+            fail("Failed to set " + Application.CONFIG_FILE_VM_ARGUMENT);
         }
     }
 
+    @Test
     public void testGetConfigurationFile() {
         try {
             File directory = new File(".");
@@ -69,11 +91,11 @@ public class ApplicationTest extends CantaloupeTestCase {
                     "illinois", "library", "cantaloupe", "test");
 
             String goodProps = testPath + File.separator + "cantaloupe.properties";
-            System.setProperty("cantaloupe.config", goodProps);
+            System.setProperty(Application.CONFIG_FILE_VM_ARGUMENT, goodProps);
             assertEquals(new File(cwd + "/src/test/java/edu/illinois/library/cantaloupe/test/cantaloupe.properties"),
                     Application.getConfigurationFile());
         } catch (IOException e) {
-            fail("Failed to set cantaloupe.config");
+            fail("Failed to set " + Application.CONFIG_FILE_VM_ARGUMENT);
         }
     }
 
@@ -81,18 +103,21 @@ public class ApplicationTest extends CantaloupeTestCase {
      * getVersion() is only partially testable as it checks whether the app is
      * running from a jar
      */
+    @Test
     public void testGetVersion() {
         assertEquals("Non-Release", Application.getVersion());
     }
 
+    @Test
     public void testSetConfiguration() {
         Configuration newConfig = newConfiguration();
         Application.setConfiguration(newConfig);
         assertSame(newConfig, Application.getConfiguration());
     }
 
+    @Test
     public void testMainWithInvalidConfigExits() throws Exception {
-        /* TODO: implement this once migrated to junit 4
+        /* TODO: implement this
         http://stackoverflow.com/questions/6141252/dealing-with-system-exit0-in-junit-tests
         exit.expectSystemExitWithStatus(-1);
         String[] args = {};
@@ -107,14 +132,16 @@ public class ApplicationTest extends CantaloupeTestCase {
         } */
     }
 
+    @Test
     public void testMainWithNoArgsStartsServer() throws Exception {
         String[] args = {};
         Application.main(args);
-        ClientResource resource = getClientForUriPath("/");
+        ClientResource resource = getHttpClientForUriPath("/");
         resource.get();
         assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
     }
 
+    @Test
     public void testMainWithPurgeCacheArg() throws Exception {
         File cacheDir = getCacheDir();
         File imageDir = new File(cacheDir.getAbsolutePath() + File.separator +
@@ -142,6 +169,7 @@ public class ApplicationTest extends CantaloupeTestCase {
         assertEquals(0, infoDir.listFiles().length);
     }
 
+    @Test
     public void testMainWithPurgeExpiredCacheArg() throws Exception {
         File cacheDir = getCacheDir();
         File imageDir = new File(cacheDir.getAbsolutePath() + File.separator +
@@ -172,11 +200,12 @@ public class ApplicationTest extends CantaloupeTestCase {
         assertEquals(1, infoDir.listFiles().length);
     }
 
-    public void testStart() throws Exception {
+    @Test
+    public void testStartServerWithHttp() throws Exception {
         try {
             Application.setConfiguration(newConfiguration());
             Application.startServer();
-            ClientResource resource = getClientForUriPath("/");
+            ClientResource resource = getHttpClientForUriPath("/");
             resource.get();
             assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
         } finally {
@@ -184,9 +213,26 @@ public class ApplicationTest extends CantaloupeTestCase {
         }
     }
 
-    public void testStop() throws Exception {
+    @Test
+    public void testStartServerWithHttps() throws Exception {
+        try {
+            Configuration config = newConfiguration();
+            config.setProperty("https.enabled", true);
+            Application.setConfiguration(config);
+            Application.startServer();
+            ClientResource resource = getHttpsClientForUriPath("/");
+            resource.get();
+            assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
+        } finally {
+            Application.stopServer();
+        }
+    }
+
+    @Test
+    public void testStopServerStopsHttp() throws Exception {
         Application.stopServer();
-        ClientResource resource = getClientForUriPath("/iiif");
+        // test that the HTTP server is stopped
+        ClientResource resource = getHttpClientForUriPath("/");
         resource.setRetryOnError(false);
         try {
             resource.get();
@@ -196,19 +242,62 @@ public class ApplicationTest extends CantaloupeTestCase {
         }
     }
 
-    private ClientResource getClientForUriPath(String path) {
-        Reference url = new Reference(getBaseUri() + path);
-        ClientResource resource = new ClientResource(url);
-        resource.setNext(client);
+    @Test
+    public void testStopServerStopsHttps() throws Exception {
+        Application.stopServer();
+        ClientResource resource = getHttpsClientForUriPath("/");
+        resource.setRetryOnError(false);
+        try {
+            resource.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            // pass
+        }
+    }
+
+    private ClientResource getHttpClientForUriPath(String path) {
+        final Reference url = new Reference("http://localhost:" + HTTP_PORT + path);
+        final ClientResource resource = new ClientResource(url);
+        resource.setNext(httpClient);
+        return resource;
+    }
+
+    /**
+     * Create a self-signed cert with keytool:
+     * keytool -keystore keystore.jks -alias server -genkey -keyalg RSA \
+     *     -keysize 2048 -dname \
+     *     "CN=localhost,OU=Simpson family,O=The Simpsons,C=US" \
+     *     -sigalg "SHA1withRSA"
+     *
+     * Export a .crt from the keystore:
+     * keytool -exportcert -keystore keystore.jks -alias server -file key.crt
+     *
+     * Import the .crt into a new truststore:
+     * keytool -import -keystore truststore.jks -trustcacerts -alias server \
+     *     -file key.crt
+     *
+     * Note: the .crt in the truststore needs to have an CN of "localhost".
+     *
+     * @param path
+     * @return
+     * @throws IOException
+     */
+    private ClientResource getHttpsClientForUriPath(String path)
+            throws IOException {
+        final Series<Parameter> parameters = httpsClient.getContext().getParameters();
+        parameters.add("truststorePath",
+                TestUtil.getFixture("truststore.jks").getAbsolutePath());
+        //parameters.add("truststorePath", "src/test/resources/truststore.jks");
+        parameters.add("truststorePassword", "password");
+        parameters.add("truststoreType", "JKS");
+        final Reference url = new Reference("https://localhost:" + HTTPS_PORT + path);
+        final ClientResource resource = new ClientResource(url);
+        resource.setNext(httpsClient);
         return resource;
     }
 
     private void deleteCacheDir() throws IOException {
         FileUtils.deleteDirectory(getCacheDir());
-    }
-
-    private String getBaseUri() {
-        return "http://localhost:" + PORT;
     }
 
     private File getCacheDir() throws IOException {

@@ -60,3 +60,9 @@ decompressed size. Multiple clients are simultaneously requesting numerous downs
 </pre>
 
 <p><span class="filename">http://www.example.org/images/</span> now displays the Cantaloupe landing page.</p>
+
+<h3 id="SSL/TLS">SSL/TLS</h3>
+
+<p>Cantaloupe supports TLS (a.k.a. SSLv3) connections over HTTPS, configurable via the <code>https.*</code> keys in the configuration file.</p>
+
+<p>SSL/TLS is an involved subject that will not be covered here in any depth. The general process for getting it working is to add a signed certificate (<span class="filename">.crt</span>) file to either a Java KeyStore (JKS) or PKCS#12 key store file, and then refer to the key store file with the <code>https.key_store_path</code> configuration option.</p>

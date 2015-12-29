@@ -15,10 +15,14 @@ import org.apache.velocity.app.Velocity;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.restlet.Component;
+import org.restlet.Server;
+import org.restlet.data.Parameter;
 import org.restlet.data.Protocol;
+import org.restlet.util.Series;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.KeyManagerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,6 +38,9 @@ import java.util.jar.Manifest;
 public class Application {
 
     private static Logger logger = LoggerFactory.getLogger(Application.class);
+
+    public static final String CONFIG_FILE_VM_ARGUMENT = "cantaloupe.config";
+
     private static Component component;
     private static Configuration config;
 
@@ -66,7 +73,7 @@ public class Application {
      * null if there is no configuration file.
      */
     public static File getConfigurationFile() {
-        String configFilePath = System.getProperty("cantaloupe.config");
+        String configFilePath = System.getProperty(CONFIG_FILE_VM_ARGUMENT);
         if (configFilePath != null) {
             try {
                 // expand paths that start with "~"
@@ -172,30 +179,32 @@ public class Application {
             System.exit(-1);
         }
 
-        // Use FilesystemWatcher to listen for changes to the directory
-        // containing the configuration file. When the config file is found to
-        // have been changed, reload it.
-        Thread configWatcher = new Thread() {
-            public void run() {
-                FilesystemWatcher.Callback callback = new FilesystemWatcher.Callback() {
-                    public void created(Path path) { handle(path); }
-                    public void deleted(Path path) {}
-                    public void modified(Path path) { handle(path); }
-                    private void handle(Path path) {
-                        if (path.toFile().equals(getConfigurationFile())) {
-                            reloadConfigurationFile();
+        if (getConfigurationFile() != null) {
+            // Use FilesystemWatcher to listen for changes to the directory
+            // containing the configuration file. When the config file is found to
+            // have been changed, reload it.
+            final Thread configWatcher = new Thread() {
+                public void run() {
+                    FilesystemWatcher.Callback callback = new FilesystemWatcher.Callback() {
+                        public void created(Path path) { handle(path); }
+                        public void deleted(Path path) {}
+                        public void modified(Path path) { handle(path); }
+                        private void handle(Path path) {
+                            if (path.toFile().equals(getConfigurationFile())) {
+                                reloadConfigurationFile();
+                            }
                         }
+                    };
+                    try {
+                        Path path = getConfigurationFile().toPath().getParent();
+                        new FilesystemWatcher(path, callback).processEvents();
+                    } catch (IOException e) {
+                        logger.error(e.getMessage(), e);
                     }
-                };
-                try {
-                    Path path = getConfigurationFile().toPath().getParent();
-                    new FilesystemWatcher(path, callback).processEvents();
-                } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
                 }
-            }
-        };
-        configWatcher.start();
+            };
+            configWatcher.start();
+        }
 
         final int mb = 1024 * 1024;
         Runtime runtime = Runtime.getRuntime();
@@ -245,9 +254,31 @@ public class Application {
 
     public static synchronized void startServer() throws Exception {
         stopServer();
+        final Configuration config = getConfiguration();
         component = new Component();
-        Integer port = getConfiguration().getInteger("http.port", 8182);
-        component.getServers().add(Protocol.HTTP, port);
+        // set up HTTP server
+        if (config.getBoolean("http.enabled", true)) {
+            final int port = config.getInteger("http.port", 8182);
+            component.getServers().add(Protocol.HTTP, port);
+        }
+        // set up HTTPS server
+        if (getConfiguration().getBoolean("https.enabled", false)) {
+            final int port = config.getInteger("https.port", 8183);
+            Server server = component.getServers().add(Protocol.HTTPS, port);
+            Series<Parameter> parameters = server.getContext().getParameters();
+            parameters.add("sslContextFactory",
+                    "org.restlet.engine.ssl.DefaultSslContextFactory");
+            parameters.add("keyStorePath",
+                    config.getString("https.key_store_path"));
+            parameters.add("keyStorePassword",
+                    config.getString("https.key_store_password"));
+            parameters.add("keyPassword",
+                    config.getString("https.key_password"));
+            parameters.add("keyStoreType",
+                    config.getString("https.key_store_type"));
+            parameters.add("keyManagerAlgorithm",
+                    KeyManagerFactory.getDefaultAlgorithm());
+        }
         component.getClients().add(Protocol.CLAP);
         component.getDefaultHost().attach("", new WebApplication());
         component.setLogService(new AccessLogService());
@@ -269,7 +300,8 @@ public class Application {
         if (getConfiguration() == null) {
             throw new edu.illinois.library.cantaloupe.ConfigurationException(
                     "No configuration file specified. Try again with the " +
-                            "-Dcantaloupe.config=/path/to/cantaloupe.properties argument.");
+                            "-D" + CONFIG_FILE_VM_ARGUMENT +
+                            "=/path/to/cantaloupe.properties argument.");
         }
     }
 

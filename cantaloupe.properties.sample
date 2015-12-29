@@ -5,18 +5,27 @@
 # launch Cantaloupe with the `-Dcantaloupe.config=cantaloupe.properties`
 # argument.
 #
-# This is a Java Properties file. Note that backslashes need to be doubled,
-# like this: \\
-# Also, each line in a multi-line value except the last needs to end with a
-# single backslash.
-#
 # Most changes will take effect without restarting. Those that won't are
 # marked with "!!".
-#
 ###########################################################################
 
-# !! TCP port to bind the web server to.
+# !! Whether to enable HTTP access (http://).
+http.enabled = true
+
+# !! TCP port to bind to via HTTP.
 http.port = 8182
+
+# !! Whether to enable HTTPS access (https://).
+https.enabled = false
+
+# !! TCP port to bind to via HTTPS.
+https.port = 8183
+
+# !! Available values are `JKS` and `PKCS12`.
+https.key_store_type = JKS
+https.key_store_password = myPassword
+https.key_store_path = /path/to/keystore.jks
+https.key_password = myPassword
 
 # !! Uncomment to require HTTP Basic authentication.
 #http.auth.basic = true
