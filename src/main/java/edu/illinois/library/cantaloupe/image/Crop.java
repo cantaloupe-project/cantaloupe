@@ -23,6 +23,19 @@ public class Crop implements Operation {
     private float y = 0.0f;
 
     /**
+     * @param rect Rectangle to imitate.
+     * @return Crop instance analogous to the given rectangle.
+     */
+    public static Crop fromRectangle(Rectangle rect) {
+        Crop crop = new Crop();
+        crop.setX(rect.x);
+        crop.setY(rect.y);
+        crop.setWidth(rect.width);
+        crop.setHeight(rect.height);
+        return crop;
+    }
+
+    /**
      * @return The height of the operation. If {@link #getUnit()} returns
      * {@link Unit#PERCENT}, this will be a percentage of the full image height
      * between 0 and 1.

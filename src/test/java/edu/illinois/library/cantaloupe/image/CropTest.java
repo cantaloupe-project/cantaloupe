@@ -1,23 +1,40 @@
 package edu.illinois.library.cantaloupe.image;
 
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
 
-public class CropTest extends CantaloupeTestCase {
+import static org.junit.Assert.*;
+
+public class CropTest {
+
+    private static final float DELTA = 0.0000001f;
 
     private Crop crop;
 
+    @Before
     public void setUp() {
         crop = new Crop();
         assertEquals(Crop.Unit.PIXELS, crop.getUnit());
-        assertEquals(0f, crop.getX());
-        assertEquals(0f, crop.getY());
-        assertEquals(0f, crop.getWidth());
-        assertEquals(0f, crop.getHeight());
+        assertEquals(0f, crop.getX(), DELTA);
+        assertEquals(0f, crop.getY(), DELTA);
+        assertEquals(0f, crop.getWidth(), DELTA);
+        assertEquals(0f, crop.getHeight(), DELTA);
     }
 
+    @Test
+    public void testFromRectangle() {
+        Rectangle rect = new Rectangle(25, 25, 75, 75);
+        Crop crop = Crop.fromRectangle(rect);
+        assertEquals(crop.getX(), rect.x, DELTA);
+        assertEquals(crop.getY(), rect.y, DELTA);
+        assertEquals(crop.getWidth(), rect.width, DELTA);
+        assertEquals(crop.getHeight(), rect.height, DELTA);
+    }
+
+    @Test
     public void testGetRectangle() {
         Dimension fullSize = new Dimension(200, 200);
         // full
@@ -41,6 +58,7 @@ public class CropTest extends CantaloupeTestCase {
         assertEquals(new Rectangle(40, 40, 100, 100), crop.getRectangle(fullSize));
     }
 
+    @Test
     public void testGetResultingSize() {
         Dimension fullSize = new Dimension(200, 200);
         // full
@@ -64,6 +82,7 @@ public class CropTest extends CantaloupeTestCase {
         assertEquals(new Dimension(100, 100), crop.getResultingSize(fullSize));
     }
 
+    @Test
     public void testIsNull() {
         // new instance
         Crop crop = new Crop();
@@ -87,12 +106,14 @@ public class CropTest extends CantaloupeTestCase {
         assertFalse(crop.isNoOp());
     }
 
+    @Test
     public void testSetHeight() {
         float height = 50f;
         this.crop.setHeight(height);
-        assertEquals(height, this.crop.getHeight());
+        assertEquals(height, this.crop.getHeight(), DELTA);
     }
 
+    @Test
     public void testSetNegativeHeight() {
         try {
             this.crop.setHeight(-1f);
@@ -102,6 +123,7 @@ public class CropTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testSetZeroHeight() {
         try {
             crop.setHeight(0f);
@@ -111,6 +133,7 @@ public class CropTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testSetMoreThan100PercentHeight() {
         try {
             crop.setUnit(Crop.Unit.PERCENT);
@@ -121,12 +144,14 @@ public class CropTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testSetWidth() {
-        Float width = (float) 50;
+        Float width = 50f;
         crop.setWidth(width);
-        assertEquals(width, this.crop.getWidth());
+        assertEquals(width, this.crop.getWidth(), DELTA);
     }
 
+    @Test
     public void testSetNegativeWidth() {
         try {
             crop.setWidth(-1f);
@@ -136,6 +161,7 @@ public class CropTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testSetZeroWidth() {
         try {
             crop.setWidth(0f);
@@ -145,6 +171,7 @@ public class CropTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testSetMoreThan100PercentWidth() {
         try {
             crop.setUnit(Crop.Unit.PERCENT);
@@ -155,12 +182,14 @@ public class CropTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testSetX() {
         float x = 50f;
         crop.setX(x);
-        assertEquals(x, this.crop.getX());
+        assertEquals(x, this.crop.getX(), DELTA);
     }
 
+    @Test
     public void testSetNegativeX() {
         try {
             crop.setX(-1f);
@@ -170,6 +199,7 @@ public class CropTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testSetMoreThan100PercentX() {
         try {
             crop.setUnit(Crop.Unit.PERCENT);
@@ -180,12 +210,14 @@ public class CropTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testSetY() {
         float y = 50f;
         crop.setY(y);
-        assertEquals(y, this.crop.getY());
+        assertEquals(y, this.crop.getY(), DELTA);
     }
 
+    @Test
     public void testSetNegativeY() {
         try {
             crop.setY(-1f);
@@ -195,6 +227,7 @@ public class CropTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testSetMoreThan100PercentY() {
         try {
             crop.setUnit(Crop.Unit.PERCENT);
@@ -205,6 +238,7 @@ public class CropTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testToString() {
         Crop crop = new Crop();
         crop.setFull(true);
