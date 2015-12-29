@@ -27,10 +27,10 @@ https.key_store_password = myPassword
 https.key_store_path = /path/to/keystore.jks
 https.key_password = myPassword
 
-# !! Uncomment to require HTTP Basic authentication.
-#http.auth.basic = true
-#http.auth.basic.username = myself
-#http.auth.basic.secret = password
+# !! Configures HTTP Basic authentication.
+auth.basic.enabled = false
+auth.basic.username = myself
+auth.basic.secret = mypassword
 
 # Base URI to use for internal links, such as Link headers and JSON-LD @id
 # values. This is mainly needed in reverse-proxy scenarios, where a public

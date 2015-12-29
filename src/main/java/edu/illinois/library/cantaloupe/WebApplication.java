@@ -24,6 +24,13 @@ import java.util.NoSuchElementException;
  */
 public class WebApplication extends Application {
 
+    public static final String BASIC_AUTH_ENABLED_CONFIG_KEY =
+            "auth.basic.enabled";
+    public static final String BASIC_AUTH_SECRET_CONFIG_KEY =
+            "auth.basic.secret";
+    public static final String BASIC_AUTH_USERNAME_CONFIG_KEY =
+            "auth.basic.username";
+
     public static final String IIIF_PATH = "/iiif";
     public static final String IIIF_1_PATH = "/iiif/1";
     public static final String IIIF_2_PATH = "/iiif/2";
@@ -123,14 +130,14 @@ public class WebApplication extends Application {
         try {
             Configuration config = edu.illinois.library.cantaloupe.Application.
                     getConfiguration();
-            if (config.getBoolean("http.auth.basic")) {
+            if (config.getBoolean(BASIC_AUTH_ENABLED_CONFIG_KEY)) {
                 ChallengeAuthenticator authenticator = new ChallengeAuthenticator(
                         getContext(), ChallengeScheme.HTTP_BASIC,
                         "Cantaloupe Realm");
                 MapVerifier verifier = new MapVerifier();
                 verifier.getLocalSecrets().put(
-                        config.getString("http.auth.basic.username"),
-                        config.getString("http.auth.basic.secret").toCharArray());
+                        config.getString(BASIC_AUTH_USERNAME_CONFIG_KEY),
+                        config.getString(BASIC_AUTH_SECRET_CONFIG_KEY).toCharArray());
                 authenticator.setVerifier(verifier);
                 authenticator.setNext(corsFilter);
                 return authenticator;

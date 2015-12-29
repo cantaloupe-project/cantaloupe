@@ -39,9 +39,9 @@ public class ImageResourceTest extends ResourceTest {
         final String secret = "secret";
         Application.stopServer();
         Configuration config = Application.getConfiguration();
-        config.setProperty("http.auth.basic", "true");
-        config.setProperty("http.auth.basic.username", username);
-        config.setProperty("http.auth.basic.secret", secret);
+        config.setProperty(WebApplication.BASIC_AUTH_ENABLED_CONFIG_KEY, "true");
+        config.setProperty(WebApplication.BASIC_AUTH_USERNAME_CONFIG_KEY, username);
+        config.setProperty(WebApplication.BASIC_AUTH_SECRET_CONFIG_KEY, secret);
         Application.startServer();
 
         // no credentials
