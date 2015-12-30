@@ -165,8 +165,8 @@ public class ImageRepresentation extends WritableRepresentation {
                 } else {
                     IOUtils.copy(readableChannel, writableChannel);
                 }
-                logger.debug("Streamed with no processing in {} msec",
-                        System.currentTimeMillis() - msec);
+                logger.debug("Streamed with no processing in {} msec: {}",
+                        System.currentTimeMillis() - msec, ops);
             } else {
                 Processor proc = ProcessorFactory.
                         getProcessor(this.sourceFormat);
@@ -179,9 +179,9 @@ public class ImageRepresentation extends WritableRepresentation {
                     sproc.process(this.ops, this.sourceFormat,
                             this.fullSize, readableChannel, writableChannel);
                 }
-                logger.debug("{} processed in {} msec",
+                logger.debug("{} processed in {} msec: {}",
                         proc.getClass().getSimpleName(),
-                        System.currentTimeMillis() - msec);
+                        System.currentTimeMillis() - msec, ops);
             }
         } catch (Exception e) {
             throw new IOException(e);
