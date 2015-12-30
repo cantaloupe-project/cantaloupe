@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 
 import javax.imageio.ImageIO;
@@ -8,7 +9,9 @@ import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 abstract class ProcessorUtil {
 
@@ -104,4 +107,19 @@ abstract class ProcessorUtil {
         return null;
     }
 
+    /**
+     * @return Set of all output formats supported by ImageIO.
+     */
+    public static Set<OutputFormat> imageIoOutputFormats() {
+        final String[] writerMimeTypes = ImageIO.getWriterMIMETypes();
+        final Set<OutputFormat> outputFormats = new HashSet<>();
+        for (OutputFormat outputFormat : OutputFormat.values()) {
+            for (String mimeType : writerMimeTypes) {
+                if (outputFormat.getMediaType().equals(mimeType.toLowerCase())) {
+                    outputFormats.add(outputFormat);
+                }
+            }
+        }
+        return outputFormats;
+    }
 }

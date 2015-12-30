@@ -154,7 +154,7 @@ class OpenJpegProcessor implements FileProcessor {
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
         Set<OutputFormat> outputFormats = new HashSet<>();
         if (sourceFormat == SourceFormat.JP2) {
-            outputFormats.addAll(Java2dUtil.imageIoOutputFormats());
+            outputFormats.addAll(ProcessorUtil.imageIoOutputFormats());
         }
         return outputFormats;
     }

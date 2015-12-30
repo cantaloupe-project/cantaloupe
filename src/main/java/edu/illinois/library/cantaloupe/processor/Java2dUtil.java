@@ -167,22 +167,6 @@ abstract class Java2dUtil {
     }
 
     /**
-     * @return Set of all output formats supported by ImageIO.
-     */
-    public static Set<OutputFormat> imageIoOutputFormats() {
-        final String[] writerMimeTypes = ImageIO.getWriterMIMETypes();
-        final Set<OutputFormat> outputFormats = new HashSet<>();
-        for (OutputFormat outputFormat : OutputFormat.values()) {
-            for (String mimeType : writerMimeTypes) {
-                if (outputFormat.getMediaType().equals(mimeType.toLowerCase())) {
-                    outputFormats.add(outputFormat);
-                }
-            }
-        }
-        return outputFormats;
-    }
-
-    /**
      * Simple and not necessarily efficient method wrapping
      * {@link ImageIO#read}.
      *
