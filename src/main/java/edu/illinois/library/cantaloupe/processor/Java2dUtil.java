@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import com.sun.imageio.plugins.gif.GIFImageReader;
+import com.sun.imageio.plugins.png.PNGImageReader;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
@@ -227,7 +229,7 @@ abstract class Java2dUtil {
                                           final ReductionFactor reductionFactor,
                                           final Set<ReaderHint> hints)
             throws IOException, ProcessorException {
-        return doReadImage(imageFile, sourceFormat, ops, fullSize,
+        return multiLevelAwareRead(imageFile, sourceFormat, ops, fullSize,
                 reductionFactor, hints);
     }
 
@@ -256,7 +258,7 @@ abstract class Java2dUtil {
                                           final ReductionFactor reductionFactor,
                                           final Set<ReaderHint> hints)
             throws IOException, ProcessorException {
-        return doReadImage(readableChannel, sourceFormat, ops,
+        return multiLevelAwareRead(readableChannel, sourceFormat, ops,
                 fullSize, reductionFactor, hints);
     }
 
@@ -277,12 +279,13 @@ abstract class Java2dUtil {
      * @throws IOException
      * @throws ProcessorException
      */
-    private static BufferedImage doReadImage(final Object inputSource,
-                                             final SourceFormat sourceFormat,
-                                             final OperationList ops,
-                                             final Dimension fullSize,
-                                             final ReductionFactor rf,
-                                             final Set<ReaderHint> hints)
+    private static BufferedImage multiLevelAwareRead(
+            final Object inputSource,
+            final SourceFormat sourceFormat,
+            final OperationList ops,
+            final Dimension fullSize,
+            final ReductionFactor rf,
+            final Set<ReaderHint> hints)
             throws IOException, ProcessorException {
         BufferedImage image = null;
         switch (sourceFormat) {
@@ -332,10 +335,9 @@ abstract class Java2dUtil {
                                 break;
                             }
                         }
-                        if (reader.isImageTiled(0) && crop != null) {
-                            image = readImageFromTiles(reader, 0,
-                                    crop.getRectangle(fullSize));
-                            hints.add(ReaderHint.ALREADY_CROPPED);
+                        if (crop != null) {
+                            image = tileAwareRead(reader, 0,
+                                    crop.getRectangle(fullSize), hints);
                         } else {
                             image = reader.read(0);
                         }
@@ -396,8 +398,7 @@ abstract class Java2dUtil {
             // ImageReadParam does not match!" during writing.
             // param.setDestinationType(ImageTypeSpecifier.
             //        createFromBufferedImageType(BufferedImage.TYPE_INT_RGB));
-            bestImage = readImageFromTiles(reader, 0, regionRect);
-            hints.add(ReaderHint.ALREADY_CROPPED);
+            bestImage = tileAwareRead(reader, 0, regionRect, hints);
             logger.debug("Using a {}x{} source image (0x reduction factor)",
                     bestImage.getWidth(), bestImage.getHeight());
         } else {
@@ -415,8 +416,7 @@ abstract class Java2dUtil {
                 }
             }
             if (numImages == 1) {
-                bestImage = readImageFromTiles(reader, 0, regionRect);
-                hints.add(ReaderHint.ALREADY_CROPPED);
+                bestImage = tileAwareRead(reader, 0, regionRect, hints);
                 logger.debug("Using a {}x{} source image (0x reduction factor)",
                         bestImage.getWidth(), bestImage.getHeight());
             } else if (numImages > 1) {
@@ -454,8 +454,7 @@ abstract class Java2dUtil {
                                 (int) Math.round(regionRect.y * reducedScale),
                                 (int) Math.round(regionRect.width * reducedScale),
                                 (int) Math.round(regionRect.height * reducedScale));
-                        bestImage = readImageFromTiles(reader, i, reducedRect);
-                        hints.add(ReaderHint.ALREADY_CROPPED);
+                        bestImage = tileAwareRead(reader, i, reducedRect, hints);
                         break;
                     }
                 }
@@ -468,12 +467,11 @@ abstract class Java2dUtil {
      * <p>Returns an image for the requested source area by reading the tiles
      * of the source image and joining them into a single image.</p>
      *
-     * <p>Clients should check that {@link ImageReader#isImageTiled(int)}
-     * returns <code>true</code> before calling this method.</p>
-     *
-     * <p>This method performs cropping according to the
-     * <code>requestedSourceArea</code> parameter and thus obviates the need
-     * for an immediately-post-read cropping step.</p>
+     * <p>This method may populate <code>hints</code> with
+     * {@link ReaderHint#ALREADY_CROPPED}, in which case cropping will have
+     * already been performed according to the
+     * <code>requestedSourceArea</code> parameter and no further cropping will
+     * be necessary (assuming it would have covered the same area).</p>
      *
      * @param reader ImageReader with input source already set
      * @param imageIndex Index of the image to read from the ImageReader.
@@ -481,15 +479,26 @@ abstract class Java2dUtil {
      *                            image will be this size or smaller if it
      *                            would overlap the right or bottom edge of the
      *                            source image.
+     * @param hints Will be populated by information returned by the reader.
      * @return Cropped image
      * @throws IOException
      * @throws IllegalArgumentException If the source image is not tiled.
      */
-    private static BufferedImage readImageFromTiles(
+    private static BufferedImage tileAwareRead(
             final ImageReader reader,
             final int imageIndex,
-            final Rectangle requestedSourceArea)
+            final Rectangle requestedSourceArea,
+            final Set<ReaderHint> hints)
             throws IOException, IllegalArgumentException {
+
+        // These readers are uncooperative with the tile-aware loading
+        // strategy.
+        if (reader instanceof GIFImageReader ||
+                reader instanceof PNGImageReader) {
+            logger.debug("Reading full image {}", imageIndex);
+            return reader.read(imageIndex);
+        }
+
         final int imageWidth = reader.getWidth(imageIndex);
         final int imageHeight = reader.getHeight(imageIndex);
         final int tileWidth = reader.getTileWidth(imageIndex);
@@ -509,17 +518,23 @@ abstract class Java2dUtil {
         final int offsetX = requestedSourceArea.x - tileX1 * tileWidth;
         final int offsetY = requestedSourceArea.y - tileY1 * tileHeight;
 
-        logger.debug("Reading tile rows {}-{} of {} and columns {}-{} of {} " +
-                "({}x{} tiles; {}x{} offset)",
-                tileX1 + 1, tileX2 + 1, numXTiles,
-                tileY1 + 1, tileY2 + 1, numYTiles,
-                tileWidth, tileHeight, offsetX, offsetY);
+        if (tileHeight == 1) {
+            logger.debug("Reading {}-column strip", numYTiles);
+        } else {
+            logger.debug("Reading tile rows {}-{} of {} and columns {}-{} of {} " +
+                            "({}x{} tiles; {}x{} offset)",
+                    tileX1 + 1, tileX2 + 1, numXTiles,
+                    tileY1 + 1, tileY2 + 1, numYTiles,
+                    tileWidth, tileHeight, offsetX, offsetY);
+        }
 
+        // The same tile-based loading code works well for reading striped
+        // TIFFs as well, apparently because it bypasses the
+        // ImageReader.read(int)-returning-TYPE_CUSTOM issue.
         final BufferedImage outImage = new BufferedImage(
                 Math.min(requestedSourceArea.width, imageWidth - requestedSourceArea.x),
                 Math.min(requestedSourceArea.height, imageHeight - requestedSourceArea.y),
                 BufferedImage.TYPE_INT_RGB);
-
         // Copy the tile rasters into outImage
         for (int tx = tileX1, ix = 0; tx <= tileX2; tx++, ix++) {
             for (int ty = tileY1, iy = 0; ty <= tileY2; ty++, iy++) {
@@ -532,6 +547,7 @@ abstract class Java2dUtil {
                 outImage.setData(raster);
             }
         }
+        hints.add(ReaderHint.ALREADY_CROPPED);
         return outImage;
     }
 
