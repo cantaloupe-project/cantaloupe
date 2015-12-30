@@ -12,11 +12,11 @@ layout: default
 
 <h3 id="Static Resolver">Static Resolver</h3>
 
-<p>By default, the <code>resolver.static</code> configuration key is set to <code>FilesystemResolver</code>, which tells Cantaloupe to use <a href="#FilesystemResolver">FilesystemResolver</a> for all requests. This is simple and works in most scenarios.</p>
+<p>The <code>resolver.static</code> configuration key tells Cantaloupe to use a single resolver for all requests. This is simple and should work in most scenarios.</p>
 
 <h3 id="Dynamic Resolvers">Dynamic Resolvers</h3>
 
-<p>It is possible to serve images from different sources simultaneously. For example, you may have some images stored on a filesystem, and others stored on Amazon S3. <em>If you can differentiate their sources based on their identifier in code</em>&mdash;either by analyzing the identifier string, or performing some kind of service request&mdash;you can use the <a href="delegate-script.html">delegate script</a> mechanism to write a simple Ruby function to tell Cantaloupe which resolver to use for a given request.</p>
+<p>When a static resolver is not flexible enough, it is also possible to serve images from different sources simultaneously. For example, you may have some images stored on a filesystem, and others stored on Amazon S3. <em>If you can differentiate their sources based on their identifier in code</em>&mdash;either by analyzing the identifier string, or performing some kind of service request&mdash;you can use the <a href="delegate-script.html">delegate script</a> mechanism to write a simple Ruby function to tell Cantaloupe which resolver to use for a given request.</p>
 
 <p>The required delegate function is <code>get_resolver(identifier)</code>, which takes in an identifier and returns a resolver name (such as FilesystemResolver, HttpResolver, etc.) For example:</p>
 
@@ -27,10 +27,7 @@ layout: default
     # and then return the name of the resolver to use to serve it.
     'FilesystemResolver'
   end
-end
-
-# Uncomment to test on the command line (`ruby functions.rb`)
-# puts Cantaloupe::get_resolver('identifier-to-test')</pre>
+end</pre>
 
 <p>See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script.</p>
 
@@ -81,18 +78,9 @@ module Cantaloupe
     results = eval(response.body)['response']['docs']
     results.any? ? results.first['pathname_si'] : nil
   end
-end
-
-# Uncomment to test on the command line (`ruby functions.rb`)
-# puts Cantaloupe::get_pathname('identifier-to-test')</pre>
+end</pre>
 
 <p>See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script in Cantaloupe.</p>
-
-<h4>Path Separator</h4>
-
-<p>The IIIF Image API specifications mandate that identifiers in URLs be percent-encoded, which changes slashes to <code>%2F</code>. Some reverse-proxy servers automatically decode this into <code>/</code> before passing on the request. This will cause HTTP 404 errors in Cantaloupe.</p>
-
-<p>If you are unable to configure your reverse proxy to stop decoding slashes, the <code>FilesystemResolver.path_separator</code> configuration option will enable you to use an alternate string as a path separator in an identifier. (Be sure to supply the non-percent-encoded string, and then percent-encode it in URLs if it contains any URL-unsafe characters.)</p>
 
 <hr>
 
@@ -120,12 +108,6 @@ HttpResolver.url_suffix =</pre>
 <p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple URLs, or perhaps your identifiers are opaque and you need to run a database or web service request to locate them.  With this lookup strategy, you can tell FilesystemResolver to invoke a function in your <a href="delegate-script.html">delegate script</a> and capture the URL it returns.</p>
 
 <p>The delegate script function, <code>get_url(identifier)</code>, will take in an identifier and should return a URL, if available, or <code>nil</code>, if not. See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script in Cantaloupe, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for an example of a similar script.</p>
-
-<h4>Path Separator</h4>
-
-<p>The IIIF Image API specifications mandate that identifiers in URLs be percent-encoded, which changes slashes to <code>%2F</code>. Some proxy servers automatically decode this into <code>/</code> before passing on the request. This will cause HTTP 404 errors in Cantaloupe.
-
-<p>If you are unable to configure your proxy to stop decoding slashes, the <code>HttpResolver.path_separator</code> configuration option will enable you to use an alternate string as a path separator in an identifier. (Be sure to supply the non-percent-encoded string, and then percent-encode it in URLs if it contains any URL-unsafe characters.)</p>
 
 <hr>
 

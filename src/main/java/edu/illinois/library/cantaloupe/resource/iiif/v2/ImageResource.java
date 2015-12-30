@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
@@ -72,6 +73,7 @@ public class ImageResource extends AbstractResource {
                 (String) attrs.get("quality"),
                 (String) attrs.get("format"));
         final OperationList ops = params.toOperationList();
+        ops.setIdentifier(decodeSlashes(ops.getIdentifier()));
         ops.getOptions().putAll(
                 this.getReference().getQueryAsForm(true).getValuesMap());
 

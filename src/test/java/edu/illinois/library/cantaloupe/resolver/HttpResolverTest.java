@@ -188,22 +188,4 @@ public class HttpResolverTest {
         }
     }
 
-    @Test
-    public void testGetUrlWithScriptLookupStrategyAndPathSeparator()
-            throws Exception {
-        Configuration config = Application.getConfiguration();
-        config.setProperty(HttpResolver.LOOKUP_STRATEGY_CONFIG_KEY,
-                "ScriptLookupStrategy");
-        config.setProperty("delegate_script",
-                TestUtil.getFixture("lookup.rb").getAbsolutePath());
-
-        String separator = "CATS";
-        config.setProperty(HttpResolver.PATH_SEPARATOR_CONFIG_KEY, separator);
-        final Reference expected = new Reference("http://example.org/bla/1" +
-                File.separator + "2" + File.separator + "3");
-        final Reference actual = instance.getUrl(
-                new Identifier("1" + separator + "2" + separator + "3"));
-        assertEquals(expected, actual);
-    }
-
 }

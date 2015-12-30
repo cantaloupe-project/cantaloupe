@@ -28,13 +28,4 @@ public class ResolverUtilTest {
                 ResolverUtil.inferSourceFormat(new Identifier("bla")));
     }
 
-    @Test
-    public void testReplacePathSeparators() {
-        Identifier identifier = new Identifier("somethingCATSsomething");
-        Identifier actual = ResolverUtil.replacePathSeparators(identifier, "CATS", "DOGS");
-        assertEquals("somethingDOGSsomething", actual.toString());
-        actual = ResolverUtil.replacePathSeparators(identifier, "BOGUS", "DOGS");
-        assertEquals("somethingCATSsomething", actual.toString());
-    }
-
 }

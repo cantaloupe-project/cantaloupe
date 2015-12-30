@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import org.apache.commons.lang3.StringUtils;
 
 abstract class ResolverUtil {
 
@@ -31,24 +30,6 @@ abstract class ResolverUtil {
             }
         }
         return sourceFormat;
-    }
-
-    /**
-     * Some web servers have issues dealing with encoded slashes (%2F) in URL
-     * identifiers. This method enables the use of an alternate string as a
-     * path separator.
-     *
-     * @param identifier
-     * @param currentSeparator
-     * @param newSeparator
-     * @return
-     */
-    public static Identifier replacePathSeparators(Identifier identifier,
-                                                   String currentSeparator,
-                                                   String newSeparator) {
-        final String idStr = StringUtils.replace(identifier.toString(),
-                currentSeparator, newSeparator);
-        return new Identifier(idStr);
     }
 
 }

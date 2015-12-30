@@ -67,8 +67,9 @@ public class ImageResource extends AbstractResource {
     @Get
     public ImageRepresentation doGet() throws Exception {
         final Map<String,Object> attrs = this.getRequest().getAttributes();
-        final Identifier identifier =
+        Identifier identifier =
                 new Identifier((String) attrs.get("identifier"));
+        identifier = decodeSlashes(identifier);
 
         final Resolver resolver = ResolverFactory.getResolver(identifier);
         // Determine the format of the source image
@@ -124,6 +125,7 @@ public class ImageResource extends AbstractResource {
                 (String) attrs.get("rotation"),
                 qualityAndFormat[0],
                 outputFormat).toOperationList();
+        ops.setIdentifier(identifier);
         ops.getOptions().putAll(
                 this.getReference().getQueryAsForm(true).getValuesMap());
 

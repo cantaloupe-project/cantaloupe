@@ -72,6 +72,7 @@ public class InformationResource extends AbstractResource {
         Map<String,Object> attrs = this.getRequest().getAttributes();
         Identifier identifier = new Identifier(
                 Reference.decode((String) attrs.get("identifier")));
+        identifier = decodeSlashes(identifier);
         // Get the resolver
         Resolver resolver = ResolverFactory.getResolver(identifier);
         // Determine the format of the source image

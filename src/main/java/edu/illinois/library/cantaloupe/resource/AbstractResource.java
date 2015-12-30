@@ -45,6 +45,8 @@ public abstract class AbstractResource extends ServerResource {
             "cache.server.purge_missing";
     protected static final String RESOLVE_FIRST_CONFIG_KEY =
             "cache.server.resolve_first";
+    public static final String SLASH_SUBSTITUTE_CONFIG_KEY =
+            "slash_substitute";
 
     @Override
     protected void doInit() throws ResourceException {
@@ -85,6 +87,27 @@ public abstract class AbstractResource extends ServerResource {
                             processor.getClass().getSimpleName(),
                             resolver.getClass().getSimpleName()));
         }
+    }
+
+    /**
+     * Some web servers have issues dealing with encoded slashes (%2F) in URLs.
+     * This method enables the use of an alternate string to represent a slash
+     * via {@link #SLASH_SUBSTITUTE_CONFIG_KEY}.
+     *
+     * @param uriPathComponent
+     * @return
+     */
+    protected String decodeSlashes(final String uriPathComponent) {
+        final String substitute = Application.getConfiguration().
+                getString(SLASH_SUBSTITUTE_CONFIG_KEY, "");
+        if (substitute.length() > 0) {
+            return StringUtils.replace(uriPathComponent, substitute, "/");
+        }
+        return uriPathComponent;
+    }
+
+    protected Identifier decodeSlashes(final Identifier identifier) {
+        return new Identifier(decodeSlashes(identifier.toString()));
     }
 
     protected List<CacheDirective> getCacheDirectives() {
@@ -137,7 +160,7 @@ public abstract class AbstractResource extends ServerResource {
      * @return A root reference usable in public, respecting the
      * <code>base_uri</code> option in the application configuration.
      */
-    protected Reference getPublicRootRef() { // TODO: move into a util class and unit-test
+    protected Reference getPublicRootRef() {
         Reference rootRef = getRootRef();
         final String baseUri = Application.getConfiguration().getString("base_uri");
         if (baseUri != null && baseUri.length() > 0) {

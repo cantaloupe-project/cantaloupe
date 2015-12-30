@@ -121,8 +121,6 @@ class FilesystemResolver extends AbstractResolver
      */
     public String getPathname(Identifier identifier, String fileSeparator)
             throws IOException {
-        identifier = replacePathSeparators(identifier, fileSeparator);
-
         final Configuration config = Application.getConfiguration();
         switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
             case "BasicLookupStrategy":
@@ -215,32 +213,12 @@ class FilesystemResolver extends AbstractResolver
     }
 
     /**
-     * Some web servers have issues dealing with encoded slashes (%2F) in URL
-     * identifiers. This method enables the use of an alternate string as a
-     * path separator via {@link #PATH_SEPARATOR_CONFIG_KEY}.
-     * #
-     * @param identifier
-     * @param fileSeparator
-     * @return
-     */
-    private Identifier replacePathSeparators(final Identifier identifier,
-                                             final String fileSeparator) {
-        final String separator = Application.getConfiguration().
-                getString(PATH_SEPARATOR_CONFIG_KEY, "");
-        if (separator.length() > 0) {
-            return ResolverUtil.replacePathSeparators(identifier, separator,
-                    fileSeparator);
-        }
-        return identifier;
-    }
-
-    /**
      * Filters out "fileseparator.." and "..fileseparator" to prevent arbitrary
      * directory traversal.
      *
-     * @param identifier
+     * @param identifier Identifier to sanitize.
      * @param fileSeparator Return value of {@link File#separator}
-     * @return
+     * @return Sanitized identifier.
      */
     private Identifier sanitize(final Identifier identifier,
                                 final String fileSeparator) {

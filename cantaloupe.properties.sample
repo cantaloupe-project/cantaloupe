@@ -37,6 +37,13 @@ auth.basic.secret = mypassword
 # base URI needs to override the local URI. Leave blank to use the default.
 base_uri =
 
+# Normally, slashes in a URI path component (like an identifier) must be
+# percent-encoded as "%2F". If your proxy is incapable of passing these
+# through without decoding them, you can define an alternate character or
+# character sequence to substitute for a slash. Supply the non-percent-
+# encoded version here, and use the percent-encoded version in URLs.
+#slash_substitute =
+
 # Maximum number of image pixels to return in a response, to prevent
 # overloading the server. Requests for more pixels than this will receive an
 # HTTP 4xx response. Comment out or set to 0 for no maximum.
@@ -99,13 +106,6 @@ FilesystemResolver.BasicLookupStrategy.path_prefix = /home/myself/images/
 # the URL.
 FilesystemResolver.BasicLookupStrategy.path_suffix =
 
-# Normally, slashes in an identifier must be percent-encoded as "%2F". If
-# your proxy is incapable of passing these through un-decoded, you can
-# define an alternate character or character sequence to represent a path
-# separator. Supply the non-percent-encoded version here, and use the
-# percent-encoded version in URLs.
-#FilesystemResolver.path_separator =
-
 #----------------------------------------
 # HttpResolver
 #----------------------------------------
@@ -121,9 +121,6 @@ HttpResolver.BasicLookupStrategy.url_prefix = http://localhost/images/
 # Path, extension, query string, etc. that will be suffixed to the
 # identifier in the request URL.
 HttpResolver.BasicLookupStrategy.url_suffix =
-
-# See FilesystemResolver.path_separator for an explanation of this.
-#HttpResolver.path_separator =
 
 # Used for HTTP Basic authentication.
 HttpResolver.auth.basic.username =

@@ -42,8 +42,6 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
             "HttpResolver.auth.basic.username";
     public static final String LOOKUP_STRATEGY_CONFIG_KEY =
             "HttpResolver.lookup_strategy";
-    public static final String PATH_SEPARATOR_CONFIG_KEY =
-            "HttpResolver.path_separator";
     public static final String URL_PREFIX_CONFIG_KEY =
             "HttpResolver.BasicLookupStrategy.url_prefix";
     public static final String URL_SUFFIX_CONFIG_KEY =
@@ -135,7 +133,6 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
 
     public Reference getUrl(Identifier identifier) throws IOException {
         final Configuration config = Application.getConfiguration();
-        identifier = replacePathSeparators(identifier);
 
         switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
             case "BasicLookupStrategy":
@@ -236,23 +233,6 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
                     username, secret);
         }
         return resource;
-    }
-
-    /**
-     * Some web servers have issues dealing with encoded slashes (%2F) in URL
-     * identifiers. This method enables the use of an alternate string as a
-     * path separator via {@link #PATH_SEPARATOR_CONFIG_KEY}.
-     * #
-     * @param identifier
-     * @return
-     */
-    private Identifier replacePathSeparators(final Identifier identifier) {
-        final String separator = Application.getConfiguration().
-                getString(PATH_SEPARATOR_CONFIG_KEY, "");
-        if (separator.length() > 0) {
-            return ResolverUtil.replacePathSeparators(identifier, separator, "/");
-        }
-        return identifier;
     }
 
 }

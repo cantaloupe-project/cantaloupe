@@ -230,6 +230,19 @@ public class InformationResourceTest extends ResourceTest {
         }
     }
 
+    public void testSlashSubstitution() throws Exception {
+        WebServer server = new WebServer();
+        Application.getConfiguration().setProperty("slash_substitute", "CATS");
+        try {
+            server.start();
+            ClientResource client = getClientForUriPath("/subfolderCATSjpg/info.json");
+            client.get();
+            assertEquals(Status.SUCCESS_OK, client.getResponse().getStatus());
+        } finally {
+            server.stop();
+        }
+    }
+
     public void testUnavailableSourceFormat() throws IOException {
         ClientResource client = getClientForUriPath("/text.txt/info.json");
         try {
