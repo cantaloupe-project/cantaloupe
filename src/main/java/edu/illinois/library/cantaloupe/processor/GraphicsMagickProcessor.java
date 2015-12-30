@@ -118,26 +118,21 @@ class GraphicsMagickProcessor implements ChannelProcessor {
                         break; // stop reading
                     }
                     if (read) {
-                        if (s.startsWith("JPEG-2000  ") && s.endsWith(" yes")) {
+                        if (s.startsWith("JPEG-2000 ") && s.endsWith(" yes")) {
                             sourceFormats.add(SourceFormat.JP2);
                             outputFormats.add(OutputFormat.JP2);
-                        }
-                        if (s.startsWith("JPEG  ") && s.endsWith(" yes")) {
+                        } else if (s.startsWith("JPEG ") && s.endsWith(" yes")) {
                             sourceFormats.add(SourceFormat.JPG);
                             outputFormats.add(OutputFormat.JPG);
-                        }
-                        if (s.startsWith("PNG  ") && s.endsWith(" yes")) {
+                        } else if (s.startsWith("PNG ") && s.endsWith(" yes")) {
                             sourceFormats.add(SourceFormat.PNG);
                             outputFormats.add(OutputFormat.PNG);
-                        }
-                        if (s.startsWith("Ghostscript") && s.endsWith(" yes")) {
+                        } else if (s.startsWith("Ghostscript") && s.endsWith(" yes")) {
                             outputFormats.add(OutputFormat.PDF);
-                        }
-                        if (s.startsWith("TIFF  ") && s.endsWith(" yes")) {
+                        } else if (s.startsWith("TIFF ") && s.endsWith(" yes")) {
                             sourceFormats.add(SourceFormat.TIF);
                             outputFormats.add(OutputFormat.TIF);
-                        }
-                        if (s.startsWith("WebP  ") && s.endsWith(" yes")) {
+                        } else if (s.startsWith("WebP ") && s.endsWith(" yes")) {
                             sourceFormats.add(SourceFormat.WEBP);
                             outputFormats.add(OutputFormat.WEBP);
                         }
@@ -149,7 +144,8 @@ class GraphicsMagickProcessor implements ChannelProcessor {
                 // (http://www.graphicsmagick.org/formats.html)
                 sourceFormats.add(SourceFormat.BMP);
                 sourceFormats.add(SourceFormat.GIF);
-                outputFormats.add(OutputFormat.GIF);
+                // GIF output is buggy
+                //outputFormats.add(OutputFormat.GIF);
             } catch (IOException e) {
                 logger.error("Failed to execute {}", cmdPath);
             }
