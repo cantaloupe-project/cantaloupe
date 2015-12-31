@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.image.Transpose;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
@@ -16,8 +17,7 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 
 /**
- * A collection of methods for reading, operating on, and writing
- * {@link BufferedImage}s.
+ * A collection of methods for operating on {@link BufferedImage}s.
  */
 abstract class Java2dUtil {
 
@@ -74,8 +74,16 @@ abstract class Java2dUtil {
     public static BufferedImage cropImage(final BufferedImage inImage,
                                           final Crop crop,
                                           final ReductionFactor rf) {
-        BufferedImage croppedImage = inImage;
-        if (!crop.isNoOp()) {
+        final Dimension croppedSize = crop.getResultingSize(
+                new Dimension(inImage.getWidth(), inImage.getHeight()));
+        BufferedImage croppedImage;
+        if (crop.isNoOp() || (croppedSize.width == inImage.getWidth() &&
+                croppedSize.height == inImage.getHeight())) {
+            logger.debug("No need to crop; skipping.");
+            croppedImage = inImage;
+        } else {
+            logger.debug("Cropping {}x{} image: {}",
+                    inImage.getWidth(), inImage.getHeight(), crop);
             final double scale = ProcessorUtil.getScale(rf);
             final double regionX = crop.getX() * scale;
             final double regionY = crop.getY() * scale;
@@ -211,8 +219,17 @@ abstract class Java2dUtil {
      */
     public static BufferedImage scaleImageWithAffineTransform(
             BufferedImage inImage, Scale scale) {
-        BufferedImage scaledImage = inImage;
-        if (!scale.isNoOp()) {
+        final Dimension scaledSize = scale.getResultingSize(
+                new Dimension(inImage.getWidth(), inImage.getHeight()));
+        BufferedImage scaledImage;
+        if (scale.isNoOp() || (scaledSize.width == inImage.getWidth() &&
+                scaledSize.height == inImage.getHeight())) {
+            logger.debug("No need to scale; skipping.");
+            scaledImage = inImage;
+        } else {
+            logger.debug("Scaling {}x{} image to {}x{}",
+                    inImage.getWidth(), inImage.getHeight(),
+                    scaledSize.width, scaledSize.height);
             double xScale = 0.0f, yScale = 0.0f;
             if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                 xScale = yScale = scale.getWidth() / (double) inImage.getWidth();
@@ -257,27 +274,10 @@ abstract class Java2dUtil {
     }
 
     /**
-     * Scales an image using Graphics2D.
-     *
-     * @param inImage Image to scale.
-     * @param scale Scale operation.
-     * @param highQuality Whether to use a high-quality but more expensive
-     *                    scaling method.
-     * @return Downscaled image, or the input image if the given scale is a
-     * no-op.
-     */
-    public static BufferedImage scaleImageWithG2d(final BufferedImage inImage,
-                                                  final Scale scale,
-                                                  final boolean highQuality) {
-        return scaleImageWithG2d(inImage, scale, new ReductionFactor(0),
-                highQuality);
-    }
-
-    /**
      * Scales an image using Graphics2D, taking an already-applied reduction
      * factor into account. In other words, the dimensions of the input image
-     * have already been halved rf times but the given size is relative to the
-     * full-sized image.
+     * have already been halved <code>rf</code> times but the given size is
+     * relative to the full-sized image.
      *
      * @param inImage Image to scale
      * @param scale Requested size ignoring any reduction factor
@@ -292,8 +292,17 @@ abstract class Java2dUtil {
                                                   final Scale scale,
                                                   final ReductionFactor rf,
                                                   final boolean highQuality) {
-        BufferedImage scaledImage = inImage;
-        if (!scale.isNoOp()) {
+        final Dimension scaledSize = scale.getResultingSize(
+                new Dimension(inImage.getWidth(), inImage.getHeight()));
+        BufferedImage scaledImage;
+        if (scale.isNoOp() || (scaledSize.width == inImage.getWidth() &&
+                scaledSize.height == inImage.getHeight())) {
+            logger.debug("No need to scale; skipping.");
+            scaledImage = inImage;
+        } else {
+            logger.debug("Scaling {}x{} image to {}x{}",
+                    inImage.getWidth(), inImage.getHeight(),
+                    scaledSize.width, scaledSize.height);
             final int sourceWidth = inImage.getWidth();
             final int sourceHeight = inImage.getHeight();
             int width = 0, height = 0;
