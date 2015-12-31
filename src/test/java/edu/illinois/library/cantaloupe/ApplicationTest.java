@@ -56,8 +56,8 @@ public class ApplicationTest {
     @Before
     public void setUp() {
         Application.setConfiguration(newConfiguration());
-        System.getProperties().remove("cantaloupe.cache.purge");
-        System.getProperties().remove("cantaloupe.cache.purge_expired");
+        System.getProperties().remove(Application.PURGE_CACHE_VM_ARGUMENT);
+        System.getProperties().remove(Application.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT);
 
     }
 
@@ -161,7 +161,7 @@ public class ApplicationTest {
         File.createTempFile("bla1", "tmp", imageDir);
         File.createTempFile("bla2", "tmp", infoDir);
 
-        System.setProperty("cantaloupe.cache.purge", "");
+        System.setProperty(Application.PURGE_CACHE_VM_ARGUMENT, "");
         String[] args = {};
         Application.main(args);
 
@@ -192,7 +192,7 @@ public class ApplicationTest {
         File.createTempFile("bla2", "tmp", imageDir);
         File.createTempFile("bla2", "tmp", infoDir);
 
-        System.setProperty("cantaloupe.cache.purge_expired", "");
+        System.setProperty(Application.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT, "");
         String[] args = {};
         Application.main(args);
 

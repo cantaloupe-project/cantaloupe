@@ -40,6 +40,10 @@ public class Application {
     private static Logger logger = LoggerFactory.getLogger(Application.class);
 
     public static final String CONFIG_FILE_VM_ARGUMENT = "cantaloupe.config";
+    public static final String PURGE_CACHE_VM_ARGUMENT =
+            "cantaloupe.cache.purge";
+    public static final String PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT =
+            "cantaloupe.cache.purge_expired";
 
     private static Component component;
     private static Configuration config;
@@ -214,9 +218,9 @@ public class Application {
                 runtime.maxMemory() / mb);
         logger.info("\uD83C\uDF48 Starting Cantaloupe {}", getVersion());
 
-        if (System.getProperty("cantaloupe.cache.purge") != null) {
+        if (System.getProperty(PURGE_CACHE_VM_ARGUMENT) != null) {
             purgeCacheAtLaunch();
-        } else if (System.getProperty("cantaloupe.cache.purge_expired") != null) {
+        } else if (System.getProperty(PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT) != null) {
             purgeExpiredFromCacheAtLaunch();
         } else {
             startServer();
