@@ -176,13 +176,14 @@ class Java2dProcessor implements ChannelProcessor, FileProcessor {
         }
 
         try {
-            ReductionFactor reductionFactor = new ReductionFactor();
-            Set<Java2dUtil.ReaderHint> readerHints = new HashSet<>();
-            BufferedImage image = Java2dUtil.readImage(inputFile,
+            final ReductionFactor reductionFactor = new ReductionFactor();
+            final Set<ImageIoImageReader.ReaderHint> readerHints = new HashSet<>();
+            final ImageIoImageReader reader = new ImageIoImageReader();
+            BufferedImage image = reader.read(inputFile,
                     sourceFormat, ops, fullSize, reductionFactor, readerHints);
             for (Operation op : ops) {
                 if (op instanceof Crop &&
-                        !readerHints.contains(Java2dUtil.ReaderHint.ALREADY_CROPPED)) {
+                        !readerHints.contains(ImageIoImageReader.ReaderHint.ALREADY_CROPPED)) {
                     image = Java2dUtil.cropImage(image, (Crop) op,
                             reductionFactor);
                 } else if (op instanceof Scale) {
@@ -199,7 +200,7 @@ class Java2dProcessor implements ChannelProcessor, FileProcessor {
                     image = Java2dUtil.filterImage(image, (Filter) op);
                 }
             }
-            Java2dUtil.writeImage(image, ops.getOutputFormat(),
+            new ImageIoImageWriter().write(image, ops.getOutputFormat(),
                     writableChannel);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
@@ -222,14 +223,15 @@ class Java2dProcessor implements ChannelProcessor, FileProcessor {
         }
 
         try {
-            ReductionFactor reductionFactor = new ReductionFactor();
-            Set<Java2dUtil.ReaderHint> readerHints = new HashSet<>();
-            BufferedImage image = Java2dUtil.readImage(readableChannel,
+            final ReductionFactor reductionFactor = new ReductionFactor();
+            final Set<ImageIoImageReader.ReaderHint> readerHints = new HashSet<>();
+            final ImageIoImageReader reader = new ImageIoImageReader();
+            BufferedImage image = reader.read(readableChannel,
                     sourceFormat, ops, fullSize, reductionFactor,
                     readerHints);
             for (Operation op : ops) {
                 if (op instanceof Crop &&
-                        !readerHints.contains(Java2dUtil.ReaderHint.ALREADY_CROPPED)) {
+                        !readerHints.contains(ImageIoImageReader.ReaderHint.ALREADY_CROPPED)) {
                     image = Java2dUtil.cropImage(image, (Crop) op,
                             reductionFactor);
                 } else if (op instanceof Scale) {
@@ -246,7 +248,7 @@ class Java2dProcessor implements ChannelProcessor, FileProcessor {
                     image = Java2dUtil.filterImage(image, (Filter) op);
                 }
             }
-            Java2dUtil.writeImage(image, ops.getOutputFormat(),
+            new ImageIoImageWriter().write(image, ops.getOutputFormat(),
                     writableChannel);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);

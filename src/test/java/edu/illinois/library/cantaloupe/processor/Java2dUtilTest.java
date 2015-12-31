@@ -99,16 +99,6 @@ public class Java2dUtilTest {
     }
 
     @Test
-    public void testReadImageWithFile() {
-        // this will be tested in ProcessorTest
-    }
-
-    @Test
-    public void testReadImageWithReadableByteChannel() {
-        // this will be tested in ProcessorTest
-    }
-
-    @Test
     public void testRemoveAlpha() {
         // TODO: write this
     }
@@ -247,11 +237,6 @@ public class Java2dUtilTest {
 
         assertEquals(200, outImage.getWidth());
         assertEquals(100, outImage.getHeight());
-    }
-
-    @Test
-    public void testWriteImage() {
-        // TODO: write this
     }
 
 }

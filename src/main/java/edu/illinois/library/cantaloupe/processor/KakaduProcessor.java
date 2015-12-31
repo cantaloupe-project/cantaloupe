@@ -463,7 +463,7 @@ class KakaduProcessor implements FileProcessor {
                                         final ReductionFactor reductionFactor,
                                         final WritableByteChannel writableChannel)
             throws IOException, ProcessorException {
-        BufferedImage image = Java2dUtil.readImage(readableChannel);
+        BufferedImage image = new ImageIoImageReader().read(readableChannel);
         for (Operation op : opList) {
             if (op instanceof Scale) {
                 final boolean highQuality = Application.getConfiguration().
@@ -482,7 +482,7 @@ class KakaduProcessor implements FileProcessor {
                         (Filter) op);
             }
         }
-        Java2dUtil.writeImage(image, opList.getOutputFormat(),
+        new ImageIoImageWriter().write(image, opList.getOutputFormat(),
                 writableChannel);
         image.flush();
     }
