@@ -134,8 +134,12 @@ public class OperationList implements Comparable<OperationList>,
         parts.add(getIdentifier().toString());
         for (Operation op : this) {
             if (!op.isNoOp()) {
-                parts.add(op.toString());
+                final String opName = op.getClass().getSimpleName().toLowerCase();
+                parts.add(opName + ":" + op.toString());
             }
+        }
+        for (String key : this.getOptions().keySet()) {
+            parts.add(key + ":" + this.getOptions().get(key));
         }
         return StringUtils.join(parts, "_") + "." +
                 getOutputFormat().getExtension();

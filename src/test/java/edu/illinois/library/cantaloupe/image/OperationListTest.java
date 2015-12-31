@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import java.awt.Dimension;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class OperationListTest {
@@ -304,12 +305,32 @@ public class OperationListTest {
 
     @Test
     public void testToString() {
+        ops = new OperationList();
+        ops.setIdentifier(new Identifier("identifier.jpg"));
+        Crop crop = new Crop();
+        crop.setX(5f);
+        crop.setY(6f);
+        crop.setWidth(20f);
+        crop.setHeight(22f);
+        ops.add(crop);
+        Scale scale = new Scale();
+        scale.setPercent(0.4f);
+        ops.add(scale);
+        ops.add(new Rotate(15));
+        ops.add(Filter.BITONAL);
+        ops.setOutputFormat(OutputFormat.JPG);
+        ops.getOptions().put("animal", "cat");
+
         List<String> parts = new ArrayList<>();
         parts.add(ops.getIdentifier().toString());
         for (Operation op : ops) {
             if (!op.isNoOp()) {
-                parts.add(op.toString());
+                parts.add(op.getClass().getSimpleName().toLowerCase() + ":" +
+                        op.toString());
             }
+        }
+        for (String key : ops.getOptions().keySet()) {
+            parts.add(key + ":" + ops.getOptions().get(key));
         }
         String expected = StringUtils.join(parts, "_") + "." +
                 ops.getOutputFormat().getExtension();

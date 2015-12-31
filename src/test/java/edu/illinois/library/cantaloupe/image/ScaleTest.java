@@ -133,7 +133,7 @@ public class ScaleTest extends CantaloupeTestCase {
     public void testToString() {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
-        assertEquals("full", scale.toString());
+        assertEquals("none", scale.toString());
 
         scale = new Scale();
         scale.setWidth(50);
@@ -148,7 +148,7 @@ public class ScaleTest extends CantaloupeTestCase {
         scale = new Scale();
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setPercent(0.5f);
-        assertEquals("pct:0.5", scale.toString());
+        assertEquals("50%", scale.toString());
 
         scale = new Scale();
         scale.setWidth(50);

@@ -242,7 +242,7 @@ public class CropTest {
     public void testToString() {
         Crop crop = new Crop();
         crop.setFull(true);
-        assertEquals("full", crop.toString());
+        assertEquals("none", crop.toString());
 
         crop = new Crop();
         crop.setWidth(50f);
@@ -253,7 +253,7 @@ public class CropTest {
         crop.setUnit(Crop.Unit.PERCENT);
         crop.setWidth(0.5f);
         crop.setHeight(0.4f);
-        assertEquals("pct:0,0,0.5,0.4", crop.toString());
+        assertEquals("0%,0%,50%,40%", crop.toString());
     }
 
 }

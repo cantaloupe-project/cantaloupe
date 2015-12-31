@@ -85,6 +85,7 @@ public class Scale implements Operation {
         return width;
     }
 
+    @Override
     public boolean isNoOp() {
         return (this.getMode() == Mode.FULL) ||
                 (this.getPercent() != null && Math.abs(this.getPercent() - 1f) < 0.000001f) ||
@@ -121,18 +122,18 @@ public class Scale implements Operation {
     }
 
     /**
-     * @return String representation of the instance, guaranteed to represent
-     * the instance, but not guaranteed to have any particular format.
+     * @return String representation of the instance, guaranteed to uniquely
+     * represent the instance.
      */
     @Override
     public String toString() {
         String str = "";
-        if (this.getMode() == Mode.FULL) {
-            str += "full";
+        if (this.isNoOp()) {
+            str += "none";
         } else if (this.getPercent() != null) {
-            str += "pct:" + NumberUtil.removeTrailingZeroes(this.getPercent());
+            str += NumberUtil.removeTrailingZeroes(this.getPercent() * 100) + "%";
         } else {
-            if (this.getMode() == Mode.ASPECT_FIT_INSIDE) {
+            if (this.getMode().equals(Mode.ASPECT_FIT_INSIDE)) {
                 str += "!";
             }
             if (this.getWidth() != null && this.getWidth() > 0) {

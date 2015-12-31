@@ -41,6 +41,7 @@ public class Rotate implements Operation {
         return new Dimension(width, height);
     }
 
+    @Override
     public boolean isNoOp() {
         return (Math.abs(getDegrees()) < 0.0001f);
     }
@@ -57,8 +58,8 @@ public class Rotate implements Operation {
     }
 
     /**
-     * @return String representation of the instance, guaranteed to represent
-     * the instance, but not guaranteed to have any particular format.
+     * @return String representation of the instance, guaranteed to uniquely
+     * represent the instance.
      */
     @Override
     public String toString() {

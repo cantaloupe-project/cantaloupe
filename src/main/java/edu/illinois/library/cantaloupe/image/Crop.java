@@ -117,11 +117,11 @@ public class Crop implements Operation {
     /**
      * @return Whether the crop is effectively a no-op.
      */
+    @Override
     public boolean isNoOp() {
         if (this.isFull()) {
             return true;
-        }
-        if (this.getUnit().equals(Unit.PERCENT) &&
+        } else if (this.getUnit().equals(Unit.PERCENT) &&
                 Math.abs(this.getWidth() - 1f) < 0.000001f &&
                 Math.abs(this.getHeight() - 1f) < 0.000001f) {
             return true;
@@ -174,27 +174,39 @@ public class Crop implements Operation {
     }
 
     /**
-     * @return String representation of the instance, guaranteed to represent
-     * the instance, but not guaranteed to have any particular format.
+     * Returns a string representation of the instance, guaranteed to uniquely
+     * represent the instance. The format is:
+     *
+     * <dl>
+     *     <dt>No-op</dt>
+     *     <dd>none</dd>
+     *     <dt>Percent</dt>
+     *     <dd>x%,y%,w%,h%</dd>
+     *     <dt>Pixels</dt>
+     *     <dd>x,y,w,h</dd>
+     * </dl>
+     *
+     * @return String representation of the instance.
      */
     @Override
     public String toString() {
         String str = "";
         if (this.isNoOp()) {
-            str += "full";
+            str += "none";
         } else {
-            String x, y;
+            String x, y, width, height;
             if (this.getUnit().equals(Unit.PERCENT)) {
-                x = NumberUtil.removeTrailingZeroes(this.getX());
-                y = NumberUtil.removeTrailingZeroes(this.getY());
-                str += "pct:";
+                x = NumberUtil.removeTrailingZeroes(this.getX() * 100) + "%";
+                y = NumberUtil.removeTrailingZeroes(this.getY() * 100) + "%";
+                width = NumberUtil.removeTrailingZeroes(this.getWidth() * 100) + "%";
+                height = NumberUtil.removeTrailingZeroes(this.getHeight() * 100) + "%";
             } else {
                 x = Integer.toString(Math.round(this.getX()));
                 y = Integer.toString(Math.round(this.getY()));
+                width = NumberUtil.removeTrailingZeroes(this.getWidth());
+                height = NumberUtil.removeTrailingZeroes(this.getHeight());
             }
-            str += String.format("%s,%s,%s,%s", x, y,
-                    NumberUtil.removeTrailingZeroes(this.getWidth()),
-                    NumberUtil.removeTrailingZeroes(this.getHeight()));
+            str += String.format("%s,%s,%s,%s", x, y, width, height);
         }
         return str;
     }
