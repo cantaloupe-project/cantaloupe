@@ -73,7 +73,6 @@ public class GraphicsMagickProcessorTest extends ProcessorTest {
             // (http://www.graphicsmagick.org/formats.html)
             sourceFormats.add(SourceFormat.BMP);
             sourceFormats.add(SourceFormat.GIF);
-            outputFormats.add(OutputFormat.GIF);
 
             supportedFormats = new HashMap<>();
             for (SourceFormat sourceFormat : SourceFormat.values()) {
