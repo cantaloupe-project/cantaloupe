@@ -145,9 +145,6 @@ public abstract class AbstractResource extends ServerResource {
                 if (config.getBoolean("cache.client.no_transform", false)) {
                     directives.add(CacheDirective.noTransform());
                 }
-            } else {
-                logger.debug("Cache-Control headers are disabled. " +
-                        "(cache.client.enabled = false)");
             }
         } catch (NoSuchElementException e) {
             logger.warn("Cache-Control headers are invalid: {}",
