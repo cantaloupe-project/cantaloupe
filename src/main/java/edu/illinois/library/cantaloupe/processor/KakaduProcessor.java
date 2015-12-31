@@ -33,12 +33,14 @@ import java.awt.image.RenderedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.math.RoundingMode;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -357,13 +359,40 @@ class KakaduProcessor implements FileProcessor {
             if (op instanceof Crop) {
                 final Crop crop = (Crop) op;
                 if (!crop.isFull()) {
+                    // Truncate coordinates to (num digits) + 1 decimal places
+                    // to prevent kdu_expand from returning an extra pixel of
+                    // width/height.
+                    final int xDecimalPlaces =
+                            Integer.toString(imageSize.width).length() + 1;
+                    final int yDecimalPlaces =
+                            Integer.toString(imageSize.height).length() + 1;
+
+                    final String xFormat = "#." + StringUtils.repeat("#",
+                            xDecimalPlaces);
+                    final String yFormat = "#." + StringUtils.repeat("#",
+                            yDecimalPlaces);
+
+                    final DecimalFormat xDecFormat = new DecimalFormat(xFormat);
+                    xDecFormat.setRoundingMode(RoundingMode.DOWN);
+                    final DecimalFormat yDecFormat = new DecimalFormat(yFormat);
+                    yDecFormat.setRoundingMode(RoundingMode.DOWN);
+
                     final double x = crop.getX() / imageSize.width;
+                    final String formattedX = xDecFormat.format(x);
+
                     final double y = crop.getY() / imageSize.height;
+                    final String formattedY = yDecFormat.format(y);
+
                     final double width = crop.getWidth() / imageSize.width;
+                    final String formattedWidth = xDecFormat.format(width);
+
                     final double height = crop.getHeight() / imageSize.height;
+                    final String formattedHeight = yDecFormat.format(height);
+
                     command.add("-region");
-                    command.add(String.format("{%.7f,%.7f},{%.7f,%.7f}",
-                            y, x, height, width));
+                    command.add(String.format("{%s,%s},{%s,%s}",
+                            formattedY, formattedX,
+                            formattedHeight, formattedWidth));
                 }
             } else if (op instanceof Scale) {
                 // kdu_expand is not capable of arbitrary scaling, but it does
