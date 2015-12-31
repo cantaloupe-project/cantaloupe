@@ -36,7 +36,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -293,7 +292,7 @@ abstract class Java2dUtil {
                         ImageInputStream iis =
                                 ImageIO.createImageInputStream(inputSource);
                         reader.setInput(iis);
-                        image = readSmallestUsableImage(reader, crop, scale,
+                        image = readSmallestUsableSubimage(reader, crop, scale,
                                 rf, hints);
                     } finally {
                         reader.dispose();
@@ -355,7 +354,7 @@ abstract class Java2dUtil {
      * operations from the given reader.
      * @throws IOException
      */
-    private static BufferedImage readSmallestUsableImage(
+    private static BufferedImage readSmallestUsableSubimage(
             final ImageReader reader,
             final Crop crop,
             final Scale scale,
@@ -512,22 +511,25 @@ abstract class Java2dUtil {
                     tileWidth, tileHeight, offsetX, offsetY);
         }
 
-        // The same tile-based loading code works well for reading striped
-        // TIFFs as well, apparently because it bypasses the
-        // ImageReader.read(int)-returning-TYPE_CUSTOM issue.
-        final BufferedImage outImage = new BufferedImage(
-                Math.min(requestedSourceArea.width, imageWidth - requestedSourceArea.x),
-                Math.min(requestedSourceArea.height, imageHeight - requestedSourceArea.y),
-                BufferedImage.TYPE_INT_RGB);
+        BufferedImage outImage = null;
         // Copy the tile rasters into outImage
         for (int tx = tileX1, ix = 0; tx <= tileX2; tx++, ix++) {
             for (int ty = tileY1, iy = 0; ty <= tileY2; ty++, iy++) {
+                final BufferedImage tile = reader.readTile(imageIndex, tx, ty);
                 // ImageReader.readTileRaster() doesn't always work, so get a
-                // Raster from the tile's BufferedImage and translate it.
-                final Raster raster = reader.readTile(imageIndex, tx, ty).
-                        getData().createTranslatedChild(
+                // Raster from the tile BufferedImage and translate it.
+                final Raster raster = tile.getData().createTranslatedChild(
                         ix * tileWidth - offsetX,
                         iy * tileHeight - offsetY);
+                if (ix == 0 && iy == 0) {
+                    final int outImageType = tile.getColorModel().hasAlpha() ?
+                            BufferedImage.TYPE_INT_ARGB :
+                            BufferedImage.TYPE_INT_RGB;
+                    outImage = new BufferedImage(
+                            Math.min(requestedSourceArea.width, imageWidth - requestedSourceArea.x),
+                            Math.min(requestedSourceArea.height, imageHeight - requestedSourceArea.y),
+                            outImageType);
+                }
                 outImage.setData(raster);
             }
         }
