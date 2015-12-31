@@ -42,6 +42,28 @@ public class OperationListTest {
         assertTrue(ops.iterator().hasNext());
     }
 
+    /* clear() */
+
+    @Test
+    public void testClear() {
+        int opCount = 0;
+        Iterator it = ops.iterator();
+        while (it.hasNext()) {
+            it.next();
+            opCount++;
+        }
+        assertEquals(4, opCount);
+        ops.clear();
+
+        opCount = 0;
+        it = ops.iterator();
+        while (it.hasNext()) {
+            it.next();
+            opCount++;
+        }
+        assertEquals(0, opCount);
+    }
+
     /* compareTo(OperationList) */
 
     @Test

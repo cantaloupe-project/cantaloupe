@@ -30,6 +30,10 @@ public class OperationList implements Comparable<OperationList>,
         }
     }
 
+    public void clear() {
+        operations.clear();
+    }
+
     @Override
     public int compareTo(OperationList ops) {
         int last = this.toString().compareTo(ops.toString());
