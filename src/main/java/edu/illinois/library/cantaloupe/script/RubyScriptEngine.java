@@ -35,6 +35,12 @@ class RubyScriptEngine implements ScriptEngine {
         scriptEngine.eval(code);
     }
 
+    @Override
+    public boolean methodExists(String methodName) throws ScriptException {
+        return (boolean) scriptEngine.eval(String.format("Cantaloupe.respond_to?(%s)",
+                escapeArgument(methodName)));
+    }
+
     private String escapeArgument(String arg) {
         return "'" + StringUtils.replace(arg, "'", "\\'") + "'";
     }

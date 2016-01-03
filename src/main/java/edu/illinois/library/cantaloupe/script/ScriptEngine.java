@@ -25,4 +25,11 @@ public interface ScriptEngine {
      */
     void load(String code) throws ScriptException;
 
+    /**
+     * @param methodName
+     * @return
+     * @throws ScriptException
+     */
+    boolean methodExists(String methodName) throws ScriptException;
+
 }
