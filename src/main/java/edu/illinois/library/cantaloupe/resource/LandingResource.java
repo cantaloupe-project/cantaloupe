@@ -7,7 +7,6 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
-import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.StringUtils;
@@ -70,11 +69,8 @@ public class LandingResource extends AbstractResource {
         final Map<String, Object> vars = getCommonTemplateVars();
 
         // resolver name
-        final String chooserScript = config.getString(
-                ResolverFactory.CHOOSER_SCRIPT_CONFIG_KEY);
-        String resolverStr = config.getString(
-                ResolverFactory.STATIC_RESOLVER_CONFIG_KEY, "None");
-        resolverStr = chooserScript != null ? "Dynamic Script" : resolverStr;
+        final String resolverStr = config.getString(
+                ResolverFactory.RESOLVER_CONFIG_KEY, "Dynamic Script");
         vars.put("resolverName", resolverStr);
 
         // cache name

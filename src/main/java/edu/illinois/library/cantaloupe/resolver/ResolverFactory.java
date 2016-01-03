@@ -21,26 +21,24 @@ public abstract class ResolverFactory {
     private static Logger logger = LoggerFactory.
             getLogger(ResolverFactory.class);
 
-    public static final String CHOOSER_SCRIPT_CONFIG_KEY =
-            "resolver.chooser_script";
-    public static final String STATIC_RESOLVER_CONFIG_KEY = "resolver.static";
+    public static final String RESOLVER_CONFIG_KEY = "resolver";
 
     /**
-     * If {@link #CHOOSER_SCRIPT_CONFIG_KEY} is defined, uses the specified
-     * script to return an instance of the appropriate resolver for the given
-     * identifier. Otherwise, returns an instance of the resolver specified in
-     * {@link #STATIC_RESOLVER_CONFIG_KEY}.
+     * If {@link #RESOLVER_CONFIG_KEY} is null or undefined, uses a
+     * delegate script method to return an instance of the appropriate
+     * resolver for the given identifier. Otherwise, returns an instance of
+     * the resolver specified in {@link #RESOLVER_CONFIG_KEY}.
      *
-     * @return An instance of the appropriate resolver for the given identifier
-     * based on the value of {@link #CHOOSER_SCRIPT_CONFIG_KEY}.
+     * @return An instance of the appropriate resolver for the given
+     * identifier.
      * @throws Exception
      * @throws FileNotFoundException If the specified chooser script is not
      * found.
      */
     public static Resolver getResolver(Identifier identifier) throws Exception {
         final String scriptValue = Application.getConfiguration().
-                getString(CHOOSER_SCRIPT_CONFIG_KEY);
-        if (scriptValue != null) {
+                getString(RESOLVER_CONFIG_KEY);
+        if (scriptValue == null) {
             final String resolverName = (String) invokeGetResolverDelegateMethod(identifier);
             return newResolver(resolverName);
         }
@@ -56,13 +54,13 @@ public abstract class ResolverFactory {
      */
     private static Resolver getStaticResolver() throws Exception {
         String resolverName = Application.getConfiguration().
-                getString(STATIC_RESOLVER_CONFIG_KEY);
+                getString(RESOLVER_CONFIG_KEY);
         if (resolverName != null) {
             return newResolver(resolverName);
         } else {
             throw new ConfigurationException("No resolver specified in the " +
                     "configuration. (Check the \"" +
-                    STATIC_RESOLVER_CONFIG_KEY + "\" key.)");
+                    RESOLVER_CONFIG_KEY + "\" key.)");
         }
     }
 

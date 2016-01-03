@@ -29,17 +29,17 @@ public class ResolverFactoryTest {
         Application.setConfiguration(config);
         Identifier identifier = new Identifier("jdbc");
 
-        config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
+        config.setProperty(ResolverFactory.RESOLVER_CONFIG_KEY,
                 "FilesystemResolver");
         assertTrue(ResolverFactory.getResolver(identifier) instanceof FilesystemResolver);
 
-        config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
+        config.setProperty(ResolverFactory.RESOLVER_CONFIG_KEY,
                 "HttpResolver");
         assertTrue(ResolverFactory.getResolver(identifier) instanceof HttpResolver);
 
         // invalid resolver
         try {
-            config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
+            config.setProperty(ResolverFactory.RESOLVER_CONFIG_KEY,
                     "bogus");
             ResolverFactory.getResolver(identifier);
             fail("Expected exception");
@@ -49,7 +49,7 @@ public class ResolverFactoryTest {
 
         // no resolver
         try {
-            config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY, null);
+            config.setProperty(ResolverFactory.RESOLVER_CONFIG_KEY, null);
             ResolverFactory.getResolver(identifier);
             fail("Expected exception");
         } catch (ConfigurationException e) {
