@@ -3,7 +3,9 @@ package edu.illinois.library.cantaloupe.resolver;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
@@ -33,6 +35,7 @@ import static org.junit.Assert.*;
 public class AmazonS3ResolverTest {
 
     private static final Identifier IMAGE = new Identifier("f50.jpg");
+
     AmazonS3Resolver instance;
 
     @Before
@@ -49,6 +52,8 @@ public class AmazonS3ResolverTest {
         config.setProperty(AmazonS3Resolver.BUCKET_NAME_CONFIG_KEY, bucket);
         config.setProperty(AmazonS3Resolver.ACCESS_KEY_ID_CONFIG_KEY, accessKeyId);
         config.setProperty(AmazonS3Resolver.SECRET_KEY_CONFIG_KEY, secretKey);
+        config.setProperty(AmazonS3Resolver.LOOKUP_STRATEGY_CONFIG_KEY,
+                "BasicLookupStrategy");
         // For future reference, note that we can also set
         // AmazonS3Resolver.ENDPOINT_CONFIG_KEY to point it at a mocked S3
         // instance.
@@ -58,7 +63,7 @@ public class AmazonS3ResolverTest {
     }
 
     @Test
-    public void testGetChannel() {
+    public void testGetChannelWithBasicLookupStrategy() {
         // present, readable image
         try {
             assertNotNull(instance.getChannel(IMAGE));
@@ -74,12 +79,34 @@ public class AmazonS3ResolverTest {
         } catch (IOException e) {
             fail("Expected FileNotFoundException");
         }
-        // present, unreadable image
-        // TODO: write this
     }
 
     @Test
-    public void testGetSourceFormat() throws IOException {
+    public void testGetChannelWithScriptLookupStrategy() throws Exception {
+        Configuration config = Application.getConfiguration();
+        config.setProperty(AmazonS3Resolver.LOOKUP_STRATEGY_CONFIG_KEY,
+                "ScriptLookupStrategy");
+        config.setProperty("delegate_script",
+                TestUtil.getFixture("delegate.rb").getAbsolutePath());
+        // present image
+        try {
+            assertNotNull(instance.getChannel(IMAGE));
+        } catch (IOException e) {
+            fail();
+        }
+        // missing image
+        try {
+            instance.getChannel(new Identifier("bogus"));
+            fail("Expected exception");
+        } catch (FileNotFoundException e) {
+            // pass
+        } catch (IOException e) {
+            fail("Expected FileNotFoundException");
+        }
+    }
+
+    @Test
+    public void testGetSourceFormatWithBasicLookupStrategy() throws IOException {
         assertEquals(SourceFormat.JPG, instance.getSourceFormat(IMAGE));
         try {
             instance.getSourceFormat(new Identifier("image.bogus"));
@@ -87,6 +114,33 @@ public class AmazonS3ResolverTest {
         } catch (IOException e) {
             // pass
         }
+        try {
+            instance.getSourceFormat(new Identifier("image"));
+            fail("Expected exception");
+        } catch (IOException e) {
+            // pass
+        }
+    }
+
+    @Test
+    public void testGetSourceFormatWithScriptLookupStrategy() throws IOException {
+        Configuration config = Application.getConfiguration();
+        config.setProperty(AmazonS3Resolver.LOOKUP_STRATEGY_CONFIG_KEY,
+                "ScriptLookupStrategy");
+        config.setProperty("delegate_script",
+                TestUtil.getFixture("delegate.rb").getAbsolutePath());
+        // present image
+        assertEquals(SourceFormat.JPG, instance.getSourceFormat(IMAGE));
+        // present image without extension TODO: write this
+
+        // missing image with extension
+        try {
+            instance.getSourceFormat(new Identifier("image.bogus"));
+            fail("Expected exception");
+        } catch (IOException e) {
+            // pass
+        }
+        // missing image without extension
         try {
             instance.getSourceFormat(new Identifier("image"));
             fail("Expected exception");

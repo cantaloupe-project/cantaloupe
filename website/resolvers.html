@@ -175,11 +175,7 @@ jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre
 
 <h3 id="AmazonS3Resolver">AmazonS3Resolver</h3>
 
-<p>AmazonS3Resolver maps a URL identifier to an Amazon S3 object. The identifier is passed as-is to S3.</p>
-
-<p>AmazonS3Resolver currently only supports images with recognizable filename extensions. For images with extensions that are missing or unrecognized, an HTTP 404 error will be returned.</p>
-
-<p>AmazonS3Resolver can be configured with the following options:</p>
+<p>AmazonS3Resolver maps a URL identifier to an Amazon S3 object, for retrieving images from Amazon S3. It can be configured with the following options:</p>
 
 <dl>
   <dt><code>AmazonS3Resolver.access_key_id</code></dt>
@@ -190,4 +186,16 @@ jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre
   <dd>Name of the bucket containing the images to be served.</dd>
   <dt><code>AmazonS3Resolver.bucket.region</code></dt>
   <dd>Name of a region to send requests to, such as <code>us-east-1</code>. Can be commented out or left blank to use a default region. (See <a href="http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region">S3 Regions</a>.)</dd>
+  <dt><code>AmazonS3Resolver.lookup_strategy</code></dt>
+  <dd>The strategy to use to look up images based on their URL identifier. See below.</dd>
 </dl>
+
+<h4>BasicLookupStrategy</h4>
+
+<p>BasicLookupStrategy locates images by passing the URL identifier as-is to S3, with no additional configuration necessary or possible.</p>
+
+<h4>ScriptLookupStrategy</h4>
+
+<p>When your URL identifiers don't match your Amazon S3 object keys, ScriptLookupStrategy is available to tell AmazonS3Resolver to capture the object key returned by a method in your <a href="delegate-script.html">delegate script</a>.</p>
+
+<p>The delegate script method, <code>get_s3_object_key(identifier)</code>, will take in an identifier and should return an S3 object key string, if available, or <code>nil</code>, if not. See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script in Cantaloupe, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for an example of a similar script.</p>

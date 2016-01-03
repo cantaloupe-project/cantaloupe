@@ -87,7 +87,9 @@ resolver = FilesystemResolver
 #----------------------------------------
 
 # Tells FilesystemResolver how to look up files. Allowed values are
-# `BasicLookupStrategy` and `ScriptLookupStrategy`.
+# `BasicLookupStrategy` and `ScriptLookupStrategy`. For
+# ScriptLookupStrategy, a method named `get_pathname(identifier)` must be
+# implemented in the delegate script.
 FilesystemResolver.lookup_strategy = BasicLookupStrategy
 
 # Server-side path that will be prefixed to the identifier in the URL.
@@ -103,7 +105,9 @@ FilesystemResolver.BasicLookupStrategy.path_suffix =
 #----------------------------------------
 
 # Tells HttpResolver how to look up resources. Allowed values are
-# `BasicLookupStrategy` and `ScriptLookupStrategy`.
+# `BasicLookupStrategy` and `ScriptLookupStrategy`. For
+# ScriptLookupStrategy, a method named `get_url(identifier)` must be
+# implemented in the delegate script.
 HttpResolver.lookup_strategy = BasicLookupStrategy
 
 # URL that will be prefixed to the identifier in the request URL. Trailing
@@ -179,6 +183,12 @@ AmazonS3Resolver.bucket.name =
 # !! Can be commented out or left blank.
 # See: http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
 #AmazonS3Resolver.bucket.region = us-east-1
+
+# Tells AmazonS3Resolver how to look up objects. Allowed values are
+# `BasicLookupStrategy` and `ScriptLookupStrategy`. For
+# ScriptLookupStrategy, a method named `get_s3_object_key(identifier)` must
+# be implemented in the delegate script.
+AmazonS3Resolver.lookup_strategy = BasicLookupStrategy
 
 ###########################################################################
 # PROCESSORS
