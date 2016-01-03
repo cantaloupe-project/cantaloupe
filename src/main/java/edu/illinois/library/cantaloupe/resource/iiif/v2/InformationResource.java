@@ -208,8 +208,7 @@ public class InformationResource extends AbstractResource {
                 final ScriptEngine engine = ScriptEngineFactory.
                         getScriptEngine();
                 if (engine.methodExists(SERVICE_METHOD)) {
-                    final String[] args = {identifier.toString(),
-                            getImageUri(identifier), complianceUri};
+                    final String[] args = { identifier.toString() };
                     imageInfo.service = (Map) engine.
                             invoke("Cantaloupe::" + SERVICE_METHOD, args);
                 } else {

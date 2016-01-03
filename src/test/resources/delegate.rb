@@ -1,10 +1,10 @@
 module Cantaloupe
 
-  def self.get_iiif2_service(identifier, image_uri, compliance_level)
+  def self.get_iiif2_service(identifier)
     {
       '@context' => "http://iiif.io/api/image/2/context.json",
-      '@id' => image_uri,
-      'profile' => compliance_level,
+      '@id' => "bla",
+      'profile' => "bla",
       'cats' => 0.85
     }
   end
