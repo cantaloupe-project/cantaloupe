@@ -1,7 +1,9 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import java.awt.Dimension;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -26,12 +28,21 @@ import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatExceptio
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
+import edu.illinois.library.cantaloupe.script.ScriptEngine;
+import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.script.ScriptUtil;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.io.FileUtils;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.script.ScriptException;
 
 /**
  * Handles IIIF information requests.
@@ -40,6 +51,11 @@ import org.restlet.resource.ResourceException;
  * Requests</a>
  */
 public class InformationResource extends AbstractResource {
+
+    private static Logger logger = LoggerFactory.
+            getLogger(InformationResource.class);
+
+    private static final String SERVICE_METHOD = "get_iiif2_service";
 
     private static final Set<ServiceFeature> SUPPORTED_SERVICE_FEATURES =
             new HashSet<>();
@@ -102,7 +118,7 @@ public class InformationResource extends AbstractResource {
         checkProcessorResolverCompatibility(resolver, proc);
 
         // Get an ImageInfo instance corresponding to the source image
-        ImageInfo imageInfo = getImageInfo(identifier,
+        ImageInfo imageInfo = assembleImageInfo(identifier,
                 getSize(identifier, proc, resolver, sourceFormat),
                 proc.getSupportedIiif2_0Qualities(sourceFormat),
                 proc.getSupportedFeatures(sourceFormat),
@@ -132,11 +148,12 @@ public class InformationResource extends AbstractResource {
         return rep;
     }
 
-    private ImageInfo getImageInfo(Identifier identifier, Dimension fullSize,
-                                   Set<Quality> qualities,
-                                   Set<ProcessorFeature> processorFeatures,
-                                   Set<OutputFormat> outputFormats) {
-        ImageInfo imageInfo = new ImageInfo();
+    private ImageInfo assembleImageInfo(final Identifier identifier,
+                                        final Dimension fullSize,
+                                        final Set<Quality> qualities,
+                                        final Set<ProcessorFeature> processorFeatures,
+                                        final Set<OutputFormat> outputFormats) {
+        final ImageInfo imageInfo = new ImageInfo();
         imageInfo.id = getImageUri(identifier);
         imageInfo.width = fullSize.width;
         imageInfo.height = fullSize.height;
@@ -184,6 +201,30 @@ public class InformationResource extends AbstractResource {
             featureStrings.add(feature.getName());
         }
         profileMap.put("supports", featureStrings);
+
+        // service
+        try {
+            final Configuration config = Application.getConfiguration();
+            final String scriptValue = config.getString("delegate_script");
+            if (scriptValue != null) {
+                final File script = ScriptUtil.findScript(scriptValue);
+
+                final ScriptEngine engine = ScriptEngineFactory.
+                        getScriptEngine("jruby");
+                engine.load(FileUtils.readFileToString(script));
+                if (engine.methodExists(SERVICE_METHOD)) {
+                    final String[] args = {identifier.toString(),
+                            getImageUri(identifier), complianceUri};
+                    imageInfo.service = (Map) engine.
+                            invoke("Cantaloupe::" + SERVICE_METHOD, args);
+                } else {
+                    logger.debug("Delegate script does not implement {}(); " +
+                            "skipping.", SERVICE_METHOD);
+                }
+            }
+        } catch (ScriptException | IOException e) {
+            logger.error(e.getMessage(), e);
+        }
 
         return imageInfo;
     }

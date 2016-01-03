@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Class whose instances are intended to be serialized to JSON for use in IIIF
@@ -46,6 +47,12 @@ class ImageInfo {
     public final List<Object> profile = new ArrayList<>();
 
     public final String protocol = "http://iiif.io/api/image";
+
+    /**
+     * @see <a href="http://iiif.io/api/annex/services/">Linking to External
+     * Services</a>
+     */
+    public Map service;
 
     public final List<Size> sizes = new ArrayList<>();
 

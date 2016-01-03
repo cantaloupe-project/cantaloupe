@@ -230,6 +230,27 @@ public class InformationResourceTest extends ResourceTest {
         }
     }
 
+    public void testService() throws Exception {
+        // assert that service does not appear with no delegate script set
+        ClientResource client = getClientForUriPath("/escher_lego.jpg/info.json");
+        client.get();
+        String json = client.getResponse().getEntityAsText();
+        assertFalse(json.contains("\"service\":"));
+
+        // assert that service does appear with delegate script set
+        Configuration config = Application.getConfiguration();
+        config.setProperty("delegate_script", "delegate_test.rb");
+        final File tempFile = new File("./delegate_test.rb");
+        try {
+            FileUtils.copyFile(TestUtil.getFixture("delegate.rb"), tempFile);
+            client.get();
+            json = client.getResponse().getEntityAsText();
+            assertTrue(json.contains("\"service\":"));
+        } finally {
+            FileUtils.forceDelete(tempFile);
+        }
+    }
+
     public void testSlashSubstitution() throws Exception {
         WebServer server = new WebServer();
         Application.getConfiguration().setProperty("slash_substitute", "CATS");
