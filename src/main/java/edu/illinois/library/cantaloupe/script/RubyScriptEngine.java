@@ -17,6 +17,16 @@ class RubyScriptEngine implements ScriptEngine {
             getEngineByName("jruby");
 
     /**
+     * @param methodName
+     * @return
+     * @throws ScriptException
+     */
+    @Override
+    public Object invoke(String methodName) throws ScriptException {
+        return scriptEngine.eval(methodName);
+    }
+
+    /**
      * @param functionName
      * @param args
      * @return

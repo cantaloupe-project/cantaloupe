@@ -10,14 +10,23 @@ import javax.script.ScriptException;
 public interface ScriptEngine {
 
     /**
-     * Invokes a function.
+     * Invokes a method.
      *
-     * @param functionName
+     * @param methodName
+     * @return Function result
+     * @throws ScriptException
+     */
+    Object invoke(String methodName) throws ScriptException;
+
+    /**
+     * Invokes a method.
+     *
+     * @param methodName
      * @param args
      * @return Function result
      * @throws ScriptException
      */
-    Object invoke(String functionName, String[] args) throws ScriptException;
+    Object invoke(String methodName, String[] args) throws ScriptException;
 
     /**
      * @param code Code to load into the script interpreter.
