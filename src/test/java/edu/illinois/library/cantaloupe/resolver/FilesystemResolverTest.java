@@ -42,32 +42,6 @@ public class FilesystemResolverTest {
     }
 
     @Test
-    public void testExecuteLookupScript() throws Exception {
-        // valid script
-        File script = TestUtil.getFixture("lookup.rb");
-        String result = (String) instance.executeLookupScript(IDENTIFIER, script);
-        assertEquals("/bla/" + IDENTIFIER, result);
-
-        // unsupported script
-        try {
-            script = TestUtil.getFixture("lookup.js");
-            instance.executeLookupScript(IDENTIFIER, script);
-            fail("Expected exception");
-        } catch (ScriptException e) {
-            assertEquals("Unsupported script type: js", e.getMessage());
-        }
-
-        // script returns nil
-        script = TestUtil.getFixture("lookup_nil.rb");
-        try {
-            instance.executeLookupScript(IDENTIFIER, script);
-            fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
-        }
-    }
-
-    @Test
     public void testGetChannel() {
         // present, readable image
         try {
@@ -137,11 +111,6 @@ public class FilesystemResolverTest {
         config.setProperty(FilesystemResolver.PATH_PREFIX_CONFIG_KEY, "");
         config.setProperty(FilesystemResolver.PATH_SUFFIX_CONFIG_KEY, "");
         assertEquals("id", instance.getPathname(new Identifier("id"), File.separator));
-        // with path separator
-        String separator = "CATS";
-        config.setProperty(FilesystemResolver.PATH_SEPARATOR_CONFIG_KEY, separator);
-        assertEquals("1" + File.separator + "2" + File.separator + "3",
-                instance.getPathname(new Identifier("1" + separator + "2" + separator + "3"), File.separator));
         // test sanitization
         config.setProperty(FilesystemResolver.PATH_PREFIX_CONFIG_KEY, "");
         config.setProperty(FilesystemResolver.PATH_SUFFIX_CONFIG_KEY, "");
@@ -193,24 +162,6 @@ public class FilesystemResolverTest {
         } finally {
             FileUtils.forceDelete(tempFile);
         }
-    }
-
-    @Test
-    public void testGetPathnameWithScriptLookupStrategyAndPathSeparator()
-            throws IOException {
-        Configuration config = Application.getConfiguration();
-        config.setProperty(FilesystemResolver.LOOKUP_STRATEGY_CONFIG_KEY,
-                "ScriptLookupStrategy");
-        config.setProperty("delegate_script",
-                TestUtil.getFixture("lookup.rb").getAbsolutePath());
-
-        String separator = "CATS";
-        config.setProperty(FilesystemResolver.PATH_SEPARATOR_CONFIG_KEY, separator);
-        final String expected = "/bla/1" + File.separator + "2" + File.separator + "3";
-        final String actual = instance.getPathname(
-                new Identifier("1" + separator + "2" + separator + "3"),
-                File.separator);
-        assertEquals(expected, actual);
     }
 
     @Test

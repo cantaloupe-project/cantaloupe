@@ -5,22 +5,16 @@ import edu.illinois.library.cantaloupe.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
-import edu.illinois.library.cantaloupe.script.ScriptUtil;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
- * Used to obtain an instance of the {@link Resolver} defined in the
- * configuration.
+ * Used to obtain an instance of a {@link Resolver} defined in the
+ * configuration, or returned by a delegate method.
  */
 public abstract class ResolverFactory {
 
@@ -30,12 +24,6 @@ public abstract class ResolverFactory {
     public static final String CHOOSER_SCRIPT_CONFIG_KEY =
             "resolver.chooser_script";
     public static final String STATIC_RESOLVER_CONFIG_KEY = "resolver.static";
-    private static final Set<String> SUPPORTED_SCRIPT_EXTENSIONS =
-            new HashSet<>();
-
-    static {
-        SUPPORTED_SCRIPT_EXTENSIONS.add("rb");
-    }
 
     /**
      * If {@link #CHOOSER_SCRIPT_CONFIG_KEY} is defined, uses the specified
@@ -53,13 +41,7 @@ public abstract class ResolverFactory {
         final String scriptValue = Application.getConfiguration().
                 getString(CHOOSER_SCRIPT_CONFIG_KEY);
         if (scriptValue != null) {
-            final File script = ScriptUtil.findScript(scriptValue);
-            if (!script.exists()) {
-                throw new FileNotFoundException("Does not exist: " +
-                        script.getAbsolutePath());
-            }
-            final String resolverName = (String) executeLookupScript(identifier,
-                    script);
+            final String resolverName = (String) invokeGetResolverDelegateMethod(identifier);
             return newResolver(resolverName);
         }
         return getStaticResolver();
@@ -79,7 +61,8 @@ public abstract class ResolverFactory {
             return newResolver(resolverName);
         } else {
             throw new ConfigurationException("No resolver specified in the " +
-                    "configuration. (Check the \"resolver\" key.)");
+                    "configuration. (Check the \"" +
+                    STATIC_RESOLVER_CONFIG_KEY + "\" key.)");
         }
     }
 
@@ -90,37 +73,27 @@ public abstract class ResolverFactory {
     }
 
     /**
-     * Passes the given identifier to a function in the given script.
+     * Passes the given identifier to the .
      *
-     * @param identifier
-     * @param script
+     * @param identifier Identifier to return a resolver for
      * @return Pathname of the image file corresponding to the given identifier,
      * as reported by the lookup script, or null.
      * @throws IOException If the lookup script configuration key is undefined
      * @throws ScriptException If the script failed to execute
      * @throws ScriptException If the script is of an unsupported type
      */
-    private static Object executeLookupScript(Identifier identifier, File script)
-            throws ScriptException, IOException {
-        final String extension = FilenameUtils.getExtension(script.getName());
+    private static Object invokeGetResolverDelegateMethod(
+            final Identifier identifier) throws ScriptException, IOException {
+        final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
+        final String functionName = "Cantaloupe::get_resolver";
+        final String[] args = { identifier.toString() };
 
-        if (SUPPORTED_SCRIPT_EXTENSIONS.contains(extension)) {
-            logger.debug("Using lookup script: {}", script);
-            switch (extension) {
-                case "rb":
-                    final ScriptEngine engine = ScriptEngineFactory.
-                            getScriptEngine("jruby");
-                    final long msec = System.currentTimeMillis();
-                    engine.load(FileUtils.readFileToString(script));
-                    final String functionName = "Cantaloupe::get_resolver";
-                    final String[] args = { identifier.toString() };
-                    final Object result = engine.invoke(functionName, args);
-                    logger.debug("{} load+exec time: {} msec",
-                            functionName, System.currentTimeMillis() - msec);
-                    return result;
-            }
-        }
-        throw new ScriptException("Unsupported script type: " + extension);
+        final long msec = System.currentTimeMillis();
+        final Object result = engine.invoke(functionName, args);
+        logger.debug("{} load+exec time: {} msec",
+                functionName, System.currentTimeMillis() - msec);
+
+        return result;
     }
 
 }

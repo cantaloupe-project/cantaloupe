@@ -5,10 +5,7 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
-import edu.illinois.library.cantaloupe.script.ScriptUtil;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.restlet.Client;
 import org.restlet.Context;
 import org.restlet.data.ChallengeScheme;
@@ -22,15 +19,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 class HttpResolver extends AbstractResolver implements ChannelResolver {
 
@@ -47,56 +41,13 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
     public static final String URL_SUFFIX_CONFIG_KEY =
             "HttpResolver.BasicLookupStrategy.url_suffix";
 
-    private static final Set<String> SUPPORTED_SCRIPT_EXTENSIONS =
-            new HashSet<>();
-
     private static Client client;
 
     static {
-        SUPPORTED_SCRIPT_EXTENSIONS.add("rb");
-
         List<Protocol> protocols = new ArrayList<>();
         protocols.add(Protocol.HTTP);
         protocols.add(Protocol.HTTPS);
         client = new Client(protocols);
-    }
-
-    /**
-     * Passes the given identifier to a function in the given script.
-     *
-     * @param identifier
-     * @param script
-     * @return Pathname of the image file corresponding to the given identifier,
-     * as reported by the lookup script.
-     * @throws IOException If the lookup script configuration key is undefined
-     * @throws ScriptException If the script failed to execute
-     * @throws ScriptException If the script is of an unsupported type
-     */
-    public Object executeLookupScript(Identifier identifier, File script)
-            throws IOException, ScriptException {
-        final String extension = FilenameUtils.getExtension(script.getName());
-
-        if (SUPPORTED_SCRIPT_EXTENSIONS.contains(extension)) {
-            logger.debug("Using lookup script: {}", script);
-            switch (extension) {
-                case "rb":
-                    final ScriptEngine engine = ScriptEngineFactory.
-                            getScriptEngine("jruby");
-                    final long msec = System.currentTimeMillis();
-                    engine.load(FileUtils.readFileToString(script));
-                    final String[] args = { identifier.toString() };
-                    final Object result = engine.
-                            invoke("Cantaloupe::get_url", args);
-                    logger.debug("Lookup function load+exec time: {} msec",
-                            System.currentTimeMillis() - msec);
-                    if (result == null) {
-                        throw new FileNotFoundException(
-                                "Lookup script returned nil for " + identifier);
-                    }
-                    return result;
-            }
-        }
-        throw new ScriptException("Unsupported script type: " + extension);
     }
 
     @Override
@@ -198,22 +149,24 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
     /**
      * @param identifier
      * @return
-     * @throws FileNotFoundException If a script does not exist
+     * @throws FileNotFoundException If the delegate script does not exist
      * @throws IOException
      * @throws ScriptException If the script fails to execute
-     * @throws ScriptException If the script is of an unsupported type
      */
     private Reference getUrlWithScriptStrategy(Identifier identifier)
             throws IOException, ScriptException {
-        final Configuration config = Application.getConfiguration();
-        // The script name may be an absolute path or a filename.
-        final String scriptValue = config.getString("delegate_script");
-        File script = ScriptUtil.findScript(scriptValue);
-        if (!script.exists()) {
-            throw new FileNotFoundException("Does not exist: " +
-                    script.getAbsolutePath());
+        final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
+        final String[] args = { identifier.toString() };
+        final String method = "Cantaloupe::get_url";
+        final long msec = System.currentTimeMillis();
+        final Object result = engine.invoke(method, args);
+        logger.debug("{} load+exec time: {} msec", method,
+                System.currentTimeMillis() - msec);
+        if (result == null) {
+            throw new FileNotFoundException(method + " returned nil for " +
+                    identifier);
         }
-        return new Reference((String) executeLookupScript(identifier, script));
+        return new Reference((String) result);
     }
 
     /**

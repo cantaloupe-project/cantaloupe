@@ -5,11 +5,8 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
-import edu.illinois.library.cantaloupe.script.ScriptUtil;
 import eu.medsea.mimeutil.MimeUtil;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.MediaType;
 import org.slf4j.Logger;
@@ -23,8 +20,6 @@ import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.AccessDeniedException;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 class FilesystemResolver extends AbstractResolver
         implements ChannelResolver, FileResolver {
@@ -36,57 +31,12 @@ class FilesystemResolver extends AbstractResolver
             "FilesystemResolver.lookup_strategy";
     public static final String PATH_PREFIX_CONFIG_KEY =
             "FilesystemResolver.BasicLookupStrategy.path_prefix";
-    public static final String PATH_SEPARATOR_CONFIG_KEY =
-            "FilesystemResolver.path_separator";
     public static final String PATH_SUFFIX_CONFIG_KEY =
             "FilesystemResolver.BasicLookupStrategy.path_suffix";
-
-    private static final Set<String> SUPPORTED_SCRIPT_EXTENSIONS =
-            new HashSet<>();
 
     static {
         MimeUtil.registerMimeDetector(
                 "eu.medsea.mimeutil.detector.MagicMimeMimeDetector");
-        SUPPORTED_SCRIPT_EXTENSIONS.add("rb");
-    }
-
-    /**
-     * Passes the given identifier to a function in the given script.
-     *
-     * @param identifier
-     * @param script
-     * @return Pathname of the image file corresponding to the given identifier,
-     * as reported by the lookup script, or null.
-     * @throws IOException If the lookup script configuration key is undefined
-     * @throws ScriptException If the script failed to execute
-     * @throws ScriptException If the script is of an unsupported type
-     * @throws FileNotFoundException If the script returned null
-     */
-    public Object executeLookupScript(Identifier identifier, File script)
-            throws IOException, ScriptException {
-        final String extension = FilenameUtils.getExtension(script.getName());
-
-        if (SUPPORTED_SCRIPT_EXTENSIONS.contains(extension)) {
-            logger.debug("Using lookup script: {}", script);
-            switch (extension) {
-                case "rb":
-                    final ScriptEngine engine = ScriptEngineFactory.
-                            getScriptEngine("jruby");
-                    final long msec = System.currentTimeMillis();
-                    engine.load(FileUtils.readFileToString(script));
-                    final String[] args = { identifier.toString() };
-                    final Object result = engine.
-                            invoke("Cantaloupe::get_pathname", args);
-                    logger.debug("Lookup function load+exec time: {} msec",
-                            System.currentTimeMillis() - msec);
-                    if (result == null) {
-                        throw new FileNotFoundException(
-                                "Lookup script returned nil for " + identifier);
-                    }
-                    return result;
-            }
-        }
-        throw new ScriptException("Unsupported script type: " + extension);
     }
 
     @Override
@@ -150,22 +100,24 @@ class FilesystemResolver extends AbstractResolver
     /**
      * @param identifier
      * @return
-     * @throws FileNotFoundException If a script does not exist
+     * @throws FileNotFoundException If the delegate script does not exist
      * @throws IOException
      * @throws ScriptException If the script fails to execute
-     * @throws ScriptException If the script is of an unsupported type
      */
     private String getPathnameWithScriptStrategy(Identifier identifier)
             throws IOException, ScriptException {
-        final Configuration config = Application.getConfiguration();
-        // The script name may be an absolute path or a filename.
-        final String scriptValue = config.getString("delegate_script");
-        File script = ScriptUtil.findScript(scriptValue);
-        if (!script.exists()) {
-            throw new FileNotFoundException("Does not exist: " +
-                    script.getAbsolutePath());
+        final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
+        final String[] args = { identifier.toString() };
+        final String method = "Cantaloupe::get_pathname";
+        final long msec = System.currentTimeMillis();
+        final Object result = engine.invoke(method, args);
+        logger.debug("{} load+exec time: {} msec", method,
+                System.currentTimeMillis() - msec);
+        if (result == null) {
+            throw new FileNotFoundException(method + " returned nil for " +
+                    identifier);
         }
-        return (String) executeLookupScript(identifier, script);
+        return (String) result;
     }
 
     @Override

@@ -1,18 +1,22 @@
 package edu.illinois.library.cantaloupe.script;
 
+import edu.illinois.library.cantaloupe.Application;
+import org.apache.commons.configuration.BaseConfiguration;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 public class ScriptEngineFactoryTest {
 
-    @Test
-    public void testGetScriptEngine() {
-        // with valid script engine
-        assertNotNull(ScriptEngineFactory.getScriptEngine("jruby"));
+    @Before
+    public void setUp() {
+        Application.setConfiguration(new BaseConfiguration());
+    }
 
-        // with invalid script engine
-        assertNull(ScriptEngineFactory.getScriptEngine("bogus"));
+    @Test
+    public void testGetScriptEngine() throws Exception {
+        assertNotNull(ScriptEngineFactory.getScriptEngine());
     }
 
 }

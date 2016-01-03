@@ -30,9 +30,7 @@ import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
-import edu.illinois.library.cantaloupe.script.ScriptUtil;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.io.FileUtils;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
@@ -207,11 +205,8 @@ public class InformationResource extends AbstractResource {
             final Configuration config = Application.getConfiguration();
             final String scriptValue = config.getString("delegate_script");
             if (scriptValue != null) {
-                final File script = ScriptUtil.findScript(scriptValue);
-
                 final ScriptEngine engine = ScriptEngineFactory.
-                        getScriptEngine("jruby");
-                engine.load(FileUtils.readFileToString(script));
+                        getScriptEngine();
                 if (engine.methodExists(SERVICE_METHOD)) {
                     final String[] args = {identifier.toString(),
                             getImageUri(identifier), complianceUri};
