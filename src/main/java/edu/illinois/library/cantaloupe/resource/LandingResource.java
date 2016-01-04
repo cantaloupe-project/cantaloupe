@@ -68,6 +68,11 @@ public class LandingResource extends AbstractResource {
         final Configuration config = Application.getConfiguration();
         final Map<String, Object> vars = getCommonTemplateVars();
 
+        vars.put("iiif1EndpointEnabled",
+                config.getBoolean("endpoint.iiif.1.enabled", true));
+        vars.put("iiif2EndpointEnabled",
+                config.getBoolean("endpoint.iiif.2.enabled", true));
+
         // resolver name
         String resolverStr = config.getString(
                 ResolverFactory.STATIC_RESOLVER_CONFIG_KEY);

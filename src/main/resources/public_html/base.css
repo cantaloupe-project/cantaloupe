@@ -28,6 +28,12 @@ dd {
     margin-left: 1em;
 }
 
+.label {
+    font-size: 0.7em;
+    text-transform: uppercase;
+    vertical-align: 30%;
+}
+
 .breadcrumb {
     font-size: 0.9em;
 }

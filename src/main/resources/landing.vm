@@ -16,10 +16,28 @@
             <div class="row">
                 <div class="col-sm-4">
                     <h3>Endpoints</h3>
-                    <ul>
-                        <li><a href="$baseUri/iiif/1">IIIF Image API 1.x</a></li>
-                        <li><a href="$baseUri/iiif/2">IIIF Image API 2.x</a></li>
-                    </ul>
+                    <table class="table-condensed">
+                        <tr>
+                            <td><a href="$baseUri/iiif/1">IIIF Image API 1.x</a></td>
+                            <td>
+                                #if ($iiif1EndpointEnabled)
+                                    <span class="label label-success">Enabled</span>
+                                #else
+                                    <span class="label label-danger">Disabled</span>
+                                #end
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><a href="$baseUri/iiif/1">IIIF Image API 2.x</a></td>
+                            <td>
+                                #if ($iiif2EndpointEnabled)
+                                    <span class="label label-success">Enabled</span>
+                                #else
+                                    <span class="label label-danger">Disabled</span>
+                                #end
+                            </td>
+                        </tr>
+                    </table>
                 </div>
                 <div class="col-sm-4">
                     <h3>Resolver</h3>
@@ -133,11 +151,14 @@
                             <tr>
                                 <td>$processor.getClass().getSimpleName()</td>
                                 #foreach ($sourceFormat in $imageSourceFormats)
-                                    <td class="text-center">
-                                        #if ($processor.getAvailableOutputFormats($sourceFormat).size() > 0)
+                                    #if ($processor.getAvailableOutputFormats($sourceFormat).size() > 0)
+                                        <td class="text-center success">
                                             <span class="text-success">&check;</span>
-                                        #end
-                                    </td>
+                                        </td>
+                                    #else
+                                        <td class="text-center danger">
+                                        </td>
+                                    #end
                                 #end
                             </tr>
                         #end
@@ -157,11 +178,14 @@
                             <tr>
                                 <td>$processor.getClass().getSimpleName()</td>
                                 #foreach ($sourceFormat in $videoSourceFormats)
-                                    <td class="text-center">
-                                        #if ($processor.getAvailableOutputFormats($sourceFormat).size() > 0)
+                                    #if ($processor.getAvailableOutputFormats($sourceFormat).size() > 0)
+                                        <td class="text-center success">
                                             <span class="text-success">&check;</span>
-                                        #end
-                                    </td>
+                                        </td>
+                                    #else
+                                        <td class="text-center danger">
+                                        </td>
+                                    #end
                                 #end
                             </tr>
                         #end
