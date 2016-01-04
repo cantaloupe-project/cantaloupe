@@ -2,6 +2,10 @@
 layout: default
 ---
 
+<script type="text/javascript">
+    $(document).ready(function() { getLatestReleaseInfo(); });
+</script>
+
 <h2 id="About">About</h2>
 
 <p>Cantaloupe is a free, open-source image server enabling dynamic delivery of derivatives of high-resolution source images. With available processing operations including cropping, scaling, and rotation, it can support client-side deep-zooming image viewers, as well as on-the-fly thumbnail generation.</p>
@@ -35,4 +39,12 @@ layout: default
 
 <h2 id="Download">Download</h2>
 
-<p><a href="https://github.com/medusa-project/cantaloupe/releases">Download the latest release from GitHub.</a></p>
+<p>
+  <a id="download-button" href="https://github.com/medusa-project/cantaloupe/releases" class="btn btn-success"><span class="fa fa-download"></span> Download</a>
+
+  <a href="https://github.com/medusa-project/cantaloupe/releases.atom" class="btn btn-default">
+    <span class="fa fa-rss"></span> Subscribe to Releases
+  </a>
+</p>
+
+<p>Releases are hosted on <a href="https://github.com/medusa-project/cantaloupe/releases">GitHub</a>.</p>

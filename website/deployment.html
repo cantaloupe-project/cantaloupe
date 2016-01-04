@@ -29,11 +29,11 @@ uncompressed size. Multiple clients are simultaneously requesting numerous downs
 
 <h4 id="HardwareStorage">Storage</h4>
 
-<p>Cantaloupe benefits from fast read performance&mdash;in terms of both latency and throughput&mdash;in the underlying storage system. Throughput becomes more important as source image size increases. Local filesystem storage is almost always faster than cloud storage.</p>
+<p>Cantaloupe benefits from fast read performance&mdash;in terms of both latency and throughput&mdash;in the underlying storage system. Throughput becomes more important as source image size increases. <a href="resolvers.html#FilesystemResolver">Local filesystem storage</a> is usually fastest, and often by a long shot.</p>
 
 <h3 id="Limiting">Limiting</h3>
 
-<p>Cantaloupe offers a <code>max_pixels</code> configuration option to limit the maximum returned size of processed images. This is a "safety net" to prevent clients from bogging down the server.</p>
+<p>A <code>max_pixels</code> configuration option is available to limit the maximum returned size of processed images. This is a "safety net" to prevent clients from bogging down the server.</p>
 
 <p>(This does not affect requests for full-sized unmodified images, which do not significantly load the server because they are streamed through with no processing.)</p>
 

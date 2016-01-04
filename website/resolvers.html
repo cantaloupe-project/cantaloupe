@@ -33,7 +33,7 @@ end</pre>
 
 <h3 id="FilesystemResolver">FilesystemResolver</h3>
 
-<p>FilesystemResolver maps a URL identifier to a filesystem path, for retrieving images on a local or attached filesystem.</p>
+<p>FilesystemResolver maps a URL identifier to a filesystem path, for retrieving images on a local or attached filesystem. In addition to being the most compatible resolver, <strong>this is also the most efficient resolver</strong> and may or may not be the only option for serving very large source images.</p>
 
 <p>For images with extensions that are missing or unrecognized, this resolver will check the "magic number" to determine type, which will add some overhead. It is therefore slightly more efficient to serve images with extensions.</p>
 

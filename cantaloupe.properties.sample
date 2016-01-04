@@ -9,16 +9,12 @@
 # marked with "!!".
 ###########################################################################
 
-# !! Whether to enable HTTP access (http://).
+# !! Whether to enable HTTP access (http://), and on what TCP port.
 http.enabled = true
-
-# !! TCP port to bind to via HTTP.
 http.port = 8182
 
-# !! Whether to enable HTTPS access (https://).
+# !! Whether to enable HTTPS access (https://), and on what TCP port.
 https.enabled = false
-
-# !! TCP port to bind to via HTTPS.
 https.port = 8183
 
 # !! Available values are `JKS` and `PKCS12`.
@@ -45,16 +41,15 @@ base_uri =
 #slash_substitute =
 
 # Maximum number of image pixels to return in a response, to prevent
-# overloading the server. Requests for more pixels than this will receive an
-# HTTP 4xx response. Comment out or set to 0 for no maximum.
+# overloading the server. Requests for more pixels than this will receive
+# an HTTP 4xx response. Comment out or set to 0 for no maximum.
 # Note: this is ignored when requesting an unmodified source image.
 max_pixels = 400000000
 
-# The name of a Ruby script containing delegate functions that Cantaloupe
-# can call to get dynamic information. See the website for more information.
-# This can be an absolute path, or a filename; if only a filename is
-# specified, it will be searched for in the same folder as this file, and
-# then the current working directory.
+# The name of a Ruby script containing various delegate methods. (See the
+# website for more information.) This can be an absolute path, or a
+# filename; if only a filename is specified, it will be searched for in the
+# same folder as this file, and then the current working directory.
 #delegate_script = delegates.rb
 
 # Helpful in development
@@ -76,14 +71,14 @@ endpoint.iiif.content_disposition = inline
 # RESOLVERS
 ###########################################################################
 
-# The resolver that translates the identifier in the URL to an image source.
-# Available values are `FilesystemResolver`, `HttpResolver`, `JdbcResolver`,
-# and `AmazonS3Resolver`.
+# Specifies one resolver to translate the identifier in the URL to an image
+# source for all requests. Available values are `FilesystemResolver`,
+# `HttpResolver`, `JdbcResolver`, and `AmazonS3Resolver`.
 resolver.static = FilesystemResolver
 
 # If true, `resolver.static` will be overridden, and the
-# `get_resolver(identifier)` method will be used to select a resolver
-# dynamically.
+# `get_resolver(identifier)` delegate script method will be used to select
+# a resolver per-request.
 resolver.delegate = false
 
 #----------------------------------------
@@ -175,13 +170,12 @@ JdbcResolver.lookup_sql = SELECT image \
 # AmazonS3Resolver
 #----------------------------------------
 
-# !! Access key ID associated with your AWS account.
+# !! Access key ID and secret key associated with your AWS account.
 # See: http://aws.amazon.com/security-credentials
 AmazonS3Resolver.access_key_id =
-# !! Secret key associated with your AWS account.
 AmazonS3Resolver.secret_key =
 
-# !! Name of a bucket containing images.
+# !! Name of the bucket containing images to be served.
 AmazonS3Resolver.bucket.name =
 
 # !! Can be commented out or left blank.
@@ -241,8 +235,8 @@ processor.fallback = Java2dProcessor
 # Java2dProcessor
 #----------------------------------------
 
-# Available values are `quality` and `speed`. `speed` is ~10-20% faster at the
-# expense of visible aliasing at thumbnail sizes.
+# Available values are `quality` and `speed`. `speed` is ~10-20% faster at
+# the expense of visible aliasing at small scales.
 Java2dProcessor.scale_mode = speed
 
 # JPEG output quality. Should be a number between 0-1 ending in "f"
@@ -258,8 +252,8 @@ Java2dProcessor.jpg.quality = 0.7f
 # Available values are `jai` and `java2d`.
 KakaduProcessor.post_processor = java2d
 
-# Available values are `quality` and `speed`. `speed` is ~10-20% faster at the
-# expense of visible aliasing at thumbnail sizes.
+# Available values are `quality` and `speed`. `speed` is ~10-20% faster at
+# the expense of visible aliasing at small scales.
 KakaduProcessor.post_processor.java2d.scale_mode = speed
 
 #----------------------------------------
@@ -272,8 +266,8 @@ KakaduProcessor.post_processor.java2d.scale_mode = speed
 # Available values are `jai` and `java2d`.
 OpenJpegProcessor.post_processor = java2d
 
-# Available values are `quality` and `speed`. `speed` is ~10-20% faster at the
-# expense of visible aliasing at thumbnail sizes.
+# Available values are `quality` and `speed`. `speed` is ~10-20% faster at
+# the expense of visible aliasing at small scales.
 OpenJpegProcessor.post_processor.java2d.scale_mode = speed
 
 ###########################################################################
@@ -303,17 +297,17 @@ cache.client.no_transform = true
 # to disable caching.
 #cache.server = FilesystemCache
 
-# If true, when the resolver reports that the requested source image has gone
-# missing, all cached information relating to it (if any) will be deleted.
-# Note: this is effectively always false when cache.server.resolve_first is
-# also false.
+# If true, when the resolver reports that the requested source image has
+# gone missing, all cached information relating to it (if any) will be
+# deleted. (This is effectively always false when cache.server.resolve_first
+# is also false.)
 cache.server.purge_missing = false
 
 # If true, the source image will be confirmed to exist before a cached copy
 # is returned. If false, the cached copy will be returned without any
 # checking. Resolving first is slower but safer.
-# Note: this has no effect with the IIIF 1.1 endpoint -- it is effectively
-# always true.
+# (This has no effect with the IIIF 1.1 endpoint -- it is effectively
+# always true.)
 cache.server.resolve_first = true
 
 #----------------------------------------
