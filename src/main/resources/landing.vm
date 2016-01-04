@@ -17,8 +17,8 @@
                 <div class="col-sm-4">
                     <h3>Endpoints</h3>
                     <ul>
-                        <li><a href="$baseUri/iiif/1">IIIF Image API 1.1</a></li>
-                        <li><a href="$baseUri/iiif/2">IIIF Image API 2.0</a></li>
+                        <li><a href="$baseUri/iiif/1">IIIF Image API 1.x</a></li>
+                        <li><a href="$baseUri/iiif/2">IIIF Image API 2.x</a></li>
                     </ul>
                 </div>
                 <div class="col-sm-4">
