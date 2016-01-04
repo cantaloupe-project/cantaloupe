@@ -1,8 +1,8 @@
 # Site settings
 title: Cantaloupe
-email: your-email@domain.com
+email: alexd@illinois.edu
 description: > # this means to ignore newlines until "baseurl:"
-  Extensible image server in Java
+  Extensible multi-protocol image server in Java
 baseurl: "/cantaloupe" # the subpath of your site, e.g. /blog
 url: "https://medusa-project.github.io" # the base hostname & protocol for your site
 #twitter_username: jekyllrb

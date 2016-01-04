@@ -4,9 +4,9 @@ layout: default
 
 <h2>Caches</h2>
 
-<p>Caches cache generated images in order to spare the computational expense of processing the same image request over and over again. Caches are pluggable, to enable different caching mechanisms.</p>
+<p>Caches cache generated images in order to spare the computational expense of processing the same image request over and over again. Caches are pluggable, to enable different cache stores.</p>
 
-<p>Server-side caching is highly recommended, as it will drastically reduce load on the server and improve response times for the remaining processing that is left to do. There are other ways of caching on the server-side, but the Cantaloupe cache is custom-tailored for this application and easy enough to set up.</p>
+<p>Server-side caching is highly recommended, as it will tend to greatly reduce load on the server and improve response times for the remaining processing that is left to do. There are other ways of caching on the server, but the Cantaloupe cache is custom-tailored for this application and easy enough to set up.</p>
 
 <h3>Enabling</h3>
 
@@ -26,6 +26,8 @@ layout: default
 
 <p>To purge all images, start Cantaloupe with the <code>-Dcantaloupe.cache.purge</code> option.</p>
 
+<p>Either of these can be run in a separate Cantaloupe process while the main instance remains running.</p>
+
 <h3>Notes</h3>
 
 <ul>
@@ -38,7 +40,7 @@ layout: default
 
 <h3 id="FilesystemCache">FilesystemCache</h3>
 
-<p>FilesystemCache caches generated images and (parts of) information requests into a filesystem directory. The location of this directory is configurable, as is the "time-to-live" of the cache files, with the following options:</p>
+<p>FilesystemCache caches generated images and (parts of) information responses in a filesystem directory. The location of this directory is configurable, as is the "time-to-live" of the cache files, with the following options:</p>
 
 <dl>
   <dt><code>FilesystemCache.pathname</code></dt>
@@ -66,7 +68,7 @@ layout: default
   <dd>Time-to-live of the cached images and information responses, in seconds.</dd>
 </dl>
 
-<p>JdbcCache will not create its schema automatically &mdash; this must be done manually using the following commands, which may have to be altered slightly for your particular database:</p>
+<p>JdbcCache will not create its schema automatically&mdash;this must be done manually using the following commands, which may have to be altered slightly for your particular database:</p>
 
 <pre>CREATE TABLE IF NOT EXISTS {JdbcCache.image_table} (
    operations VARCHAR(4096) NOT NULL,
@@ -83,4 +85,4 @@ CREATE TABLE IF NOT EXISTS {JdbcCache.info_table} (
 
 <div class="alert alert-info">Note: JdbcCache has been tested with PostgreSQL 9.4 and H2 1.4. Other databases may work, but are untested.</div>
 
-<div class="alert alert-warning">Note: JdbcCache is inefficient in that it buffers generated images in memory before flushing them to the database, as opposed to streaming them. (This is currently unavoidable, as the JDBC API couples poorly with the Cantaloupe cache API.)</div>
+<div class="alert alert-warning">Note: JdbcCache is inefficient in that it buffers generated images in memory before flushing them to the database. (This is currently unavoidable&mdash;the JDBC API couples poorly with the Cantaloupe cache API.)</div>

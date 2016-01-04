@@ -16,18 +16,20 @@ layout: default
 
 <h4 id="HardwareMemory">Memory</h4>
 
-<p>Consider the case of an image server that is asked to render tiles for a 4096&times;4096 pixel source image that, at 24 bits per pixel, totals 50 MB in
-decompressed size. Multiple clients are simultaneously requesting numerous downscaled tiles. For each request, a request handler needs to load this large image and operate on it independently.</p>
+<p>Consider the case of an image server that is asked to render tiles for an 8192&times;8192 pixel source image that, at 24 bits per pixel, totals 201 MB in
+uncompressed size. Multiple clients are simultaneously requesting numerous downscaled tiles. For each request, a request handler needs to load this large image and operate on it independently.</p>
 
-<p>Furthermore, some processors are inefficient in that they have to create new images internally at each intermediate step in the processing pipeline &mdash; cropping, scaling, rotating, etc. Each one consumes precious memory.</p>
+<p>Furthermore, some processors are inefficient in that they have to create new images internally at each intermediate step in the processing pipeline&mdash;cropping, scaling, rotating, etc.&mdash;each one consuming precious memory.</p>
 
-<p>It's easy to see how RAM becomes a major consideration here. With the processors that do their work in Java (as opposed to forking out to an external process), It is normal to see transient spikes of hundreds of megabytes of used memory on the Java heap in response to a single zooming-image-viewer action. The JVM will accommodate by dynamically increasing the heap size &mdash; the amount of RAM available to the application. From the operating system's perspective, the Java process is bloating up to immense size, but there is nothing wrong &mdash; most of this is actually unused heap space.</p>
+<p>It's easy to see how RAM becomes a major consideration here, and why, for an image server, more is usually better.</p>
 
-<p>The smaller the available heap space, the larger the source images, and the larger the number of simultaneous requests, the greater the likelihood of OutOfMemoryErrors. Unlike an OS-native application, a Java application is only able to access as much memory as its container (the JVM) allows it to. In production, it is highly recommended to use the <code>-Xmx</code> flag to increase the maximum heap size to the largest amount possible &mdash; for example, <code>-Xmx8g</code> for 8GB.</p>
+<p>With the processors that do their work in Java&mdash;as opposed to forking out to an external process&mdash; it is normal to see transient spikes of hundreds of megabytes of used memory on the Java heap in response to a single zooming-image-viewer action. The JVM will accommodate by dynamically increasing the heap size (the amount of RAM available to the application). From the operating system's perspective, the Java process is bloating up to immense size, but there is nothing wrong&mdash;most of this is actually unused heap space.</p>
+
+<p>The smaller the available heap space, the larger the source images, and the larger the number of simultaneous requests, the greater the likelihood of OutOfMemoryErrors. Unlike an OS-native application, a Java application is only able to access as much memory as its container (the JVM) allows it to. In production, it is highly recommended to use the <code>-Xmx</code> flag to increase the maximum heap size to the largest amount possible&mdash;for example, <code>-Xmx8g</code> for 8GB.</p>
 
 <h4 id="HardwareStorage">Storage</h4>
 
-<p>Cantaloupe benefits from fast read performance &mdash; in terms of both latency and throughput &mdash; in the underlying storage system. Throughput becomes more important as source image size increases.</p>
+<p>Cantaloupe benefits from fast read performance&mdash;in terms of both latency and throughput&mdash;in the underlying storage system. Throughput becomes more important as source image size increases. Local filesystem storage is almost always faster than cloud storage.</p>
 
 <h3 id="Limiting">Limiting</h3>
 
@@ -63,6 +65,4 @@ decompressed size. Multiple clients are simultaneously requesting numerous downs
 
 <h3 id="SSL/TLS">SSL/TLS</h3>
 
-<p>Cantaloupe supports TLS (a.k.a. SSLv3) connections over HTTPS, configurable via the <code>https.*</code> keys in the configuration file.</p>
-
-<p>SSL/TLS is an involved subject that will not be covered here in any depth. The general process for getting it working is to add a signed certificate (<span class="filename">.crt</span>) file to either a Java KeyStore (JKS) or PKCS#12 key store file, and then refer to the key store file with the <code>https.key_store_path</code> configuration option.</p>
+<p>SSL/TLS is an involved subject that will not be covered here in any depth. Suffice to say that Cantaloupe supports TLS connections over HTTPS, configurable via the <code>https.*</code> keys in the configuration file. The general process for getting it working is to add a signed certificate (<span class="filename">.crt</span>) file to either a Java KeyStore (JKS) or PKCS#12 key store, and then refer to the key store file with the <code>https.key_store_path</code> configuration option.</p>
