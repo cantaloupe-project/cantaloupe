@@ -13,7 +13,7 @@ public enum Quality {
             case GRAY:
                 return Filter.GRAY;
             default:
-                return Filter.NONE;
+                return null;
         }
     }
 

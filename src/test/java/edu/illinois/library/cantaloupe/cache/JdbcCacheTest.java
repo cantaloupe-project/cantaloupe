@@ -63,14 +63,12 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         Scale scale = new Scale();
         scale.setPercent(0.9f);
         Rotate rotate = new Rotate();
-        Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.JPG;
         ops = new OperationList();
         ops.setIdentifier(identifier);
         ops.add(crop);
         ops.add(scale);
         ops.add(rotate);
-        ops.add(filter);
         ops.setOutputFormat(format);
 
         bc = instance.getImageWritableChannel(ops);
@@ -87,14 +85,12 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         scale.setWidth(40);
         scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
         rotate = new Rotate(15);
-        filter = Filter.NONE;
         format = OutputFormat.PNG;
         ops = new OperationList();
         ops.setIdentifier(identifier);
         ops.add(crop);
         ops.add(scale);
         ops.add(rotate);
-        ops.add(filter);
         ops.setOutputFormat(format);
 
         bc = instance.getImageWritableChannel(ops);

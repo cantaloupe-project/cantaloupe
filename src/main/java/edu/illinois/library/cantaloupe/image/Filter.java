@@ -4,7 +4,7 @@ import java.awt.Dimension;
 
 public enum Filter implements Operation {
 
-    BITONAL, NONE, GRAY;
+    BITONAL, GRAY;
 
     @Override
     public Dimension getResultingSize(Dimension fullSize) {
@@ -12,7 +12,7 @@ public enum Filter implements Operation {
     }
 
     public boolean isNoOp() {
-        return (this == NONE);
+        return false;
     }
 
     @Override

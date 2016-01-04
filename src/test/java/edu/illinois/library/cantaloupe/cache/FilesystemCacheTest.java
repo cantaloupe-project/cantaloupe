@@ -301,7 +301,6 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
         Rotate rotate = new Rotate(0);
-        Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.TIF;
 
         OperationList ops = new OperationList();
@@ -309,7 +308,6 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         ops.add(crop);
         ops.add(scale);
         ops.add(rotate);
-        ops.add(filter);
         ops.setOutputFormat(format);
 
         final String search = "[^A-Za-z0-9._-]";
@@ -385,7 +383,6 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
         Rotate rotate = new Rotate(0);
-        Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.TIF;
 
         OperationList ops = new OperationList();
@@ -393,7 +390,6 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         ops.add(crop);
         ops.add(scale);
         ops.add(rotate);
-        ops.add(filter);
         ops.setOutputFormat(format);
 
         final String search = "[^A-Za-z0-9._-]";

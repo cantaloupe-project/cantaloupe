@@ -27,7 +27,6 @@ public class OperationListTest {
         scale.setMode(Scale.Mode.FULL);
         ops.add(scale);
         ops.add(new Rotate(0));
-        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.JPG);
 
         assertNotNull(ops.getOptions());
@@ -53,7 +52,7 @@ public class OperationListTest {
             it.next();
             opCount++;
         }
-        assertEquals(4, opCount);
+        assertEquals(3, opCount);
         ops.clear();
 
         opCount = 0;
@@ -78,7 +77,6 @@ public class OperationListTest {
         scale.setMode(Scale.Mode.FULL);
         ops2.add(scale);
         ops2.add(new Rotate(0));
-        ops2.add(Filter.NONE);
         ops2.setOutputFormat(OutputFormat.JPG);
         assertEquals(0, ops2.compareTo(this.ops));
     }
@@ -139,14 +137,12 @@ public class OperationListTest {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
         Rotate rotate = new Rotate(0);
-        Filter filter = Filter.NONE;
         OutputFormat format = OutputFormat.JPG;
         ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier"));
         ops.add(crop);
         ops.add(scale);
         ops.add(rotate);
-        ops.add(filter);
         ops.setOutputFormat(format);
         assertFalse(ops.isNoOp());
     }
@@ -162,7 +158,6 @@ public class OperationListTest {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotate(0));
-        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.JPG);
         assertFalse(ops.isNoOp()); // false because the identifier has no discernible source format
     }
@@ -178,7 +173,6 @@ public class OperationListTest {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotate(0));
-        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.GIF);
         assertTrue(ops.isNoOp());
     }
@@ -198,7 +192,6 @@ public class OperationListTest {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotate(0));
-        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.GIF);
         assertFalse(ops.isNoOp());
     }
@@ -214,7 +207,6 @@ public class OperationListTest {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotate(0));
-        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.GIF);
         assertTrue(ops.isNoOp());
     }
@@ -231,7 +223,6 @@ public class OperationListTest {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotate(0));
-        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.GIF);
         assertFalse(ops.isNoOp());
     }
@@ -247,7 +238,6 @@ public class OperationListTest {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotate(2));
-        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.GIF);
         assertFalse(ops.isNoOp());
     }
@@ -263,7 +253,6 @@ public class OperationListTest {
         ops.add(crop);
         ops.add(scale);;
         ops.add(new Rotate());
-        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.GIF);
         assertTrue(ops.isNoOp());
     }
@@ -279,7 +268,6 @@ public class OperationListTest {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotate(0));
-        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.GIF);
         assertTrue(ops.isNoOp());
     }

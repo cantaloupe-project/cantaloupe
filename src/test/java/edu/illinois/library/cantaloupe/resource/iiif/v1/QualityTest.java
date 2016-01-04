@@ -15,9 +15,9 @@ public class QualityTest extends CantaloupeTestCase {
 
     public void testToFilter() {
         assertEquals(Filter.BITONAL, Quality.BITONAL.toFilter());
-        assertEquals(Filter.NONE, Quality.COLOR.toFilter());
+        assertNull(Quality.COLOR.toFilter());
         assertEquals(Filter.GRAY, Quality.GRAY.toFilter());
-        assertEquals(Filter.NONE, Quality.NATIVE.toFilter());
+        assertNull(Quality.NATIVE.toFilter());
     }
 
 }

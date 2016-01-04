@@ -89,7 +89,6 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotate(0));
-        ops.add(Filter.NONE);
         ops.setOutputFormat(OutputFormat.JPG);
         doProcessTest(ops);
     }
