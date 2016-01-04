@@ -4,24 +4,26 @@ layout: default
 
 <h2>Delegate Script</h2>
 
-<p>The delegate script mechanism enables the use of custom Ruby functions as "hooks" to provide dynamic information back to the image server.</p>
+<p>The delegate script mechanism enables the use of custom Ruby functions as "hooks" to provide dynamic information back to the image server. A truly dynamic and customized image server can be created with minimal lines of code.</p>
 
-<h3>Naming</h3>
-
-<p>The delegate script can be named anything, but it must have a <span class="filename">.rb</span> extension. Then, it can be referenced by the <code>delegate_script</code> configuration option, like:</p>
+<p>A sample delegate script, <span class="filename">delegates.rb.sample</span>, is included in the distribution. This should be copied to <span class="filename">delegates.rb</span> and referenced from the <code>delegate_script</code> configuration option, like:
 
 <pre># Option 1: absolute pathname
-delegate_script = /path/to/functions.rb
+delegate_script = /path/to/delegates.rb
 
 # Option 2: filename only; will be expected to be located in the
 # same folder as the config file, or the current working directory
 delegate_script = delegates.rb</pre>
 
+<p>The delegate script mechanism is optional and does not have to be used at all. In that case, the <code>delegate_script</code> option can be commented out or left blank.</p>
+
 <h3>Rules</h3>
 
 <p>While the arguments and return types of each function will vary, the script itself must contain a <code>Cantaloupe</code> module within which all delegate functions are contained.</p>
 
-<p>Inside a function, anything goes&mdash;it will be interpreted by a JRuby interpreter built into Cantaloupe, so you can even use any (non-platform-native) gems that you have installed with <code>gem install</code>. Because it will be called upon each image request, though, it should be written with efficiency in mind.</p>
+<p>Inside a function, anything goes&mdash;it will be interpreted by a JRuby interpreter built into Cantaloupe, so you can even use any (non-platform-native) gems that you have installed with <code>gem install</code>.</p>
+
+<p>Because it will be called upon each image request, though, it should be written with efficiency in mind.</p>
 
 <p>Scripts will be re-read on each request, so they can be edited without restarting.</p>
 
@@ -49,7 +51,4 @@ module Cantaloupe
     results = eval(response.body)['response']['docs']
     results.any? ? results.first['pathname_si'] : nil
   end
-end
-
-# Uncomment to test on the command line (`ruby functions.rb`)
-# puts Cantaloupe::get_pathname('identifier-to-test')</pre>
+end</pre>

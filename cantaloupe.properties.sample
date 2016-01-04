@@ -55,7 +55,7 @@ max_pixels = 400000000
 # This can be an absolute path, or a filename; if only a filename is
 # specified, it will be searched for in the same folder as this file, and
 # then the current working directory.
-delegate_script = /path/to/delegates.rb
+#delegate_script = delegates.rb
 
 # Helpful in development
 print_stack_trace_on_error_pages = true
