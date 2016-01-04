@@ -88,7 +88,7 @@ public abstract class ResolverFactory {
 
         final long msec = System.currentTimeMillis();
         final Object result = engine.invoke(functionName, args);
-        logger.debug("{} load+exec time: {} msec",
+        logger.debug("{}() load+exec time: {} msec",
                 functionName, System.currentTimeMillis() - msec);
 
         return result;

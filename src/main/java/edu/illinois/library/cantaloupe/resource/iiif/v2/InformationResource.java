@@ -212,12 +212,12 @@ public class InformationResource extends AbstractResource {
                     imageInfo.service = (Map) engine.
                             invoke("Cantaloupe::" + SERVICE_METHOD, args);
                 } else {
-                    logger.debug("Delegate script does not implement {}(); " +
-                            "skipping.", SERVICE_METHOD);
+                    logger.info("Delegate script does not implement {}(); " +
+                            "skipping service information.", SERVICE_METHOD);
                 }
             }
         } catch (ScriptException | IOException e) {
-            logger.error(e.getMessage(), e);
+            logger.error(e.getMessage());
         }
 
         return imageInfo;

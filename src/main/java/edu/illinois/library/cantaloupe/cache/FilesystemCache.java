@@ -231,13 +231,13 @@ class FilesystemCache implements Cache {
             File cacheFile = getDimensionFile(identifier);
             if (cacheFile != null && cacheFile.exists()) {
                 if (!isExpired(cacheFile)) {
-                    logger.debug("Hit for dimension: {}", cacheFile.getName());
+                    logger.info("Hit for dimension: {}", cacheFile.getName());
 
                     ImageInfo info = infoMapper.readValue(cacheFile,
                             ImageInfo.class);
                     return new Dimension(info.width, info.height);
                 } else {
-                    logger.debug("Deleting stale cache file: {}",
+                    logger.info("Deleting stale cache file: {}",
                             cacheFile.getName());
                     if (!cacheFile.delete()) {
                         logger.error("Unable to delete {}", cacheFile);
@@ -322,13 +322,13 @@ class FilesystemCache implements Cache {
         if (cacheFile != null && cacheFile.exists()) {
             if (!isExpired(cacheFile)) {
                 try {
-                    logger.debug("Hit for image: {}", ops);
+                    logger.info("Hit for image: {}", ops);
                     return new FileInputStream(cacheFile).getChannel();
                 } catch (FileNotFoundException e) {
                     logger.error(e.getMessage(), e);
                 }
             } else {
-                logger.debug("Deleting stale cache file: {}",
+                logger.info("Deleting stale cache file: {}",
                         cacheFile.getName());
                 if (!cacheFile.delete()) {
                     logger.error("Unable to delete {}", cacheFile);
@@ -342,12 +342,12 @@ class FilesystemCache implements Cache {
     public WritableByteChannel getImageWritableChannel(OperationList ops)
             throws IOException {
         if (imagesBeingWritten.contains(ops)) {
-            logger.debug("Miss, but cache file for {} is being written in " +
+            logger.info("Miss, but cache file for {} is being written in " +
                     "another thread, so not caching", ops);
             return new ConcurrentNullWritableByteChannel(imagesBeingWritten, ops);
         }
         imagesBeingWritten.add(ops); // will be removed by ConcurrentNullOutputStream.close()
-        logger.debug("Miss; caching {}", ops);
+        logger.info("Miss; caching {}", ops);
         File cacheFile = getImageFile(ops);
         if (!cacheFile.getParentFile().exists()) {
             if (!cacheFile.getParentFile().mkdirs() ||
@@ -419,14 +419,14 @@ class FilesystemCache implements Cache {
     public void purge(Identifier identifier) throws IOException {
         // TODO: improve concurrency
         for (File imageFile : getImageFiles(identifier)) {
-            logger.debug("Deleting {}", imageFile);
+            logger.info("Deleting {}", imageFile);
             if (!imageFile.delete()) {
                 throw new IOException("Failed to delete " + imageFile);
             }
         }
         File dimensionFile = getDimensionFile(identifier);
         if (dimensionFile.exists()) {
-            logger.debug("Deleting {}", dimensionFile);
+            logger.info("Deleting {}", dimensionFile);
             if (!dimensionFile.delete()) {
                 throw new IOException("Failed to delete " + dimensionFile);
             }
@@ -540,7 +540,7 @@ class FilesystemCache implements Cache {
             dimensionsBeingWritten.add(identifier);
             final File cacheFile = getDimensionFile(identifier);
             if (cacheFile != null) {
-                logger.debug("Caching dimension: {}", identifier);
+                logger.info("Caching dimension: {}", identifier);
                 if (!cacheFile.getParentFile().exists() &&
                         !cacheFile.getParentFile().mkdirs()) {
                     throw new IOException("Unable to create directory: " +

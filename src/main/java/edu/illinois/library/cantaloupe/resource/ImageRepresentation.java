@@ -148,7 +148,7 @@ public class ImageRepresentation extends WritableRepresentation {
         try {
             doWrite(writableChannel);
         } catch (IOException e) {
-            logger.debug(e.getMessage(), e);
+            logger.info(e.getMessage(), e);
             cache.purge(this.ops);
         }
     }
@@ -165,7 +165,7 @@ public class ImageRepresentation extends WritableRepresentation {
                 } else {
                     IOUtils.copy(readableChannel, writableChannel);
                 }
-                logger.debug("Streamed with no processing in {} msec: {}",
+                logger.info("Streamed with no processing in {} msec: {}",
                         System.currentTimeMillis() - msec, ops);
             } else {
                 Processor proc = ProcessorFactory.
@@ -179,7 +179,7 @@ public class ImageRepresentation extends WritableRepresentation {
                     sproc.process(this.ops, this.sourceFormat,
                             this.fullSize, readableChannel, writableChannel);
                 }
-                logger.debug("{} processed in {} msec: {}",
+                logger.info("{} processed in {} msec: {}",
                         proc.getClass().getSimpleName(),
                         System.currentTimeMillis() - msec, ops);
             }

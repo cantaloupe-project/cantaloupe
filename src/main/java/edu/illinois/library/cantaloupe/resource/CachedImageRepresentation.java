@@ -47,7 +47,7 @@ public class CachedImageRepresentation extends WritableRepresentation {
     public void write(WritableByteChannel writableChannel) throws IOException {
         final long msec = System.currentTimeMillis();
         IOUtils.copy(readableChannel, writableChannel);
-        logger.debug("Streamed from the cache without resolving in {} msec",
+        logger.info("Streamed from the cache without resolving in {} msec",
                 System.currentTimeMillis() - msec);
     }
 

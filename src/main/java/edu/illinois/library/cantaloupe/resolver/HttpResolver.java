@@ -129,10 +129,10 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
         } catch (ResourceException e) {
             // nothing we can do but log it
             if (contentType.length() > 0) {
-                logger.debug("Failed to determine source format based on a " +
+                logger.warn("Failed to determine source format based on a " +
                         "Content-Type of {}", contentType);
             } else {
-                logger.debug("Failed to determine source format (missing " +
+                logger.warn("Failed to determine source format (missing " +
                         "Content-Type at {})", url);
             }
         }

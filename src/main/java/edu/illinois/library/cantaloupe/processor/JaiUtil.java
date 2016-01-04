@@ -326,7 +326,7 @@ abstract class JaiUtil {
             // the next larger.
             int numImages = decoder.getNumPages();
             if (numImages > 1) {
-                logger.debug("Detected pyramidal TIFF with {} levels",
+                logger.debug("Detected multi-resolution image with {} levels",
                         numImages);
                 final Rectangle regionRect = crop.getRectangle(fullSize);
 

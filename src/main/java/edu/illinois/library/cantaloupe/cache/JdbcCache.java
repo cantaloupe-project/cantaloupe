@@ -224,12 +224,12 @@ class JdbcCache implements Cache {
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 if (resultSet.getTimestamp(3).after(oldestDate)) {
-                    logger.debug("Hit for dimension: {}", identifier);
+                    logger.info("Hit for dimension: {}", identifier);
                     return new Dimension(
                             resultSet.getInt(INFO_TABLE_WIDTH_COLUMN),
                             resultSet.getInt(INFO_TABLE_HEIGHT_COLUMN));
                 } else {
-                    logger.debug("Miss for dimension: {}", identifier);
+                    logger.info("Miss for dimension: {}", identifier);
                     purgeInfo(identifier, connection);
                 }
             }
@@ -257,10 +257,10 @@ class JdbcCache implements Cache {
                 ResultSet resultSet = statement.executeQuery();
                 if (resultSet.next()) {
                     if (resultSet.getTimestamp(2).after(oldestDate)) {
-                        logger.debug("Hit for image: {}", ops);
+                        logger.info("Hit for image: {}", ops);
                         inputStream = resultSet.getBinaryStream(1);
                     } else {
-                        logger.debug("Miss for image: {}", ops);
+                        logger.info("Miss for image: {}", ops);
                         purgeImage(ops, conn);
                     }
                 }
@@ -276,7 +276,7 @@ class JdbcCache implements Cache {
     @Override
     public WritableByteChannel getImageWritableChannel(OperationList ops)
             throws IOException {
-        logger.debug("Miss; caching {}", ops);
+        logger.info("Miss; caching {}", ops);
         try {
             return Channels.newChannel(new JdbcImageOutputStream(getConnection(), ops));
         } catch (SQLException e) {
@@ -484,7 +484,7 @@ class JdbcCache implements Cache {
             statement.setTimestamp(4, now());
             logger.debug(sql);
             statement.executeUpdate();
-            logger.debug("Cached dimension: {}", identifier);
+            logger.info("Cached dimension: {}", identifier);
         } catch (SQLException e) {
             throw new IOException(e.getMessage(), e);
         }
