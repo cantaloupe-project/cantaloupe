@@ -52,11 +52,10 @@ public abstract class ResolverFactory {
             final String resolverName = config.
                     getString(STATIC_RESOLVER_CONFIG_KEY);
             if (resolverName != null) {
-                logger.debug("Using {}", resolverName);
                 return newStaticResolver(resolverName);
             } else {
-                throw new ConfigurationException("No resolver specified in " +
-                        "the configuration.");
+                throw new ConfigurationException(STATIC_RESOLVER_CONFIG_KEY +
+                        " is not set to a valid resolver.");
             }
         }
     }
