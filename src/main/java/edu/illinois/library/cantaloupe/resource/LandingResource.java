@@ -69,8 +69,11 @@ public class LandingResource extends AbstractResource {
         final Map<String, Object> vars = getCommonTemplateVars();
 
         // resolver name
-        final String resolverStr = config.getString(
-                ResolverFactory.STATIC_RESOLVER_CONFIG_KEY, "Dynamic Script");
+        String resolverStr = config.getString(
+                ResolverFactory.STATIC_RESOLVER_CONFIG_KEY);
+        if (config.getBoolean(ResolverFactory.DELEGATE_RESOLVER_CONFIG_KEY, false)) {
+            resolverStr = "Delegate Script";
+        }
         vars.put("resolverName", resolverStr);
 
         // cache name
