@@ -78,9 +78,13 @@ endpoint.iiif.content_disposition = inline
 
 # The resolver that translates the identifier in the URL to an image source.
 # Available values are `FilesystemResolver`, `HttpResolver`, `JdbcResolver`,
-# and `AmazonS3Resolver`. Or, leave blank to use a `get_resolver(identifier)`
-# method in the delegate script to choose a resolver dynamically.
-resolver = FilesystemResolver
+# and `AmazonS3Resolver`.
+resolver.static = FilesystemResolver
+
+# If true, `resolver.static` will be overridden, and the
+# `get_resolver(identifier)` method will be used to select a resolver
+# dynamically.
+resolver.delegate = false
 
 #----------------------------------------
 # FilesystemResolver

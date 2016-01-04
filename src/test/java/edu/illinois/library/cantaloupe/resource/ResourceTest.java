@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
+import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.restlet.Client;
@@ -25,7 +26,8 @@ public abstract class ResourceTest extends CantaloupeTestCase {
         config.setProperty("http.enabled", true);
         config.setProperty("http.port", PORT);
         config.setProperty("processor.fallback", "Java2dProcessor");
-        config.setProperty("resolver.static", "FilesystemResolver");
+        config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
+                "FilesystemResolver");
         config.setProperty("FilesystemResolver.lookup_strategy",
                 "BasicLookupStrategy");
         config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",

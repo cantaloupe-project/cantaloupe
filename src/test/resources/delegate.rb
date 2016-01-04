@@ -9,6 +9,10 @@ module Cantaloupe
     }
   end
 
+  def self.get_resolver(identifier)
+    'FilesystemResolver'
+  end
+
   def self.get_s3_object_key(identifier)
     identifier
   end

@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import org.apache.commons.configuration.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,13 +22,17 @@ public abstract class ResolverFactory {
     private static Logger logger = LoggerFactory.
             getLogger(ResolverFactory.class);
 
-    public static final String RESOLVER_CONFIG_KEY = "resolver";
+    public static final String DELEGATE_RESOLVER_CONFIG_KEY =
+            "resolver.delegate";
+    public static final String RESOLVER_CHOOSER_DELEGATE_METHOD =
+            "Cantaloupe::get_resolver";
+    public static final String STATIC_RESOLVER_CONFIG_KEY = "resolver.static";
 
     /**
-     * If {@link #RESOLVER_CONFIG_KEY} is null or undefined, uses a
+     * If {@link #STATIC_RESOLVER_CONFIG_KEY} is null or undefined, uses a
      * delegate script method to return an instance of the appropriate
      * resolver for the given identifier. Otherwise, returns an instance of
-     * the resolver specified in {@link #RESOLVER_CONFIG_KEY}.
+     * the resolver specified in {@link #STATIC_RESOLVER_CONFIG_KEY}.
      *
      * @return An instance of the appropriate resolver for the given
      * identifier.
@@ -36,32 +41,37 @@ public abstract class ResolverFactory {
      * found.
      */
     public static Resolver getResolver(Identifier identifier) throws Exception {
-        final String scriptValue = Application.getConfiguration().
-                getString(RESOLVER_CONFIG_KEY);
-        if (scriptValue == null) {
-            final String resolverName = (String) invokeGetResolverDelegateMethod(identifier);
-            return newResolver(resolverName);
+        final Configuration config = Application.getConfiguration();
+        if (config.getBoolean(DELEGATE_RESOLVER_CONFIG_KEY, false)) {
+            Resolver resolver = newDynamicResolver(identifier);
+            logger.info("{}() returned a {} for {}",
+                    RESOLVER_CHOOSER_DELEGATE_METHOD,
+                    resolver.getClass().getSimpleName(), identifier);
+            return resolver;
+        } else {
+            final String resolverName = config.
+                    getString(STATIC_RESOLVER_CONFIG_KEY);
+            if (resolverName != null) {
+                logger.debug("Using {}", resolverName);
+                return newStaticResolver(resolverName);
+            } else {
+                throw new ConfigurationException("No resolver specified in " +
+                        "the configuration.");
+            }
         }
-        return getStaticResolver();
     }
 
     /**
+     * @param resolverName Resolver name
      * @return An instance of the current resolver based on the
      * <code>resolver</code> setting in the configuration.
      * @throws Exception
      * @throws ConfigurationException If there is no resolver specified in the
      * configuration.
      */
-    private static Resolver getStaticResolver() throws Exception {
-        String resolverName = Application.getConfiguration().
-                getString(RESOLVER_CONFIG_KEY);
-        if (resolverName != null) {
-            return newResolver(resolverName);
-        } else {
-            throw new ConfigurationException("No resolver specified in the " +
-                    "configuration. (Check the \"" +
-                    RESOLVER_CONFIG_KEY + "\" key.)");
-        }
+    private static Resolver newStaticResolver(String resolverName)
+            throws Exception {
+        return newResolver(resolverName);
     }
 
     private static Resolver newResolver(String name) throws Exception {
@@ -71,7 +81,7 @@ public abstract class ResolverFactory {
     }
 
     /**
-     * Passes the given identifier to the .
+     * Passes the given identifier to the resolver chooser delegate method.
      *
      * @param identifier Identifier to return a resolver for
      * @return Pathname of the image file corresponding to the given identifier,
@@ -80,18 +90,18 @@ public abstract class ResolverFactory {
      * @throws ScriptException If the script failed to execute
      * @throws ScriptException If the script is of an unsupported type
      */
-    private static Object invokeGetResolverDelegateMethod(
-            final Identifier identifier) throws ScriptException, IOException {
+    private static Resolver newDynamicResolver(final Identifier identifier)
+            throws Exception {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final String functionName = "Cantaloupe::get_resolver";
-        final String[] args = { identifier.toString() };
+        final String[] args = {identifier.toString()};
 
         final long msec = System.currentTimeMillis();
-        final Object result = engine.invoke(functionName, args);
+        final Object result = engine.invoke(RESOLVER_CHOOSER_DELEGATE_METHOD, args);
         logger.debug("{}() load+exec time: {} msec",
-                functionName, System.currentTimeMillis() - msec);
+                RESOLVER_CHOOSER_DELEGATE_METHOD,
+                System.currentTimeMillis() - msec);
 
-        return result;
+        return newResolver((String) result);
     }
 
 }
