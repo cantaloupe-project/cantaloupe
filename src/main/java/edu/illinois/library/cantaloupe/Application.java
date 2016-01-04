@@ -26,6 +26,7 @@ import javax.net.ssl.KeyManagerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Iterator;
@@ -49,6 +50,9 @@ public class Application {
     private static Configuration config;
 
     static {
+        // Suppress a Dock icon in OS X
+        System.setProperty("java.awt.headless", "true");
+
         initializeLogging();
 
         Velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
