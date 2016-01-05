@@ -377,22 +377,23 @@ class KakaduProcessor implements FileProcessor {
                     final DecimalFormat yDecFormat = new DecimalFormat(yFormat);
                     yDecFormat.setRoundingMode(RoundingMode.DOWN);
 
-                    final double x = crop.getX() / imageSize.width;
-                    final String formattedX = xDecFormat.format(x);
-
-                    final double y = crop.getY() / imageSize.height;
-                    final String formattedY = yDecFormat.format(y);
-
-                    final double width = crop.getWidth() / imageSize.width;
-                    final String formattedWidth = xDecFormat.format(width);
-
-                    final double height = crop.getHeight() / imageSize.height;
-                    final String formattedHeight = yDecFormat.format(height);
+                    double x = crop.getX();
+                    double y = crop.getY();
+                    double width = crop.getWidth();
+                    double height = crop.getHeight();
+                    if (crop.getUnit().equals(Crop.Unit.PIXELS)) {
+                        x /= imageSize.width;
+                        y /= imageSize.height;
+                        width /= imageSize.width;
+                        height /= imageSize.height;
+                    }
 
                     command.add("-region");
                     command.add(String.format("{%s,%s},{%s,%s}",
-                            formattedY, formattedX,
-                            formattedHeight, formattedWidth));
+                            yDecFormat.format(y),
+                            xDecFormat.format(x),
+                            yDecFormat.format(height),
+                            xDecFormat.format(width)));
                 }
             } else if (op instanceof Scale) {
                 // kdu_expand is not capable of arbitrary scaling, but it does
