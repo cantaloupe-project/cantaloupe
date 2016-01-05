@@ -64,6 +64,7 @@ public class InformationResource extends AbstractResource {
         SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.CANONICAL_LINK_HEADER);
         SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.CORS);
         SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.JSON_LD_MEDIA_TYPE);
+        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.PROFILE_LINK_HEADER);
     }
 
     @Override
