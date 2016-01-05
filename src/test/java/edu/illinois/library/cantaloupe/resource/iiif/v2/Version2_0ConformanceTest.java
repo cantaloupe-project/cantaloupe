@@ -118,8 +118,13 @@ public class Version2_0ConformanceTest extends CantaloupeTestCase {
                 path + File.separator);
         Application.setConfiguration(config);
 
+        // image endpoint
         String identifier = Reference.encode("resources/" + IMAGE);
-        ClientResource client = getClientForUriPath("/" + identifier + "/info.json");
+        ClientResource client = getClientForUriPath("/" + identifier + "/full/full/0/default.jpg");
+        client.get();
+        assertEquals(Status.SUCCESS_OK, client.getStatus());
+        // information endpoint
+        client = getClientForUriPath("/" + identifier + "/info.json");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
     }
@@ -233,6 +238,22 @@ public class Version2_0ConformanceTest extends CantaloupeTestCase {
             assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
         }
         */
+    }
+
+    /**
+     * The IIIF API Validator wants the server to return 400 for a bogus
+     * (junk characters) region.
+     *
+     * @throws IOException
+     */
+    public void testBogusRegion() throws IOException {
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/ca%20ioU/full/0/default.jpg");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
+        }
     }
 
     /**

@@ -18,6 +18,7 @@ import edu.illinois.library.cantaloupe.resource.iiif.ResourceUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Disposition;
 import org.restlet.data.MediaType;
+import org.restlet.data.Reference;
 import org.restlet.representation.Variant;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
@@ -68,7 +69,7 @@ public class ImageResource extends AbstractResource {
     public ImageRepresentation doGet() throws Exception {
         final Map<String,Object> attrs = this.getRequest().getAttributes();
         Identifier identifier =
-                new Identifier((String) attrs.get("identifier"));
+                new Identifier(Reference.decode((String) attrs.get("identifier")));
         identifier = decodeSlashes(identifier);
 
         final Resolver resolver = ResolverFactory.getResolver(identifier);

@@ -120,8 +120,13 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
                 path + File.separator);
         Application.setConfiguration(config);
 
+        // image endpoint
         String identifier = Reference.encode("resources/" + IMAGE);
-        ClientResource client = getClientForUriPath("/" + identifier + "/info.json");
+        ClientResource client = getClientForUriPath("/" + identifier + "/full/full/0/native.jpg");
+        client.get();
+        assertEquals(Status.SUCCESS_OK, client.getStatus());
+        // information endpoint
+        client = getClientForUriPath("/" + identifier + "/info.json");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
     }
