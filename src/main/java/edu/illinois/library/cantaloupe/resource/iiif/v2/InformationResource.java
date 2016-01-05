@@ -194,6 +194,11 @@ public class InformationResource extends AbstractResource {
         // supports
         Set<String> featureStrings = new HashSet<>();
         for (Feature feature : processorFeatures) {
+            if (feature.equals(ProcessorFeature.SIZE_ABOVE_FULL)) {
+                // Though processors may support this, Cantaloupe currently
+                // doesn't.
+                continue;
+            }
             featureStrings.add(feature.getName());
         }
         for (Feature feature : SUPPORTED_SERVICE_FEATURES) {
