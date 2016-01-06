@@ -5,12 +5,15 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Extensible image server in Java
+  <meta name="description" content="Extensible multi-protocol image server in Java
 ">
 
+  <title>Cantaloupe</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="/cantaloupe/css/base.css">
 
-  <title>Cantaloupe</title>
+  <script src="/cantaloupe/scripts/jquery.min.js"></script>
 </head>
 
 
@@ -26,7 +29,7 @@
   <h1>
     <a href="/cantaloupe/">Cantaloupe</a>
     <br>
-    <small>Extensible IIIF Image API 2.0 image server in Java</small>
+    <small>Extensible multi-protocol dynamic image server in Java</small>
   </h1>
 </header>
 
@@ -40,23 +43,41 @@
       <ul>
         <li><a href="/cantaloupe/#About">About</a></li>
         <li><a href="/cantaloupe/#Features">Features</a></li>
-        <li><a href="/cantaloupe/#Download">Download</a></li>
       </ul>
     </li>
     <li>
       <a href="getting-started.html">Getting Started</a>
       <ul>
         <li><a href="getting-started.html#Requirements">Requirements</a></li>
+        <li><a href="getting-started.html#Download">Download</a></li>
         <li><a href="getting-started.html#Configuration">Configuration</a></li>
         <li><a href="getting-started.html#Running">Running</a></li>
         <li><a href="getting-started.html#Upgrading">Upgrading</a></li>
-        <li><a href="getting-started.html#Proxying">Proxying</a></li>
-        <li><a href="getting-started.html#Considerations">Considerations</a></li>
+        <li><a href="getting-started.html#GettingHelp">Getting Help</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="deployment.html">Deployment</a>
+      <ul>
+        <li><a href="deployment.html#Hardware">Hardware</a></li>
+        <li><a href="deployment.html#Caching">Caching</a></li>
+        <li><a href="deployment.html#Limiting">Limiting</a></li>
+        <li><a href="deployment.html#Reverse-Proxying">Reverse-Proxying</a></li>
+        <li><a href="deployment.html#SSL%2FTLS">SSL/TLS</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="endpoints.html">Endpoints</a>
+      <ul>
+        <li><a href="endpoints.html#IIIFImageAPI1">IIIF Image API 1.x</a></li>
+        <li><a href="endpoints.html#IIIFImageAPI2">IIIF Image API 2.x</a></li>
       </ul>
     </li>
     <li>
       <a href="resolvers.html">Resolvers</a>
       <ul>
+        <li><a href="resolvers.html#Static%20Resolution">Static Resolver</a></li>
+        <li><a href="resolvers.html#Dynamic%20Resolution">Dynamic Resolvers</a></li>
         <li><a href="resolvers.html#FilesystemResolver">Filesystem</a></li>
         <li><a href="resolvers.html#HttpResolver">HTTP</a></li>
         <li><a href="resolvers.html#JdbcResolver">JDBC</a></li>
@@ -66,26 +87,32 @@
     <li>
       <a href="processors.html">Processors</a>
       <ul>
+        <li><a href="processors.html#Compatibility">Resolver Compatibility</a></li>
         <li><a href="processors.html#Java2dProcessor">Java 2D</a></li>
         <li><a href="processors.html#GraphicsMagickProcessor">GraphicsMagick</a></li>
         <li><a href="processors.html#ImageMagickProcessor">ImageMagick</a></li>
-        <li><a href="processors.html#KakaduProcessor">Kakadu</a></li>
         <li><a href="processors.html#JaiProcessor">JAI</a></li>
+        <li><a href="processors.html#KakaduProcessor">Kakadu</a></li>
+        <li><a href="processors.html#OpenJpegProcessor">OpenJPEG</a></li>
         <li><a href="processors.html#FfmpegProcessor">FFmpeg</a></li>
-        <li><a href="processors.html#Compatibility">Compatibility</a></li>
       </ul>
     </li>
     <li>
-      <a href="caches.html">Caches</a>
+      <a href="caches.html">Caches (Server-Side)</a>
       <ul>
+        <li><a href="caches.html#Purging">Purging</a></li>
         <li><a href="caches.html#FilesystemCache">Filesystem</a></li>
         <li><a href="caches.html#JdbcCache">JDBC</a></li>
-        <li><a href="caches.html#Flushing">Flushing</a></li>
-        <li><a href="caches.html#Considerations">Considerations</a></li>
       </ul>
     </li>
-    <li><a href="access-control.html">Access Control</a></li>
-    <li><a href="client-caching.html">Client-Side Caching</a></li>
+    <li><a href="client-caching.html">Caching (Client-Side)</a></li>
+    <li>
+      <a href="access-control.html">Access Control</a>
+      <ul>
+        <li><a href="access-control.html#Authentication">Authentication</a></li>
+        <li><a href="access-control.html#Authorization">Authorization</a></li>
+      </ul>
+    </li>
     <li>
       <a href="logging.html">Logging</a>
       <ul>
@@ -101,15 +128,12 @@
         <li><a href="source-formats.html#TIFF">TIFF</a></li>
       </ul>
     </li>
+    <li><a href="delegate-script.html">Delegate Script</a></li>
     <li>
-      <a href="developers.html">Developer's Guide</a>
+      <a href="developers.html">For Developers</a>
       <ul>
-        <li><a href="developers.html#Resolvers">Custom Resolvers</a></li>
-        <li><a href="developers.html#Processors">Custom Processors</a></li>
-        <li><a href="developers.html#Caches">Custom Caches</a></li>
         <li><a href="/cantaloupe/javadoc/">Javadoc</a></li>
         <li><a href="developers.html#Contributing">Contributing</a></li>
-        <li><a href="developers.html#Administrative">Administrative</a></li>
       </ul>
     </li>
     <li><a href="changes.html">Change Log</a>
@@ -123,101 +147,21 @@
 
 <p>Cantaloupe can use different image processors for different source formats. (Assignments are made in the configuration file.) Different processors have different quality, compatibility, dependency, and performance characteristics. The ability to choose among different processors is intended to make it easy to add support for new image formats; improve support for existing image formats via the substitution of better decoders; and decouple the image server implementation from any one decoder.</p>
 
-<p>Currently, all processors can work with <a href="resolvers.html#FilesystemResolver">FilesystemResolver</a>, and the majority can work with <a href="resolvers.html#HttpResolver">HttpResolver</a>.</p>
-
 <p>In terms of format support, a distinction is made between the concepts of source format and output format. Available output formats may differ on a per-platform or per-instance basis depending on the source format.</p>
 
 <p>Supported source formats depend on the processor, and possibly installed
 libraries/delegates, etc., as well. Lists of these are displayed on the
-landing page, at <span class="filename">/iiif</span>. A list of output formats supported <em>for a given source format</em> is contained within the response to an information request (<span class="filename">/iiif/{identifier}/info.json</span>).</p>
+landing page. A list of output formats supported <em>for a given source format</em> is contained within the response to an information request (such as <span class="filename">/iiif/2/{identifier}/info.json</span>).</p>
 
 <p>For all of the rest of the source formats you would like to serve, it's a good idea to experiment with different processors, comparing their performance, resource usage, and output quality.</p>
 
-<h3 id="Java2dProcessor">Java2dProcessor</h3>
-
-<p>Java2dProcessor uses the Java ImageIO framework and Java 2D API to load and process images in a native-Java way. This is a good processor to get started with as it has no external dependencies and works out-of-the-JAR.</p>
-
-<p>ImageIO, as its name implies, is simply an I/O interface that does not care about image formats, and therefore the list of formats supported by this processor varies depending on the codec JARs available in the classpath. Cantaloupe includes support for some common ones.</p>
-
-<p>Java2dProcessor buffers entire source images in RAM, and is therefore
-memory-intensive. (See the section on <a href="getting-started.html#Memory">memory considerations</a>.) Large amounts of RAM and fast storage help.</p>
-
-<h3 id="GraphicsMagickProcessor">GraphicsMagickProcessor</h3>
-
-<p>GraphicsMagickProcessor uses <a href="http://im4java.sourceforge.net">im4java</a> to fork out to the <a href="http://www.graphicsmagick.org">GraphicsMagick</a> executable
-(<span class="filename">gm</span>). As such, GraphicsMagick must be installed.</p>
-
-<p>GraphicsMagick produces high-quality output and supports all of the IIIF transforms and all IIIF output formats (assuming the necessary libraries are installed; see <a href="http://www.graphicsmagick.org/formats.html">Supported Formats</a>).</p>
-
-<p>GraphicsMagickProcessor is a good fallback processor, as it supports a wide range of source formats and is generally faster than <a href="#ImageMagickProcessor">ImageMagickProcessor</a>. It is recommended to find or compile a "Q8" version of GraphicsMagick, as its memory use will be halved.</p>
-
-<h3 id="ImageMagickProcessor">ImageMagickProcessor</h3>
-
-<p>ImageMagickProcessor, like <a href="#GraphicsMagickProcessor">GraphicsMagickProcessor</a>, uses
-<a href="http://im4java.sourceforge.net">im4java</a> to wrap <a href="http://www.imagemagick.org/">ImageMagick</a> commands. As such, ImageMagick must be installed.</p>
-
-<p>ImageMagick produces high-quality output and supports all of the IIIF
-transforms and all IIIF output formats, assuming the necessary delegates are installed. It also supports a wide array of source formats.</p>
-
-<p>ImageMagick is not known for being particularly fast or efficient, but it is generally quite usable. It is recommended to find or compile a "Q8" version of ImageMagick, as its memory use will be halved.</p>
-
-<h3 id="KakaduProcessor">KakaduProcessor</h3>
-
-<p>KakaduProcessor uses the <span class="filename">kdu_expand</span> and <span class="filename">kdu_jp2info</span> binaries &mdash; part of the
-<a href="http://www.kakadusoftware.com">Kakadu</a> SDK &mdash; to efficiently extract regions of JPEG2000 source images. This processor is capable of performing well even with large JP2s.</p>
-
-<p>Although it does support some other operations, <span class="filename">kdu_expand</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. The rest of the IIIF operations (differential scaling, rotation, etc.) are performed using either the Java 2D or JAI APIs (configurable).</p>
-
-<p>Kakadu is not free and the SDK is not included with Cantaloupe.</p>
-
-<p><em>Note 1: KakaduProcessor does not work in Windows, as it requires access to <span class="filename">/dev/stdout</span>.</em></p>
-
-<p><em>Note 2: KakaduProcessor only works with FilesystemResolver.</em></p>
-
-<h3 id="JaiProcessor">JaiProcessor</h3>
-
-<p>Java Advanced Imaging (JAI) is a sophisticated image processing library developed by Sun until around 2006. JaiProcessor uses an updated fork called <a href="https://github.com/geosolutions-it/jai-ext">JAI-EXT</a>.</p>
-
-<p>JAI offers several theoretical advantages over Java 2D for this application: a more efficient rendering pipeline that should reduce memory usage, and capability of region-of-interest decoding with some formats. Whether these advantages play out in reality is an open question; the author's own profiling seems to indicate maybe not.</p>
-
-<p>JaiProcessor can read and write the same formats as Java2dProcessor.</p>
-
-<p>Years ago, Sun published <a href="http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-java-client-419417.html">platform-native accelerator JARs</a> called <a href="http://www.oracle.com/technetwork/java/install-1-1-2-135866.html">mediaLib</a> for Windows, Linux, and Solaris, which improved JAI's performance. It is unknown whether these still work on modern platforms, but perhaps they are something to try.</p>
-
-<p><em>Note: if mediaLib is not installed, an error message will be generated saying, "Could not find mediaLib accelerator wrapper classes. Continuing in pure Java mode." This is harmless, but can be suppressed anyway by launching Cantaloupe with the <code>-Dcom.sun.media.jai.disableMediaLib=true</code> option.</em></p>
-
-<h3 id="FfmpegProcessor">FfmpegProcessor</h3>
-
-<p>FfmpegProcessor uses the <a href="http://www.ffmpeg.org">FFmpeg</a> tool to extract still frames from video files. It can be used for video thumbnail generation á la YouTube, as well as deep zooming of high-resolution still frames.</p>
-
-<p>FfmpegProcessor has been tested with FFmpeg version 2.8. Other versions may or may not work.</p>
-
-<h4>Optional Parameters</h4>
-
-<p>FFmpegProcessor supports a <code>time</code> URL query parameter which can be used to return a frame at a particular second in the source video. The value of this parameter should be in <code>hours:minutes:seconds</code> format, like:</p>
-
-<pre>http://example.org/iiif/video.mp4/full/full/0/default.jpg?time=00:02:15</pre>
-
-<p>If the <code>time</code> parameter is not present in the URL, the first frame will be returned.</p>
-
-<p>Note that the <code>time</code> parameter is nonstandard and Cantaloupe-specific.</p>
+<hr>
 
 <h3 id="Compatibility">Processor/Resolver Compatibility</h3>
 
-<p>A processor's ability to work with a given resolver depends on the interfaces implemented by both:</p>
-
-<ul>
-  <li>StreamProcessors can work with either FileResolvers or StreamResolvers.</li> <li>FileProcessors can work only with FileResolvers.</li>
-</ul>
-
-<p>In the table below, the red cells indicate processors that want to open and seek around the source data directly, and are not able to consume input from a Java stream.</p>
-
 <table class="table table-striped table-bordered">
   <tr>
-    <th rowspan="2"></th>
-    <th colspan="4">Resolver</th>
-  </tr>
-  <tr>
+    <th></th>
     <th><a href="resolvers.html#AmazonS3Resolver">Amazon S3</a></th>
     <th><a href="resolvers.html#FilesystemResolver">Filesystem</a></th>
     <th><a href="resolvers.html#HttpResolver">HTTP</a></th>
@@ -225,10 +169,10 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
   </tr>
   <tr>
     <td><a href="processors.html#FfmpegProcessor">FfmpegProcessor</a></td>
-    <td class="bg-danger">&times;</td>
+    <td class="bg-danger"></td>
     <td class="bg-success">&check;</td>
-    <td class="bg-danger">&times;</td>
-    <td class="bg-danger">&times;</td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
   </tr>
   <tr>
     <td><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a></td>
@@ -260,18 +204,121 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
   </tr>
   <tr>
     <td><a href="processors.html#KakaduProcessor">KakaduProcessor</a></td>
-    <td class="bg-danger">&times;</td>
+    <td class="bg-danger"></td>
     <td class="bg-success">&check;</td>
-    <td class="bg-danger">&times;</td>
-    <td class="bg-danger">&times;</td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a></td>
+    <td class="bg-danger"></td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
   </tr>
 </table>
+
+<hr>
+
+<h3 id="Java2dProcessor">Java2dProcessor</h3>
+
+<p>Java2dProcessor uses the Java ImageIO framework and Java 2D API to load and process images in a native-Java way. This is a good processor to get started with as it has no external dependencies and works out-of-the-JAR.</p>
+
+<p>ImageIO, as its name implies, is simply an I/O interface that does not care about image formats, and therefore the list of formats supported by this processor varies depending on the codec JARs available in the classpath. Cantaloupe includes support for some common ones.</p>
+
+<p>Java2dProcessor has been written to exploit the ImageIO image readers as efficiently as possible. Special attention has been paid to its handling of tiled images, such as tile-encoded TIFFs, for which it reads only the necessary tiles for a given request. It is also capable of reading the sub-images contained within multi-resolution (pyramidal) TIFF images. (Striped TIFF images work, too, but are not recommended except at small sizes.)</p>
+
+<p>Because Java2dProcessor does all its work in Java, it places a burden on the JVM heap. Although it tries to be efficient at reading images, it does have to create derivative images at every processing step (scaling, rotating, etc.), which have to be temporarily buffered in RAM. (See the section on <a href="deployment.html#HardwareMemory">memory considerations</a>.)</p>
+
+<hr>
+
+<h3 id="GraphicsMagickProcessor">GraphicsMagickProcessor</h3>
+
+<p>GraphicsMagickProcessor uses <a href="http://im4java.sourceforge.net">im4java</a> to fork out to the <a href="http://www.graphicsmagick.org">GraphicsMagick</a> executable
+(<span class="filename">gm</span>). As such, GraphicsMagick must be installed.</p>
+
+<p>GraphicsMagick produces high-quality output and supports all of the IIIF transforms and most IIIF output formats (assuming the necessary libraries are installed; see <a href="http://www.graphicsmagick.org/formats.html">Supported Formats</a>).</p>
+
+<p>GraphicsMagickProcessor is generally faster than <a href="#ImageMagickProcessor">ImageMagickProcessor</a>. However, like ImageMagickProcessor, it deals poorly with large images.</p>
+
+<div class="alert alert-info">It is recommended to find or compile a "Q8" version of GraphicsMagick, as its memory use will be halved.</div>
+
+<hr>
+
+<h3 id="ImageMagickProcessor">ImageMagickProcessor</h3>
+
+<p>ImageMagickProcessor, like <a href="#GraphicsMagickProcessor">GraphicsMagickProcessor</a>, uses
+<a href="http://im4java.sourceforge.net">im4java</a> to wrap <a href="http://www.imagemagick.org/">ImageMagick</a> commands. As such, ImageMagick must be installed.</p>
+
+<p>ImageMagick produces high-quality output and supports all of the IIIF
+transforms and all IIIF output formats, assuming the necessary delegates are installed. It also supports a wide array of source formats.</p>
+
+<p>ImageMagick is not known for being particularly fast or efficient, but it is generally usable with small images (into the low tens of megapixels).</p>
+
+<div class="alert alert-info">It is recommended to find or compile a "Q8" version of ImageMagick, as its memory use will be halved.</div>
+
+<hr>
+
+<h3 id="JaiProcessor">JaiProcessor</h3>
+
+<p>Java Advanced Imaging (JAI) is a sophisticated image processing library developed by Sun until around 2006. JaiProcessor uses an updated fork called <a href="https://github.com/geosolutions-it/jai-ext">JAI-EXT</a>.</p>
+
+<p>JAI offers several theoretical advantages over Java 2D for this application: a more efficient rendering pipeline that should reduce memory usage, and capability of region-of-interest decoding with some formats. Whether these advantages play out in reality is an open question; the author's own profiling seems to indicate maybe not.</p>
+
+<p>JaiProcessor can read and write the same formats as Java2dProcessor.</p>
+
+<p>Years ago, Sun published <a href="http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-java-client-419417.html">platform-native accelerator JARs</a> called <a href="http://www.oracle.com/technetwork/java/install-1-1-2-135866.html">mediaLib</a> for Windows, Linux, and Solaris, which improved JAI's performance. It is unknown whether these still work on modern platforms.</p>
+
+<div class="alert alert-warning">Note: JaiProcessor is buggy and most development effort thus far has been applied to Java2dProcessor instead. This processor should be considered experimental and Java2dProcessor should be preferred in all cases.</div>
+
+<hr>
+
+<h3 id="KakaduProcessor">KakaduProcessor</h3>
+
+<p>KakaduProcessor uses the <span class="filename">kdu_expand</span> and <span class="filename">kdu_jp2info</span> binaries from the
+<a href="http://www.kakadusoftware.com">Kakadu</a> SDK to efficiently decode JPEG2000 source images. This processor is capable of performing well even with large JP2s.</p>
+
+<p>Although it does support some other operations, <span class="filename">kdu_expand</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. The rest of the IIIF operations (differential scaling, rotation, etc.) are performed using either the Java 2D or JAI APIs (configurable).</p>
+
+<div class="alert alert-warning">Note: KakaduProcessor does not work in Windows, as it requires access to <span class="filename">/dev/stdout</span>.</div>
+
+<div class="alert alert-info">Note: Kakadu is not free and the SDK is not included with Cantaloupe.</div>
+
+<hr>
+
+<h3 id="OpenJpegProcessor">OpenJpegProcessor</h3>
+
+<p>OpenJpegProcessor uses the <span class="filename">opj_decompress</span> and <span class="filename">opj_dump</span> tools from the open-source
+<a href="http://www.openjpeg.org">OpenJPEG</a> project to decode JPEG2000 source images.</p>
+
+<p>Although it does support some other operations, <span class="filename">opj_decompress</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. The rest of the IIIF operations (differential scaling, rotation, etc.) are performed using either the Java 2D or JAI APIs (configurable).</p>
+
+<div class="alert alert-warning">Note: OpenJpegProcessor does not work in Windows, as it requires access to <span class="filename">/dev/stdout</span>.</div>
+
+<hr>
+
+<h3 id="FfmpegProcessor">FfmpegProcessor</h3>
+
+<p>FfmpegProcessor uses the <a href="http://www.ffmpeg.org">FFmpeg</a> tool to extract still frames from video files. It can be used for thumbnail generation á la YouTube, as well as for deep zooming of high-resolution still frames.</p>
+
+<p>FfmpegProcessor has been tested with FFmpeg version 2.8. Other versions may or may not work.</p>
+
+<h4>Optional Parameters</h4>
+
+<p>FFmpegProcessor supports a <code>time</code> URL query parameter (which is nonstandard and Cantaloupe-specific) which can be used to return a frame at a particular second in the source video. The value of this parameter should be in <code>hh:mm:ss</code> format, like:</p>
+
+<pre>http://example.org/iiif/2/video.mp4/full/full/0/default.jpg?time=00:02:15</pre>
+
+<p>If the <code>time</code> parameter is not present, the first frame will be returned.</p>
 
         </div>
       </div>
 
       <footer>
 </footer>
+
+<script src="/cantaloupe/scripts/bootstrap.min.js"></script>
+<script src="/cantaloupe/scripts/base.js"></script>
 
 
     </div>

@@ -4,7 +4,10 @@ edu.illinois.library.cantaloupe.image
 edu.illinois.library.cantaloupe.logging
 edu.illinois.library.cantaloupe.logging.velocity
 edu.illinois.library.cantaloupe.processor
-edu.illinois.library.cantaloupe.request
 edu.illinois.library.cantaloupe.resolver
 edu.illinois.library.cantaloupe.resource
+edu.illinois.library.cantaloupe.resource.iiif
+edu.illinois.library.cantaloupe.resource.iiif.v1
+edu.illinois.library.cantaloupe.resource.iiif.v2
+edu.illinois.library.cantaloupe.script
 edu.illinois.library.cantaloupe.util

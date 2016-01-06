@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+
+    <appender name="AppConsoleLog" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="edu.illinois.library.cantaloupe.logging.ApplicationLogFilter" />
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <if condition='property("log.application.FileAppender.enabled").contains("true")'>
+        <then>
+            <appender name="AppFileLog" class="ch.qos.logback.core.FileAppender">
+                <filter class="edu.illinois.library.cantaloupe.logging.ApplicationLogFilter" />
+                <file>${log.application.FileAppender.pathname}</file>
+                <encoder>
+                    <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+                </encoder>
+            </appender>
+        </then>
+    </if>
+
+    <if condition='property("log.application.RollingFileAppender.enabled").contains("true")'>
+        <then>
+            <appender name="AppRollingFileLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+                <filter class="edu.illinois.library.cantaloupe.logging.ApplicationLogFilter" />
+                <file>${log.application.RollingFileAppender.pathname}</file>
+                <if condition='property("log.application.RollingFileAppender.policy").contains("TimeBasedRollingPolicy")'>
+                    <then>
+                        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                            <fileNamePattern>${log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern}</fileNamePattern>
+                            <maxHistory>${log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history}</maxHistory>
+                        </rollingPolicy>
+                    </then>
+                </if>
+                <encoder>
+                    <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+                </encoder>
+            </appender>
+        </then>
+    </if>
+
+    <appender name="AccessConsoleLog" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="edu.illinois.library.cantaloupe.logging.AccessLogFilter" />
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <if condition='property("log.access.FileAppender.enabled").contains("true")'>
+        <then>
+            <appender name="AccessFileLog" class="ch.qos.logback.core.FileAppender">
+                <filter class="edu.illinois.library.cantaloupe.logging.AccessLogFilter" />
+                <file>${log.access.FileAppender.pathname}</file>
+                <encoder>
+                    <!-- already in W3C Extended Log File Format -->
+                    <pattern>%msg%n</pattern>
+                </encoder>
+            </appender>
+        </then>
+    </if>
+
+    <if condition='property("log.access.RollingFileAppender.enabled").contains("true")'>
+        <then>
+            <appender name="AccessRollingFileLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+                <filter class="edu.illinois.library.cantaloupe.logging.AccessLogFilter" />
+                <file>${log.access.RollingFileAppender.pathname}</file>
+                <if condition='property("log.access.RollingFileAppender.policy").contains("TimeBasedRollingPolicy")'>
+                    <then>
+                        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                            <fileNamePattern>${log.access.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern}</fileNamePattern>
+                            <maxHistory>${log.access.RollingFileAppender.TimeBasedRollingPolicy.max_history}</maxHistory>
+                        </rollingPolicy>
+                    </then>
+                </if>
+                <encoder>
+                    <!-- already in W3C Extended Log File Format -->
+                    <pattern>%msg%n</pattern>
+                </encoder>
+            </appender>
+        </then>
+    </if>
+
+    <logger name="edu.illinois.library.cantaloupe.logging.AccessLogService" additivity="false">
+        <if condition='property("log.access.ConsoleAppender.enabled").contains("true")'>
+            <then>
+                <appender-ref ref="AccessConsoleLog" />
+            </then>
+        </if>
+        <if condition='property("log.access.FileAppender.enabled").contains("true")'>
+            <then>
+                <appender-ref ref="AccessFileLog" />
+            </then>
+        </if>
+        <if condition='property("log.access.RollingFileAppender.enabled").contains("true")'>
+            <then>
+                <appender-ref ref="AccessRollingFileLog" />
+            </then>
+        </if>
+    </logger>
+    <logger name="eu.medsea.mimeutil" level="INFO" />
+    <logger name="org.apache.commons.configuration" level="INFO" />
+    <logger name="edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute" level="INFO" />
+    <logger name="org.restlet" level="INFO" />
+
+    <root level="${log.application.level}">
+        <if condition='property("log.application.ConsoleAppender.enabled").contains("true")'>
+            <then>
+                <appender-ref ref="AppConsoleLog" />
+            </then>
+        </if>
+        <if condition='property("log.application.FileAppender.enabled").contains("true")'>
+            <then>
+                <appender-ref ref="AppFileLog" />
+            </then>
+        </if>
+        <if condition='property("log.application.RollingFileAppender.enabled").contains("true")'>
+            <then>
+                <appender-ref ref="AppRollingFileLog" />
+            </then>
+        </if>
+    </root>
+
+</configuration>

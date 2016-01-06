@@ -5,12 +5,15 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Extensible image server in Java
+  <meta name="description" content="Extensible multi-protocol image server in Java
 ">
 
+  <title>Cantaloupe</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="/cantaloupe/css/base.css">
 
-  <title>Cantaloupe</title>
+  <script src="/cantaloupe/scripts/jquery.min.js"></script>
 </head>
 
 
@@ -26,7 +29,7 @@
   <h1>
     <a href="/cantaloupe/">Cantaloupe</a>
     <br>
-    <small>Extensible IIIF Image API 2.0 image server in Java</small>
+    <small>Extensible multi-protocol dynamic image server in Java</small>
   </h1>
 </header>
 
@@ -40,23 +43,41 @@
       <ul>
         <li><a href="/cantaloupe/#About">About</a></li>
         <li><a href="/cantaloupe/#Features">Features</a></li>
-        <li><a href="/cantaloupe/#Download">Download</a></li>
       </ul>
     </li>
     <li>
       <a href="getting-started.html">Getting Started</a>
       <ul>
         <li><a href="getting-started.html#Requirements">Requirements</a></li>
+        <li><a href="getting-started.html#Download">Download</a></li>
         <li><a href="getting-started.html#Configuration">Configuration</a></li>
         <li><a href="getting-started.html#Running">Running</a></li>
         <li><a href="getting-started.html#Upgrading">Upgrading</a></li>
-        <li><a href="getting-started.html#Proxying">Proxying</a></li>
-        <li><a href="getting-started.html#Considerations">Considerations</a></li>
+        <li><a href="getting-started.html#GettingHelp">Getting Help</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="deployment.html">Deployment</a>
+      <ul>
+        <li><a href="deployment.html#Hardware">Hardware</a></li>
+        <li><a href="deployment.html#Caching">Caching</a></li>
+        <li><a href="deployment.html#Limiting">Limiting</a></li>
+        <li><a href="deployment.html#Reverse-Proxying">Reverse-Proxying</a></li>
+        <li><a href="deployment.html#SSL%2FTLS">SSL/TLS</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="endpoints.html">Endpoints</a>
+      <ul>
+        <li><a href="endpoints.html#IIIFImageAPI1">IIIF Image API 1.x</a></li>
+        <li><a href="endpoints.html#IIIFImageAPI2">IIIF Image API 2.x</a></li>
       </ul>
     </li>
     <li>
       <a href="resolvers.html">Resolvers</a>
       <ul>
+        <li><a href="resolvers.html#Static%20Resolution">Static Resolver</a></li>
+        <li><a href="resolvers.html#Dynamic%20Resolution">Dynamic Resolvers</a></li>
         <li><a href="resolvers.html#FilesystemResolver">Filesystem</a></li>
         <li><a href="resolvers.html#HttpResolver">HTTP</a></li>
         <li><a href="resolvers.html#JdbcResolver">JDBC</a></li>
@@ -66,26 +87,32 @@
     <li>
       <a href="processors.html">Processors</a>
       <ul>
+        <li><a href="processors.html#Compatibility">Resolver Compatibility</a></li>
         <li><a href="processors.html#Java2dProcessor">Java 2D</a></li>
         <li><a href="processors.html#GraphicsMagickProcessor">GraphicsMagick</a></li>
         <li><a href="processors.html#ImageMagickProcessor">ImageMagick</a></li>
-        <li><a href="processors.html#KakaduProcessor">Kakadu</a></li>
         <li><a href="processors.html#JaiProcessor">JAI</a></li>
+        <li><a href="processors.html#KakaduProcessor">Kakadu</a></li>
+        <li><a href="processors.html#OpenJpegProcessor">OpenJPEG</a></li>
         <li><a href="processors.html#FfmpegProcessor">FFmpeg</a></li>
-        <li><a href="processors.html#Compatibility">Compatibility</a></li>
       </ul>
     </li>
     <li>
-      <a href="caches.html">Caches</a>
+      <a href="caches.html">Caches (Server-Side)</a>
       <ul>
+        <li><a href="caches.html#Purging">Purging</a></li>
         <li><a href="caches.html#FilesystemCache">Filesystem</a></li>
         <li><a href="caches.html#JdbcCache">JDBC</a></li>
-        <li><a href="caches.html#Flushing">Flushing</a></li>
-        <li><a href="caches.html#Considerations">Considerations</a></li>
       </ul>
     </li>
-    <li><a href="access-control.html">Access Control</a></li>
-    <li><a href="client-caching.html">Client-Side Caching</a></li>
+    <li><a href="client-caching.html">Caching (Client-Side)</a></li>
+    <li>
+      <a href="access-control.html">Access Control</a>
+      <ul>
+        <li><a href="access-control.html#Authentication">Authentication</a></li>
+        <li><a href="access-control.html#Authorization">Authorization</a></li>
+      </ul>
+    </li>
     <li>
       <a href="logging.html">Logging</a>
       <ul>
@@ -101,15 +128,12 @@
         <li><a href="source-formats.html#TIFF">TIFF</a></li>
       </ul>
     </li>
+    <li><a href="delegate-script.html">Delegate Script</a></li>
     <li>
-      <a href="developers.html">Developer's Guide</a>
+      <a href="developers.html">For Developers</a>
       <ul>
-        <li><a href="developers.html#Resolvers">Custom Resolvers</a></li>
-        <li><a href="developers.html#Processors">Custom Processors</a></li>
-        <li><a href="developers.html#Caches">Custom Caches</a></li>
         <li><a href="/cantaloupe/javadoc/">Javadoc</a></li>
         <li><a href="developers.html#Contributing">Contributing</a></li>
-        <li><a href="developers.html#Administrative">Administrative</a></li>
       </ul>
     </li>
     <li><a href="changes.html">Change Log</a>
@@ -121,47 +145,52 @@
         <div class="col-sm-9">
           <h2>Logging</h2>
 
-<p>Cantaloupe maintains two types of logs &mdash; application and access &mdash; which are independently configurable.
+<p>Cantaloupe maintains two logs&mdash;application and access&mdash;which are independently configurable.</p>
 
 <h3 id="Application Log">Application Log</h3>
 
-<pre># `trace`, `debug`, `info`, `warn`, `error`, `all`, or `off`
-log.application.level = debug
+<h4>Log Levels</h4>
 
-log.application.ConsoleAppender.enabled = true
-log.application.ConsoleAppender.pattern = %d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+<p>The <code>log.application.level</code> configuration key specifies the severity threshold beneath which log messages will be discarded. Available values, in order of importance, are: <code>trace</code>, <code>debug</code>, <code>info</code>, <code>warn</code>, and <code>error</code>.</p>
 
-log.application.FileAppender.enabled = false
-log.application.FileAppender.pathname = /path/to/logs/cantaloupe.log
-log.application.FileAppender.pattern = %date %level [%thread] %logger{10} [%file:%line] %msg%n
+<p>Additionally, <code>all</code> can be used to log absolutely everything.</p>
 
-log.application.RollingFileAppender.enabled = false
-log.application.RollingFileAppender.pathname = /path/to/logs/cantaloupe.log
-log.application.RollingFileAppender.pattern = %date %level [%thread] %logger{10} [%file:%line] %msg%n
-log.application.RollingFileAppender.policy = TimeBasedRollingPolicy
-log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/cantaloupe-%d{yyyy-MM-dd}.log
-log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30</pre>
+<p>To completely disable the application log, use <code>off</code>.</p>
+
+<h4>Appenders</h4>
+
+<p>Appenders direct log messages to various destinations, like files and/or the console. (The default configuration file logs only to the console.) There are three available appenders &mdash; ConsoleAppender, FileAppender, and RollingFileAppender &mdash; which can be enabled or disabled in any combination.</p>
+
+<h5>ConsoleAppender</h5>
+
+<p>ConsoleAppender logs to the console. Set the <code>log.application.ConsoleAppender.enabled</code> configuration key to <code>true</code> or <code>false</code> to enable or disable.</p>
+
+<h5>FileAppender</h5>
+
+<p>FileAppender logs to a single file. Use the <code>log.application.FileAppender.enabled</code> key to enable or disable, and the <code>log.application.FileAppender.pathname</code> key to set the absolute pathname of the log file.</p>
+
+<div class="alert alert-warning">Note: log files can become very large with this appender.</div>
+
+<h5>RollingFileAppender</h5>
+
+<p>RollingFileAppender logs to a file that rolls over periodically (to avoid creating a single huge file). Use the <code>log.application.RollingFileAppender.enabled</code> key to enable or disable, and the <code>log.application.RollingFileAppender.pathname</code> key to set the absolute pathname of the primary log file.</p>
+
+<p>Currently, the only available rolling policy (<code>log.application.RollingFileAppender.policy</code>) is <code>TimeBasedRollingPolicy</code>, which rolls over the log file based on the value of <code>log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern</code>. <code>log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history</code> defines how many rolled-over log files will be kept.</p>
 
 <h3 id="Access Log">Access Log</h3>
 
-<p>Access logs are written in the <a href="http://www.w3.org/TR/WD-logfile.html">W3C Extended Log File Format</a>.
+<p>Access logs are written in the <a href="http://www.w3.org/TR/WD-logfile.html">W3C Extended Log File Format</a>. To enable or disable the access log, set the value of <code>log.access.ConsoleAppender.enabled</code> to <code>true</code> or <code>false</code>.</p>
 
-<pre>log.access.ConsoleAppender.enabled = true
-
-log.access.FileAppender.enabled = false
-log.access.FileAppender.pathname = /path/to/logs/access.log
-
-log.access.RollingFileAppender.enabled = false
-log.access.RollingFileAppender.pathname = /path/to/logs/access.log
-log.access.RollingFileAppender.policy = TimeBasedRollingPolicy
-log.access.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/access-%d{yyyy-MM-dd}.log
-log.access.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30</pre>
+<p>Access log appenders work the same as <a href="#Application%20Log">application log</a> appenders.</p>
 
         </div>
       </div>
 
       <footer>
 </footer>
+
+<script src="/cantaloupe/scripts/bootstrap.min.js"></script>
+<script src="/cantaloupe/scripts/base.js"></script>
 
 
     </div>

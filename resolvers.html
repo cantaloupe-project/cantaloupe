@@ -5,12 +5,15 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Extensible image server in Java
+  <meta name="description" content="Extensible multi-protocol image server in Java
 ">
 
+  <title>Cantaloupe</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="/cantaloupe/css/base.css">
 
-  <title>Cantaloupe</title>
+  <script src="/cantaloupe/scripts/jquery.min.js"></script>
 </head>
 
 
@@ -26,7 +29,7 @@
   <h1>
     <a href="/cantaloupe/">Cantaloupe</a>
     <br>
-    <small>Extensible IIIF Image API 2.0 image server in Java</small>
+    <small>Extensible multi-protocol dynamic image server in Java</small>
   </h1>
 </header>
 
@@ -40,23 +43,41 @@
       <ul>
         <li><a href="/cantaloupe/#About">About</a></li>
         <li><a href="/cantaloupe/#Features">Features</a></li>
-        <li><a href="/cantaloupe/#Download">Download</a></li>
       </ul>
     </li>
     <li>
       <a href="getting-started.html">Getting Started</a>
       <ul>
         <li><a href="getting-started.html#Requirements">Requirements</a></li>
+        <li><a href="getting-started.html#Download">Download</a></li>
         <li><a href="getting-started.html#Configuration">Configuration</a></li>
         <li><a href="getting-started.html#Running">Running</a></li>
         <li><a href="getting-started.html#Upgrading">Upgrading</a></li>
-        <li><a href="getting-started.html#Proxying">Proxying</a></li>
-        <li><a href="getting-started.html#Considerations">Considerations</a></li>
+        <li><a href="getting-started.html#GettingHelp">Getting Help</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="deployment.html">Deployment</a>
+      <ul>
+        <li><a href="deployment.html#Hardware">Hardware</a></li>
+        <li><a href="deployment.html#Caching">Caching</a></li>
+        <li><a href="deployment.html#Limiting">Limiting</a></li>
+        <li><a href="deployment.html#Reverse-Proxying">Reverse-Proxying</a></li>
+        <li><a href="deployment.html#SSL%2FTLS">SSL/TLS</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="endpoints.html">Endpoints</a>
+      <ul>
+        <li><a href="endpoints.html#IIIFImageAPI1">IIIF Image API 1.x</a></li>
+        <li><a href="endpoints.html#IIIFImageAPI2">IIIF Image API 2.x</a></li>
       </ul>
     </li>
     <li>
       <a href="resolvers.html">Resolvers</a>
       <ul>
+        <li><a href="resolvers.html#Static%20Resolution">Static Resolver</a></li>
+        <li><a href="resolvers.html#Dynamic%20Resolution">Dynamic Resolvers</a></li>
         <li><a href="resolvers.html#FilesystemResolver">Filesystem</a></li>
         <li><a href="resolvers.html#HttpResolver">HTTP</a></li>
         <li><a href="resolvers.html#JdbcResolver">JDBC</a></li>
@@ -66,26 +87,32 @@
     <li>
       <a href="processors.html">Processors</a>
       <ul>
+        <li><a href="processors.html#Compatibility">Resolver Compatibility</a></li>
         <li><a href="processors.html#Java2dProcessor">Java 2D</a></li>
         <li><a href="processors.html#GraphicsMagickProcessor">GraphicsMagick</a></li>
         <li><a href="processors.html#ImageMagickProcessor">ImageMagick</a></li>
-        <li><a href="processors.html#KakaduProcessor">Kakadu</a></li>
         <li><a href="processors.html#JaiProcessor">JAI</a></li>
+        <li><a href="processors.html#KakaduProcessor">Kakadu</a></li>
+        <li><a href="processors.html#OpenJpegProcessor">OpenJPEG</a></li>
         <li><a href="processors.html#FfmpegProcessor">FFmpeg</a></li>
-        <li><a href="processors.html#Compatibility">Compatibility</a></li>
       </ul>
     </li>
     <li>
-      <a href="caches.html">Caches</a>
+      <a href="caches.html">Caches (Server-Side)</a>
       <ul>
+        <li><a href="caches.html#Purging">Purging</a></li>
         <li><a href="caches.html#FilesystemCache">Filesystem</a></li>
         <li><a href="caches.html#JdbcCache">JDBC</a></li>
-        <li><a href="caches.html#Flushing">Flushing</a></li>
-        <li><a href="caches.html#Considerations">Considerations</a></li>
       </ul>
     </li>
-    <li><a href="access-control.html">Access Control</a></li>
-    <li><a href="client-caching.html">Client-Side Caching</a></li>
+    <li><a href="client-caching.html">Caching (Client-Side)</a></li>
+    <li>
+      <a href="access-control.html">Access Control</a>
+      <ul>
+        <li><a href="access-control.html#Authentication">Authentication</a></li>
+        <li><a href="access-control.html#Authorization">Authorization</a></li>
+      </ul>
+    </li>
     <li>
       <a href="logging.html">Logging</a>
       <ul>
@@ -101,15 +128,12 @@
         <li><a href="source-formats.html#TIFF">TIFF</a></li>
       </ul>
     </li>
+    <li><a href="delegate-script.html">Delegate Script</a></li>
     <li>
-      <a href="developers.html">Developer's Guide</a>
+      <a href="developers.html">For Developers</a>
       <ul>
-        <li><a href="developers.html#Resolvers">Custom Resolvers</a></li>
-        <li><a href="developers.html#Processors">Custom Processors</a></li>
-        <li><a href="developers.html#Caches">Custom Caches</a></li>
         <li><a href="/cantaloupe/javadoc/">Javadoc</a></li>
         <li><a href="developers.html#Contributing">Contributing</a></li>
-        <li><a href="developers.html#Administrative">Administrative</a></li>
       </ul>
     </li>
     <li><a href="changes.html">Change Log</a>
@@ -121,69 +145,124 @@
         <div class="col-sm-9">
           <h2>Resolvers</h2>
 
-<p>Resolvers locate a source image based on the identifier in an IIIF URL. In Java-speak, they take in an identifier and return an InputStream and/or File object from which the corresponding image can be read by a <a href="processors.html">processor</a>.</p>
+<p>Resolvers locate a source image based on the image identifier in a request URL. In Java-speak, they take in an identifier and return a File or ReadableByteChannel object from which the corresponding image can be read by a <a href="processors.html">processor</a>.</p>
+
+<p>(This distinction is important because <a href="processors.html#Compatibility">not all processors can work with all resolvers</a>.)</p>
+
+<p>The resolution process can be configured to be <a href="#Static%20Resolver">static</a>&mdash;with all requests using the same resolver&mdash;or <a href="#Dynamic%20Resolvers">dynamic</a>, with images being served from different resolvers depending on their identifier.</p>
+
+<h3 id="Static Resolver">Static Resolver</h3>
+
+<p>When the <code>resolver.static</code> configuration key is set to the name of a resolver, Cantaloupe will use that resolver for all requests. This is simple and should work in most scenarios.</p>
+
+<h3 id="Dynamic Resolvers">Dynamic Resolvers</h3>
+
+<p>When a static resolver is not flexible enough, it is also possible to serve images from different sources simultaneously. For example, you may have some images stored on a filesystem, and others stored on Amazon S3. <em>If you can differentiate their sources based on their identifier in code</em>&mdash;either by analyzing the identifier string, or performing some kind of service request&mdash;you can use the <a href="delegate-script.html">delegate script</a> mechanism to write a simple Ruby method to tell Cantaloupe which resolver to use for a given request.</p>
+
+<p>To enable dynamic resolver selection, set the <code>resolver.delegate</code> configuration key to <code>true</code>. Then, implement the <code>get_resolver(identifier)</code> method in the delegate script, which takes in an identifier and returns a resolver name (such as FilesystemResolver, HttpResolver, etc.) For example:</p>
+
+<pre>module Cantaloupe
+  def self.get_resolver(identifier)
+    # Here, you would perform some kind of analysis on `identifier`:
+    # parse it, look it up in a web service or database...
+    # and then return the name of the resolver to use to serve it.
+    'FilesystemResolver'
+  end
+end</pre>
+
+<p>See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script.</p>
 
 <h3 id="FilesystemResolver">FilesystemResolver</h3>
 
-<p>FilesystemResolver maps an identifier from an IIIF URL to a filesystem path, for retrieving images on a local or attached filesystem.</p>
+<p>FilesystemResolver maps a URL identifier to a filesystem path, for retrieving images on a local or attached filesystem. In addition to being the most compatible resolver, <strong>this is also the most efficient resolver</strong> and may or may not be the only option for serving very large source images.</p>
 
 <p>For images with extensions that are missing or unrecognized, this resolver will check the "magic number" to determine type, which will add some overhead. It is therefore slightly more efficient to serve images with extensions.</p>
 
-<h4>Prefix and Suffix</h4>
+<p>FilesystemResolver supports two distinct lookup strategies, defined by the <code>FilesystemResolver.lookup_strategy</code> configuration option.</p>
 
-<p>The <code>FilesystemResolver.path_prefix</code> and <code>path_suffix</code> configuration options are optional and intended to make URLs shorter, more stable, and hide sensitive information. For example, with these options set as such:</p>
+<h4>BasicLookupStrategy</h4>
 
-<pre>FilesystemResolver.path_prefix = /usr/local/images/
-FilesystemResolver.path_suffix =</pre>
+<p>BasicLookupStrategy locates images by concatenating a pre-defined path prefix and/or suffix. For example, with the following configuration options set:</p>
+
+<pre># Note trailing slash!
+FilesystemResolver.BasicLookupStrategy.path_prefix = /usr/local/images/
+FilesystemResolver.BasicLookupStrategy.path_suffix =</pre>
 
 <p>An identifier of <code>image.jpg</code> in the URL will resolve to
 <span class="filename">/usr/local/images/image.jpg</span>.</p>
 
-<p><em>Note: it is dangerous to <strong>not</strong> use <code>path_prefix</code>. The shallower the path, the more of the filesystem that will be exposed.</em></p>
+<p>To prevent arbitrary directory traversal, BasicLookupStrategy will strip out <code>..{path separator}</code> and <code>{path separator}..</code> from identifiers before resolving the path.</p>
 
-<h4>Path Separator</h4>
+<div class="alert alert-danger">Note: it is dangerous to <strong>not</strong> use <code>path_prefix</code>. The shallower the path, the more of the filesystem that will be exposed.</div>
 
-<p>The IIIF Image API 2.0 specification mandates that identifiers in URLs be percent-encoded, which changes slashes to <code>%2F</code>. Some reverse-proxy servers automatically decode this into <code>/</code> before passing on the request. This will cause HTTP 404 errors in Cantaloupe.</p>
+<h4 id="FilesystemResolverScriptLookupStrategy">ScriptLookupStrategy</h4>
 
-<p>If you are unable to configure your reverse proxy to stop decoding slashes, the <code>FilesystemResolver.path_separator</code> configuration option will enable you to use an alternate string as a path separator in an identifier. (Be sure to supply the non-percent-encoded string, and then percent-encode it in URLs if it contains any URL-unsafe characters.)</p>
+<p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple filesystems, or perhaps your identifiers are opaque and you need to perform a database or web service request to locate the corresponding images. With this lookup strategy, you can tell FilesystemResolver to invoke a method in your <a href="delegate-script.html">delegate script</a> and capture the pathname it returns.</p>
 
-<p>To prevent arbitrary directory traversal, FilesystemResolver will strip out <code>..{path separator}</code> and <code>{path separator}..</code> from identifiers before resolving the path.</p>
+<p>The delegate script method, <code>get_pathname(identifier)</code>, will take in an identifier and should return a pathname, if available, or <code>nil</code>, if not. A Solr query, for example, could look like:</p>
+
+<pre>require 'net/http'
+require 'cgi'
+
+module Cantaloupe
+  def self.get_pathname(identifier)
+    uri = 'http://localhost:8983/solr/collection1/select?q=' +
+        CGI.escape('id:"' + identifier + '"') +
+        '&amp;fl=pathname_si&amp;wt=ruby'
+    uri = URI.parse(uri)
+
+    http = Net::HTTP.new(uri.host, uri.port)
+    request = Net::HTTP::Get.new(uri.request_uri)
+    response = http.request(request)
+    return nil if response.code.to_i >= 400
+
+    results = eval(response.body)['response']['docs']
+    results.any? ? results.first['pathname_si'] : nil
+  end
+end</pre>
+
+<p>See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script in Cantaloupe.</p>
+
+<hr>
 
 <h3 id="HttpResolver">HttpResolver</h3>
 
-<p>HttpResolver maps an identifier from an IIIF URL to an HTTP resource. Image access via HTTP may be slower than via a filesystem, though this varies depending on the relative performance of both, as well as the particular source image format and processor.</p>
+<p>HttpResolver maps a URL identifier to an HTTP or HTTPS resource, for retrieving images from a web server.</p>
 
 <p>It is preferable to use this resolver with source images with recognizable file extensions. For images with an extension that is missing or unrecognizable, it will issue an HTTP HEAD request to the server to check the <code>Content-Type</code> header. If the type cannot be inferred from that, an HTTP 415 response will be returned.</p>
 
-<h4>Prefix and Suffix</h4>
+<p>HttpResolver supports two distinct lookup strategies, defined by the <code>HttpResolver.lookup_strategy</code> configuration option.</p>
 
-<p>The <code>HttpResolver.url_prefix</code> and <code>url_suffix</code> configuration options are optional and intended to make URLs shorter, more stable, and hide sensitive information. For example, with these options set as such:</p>
+<h4>BasicLookupStrategy</h4>
 
-<pre>HttpResolver.url_prefix = http://example.org/images/
+<p>BasicLookupStrategy locates images by concatenating a pre-defined URL prefix and/or suffix. For example, with the following configuration options set:</p>
+
+<pre># Note trailing slash!
+HttpResolver.url_prefix = http://example.org/images/
 HttpResolver.url_suffix =</pre>
 
 <p>An identifier of <code>image.jpg</code> in the URL will resolve to
 <span class="filename">http://example.org/images/image.jpg</span>.
 
-<h4>Path Separator</h4>
+<h4>ScriptLookupStrategy</h4>
 
-<p>The IIIF Image API 2.0 specification mandates that identifiers in URLs be percent-encoded, which changes slashes to <code>%2F</code>. Some proxy servers automatically decode this into <code>/</code> before passing on the request. This will cause HTTP 404 errors in Cantaloupe.
+<p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple URLs, or perhaps your identifiers are opaque and you need to run a database or web service request to locate them.  With this lookup strategy, you can tell FilesystemResolver to invoke a method in your <a href="delegate-script.html">delegate script</a> and capture the URL it returns.</p>
 
-<p>If you are unable to configure your proxy to stop decoding slashes, the <code>HttpResolver.path_separator</code> configuration option will enable you to use an alternate string as a path separator in an identifier. (Be sure to supply the non-percent-encoded string, and then percent-encode it in URLs if it contains any URL-unsafe characters.)</p>
+<p>The delegate script method, <code>get_url(identifier)</code>, will take in an identifier and should return a URL, if available, or <code>nil</code>, if not. See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script in Cantaloupe, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for an example of a similar script.</p>
+
+<hr>
 
 <h3 id="JdbcResolver">JdbcResolver</h3>
 
-<p>JdbcResolver maps an identifier from an IIIF URL to an RDBMS BLOB field, for retrieving images from a relational database.</p>
+<p>JdbcResolver maps a URL identifier to an RDBMS BLOB field, for retrieving images from a relational database.</p>
 
 <p>Cantaloupe does not include any JDBC drivers, so a driver JAR for the desired database must be obtained separately and saved somewhere on the classpath.</p>
 
-<p>The JDBC connection is initialized by the <code>JdbcResolver.connection_string</code>, <code>JdbcResolver.user</code>, and <code>JdbcResolver.password</code> configuration options. If the user or password are not necessary, they can be left blank. The connection string must use your driver's JDBC syntax:</p>
+<p>The JDBC connection is initialized by the <code>JdbcResolver.url</code>, <code>JdbcResolver.user</code>, and <code>JdbcResolver.password</code> configuration options. If the user or password are not necessary, they can be left blank. The connection string must use your driver's JDBC syntax:</p>
 
-<p>
-  <pre><code>jdbc:postgresql://localhost:5432/my_database
+<pre><code>jdbc:postgresql://localhost:5432/my_database
 jdbc:mysql://localhost:3306/my_database
 jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre>
-</p>
 
 <p>Consult the driver's documentation for details.</p>
 
@@ -211,7 +290,7 @@ jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre
         return url_identifier + "-something";\
     }</code></pre>
 
-<p><em>Note that in properties files, all lines in multi-line strings except the last need to end with a backslash (\).</em></p>
+<div class="alert alert-info">Note that in properties files, all lines in multi-line strings except the last need to end with a backslash (\).</div>
 
 <h4 id="JdbcResolverMediaTypeFunction">Media Type Retrieval Function</h4>
 
@@ -223,7 +302,7 @@ jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre
           "WHERE some_identifier = ?"\
   }</code></pre>
 
-<p>If the IIIF URL identifier will <strong>always</strong> have a known, valid image extension, like <span class="filename">.jpg</span>, <span class="filename">.tif</span>, etc., the entire <code>JdbcResolver.function.media_type</code> option can be commented out, and Cantaloupe will infer the media type from the extension.</p>
+<p>If the URL identifier will <strong>always</strong> have a known, valid image extension, like <span class="filename">.jpg</span>, <span class="filename">.tif</span>, etc., the entire <code>JdbcResolver.function.media_type</code> option can be commented out, and Cantaloupe will infer the media type from the extension.</p>
 
 <h4 id="JdbcResolverBlobSQL">BLOB Retrieval SQL</h4>
 
@@ -233,13 +312,11 @@ jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre
     FROM some_table \
     WHERE some_identifier = ?</code></pre>
 
+<hr>
+
 <h3 id="AmazonS3Resolver">AmazonS3Resolver</h3>
 
-<p>AmazonS3Resolver maps an identifier in an IIIF URL to an Amazon S3 object. The identifier is passed as-is to S3.</p>
-
-<p>AmazonS3Resolver currently only supports images with recognizable filename extensions. For images with extensions that are missing or unrecognized, an HTTP 404 error will be returned.</p>
-
-<p>AmazonS3Resolver can be configured with the following options:</p>
+<p>AmazonS3Resolver maps a URL identifier to an Amazon S3 object, for retrieving images from Amazon S3. It can be configured with the following options:</p>
 
 <dl>
   <dt><code>AmazonS3Resolver.access_key_id</code></dt>
@@ -250,13 +327,28 @@ jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre
   <dd>Name of the bucket containing the images to be served.</dd>
   <dt><code>AmazonS3Resolver.bucket.region</code></dt>
   <dd>Name of a region to send requests to, such as <code>us-east-1</code>. Can be commented out or left blank to use a default region. (See <a href="http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region">S3 Regions</a>.)</dd>
+  <dt><code>AmazonS3Resolver.lookup_strategy</code></dt>
+  <dd>The strategy to use to look up images based on their URL identifier. See below.</dd>
 </dl>
+
+<h4>BasicLookupStrategy</h4>
+
+<p>BasicLookupStrategy locates images by passing the URL identifier as-is to S3, with no additional configuration necessary or possible.</p>
+
+<h4>ScriptLookupStrategy</h4>
+
+<p>When your URL identifiers don't match your Amazon S3 object keys, ScriptLookupStrategy is available to tell AmazonS3Resolver to capture the object key returned by a method in your <a href="delegate-script.html">delegate script</a>.</p>
+
+<p>The delegate script method, <code>get_s3_object_key(identifier)</code>, will take in an identifier and should return an S3 object key string, if available, or <code>nil</code>, if not. See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script in Cantaloupe, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for an example of a similar script.</p>
 
         </div>
       </div>
 
       <footer>
 </footer>
+
+<script src="/cantaloupe/scripts/bootstrap.min.js"></script>
+<script src="/cantaloupe/scripts/base.js"></script>
 
 
     </div>
