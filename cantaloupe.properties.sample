@@ -204,7 +204,6 @@ processor.avi = FfmpegProcessor
 #processor.jp2 = OpenJpegProcessor
 processor.mov = FfmpegProcessor
 processor.mp4 = FfmpegProcessor
-#processor.tif = GraphicsMagickProcessor
 processor.webm = FfmpegProcessor
 
 # Fall back to this processor for any formats not assigned above.
