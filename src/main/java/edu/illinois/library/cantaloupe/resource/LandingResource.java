@@ -1,16 +1,14 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.ImageServerApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
-import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.configuration.Configuration;
 import org.apache.velocity.Template;
 import org.apache.velocity.app.Velocity;
 import org.restlet.data.CacheDirective;
@@ -25,7 +23,6 @@ import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -34,20 +31,6 @@ import java.util.TreeMap;
  * Handles the landing page.
  */
 public class LandingResource extends AbstractResource {
-
-    private class ProcessorComparator implements Comparator<Processor> {
-        public int compare(Processor o1, Processor o2) {
-            return o1.getClass().getSimpleName().
-                    compareTo(o2.getClass().getSimpleName());
-        }
-    }
-
-    private class SourceFormatComparator implements Comparator<SourceFormat> {
-        public int compare(SourceFormat o1, SourceFormat o2) {
-            return o1.getPreferredExtension().
-                    compareTo(o2.getPreferredExtension());
-        }
-    }
 
     @Override
     protected void doInit() throws ResourceException {
@@ -65,30 +48,24 @@ public class LandingResource extends AbstractResource {
     }
 
     private Map<String,Object> getTemplateVars() throws Exception {
-        Map<String,Object> vars = new HashMap<String,Object>();
+        final Configuration config = Application.getConfiguration();
+        final Map<String, Object> vars = getCommonTemplateVars(getRequest());
 
-        // base URI
-        String baseUri = Application.getConfiguration().getString("base_uri", "");
-        baseUri = StringUtils.stripEnd(baseUri, "/");
-        vars.put("baseUri", baseUri);
-
-        // version
-        vars.put("version", Application.getVersion());
+        vars.put("iiif1EndpointEnabled",
+                config.getBoolean("endpoint.iiif.1.enabled", true));
+        vars.put("iiif2EndpointEnabled",
+                config.getBoolean("endpoint.iiif.2.enabled", true));
 
         // resolver name
-        String resolverStr = "None";
-        try {
-            Resolver resolver = ResolverFactory.getResolver();
-            if (resolver != null) {
-                resolverStr = resolver.getClass().getSimpleName();
-            }
-        } catch (Exception e) {
-            // noop
+        String resolverStr = config.getString(
+                ResolverFactory.STATIC_RESOLVER_CONFIG_KEY);
+        if (config.getBoolean(ResolverFactory.DELEGATE_RESOLVER_CONFIG_KEY, false)) {
+            resolverStr = "Delegate Script";
         }
         vars.put("resolverName", resolverStr);
 
         // cache name
-        String cacheStr = "None";
+        String cacheStr = "Disabled";
         try {
             Cache cache = CacheFactory.getInstance();
             if (cache != null) {
@@ -123,6 +100,12 @@ public class LandingResource extends AbstractResource {
         }
         vars.put("processorAssignments", assignments);
 
+        class SourceFormatComparator implements Comparator<SourceFormat> {
+            public int compare(SourceFormat o1, SourceFormat o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        }
+
         // image source formats
         List<SourceFormat> imageFormats = new ArrayList<>();
         for (SourceFormat sourceFormat : SourceFormat.values()) {
@@ -146,6 +129,12 @@ public class LandingResource extends AbstractResource {
         vars.put("videoSourceFormats", videoFormats);
 
         // processors
+        class ProcessorComparator implements Comparator<Processor> {
+            public int compare(Processor o1, Processor o2) {
+                return o1.getClass().getSimpleName().
+                        compareTo(o2.getClass().getSimpleName());
+            }
+        }
         List<Processor> sortedProcessors =
                 new ArrayList<>(ProcessorFactory.getAllProcessors());
         Collections.sort(sortedProcessors, new ProcessorComparator());

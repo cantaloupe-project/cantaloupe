@@ -7,6 +7,10 @@ import org.apache.commons.configuration.Configuration;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Used to obtain an instance of a {@link Processor} for a given source format,
+ * as defined in the configuration.
+ */
 public abstract class ProcessorFactory {
 
     public static Set<Processor> getAllProcessors() {
@@ -19,6 +23,7 @@ public abstract class ProcessorFactory {
         processors.add(new JaiProcessor());
         processors.add(new Java2dProcessor());
         processors.add(new KakaduProcessor());
+        processors.add(new OpenJpegProcessor());
         return processors;
     }
 
@@ -28,6 +33,8 @@ public abstract class ProcessorFactory {
      *                     <code>SourceFormat.UNKNOWN</code>.
      * @return An instance suitable for handling the given source format, based
      * on configuration settings.
+     * @throws ClassNotFoundException If a fallback processor is needed but not
+     * defined.
      * @throws UnsupportedSourceFormatException If the processor assigned to
      * the given source format, or the fallback processor, does not support the
      * format.

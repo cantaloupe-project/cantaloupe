@@ -1,11 +1,11 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.request.Parameters;
 
 import java.awt.Dimension;
 import java.io.File;
-import java.io.OutputStream;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * Interface to be implemented by processors that support input via direct
@@ -16,32 +16,39 @@ public interface FileProcessor extends Processor {
     /**
      * @param inputFile Source image
      * @param sourceFormat Format of the source image
-     * @return Size of the source image in pixels.
+     * @return Scale of the source image in pixels.
      * @throws ProcessorException
      */
     Dimension getSize(File inputFile, SourceFormat sourceFormat)
             throws ProcessorException;
 
     /**
-     * Uses the supplied parameters to process an image from the supplied File,
-     * and writes the result to the given OutputStream.
+     * <p>Performs the supplied operations on an image, reading it from the
+     * supplied File, and writing the result to the supplied OutputStream.</p>
+     *
+     * <p>Operations should be applied in the order they appear in the
+     * OperationList iterator. For the sake of efficiency, implementations
+     * should check whether each one is a no-op
+     * ({@link edu.illinois.library.cantaloupe.image.Operation#isNoOp()})
+     * before performing it.</p>
      *
      * <p>Implementations should use the sourceSize parameter and not their
-     * own <code>getSize()</code> method to avoid reusing a potentially
-     * unreusable InputStream.</p>
+     * own {#link #getScale} method to avoid reusing a potentially unreusable
+     * InputStream.</p>
      *
-     * @param params Parameters of the output image
-     * @param sourceFormat Format of the source image
+     * @param ops OperationList of the output image
+     * @param sourceFormat Format of the source image. Will never be
+     * {@link SourceFormat#UNKNOWN}.
      * @param inputFile File from which to read the image. Implementations
      *                  should not close it.
-     * @param outputStream Stream to which to write the image. Implementations
-     *                     should not close it.
+     * @param writableChannel Writable channel to which to write the image.
+     *                        Implementations should not close it.
      * @throws UnsupportedOutputFormatException
      * @throws UnsupportedSourceFormatException
      * @throws ProcessorException
      */
-    void process(Parameters params, SourceFormat sourceFormat,
+    void process(OperationList ops, SourceFormat sourceFormat,
                  Dimension sourceSize, File inputFile,
-                 OutputStream outputStream) throws ProcessorException;
+                 WritableByteChannel writableChannel) throws ProcessorException;
 
 }

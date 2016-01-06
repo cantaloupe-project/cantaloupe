@@ -4,10 +4,20 @@ layout: default
 
 <h2>Access Control</h2>
 
-<p>Cantaloupe supports HTTP Basic authentication. To enable it, set the following keys in the configuration file:</p>
+<h3 id="Authentication">Authentication</h3>
 
-<pre>http.auth.basic = true
-http.auth.basic.username = myself
-http.auth.basic.secret = password</pre>
+<p>Cantaloupe has built-in support for HTTP Basic authentication. To enable it, set the following keys in the configuration file:</p>
+
+<pre>auth.basic.enabled = true
+auth.basic.username = myusername
+auth.basic.secret = mypassword</pre>
 
 <p>When enabled, the entire website will be restricted.</p>
+
+<div class="alert alert-warning">HTTP Basic transmits passwords in clear text, so it should only be used on a trusted local network, or in conjunction with <a href="deployment.html#SSL%2FTLS">TLS</a>.</div>
+
+<p>A reverse proxy server can be used to support other means of authentication.</p>
+
+<h3 id="Authorization">Authorization</h3>
+
+<p>Currently, Cantaloupe is not authorization-aware. But, <a href="https://github.com/medusa-project/cantaloupe/issues/22">stay tuned</a>.</p>

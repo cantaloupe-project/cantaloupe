@@ -1,8 +1,9 @@
 package edu.illinois.library.cantaloupe.resolver;
 
+import com.zaxxer.hikari.HikariDataSource;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.request.Identifier;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import org.apache.commons.configuration.Configuration;
 import org.restlet.data.MediaType;
 import org.slf4j.Logger;
@@ -13,61 +14,89 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-class JdbcResolver implements StreamResolver {
+class JdbcResolver extends AbstractResolver implements ChannelResolver {
 
     private static Logger logger = LoggerFactory.getLogger(JdbcResolver.class);
-    private static Connection connection;
+
+    public static final String CONNECTION_TIMEOUT_CONFIG_KEY =
+            "JdbcResolver.connection_timeout";
+    public static final String IDENTIFIER_FUNCTION_CONFIG_KEY =
+            "JdbcResolver.function.identifier";
+    public static final String JDBC_URL_CONFIG_KEY = "JdbcResolver.url";
+    public static final String LOOKUP_SQL_CONFIG_KEY =
+            "JdbcResolver.lookup_sql";
+    public static final String MAX_POOL_SIZE_CONFIG_KEY =
+            "JdbcResolver.max_pool_size";
+    public static final String MEDIA_TYPE_FUNCTION_CONFIG_KEY =
+            "JdbcResolver.function.media_type";
+    public static final String PASSWORD_CONFIG_KEY = "JdbcResolver.password";
+    public static final String USER_CONFIG_KEY = "JdbcResolver.user";
+
+    private static HikariDataSource dataSource;
 
     static {
-        try {
-            Connection connection = getConnection();
+        try (Connection connection = getConnection()) {
             logger.info("Using {} {}", connection.getMetaData().getDriverName(),
                     connection.getMetaData().getDriverVersion());
             Configuration config = Application.getConfiguration();
             logger.info("Connection string: {}",
-                    config.getString("JdbcResolver.connection_string"));
+                    config.getString(JDBC_URL_CONFIG_KEY));
         } catch (SQLException e) {
             logger.error("Failed to establish a database connection", e);
         }
     }
 
+    /**
+     * @return Connection from the connection pool. Clients must
+     * <code>close()</code> it when they are done with it.
+     * @throws SQLException
+     */
     public static synchronized Connection getConnection() throws SQLException {
-        if (connection == null) {
-            Configuration config = Application.getConfiguration();
+        if (dataSource == null) {
+            final Configuration config = Application.getConfiguration();
             final String connectionString = config.
-                    getString("JdbcResolver.connection_string", "");
-            final String user = config.getString("JdbcResolver.user", "");
-            final String password = config.getString("JdbcResolver.password", "");
-            connection = DriverManager.getConnection(connectionString, user,
-                    password);
+                    getString(JDBC_URL_CONFIG_KEY, "");
+            final int connectionTimeout = 1000 *
+                    config.getInt(CONNECTION_TIMEOUT_CONFIG_KEY, 10);
+            final int maxPoolSize = config.getInt(MAX_POOL_SIZE_CONFIG_KEY, 10);
+            final String user = config.getString(USER_CONFIG_KEY, "");
+            final String password = config.getString(PASSWORD_CONFIG_KEY, "");
+
+            dataSource = new HikariDataSource();
+            dataSource.setJdbcUrl(connectionString);
+            dataSource.setUsername(user);
+            dataSource.setPassword(password);
+            dataSource.setPoolName("JdbcResolverPool");
+            dataSource.setMaximumPoolSize(maxPoolSize);
+            dataSource.setConnectionTimeout(connectionTimeout);
         }
-        return connection;
+        return dataSource.getConnection();
     }
 
     @Override
-    public InputStream getInputStream(Identifier identifier)
+    public ReadableByteChannel getChannel(Identifier identifier)
             throws IOException {
-        try {
+        try (Connection connection = getConnection()) {
             Configuration config = Application.getConfiguration();
-            String sql = config.getString("JdbcResolver.lookup_sql");
+            String sql = config.getString(LOOKUP_SQL_CONFIG_KEY);
             if (!sql.contains("?")) {
-                throw new IOException("JdbcResolver.lookup_sql does not " +
-                        "support prepared statements");
+                throw new IOException(LOOKUP_SQL_CONFIG_KEY +
+                        " does not support prepared statements");
             }
             logger.debug(sql);
 
-            PreparedStatement statement = getConnection().prepareStatement(sql);
+            PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, executeGetDatabaseIdentifier(identifier));
             ResultSet result = statement.executeQuery();
             if (result.next()) {
-                return result.getBinaryStream(1);
+                return Channels.newChannel(result.getBinaryStream(1));
             }
         } catch (ScriptException | SQLException e) {
             throw new IOException(e.getMessage(), e);
@@ -86,15 +115,17 @@ class JdbcResolver implements StreamResolver {
             if (functionResult != null) {
                 // the function result may be a media type, or an SQL
                 // statement to look it up.
-                if (functionResult.toUpperCase().contains("SELECT ") &&
-                        functionResult.toUpperCase().contains("FROM ")) {
+                if (functionResult.toUpperCase().contains("SELECT") &&
+                        functionResult.toUpperCase().contains("FROM")) {
                     logger.debug(functionResult);
-                    PreparedStatement statement = getConnection().
-                            prepareStatement(functionResult);
-                    statement.setString(1, executeGetDatabaseIdentifier(identifier));
-                    ResultSet resultSet = statement.executeQuery();
-                    if (resultSet.next()) {
-                        mediaType = new MediaType(resultSet.getString(1));
+                    try (Connection connection = getConnection()) {
+                        PreparedStatement statement = connection.
+                                prepareStatement(functionResult);
+                        statement.setString(1, executeGetDatabaseIdentifier(identifier));
+                        ResultSet resultSet = statement.executeQuery();
+                        if (resultSet.next()) {
+                            mediaType = new MediaType(resultSet.getString(1));
+                        }
                     }
                 } else {
                     mediaType = new MediaType(functionResult);
@@ -109,21 +140,32 @@ class JdbcResolver implements StreamResolver {
         }
     }
 
+    /**
+     * @param identifier
+     * @return Result of the <code>getDatabaseIdentifier()</code> function.
+     * @throws ScriptException
+     * @throws SQLException
+     */
     public String executeGetDatabaseIdentifier(Identifier identifier)
             throws ScriptException {
         Configuration config = Application.getConfiguration();
         final String statement = String.format("%s\ngetDatabaseIdentifier(\"%s\")",
-                config.getString("JdbcResolver.function.identifier"),
-                identifier);
+                config.getString(IDENTIFIER_FUNCTION_CONFIG_KEY), identifier);
         ScriptEngineManager manager = new ScriptEngineManager();
         ScriptEngine engine = manager.getEngineByName("js");
         return (String) engine.eval(statement);
     }
 
-    public String executeGetMediaType(Identifier identifier) throws ScriptException,
-            SQLException {
+    /**
+     * @param identifier
+     * @return Result of the <code>getMediaType()</code> function.
+     * @throws ScriptException
+     * @throws SQLException
+     */
+    public String executeGetMediaType(Identifier identifier)
+            throws ScriptException, SQLException {
         Configuration config = Application.getConfiguration();
-        String function = config.getString("JdbcResolver.function.media_type");
+        String function = config.getString(MEDIA_TYPE_FUNCTION_CONFIG_KEY);
         if (function != null && function.length() > 0) {
             final String statement = String.format("%s\ngetMediaType(\"%s\")",
                     function, identifier);

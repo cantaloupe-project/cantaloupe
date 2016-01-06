@@ -1,16 +1,17 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.request.OutputFormat;
-import edu.illinois.library.cantaloupe.request.Parameters;
-import edu.illinois.library.cantaloupe.request.Quality;
+import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.restlet.data.Form;
 
 import java.awt.Dimension;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -65,42 +66,63 @@ public class FfmpegProcessorTest extends ProcessorTest {
                 instance.getSupportedFeatures(SourceFormat.UNKNOWN));
     }
 
-    public void testGetSupportedQualities() {
-        Set<Quality> expectedQualities = new HashSet<>();
-        //expectedQualities.add(Quality.BITONAL);
-        expectedQualities.add(Quality.COLOR);
-        expectedQualities.add(Quality.DEFAULT);
-        expectedQualities.add(Quality.GRAY);
-        assertEquals(expectedQualities,
-                instance.getSupportedQualities(getAnySupportedSourceFormat(instance)));
-
-        expectedQualities = new HashSet<>();
-        assertEquals(expectedQualities,
-                instance.getSupportedQualities(SourceFormat.UNKNOWN));
-    }
-
     public void testProcessWithFrameOption() throws Exception {
-        final Parameters params = new Parameters("bla", "full", "full", "0",
-                "default", "jpg");
         final SourceFormat sourceFormat = SourceFormat.MPG;
 
-        // frame option missing
+        // time option missing
         FileProcessor proc = (FileProcessor) getProcessor();
         File file = TestUtil.getFixture(sourceFormat.getPreferredExtension());
         Dimension size = proc.getSize(file, sourceFormat);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        proc.process(params, sourceFormat, size, file, outputStream);
+        WritableByteChannel outputChannel = Channels.newChannel(outputStream);
+        OperationList ops = TestUtil.newOperationList();
+        proc.process(ops, sourceFormat, size, file, outputChannel);
         byte[] zeroSecondFrame = outputStream.toByteArray();
 
-        // frame option present
-        final Form urlQuery = new Form();
-        urlQuery.add("time", "00:00:05");
+        // time option present
+        ops.getOptions().put("time", "00:00:05");
         outputStream = new ByteArrayOutputStream();
-        params.setQuery(urlQuery);
-        proc.process(params, sourceFormat, size, file, outputStream);
+        outputChannel = Channels.newChannel(outputStream);
+        proc.process(ops, sourceFormat, size, file, outputChannel);
         byte[] fiveSecondFrame = outputStream.toByteArray();
 
         assertFalse(Arrays.equals(zeroSecondFrame, fiveSecondFrame));
+    }
+
+    @Override
+    public void testGetSupportedIiif11Qualities() {
+        Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
+                expectedQualities = new HashSet<>();
+        expectedQualities.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR);
+        expectedQualities.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY);
+        expectedQualities.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE);
+        assertEquals(expectedQualities,
+                getProcessor().getSupportedIiif1_1Qualities(getAnySupportedSourceFormat(getProcessor())));
+
+        expectedQualities = new HashSet<>();
+        assertEquals(expectedQualities,
+                getProcessor().getSupportedIiif1_1Qualities(SourceFormat.UNKNOWN));
+    }
+
+    @Override
+    public void testGetSupportedIiif20Qualities() {
+        Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
+                expectedQualities = new HashSet<>();
+        expectedQualities.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR);
+        expectedQualities.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT);
+        expectedQualities.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY);
+        assertEquals(expectedQualities,
+                getProcessor().getSupportedIiif2_0Qualities(getAnySupportedSourceFormat(getProcessor())));
+
+        expectedQualities = new HashSet<>();
+        assertEquals(expectedQualities,
+                getProcessor().getSupportedIiif1_1Qualities(SourceFormat.UNKNOWN));
     }
 
 }

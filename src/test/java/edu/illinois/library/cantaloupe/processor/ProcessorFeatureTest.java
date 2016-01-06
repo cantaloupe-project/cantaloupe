@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.CantaloupeTestCase;
+import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
 public class ProcessorFeatureTest extends CantaloupeTestCase {
 

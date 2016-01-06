@@ -2,9 +2,10 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.request.Identifier;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.script.ScriptEngine;
+import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.lang3.StringUtils;
 import org.restlet.Client;
 import org.restlet.Context;
 import org.restlet.data.ChallengeScheme;
@@ -17,35 +18,47 @@ import org.restlet.resource.ResourceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.script.ScriptException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.file.AccessDeniedException;
+import java.util.ArrayList;
+import java.util.List;
 
-class HttpResolver implements StreamResolver {
+class HttpResolver extends AbstractResolver implements ChannelResolver {
 
     private static Logger logger = LoggerFactory.getLogger(HttpResolver.class);
 
-    private static Client client = new Client(new Context(), Protocol.HTTP);
+    public static final String BASIC_AUTH_SECRET_CONFIG_KEY =
+            "HttpResolver.auth.basic.secret";
+    public static final String BASIC_AUTH_USERNAME_CONFIG_KEY =
+            "HttpResolver.auth.basic.username";
+    public static final String LOOKUP_STRATEGY_CONFIG_KEY =
+            "HttpResolver.lookup_strategy";
+    public static final String URL_PREFIX_CONFIG_KEY =
+            "HttpResolver.BasicLookupStrategy.url_prefix";
+    public static final String URL_SUFFIX_CONFIG_KEY =
+            "HttpResolver.BasicLookupStrategy.url_suffix";
+
+    private static Client client;
+
+    static {
+        List<Protocol> protocols = new ArrayList<>();
+        protocols.add(Protocol.HTTP);
+        protocols.add(Protocol.HTTPS);
+        client = new Client(protocols);
+    }
 
     @Override
-    public InputStream getInputStream(Identifier identifier)
+    public ReadableByteChannel getChannel(Identifier identifier)
             throws IOException {
-        Configuration config = Application.getConfiguration();
         Reference url = getUrl(identifier);
         logger.debug("Resolved {} to {}", identifier, url);
-        ClientResource resource = new ClientResource(url);
+        ClientResource resource = newClientResource(url);
         resource.setNext(client);
-
-        // set up HTTP Basic authentication
-        String username = config.getString("HttpResolver.auth.basic.username", "");
-        String secret = config.getString("HttpResolver.auth.basic.secret", "");
-        if (username.length() > 0 && secret.length() > 0) {
-            resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC,
-                    username, secret);
-        }
         try {
-            return resource.get().getStream();
+            return resource.get().getChannel();
         } catch (ResourceException e) {
             if (e.getStatus().equals(Status.CLIENT_ERROR_NOT_FOUND) ||
                     e.getStatus().equals(Status.CLIENT_ERROR_GONE)) {
@@ -58,63 +71,34 @@ class HttpResolver implements StreamResolver {
         }
     }
 
-    public SourceFormat getSourceFormat(Identifier identifier)
+    @Override
+    public SourceFormat getSourceFormat(final Identifier identifier)
             throws IOException {
-        SourceFormat format = getSourceFormatFromIdentifier(identifier);
+        SourceFormat format = ResolverUtil.inferSourceFormat(identifier);
         if (format == SourceFormat.UNKNOWN) {
-            format = getSourceFormatFromServer(identifier);
+            format = getSourceFormatFromContentTypeHeader(identifier);
         }
-        getInputStream(identifier); // throws IOException if not found etc.
+        getChannel(identifier); // throws IOException if not found etc.
         return format;
     }
 
-    public Reference getUrl(Identifier identifier) {
-        Configuration config = Application.getConfiguration();
-        String prefix = config.getString("HttpResolver.url_prefix");
-        if (prefix == null) {
-            prefix = "";
-        }
-        String suffix = config.getString("HttpResolver.url_suffix");
-        if (suffix == null) {
-            suffix = "";
-        }
+    public Reference getUrl(Identifier identifier) throws IOException {
+        final Configuration config = Application.getConfiguration();
 
-        String idStr = identifier.toString();
-
-        // The Image API 2.0 spec mandates the use of percent-encoded
-        // identifiers. But some web servers have issues dealing with the
-        // encoded slash (%2F). FilesystemResolver.path_separator enables the
-        // use of an alternate string as a path separator.
-        String separator = config.getString("HttpResolver.path_separator", "/");
-        if (!separator.equals("/")) {
-            idStr = StringUtils.replace(idStr, separator, "/");
-        }
-        return new Reference(prefix + idStr + suffix);
-    }
-
-    /**
-     * @param identifier
-     * @return A source format, or <code>SourceFormat.UNKNOWN</code> if unknown.
-     */
-    private SourceFormat getSourceFormatFromIdentifier(Identifier identifier) {
-        // try to get the source format based on a filename extension in the
-        // identifier
-        String idStr = identifier.toString().toLowerCase();
-        String extension = null;
-        SourceFormat sourceFormat = SourceFormat.UNKNOWN;
-        int i = idStr.lastIndexOf('.');
-        if (i > 0) {
-            extension = idStr.substring(i + 1);
-        }
-        if (extension != null) {
-            for (SourceFormat enumValue : SourceFormat.values()) {
-                if (enumValue.getExtensions().contains(extension)) {
-                    sourceFormat = enumValue;
-                    break;
+        switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
+            case "BasicLookupStrategy":
+                return getUrlWithBasicStrategy(identifier);
+            case "ScriptLookupStrategy":
+                try {
+                    return getUrlWithScriptStrategy(identifier);
+                } catch (ScriptException e) {
+                    logger.error(e.getMessage(), e);
+                    throw new IOException(e);
                 }
-            }
+            default:
+                throw new IOException(LOOKUP_STRATEGY_CONFIG_KEY +
+                        " is invalid or not set");
         }
-        return sourceFormat;
     }
 
     /**
@@ -122,9 +106,11 @@ class HttpResolver implements StreamResolver {
      * response to determine the source format.
      *
      * @param identifier
-     * @return A source format, or <code>SourceFormat.UNKNOWN</code> if unknown.
+     * @return A source format, or {@link SourceFormat#UNKNOWN} if unknown.
+     * @throws IOException
      */
-    private SourceFormat getSourceFormatFromServer(Identifier identifier) {
+    private SourceFormat getSourceFormatFromContentTypeHeader(Identifier identifier)
+            throws IOException {
         SourceFormat sourceFormat = SourceFormat.UNKNOWN;
         String contentType = "";
         Reference url = getUrl(identifier);
@@ -143,13 +129,63 @@ class HttpResolver implements StreamResolver {
         } catch (ResourceException e) {
             // nothing we can do but log it
             if (contentType.length() > 0) {
-                logger.debug("Failed to determine source format based on a Content-Type of {}",
-                        contentType);
+                logger.warn("Failed to determine source format based on a " +
+                        "Content-Type of {}", contentType);
             } else {
-                logger.debug("Failed to determine source format (missing Content-Type at {})", url);
+                logger.warn("Failed to determine source format (missing " +
+                        "Content-Type at {})", url);
             }
         }
         return sourceFormat;
+    }
+
+    private Reference getUrlWithBasicStrategy(final Identifier identifier) {
+        final Configuration config = Application.getConfiguration();
+        final String prefix = config.getString(URL_PREFIX_CONFIG_KEY, "");
+        final String suffix = config.getString(URL_SUFFIX_CONFIG_KEY, "");
+        return new Reference(prefix + identifier.toString() + suffix);
+    }
+
+    /**
+     * @param identifier
+     * @return
+     * @throws FileNotFoundException If the delegate script does not exist
+     * @throws IOException
+     * @throws ScriptException If the script fails to execute
+     */
+    private Reference getUrlWithScriptStrategy(Identifier identifier)
+            throws IOException, ScriptException {
+        final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
+        final String[] args = { identifier.toString() };
+        final String method = "Cantaloupe::get_url";
+        final long msec = System.currentTimeMillis();
+        final Object result = engine.invoke(method, args);
+        logger.debug("{} load+exec time: {} msec", method,
+                System.currentTimeMillis() - msec);
+        if (result == null) {
+            throw new FileNotFoundException(method + " returned nil for " +
+                    identifier);
+        }
+        return new Reference((String) result);
+    }
+
+    /**
+     * Factory method.
+     *
+     * @param url
+     * @return New ClientResource respecting HttpResolver configuration
+     * options.
+     */
+    private ClientResource newClientResource(final Reference url) {
+        final ClientResource resource = new ClientResource(url);
+        final Configuration config = Application.getConfiguration();
+        final String username = config.getString(BASIC_AUTH_USERNAME_CONFIG_KEY, "");
+        final String secret = config.getString(BASIC_AUTH_SECRET_CONFIG_KEY, "");
+        if (username.length() > 0 && secret.length() > 0) {
+            resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC,
+                    username, secret);
+        }
+        return resource;
     }
 
 }

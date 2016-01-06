@@ -4,6 +4,28 @@ layout: default
 
 <h2>Change Log</h2>
 
+<h3>2.0</h3>
+
+<ul>
+  <li>Redesigned internal APIs to abstract internal processing operations away from request processing directives and leverage Java NIO, where appropriate.</li>
+  <li>Added an IIIF Image API 1.1 endpoint, moving the 2.0 endpoint to <span class="filename">/iiif/2</span> to accommodate it.</li>
+  <li>Added OpenJpegProcessor.</li>
+  <li>Added support for SSL/TLS connections over HTTPS.</li>
+  <li>Most configuration file changes are auto-detected and applied without restarting.</li>
+  <li>Resolvers can be chosen dynamically using a custom Ruby delegate method.</li>
+  <li>FilesystemResolver, HttpResolver, and AmazonS3Resolver can use a custom Ruby delegate method.</li>
+  <li>Added support for custom service profiles in the IIIF Image API 2.0 information endpoint.</li>
+  <li>Added configuration options to improve downscaling quality with Java2dProcessor and KakaduProcessor.</li>
+  <li>Enhanced Java2dProcessor's efficiency with tiled source images.</li>
+  <li>Added multi-resolution TIFF support to JaiProcessor.</li>
+  <li>Improved the efficiency of KakaduProcessor and FfmpegProcessor.</li>
+  <li>Improved the robustness of FilesystemCache.</li>
+  <li>JdbcResolver and JdbcCache use a JDBC connection pool.</li>
+  <li>JdbcCache uses transactions for nonatomic operations.</li>
+  <li>Added an option to auto-purge missing (HTTP 404) images from the cache.</li>
+  <li>Added an option to limit the pixel count of returned images, to prevent overloading the server.</li>
+</ul>
+
 <h3>1.2.1</h3>
 
 <ul>
@@ -50,7 +72,7 @@ layout: default
   <li>Added client-side caching.</li>
   <li>Added HTTP Basic authentication.</li>
   <li>Added KakaduProcessor.</li>
-  <li>Added a <code>sizes</code> key to information responses.</li>
+  <li>Added a <code>sizes</code> key to IIIF information responses.</li>
   <li>Renamed ImageIoProcessor to Java2dProcessor.</li>
   <li>Java2dProcessor supports pyramidal TIFF.</li>
   <li>Improved the thread-safety of FilesystemCache.</li>
@@ -65,12 +87,10 @@ layout: default
 <ul>
   <li>Added optional server-side caching via FilesystemCache.</li>
   <li>Added configurable path separators in FilesystemResolver and HttpResolver.</li>
-  <li>The application version is displayed on the landing page and in a startup log
-  message.</li>
 </ul>
 
 <h3>1.0-beta1</h3>
 
 <ul>
-  <li>First version.</li>
+  <li>First public version.</li>
 </ul>

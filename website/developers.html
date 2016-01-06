@@ -2,28 +2,9 @@
 layout: default
 ---
 
-<h2>Developer's Guide</h2>
+<h2>For Developers</h2>
 
 <p>Cantaloupe is a standard Maven project that should open right up in any Java IDE. Simply use the same configuration file and VM options (e.g. <code>-Dcantaloupe.config=...</code>) as you would when running from a JAR.</p>
-
-<h3 id="Resolvers">Custom Resolvers</h3>
-
-<p>A resolver is a class that implements the <code>e.i.l.c.resolver.FileResolver</code>
-and/or <code>e.i.l.c.resolver.StreamResolver</code> interfaces. Then, to use it, set <code>resolver</code> in your configuration file to its name.</p>
-
-<p>See one of the existing resolvers for examples.</p>
-
-<h3 id="Processors">Custom Image Processors</h3>
-
-<p>A processor is a class that implements the <code>e.i.l.c.processor.FileProcessor</code>
-and/or <code>e.i.l.c.processor.StreamProcessor</code> interfaces. See the interface documentation for details and the existing implementations for examples.</p>
-
-<p>Another option might be to add an ImageIO format plugin instead of a custom processor; then it would work with Java2dProcessor or JaiProcessor.</p>
-
-<h3 id="Caches">Custom Caches</h3>
-
-<p>A cache is a class that implements the <code>e.i.l.c.cache.Cache</code> interface. See the interface documentation for details and the existing implementations for
-examples.</p>
 
 <h3 id="Caches">Javadoc</h3>
 
@@ -33,7 +14,7 @@ examples.</p>
 
 <p>Ideas, suggestions, feature requests, bug reports, and other kinds of feedback are welcome; please <a href="https://github.com/medusa-project/cantaloupe/issues/new">submit an issue</a>.</p>
 
-<p>This project uses the <a href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow/">Gitflow</a> branching model. All changes should take place in feature branches ("feature/xxxx") that branch off from the main branch, "develop." They can then be cleanly integrated into a particular release by the release manager.</p>
+<p>This project uses the <a href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow/">Gitflow</a> branching model. All changes should take place in feature branches ("feature/xxxx") that branch off from the main branch, "develop," from which they can be integrated into a particular release by the release manager.</p>
 
 <p>The general process for contributing code changes is:</p>
 
@@ -51,7 +32,7 @@ examples.</p>
 
 <h4 id="Website">Website</h4>
 
-<p>The <a href="http://jekyllrb.com">Jekyll</a> website compiler transforms the HTML pages in the <span class="filename">website</span> folder into a working static website. The <span class="filename">build/deploy_website.rb</span> script takes care of building the website, adding the current Javadoc to it, committing it, and deploying it to GitHub Pages.</p>
+<p>The <a href="http://jekyllrb.com">Jekyll</a> website compiler transforms the HTML pages in the <span class="filename">website</span> folder into this website. The <span class="filename">build/deploy_website.rb</span> script takes care of building the website, adding the current Javadoc to it, committing it, and deploying it to GitHub Pages.</p>
 
 <p>To merely preview the website without releasing it, <code>cd</code> into the <span class="filename">website</span> folder and run <code>jekyll serve</code>, then go to <a href="http://localhost:4000/cantaloupe/">http://localhost:4000/cantaloupe/</a> in a web browser.</p>
 

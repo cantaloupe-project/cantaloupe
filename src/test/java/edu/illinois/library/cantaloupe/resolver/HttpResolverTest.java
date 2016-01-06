@@ -1,50 +1,93 @@
 package edu.illinois.library.cantaloupe.resolver;
 
-import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.request.Identifier;
-import org.apache.commons.configuration.BaseConfiguration;
+import static org.junit.Assert.*;
 
+import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.test.WebServer;
+import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.restlet.data.Reference;
+
+import javax.script.ScriptException;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 
-public class HttpResolverTest extends CantaloupeTestCase {
+public class HttpResolverTest {
 
-    private static final Identifier IMAGE = new Identifier("14405804_o1.jpg");
-    HttpResolver instance;
+    private static final Identifier IDENTIFIER = new Identifier("escher_lego.jpg");
 
-    public void setUp() throws IOException {
+    private HttpResolver instance;
+    private WebServer server;
+
+    @Before
+    public void setUp() throws Exception {
+        server = new WebServer();
+        server.start();
+
         BaseConfiguration config = new BaseConfiguration();
-        config.setProperty("HttpResolver.url_prefix",
-                "https://ia601502.us.archive.org/4/items/14405804O1_201507/");
+        config.setProperty(HttpResolver.LOOKUP_STRATEGY_CONFIG_KEY,
+                "BasicLookupStrategy");
+        config.setProperty(HttpResolver.URL_PREFIX_CONFIG_KEY,
+                "http://localhost:" + server.getPort() + "/");
         Application.setConfiguration(config);
 
         instance = new HttpResolver();
     }
 
-    public void testGetInputStream() {
-        // present, readable image
+    @After
+    public void tearDown() throws Exception {
+        server.stop();
+    }
+
+    @Test
+    public void testGetChannelWithPresentReadableImage() throws IOException {
         try {
-            assertNotNull(instance.getInputStream(IMAGE));
+            assertNotNull(instance.getChannel(IDENTIFIER));
         } catch (IOException e) {
             fail();
         }
-        // missing image
+    }
+
+    @Test
+    public void testGetChannelWithMissingImage() throws IOException {
         try {
-            instance.getInputStream(new Identifier("bogus"));
+            instance.getChannel(new Identifier("bogus"));
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
         } catch (IOException e) {
             fail("Expected FileNotFoundException");
         }
-        // present, unreadable image
-        // TODO: write this
     }
 
+    @Test
+    public void testGetChannelWithPresentUnreadableImage() throws IOException {
+        /* TODO: possible restlet bug: https://github.com/restlet/restlet-framework-java/issues/1179
+        File image = TestUtil.getFixture("gif");
+        try {
+            image.setReadable(false);
+            instance.getChannel(new Identifier("gif"));
+            fail("Expected exception");
+        } catch (AccessDeniedException e) {
+            // pass
+        } finally {
+            image.setReadable(true);
+        }
+        */
+    }
+
+    @Test
     public void testGetSourceFormat() throws IOException {
-        assertEquals(SourceFormat.JPG, instance.getSourceFormat(IMAGE));
+        assertEquals(SourceFormat.JPG, instance.getSourceFormat(IDENTIFIER));
         try {
             instance.getSourceFormat(new Identifier("image.bogus"));
             fail("Expected exception");
@@ -59,29 +102,66 @@ public class HttpResolverTest extends CantaloupeTestCase {
         }
     }
 
-    public void testGetUrl() {
+    @Test
+    public void testGetUrlWithBasicLookupStrategy() throws Exception {
         BaseConfiguration config = (BaseConfiguration) Application.getConfiguration();
         // with prefix
-        config.setProperty("HttpResolver.url_prefix",
+        config.setProperty(HttpResolver.URL_PREFIX_CONFIG_KEY,
                 "http://example.org/prefix/");
         assertEquals("http://example.org/prefix/id",
                 instance.getUrl(new Identifier("id")).toString());
         // with suffix
-        config.setProperty("HttpResolver.url_suffix", "/suffix");
+        config.setProperty(HttpResolver.URL_SUFFIX_CONFIG_KEY, "/suffix");
         assertEquals("http://example.org/prefix/id/suffix",
                 instance.getUrl(new Identifier("id")).toString());
         // without prefix or suffix
-        config.setProperty("HttpResolver.url_prefix", "");
-        config.setProperty("HttpResolver.url_suffix", "");
+        config.setProperty(HttpResolver.URL_PREFIX_CONFIG_KEY, "");
+        config.setProperty(HttpResolver.URL_SUFFIX_CONFIG_KEY, "");
         assertEquals("http://example.org/images/image.jpg",
                 instance.getUrl(new Identifier("http://example.org/images/image.jpg")).toString());
-        // with path separator
-        config.setProperty("HttpResolver.url_prefix", "http://example.org/");
-        config.setProperty("HttpResolver.url_suffix", "");
-        String separator = "CATS";
-        config.setProperty("HttpResolver.path_separator", separator);
-        assertEquals("http://example.org/1/2/3",
-                instance.getUrl(new Identifier("1" + separator + "2" + separator + "3")).toString());
+    }
+
+    @Test
+    public void testGetUrlWithScriptLookupStrategyAndAbsolutePath()
+            throws Exception {
+        Configuration config = Application.getConfiguration();
+        config.setProperty(HttpResolver.LOOKUP_STRATEGY_CONFIG_KEY,
+                "ScriptLookupStrategy");
+
+        // valid, present script
+        config.setProperty("delegate_script",
+                TestUtil.getFixture("lookup.rb").getAbsolutePath());
+        assertEquals(new Reference("http://example.org/bla/" + IDENTIFIER),
+                instance.getUrl(IDENTIFIER));
+
+        // missing script
+        try {
+            config.setProperty("delegate_script",
+                    TestUtil.getFixture("bogus.rb").getAbsolutePath());
+            instance.getUrl(IDENTIFIER);
+            fail("Expected exception");
+        } catch (FileNotFoundException e) {
+            // pass
+        }
+    }
+
+    @Test
+    public void testGetUrlWithScriptLookupStrategyAndRelativePath()
+            throws Exception {
+        Configuration config = Application.getConfiguration();
+        config.setProperty(HttpResolver.LOOKUP_STRATEGY_CONFIG_KEY,
+                "ScriptLookupStrategy");
+
+        // filename of script, located in cwd
+        config.setProperty("delegate_script", "lookup_test.rb");
+        final File tempFile = new File("./lookup_test.rb");
+        try {
+            FileUtils.copyFile(TestUtil.getFixture("lookup.rb"), tempFile);
+            assertEquals(new Reference("http://example.org/bla/" + IDENTIFIER),
+                    instance.getUrl(IDENTIFIER));
+        } finally {
+            FileUtils.forceDelete(tempFile);
+        }
     }
 
 }

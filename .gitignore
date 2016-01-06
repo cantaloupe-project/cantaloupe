@@ -4,9 +4,9 @@
 .idea/*
 *.iml
 nbactions.xml
+delegates.rb
 
 /target
 /website/javadoc
 cantaloupe.properties
 dependency-reduced-pom.xml
-stdout.ppm
