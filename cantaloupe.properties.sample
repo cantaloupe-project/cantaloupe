@@ -308,7 +308,7 @@ cache.server.purge_missing = false
 # checking. Resolving first is slower but safer.
 # (This has no effect with the IIIF 1.1 endpoint -- it is effectively
 # always true.)
-cache.server.resolve_first = true
+cache.server.resolve_first = false
 
 #----------------------------------------
 # FilesystemCache
