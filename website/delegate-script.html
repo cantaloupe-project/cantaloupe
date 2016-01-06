@@ -4,7 +4,7 @@ layout: default
 
 <h2>Delegate Script</h2>
 
-<p>Traditionally, application developers have been faced with the choice between accepting the limitations of an out-of-the-box image server, and implementing their own solution. The delegate script mechanism enables the use of custom Ruby methods as "hooks" to provide dynamic information back to the image server. A truly customized image server can be created with minimal lines of code.</p>
+<p>The delegate script mechanism enables the use of custom Ruby methods as "hooks" to provide dynamic information back to the image server. A truly customized image server can be created with minimal lines of code.</p>
 
 <p>Delegate methods are implemented in Ruby: a simple, yet powerful language that runs inside a JRuby interpreter bundled into Cantaloupe. There is no need to install an external Ruby environment and no need to know Java; just type some code into a file, and go.</p>
 
@@ -16,9 +16,9 @@ layout: default
 
 <p>While the arguments and return types of each method will vary, all delegate methods must be contained within a <code>Cantaloupe</code> module. Inside a method, anything goes&mdash;you can use any (non-platform-native) gems that you have installed with <code>gem install</code>.</p>
 
-<p>Because delegate methods will often be called upon each image request, though, they should be written with efficiency in mind.</p>
+<p>Because delegate methods will be called frequently, though, they should be written with efficiency in mind.</p>
 
-<div class="alert alert-warning">The delegate script will be reloaded on each request, so it can be edited without restarting. However, be aware that code that has been loaded cannot be unloaded. For example, when a method is redefined, it will overwrite the old version; but a constant that has already been defined cannot be redefined.</div>
+<div class="alert alert-warning">The delegate script will be reloaded on each request, so it can be edited without restarting. However, be aware that code that has been loaded into the JRuby runtime cannot be unloaded. For example, when a method is redefined, it will overwrite the old version; but a constant that has already been defined cannot be redefined.</div>
 
 <div class="alert alert-danger">Note: typically, neither method arguments nor return values are sanitized or validated. <strong>Be very careful to write defensive, injection-aware code.</strong></div>
 
