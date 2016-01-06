@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
@@ -250,12 +251,13 @@ public class ImageResourceTest extends ResourceTest {
         Configuration config = Application.getConfiguration();
         ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
 
-        config.setProperty("base_uri", null);
+        config.setProperty(AbstractResource.BASE_URI_CONFIG_KEY, null);
         client.get();
         Header header = client.getResponse().getHeaders().getFirst("Link");
         assertTrue(header.getValue().startsWith("<http://localhost"));
 
-        config.setProperty("base_uri", "https://example.org/");
+        config.setProperty(AbstractResource.BASE_URI_CONFIG_KEY,
+                "https://example.org/");
         client.get();
         header = client.getResponse().getHeaders().getFirst("Link");
         System.out.println(header.getValue());

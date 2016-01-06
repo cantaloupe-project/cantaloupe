@@ -16,10 +16,12 @@ import edu.illinois.library.cantaloupe.resolver.FileResolver;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.StringUtils;
+import org.restlet.Request;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.Disposition;
 import org.restlet.data.Header;
 import org.restlet.data.MediaType;
+import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
@@ -32,7 +34,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 public abstract class AbstractResource extends ServerResource {
@@ -40,6 +44,7 @@ public abstract class AbstractResource extends ServerResource {
     private static Logger logger = LoggerFactory.
             getLogger(AbstractResource.class);
 
+    public static final String BASE_URI_CONFIG_KEY = "base_uri";
     private static final String MAX_PIXELS_CONFIG_KEY = "max_pixels";
     protected static final String PURGE_MISSING_CONFIG_KEY =
             "cache.server.purge_missing";
@@ -47,6 +52,72 @@ public abstract class AbstractResource extends ServerResource {
             "cache.server.resolve_first";
     public static final String SLASH_SUBSTITUTE_CONFIG_KEY =
             "slash_substitute";
+
+    /**
+     * @return Map of template variables common to most or all views, such as
+     * variables that appear in a common header.
+     */
+    public static Map<String, Object> getCommonTemplateVars(Request request) {
+        Map<String,Object> vars = new HashMap<>();
+        vars.put("version", Application.getVersion());
+        vars.put("baseUri", getPublicRootRef(request).toString());
+        return vars;
+    }
+
+    /**
+     * @param request
+     * @return A root reference usable in public, respecting the
+     * <code>base_uri</code> option in the application configuration.
+     */
+    public static Reference getPublicRootRef(final Request request) {
+        Reference rootRef = new Reference(request.getRootRef());
+
+        final String baseUri = Application.getConfiguration().
+                getString(BASE_URI_CONFIG_KEY);
+        if (baseUri != null && baseUri.length() > 0) {
+            final Reference baseRef = new Reference(baseUri);
+            rootRef.setScheme(baseRef.getScheme());
+            rootRef.setHostDomain(baseRef.getHostDomain());
+            // if the "port" is a local socket, Reference will serialize it as
+            // -1.
+            if (baseRef.getHostPort() == -1) {
+                rootRef.setHostPort(null);
+            } else {
+                rootRef.setHostPort(baseRef.getHostPort());
+            }
+            rootRef.setPath(StringUtils.stripEnd(baseRef.getPath(), "/"));
+        } else {
+            final Series<Header> headers = request.getHeaders();
+            final String protocolStr = headers.getFirstValue("X-Forwarded-Proto",
+                    true, "HTTP");
+            final String hostStr = headers.getFirstValue("X-Forwarded-Host",
+                    true, null);
+            final String portStr = headers.getFirstValue("X-Forwarded-Port",
+                    true, null);
+            final String pathStr = headers.getFirstValue("X-Forwarded-Path",
+                    true, null);
+            if (hostStr != null) {
+                logger.debug("Assembling base URI from X-Forwarded-* headers. " +
+                                "Proto: {}; Host: {}; Port: {}; Path: {}",
+                        protocolStr, hostStr, portStr, pathStr);
+
+                rootRef.setHostDomain(hostStr);
+                rootRef.setPath(pathStr);
+
+                final Protocol protocol = protocolStr.toUpperCase().equals("HTTPS") ?
+                        Protocol.HTTPS : Protocol.HTTP;
+                rootRef.setProtocol(protocol);
+
+                Integer port = Integer.parseInt(portStr);
+                if ((port == 80 && protocol.equals(Protocol.HTTP)) ||
+                        (port == 443 && protocol.equals(Protocol.HTTPS))) {
+                    port = null;
+                }
+                rootRef.setHostPort(port);
+            }
+        }
+        return rootRef;
+    }
 
     @Override
     protected void doInit() throws ResourceException {
@@ -151,30 +222,6 @@ public abstract class AbstractResource extends ServerResource {
                     e.getMessage());
         }
         return directives;
-    }
-
-    /**
-     * @return A root reference usable in public, respecting the
-     * <code>base_uri</code> option in the application configuration.
-     */
-    protected Reference getPublicRootRef() {
-        Reference rootRef = getRootRef();
-        final String baseUri = Application.getConfiguration().getString("base_uri");
-        if (baseUri != null && baseUri.length() > 0) {
-            rootRef = rootRef.clone();
-            Reference baseRef = new Reference(baseUri);
-            rootRef.setScheme(baseRef.getScheme());
-            rootRef.setHostDomain(baseRef.getHostDomain());
-            // if the "port" is a local socket, Reference will actually put -1
-            // in the URL.
-            if (baseRef.getHostPort() == -1) {
-                rootRef.setHostPort(null);
-            } else {
-                rootRef.setHostPort(baseRef.getHostPort());
-            }
-            rootRef.setPath(StringUtils.stripEnd(baseRef.getPath(), "/"));
-        }
-        return rootRef;
     }
 
     protected ImageRepresentation getRepresentation(OperationList ops,

@@ -2,8 +2,8 @@ package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
+import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.app.Velocity;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -19,7 +19,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.AccessDeniedException;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -57,15 +56,12 @@ class CantaloupeStatusService extends StatusService {
             message = "No resource exists at this URL.";
         }
 
-        Map<String,Object> templateVars = new HashMap<>();
+        final Map<String,Object> templateVars =
+                AbstractResource.getCommonTemplateVars(request);
         templateVars.put("pageTitle", status.getCode() + " " +
                 status.getReasonPhrase());
         templateVars.put("message", message);
         templateVars.put("stackTrace", stackTrace);
-        String baseUri = edu.illinois.library.cantaloupe.Application.
-                getConfiguration().getString("base_uri", "");
-        baseUri = StringUtils.stripEnd(baseUri, "/");
-        templateVars.put("baseUri", baseUri);
 
         org.apache.velocity.Template template = Velocity.getTemplate("error.vm");
         return new TemplateRepresentation(template, templateVars,

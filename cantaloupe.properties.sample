@@ -29,8 +29,8 @@ auth.basic.username = myself
 auth.basic.secret = mypassword
 
 # Base URI to use for internal links, such as Link headers and JSON-LD @id
-# values. This is mainly needed in reverse-proxy scenarios, where a public
-# base URI needs to override the local URI. Leave blank to use the default.
+# values. This should only be used in reverse-proxy scenarios when
+# X-Forwarded-* headers cannot be used instead (see the documentation).
 base_uri =
 
 # Normally, slashes in a URI path component (like an identifier) must be

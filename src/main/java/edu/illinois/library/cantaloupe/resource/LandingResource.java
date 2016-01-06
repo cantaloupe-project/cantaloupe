@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.app.Velocity;
 import org.restlet.data.CacheDirective;
@@ -24,7 +23,6 @@ import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -33,21 +31,6 @@ import java.util.TreeMap;
  * Handles the landing page.
  */
 public class LandingResource extends AbstractResource {
-
-    /**
-     * @return Map of template variables common to most or all views, such as
-     * variables that appear in a common header.
-     */
-    public static Map<String, Object> getCommonTemplateVars() {
-        Map<String,Object> vars = new HashMap<>();
-        // application version
-        vars.put("version", Application.getVersion());
-        // base URI
-        String baseUri = Application.getConfiguration().getString("base_uri", "");
-        baseUri = StringUtils.stripEnd(baseUri, "/");
-        vars.put("baseUri", baseUri);
-        return vars;
-    }
 
     @Override
     protected void doInit() throws ResourceException {
@@ -66,7 +49,7 @@ public class LandingResource extends AbstractResource {
 
     private Map<String,Object> getTemplateVars() throws Exception {
         final Configuration config = Application.getConfiguration();
-        final Map<String, Object> vars = getCommonTemplateVars();
+        final Map<String, Object> vars = getCommonTemplateVars(getRequest());
 
         vars.put("iiif1EndpointEnabled",
                 config.getBoolean("endpoint.iiif.1.enabled", true));

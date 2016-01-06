@@ -166,29 +166,6 @@ public class InformationResourceTest extends ResourceTest {
         }
     }
 
-    public void testJson() throws IOException {
-        // TODO: this could be a lot more thorough; but the aspects of the JSON
-        // response defined in the Image API spec are tested in
-        // ConformanceTest
-
-        // test whether the @id property respects the base_uri configuration
-        // option
-        ClientResource client = getClientForUriPath("/escher_lego.jpg/info.json");
-        client.get();
-        String json = client.getResponse().getEntityAsText();
-        ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = mapper.readValue(json, ImageInfo.class);
-        assertTrue(info.id.startsWith("http://") &&
-                info.id.contains(WebApplication.IIIF_1_PATH + "/escher_lego.jpg"));
-
-        Configuration config = Application.getConfiguration();
-        config.setProperty("base_uri", "http://example.org/");
-        client.get();
-        json = client.getResponse().getEntityAsText();
-        info = mapper.readValue(json, ImageInfo.class);
-        assertTrue(info.id.startsWith("http://example.org/"));
-    }
-
     public void testNotFound() throws IOException {
         ClientResource client = getClientForUriPath("/invalid/info.json");
         try {
@@ -252,6 +229,62 @@ public class InformationResourceTest extends ResourceTest {
             assertEquals(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE,
                     client.getStatus());
         }
+    }
+
+    public void testUrisInJson() throws IOException {
+        ClientResource client = getClientForUriPath("/escher_lego.jpg/info.json");
+        client.get();
+        String json = client.getResponse().getEntityAsText();
+        ObjectMapper mapper = new ObjectMapper();
+        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        assertEquals("http://localhost:" + PORT +
+                WebApplication.IIIF_1_PATH + "/escher_lego.jpg", info.id);
+    }
+
+    public void testUrisInJsonWithBaseUriOverride() throws IOException {
+        Configuration config = Application.getConfiguration();
+        config.setProperty(AbstractResource.BASE_URI_CONFIG_KEY,
+                "http://example.org/");
+
+        ClientResource client = getClientForUriPath("/escher_lego.jpg/info.json");
+        client.get();
+        String json = client.getResponse().getEntityAsText();
+        ObjectMapper mapper = new ObjectMapper();
+        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        assertEquals("http://example.org" +
+                WebApplication.IIIF_1_PATH + "/escher_lego.jpg", info.id);
+    }
+
+    public void testUrisInJsonWithProxyHeaders() throws IOException {
+        ClientResource client = getClientForUriPath("/escher_lego.jpg/info.json");
+        client.getRequest().getHeaders().add("X-Forwarded-Proto", "HTTP");
+        client.getRequest().getHeaders().add("X-Forwarded-Host", "example.org");
+        client.getRequest().getHeaders().add("X-Forwarded-Port", "8080");
+        client.getRequest().getHeaders().add("X-Forwarded-Path", "/cats");
+        client.get();
+        String json = client.getResponse().getEntityAsText();
+        ObjectMapper mapper = new ObjectMapper();
+        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        assertEquals("http://example.org:8080/cats" +
+                WebApplication.IIIF_1_PATH + "/escher_lego.jpg", info.id);
+    }
+
+    public void testBaseUriOverridesProxyHeaders() throws IOException {
+        Configuration config = Application.getConfiguration();
+        config.setProperty(AbstractResource.BASE_URI_CONFIG_KEY,
+                "https://example.net/");
+
+        ClientResource client = getClientForUriPath("/escher_lego.jpg/info.json");
+        client.getRequest().getHeaders().add("X-Forwarded-Proto", "HTTP");
+        client.getRequest().getHeaders().add("X-Forwarded-Host", "example.org");
+        client.getRequest().getHeaders().add("X-Forwarded-Port", "8080");
+        client.getRequest().getHeaders().add("X-Forwarded-Path", "/cats");
+        client.get();
+        String json = client.getResponse().getEntityAsText();
+        ObjectMapper mapper = new ObjectMapper();
+        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        assertEquals("https://example.net" +
+                WebApplication.IIIF_1_PATH + "/escher_lego.jpg", info.id);
     }
 
 }

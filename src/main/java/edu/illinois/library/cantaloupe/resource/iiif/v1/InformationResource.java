@@ -152,7 +152,7 @@ public class InformationResource extends AbstractResource {
     }
 
     private String getImageUri(Identifier identifier) {
-        return getPublicRootRef() + WebApplication.IIIF_1_PATH +
+        return getPublicRootRef(getRequest()) + WebApplication.IIIF_1_PATH +
                 "/" + Reference.encode(identifier.toString());
     }
 

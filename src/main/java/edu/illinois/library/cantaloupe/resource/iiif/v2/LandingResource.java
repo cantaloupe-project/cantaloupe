@@ -30,9 +30,8 @@ public class LandingResource extends AbstractResource {
     @Get
     public Representation doGet() throws Exception {
         Template template = Velocity.getTemplate("iiif_2_landing.vm");
-        Map<String, Object> vars = edu.illinois.library.cantaloupe.resource.
-                LandingResource.getCommonTemplateVars();
-        return new TemplateRepresentation(template, vars, MediaType.TEXT_HTML);
+        return new TemplateRepresentation(template,
+                getCommonTemplateVars(getRequest()), MediaType.TEXT_HTML);
     }
 
 }
