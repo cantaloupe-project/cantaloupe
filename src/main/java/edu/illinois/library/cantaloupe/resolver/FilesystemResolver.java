@@ -24,6 +24,21 @@ import java.util.Collection;
 class FilesystemResolver extends AbstractResolver
         implements ChannelResolver, FileResolver {
 
+    private static class FilesystemChannelSource implements ChannelSource {
+
+        private final File file;
+
+        public FilesystemChannelSource(File file) {
+            this.file = file;
+        }
+
+        @Override
+        public ReadableByteChannel newChannel() throws IOException {
+            return new FileInputStream(file).getChannel();
+        }
+
+    }
+
     private static Logger logger = LoggerFactory.
             getLogger(FilesystemResolver.class);
 
@@ -40,9 +55,9 @@ class FilesystemResolver extends AbstractResolver
     }
 
     @Override
-    public ReadableByteChannel getChannel(Identifier identifier)
+    public ChannelSource getChannelSource(Identifier identifier)
             throws IOException {
-        return new FileInputStream(getFile(identifier)).getChannel();
+        return new FilesystemChannelSource(getFile(identifier));
     }
 
     @Override

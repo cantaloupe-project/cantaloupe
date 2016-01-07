@@ -12,6 +12,7 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.processor.ChannelProcessor;
 import edu.illinois.library.cantaloupe.resolver.ChannelResolver;
+import edu.illinois.library.cantaloupe.resolver.ChannelSource;
 import edu.illinois.library.cantaloupe.resolver.FileResolver;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import org.apache.commons.configuration.Configuration;
@@ -165,8 +166,9 @@ public abstract class AbstractResource extends ServerResource {
      * This method enables the use of an alternate string to represent a slash
      * via {@link #SLASH_SUBSTITUTE_CONFIG_KEY}.
      *
-     * @param uriPathComponent
-     * @return
+     * @param uriPathComponent Path component (a part of the path before,
+     *                         after, or between slashes)
+     * @return Path component with slashes decoded
      */
     protected String decodeSlashes(final String uriPathComponent) {
         final String substitute = Application.getConfiguration().
@@ -257,22 +259,20 @@ public abstract class AbstractResource extends ServerResource {
             final ChannelResolver chRes = (ChannelResolver) resolver;
             if (proc instanceof ChannelProcessor) {
                 final ChannelProcessor sproc = (ChannelProcessor) proc;
-                ReadableByteChannel readableChannel = chRes.
-                        getChannel(ops.getIdentifier());
-                final Dimension fullSize = sproc.getSize(readableChannel,
-                        sourceFormat);
+                final ChannelSource channelSource = chRes.
+                        getChannelSource(ops.getIdentifier());
+                final Dimension fullSize = sproc.getSize(
+                        channelSource.newChannel(), sourceFormat);
                 final Dimension effectiveSize = ops.getResultingSize(fullSize);
                 if (maxAllowedSize > 0 &&
                         effectiveSize.width * effectiveSize.height > maxAllowedSize) {
                     throw new PayloadTooLargeException();
                 }
-                // avoid reusing the channel
-                readableChannel = chRes.getChannel(ops.getIdentifier());
                 return new ImageRepresentation(mediaType, sourceFormat,
-                        fullSize, ops, disposition, readableChannel);
+                        fullSize, ops, disposition, channelSource);
             }
         }
-        return null; // should never happen
+        return null; // should never hit
     }
 
     /**
@@ -326,7 +326,7 @@ public abstract class AbstractResource extends ServerResource {
                         sourceFormat);
             } else if (proc instanceof ChannelProcessor) {
                 size = ((ChannelProcessor) proc).getSize(
-                        ((ChannelResolver) resolver).getChannel(identifier),
+                        ((ChannelResolver) resolver).getChannelSource(identifier).newChannel(),
                         sourceFormat);
             }
         } else if (resolver instanceof ChannelResolver) {
@@ -334,7 +334,7 @@ public abstract class AbstractResource extends ServerResource {
                 // ChannelResolvers and FileProcessors are incompatible
             } else {
                 size = ((ChannelProcessor) proc).getSize(
-                        ((ChannelResolver) resolver).getChannel(identifier),
+                        ((ChannelResolver) resolver).getChannelSource(identifier).newChannel(),
                         sourceFormat);
             }
         }

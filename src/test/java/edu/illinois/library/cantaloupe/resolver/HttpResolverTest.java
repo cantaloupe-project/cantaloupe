@@ -15,11 +15,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.restlet.data.Reference;
 
-import javax.script.ScriptException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.AccessDeniedException;
 
 public class HttpResolverTest {
 
@@ -51,7 +49,7 @@ public class HttpResolverTest {
     @Test
     public void testGetChannelWithPresentReadableImage() throws IOException {
         try {
-            assertNotNull(instance.getChannel(IDENTIFIER));
+            assertNotNull(instance.getChannelSource(IDENTIFIER));
         } catch (IOException e) {
             fail();
         }
@@ -60,7 +58,7 @@ public class HttpResolverTest {
     @Test
     public void testGetChannelWithMissingImage() throws IOException {
         try {
-            instance.getChannel(new Identifier("bogus"));
+            instance.getChannelSource(new Identifier("bogus"));
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass

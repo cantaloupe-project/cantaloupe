@@ -23,6 +23,27 @@ import java.sql.SQLException;
 
 class JdbcResolver extends AbstractResolver implements ChannelResolver {
 
+    private static class JdbcChannelSource implements ChannelSource {
+
+        private final int column;
+        private final ResultSet resultSet;
+
+        public JdbcChannelSource(ResultSet resultSet, int column) {
+            this.resultSet = resultSet;
+            this.column = column;
+        }
+
+        @Override
+        public ReadableByteChannel newChannel() throws IOException {
+            try {
+                return Channels.newChannel(resultSet.getBinaryStream(column));
+            } catch (SQLException e) {
+                throw new IOException(e.getMessage(), e);
+            }
+        }
+
+    }
+
     private static Logger logger = LoggerFactory.getLogger(JdbcResolver.class);
 
     public static final String CONNECTION_TIMEOUT_CONFIG_KEY =
@@ -81,7 +102,7 @@ class JdbcResolver extends AbstractResolver implements ChannelResolver {
     }
 
     @Override
-    public ReadableByteChannel getChannel(Identifier identifier)
+    public ChannelSource getChannelSource(Identifier identifier)
             throws IOException {
         try (Connection connection = getConnection()) {
             Configuration config = Application.getConfiguration();
@@ -96,7 +117,7 @@ class JdbcResolver extends AbstractResolver implements ChannelResolver {
             statement.setString(1, executeGetDatabaseIdentifier(identifier));
             ResultSet result = statement.executeQuery();
             if (result.next()) {
-                return Channels.newChannel(result.getBinaryStream(1));
+                return new JdbcChannelSource(result, 1);
             }
         } catch (ScriptException | SQLException e) {
             throw new IOException(e.getMessage(), e);

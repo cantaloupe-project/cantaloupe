@@ -30,6 +30,21 @@ import java.nio.channels.ReadableByteChannel;
  */
 class AmazonS3Resolver extends AbstractResolver implements ChannelResolver {
 
+    private static class AmazonS3ChannelSource implements ChannelSource {
+
+        private final S3Object object;
+
+        public AmazonS3ChannelSource(S3Object object) {
+            this.object = object;
+        }
+
+        @Override
+        public ReadableByteChannel newChannel() throws IOException {
+            return Channels.newChannel(object.getObjectContent());
+        }
+
+    }
+
     private static Logger logger = LoggerFactory.
             getLogger(AmazonS3Resolver.class);
 
@@ -87,10 +102,9 @@ class AmazonS3Resolver extends AbstractResolver implements ChannelResolver {
     }
 
     @Override
-    public ReadableByteChannel getChannel(Identifier identifier)
+    public ChannelSource getChannelSource(Identifier identifier)
             throws IOException {
-        final S3Object object = getObject(identifier);
-        return Channels.newChannel(object.getObjectContent());
+        return new AmazonS3ChannelSource(getObject(identifier));
     }
 
     private S3Object getObject(Identifier identifier) throws IOException {

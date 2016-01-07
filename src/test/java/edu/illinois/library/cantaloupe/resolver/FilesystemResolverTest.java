@@ -12,7 +12,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.script.ScriptException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -45,13 +44,13 @@ public class FilesystemResolverTest {
     public void testGetChannel() {
         // present, readable image
         try {
-            assertNotNull(instance.getChannel(IDENTIFIER));
+            assertNotNull(instance.getChannelSource(IDENTIFIER));
         } catch (IOException e) {
             fail();
         }
         // missing image
         try {
-            instance.getChannel(new Identifier("bogus"));
+            instance.getChannelSource(new Identifier("bogus"));
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass

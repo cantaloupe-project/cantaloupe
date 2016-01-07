@@ -66,13 +66,13 @@ public class AmazonS3ResolverTest {
     public void testGetChannelWithBasicLookupStrategy() {
         // present, readable image
         try {
-            assertNotNull(instance.getChannel(IMAGE));
+            assertNotNull(instance.getChannelSource(IMAGE));
         } catch (IOException e) {
             fail();
         }
         // missing image
         try {
-            instance.getChannel(new Identifier("bogus"));
+            instance.getChannelSource(new Identifier("bogus"));
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
@@ -90,13 +90,14 @@ public class AmazonS3ResolverTest {
                 TestUtil.getFixture("delegate.rb").getAbsolutePath());
         // present image
         try {
-            assertNotNull(instance.getChannel(IMAGE));
+            ChannelSource source = instance.getChannelSource(IMAGE);
+            assertNotNull(source.newChannel());
         } catch (IOException e) {
             fail();
         }
         // missing image
         try {
-            instance.getChannel(new Identifier("bogus"));
+            ChannelSource source = instance.getChannelSource(new Identifier("bogus"));
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass

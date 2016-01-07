@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.resolver.ChannelSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 
@@ -111,16 +112,16 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             if (getProcessor().getAvailableOutputFormats(sourceFormat).size() == 0) {
                 if (getProcessor() instanceof ChannelProcessor) {
-                    ReadableByteChannel sizeReadableChannel = new FileInputStream(
-                            TestUtil.getFixture(sourceFormat.getPreferredExtension())).getChannel();
-                    ReadableByteChannel processReadableChannel = new FileInputStream(
+                    final ChannelSource source = new TestChannelSource(
+                            TestUtil.getFixture(sourceFormat.getPreferredExtension()));
+
+                    final ReadableByteChannel processReadableChannel = new FileInputStream(
                             TestUtil.getFixture(sourceFormat.getPreferredExtension())).getChannel();
                     try {
                         ChannelProcessor proc = (ChannelProcessor) getProcessor();
-                        Dimension size = proc.getSize(sizeReadableChannel,
+                        Dimension size = proc.getSize(source.newChannel(),
                                 sourceFormat);
-                        proc.process(ops, sourceFormat, size,
-                                processReadableChannel,
+                        proc.process(ops, sourceFormat, size, source,
                                 new NullWritableByteChannel());
                         fail("Expected exception");
                     } catch (ProcessorException e) {
@@ -128,7 +129,6 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
                                         sourceFormat.getPreferredExtension(),
                                 e.getMessage());
                     } finally {
-                        sizeReadableChannel.close();
                         processReadableChannel.close();
                     }
                 }
@@ -299,21 +299,21 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {
                 if (getProcessor() instanceof ChannelProcessor) {
-                    ReadableByteChannel sizeReadableChannel = new FileInputStream(
-                            TestUtil.getFixture(sourceFormat.getPreferredExtension())).getChannel();
+                    ChannelSource source = new TestChannelSource(
+                            TestUtil.getFixture(sourceFormat.getPreferredExtension()));
+
                     ReadableByteChannel processReadableChannel = new FileInputStream(
                             TestUtil.getFixture(sourceFormat.getPreferredExtension())).getChannel();
                     try {
                         ChannelProcessor proc = (ChannelProcessor) getProcessor();
-                        Dimension size = proc.getSize(sizeReadableChannel,
+                        Dimension size = proc.getSize(source.newChannel(),
                                 sourceFormat);
                         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                         WritableByteChannel outputChannel = Channels.newChannel(outputStream);
-                        proc.process(ops, sourceFormat, size,
-                                processReadableChannel, outputChannel);
+                        proc.process(ops, sourceFormat, size, source,
+                                outputChannel);
                         assertTrue(outputStream.toByteArray().length > 100); // TODO: actually read this
                     } finally {
-                        sizeReadableChannel.close();
                         processReadableChannel.close();
                     }
                 }

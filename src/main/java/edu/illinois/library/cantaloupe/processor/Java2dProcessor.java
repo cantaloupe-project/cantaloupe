@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.resolver.ChannelSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.restlet.data.MediaType;
 
@@ -211,7 +212,7 @@ class Java2dProcessor implements ChannelProcessor, FileProcessor {
     public void process(final OperationList ops,
                         final SourceFormat sourceFormat,
                         final Dimension fullSize,
-                        final ReadableByteChannel readableChannel,
+                        final ChannelSource channelSource,
                         final WritableByteChannel writableChannel)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
@@ -226,7 +227,7 @@ class Java2dProcessor implements ChannelProcessor, FileProcessor {
             final ReductionFactor reductionFactor = new ReductionFactor();
             final Set<ImageIoImageReader.ReaderHint> readerHints = new HashSet<>();
             final ImageIoImageReader reader = new ImageIoImageReader();
-            BufferedImage image = reader.read(readableChannel,
+            BufferedImage image = reader.read(channelSource,
                     sourceFormat, ops, fullSize, reductionFactor,
                     readerHints);
             for (Operation op : ops) {

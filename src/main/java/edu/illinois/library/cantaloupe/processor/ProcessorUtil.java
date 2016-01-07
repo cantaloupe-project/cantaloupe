@@ -2,6 +2,8 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -14,6 +16,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 abstract class ProcessorUtil {
+
+    private static Logger logger = LoggerFactory.getLogger(ProcessorUtil.class);
 
     /**
      * Gets a reduction factor where the corresponding scale is 1/(2^rf).
@@ -51,8 +55,7 @@ abstract class ProcessorUtil {
     }
 
     /**
-     * Efficiently reads the width & height of an image without reading the
-     * entire image into memory.
+     * Efficiently reads the width & height of an image.
      *
      * @param inputFile
      * @param sourceFormat
@@ -65,10 +68,9 @@ abstract class ProcessorUtil {
     }
 
     /**
-     * Efficiently reads the width & height of an image without reading the
-     * entire image into memory.
+     * Efficiently reads the width & height of an image.
      *
-     * @param readableChannel
+     * @param readableChannel Will be closed.
      * @param sourceFormat
      * @return Dimensions in pixels
      * @throws ProcessorException
@@ -76,7 +78,15 @@ abstract class ProcessorUtil {
     public static Dimension getSize(ReadableByteChannel readableChannel,
                                     SourceFormat sourceFormat)
             throws ProcessorException {
-        return doGetSize(readableChannel, sourceFormat);
+        try {
+            return doGetSize(readableChannel, sourceFormat);
+        } finally {
+            try {
+                readableChannel.close();
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
     }
 
     /**

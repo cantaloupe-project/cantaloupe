@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.resolver.ChannelSource;
 
 import java.awt.Dimension;
 import java.nio.channels.ReadableByteChannel;
@@ -9,12 +10,13 @@ import java.nio.channels.WritableByteChannel;
 
 /**
  * Interface to be implemented by image processors that support input via
- * streams.
+ * channels.
  */
 public interface ChannelProcessor extends Processor {
 
     /**
-     * @param readableChannel Source image. Implementations should not close it.
+     * @param readableChannel Channel for reading the source image.
+     *                        Implementations should close it.
      * @param sourceFormat Format of the source image
      * @return Scale of the source image in pixels.
      * @throws ProcessorException
@@ -32,16 +34,16 @@ public interface ChannelProcessor extends Processor {
      * ({@link edu.illinois.library.cantaloupe.image.Operation#isNoOp()})
      * before performing it.</p>
      *
-     * <p>Implementations should use the sourceSize parameter and not their
-     * own {#link #getSize} method to avoid reusing a potentially unreusable
-     * InputStream.</p>
+     * <p>Implementations should get the full size of the source image from
+     * the sourceSize parameter instead of their {#link #getSize} method,
+     * for efficiency.</p>
      *
      * @param ops OperationList of the image to process.
      * @param sourceFormat Format of the source image. Will never be
      * {@link SourceFormat#UNKNOWN}.
      * @param sourceSize Scale of the source image.
-     * @param readableChannel Stream from which to read the image.
-     *                        Implementations should not close it.
+     * @param channelSource Source for acquiring channels from which to read
+     *                      the imagee.
      * @param writableChannel Writable channel to write the image to.
      *                        Implementations should not close it.
      * @throws UnsupportedOutputFormatException
@@ -49,7 +51,7 @@ public interface ChannelProcessor extends Processor {
      * @throws ProcessorException
      */
     void process(OperationList ops, SourceFormat sourceFormat,
-                 Dimension sourceSize, ReadableByteChannel readableChannel,
+                 Dimension sourceSize, ChannelSource channelSource,
                  WritableByteChannel writableChannel) throws ProcessorException;
 
 }

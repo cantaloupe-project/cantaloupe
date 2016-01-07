@@ -23,10 +23,32 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.AccessDeniedException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 class HttpResolver extends AbstractResolver implements ChannelResolver {
+
+    private static class HttpChannelSource implements ChannelSource {
+
+        private final Client client = new Client(
+                Arrays.asList(Protocol.HTTP, Protocol.HTTPS));
+        private final Reference url;
+
+        public HttpChannelSource(Reference url) {
+            this.url = url;
+        }
+
+        @Override
+        public ReadableByteChannel newChannel() throws IOException {
+            ClientResource resource = newClientResource(url);
+            resource.setNext(client);
+            try {
+                return resource.get().getChannel();
+            } catch (ResourceException e) {
+                throw new IOException(e.getMessage(), e);
+            }
+        }
+
+    }
 
     private static Logger logger = LoggerFactory.getLogger(HttpResolver.class);
 
@@ -41,24 +63,38 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
     public static final String URL_SUFFIX_CONFIG_KEY =
             "HttpResolver.BasicLookupStrategy.url_suffix";
 
-    private static Client client;
-
-    static {
-        List<Protocol> protocols = new ArrayList<>();
-        protocols.add(Protocol.HTTP);
-        protocols.add(Protocol.HTTPS);
-        client = new Client(protocols);
+    /**
+     * Factory method.
+     *
+     * @param url
+     * @return New ClientResource respecting HttpResolver configuration
+     * options.
+     */
+    private static ClientResource newClientResource(final Reference url) {
+        final ClientResource resource = new ClientResource(url);
+        final Configuration config = Application.getConfiguration();
+        final String username = config.getString(BASIC_AUTH_USERNAME_CONFIG_KEY, "");
+        final String secret = config.getString(BASIC_AUTH_SECRET_CONFIG_KEY, "");
+        if (username.length() > 0 && secret.length() > 0) {
+            resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC,
+                    username, secret);
+        }
+        return resource;
     }
 
     @Override
-    public ReadableByteChannel getChannel(Identifier identifier)
+    public ChannelSource getChannelSource(final Identifier identifier)
             throws IOException {
         Reference url = getUrl(identifier);
         logger.debug("Resolved {} to {}", identifier, url);
-        ClientResource resource = newClientResource(url);
-        resource.setNext(client);
         try {
-            return resource.get().getChannel();
+            // Issue an HTTP HEAD request to check whether the underlying
+            // resource is accessible
+            Client client = new Client(new Context(), url.getSchemeProtocol());
+            ClientResource resource = new ClientResource(url);
+            resource.setNext(client);
+            resource.head();
+            return new HttpChannelSource(url);
         } catch (ResourceException e) {
             if (e.getStatus().equals(Status.CLIENT_ERROR_NOT_FOUND) ||
                     e.getStatus().equals(Status.CLIENT_ERROR_GONE)) {
@@ -66,7 +102,7 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
             } else if (e.getStatus().equals(Status.CLIENT_ERROR_FORBIDDEN)) {
                 throw new AccessDeniedException(e.getMessage());
             } else {
-                throw new IOException(e.getMessage());
+                throw new IOException(e.getMessage(), e);
             }
         }
     }
@@ -78,11 +114,11 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
         if (format == SourceFormat.UNKNOWN) {
             format = getSourceFormatFromContentTypeHeader(identifier);
         }
-        getChannel(identifier); // throws IOException if not found etc.
+        getChannelSource(identifier).newChannel(); // throws IOException if not found etc.
         return format;
     }
 
-    public Reference getUrl(Identifier identifier) throws IOException {
+    public Reference getUrl(final Identifier identifier) throws IOException {
         final Configuration config = Application.getConfiguration();
 
         switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
@@ -115,7 +151,7 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
         String contentType = "";
         Reference url = getUrl(identifier);
         try {
-            Client client = new Client(new Context(), Protocol.HTTP);
+            Client client = new Client(new Context(), url.getSchemeProtocol());
             ClientResource resource = new ClientResource(url);
             resource.setNext(client);
             resource.head();
@@ -167,25 +203,6 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
                     identifier);
         }
         return new Reference((String) result);
-    }
-
-    /**
-     * Factory method.
-     *
-     * @param url
-     * @return New ClientResource respecting HttpResolver configuration
-     * options.
-     */
-    private ClientResource newClientResource(final Reference url) {
-        final ClientResource resource = new ClientResource(url);
-        final Configuration config = Application.getConfiguration();
-        final String username = config.getString(BASIC_AUTH_USERNAME_CONFIG_KEY, "");
-        final String secret = config.getString(BASIC_AUTH_SECRET_CONFIG_KEY, "");
-        if (username.length() > 0 && secret.length() > 0) {
-            resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC,
-                    username, secret);
-        }
-        return resource;
     }
 
 }

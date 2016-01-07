@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.resolver.ChannelSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import it.geosolutions.jaiext.JAIExt;
 import org.restlet.data.MediaType;
@@ -175,10 +176,10 @@ class JaiProcessor implements FileProcessor, ChannelProcessor {
     public void process(final OperationList ops,
                         final SourceFormat sourceFormat,
                         final Dimension fullSize,
-                        final ReadableByteChannel readableChannel,
+                        final ChannelSource channelSource,
                         final WritableByteChannel writableChannel)
             throws ProcessorException {
-        doProcess(ops, sourceFormat, fullSize, readableChannel, writableChannel);
+        doProcess(ops, sourceFormat, fullSize, channelSource, writableChannel);
     }
 
     private void doProcess(final OperationList ops,
@@ -198,9 +199,9 @@ class JaiProcessor implements FileProcessor, ChannelProcessor {
         try {
             RenderedImage renderedImage = null;
             ReductionFactor rf = new ReductionFactor();
-            if (input instanceof ReadableByteChannel) {
-                renderedImage = JaiUtil.readImage(
-                        (ReadableByteChannel) input, sourceFormat, ops,
+            if (input instanceof ChannelSource) {
+                ReadableByteChannel channel = ((ChannelSource) input).newChannel();
+                renderedImage = JaiUtil.readImage(channel, sourceFormat, ops,
                         fullSize, rf);
             } else if (input instanceof File) {
                 renderedImage = JaiUtil.readImage(

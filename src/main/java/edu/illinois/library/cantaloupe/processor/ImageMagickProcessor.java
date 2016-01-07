@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.resolver.ChannelSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.apache.commons.configuration.Configuration;
 import org.im4java.core.ConvertCmd;
@@ -173,12 +174,19 @@ class ImageMagickProcessor implements ChannelProcessor {
             throw new UnsupportedSourceFormatException(sourceFormat);
         }
         try {
-            Info sourceInfo = new Info(sourceFormat.getPreferredExtension() +
-                    ":-", Channels.newInputStream(readableChannel), true);
+            Info sourceInfo = new Info(
+                    sourceFormat.getPreferredExtension() + ":-",
+                    Channels.newInputStream(readableChannel), true);
             return new Dimension(sourceInfo.getImageWidth(),
                     sourceInfo.getImageHeight());
         } catch (IM4JavaException e) {
             throw new ProcessorException(e.getMessage(), e);
+        } finally {
+            try {
+                readableChannel.close();
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
         }
     }
 
@@ -218,7 +226,7 @@ class ImageMagickProcessor implements ChannelProcessor {
     public void process(final OperationList ops,
                         final SourceFormat sourceFormat,
                         final Dimension fullSize,
-                        final ReadableByteChannel readableChannel,
+                        final ChannelSource channelSource,
                         final WritableByteChannel writableChannel)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
@@ -238,7 +246,7 @@ class ImageMagickProcessor implements ChannelProcessor {
             op.addImage(ops.getOutputFormat().getExtension() + ":-"); // write to stdout
 
             Pipe pipeIn = new Pipe(
-                    Channels.newInputStream(readableChannel), null);
+                    Channels.newInputStream(channelSource.newChannel()), null);
             Pipe pipeOut = new Pipe(null,
                     Channels.newOutputStream(writableChannel));
 
