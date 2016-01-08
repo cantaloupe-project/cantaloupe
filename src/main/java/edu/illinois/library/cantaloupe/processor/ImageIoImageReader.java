@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -29,18 +28,43 @@ import java.util.Set;
  */
 class ImageIoImageReader {
 
-    private static Logger logger = LoggerFactory.getLogger(Java2dUtil.class);
+    private static Logger logger = LoggerFactory.
+            getLogger(ImageIoImageReader.class);
 
     public enum ReaderHint {
         ALREADY_CROPPED
     }
 
     /**
-     * Simple and not necessarily efficient method wrapping
-     * {@link ImageIO#read}.
+     * @param inputSource  {@link File} or {@link ReadableByteChannel}
+     * @param sourceFormat Format of the source image
+     * @return New ImageReader instance with input already set. Should be
+     * disposed after using.
+     * @throws IOException
+     * @throws UnsupportedSourceFormatException
+     */
+    private static ImageReader newImageReader(Object inputSource,
+                                              final SourceFormat sourceFormat)
+            throws IOException, UnsupportedSourceFormatException {
+        Iterator<ImageReader> it = ImageIO.getImageReadersByMIMEType(
+                sourceFormat.getPreferredMediaType().toString());
+        if (it.hasNext()) {
+            final ImageReader reader = it.next();
+            reader.setInput(ImageIO.createImageInputStream(inputSource));
+            return reader;
+        } else {
+            throw new UnsupportedSourceFormatException(sourceFormat);
+        }
+    }
+
+    /**
+     * Expedient but not necessarily efficient method wrapping
+     * {@link ImageIO#read} that reads a whole image (excluding subimages) in
+     * one shot.
      *
      * @param readableChannel Image channel to read.
-     * @return RGB BufferedImage
+     * @return BufferedImage guaranteed to not be of type
+     * {@link BufferedImage#TYPE_CUSTOM}.
      * @throws IOException
      */
     public BufferedImage read(ReadableByteChannel readableChannel)
@@ -56,21 +80,22 @@ class ImageIoImageReader {
 
     /**
      * <p>Attempts to reads an image as efficiently as possible, utilizing its
-     * tile layout and/or sub-images, if possible.</p>
-     *
+     * tile layout and/or subimages, if possible.</p>
+     * <p/>
      * <p>After reading, clients should check the reader hints to see whether
      * the returned image will require cropping.</p>
      *
-     * @param imageFile Image file to read.
-     * @param sourceFormat
+     * @param imageFile       Image file to read.
+     * @param sourceFormat    Format of the source image.
      * @param ops
-     * @param fullSize Full size of the source image.
+     * @param fullSize        Full size of the source image.
      * @param reductionFactor {@link ReductionFactor#factor} property will be
      *                        modified to reflect the reduction factor of the
      *                        returned image.
-     * @param hints Will be populated by information returned by the reader.
-     * @return RGB BufferedImage best matching the given parameters. Clients
-     * should check the hints set to see whether they need to perform
+     * @param hints           Will be populated by information returned by the reader.
+     * @return BufferedImage best matching the given parameters, guaranteed to
+     * not be of {@link BufferedImage#TYPE_CUSTOM}. Clients should
+     * check the hints set to see whether they need to perform
      * additional cropping.
      * @throws IOException
      * @throws ProcessorException
@@ -87,22 +112,22 @@ class ImageIoImageReader {
     }
 
     /**
-     * @see #read(File, SourceFormat, OperationList, Dimension,
-     * ReductionFactor, Set< ReaderHint >)
-     *
      * @param readableChannel Image channel to read.
-     * @param sourceFormat
+     * @param sourceFormat    Format of the source image.
      * @param ops
-     * @param fullSize Full size of the source image.
+     * @param fullSize        Full size of the source image.
      * @param reductionFactor {@link ReductionFactor#factor} property will be
      *                        modified to reflect the reduction factor of the
      *                        returned image.
-     * @param hints Will be populated by information returned by the reader.
-     * @return RGB BufferedImage best matching the given parameters. Clients
-     * should check the hints set to see whether they need to perform
+     * @param hints           Will be populated by information returned by the reader.
+     * @return BufferedImage best matching the given parameters, guaranteed to
+     * not be of {@link BufferedImage#TYPE_CUSTOM}. Clients should
+     * check the hints set to see whether they need to perform
      * additional cropping.
      * @throws IOException
      * @throws ProcessorException
+     * @see #read(File, SourceFormat, OperationList, Dimension,
+     * ReductionFactor, Set< ReaderHint >)
      */
     public BufferedImage read(final ReadableByteChannel readableChannel,
                               final SourceFormat sourceFormat,
@@ -116,21 +141,20 @@ class ImageIoImageReader {
     }
 
     /**
-     * @see #read(File, SourceFormat, OperationList, Dimension,
-     * ReductionFactor, Set< ReaderHint >)
-     *
-     * @param inputSource {@link ReadableByteChannel} or {@link File}
-     * @param sourceFormat
+     * @param inputSource  {@link ReadableByteChannel} or {@link File}
+     * @param sourceFormat Format of the source image.
      * @param ops
-     * @param fullSize Full size of the source image.
-     * @param rf {@link ReductionFactor#factor} property will be modified to
-     *           reflect the reduction factor of the returned image.
-     * @param hints Will be populated by information returned by the reader.
-     * @return RGB BufferedImage best matching the given parameters. Clients
+     * @param fullSize     Full size of the source image.
+     * @param rf           {@link ReductionFactor#factor} property will be modified to
+     *                     reflect the reduction factor of the returned image.
+     * @param hints        Will be populated by information returned by the reader.
+     * @return BufferedImage best matching the given parameters. Clients
      * should check the hints set to see whether they need to perform
      * additional cropping.
      * @throws IOException
      * @throws ProcessorException
+     * @see #read(File, SourceFormat, OperationList, Dimension,
+     * ReductionFactor, Set< ReaderHint >)
      */
     private BufferedImage multiLevelAwareRead(final Object inputSource,
                                               final SourceFormat sourceFormat,
@@ -139,65 +163,45 @@ class ImageIoImageReader {
                                               final ReductionFactor rf,
                                               final Set<ReaderHint> hints)
             throws IOException, ProcessorException {
+        final ImageReader reader = newImageReader(inputSource, sourceFormat);
         BufferedImage image = null;
-        switch (sourceFormat) {
-            case TIF:
-                Iterator<ImageReader> it = ImageIO.
-                        getImageReadersByMIMEType("image/tiff");
-                if (it.hasNext()) {
-                    ImageReader reader = it.next();
-                    try {
-                        Crop crop = new Crop();
-                        crop.setFull(true);
-                        Scale scale = new Scale();
-                        scale.setMode(Scale.Mode.FULL);
-                        for (Operation op : ops) {
-                            if (op instanceof Crop) {
-                                crop = (Crop) op;
-                            } else if (op instanceof Scale) {
-                                scale = (Scale) op;
-                            }
+        try {
+            switch (sourceFormat) {
+                case TIF:
+                    Crop crop = new Crop();
+                    crop.setFull(true);
+                    Scale scale = new Scale();
+                    scale.setMode(Scale.Mode.FULL);
+                    for (Operation op : ops) {
+                        if (op instanceof Crop) {
+                            crop = (Crop) op;
+                        } else if (op instanceof Scale) {
+                            scale = (Scale) op;
                         }
-                        ImageInputStream iis =
-                                ImageIO.createImageInputStream(inputSource);
-                        reader.setInput(iis);
-                        image = readSmallestUsableSubimage(reader, crop, scale,
-                                rf, hints);
-                    } finally {
-                        reader.dispose();
                     }
-                }
-                break;
-            // This is similar to the TIF case; the main difference is that it
-            // doesn't scan for sub-images, which is costly to do.
-            default:
-                it = ImageIO.getImageReadersByMIMEType(
-                        sourceFormat.getPreferredMediaType().toString());
-                if (it.hasNext()) {
-                    ImageReader reader = it.next();
-                    try {
-                        ImageInputStream iis =
-                                ImageIO.createImageInputStream(inputSource);
-                        reader.setInput(iis);
-
-                        Crop crop = null;
-                        for (Operation op : ops) {
-                            if (op instanceof Crop) {
-                                crop = (Crop) op;
-                                break;
-                            }
+                    image = readSmallestUsableSubimage(reader, crop, scale,
+                            rf, hints);
+                    break;
+                // This is similar to the TIF case, except it doesn't scan for
+                // subimages, which is costly to do.
+                default:
+                    crop = null;
+                    for (Operation op : ops) {
+                        if (op instanceof Crop) {
+                            crop = (Crop) op;
+                            break;
                         }
-                        if (crop != null) {
-                            image = tileAwareRead(reader, 0,
-                                    crop.getRectangle(fullSize), hints);
-                        } else {
-                            image = reader.read(0);
-                        }
-                    } finally {
-                        reader.dispose();
                     }
-                }
-                break;
+                    if (crop != null) {
+                        image = tileAwareRead(reader, 0,
+                                crop.getRectangle(fullSize), hints);
+                    } else {
+                        image = reader.read(0);
+                    }
+                    break;
+            }
+        } finally {
+            reader.dispose();
         }
         if (image == null) {
             throw new UnsupportedSourceFormatException(sourceFormat);
@@ -211,14 +215,15 @@ class ImageIoImageReader {
     }
 
     /**
-     * Reads the smallest usable image from a multi-resolution image.
+     * Reads the smallest image that can fulfill the given crop and scale from
+     * a multi-resolution image.
      *
      * @param reader ImageReader with input source already set
-     * @param crop Requested crop
-     * @param scale Requested scale
-     * @param rf {@link ReductionFactor#factor} will be set to the reduction
-     *           factor of the returned image.
-     * @param hints Will be populated by information returned by the reader.
+     * @param crop   Requested crop
+     * @param scale  Requested scale
+     * @param rf     {@link ReductionFactor#factor} will be set to the reduction
+     *               factor of the returned image.
+     * @param hints  Will be populated by information returned by the reader.
      * @return The smallest image fitting the requested crop and scale
      * operations from the given reader.
      * @throws IOException
@@ -229,11 +234,11 @@ class ImageIoImageReader {
                                                      final ReductionFactor rf,
                                                      final Set<ReaderHint> hints)
             throws IOException {
-        BufferedImage bestImage = null;
-        final Dimension fullSize = new Dimension(reader.getWidth(0),
-                reader.getHeight(0));
+        final Dimension fullSize = new Dimension(
+                reader.getWidth(0), reader.getHeight(0));
         final Rectangle regionRect = crop.getRectangle(fullSize);
         final ImageReadParam param = reader.getDefaultReadParam();
+        BufferedImage bestImage = null;
         if (scale.isNoOp()) {
             // ImageReader loves to read TIFFs into BufferedImages of type
             // TYPE_CUSTOM, which need to be redrawn into a new image of type
@@ -317,21 +322,25 @@ class ImageIoImageReader {
 
     /**
      * <p>Returns an image for the requested source area by reading the tiles
-     * of the source image and joining them into a single image.</p>
-     *
+     * (or strips) of the source image and joining them into a single image.</p>
+     * <p/>
+     * <p>This method is intended to be compatible with all source images, no
+     * matter the data layout (tiled or not). For some image types, including
+     * GIF and PNG, a tiled reading strategy will not work, and so this method
+     * will read the entire image.</p>
+     * <p/>
      * <p>This method may populate <code>hints</code> with
      * {@link ReaderHint#ALREADY_CROPPED}, in which case cropping will have
      * already been performed according to the
-     * <code>requestedSourceArea</code> parameter and no further cropping will
-     * be necessary (assuming it would have covered the same area).</p>
+     * <code>requestedSourceArea</code> parameter.</p>
      *
-     * @param reader ImageReader with input source already set
-     * @param imageIndex Index of the image to read from the ImageReader.
+     * @param reader              ImageReader with input source already set
+     * @param imageIndex          Index of the image to read from the ImageReader.
      * @param requestedSourceArea Source image area to retrieve. The returned
      *                            image will be this size or smaller if it
      *                            would overlap the right or bottom edge of the
      *                            source image.
-     * @param hints Will be populated by information returned by the reader.
+     * @param hints               Will be populated by information returned by the reader.
      * @return Cropped image
      * @throws IOException
      * @throws IllegalArgumentException If the source image is not tiled.
@@ -342,11 +351,11 @@ class ImageIoImageReader {
                                         final Set<ReaderHint> hints)
             throws IOException, IllegalArgumentException {
 
-        // These readers are uncooperative with the tile-aware loading
+        // These formats are uncooperative with the tile-aware loading
         // strategy.
         if (reader instanceof GIFImageReader ||
                 reader instanceof PNGImageReader) {
-            logger.debug("Reading full image {}", imageIndex);
+            logger.debug("tileAwareRead(): reading full image {}", imageIndex);
             return reader.read(imageIndex);
         }
 
@@ -370,10 +379,10 @@ class ImageIoImageReader {
         final int offsetY = requestedSourceArea.y - tileY1 * tileHeight;
 
         if (tileHeight == 1) {
-            logger.debug("Reading {}-column strip", numYTiles);
+            logger.debug("tileAwareRead(): reading {}-column strip", numYTiles);
         } else {
-            logger.debug("Reading tile rows {}-{} of {} and columns {}-{} of {} " +
-                            "({}x{} tiles; {}x{} offset)",
+            logger.debug("tileAwareRead(): reading tile rows {}-{} of {} and " +
+                            "columns {}-{} of {} ({}x{} tiles; {}x{} offset)",
                     tileX1 + 1, tileX2 + 1, numXTiles,
                     tileY1 + 1, tileY2 + 1, numYTiles,
                     tileWidth, tileHeight, offsetX, offsetY);
