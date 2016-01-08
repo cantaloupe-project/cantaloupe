@@ -218,6 +218,8 @@ public class Application {
         Runtime runtime = Runtime.getRuntime();
         logger.info(System.getProperty("java.vm.name") + " / " +
                 System.getProperty("java.vm.info"));
+        logger.info("{} available processor cores",
+                runtime.availableProcessors());
         logger.info("Heap total: {}MB; max: {}MB", runtime.totalMemory() / mb,
                 runtime.maxMemory() / mb);
         logger.info("\uD83C\uDF48 Starting Cantaloupe {}", getVersion());
