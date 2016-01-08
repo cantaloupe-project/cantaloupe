@@ -18,6 +18,7 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
+import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
@@ -28,6 +29,10 @@ import java.util.Set;
  * Image reader using ImageIO to efficiently read source images.
  */
 class ImageIoImageReader {
+
+    // Note: methods that return BufferedImages (for Java 2D) are arranged
+    // toward the beginning of the class; methods that return RenderedImages
+    // (for JAI) are toward the end.
 
     private static Logger logger = LoggerFactory.
             getLogger(ImageIoImageReader.class);
@@ -57,6 +62,8 @@ class ImageIoImageReader {
             throw new UnsupportedSourceFormatException(sourceFormat);
         }
     }
+
+    /////////////////////// BufferedImage methods //////////////////////////
 
     /**
      * Expedient but not necessarily efficient method wrapping
@@ -416,6 +423,215 @@ class ImageIoImageReader {
         }
         hints.add(ReaderHint.ALREADY_CROPPED);
         return outImage;
+    }
+
+    /////////////////////// RenderedImage methods //////////////////////////
+
+    /**
+     * Reads an image (excluding subimages).
+     *
+     * @param readableChannel Image channel to read.
+     * @param sourceFormat
+     * @return RenderedImage
+     * @throws IOException
+     * @throws UnsupportedSourceFormatException
+     */
+    public RenderedImage readRendered(final ReadableByteChannel readableChannel,
+                                      final SourceFormat sourceFormat)
+            throws IOException, UnsupportedSourceFormatException {
+        ImageReader reader = newImageReader(readableChannel, sourceFormat);
+        return reader.readAsRenderedImage(0, reader.getDefaultReadParam());
+    }
+
+    /**
+     * <p>Attempts to reads an image as efficiently as possible, utilizing its
+     * tile layout and/or subimages, if possible.</p>
+     *
+     * @param imageFile       Image file to read.
+     * @param sourceFormat    Format of the source image.
+     * @param ops
+     * @param reductionFactor {@link ReductionFactor#factor} property will be
+     *                        modified to reflect the reduction factor of the
+     *                        returned image.
+     * @return RenderedImage best matching the given parameters.
+     * @throws IOException
+     * @throws ProcessorException
+     */
+    public RenderedImage read(final File imageFile,
+                              final SourceFormat sourceFormat,
+                              final OperationList ops,
+                              final ReductionFactor reductionFactor)
+            throws IOException, ProcessorException {
+        return multiLevelAwareRead(imageFile, sourceFormat, ops,
+                reductionFactor);
+    }
+
+    /**
+     * @see #read(File, SourceFormat, OperationList, ReductionFactor)
+     *
+     * @param channelSource Source of image channels to read
+     * @param sourceFormat Format of the source image
+     * @param ops
+     * @param reductionFactor {@link ReductionFactor#factor} property will be
+     *                        modified to reflect the reduction factor of the
+     *                        returned image.
+     * @return BufferedImage best matching the given parameters.
+     * @throws IOException
+     * @throws ProcessorException
+     * @see #read(File, SourceFormat, OperationList, ReductionFactor)
+     */
+    public RenderedImage read(final ChannelSource channelSource,
+                              final SourceFormat sourceFormat,
+                              final OperationList ops,
+                              final ReductionFactor reductionFactor)
+            throws IOException, ProcessorException {
+        return multiLevelAwareRead(channelSource, sourceFormat,
+                ops, reductionFactor);
+    }
+
+    /**
+     * @param inputSource {@link ChannelSource} or {@link File}
+     * @param sourceFormat Format of the source image.
+     * @param ops
+     * @param rf {@link ReductionFactor#factor} property will be modified to
+     *           reflect the reduction factor of the returned image.
+     * @return BufferedImage best matching the given parameters.
+     * @throws IOException
+     * @throws ProcessorException
+     * @see #read(File, SourceFormat, OperationList, ReductionFactor)
+     */
+    private RenderedImage multiLevelAwareRead(final Object inputSource,
+                                              final SourceFormat sourceFormat,
+                                              final OperationList ops,
+                                              final ReductionFactor rf)
+            throws IOException, ProcessorException {
+        final ImageReader reader = newImageReader(inputSource, sourceFormat);
+        RenderedImage image = null;
+        try {
+            switch (sourceFormat) {
+                case TIF:
+                    Crop crop = new Crop();
+                    crop.setFull(true);
+                    Scale scale = new Scale();
+                    scale.setMode(Scale.Mode.FULL);
+                    for (Operation op : ops) {
+                        if (op instanceof Crop) {
+                            crop = (Crop) op;
+                        } else if (op instanceof Scale) {
+                            scale = (Scale) op;
+                        }
+                    }
+                    image = readSmallestUsableSubimage(reader, crop, scale, rf);
+                    break;
+                // This is similar to the TIF case, except it doesn't scan for
+                // subimages, which is costly to do.
+                default:
+                    crop = null;
+                    for (Operation op : ops) {
+                        if (op instanceof Crop) {
+                            crop = (Crop) op;
+                            break;
+                        }
+                    }
+                    if (crop != null) {
+                        image = reader.readAsRenderedImage(0,
+                                reader.getDefaultReadParam());
+                    } else {
+                        image = reader.read(0);
+                    }
+                    break;
+            }
+        } finally {
+            reader.dispose();
+        }
+        if (image == null) {
+            throw new UnsupportedSourceFormatException(sourceFormat);
+        }
+        return image;
+    }
+
+    /**
+     * Reads the smallest image that can fulfill the given crop and scale from
+     * a multi-resolution image.
+     *
+     * @param reader ImageReader with input source already set
+     * @param crop   Requested crop
+     * @param scale  Requested scale
+     * @param rf     {@link ReductionFactor#factor} will be set to the reduction
+     *               factor of the returned image.
+     * @return The smallest image fitting the requested crop and scale
+     * operations from the given reader.
+     * @throws IOException
+     */
+    private RenderedImage readSmallestUsableSubimage(final ImageReader reader,
+                                                     final Crop crop,
+                                                     final Scale scale,
+                                                     final ReductionFactor rf)
+            throws IOException {
+        final Dimension fullSize = new Dimension(
+                reader.getWidth(0), reader.getHeight(0));
+        final Rectangle regionRect = crop.getRectangle(fullSize);
+        final ImageReadParam param = reader.getDefaultReadParam();
+        RenderedImage bestImage = null;
+        if (scale.isNoOp()) {
+            bestImage = reader.readAsRenderedImage(0, param);
+            logger.debug("Using a {}x{} source image (0x reduction factor)",
+                    bestImage.getWidth(), bestImage.getHeight());
+        } else {
+            // Pyramidal TIFFs will have > 1 image, each half the dimensions of
+            // the next larger. The "true" parameter tells getNumImages() to
+            // scan for images, which seems to be necessary for at least some
+            // files, but is slower.
+            int numImages = reader.getNumImages(false);
+            if (numImages > 1) {
+                logger.debug("Detected {} subimage(s)", numImages - 1);
+            } else if (numImages == -1) {
+                numImages = reader.getNumImages(true);
+                if (numImages > 1) {
+                    logger.debug("Scan revealed {} subimage(s)", numImages - 1);
+                }
+            }
+            if (numImages == 1) {
+                bestImage = reader.read(0, param);
+                logger.debug("Using a {}x{} source image (0x reduction factor)",
+                        bestImage.getWidth(), bestImage.getHeight());
+            } else if (numImages > 1) {
+                // Loop through the reduced images from smallest to largest to
+                // find the first one that can supply the requested scale
+                for (int i = numImages - 1; i >= 0; i--) {
+                    final int reducedWidth = reader.getWidth(i);
+                    final int reducedHeight = reader.getHeight(i);
+
+                    final double reducedScale = (double) reducedWidth /
+                            (double) fullSize.width;
+                    boolean fits = false;
+                    if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+                        fits = (scale.getWidth() / (float) regionRect.width <= reducedScale);
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
+                        fits = (scale.getHeight() / (float) regionRect.height <= reducedScale);
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
+                        fits = (scale.getWidth() / (float) regionRect.width <= reducedScale &&
+                                scale.getHeight() / (float) regionRect.height <= reducedScale);
+                    } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
+                        fits = (scale.getWidth() / (float) regionRect.width <= reducedScale &&
+                                scale.getHeight() / (float) regionRect.height <= reducedScale);
+                    } else if (scale.getPercent() != null) {
+                        float pct = scale.getPercent();
+                        fits = ((pct * fullSize.width) / (float) regionRect.width <= reducedScale &&
+                                (pct * fullSize.height) / (float) regionRect.height <= reducedScale);
+                    }
+                    if (fits) {
+                        rf.factor = ProcessorUtil.
+                                getReductionFactor(reducedScale, 0).factor;
+                        logger.debug("Using a {}x{} source image ({}x reduction factor)",
+                                reducedWidth, reducedHeight, rf.factor);
+                        bestImage = reader.readAsRenderedImage(i, param);
+                        break;
+                    }
+                }
+            }
+        }
+        return bestImage;
     }
 
 }

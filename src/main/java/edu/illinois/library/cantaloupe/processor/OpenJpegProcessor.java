@@ -433,8 +433,8 @@ class OpenJpegProcessor implements FileProcessor {
                                      final ReductionFactor reductionFactor,
                                      final WritableByteChannel writableChannel)
             throws IOException, ProcessorException {
-        RenderedImage renderedImage =
-                JaiUtil.readImage(readableChannel);
+        RenderedImage renderedImage = new ImageIoImageReader().
+                readRendered(readableChannel, SourceFormat.BMP);
         RenderedOp renderedOp = JaiUtil.reformatImage(
                 RenderedOp.wrapRenderedImage(renderedImage),
                 new Dimension(512, 512));

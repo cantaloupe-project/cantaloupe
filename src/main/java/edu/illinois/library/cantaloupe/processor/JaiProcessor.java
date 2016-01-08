@@ -31,8 +31,6 @@ import java.util.Set;
  */
 class JaiProcessor implements FileProcessor, ChannelProcessor {
 
-    // TODO: this should be used in conjunction with tile offset to match the crop region
-    private static final int JAI_TILE_SIZE = 512;
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
@@ -169,7 +167,7 @@ class JaiProcessor implements FileProcessor, ChannelProcessor {
                         final File inputFile,
                         final WritableByteChannel writableChannel)
             throws ProcessorException {
-        doProcess(ops, sourceFormat, fullSize, inputFile, writableChannel);
+        doProcess(ops, sourceFormat, inputFile, writableChannel);
     }
 
     @Override
@@ -179,12 +177,11 @@ class JaiProcessor implements FileProcessor, ChannelProcessor {
                         final ChannelSource channelSource,
                         final WritableByteChannel writableChannel)
             throws ProcessorException {
-        doProcess(ops, sourceFormat, fullSize, channelSource, writableChannel);
+        doProcess(ops, sourceFormat, channelSource, writableChannel);
     }
 
     private void doProcess(final OperationList ops,
                            final SourceFormat sourceFormat,
-                           final Dimension fullSize,
                            final Object input,
                            final WritableByteChannel writableChannel)
             throws ProcessorException {
@@ -197,20 +194,21 @@ class JaiProcessor implements FileProcessor, ChannelProcessor {
         }
 
         try {
+            final ImageIoImageReader reader = new ImageIoImageReader();
+            final ReductionFactor rf = new ReductionFactor();
             RenderedImage renderedImage = null;
-            ReductionFactor rf = new ReductionFactor();
             if (input instanceof ChannelSource) {
-                ReadableByteChannel channel = ((ChannelSource) input).newChannel();
-                renderedImage = JaiUtil.readImage(channel, sourceFormat, ops,
-                        fullSize, rf);
+                renderedImage = reader.read((ChannelSource) input,
+                        sourceFormat, ops, rf);
             } else if (input instanceof File) {
-                renderedImage = JaiUtil.readImage(
-                        (File) input, sourceFormat, ops, fullSize, rf);
+                renderedImage = reader.read((File) input, sourceFormat, ops,
+                        rf);
             }
             if (renderedImage != null) {
                 RenderedOp renderedOp = JaiUtil.reformatImage(
                         RenderedOp.wrapRenderedImage(renderedImage),
-                        new Dimension(JAI_TILE_SIZE, JAI_TILE_SIZE));
+                        new Dimension(renderedImage.getTileWidth(),
+                                renderedImage.getTileHeight()));
                 for (Operation op : ops) {
                     if (op instanceof Crop) {
                         renderedOp = JaiUtil.

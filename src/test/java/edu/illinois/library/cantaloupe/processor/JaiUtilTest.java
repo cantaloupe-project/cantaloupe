@@ -50,22 +50,12 @@ public class JaiUtilTest {
     }
 
     @Test
-    public void testReadImageWithFile() {
-        // this will be tested in ProcessorTest
-    }
-
-    @Test
-    public void testReadImageWithInputStream() {
-        // this will be tested in ProcessorTest
-    }
-
-    @Test
     public void testReformatImage() throws Exception {
-        final Dimension fullSize = new Dimension(100, 88);
         final OperationList ops = new OperationList();
         final ReductionFactor reductionFactor = new ReductionFactor();
-        RenderedImage image = JaiUtil.readImage(
-                TestUtil.getFixture("jpg"), SourceFormat.JPG, ops, fullSize,
+        ImageIoImageReader reader = new ImageIoImageReader();
+        RenderedImage image = reader.read(
+                TestUtil.getFixture("jpg"), SourceFormat.JPG, ops,
                 reductionFactor);
         PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
         RenderedOp renderedOp = JaiUtil.reformatImage(planarImage,
@@ -147,11 +137,11 @@ public class JaiUtilTest {
     }
 
     private RenderedOp getFixture(final String name) throws Exception {
-        final Dimension fullSize = new Dimension(100, 88);
         final OperationList ops = new OperationList();
         final ReductionFactor reductionFactor = new ReductionFactor();
-        RenderedImage image = JaiUtil.readImage(
-                TestUtil.getFixture(name), SourceFormat.JPG, ops, fullSize,
+        ImageIoImageReader reader = new ImageIoImageReader();
+        RenderedImage image = reader.read(
+                TestUtil.getFixture(name), SourceFormat.JPG, ops,
                 reductionFactor);
         PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
         return JaiUtil.reformatImage(planarImage, new Dimension(512, 512));
