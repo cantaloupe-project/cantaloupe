@@ -131,11 +131,6 @@ public class JaiUtilTest {
         assertEquals(88, result.getHeight());
     }
 
-    @Test
-    public void testWriteImage() {
-        // TODO: write this
-    }
-
     private RenderedOp getFixture(final String name) throws Exception {
         final OperationList ops = new OperationList();
         final ReductionFactor reductionFactor = new ReductionFactor();

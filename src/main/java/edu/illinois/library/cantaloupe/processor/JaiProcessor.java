@@ -31,6 +31,11 @@ import java.util.Set;
  */
 class JaiProcessor implements FileProcessor, ChannelProcessor {
 
+    public static final String JPG_QUALITY_CONFIG_KEY =
+            "JaiProcessor.jpg.quality";
+    public static final String TIF_COMPRESSION_CONFIG_KEY =
+            "JaiProcessor.tif.compression";
+
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
@@ -86,18 +91,17 @@ class JaiProcessor implements FileProcessor, ChannelProcessor {
             formatsMap = new HashMap<>();
             for (SourceFormat sourceFormat : SourceFormat.values()) {
                 Set<OutputFormat> outputFormats = new HashSet<>();
-                for (int i = 0, length = readerMimeTypes.length; i < length; i++) {
-                    if (sourceFormat.getMediaTypes().
-                            contains(new MediaType(readerMimeTypes[i].toLowerCase()))) {
+                for (String readerMimeType : readerMimeTypes) {
+                    if (sourceFormat.getMediaTypes().contains(
+                            new MediaType(readerMimeType.toLowerCase()))) {
                         for (OutputFormat outputFormat : OutputFormat.values()) {
-                            if (outputFormat == OutputFormat.GIF ||
-                                    outputFormat == OutputFormat.JP2) {
-                                // these currently don't work
-                                // (see ProcessorUtil.writeImage(RenderedOp))
+                            if (outputFormat.equals(OutputFormat.JP2)) {
+                                // currently doesn't work
+                                // (see ImageIoImageWriter.write(RenderedOp...))
                                 continue;
                             }
-                            for (int i2 = 0, length2 = writerMimeTypes.length; i2 < length2; i2++) {
-                                if (outputFormat.getMediaType().equals(writerMimeTypes[i2].toLowerCase())) {
+                            for (String writerMimeType : writerMimeTypes) {
+                                if (outputFormat.getMediaType().equals(writerMimeType.toLowerCase())) {
                                     outputFormats.add(outputFormat);
                                 }
                             }
@@ -227,7 +231,8 @@ class JaiProcessor implements FileProcessor, ChannelProcessor {
                                 filterImage(renderedOp, (Filter) op);
                     }
                 }
-                JaiUtil.writeImage(renderedOp, ops.getOutputFormat(),
+                ImageIoImageWriter writer = new ImageIoImageWriter();
+                writer.write(renderedOp, ops.getOutputFormat(),
                         writableChannel);
             }
         } catch (IOException e) {

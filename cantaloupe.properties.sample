@@ -231,6 +231,18 @@ processor.fallback = Java2dProcessor
 #ImageMagickProcessor.path_to_binaries = /usr/local/bin
 
 #----------------------------------------
+# JaiProcessor
+#----------------------------------------
+
+# JPEG output quality. Should be a number between 0-1 ending in "f"
+JaiProcessor.jpg.quality = 0.7f
+
+# TIFF output compression type. Available values are `LZW`, `Deflate`,
+# `ZLib`, `JPEG`, and `PackBits`. Comment out or leave blank for no
+# compression.
+JaiProcessor.tif.compression = LZW
+
+#----------------------------------------
 # Java2dProcessor
 #----------------------------------------
 

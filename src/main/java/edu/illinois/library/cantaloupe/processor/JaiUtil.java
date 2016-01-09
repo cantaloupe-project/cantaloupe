@@ -1,28 +1,11 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
-import com.sun.media.jai.codec.ImageEncoder;
-import com.sun.media.jai.codecimpl.TIFFImageEncoder;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
-import edu.illinois.library.cantaloupe.image.Operation;
-import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Transpose;
-import edu.illinois.library.cantaloupe.resolver.ChannelSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReadParam;
-import javax.imageio.ImageReader;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
@@ -32,21 +15,11 @@ import javax.media.jai.RenderedOp;
 import javax.media.jai.TileCache;
 import javax.media.jai.operator.TransposeDescriptor;
 import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
-import java.io.File;
-import java.io.IOException;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 import java.util.HashMap;
-import java.util.Iterator;
 
 abstract class JaiUtil {
-
-    private static Logger logger = LoggerFactory.getLogger(JaiProcessor.class);
 
     /**
      * @param inImage Image to crop
@@ -274,80 +247,6 @@ abstract class JaiUtil {
                 break;
         }
         return JAI.create("transpose", pb);
-    }
-
-    /**
-     * Writes an image to the given output stream.
-     *
-     * @param image Image to write
-     * @param outputFormat Format of the output image
-     * @param writableChannel Channel to write the image to
-     * @throws IOException
-     */
-    public static void writeImage(RenderedOp image,
-                                  OutputFormat outputFormat,
-                                  WritableByteChannel writableChannel)
-            throws IOException {
-        switch (outputFormat) {
-            case GIF:
-                // TODO: this and ImageIO.write() frequently don't work
-                Iterator writers = ImageIO.getImageWritersByFormatName("GIF");
-                if (writers.hasNext()) {
-                    // GIFWriter can't deal with a non-0,0 origin
-                    ParameterBlock pb = new ParameterBlock();
-                    pb.addSource(image);
-                    pb.add((float) -image.getMinX());
-                    pb.add((float) -image.getMinY());
-                    image = JAI.create("translate", pb);
-
-                    ImageWriter writer = (ImageWriter) writers.next();
-                    ImageOutputStream os = ImageIO.
-                            createImageOutputStream(writableChannel);
-                    writer.setOutput(os);
-                    writer.write(image);
-                }
-                break;
-            case JP2:
-                // TODO: neither this nor ImageIO.write() seem to write anything
-                writers = ImageIO.getImageWritersByFormatName("JPEG2000");
-                if (writers.hasNext()) {
-                    ImageWriter writer = (ImageWriter) writers.next();
-                    IIOImage iioImage = new IIOImage(image, null, null);
-                    J2KImageWriteParam j2Param = new J2KImageWriteParam();
-                    j2Param.setLossless(false);
-                    j2Param.setEncodingRate(Double.MAX_VALUE);
-                    j2Param.setCodeBlockSize(new int[]{128, 8});
-                    j2Param.setTilingMode(ImageWriteParam.MODE_DISABLED);
-                    j2Param.setProgressionType("res");
-                    ImageOutputStream os = ImageIO.
-                            createImageOutputStream(writableChannel);
-                    writer.setOutput(os);
-                    writer.write(null, iioImage, j2Param);
-                }
-                break;
-            case JPG:
-                JAI.create("encode", image.getAsBufferedImage(),
-                        Channels.newOutputStream(writableChannel), "JPEG", null);
-                break;
-            case PNG:
-                // ImageIO.write() seems to be more efficient than
-                // PNGImageEncoder
-                ImageIO.write(image, outputFormat.getExtension(),
-                        ImageIO.createImageOutputStream(writableChannel));
-                /* PNGEncodeParam pngParam = new PNGEncodeParam.RGB();
-                ImageEncoder pngEncoder = ImageCodec.createImageEncoder("PNG",
-                        outputStream, pngParam);
-                pngEncoder.encode(image); */
-                break;
-            case TIF:
-                // TIFFImageEncoder seems to be more efficient than
-                // ImageIO.write();
-                ImageEncoder tiffEnc = new TIFFImageEncoder(
-                        Channels.newOutputStream(writableChannel), null);
-                tiffEnc.encode(image);
-                break;
-        }
-
     }
 
 }
