@@ -553,6 +553,7 @@ class FilesystemCache implements Cache {
                 try {
                     infoMapper.writeValue(cacheFile, info);
                 } catch (IOException e) {
+                    cacheFile.delete();
                     throw new IOException("Unable to create " +
                             cacheFile.getAbsolutePath(), e);
                 }

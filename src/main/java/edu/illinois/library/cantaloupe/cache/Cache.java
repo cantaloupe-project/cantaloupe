@@ -90,7 +90,9 @@ public interface Cache {
     void purgeExpired() throws IOException;
 
     /**
-     * Adds an image's dimension information to the cache.
+     * Adds an image's dimension information to the cache. If the writing of
+     * the dimension is interrupted, implementations should clean it up, if
+     * necessary.
      *
      * @param identifier Identifier of the image corresponding to the given
      *                   size.
