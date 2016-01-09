@@ -434,10 +434,11 @@ class FilesystemCache implements Cache {
     }
 
     @Override
-    public void purge(OperationList ops) throws IOException {
+    public void purge(OperationList opList) throws IOException {
         synchronized (lock1) {
-            while (purgingInProgress.get() || imagesBeingPurged.contains(ops) ||
-                    imagesBeingWritten.contains(ops)) {
+            // imagesBeingWritten may also contain this opList, but so be it;
+            // the delete we're going to do won't interrupt the write.
+            while (purgingInProgress.get() || imagesBeingPurged.contains(opList)) {
                 try {
                     lock1.wait();
                 } catch (InterruptedException e) {
@@ -447,22 +448,22 @@ class FilesystemCache implements Cache {
         }
 
         try {
-            imagesBeingPurged.add(ops);
-            File imageFile = getImageFile(ops);
+            imagesBeingPurged.add(opList);
+            File imageFile = getImageFile(opList);
             if (imageFile != null && imageFile.exists()) {
                 if (!imageFile.delete()) {
                     throw new IOException("Unable to delete " + imageFile);
                 }
             }
-            File dimensionFile = getDimensionFile(ops.getIdentifier());
+            File dimensionFile = getDimensionFile(opList.getIdentifier());
             if (dimensionFile != null && dimensionFile.exists()) {
                 if (!dimensionFile.delete()) {
                     throw new IOException("Unable to delete " + imageFile);
                 }
             }
-            logger.info("Purged {}", ops);
+            logger.info("Purged {}", opList);
         } finally {
-            imagesBeingPurged.remove(ops);
+            imagesBeingPurged.remove(opList);
         }
     }
 

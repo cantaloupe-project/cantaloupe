@@ -96,7 +96,7 @@ public class ImageRepresentation extends WritableRepresentation {
      */
     @Override
     public void write(WritableByteChannel writableChannel) throws IOException {
-        Cache cache = CacheFactory.getInstance();
+        final Cache cache = CacheFactory.getInstance();
         if (cache != null) {
             WritableByteChannel cacheWritableChannel = null;
             try (ReadableByteChannel cacheReadableChannel =
@@ -139,7 +139,7 @@ public class ImageRepresentation extends WritableRepresentation {
         try {
             doWrite(writableChannel);
         } catch (IOException e) {
-            logger.info(e.getMessage(), e);
+            logger.info(e.getMessage());
             cache.purge(this.ops);
         }
     }
