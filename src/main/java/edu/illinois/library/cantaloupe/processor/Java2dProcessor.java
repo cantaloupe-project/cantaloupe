@@ -32,6 +32,7 @@ class Java2dProcessor implements ChannelProcessor, FileProcessor {
 
     public static final String JPG_QUALITY_CONFIG_KEY = "Java2dProcessor.jpg.quality";
     public static final String SCALE_MODE_CONFIG_KEY = "Java2dProcessor.scale_mode";
+    public static final String TIF_COMPRESSION_CONFIG_KEY = "Java2dProcessor.tif.compression";
 
     private static final HashMap<SourceFormat,Set<OutputFormat>> FORMATS =
             getAvailableOutputFormats();

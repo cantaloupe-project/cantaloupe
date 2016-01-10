@@ -61,6 +61,34 @@ class ImageIoImageWriter {
                 writer.setOutput(os);
                 writer.write(image);
                 break;*/
+            case TIF:
+                Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("TIFF");
+                while (writers.hasNext()) {
+                    writer = writers.next();
+                    if (writer instanceof it.geosolutions.imageioimpl.plugins.tiff.TIFFImageWriter) {
+                        final String compressionType = Application.
+                                getConfiguration().
+                                getString(Java2dProcessor.TIF_COMPRESSION_CONFIG_KEY);
+                        final TIFFImageWriteParam param =
+                                (TIFFImageWriteParam) writer.getDefaultWriteParam();
+                        if (compressionType != null) {
+                            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                            param.setCompressionType(compressionType);
+                        }
+
+                        final IIOImage iioImage = new IIOImage(image, null, null);
+                        ImageOutputStream ios =
+                                ImageIO.createImageOutputStream(writableChannel);
+                        writer.setOutput(ios);
+                        try {
+                            writer.write(null, iioImage, param);
+                            ios.flush(); // http://stackoverflow.com/a/14489406
+                        } finally {
+                            writer.dispose();
+                        }
+                    }
+                }
+                break;
             default:
                 // TODO: jp2 doesn't seem to work
                 ImageIO.write(image, outputFormat.getExtension(),

@@ -253,6 +253,11 @@ Java2dProcessor.scale_mode = speed
 # JPEG output quality. Should be a number between 0-1 ending in "f"
 Java2dProcessor.jpg.quality = 0.7f
 
+# TIFF output compression type. Available values are `LZW`, `Deflate`,
+# `ZLib`, `JPEG`, and `PackBits`. Comment out or leave blank for no
+# compression.
+Java2dProcessor.tif.compression = LZW
+
 #----------------------------------------
 # KakaduProcessor
 #----------------------------------------
