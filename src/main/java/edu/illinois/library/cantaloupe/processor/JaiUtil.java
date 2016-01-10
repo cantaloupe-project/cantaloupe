@@ -441,8 +441,8 @@ abstract class JaiUtil {
             } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
                 double hScale = scale.getWidth() / sourceWidth;
                 double vScale = scale.getHeight() / sourceHeight;
-                xScale = sourceWidth * Math.min(hScale, vScale);
-                yScale = sourceHeight * Math.min(hScale, vScale);
+                xScale = (sourceWidth * Math.min(hScale, vScale)) / 100f;
+                yScale = (sourceHeight * Math.min(hScale, vScale)) / 100f;
             } else if (scale.getPercent() != null) {
                 int reqRf = ProcessorUtil.
                         getReductionFactor(scale.getPercent(), 0).factor;
