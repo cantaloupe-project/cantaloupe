@@ -120,15 +120,11 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 
 <h3 id="JaiProcessor">JaiProcessor</h3>
 
-<p>Java Advanced Imaging (JAI) is a sophisticated image processing library developed by Sun until around 2006. JaiProcessor uses an updated fork called <a href="https://github.com/geosolutions-it/jai-ext">JAI-EXT</a>.</p>
+<p>Java Advanced Imaging (JAI) is a sophisticated image processing library developed in the 2000s by Sun. It offers several advantages over Java 2D: a pull-based rendering pipeline that can reduce memory usage, and efficient region-of-interest decoding with some formats.</p>
 
-<p>JAI offers several theoretical advantages over Java 2D for this application: a more efficient rendering pipeline that should reduce memory usage, and capability of region-of-interest decoding with some formats. Whether these advantages play out in reality is an open question; the author's own profiling seems to indicate maybe not.</p>
-
-<p>JaiProcessor can read and write the same formats as Java2dProcessor.</p>
+<p>As JaiProcessor and Java2dProcessor use the same ImageIO readers and writers, they can read and write the same formats.</p>
 
 <p>Years ago, Sun published <a href="http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-java-client-419417.html">platform-native accelerator JARs</a> called <a href="http://www.oracle.com/technetwork/java/install-1-1-2-135866.html">mediaLib</a> for Windows, Linux, and Solaris, which improved JAI's performance. It is unknown whether these still work on modern platforms.</p>
-
-<div class="alert alert-warning">Note: JaiProcessor is buggy and most development effort thus far has been applied to Java2dProcessor instead. This processor should be considered experimental and Java2dProcessor should be preferred in all cases.</div>
 
 <hr>
 

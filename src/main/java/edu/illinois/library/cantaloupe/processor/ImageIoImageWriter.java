@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
-import it.geosolutions.imageio.plugins.tiff.TIFFImageWriteParam;
 import org.apache.commons.configuration.Configuration;
 
 import javax.imageio.IIOImage;
@@ -63,29 +62,26 @@ class ImageIoImageWriter {
                 break;*/
             case TIF:
                 Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("TIFF");
-                while (writers.hasNext()) {
+                if (writers.hasNext()) {
                     writer = writers.next();
-                    if (writer instanceof it.geosolutions.imageioimpl.plugins.tiff.TIFFImageWriter) {
-                        final String compressionType = Application.
-                                getConfiguration().
-                                getString(Java2dProcessor.TIF_COMPRESSION_CONFIG_KEY);
-                        final TIFFImageWriteParam param =
-                                (TIFFImageWriteParam) writer.getDefaultWriteParam();
-                        if (compressionType != null) {
-                            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                            param.setCompressionType(compressionType);
-                        }
+                    final String compressionType = Application.
+                            getConfiguration().
+                            getString(Java2dProcessor.TIF_COMPRESSION_CONFIG_KEY);
+                    final ImageWriteParam param = writer.getDefaultWriteParam();
+                    if (compressionType != null) {
+                        param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                        param.setCompressionType(compressionType);
+                    }
 
-                        final IIOImage iioImage = new IIOImage(image, null, null);
-                        ImageOutputStream ios =
-                                ImageIO.createImageOutputStream(writableChannel);
-                        writer.setOutput(ios);
-                        try {
-                            writer.write(null, iioImage, param);
-                            ios.flush(); // http://stackoverflow.com/a/14489406
-                        } finally {
-                            writer.dispose();
-                        }
+                    final IIOImage iioImage = new IIOImage(image, null, null);
+                    ImageOutputStream ios =
+                            ImageIO.createImageOutputStream(writableChannel);
+                    writer.setOutput(ios);
+                    try {
+                        writer.write(null, iioImage, param);
+                        ios.flush(); // http://stackoverflow.com/a/14489406
+                    } finally {
+                        writer.dispose();
                     }
                 }
                 break;
@@ -160,7 +156,7 @@ class ImageIoImageWriter {
                 } */
                 break;
             case JPG:
-                Iterator iter = ImageIO.getImageWritersByFormatName("jpeg");
+                Iterator iter = ImageIO.getImageWritersByFormatName("JPEG");
                 ImageWriter writer = (ImageWriter) iter.next();
                 try {
                     ImageWriteParam param = writer.getDefaultWriteParam();
@@ -184,30 +180,25 @@ class ImageIoImageWriter {
                 break;
             case TIF:
                 writers = ImageIO.getImageWritersByFormatName("TIFF");
-                while (writers.hasNext()) {
+                if (writers.hasNext()) {
                     writer = writers.next();
-                    if (writer instanceof it.geosolutions.imageioimpl.plugins.tiff.TIFFImageWriter) {
-                        final String compressionType = config.getString(
-                                JaiProcessor.TIF_COMPRESSION_CONFIG_KEY);
-                        final TIFFImageWriteParam param =
-                                (TIFFImageWriteParam) writer.getDefaultWriteParam();
-                        param.setTilingMode(ImageWriteParam.MODE_EXPLICIT);
-                        param.setTiling(128, 128, 0, 0);
-                        if (compressionType != null) {
-                            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                            param.setCompressionType(compressionType);
-                        }
+                    final String compressionType = config.getString(
+                            JaiProcessor.TIF_COMPRESSION_CONFIG_KEY);
+                    final ImageWriteParam param = writer.getDefaultWriteParam();
+                    if (compressionType != null) {
+                        param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                        param.setCompressionType(compressionType);
+                    }
 
-                        final IIOImage iioImage = new IIOImage(image, null, null);
-                        ImageOutputStream ios =
-                                ImageIO.createImageOutputStream(writableChannel);
-                        writer.setOutput(ios);
-                        try {
-                            writer.write(null, iioImage, param);
-                            ios.flush(); // http://stackoverflow.com/a/14489406
-                        } finally {
-                            writer.dispose();
-                        }
+                    final IIOImage iioImage = new IIOImage(image, null, null);
+                    ImageOutputStream ios =
+                            ImageIO.createImageOutputStream(writableChannel);
+                    writer.setOutput(ios);
+                    try {
+                        writer.write(null, iioImage, param);
+                        ios.flush(); // http://stackoverflow.com/a/14489406
+                    } finally {
+                        writer.dispose();
                     }
                 }
                 break;

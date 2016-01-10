@@ -11,7 +11,6 @@ import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.resolver.ChannelSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
-import it.geosolutions.jaiext.JAIExt;
 import org.restlet.data.MediaType;
 
 import javax.imageio.ImageIO;
@@ -46,9 +45,6 @@ class JaiProcessor implements FileProcessor, ChannelProcessor {
     private static HashMap<SourceFormat,Set<OutputFormat>> formatsMap;
 
     static {
-        // use GeoTools JAI-EXT instead of Sun JAI
-        JAIExt.initJAIEXT();
-
         SUPPORTED_IIIF_1_1_QUALITIES.add(
                 edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL);
         SUPPORTED_IIIF_1_1_QUALITIES.add(
