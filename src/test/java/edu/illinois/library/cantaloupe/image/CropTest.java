@@ -56,6 +56,13 @@ public class CropTest {
         crop.setWidth(0.5f);
         crop.setHeight(0.5f);
         assertEquals(new Rectangle(40, 40, 100, 100), crop.getRectangle(fullSize));
+        // test that the resulting rectangle does not clip the full-size bounds
+        crop = new Crop();
+        crop.setX(150f);
+        crop.setY(150f);
+        crop.setWidth(100f);
+        crop.setHeight(100f);
+        assertEquals(new Rectangle(150, 150, 50, 50), crop.getRectangle(fullSize));
     }
 
     @Test
