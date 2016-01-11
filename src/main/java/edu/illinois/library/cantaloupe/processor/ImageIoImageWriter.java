@@ -10,6 +10,7 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.JAI;
+import javax.media.jai.OpImage;
 import javax.media.jai.RenderedOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.renderable.ParameterBlock;
@@ -101,6 +102,7 @@ class ImageIoImageWriter {
      * @param writableChannel Channel to write the image to
      * @throws IOException
      */
+    @SuppressWarnings({ "deprecation" })
     public void write(RenderedOp image,
                       OutputFormat outputFormat,
                       WritableByteChannel writableChannel) throws IOException {
@@ -159,6 +161,16 @@ class ImageIoImageWriter {
                 Iterator iter = ImageIO.getImageWritersByFormatName("JPEG");
                 ImageWriter writer = (ImageWriter) iter.next();
                 try {
+                    // JPEGImageWriter will interpret a >3-band image as CMYK.
+                    // So, select only the first 3 bands.
+                    if (OpImage.getExpandedNumBands(image.getSampleModel(),
+                            image.getColorModel()) == 4) {
+                        final ParameterBlock pb = new ParameterBlock();
+                        pb.addSource(image);
+                        final int[] bands = { 0, 1, 2 };
+                        pb.add(bands);
+                        image = JAI.create("bandselect", pb, null);
+                    }
                     ImageWriteParam param = writer.getDefaultWriteParam();
                     param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
                     param.setCompressionQuality(config.getFloat(
