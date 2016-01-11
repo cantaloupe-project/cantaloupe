@@ -67,6 +67,9 @@ public class Crop implements Operation {
             width = Math.round(this.getWidth());
             height = Math.round(this.getHeight());
         }
+        // confine width and height to the source image bounds
+        width = Math.min(width, fullSize.width - x);
+        height = Math.min(height, fullSize.height - y);
         return new Rectangle(x, y, width, height);
     }
 
