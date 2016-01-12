@@ -28,7 +28,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td><a href="$baseUri/iiif/1">IIIF Image API 2.x</a></td>
+                            <td><a href="$baseUri/iiif/2">IIIF Image API 2.x</a></td>
                             <td>
                                 #if ($iiif2EndpointEnabled)
                                     <span class="label label-success">Enabled</span>
