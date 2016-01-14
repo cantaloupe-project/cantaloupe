@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.imageio.ImageIO;
@@ -33,6 +34,7 @@ import java.awt.image.RenderedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.math.RoundingMode;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -195,9 +197,19 @@ class KakaduProcessor implements FileProcessor {
             logger.debug("Invoking {}", StringUtils.join(pb.command(), " "));
             Process process = pb.start();
 
+            // Ideally we could just call
+            // DocumentBuilder.parse(process.getInputStream()), but the XML
+            // output of kdu_jp2info may contain leading whitespace that
+            // causes a SAXParseException. So, read into a byte array in
+            // order to trim it, and then parse that.
+            ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
+            org.apache.commons.io.IOUtils.copy(process.getInputStream(),
+                    outputBucket);
+            final String outputXml = outputBucket.toString("UTF-8").trim();
+
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.parse(process.getInputStream());
+            Document doc = db.parse(new InputSource(new StringReader(outputXml)));
 
             XPath xpath = XPathFactory.newInstance().newXPath();
             XPathExpression expr = xpath.compile("//codestream/width");
