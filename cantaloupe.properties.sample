@@ -386,6 +386,13 @@ log.application.RollingFileAppender.policy = TimeBasedRollingPolicy
 log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/cantaloupe-%d{yyyy-MM-dd}.log
 log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30
 
+# See the "SyslogAppender" section for a list of facilities:
+# http://logback.qos.ch/manual/appenders.html
+log.application.SyslogAppender.enabled = false
+log.application.SyslogAppender.host =
+log.application.SyslogAppender.port = 514
+log.application.SyslogAppender.facility = LOCAL0
+
 #----------------------------------------
 # !! Access Log
 #----------------------------------------
@@ -400,3 +407,10 @@ log.access.RollingFileAppender.pathname = /path/to/logs/access.log
 log.access.RollingFileAppender.policy = TimeBasedRollingPolicy
 log.access.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/access-%d{yyyy-MM-dd}.log
 log.access.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30
+
+# See the "SyslogAppender" section for a list of facilities:
+# http://logback.qos.ch/manual/appenders.html
+log.access.SyslogAppender.enabled = false
+log.access.SyslogAppender.host =
+log.access.SyslogAppender.port = 514
+log.access.SyslogAppender.facility = LOCAL0

@@ -18,7 +18,7 @@ layout: default
 
 <h4>Appenders</h4>
 
-<p>Appenders direct log messages to various destinations, like files and/or the console. (The default configuration file logs only to the console.) There are three available appenders &mdash; ConsoleAppender, FileAppender, and RollingFileAppender &mdash; which can be enabled or disabled in any combination.</p>
+<p>Appenders direct log messages to various destinations, like files and/or the console. (The default configuration file logs only to the console.) There are several available appenders, which can be enabled or disabled in any combination.</p>
 
 <h5>ConsoleAppender</h5>
 
@@ -35,6 +35,10 @@ layout: default
 <p>RollingFileAppender logs to a file that rolls over periodically (to avoid creating a single huge file). Use the <code>log.application.RollingFileAppender.enabled</code> key to enable or disable, and the <code>log.application.RollingFileAppender.pathname</code> key to set the absolute pathname of the primary log file.</p>
 
 <p>Currently, the only available rolling policy (<code>log.application.RollingFileAppender.policy</code>) is <code>TimeBasedRollingPolicy</code>, which rolls over the log file based on the value of <code>log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern</code>. <code>log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history</code> defines how many rolled-over log files will be kept.</p>
+
+<h5>SyslogAppender</h5>
+
+<p>SyslogAppender appends log messages to the syslog, managed by syslogd, on a local or remote host.</p>
 
 <h3 id="Access Log">Access Log</h3>
 

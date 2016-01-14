@@ -40,6 +40,17 @@
         </then>
     </if>
 
+    <if condition='property("log.application.SyslogAppender.enabled").contains("true")'>
+        <then>
+            <appender name="AppSyslogLog" class="ch.qos.logback.classic.net.SyslogAppender">
+                <filter class="edu.illinois.library.cantaloupe.logging.ApplicationLogFilter" />
+                <syslogHost>${log.application.SyslogAppender.host}</syslogHost>
+                <port>${log.application.SyslogAppender.port}</port>
+                <facility>${log.application.SyslogAppender.facility}</facility>
+            </appender>
+        </then>
+    </if>
+
     <appender name="AccessConsoleLog" class="ch.qos.logback.core.ConsoleAppender">
         <filter class="edu.illinois.library.cantaloupe.logging.AccessLogFilter" />
         <encoder>
@@ -81,6 +92,17 @@
         </then>
     </if>
 
+    <if condition='property("log.access.SyslogAppender.enabled").contains("true")'>
+        <then>
+            <appender name="AccessSyslogLog" class="ch.qos.logback.classic.net.SyslogAppender">
+                <filter class="edu.illinois.library.cantaloupe.logging.AccessLogFilter" />
+                <syslogHost>${log.access.SyslogAppender.host}</syslogHost>
+                <port>${log.access.SyslogAppender.port}</port>
+                <facility>${log.access.SyslogAppender.facility}</facility>
+            </appender>
+        </then>
+    </if>
+
     <logger name="edu.illinois.library.cantaloupe.logging.AccessLogService" additivity="false">
         <if condition='property("log.access.ConsoleAppender.enabled").contains("true")'>
             <then>
@@ -95,6 +117,11 @@
         <if condition='property("log.access.RollingFileAppender.enabled").contains("true")'>
             <then>
                 <appender-ref ref="AccessRollingFileLog" />
+            </then>
+        </if>
+        <if condition='property("log.access.SyslogAppender.enabled").contains("true")'>
+            <then>
+                <appender-ref ref="AccessSyslogLog" />
             </then>
         </if>
     </logger>
@@ -117,6 +144,11 @@
         <if condition='property("log.application.RollingFileAppender.enabled").contains("true")'>
             <then>
                 <appender-ref ref="AppRollingFileLog" />
+            </then>
+        </if>
+        <if condition='property("log.application.SyslogAppender.enabled").contains("true")'>
+            <then>
+                <appender-ref ref="AppSyslogLog" />
             </then>
         </if>
     </root>
