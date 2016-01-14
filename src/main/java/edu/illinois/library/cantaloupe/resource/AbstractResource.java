@@ -293,8 +293,12 @@ public abstract class AbstractResource extends ServerResource {
         Dimension size = null;
         Cache cache = CacheFactory.getInstance();
         if (cache != null) {
+            long msec = System.currentTimeMillis();
             size = cache.getDimension(identifier);
-            if (size == null) {
+            if (size != null) {
+                logger.debug("Retrieved dimensions of {} from cache in {} msec",
+                        identifier, System.currentTimeMillis() - msec);
+            } else {
                 size = readSize(identifier, resolver, proc, sourceFormat);
                 cache.putDimension(identifier, size);
             }
@@ -318,6 +322,7 @@ public abstract class AbstractResource extends ServerResource {
     protected Dimension readSize(Identifier identifier, Resolver resolver,
                                  Processor proc, SourceFormat sourceFormat)
             throws Exception {
+        final long msec = System.currentTimeMillis();
         Dimension size = null;
         if (resolver instanceof FileResolver) {
             if (proc instanceof FileProcessor) {
@@ -338,6 +343,8 @@ public abstract class AbstractResource extends ServerResource {
                         sourceFormat);
             }
         }
+        logger.debug("Read dimensions of {} in {} msec", identifier,
+                System.currentTimeMillis() - msec);
         return size;
     }
 
