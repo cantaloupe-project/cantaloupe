@@ -2,15 +2,26 @@
 layout: default
 ---
 
-<script type="text/javascript">
-    $(document).ready(function() { getLatestReleaseInfo(); });
-</script>
-
 <h2 id="About">About</h2>
 
 <p>Cantaloupe is a free, open-source image server enabling dynamic delivery of high-resolution source image derivatives. With available processing operations including cropping, scaling, and rotation, it can support deep-zooming image viewers, as well as on-the-fly thumbnail generation. Compliance with the <a href="http://iiif.io/api/image/">IIIF Image API</a> enables it to work with <a href="http://iiif.io/apps-demos.html">a growing number of client applications</a>.</p>
 
 <p>Developed at the <a href="http://www.library.illinois.edu/">University of Illinois at Urbana-Champaign Library</a>, Cantaloupe augments an emerging digital image repository containing thousands of high-resolution scanned maps and photographs. Project goals include performance, scalability, and extensibility, without sacrificing ease-of-use.</p>
+
+<figure>
+  <div id="openseadragon1" style="width: 100%; height: 500px; margin: 0 auto"></div>
+  <figcaption>Cantaloupe driving the <a href="https://openseadragon.github.io">OpenSeadragon</a> viewer.
+    <br>JPEG2000 &ndash; 8848&times;6928 pixels &ndash; 62 MB</figcaption>
+</figure>
+
+<script src="{{ site.baseurl }}/scripts/openseadragon.min.js"></script>
+<script type="text/javascript">
+    var viewer = OpenSeadragon({
+        id: "openseadragon1",
+        prefixUrl: "images/openseadragon/",
+        tileSources: "http://iiif.library.illinois.edu/medusa-dls/iiif/2/champaign.jp2"
+    });
+</script>
 
 <p>Cantaloupe features a configurable processing pipeline based on:</p>
 
@@ -46,3 +57,7 @@ layout: default
 </p>
 
 <p>Releases are hosted on <a href="https://github.com/medusa-project/cantaloupe/releases">GitHub</a>.</p>
+
+<script type="text/javascript">
+    $(document).ready(function() { getLatestReleaseInfo(); });
+</script>
