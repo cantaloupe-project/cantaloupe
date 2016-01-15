@@ -21,23 +21,23 @@ class RubyScriptEngine implements ScriptEngine {
             getEngineByName("jruby");
 
     /**
-     * @param methodName
-     * @return
+     * @param methodName Method to invoke
+     * @return Return value of the invocation
      * @throws ScriptException
      */
     @Override
     public Object invoke(String methodName) throws ScriptException {
         final long msec = System.currentTimeMillis();
         final Object returnValue = scriptEngine.eval(methodName);
-        logger.debug("invoke({}::{}): load+exec time: {} msec",
+        logger.debug("invoke({}::{}): exec time: {} msec",
                 MODULE, methodName, System.currentTimeMillis() - msec);
         return returnValue;
     }
 
     /**
-     * @param methodName
-     * @param args
-     * @return
+     * @param methodName Method to invoke
+     * @param args See {@link #serializeAsRuby(Object)} for allowed types
+     * @return Return value of the invocation
      * @throws ScriptException
      */
     @Override
@@ -47,7 +47,7 @@ class RubyScriptEngine implements ScriptEngine {
         final String invocationString = String.format("%s::%s(%s)",
                 MODULE, methodName, serializeAsRuby(args));
         final Object returnValue = scriptEngine.eval(invocationString);
-        logger.debug("invoke({}::{}(...)): load+exec time: {} msec",
+        logger.debug("invoke({}::{}(*args)): exec time: {} msec",
                 MODULE, methodName, System.currentTimeMillis() - msec);
         return returnValue;
     }
@@ -61,7 +61,7 @@ class RubyScriptEngine implements ScriptEngine {
     public boolean methodExists(String methodName) throws ScriptException {
         return (boolean) scriptEngine.eval(
                 String.format("%s.respond_to?(%s)",
-                MODULE, formatString(methodName)));
+                MODULE, serializeStringAsRuby(methodName)));
     }
 
     private String serializeAsRuby(Object[] args) {
@@ -96,7 +96,7 @@ class RubyScriptEngine implements ScriptEngine {
         if (object == null) {
             rubyCode.append("nil");
         } else if (object instanceof Number || object instanceof Boolean) {
-            rubyCode.append(object + "");
+            rubyCode.append(object.toString());
         } else if (object instanceof Collection) {
             rubyCode.append("[");
             Collection collection = (Collection) object;
@@ -112,7 +112,7 @@ class RubyScriptEngine implements ScriptEngine {
             Map map = (Map) object;
             int i = 0;
             for (Object key : map.keySet()) {
-                rubyCode.append(formatString(key.toString()));
+                rubyCode.append(serializeStringAsRuby(key.toString()));
                 rubyCode.append(" => ");
                 rubyCode.append(serializeAsRuby(map.get(key)));
                 if (i < map.size() - 1) {
@@ -122,12 +122,12 @@ class RubyScriptEngine implements ScriptEngine {
             }
             rubyCode.append("}");
         } else {
-            rubyCode.append(formatString(object.toString()));
+            rubyCode.append(serializeStringAsRuby(object.toString()));
         }
         return rubyCode.toString();
     }
 
-    private String formatString(String arg) {
+    private String serializeStringAsRuby(String arg) {
         return "'" + StringUtils.replace(arg, "'", "\\'") + "'";
     }
 
