@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.script;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -8,6 +10,9 @@ import java.util.Collection;
 import java.util.Map;
 
 class RubyScriptEngine implements ScriptEngine {
+
+    private static Logger logger = LoggerFactory.
+            getLogger(RubyScriptEngine.class);
 
     /** Ruby module containing methods to invoke */
     private static final String MODULE = "Cantaloupe";
@@ -22,21 +27,29 @@ class RubyScriptEngine implements ScriptEngine {
      */
     @Override
     public Object invoke(String methodName) throws ScriptException {
-        return scriptEngine.eval(methodName);
+        final long msec = System.currentTimeMillis();
+        final Object returnValue = scriptEngine.eval(methodName);
+        logger.debug("invoke({}::{}): load+exec time: {} msec",
+                MODULE, methodName, System.currentTimeMillis() - msec);
+        return returnValue;
     }
 
     /**
-     * @param functionName
+     * @param methodName
      * @param args
      * @return
      * @throws ScriptException
      */
     @Override
-    public Object invoke(String functionName, Object[] args)
+    public Object invoke(String methodName, Object[] args)
             throws ScriptException {
+        final long msec = System.currentTimeMillis();
         final String invocationString = String.format("%s::%s(%s)",
-                MODULE, functionName, serializeAsRuby(args));
-        return scriptEngine.eval(invocationString);
+                MODULE, methodName, serializeAsRuby(args));
+        final Object returnValue = scriptEngine.eval(invocationString);
+        logger.debug("invoke({}::{}(...)): load+exec time: {} msec",
+                MODULE, methodName, System.currentTimeMillis() - msec);
+        return returnValue;
     }
 
     @Override

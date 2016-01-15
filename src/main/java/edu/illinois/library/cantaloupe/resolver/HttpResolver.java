@@ -194,10 +194,7 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final String[] args = { identifier.toString() };
         final String method = "get_url";
-        final long msec = System.currentTimeMillis();
         final Object result = engine.invoke(method, args);
-        logger.debug("{} load+exec time: {} msec", method,
-                System.currentTimeMillis() - msec);
         if (result == null) {
             throw new FileNotFoundException(method + " returned nil for " +
                     identifier);
