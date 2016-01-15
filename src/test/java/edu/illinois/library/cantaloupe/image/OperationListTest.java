@@ -294,18 +294,28 @@ public class OperationListTest {
 
     @Test
     public void testToMap() {
-        // get the number of operations
-        Iterator it = ops.iterator();
-        int count = 0;
-        while (it.hasNext()) {
-            count++;
-            it.next();
-        }
+        ops = new OperationList();
+        ops.setIdentifier(new Identifier("identifier.jpg"));
+        // crop
+        Crop crop = new Crop();
+        crop.setX(2);
+        crop.setY(4);
+        crop.setWidth(50);
+        crop.setHeight(50);
+        ops.add(crop);
+        // no-op scale
+        Scale scale = new Scale();
+        scale.setMode(Scale.Mode.FULL);
+        ops.add(scale);
+        ops.add(new Rotate(0));
+        ops.setOutputFormat(OutputFormat.JPG);
+        // transpose
+        ops.add(Transpose.HORIZONTAL);
 
         final Dimension fullSize = new Dimension(100, 100);
         Map<String,Object> map = ops.toMap(fullSize);
         assertEquals("identifier.jpg", map.get("identifier"));
-        assertEquals(count, ((List) map.get("operations")).size());
+        assertEquals(2, ((List) map.get("operations")).size());
         assertEquals(0, ((Map) map.get("options")).size());
         assertEquals("jpg", ((Map) map.get("output_format")).get("extension"));
     }

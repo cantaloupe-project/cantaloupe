@@ -152,7 +152,9 @@ public class OperationList implements Comparable<OperationList>,
         // operations
         List<Map<String,Object>> opsList = new ArrayList<>();
         for (Operation op : this) {
-            opsList.add(op.toMap(fullSize));
+            if (!op.isNoOp()) {
+                opsList.add(op.toMap(fullSize));
+            }
         }
         map.put("operations", opsList);
         // options
