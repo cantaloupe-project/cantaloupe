@@ -32,6 +32,7 @@ public class FilterTest {
     @Test
     public void testToMap() {
         Map<String,Object> map = Filter.BITONAL.toMap(new Dimension(0, 0));
+        assertEquals("filter", map.get("operation"));
         assertEquals("bitonal", map.get("type"));
     }
 

@@ -134,6 +134,7 @@ public class Scale implements Operation {
     public Map<String,Object> toMap(Dimension fullSize) {
         final Dimension resultingSize = getResultingSize(fullSize);
         final Map<String,Object> map = new HashMap<>();
+        map.put("operation", "scale");
         map.put("width", resultingSize.width);
         map.put("height", resultingSize.height);
         return map;

@@ -66,6 +66,7 @@ public class Rotate implements Operation {
     @Override
     public Map<String,Object> toMap(Dimension fullSize) {
         final Map<String,Object> map = new HashMap<>();
+        map.put("operation", "rotate");
         map.put("degrees", getDegrees());
         return map;
     }

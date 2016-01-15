@@ -32,6 +32,7 @@ public enum Transpose implements Operation {
     @Override
     public Map<String,Object> toMap(Dimension fullSize) {
         final Map<String,Object> map = new HashMap<>();
+        map.put("operation", "transpose");
         map.put("axis", this.name().toLowerCase());
         return map;
     }

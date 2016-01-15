@@ -32,6 +32,7 @@ public class TransposeTest {
     @Test
     public void testToMap() {
         Map<String,Object> map = transpose.toMap(new Dimension(0, 0));
+        assertEquals("transpose", map.get("operation"));
         assertEquals("horizontal", map.get("axis"));
     }
 

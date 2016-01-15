@@ -78,6 +78,7 @@ public class RotateTest {
     public void testToMap() {
         this.rotate.setDegrees(15);
         Map<String,Object> map = this.rotate.toMap(new Dimension(0, 0));
+        assertEquals("rotate", map.get("operation"));
         assertEquals(15f, map.get("degrees"));
     }
 
