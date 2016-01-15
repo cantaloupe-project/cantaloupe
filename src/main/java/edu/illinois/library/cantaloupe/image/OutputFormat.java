@@ -1,5 +1,8 @@
 package edu.illinois.library.cantaloupe.image;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public enum OutputFormat {
 
     GIF("gif", "image/gif"),
@@ -52,6 +55,17 @@ public enum OutputFormat {
                     contains(this.getExtension());
         }
         return this.equals(obj);
+    }
+
+    /**
+     * @return Map serialization with <code>extension</code> and
+     * <code>media_type</code> keys corresponding to string values.
+     */
+    public Map<String,Object> toMap() {
+        Map<String,Object> map = new HashMap<>();
+        map.put("extension", getExtension());
+        map.put("media_type", getMediaType());
+        return map;
     }
 
     /**
