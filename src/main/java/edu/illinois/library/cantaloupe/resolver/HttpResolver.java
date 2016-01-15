@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resolver;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.apache.commons.configuration.Configuration;
@@ -127,7 +128,7 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
             case "ScriptLookupStrategy":
                 try {
                     return getUrlWithScriptStrategy(identifier);
-                } catch (ScriptException e) {
+                } catch (ScriptException | DelegateScriptDisabledException e) {
                     logger.error(e.getMessage(), e);
                     throw new IOException(e);
                 }
@@ -188,9 +189,11 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
      * @throws FileNotFoundException If the delegate script does not exist
      * @throws IOException
      * @throws ScriptException If the script fails to execute
+     * @throws DelegateScriptDisabledException
      */
     private Reference getUrlWithScriptStrategy(Identifier identifier)
-            throws IOException, ScriptException {
+            throws IOException, ScriptException,
+            DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final String[] args = { identifier.toString() };
         final String method = "get_url";

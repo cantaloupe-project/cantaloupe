@@ -15,6 +15,7 @@ import edu.illinois.library.cantaloupe.resolver.ChannelResolver;
 import edu.illinois.library.cantaloupe.resolver.ChannelSource;
 import edu.illinois.library.cantaloupe.resolver.FileResolver;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
+import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.apache.commons.configuration.Configuration;
@@ -341,9 +342,14 @@ public abstract class AbstractResource extends ServerResource {
         args[6] = getRequest().getClientInfo().getAddress();   // client_ip
         args[7] = getRequest().getCookies().getValuesMap();    // cookies
 
-        final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final String method = "authorized?";
-        return (boolean) engine.invoke(method, args);
+        try {
+            final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
+            final String method = "authorized?";
+            return (boolean) engine.invoke(method, args);
+        } catch (DelegateScriptDisabledException e) {
+            logger.info("isAuthorized(): delegate script disabled; allowing.");
+            return true;
+        }
     }
 
     /**

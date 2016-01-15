@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resolver;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import eu.medsea.mimeutil.MimeUtil;
@@ -93,7 +94,7 @@ class FilesystemResolver extends AbstractResolver
             case "ScriptLookupStrategy":
                 try {
                     return getPathnameWithScriptStrategy(identifier);
-                } catch (ScriptException e) {
+                } catch (ScriptException | DelegateScriptDisabledException e) {
                     logger.error(e.getMessage(), e);
                     throw new IOException(e);
                 }
@@ -118,9 +119,11 @@ class FilesystemResolver extends AbstractResolver
      * @throws FileNotFoundException If the delegate script does not exist
      * @throws IOException
      * @throws ScriptException If the script fails to execute
+     * @throws DelegateScriptDisabledException
      */
     private String getPathnameWithScriptStrategy(Identifier identifier)
-            throws IOException, ScriptException {
+            throws IOException, ScriptException,
+            DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final String[] args = { identifier.toString() };
         final String method = "get_pathname";
