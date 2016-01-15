@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -133,7 +132,7 @@ public abstract class AbstractResource extends ServerResource {
      * @param value Header value
      */
     @SuppressWarnings({"unchecked"})
-    protected void addHeader(String key, String value) {
+    protected final void addHeader(String key, String value) {
         Series<Header> responseHeaders = (Series<Header>) getResponse().
                 getAttributes().get("org.restlet.http.headers");
         if (responseHeaders == null) {
@@ -150,8 +149,8 @@ public abstract class AbstractResource extends ServerResource {
      * @throws ConfigurationException If the given resolver and processor are
      * incompatible.
      */
-    protected void checkProcessorResolverCompatibility(Resolver resolver,
-                                                       Processor processor)
+    protected final void checkProcessorResolverCompatibility(Resolver resolver,
+                                                             Processor processor)
             throws ConfigurationException {
         if (!resolver.isCompatible(processor)) {
             throw new ConfigurationException(
@@ -170,7 +169,7 @@ public abstract class AbstractResource extends ServerResource {
      *                         after, or between slashes)
      * @return Path component with slashes decoded
      */
-    protected String decodeSlashes(final String uriPathComponent) {
+    protected final String decodeSlashes(final String uriPathComponent) {
         final String substitute = Application.getConfiguration().
                 getString(SLASH_SUBSTITUTE_CONFIG_KEY, "");
         if (substitute.length() > 0) {
@@ -179,11 +178,11 @@ public abstract class AbstractResource extends ServerResource {
         return uriPathComponent;
     }
 
-    protected Identifier decodeSlashes(final Identifier identifier) {
+    protected final Identifier decodeSlashes(final Identifier identifier) {
         return new Identifier(decodeSlashes(identifier.toString()));
     }
 
-    protected List<CacheDirective> getCacheDirectives() {
+    protected final List<CacheDirective> getCacheDirectives() {
         List<CacheDirective> directives = new ArrayList<>();
         try {
             Configuration config = Application.getConfiguration();
@@ -287,8 +286,10 @@ public abstract class AbstractResource extends ServerResource {
      * @return
      * @throws Exception
      */
-    protected Dimension getSize(Identifier identifier, Processor proc,
-                                Resolver resolver, SourceFormat sourceFormat)
+    protected final Dimension getSize(final Identifier identifier,
+                                      final Processor proc,
+                                      final Resolver resolver,
+                                      final SourceFormat sourceFormat)
             throws Exception {
         Dimension size = null;
         Cache cache = CacheFactory.getInstance();
@@ -319,8 +320,10 @@ public abstract class AbstractResource extends ServerResource {
      * @return
      * @throws Exception
      */
-    protected Dimension readSize(Identifier identifier, Resolver resolver,
-                                 Processor proc, SourceFormat sourceFormat)
+    protected final Dimension readSize(final Identifier identifier,
+                                       final Resolver resolver,
+                                       final Processor proc,
+                                       final SourceFormat sourceFormat)
             throws Exception {
         final long msec = System.currentTimeMillis();
         Dimension size = null;
