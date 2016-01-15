@@ -1,10 +1,11 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
+import org.junit.After;
+import org.junit.Before;
 import org.restlet.Client;
 import org.restlet.Context;
 import org.restlet.data.Protocol;
@@ -14,9 +15,9 @@ import org.restlet.resource.ClientResource;
 import java.io.File;
 import java.io.IOException;
 
-public abstract class ResourceTest extends CantaloupeTestCase {
+public abstract class ResourceTest {
 
-    protected static final Integer PORT = 34852;
+    protected static final Integer PORT = TestUtil.getOpenPort();
 
     protected static Client client = new Client(new Context(), Protocol.HTTP);
 
@@ -37,11 +38,13 @@ public abstract class ResourceTest extends CantaloupeTestCase {
         return config;
     }
 
+    @Before
     public void setUp() throws Exception {
         Application.setConfiguration(newConfiguration());
         Application.startServer();
     }
 
+    @After
     public void tearDown() throws Exception {
         Application.stopServer();
     }

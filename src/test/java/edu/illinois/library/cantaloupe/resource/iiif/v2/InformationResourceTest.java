@@ -14,6 +14,7 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
+import org.junit.Test;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
@@ -25,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.*;
+
 /**
  * Functional test of the non-IIIF features of InformationResource.
  */
@@ -35,6 +38,7 @@ public class InformationResourceTest extends ResourceTest {
         return super.getClientForUriPath(WebApplication.IIIF_2_PATH + path);
     }
 
+    @Test
     public void testCacheHeaders() {
         Configuration config = Application.getConfiguration();
         config.setProperty("cache.client.enabled", "true");
@@ -72,6 +76,7 @@ public class InformationResourceTest extends ResourceTest {
         }
     }
 
+    @Test
     public void testEndpointDisabled() {
         Configuration config = Application.getConfiguration();
         ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
@@ -89,11 +94,13 @@ public class InformationResourceTest extends ResourceTest {
         }
     }
 
+    @Test
     public void testPurgeFromCacheWhenSourceIsMissingAndOptionIsFalse()
             throws Exception {
         doPurgeFromCacheWhenSourceIsMissing(false);
     }
 
+    @Test
     public void testPurgeFromCacheWhenSourceIsMissingAndOptionIsTrue()
             throws Exception {
         doPurgeFromCacheWhenSourceIsMissing(true);
@@ -167,6 +174,7 @@ public class InformationResourceTest extends ResourceTest {
         }
     }
 
+    @Test
     public void testNotFound() throws IOException {
         ClientResource client = getClientForUriPath("/invalid/info.json");
         try {
@@ -183,6 +191,7 @@ public class InformationResourceTest extends ResourceTest {
      *
      * @throws Exception
      */
+    @Test
     public void testResolverProcessorCompatibility() throws Exception {
         WebServer server = new WebServer();
 
@@ -208,6 +217,7 @@ public class InformationResourceTest extends ResourceTest {
         }
     }
 
+    @Test
     public void testService() throws Exception {
         // assert that service does not appear with no delegate script set
         ClientResource client = getClientForUriPath("/escher_lego.jpg/info.json");
@@ -229,6 +239,7 @@ public class InformationResourceTest extends ResourceTest {
         }
     }
 
+    @Test
     public void testSlashSubstitution() throws Exception {
         WebServer server = new WebServer();
         Application.getConfiguration().setProperty("slash_substitute", "CATS");
@@ -242,6 +253,7 @@ public class InformationResourceTest extends ResourceTest {
         }
     }
 
+    @Test
     public void testUnavailableSourceFormat() throws IOException {
         ClientResource client = getClientForUriPath("/text.txt/info.json");
         try {
@@ -253,6 +265,7 @@ public class InformationResourceTest extends ResourceTest {
         }
     }
 
+    @Test
     public void testUrisInJson() throws IOException {
         ClientResource client = getClientForUriPath("/escher_lego.jpg/info.json");
         client.get();
@@ -263,6 +276,7 @@ public class InformationResourceTest extends ResourceTest {
                 WebApplication.IIIF_2_PATH + "/escher_lego.jpg", info.id);
     }
 
+    @Test
     public void testUrisInJsonWithBaseUriOverride() throws IOException {
         Configuration config = Application.getConfiguration();
         config.setProperty(AbstractResource.BASE_URI_CONFIG_KEY,
@@ -277,6 +291,7 @@ public class InformationResourceTest extends ResourceTest {
                 WebApplication.IIIF_2_PATH + "/escher_lego.jpg", info.id);
     }
 
+    @Test
     public void testUrisInJsonWithProxyHeaders() throws IOException {
         ClientResource client = getClientForUriPath("/escher_lego.jpg/info.json");
         client.getRequest().getHeaders().add("X-Forwarded-Proto", "HTTP");
@@ -291,6 +306,7 @@ public class InformationResourceTest extends ResourceTest {
                 WebApplication.IIIF_2_PATH + "/escher_lego.jpg", info.id);
     }
 
+    @Test
     public void testBaseUriOverridesProxyHeaders() throws IOException {
         Configuration config = Application.getConfiguration();
         config.setProperty(AbstractResource.BASE_URI_CONFIG_KEY,

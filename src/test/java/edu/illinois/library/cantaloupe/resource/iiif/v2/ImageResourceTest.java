@@ -13,6 +13,7 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
+import org.junit.Test;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.ChallengeResponse;
 import org.restlet.data.ChallengeScheme;
@@ -28,6 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.*;
+
 public class ImageResourceTest extends ResourceTest {
 
     @Override
@@ -35,6 +38,7 @@ public class ImageResourceTest extends ResourceTest {
         return super.getClientForUriPath(WebApplication.IIIF_2_PATH + path);
     }
 
+    @Test
     public void testAuthorizationDelegate() throws Exception {
         ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
         client.get();
@@ -49,6 +53,7 @@ public class ImageResourceTest extends ResourceTest {
         }
     }
 
+    @Test
     public void testBasicAuthentication() throws Exception {
         final String username = "user";
         final String secret = "secret";
@@ -85,6 +90,7 @@ public class ImageResourceTest extends ResourceTest {
         assertEquals(Status.SUCCESS_OK, client.getStatus());
     }
 
+    @Test
     public void testCacheHeadersWhenCachingEnabled() {
         Configuration config = Application.getConfiguration();
         config.setProperty("cache.client.enabled", "true");
@@ -119,6 +125,7 @@ public class ImageResourceTest extends ResourceTest {
         }
     }
 
+    @Test
     public void testCacheHeadersWhenCachingDisabled() {
         Configuration config = Application.getConfiguration();
         config.setProperty("cache.client.enabled", "false");
@@ -138,6 +145,7 @@ public class ImageResourceTest extends ResourceTest {
         assertEquals(0, client.getResponse().getCacheDirectives().size());
     }
 
+    @Test
     public void testContentDispositionHeader() {
         // no header
         ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
@@ -162,6 +170,7 @@ public class ImageResourceTest extends ResourceTest {
                 client.getResponseEntity().getDisposition().getFilename());
     }
 
+    @Test
     public void testEndpointDisabled() {
         Configuration config = Application.getConfiguration();
         ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
@@ -179,15 +188,18 @@ public class ImageResourceTest extends ResourceTest {
         }
     }
 
+    @Test
     public void testIsAuthorized() {
         // TODO: write this
     }
 
+    @Test
     public void testPurgeFromCacheWhenSourceIsMissingAndOptionIsFalse()
             throws Exception {
         doPurgeFromCacheWhenSourceIsMissing(false);
     }
 
+    @Test
     public void testPurgeFromCacheWhenSourceIsMissingAndOptionIsTrue()
             throws Exception {
         doPurgeFromCacheWhenSourceIsMissing(true);
@@ -265,6 +277,7 @@ public class ImageResourceTest extends ResourceTest {
      * Tests that the Link header respects the <code>base_uri</code>
      * key in the configuration.
      */
+    @Test
     public void testLinkHeader() {
         Configuration config = Application.getConfiguration();
         ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
@@ -282,6 +295,7 @@ public class ImageResourceTest extends ResourceTest {
         assertTrue(header.getValue().startsWith("<https://example.org/"));
     }
 
+    @Test
     public void testMaxPixels() {
         Configuration config = Application.getConfiguration();
         ClientResource client = getClientForUriPath("/png/full/full/0/default.jpg");
@@ -299,6 +313,7 @@ public class ImageResourceTest extends ResourceTest {
         }
     }
 
+    @Test
     public void testMaxPixelsIgnoredWhenStreamingSource() {
         Configuration config = Application.getConfiguration();
         ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
@@ -307,6 +322,7 @@ public class ImageResourceTest extends ResourceTest {
         assertEquals(Status.SUCCESS_OK, client.getStatus());
     }
 
+    @Test
     public void testNotFound() throws IOException {
         ClientResource client = getClientForUriPath("/invalid/info.json");
         try {
@@ -323,6 +339,7 @@ public class ImageResourceTest extends ResourceTest {
      *
      * @throws Exception
      */
+    @Test
     public void testResolverProcessorCompatibility() throws Exception {
         WebServer server = new WebServer();
 
@@ -349,6 +366,7 @@ public class ImageResourceTest extends ResourceTest {
         }
     }
 
+    @Test
     public void testSlashSubstitution() throws Exception {
         WebServer server = new WebServer();
         Application.getConfiguration().setProperty("slash_substitute", "CATS");
@@ -362,6 +380,7 @@ public class ImageResourceTest extends ResourceTest {
         }
     }
 
+    @Test
     public void testUnavailableSourceFormat() throws IOException {
         ClientResource client = getClientForUriPath("/text.txt/full/full/0/default.jpg");
         try {
@@ -373,6 +392,7 @@ public class ImageResourceTest extends ResourceTest {
         }
     }
 
+    @Test
     public void testUnavailableOutputFormat() throws IOException {
         ClientResource client = getClientForUriPath("/escher_logo.jpg/full/full/0/default.bogus");
         try {
