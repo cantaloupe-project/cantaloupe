@@ -34,7 +34,21 @@ public class ImageResourceTest extends ResourceTest {
         return super.getClientForUriPath(WebApplication.IIIF_1_PATH + path);
     }
 
-    public void testBasicAuth() throws Exception {
+    public void testAuthorizationDelegate() throws Exception {
+        ClientResource client = getClientForUriPath("/jpg/full/full/0/native.jpg");
+        client.get();
+        assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        try {
+            client = getClientForUriPath("/forbidden.jpg/full/full/0/native.jpg");
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_FORBIDDEN, client.getStatus());
+        }
+    }
+
+    public void testBasicAuthentication() throws Exception {
         final String username = "user";
         final String secret = "secret";
         Application.stopServer();
@@ -162,6 +176,10 @@ public class ImageResourceTest extends ResourceTest {
         } catch (ResourceException e) {
             assertEquals(Status.CLIENT_ERROR_FORBIDDEN, client.getStatus());
         }
+    }
+
+    public void testIsAuthorized() {
+        // will be tested in the v2 endpoint counterpart
     }
 
     public void testMaxPixels() {

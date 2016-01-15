@@ -23,6 +23,8 @@ public abstract class ResourceTest extends CantaloupeTestCase {
     public static BaseConfiguration newConfiguration() throws IOException {
         BaseConfiguration config = new BaseConfiguration();
         config.setProperty("print_stack_trace_on_error_pages", false);
+        config.setProperty("delegate_script",
+                TestUtil.getFixture("delegate.rb").getAbsolutePath());
         config.setProperty("http.enabled", true);
         config.setProperty("http.port", PORT);
         config.setProperty("processor.fallback", "Java2dProcessor");

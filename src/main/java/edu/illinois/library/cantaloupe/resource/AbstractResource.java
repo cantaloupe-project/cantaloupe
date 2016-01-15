@@ -15,6 +15,8 @@ import edu.illinois.library.cantaloupe.resolver.ChannelResolver;
 import edu.illinois.library.cantaloupe.resolver.ChannelSource;
 import edu.illinois.library.cantaloupe.resolver.FileResolver;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
+import edu.illinois.library.cantaloupe.script.ScriptEngine;
+import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.Request;
@@ -30,6 +32,7 @@ import org.restlet.util.Series;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.script.ScriptException;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
@@ -311,7 +314,40 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * Reads the size from the source image.
+     * Invokes a delegate script method to determine whether the request is
+     * authorized.
+     *
+     * @param fullSize
+     * @param opList
+     * @return
+     * @throws IOException
+     * @throws ScriptException
+     */
+    protected final boolean isAuthorized(final OperationList opList,
+                                         final Dimension fullSize)
+            throws IOException, ScriptException {
+        final Map<String,Integer> fullSizeArg = new HashMap<>();
+        fullSizeArg.put("width", fullSize.width);
+        fullSizeArg.put("height", fullSize.height);
+
+        // delegate method parameters
+        final Object args[] = new Object[8];
+        args[0] = opList.getIdentifier().toString();           // identifier
+        args[1] = opList.toMap(fullSize).get("operations");    // operations
+        args[2] = opList.toMap(fullSize).get("output_format"); // output_format
+        args[3] = fullSizeArg;                                 // full_size
+        args[4] = getReference().toString();                   // request_uri
+        args[5] = getRequest().getHeaders().getValuesMap();    // request_headers
+        args[6] = getRequest().getClientInfo().getAddress();   // client_ip
+        args[7] = getRequest().getCookies().getValuesMap();    // cookies
+
+        final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
+        final String method = "authorized?";
+        return (boolean) engine.invoke(method, args);
+    }
+
+    /**
+     * Reads the size of the source image.
      *
      * @param identifier
      * @param resolver

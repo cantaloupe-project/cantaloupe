@@ -12,6 +12,7 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
+import edu.illinois.library.cantaloupe.resource.AccessDeniedException;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.iiif.ResourceUtils;
@@ -129,6 +130,11 @@ public class ImageResource extends AbstractResource {
         ops.setIdentifier(identifier);
         ops.getOptions().putAll(
                 this.getReference().getQueryAsForm(true).getValuesMap());
+
+        if (!isAuthorized(ops,
+                getSize(ops.getIdentifier(), proc, resolver, sourceFormat))) {
+            throw new AccessDeniedException();
+        }
 
         // Find out whether the processor supports that source format by
         // asking it whether it offers any output formats for it
