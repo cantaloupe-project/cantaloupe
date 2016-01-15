@@ -6,12 +6,15 @@ module Cantaloupe
   end
 
   def self.get_iiif2_service(identifier)
-    {
-      '@context' => "http://iiif.io/api/image/2/context.json",
-      '@id' => "bla",
-      'profile' => "bla",
-      'cats' => 0.85
-    }
+    if identifier == 'jpg'
+      return {
+        '@context' => "http://iiif.io/api/image/2/context.json",
+        '@id' => "bla",
+        'profile' => "bla",
+        'cats' => 0.85
+      }
+    end
+    nil
   end
 
   def self.get_resolver(identifier)
