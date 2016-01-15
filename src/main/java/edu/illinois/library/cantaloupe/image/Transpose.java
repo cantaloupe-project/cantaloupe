@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.image;
 
 import java.awt.Dimension;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Encapsulates a transposition (flipping/mirroring) operation on an image.
@@ -17,8 +19,21 @@ public enum Transpose implements Operation {
         return fullSize;
     }
 
+    @Override
     public boolean isNoOp() {
         return false;
+    }
+
+    /**
+     * @param fullSize Ignored.
+     * @return Map with an <code>axis</code> key corresponding to the
+     *         lowercase enum name.
+     */
+    @Override
+    public Map<String,Object> toMap(Dimension fullSize) {
+        final Map<String,Object> map = new HashMap<>();
+        map.put("axis", this.name().toLowerCase());
+        return map;
     }
 
     /**

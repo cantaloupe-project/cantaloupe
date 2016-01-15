@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.image;
 
 import java.awt.Dimension;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Scale implements Operation {
 
@@ -119,6 +121,22 @@ public class Scale implements Operation {
             throw new IllegalArgumentException("Width must be a positive integer");
         }
         this.width = width;
+    }
+
+    /**
+     * @param fullSize Full size of the source image on which the operation
+     *                 is being applied.
+     * @return Map with <code>width</code> and <code>height</code> keys
+     *         and integer values corresponding to the resulting pixel size of
+     *         the operation.
+     */
+    @Override
+    public Map<String,Object> toMap(Dimension fullSize) {
+        final Dimension resultingSize = getResultingSize(fullSize);
+        final Map<String,Object> map = new HashMap<>();
+        map.put("width", resultingSize.width);
+        map.put("height", resultingSize.height);
+        return map;
     }
 
     /**

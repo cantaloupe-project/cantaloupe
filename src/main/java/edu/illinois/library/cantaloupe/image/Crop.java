@@ -2,6 +2,8 @@ package edu.illinois.library.cantaloupe.image;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <p>Encapsulates a cropping operation.</p>
@@ -174,6 +176,24 @@ public class Crop implements Operation {
             throw new IllegalArgumentException("Y percentage must be <= 1");
         }
         this.y = y;
+    }
+
+    /**
+     * @param fullSize Full size of the source image on which the operation
+     *                 is being applied.
+     * @return Map with <code>x</code>, <code>y</code>, <code>width</code>, and
+     *         <code>height</code> keys and integer values corresponding to the
+     *         absolute crop coordinates.
+     */
+    @Override
+    public Map<String,Object> toMap(Dimension fullSize) {
+        final Rectangle rect = getRectangle(fullSize);
+        final HashMap<String,Object> map = new HashMap<>();
+        map.put("x", rect.x);
+        map.put("y", rect.y);
+        map.put("width", rect.width);
+        map.put("height", rect.height);
+        return map;
     }
 
     /**
