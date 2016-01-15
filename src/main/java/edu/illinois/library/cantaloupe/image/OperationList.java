@@ -124,6 +124,19 @@ public class OperationList implements Comparable<OperationList>,
     }
 
     /**
+     * @param fullSize Full size of the source image on which the instance is
+     *                 being applied.
+     * @return Map serialization of the instance.
+     */
+    public List<Map<String,Object>> toMap(Dimension fullSize) {
+        final List<Map<String,Object>> map = new ArrayList<>();
+        for (Operation op : this) {
+            map.add(op.toMap(fullSize));
+        }
+        return map;
+    }
+
+    /**
      * @return String representation of the instance, guaranteed to uniquely
      * represent the instance, but not guaranteed to have any particular
      * format.

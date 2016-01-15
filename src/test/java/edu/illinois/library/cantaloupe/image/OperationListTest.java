@@ -11,6 +11,7 @@ import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class OperationListTest {
 
@@ -287,6 +288,22 @@ public class OperationListTest {
         ops.setIdentifier(new Identifier("identifier.jpg"));
         ops.setOutputFormat(OutputFormat.GIF);
         assertFalse(ops.isNoOp(SourceFormat.JPG));
+    }
+
+    /* toMap() */
+
+    @Test
+    public void testToMap() {
+        Iterator it = ops.iterator();
+        int count = 0;
+        while (it.hasNext()) {
+            count++;
+            it.next();
+        }
+
+        final Dimension fullSize = new Dimension(100, 100);
+        List<Map<String,Object>> map = ops.toMap(fullSize);
+        assertEquals(count, map.size());
     }
 
     /* toString() */
