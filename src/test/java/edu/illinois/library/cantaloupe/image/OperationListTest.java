@@ -294,6 +294,7 @@ public class OperationListTest {
 
     @Test
     public void testToMap() {
+        // get the number of operations
         Iterator it = ops.iterator();
         int count = 0;
         while (it.hasNext()) {
@@ -302,8 +303,11 @@ public class OperationListTest {
         }
 
         final Dimension fullSize = new Dimension(100, 100);
-        List<Map<String,Object>> map = ops.toMap(fullSize);
-        assertEquals(count, map.size());
+        Map<String,Object> map = ops.toMap(fullSize);
+        assertEquals("identifier.jpg", map.get("identifier"));
+        assertEquals(count, ((List) map.get("operations")).size());
+        assertEquals(0, ((Map) map.get("options")).size());
+        assertEquals("jpg", ((Map) map.get("output_format")).get("extension"));
     }
 
     /* toString() */

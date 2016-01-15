@@ -124,15 +124,42 @@ public class OperationList implements Comparable<OperationList>,
     }
 
     /**
+     * <p>Serializes the instance to a map with the following format:</p>
+     *
+     * <pre>{@link Map}
+     *   "identifier" =&gt;
+     *     result of {@link Identifier#toString()}
+     *   "operations" =&gt;
+     *     {@link List}
+     *       {@link Map}
+     *         lowercase {@link Operation} class name => result of {@link Operation#toMap(Dimension)}
+     *       ...
+     *   "options" =&gt;
+     *     {@link Map}
+     *       "key" => "value"
+     *       ...
+     *   "output_format" =&gt;
+     *     result of {@link OutputFormat#toMap}</pre>
+     *
      * @param fullSize Full size of the source image on which the instance is
      *                 being applied.
      * @return Map serialization of the instance.
      */
-    public List<Map<String,Object>> toMap(Dimension fullSize) {
-        final List<Map<String,Object>> map = new ArrayList<>();
+    public Map<String,Object> toMap(Dimension fullSize) {
+        final Map<String,Object> map = new HashMap<>();
+        // identifier
+        map.put("identifier", getIdentifier().toString());
+        // operations
+        List<Map<String,Object>> opsList = new ArrayList<>();
         for (Operation op : this) {
-            map.add(op.toMap(fullSize));
+            opsList.add(op.toMap(fullSize));
         }
+        map.put("operations", opsList);
+        // options
+        map.put("options", getOptions());
+        // output format
+        map.put("output_format", getOutputFormat().toMap());
+
         return map;
     }
 
