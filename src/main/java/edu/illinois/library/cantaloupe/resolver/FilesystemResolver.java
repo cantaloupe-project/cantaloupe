@@ -123,7 +123,7 @@ class FilesystemResolver extends AbstractResolver
             throws IOException, ScriptException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final String[] args = { identifier.toString() };
-        final String method = "Cantaloupe::get_pathname";
+        final String method = "get_pathname";
         final long msec = System.currentTimeMillis();
         final Object result = engine.invoke(method, args);
         logger.debug("{} load+exec time: {} msec", method,

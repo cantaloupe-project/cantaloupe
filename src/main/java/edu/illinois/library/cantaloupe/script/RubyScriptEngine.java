@@ -9,6 +9,9 @@ import java.util.Map;
 
 class RubyScriptEngine implements ScriptEngine {
 
+    /** Ruby module containing methods to invoke */
+    private static final String MODULE = "Cantaloupe";
+
     private javax.script.ScriptEngine scriptEngine = new ScriptEngineManager().
             getEngineByName("jruby");
 
@@ -31,8 +34,8 @@ class RubyScriptEngine implements ScriptEngine {
     @Override
     public Object invoke(String functionName, Object[] args)
             throws ScriptException {
-        final String invocationString = String.format("%s(%s)",
-                functionName, serializeAsRuby(args));
+        final String invocationString = String.format("%s::%s(%s)",
+                MODULE, functionName, serializeAsRuby(args));
         return scriptEngine.eval(invocationString);
     }
 
@@ -44,8 +47,8 @@ class RubyScriptEngine implements ScriptEngine {
     @Override
     public boolean methodExists(String methodName) throws ScriptException {
         return (boolean) scriptEngine.eval(
-                String.format("Cantaloupe.respond_to?(%s)",
-                formatString(methodName)));
+                String.format("%s.respond_to?(%s)",
+                MODULE, formatString(methodName)));
     }
 
     private String serializeAsRuby(Object[] args) {

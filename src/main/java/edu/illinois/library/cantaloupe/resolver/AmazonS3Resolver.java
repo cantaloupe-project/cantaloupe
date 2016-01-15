@@ -155,7 +155,7 @@ class AmazonS3Resolver extends AbstractResolver implements ChannelResolver {
             throws IOException, ScriptException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final String[] args = { identifier.toString() };
-        final String method = "Cantaloupe::get_s3_object_key";
+        final String method = "get_s3_object_key";
         final long msec = System.currentTimeMillis();
         final Object result = engine.invoke(method, args);
         logger.debug("{} load+exec time: {} msec", method,

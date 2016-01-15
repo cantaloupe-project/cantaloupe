@@ -30,7 +30,7 @@ public class RubyScriptEngineTest {
                 "end\n" +
                 "end";
         instance.load(code);
-        String function = "Cantaloupe::func";
+        final String function = "func";
 
         for (int i = 0; i < 3; i++) {
             String[] args = { String.valueOf(i) };

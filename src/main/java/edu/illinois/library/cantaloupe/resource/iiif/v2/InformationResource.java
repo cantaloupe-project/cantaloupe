@@ -216,7 +216,7 @@ public class InformationResource extends AbstractResource {
                 if (engine.methodExists(SERVICE_METHOD)) {
                     final String[] args = { identifier.toString() };
                     imageInfo.service = (Map) engine.
-                            invoke("Cantaloupe::" + SERVICE_METHOD, args);
+                            invoke(SERVICE_METHOD, args);
                 } else {
                     logger.info("Delegate script does not implement {}(); " +
                             "skipping service information.", SERVICE_METHOD);
