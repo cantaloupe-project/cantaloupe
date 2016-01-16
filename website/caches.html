@@ -70,18 +70,20 @@ layout: default
 
 <p>JdbcCache will not create its schema automatically&mdash;this must be done manually using the following commands, which may have to be altered slightly for your particular database:</p>
 
-<pre>CREATE TABLE IF NOT EXISTS {JdbcCache.image_table} (
+{% highlight sql %}
+CREATE TABLE IF NOT EXISTS image (
    operations VARCHAR(4096) NOT NULL,
    image BLOB,
    last_modified DATETIME
 );
 
-CREATE TABLE IF NOT EXISTS {JdbcCache.info_table} (
-  identifier VARCHAR(4096) NOT NULL, " +
+CREATE TABLE IF NOT EXISTS info (
+  identifier VARCHAR(4096) NOT NULL,
   width DECIMAL(5,0),
   height DECIMAL(5,0),
   last_modified DATETIME
-);</pre>
+);
+{% endhighlight %}
 
 <div class="alert alert-info">Note: JdbcCache has been tested with PostgreSQL 9.4 and H2 1.4. Other databases may work, but are untested.</div>
 
