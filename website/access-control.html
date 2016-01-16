@@ -14,12 +14,134 @@ auth.basic.username = myusername
 auth.basic.secret = mypassword
 {% endhighlight %}
 
-<p>When enabled, the entire website will be restricted.</p>
+<p>When enabled, the entire website and all endpoints will be restricted.</p>
 
-<div class="alert alert-warning">HTTP Basic transmits passwords in clear text, so it should only be used on a trusted local network, or in conjunction with <a href="deployment.html#SSL%2FTLS">TLS</a>.</div>
-
-<p>A reverse proxy server can be used to support other means of authentication.</p>
+<hr>
 
 <h3 id="Authorization">Authorization</h3>
 
-<p>Currently, Cantaloupe is not authorization-aware. But, <a href="https://github.com/medusa-project/cantaloupe/issues/22">stay tuned</a>.</p>
+<p>A custom <a href="delegate-script.html">delegate script</a> method can be used to implement authorization logic ranging from simple to highly complex. Cantaloupe will execute this method upon every image request and, depending on its return value, either authorize the request (by returning HTTP 200 OK), or not (by returning HTTP 403 Forbidden).</p>
+
+<p>The delegate method in question is called <code>authorized?</code>. A skeleton with documented parameters and return values is present in the <span class="filename">delegates.rb.sample</span> file. By default, it just returns <code>true</code>, thus authorizing all requests.</p>
+
+<div class="alert alert-warning">This method will be called upon requests to all image endpoints, but not requests to information endpoints, landing pages, etc.</div>
+
+<h4>Examples</h4>
+
+<h5>Inspect the parameters</h5>
+
+{% highlight ruby %}
+def self.authorized?(identifier, operations, output_format, full_size,
+                     request_uri, request_headers, client_ip, cookies)
+  # Output will appear in the console.
+  puts "identifier: #{identifier}"
+  puts "operations: #{operations}"
+  puts "output_format: #{output_format}"
+  puts "full_size: #{full_size}"
+  puts "request_uri: #{request_uri}"
+  puts "request_headers: #{request_headers}"
+  puts "client_ip: #{client_ip}"
+  puts "cookies: #{cookies}"
+  true
+end
+{% endhighlight %}
+
+<h5>Allow only requests for half-scale images or smaller</h5>
+
+{% highlight ruby %}
+def self.authorized?(identifier, operations, output_format, full_size,
+                     request_uri, request_headers, client_ip, cookies)
+  max_scale = 0.5
+  scale = operations.select{ |op| op['type'] == 'scale' }.first
+  if scale
+    return scale['width'] <= full_size['width'] * max_scale and
+        scale['height'] <= full_size['height'] * max_scale
+  end
+  false
+end
+{% endhighlight %}
+
+<h5>Allow only requests for identifiers matching a certain pattern</h5>
+
+{% highlight ruby %}
+def self.authorized?(identifier, operations, output_format, full_size,
+                     request_uri, request_headers, client_ip, cookies)
+  # Allow only identifiers that don't include "_restricted"
+  return !identifier.include?('_restricted')
+  # Allow only identifiers that start with "_public"
+  return identifier.start_with?('public_')
+  # Allow only identifiers matching a regex
+  return identifier.match(/public/)
+end
+{% endhighlight %}
+
+<h5>Allow only requests for images marked as "public" in a MySQL database</h5>
+
+<p>(You will need to install the <a href="https://dev.mysql.com/downloads/connector/j/">MySQL JDBC driver</a> first.)</p>
+
+<div class="alert alert-danger">Note: The parameters passed to <code>authorized?</code> are not guaranteed to be safe. <code>identifier</code>, for example, is coming straight from the URL. Always use prepared statements over string concatenation to reduce susceptibility to SQL injection attacks.</div>
+
+{% highlight ruby %}
+def self.authorized?(identifier, operations, output_format, full_size,
+                     request_uri, request_headers, client_ip, cookies)
+  require "rubygems"
+  require "jdbc/mysql"
+  require "java"
+
+  authorized = false
+
+  Java::com.mysql.jdbc.Driver
+  url = "jdbc:mysql://HOST/DATABASE"
+  conn = java.sql.DriverManager.get_connection(url, "USERNAME", "PASSWORD")
+  stmt = conn.create_statement
+
+  begin
+    query = %q{SELECT is_public
+        FROM image
+        WHERE identifier = ?
+        LIMIT 1}
+    stmt = conn.prepare_statement(query)
+    stmt.setString(1, identifier);
+    result_set = stmt.execute_query
+    while result_set.next do
+      authorized = result_set.getBoolean(1)
+    end
+  ensure
+    stmt.close
+    conn.close
+  end
+  authorized
+end
+{% endhighlight %}
+
+<h5>Allow only JPEG output</h5>
+
+{% highlight ruby %}
+def self.authorized?(identifier, operations, output_format, full_size,
+                     request_uri, request_headers, client_ip, cookies)
+  output_format['media_type'] == 'image/jpeg'
+end
+{% endhighlight %}
+
+<h5>Allow only certain user agents</h5>
+
+<div class="alert alert-warning">This is not foolproof; if a client knows what User-Agent you are checking for, they can spoof it.</div>
+
+{% highlight ruby %}
+def self.authorized?(identifier, operations, output_format, full_size,
+                     request_uri, request_headers, client_ip, cookies)
+  agent = request_headers.select{ |h, v| h.downcase == 'user-agent' }.first
+  agent and agent == 'MyAllowedUserAgent/1.0'
+end
+{% endhighlight %}
+
+<h5>Allow only requests from clients that have an authorization cookie</h5>
+
+<p>If you have an authorization service that sets a cookie, you can have Cantaloupe check for it. Cookies can't be shared across domains, but if you could set the cookie on a parent domain, this could work.</p>
+
+{% highlight ruby %}
+def self.authorized?(identifier, operations, output_format, full_size,
+                     request_uri, request_headers, client_ip, cookies)
+  cookies.select{ |c| c['authcookie'] }.any?
+end
+{% endhighlight %}
