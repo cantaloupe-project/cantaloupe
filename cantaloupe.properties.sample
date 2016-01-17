@@ -50,6 +50,7 @@ max_pixels = 400000000
 # website for more information.) This can be an absolute path, or a
 # filename; if only a filename is specified, it will be searched for in the
 # same folder as this file, and then the current working directory.
+# Comment out or set blank to disable the delegate script mechanism.
 #delegate_script = delegates.rb
 
 # Helpful in development
