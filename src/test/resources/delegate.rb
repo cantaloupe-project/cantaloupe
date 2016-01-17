@@ -1,7 +1,7 @@
 module Cantaloupe
 
-  def self.authorized?(identifier, operations, output_format, full_size,
-      request_uri, request_headers, client_ip, cookies)
+  def self.authorized?(identifier, full_size, operations, resulting_size,
+      output_format, request_uri, request_headers, client_ip, cookies)
     identifier != 'forbidden.jpg'
   end
 

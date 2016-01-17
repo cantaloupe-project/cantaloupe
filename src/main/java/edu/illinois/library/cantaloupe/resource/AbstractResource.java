@@ -331,16 +331,22 @@ public abstract class AbstractResource extends ServerResource {
         fullSizeArg.put("width", fullSize.width);
         fullSizeArg.put("height", fullSize.height);
 
+        final Dimension resultingSize = opList.getResultingSize(fullSize);
+        final Map<String,Integer> resultingSizeArg = new HashMap<>();
+        resultingSizeArg.put("width", resultingSize.width);
+        resultingSizeArg.put("height", resultingSize.height);
+
         // delegate method parameters
-        final Object args[] = new Object[8];
+        final Object args[] = new Object[9];
         args[0] = opList.getIdentifier().toString();           // identifier
-        args[1] = opList.toMap(fullSize).get("operations");    // operations
-        args[2] = opList.toMap(fullSize).get("output_format"); // output_format
-        args[3] = fullSizeArg;                                 // full_size
-        args[4] = getReference().toString();                   // request_uri
-        args[5] = getRequest().getHeaders().getValuesMap();    // request_headers
-        args[6] = getRequest().getClientInfo().getAddress();   // client_ip
-        args[7] = getRequest().getCookies().getValuesMap();    // cookies
+        args[1] = fullSizeArg;                                 // full_size
+        args[2] = opList.toMap(fullSize).get("operations");    // operations
+        args[3] = resultingSizeArg;                            // resulting_size
+        args[4] = opList.toMap(fullSize).get("output_format"); // output_format
+        args[5] = getReference().toString();                   // request_uri
+        args[6] = getRequest().getHeaders().getValuesMap();    // request_headers
+        args[7] = getRequest().getClientInfo().getAddress();   // client_ip
+        args[8] = getRequest().getCookies().getValuesMap();    // cookies
 
         try {
             final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();

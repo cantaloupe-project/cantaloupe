@@ -13,26 +13,30 @@ module Cantaloupe
   # Implementations should assume that the underlying resource is available.
   #
   # @param identifier [String] Image identifier
-  # @param operations [Array<Hash>] Array of operations in order of execution.
-  #                                 Only operations that are not no-ops will
-  #                                 be included. Every hash contains an
-  #                                 "operation" key pointing to the type of
-  #                                 operation. See the Javadoc of
-  #                                 e.i.l.c.image.Operation implementations
-  #                                 for a list of possible operations.
-  # @param output_format [Hash] Hash with "media_type" and "extension" keys.
   # @param full_size [Hash<String,Integer>] Hash with "width" and "height"
   #                                         keys corresponding to the pixel
   #                                         dimensions of the source image.
+  # @param operations [Array<Hash<String,Object>] Array of operations in order
+  #                   of execution. Only operations that are not no-ops will
+  #                   be included. Every hash contains an "operation" key
+  #                   corresponding to the type of operation. See the Javadoc
+  #                   of e.i.l.c.image.Operation implementations for a list of
+  #                   possible operations.
+  # @param resulting_size [Hash<String,String>] Hash with "width" and "height"
+  #                       keys corresponding to the pixel dimensions of the
+  #                       resulting image after all operations are applied.
+  # @param output_format [Hash<String,String>] Hash with "media_type" and
+  #                                            "extension" keys.
   # @param request_uri [String] Full request URI
   # @param request_headers [Hash<String,String>]
   # @param client_ip [String]
   # @param cookies [Hash<String,String>]
-  # @return [Boolean] Whether the request is authorized based on the
-  #                   supplied parameters.
+  # @return [Boolean] Whether the request is authorized based on the supplied
+  #                   parameters.
   #
-  def self.authorized?(identifier, operations, output_format, full_size,
-                       request_uri, request_headers, client_ip, cookies)
+  def self.authorized?(identifier, full_size, operations, resulting_size,
+                       output_format, request_uri, request_headers, client_ip,
+                       cookies)
     true
   end
 

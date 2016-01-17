@@ -16,28 +16,51 @@ auth.basic.secret = mypassword
 
 <p>When enabled, the entire website and all endpoints will be restricted.</p>
 
+<p>A <a href="deployment.html#Reverse-Proxying">reverse-proxying</a> configuration can be used to provide additional authentication options.</p>
+
 <hr>
 
 <h3 id="Authorization">Authorization</h3>
 
-<p>A custom <a href="delegate-script.html">delegate script</a> method can be used to implement authorization logic ranging from simple to highly complex. Cantaloupe will execute this method upon every image request and, depending on its return value, either authorize the request (by returning HTTP 200 OK), or not (by returning HTTP 403 Forbidden).</p>
+<p>A custom <a href="delegate-script.html">delegate script</a> method can be used to implement authorization logic ranging from simple to complex. Cantaloupe will execute this method upon every image request and, depending on its return value, either authorize the request (by returning HTTP 200 OK), or not (by returning HTTP 403 Forbidden).</p>
 
-<p>The delegate method in question is called <code>authorized?</code>. A skeleton with documented parameters and return values is present in the <span class="filename">delegates.rb.sample</span> file. By default, it just returns <code>true</code>, thus authorizing all requests.</p>
+<p>The delegate method in question is called <code>authorized?</code>. A skeleton with documented parameters and return values is present in the <span class="filename">delegates.rb.sample</span> file. By default, it just returns <code>true</code>, authorizing all requests.</p>
 
-<div class="alert alert-warning">This method will be called upon requests to all image endpoints, but not requests to information endpoints, landing pages, etc.</div>
+<div class="alert alert-warning">This method will be called upon requests to all image endpoints, but not information endpoints, landing pages, etc.</div>
+
+<h4>Notes</h4>
+
+<ul>
+  <li>The authorization method will be called on every image request and should therefore be written to be efficient.</li>
+  <li>Implementations should not assume that the underlying source image actually exists, but they should not try to check for it regardless&mdash;the image server will handle that. (But, the check may occur after the delegate method is invoked.)</li>
+</ul>
 
 <h4>Examples</h4>
 
-<h5>Inspect the parameters</h5>
+<ul>
+  <li><a href="#example-1">Inspect the parameters</a></li>
+  <li><a href="#example-2">Allow only requests for half-scale images or smaller</a></li>
+  <li><a href="#example-3">Allow only requests for identifiers matching a certain pattern</a></li>
+  <li><a href="#example-4">Allow only requests for images set as "public" in a MySQL database</a></li>
+  <li><a href="#example-5">Allow only JPEG output</a></li>
+  <li><a href="#example-6">Allow only certain user agents</a></li>
+  <li><a href="#example-7">Allow only requests from clients that have an authorization cookie</a></li>
+  <li><a href="#example-8">Restrict a region of an image</a></li>
+</ul>
+
+<h5 id="example-1">Inspect the parameters</h5>
+
+<p>This method will print the parameters to the console.</p>
 
 {% highlight ruby %}
-def self.authorized?(identifier, operations, output_format, full_size,
-                     request_uri, request_headers, client_ip, cookies)
-  # Output will appear in the console.
+def self.authorized?(identifier, full_size, operations, resulting_size,
+                     output_format, request_uri, request_headers, client_ip,
+                     cookies)
   puts "identifier: #{identifier}"
-  puts "operations: #{operations}"
-  puts "output_format: #{output_format}"
   puts "full_size: #{full_size}"
+  puts "operations: #{operations}"
+  puts "resulting_size: #{resulting_size}"
+  puts "output_format: #{output_format}"
   puts "request_uri: #{request_uri}"
   puts "request_headers: #{request_headers}"
   puts "client_ip: #{client_ip}"
@@ -46,14 +69,15 @@ def self.authorized?(identifier, operations, output_format, full_size,
 end
 {% endhighlight %}
 
-<h5>Allow only requests for half-scale images or smaller</h5>
+<h5 id="example-2">Allow only requests for half-scale images or smaller</h5>
 
 {% highlight ruby %}
-def self.authorized?(identifier, operations, output_format, full_size,
-                     request_uri, request_headers, client_ip, cookies)
-  max_scale = 0.5
+def self.authorized?(identifier, full_size, operations, resulting_size,
+                     output_format, request_uri, request_headers, client_ip,
+                     cookies)
   scale = operations.select{ |op| op['type'] == 'scale' }.first
   if scale
+    max_scale = 0.5
     return scale['width'] <= full_size['width'] * max_scale and
         scale['height'] <= full_size['height'] * max_scale
   end
@@ -61,29 +85,31 @@ def self.authorized?(identifier, operations, output_format, full_size,
 end
 {% endhighlight %}
 
-<h5>Allow only requests for identifiers matching a certain pattern</h5>
+<h5 id="example-3">Allow only requests for identifiers matching a certain pattern</h5>
 
 {% highlight ruby %}
-def self.authorized?(identifier, operations, output_format, full_size,
-                     request_uri, request_headers, client_ip, cookies)
+def self.authorized?(identifier, full_size, operations, resulting_size,
+                     output_format, request_uri, request_headers, client_ip,
+                     cookies)
   # Allow only identifiers that don't include "_restricted"
   return !identifier.include?('_restricted')
   # Allow only identifiers that start with "_public"
   return identifier.start_with?('public_')
   # Allow only identifiers matching a regex
-  return identifier.match(/public/)
+  return identifier.match(/^image[5-9][0-9]/)
 end
 {% endhighlight %}
 
-<h5>Allow only requests for images marked as "public" in a MySQL database</h5>
+<h5 id="example-4">Allow only requests for images set as "public" in a MySQL database</h5>
 
 <p>(You will need to install the <a href="https://dev.mysql.com/downloads/connector/j/">MySQL JDBC driver</a> first.)</p>
 
-<div class="alert alert-danger">Note: The parameters passed to <code>authorized?</code> are not guaranteed to be safe. <code>identifier</code>, for example, is coming straight from the URL. Always use prepared statements over string concatenation to reduce susceptibility to SQL injection attacks.</div>
+<div class="alert alert-danger">Note: The parameters passed to <code>authorized?</code> are not guaranteed to be safe. <code>identifier</code>, for example, will be exactly as supplied in the URL. Always prefer prepared statements over string concatenation in order to reduce susceptibility to SQL injection attacks.</div>
 
 {% highlight ruby %}
-def self.authorized?(identifier, operations, output_format, full_size,
-                     request_uri, request_headers, client_ip, cookies)
+def self.authorized?(identifier, full_size, operations, resulting_size,
+                     output_format, request_uri, request_headers, client_ip,
+                     cookies)
   require "rubygems"
   require "jdbc/mysql"
   require "java"
@@ -114,34 +140,56 @@ def self.authorized?(identifier, operations, output_format, full_size,
 end
 {% endhighlight %}
 
-<h5>Allow only JPEG output</h5>
+<h5 id="example-5">Allow only JPEG output</h5>
 
 {% highlight ruby %}
-def self.authorized?(identifier, operations, output_format, full_size,
-                     request_uri, request_headers, client_ip, cookies)
+def self.authorized?(identifier, full_size, operations, resulting_size,
+                     output_format, request_uri, request_headers, client_ip,
+                     cookies)
   output_format['media_type'] == 'image/jpeg'
 end
 {% endhighlight %}
 
-<h5>Allow only certain user agents</h5>
+<h5 id="example-6">Allow only certain user agents</h5>
 
-<div class="alert alert-warning">This is not foolproof; if a client knows what User-Agent you are checking for, they can spoof it.</div>
+<div class="alert alert-warning">This is not foolproof&mdash;if a client knows what User-Agent you are checking for, they can spoof it.</div>
 
 {% highlight ruby %}
-def self.authorized?(identifier, operations, output_format, full_size,
-                     request_uri, request_headers, client_ip, cookies)
+def self.authorized?(identifier, full_size, operations, resulting_size,
+                     output_format, request_uri, request_headers, client_ip,
+                     cookies)
   agent = request_headers.select{ |h, v| h.downcase == 'user-agent' }.first
-  agent and agent == 'MyAllowedUserAgent/1.0'
+  agent == 'MyAllowedUserAgent/1.0'
 end
 {% endhighlight %}
 
-<h5>Allow only requests from clients that have an authorization cookie</h5>
+<h5 id="example-7">Allow only requests from clients that have an authorization cookie</h5>
 
-<p>If you have an authorization service that sets a cookie, you can have Cantaloupe check for it. Cookies can't be shared across domains, but if you could set the cookie on a parent domain, this could work.</p>
+<p>If you have an authorization service that sets a cookie, you can check for it. Cookies can't be shared across domains, but this could still work if you can set the cookie on a parent domain.</p>
 
 {% highlight ruby %}
-def self.authorized?(identifier, operations, output_format, full_size,
-                     request_uri, request_headers, client_ip, cookies)
+def self.authorized?(identifier, full_size, operations, resulting_size,
+                     output_format, request_uri, request_headers, client_ip,
+                     cookies)
   cookies.select{ |c| c['authcookie'] }.any?
+end
+{% endhighlight %}
+
+<h5 id="example-8">Restrict a region of an image</h5>
+
+<p>In this example, requests for images containing any part of the bottom right quadrant of the source image will be denied.</p>
+
+{% highlight ruby %}
+def self.authorized?(identifier, full_size, operations, resulting_size,
+                     output_format, request_uri, request_headers, client_ip,
+                     cookies)
+  crop = operations.select{ |op| op['type'] == 'crop' }.first
+  if crop
+    max_x = full_size['width'] / 2
+    max_y = full_size['height'] / 2
+    return !(crop['x'] + crop['width'] > max_x and
+        crop['y'] + crop['height'] > max_y)
+  end
+  false
 end
 {% endhighlight %}
