@@ -55,6 +55,9 @@ class ImageIoImageReader {
         Iterator<ImageReader> it = ImageIO.getImageReadersByMIMEType(
                 sourceFormat.getPreferredMediaType().toString());
         if (it.hasNext()) {
+            if (inputSource instanceof ChannelSource) {
+                inputSource = ((ChannelSource) inputSource).newChannel();
+            }
             final ImageReader reader = it.next();
             reader.setInput(ImageIO.createImageInputStream(inputSource));
             return reader;
