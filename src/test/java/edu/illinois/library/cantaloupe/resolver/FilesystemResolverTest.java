@@ -120,7 +120,7 @@ public class FilesystemResolverTest {
     }
 
     @Test
-    public void testGetPathnameWithScriptLookupStrategyAndAbsolutePath()
+    public void testGetPathnameWithScriptLookupStrategy()
             throws IOException {
         Configuration config = Application.getConfiguration();
         config.setProperty(FilesystemResolver.LOOKUP_STRATEGY_CONFIG_KEY,
@@ -140,26 +140,6 @@ public class FilesystemResolverTest {
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
-        }
-    }
-
-    @Test
-    public void testGetPathnameWithScriptLookupStrategyAndRelativePath()
-            throws Exception {
-        Configuration config = Application.getConfiguration();
-        config.setProperty(FilesystemResolver.LOOKUP_STRATEGY_CONFIG_KEY,
-                "ScriptLookupStrategy");
-
-        // filename of script, located in cwd
-        config.setProperty("delegate_script", "lookup_test.rb");
-        final File tempFile = new File("./lookup_test.rb");
-        try {
-            FileUtils.copyFile(TestUtil.getFixture("lookup.rb"), tempFile);
-            Thread.sleep(50);
-            assertEquals("/bla/" + IDENTIFIER,
-                    instance.getPathname(IDENTIFIER, File.separator));
-        } finally {
-            FileUtils.forceDelete(tempFile);
         }
     }
 

@@ -120,8 +120,7 @@ public class HttpResolverTest {
     }
 
     @Test
-    public void testGetUrlWithScriptLookupStrategyAndAbsolutePath()
-            throws Exception {
+    public void testGetUrlWithScriptLookupStrategy() throws Exception {
         Configuration config = Application.getConfiguration();
         config.setProperty(HttpResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
@@ -140,25 +139,6 @@ public class HttpResolverTest {
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
-        }
-    }
-
-    @Test
-    public void testGetUrlWithScriptLookupStrategyAndRelativePath()
-            throws Exception {
-        Configuration config = Application.getConfiguration();
-        config.setProperty(HttpResolver.LOOKUP_STRATEGY_CONFIG_KEY,
-                "ScriptLookupStrategy");
-
-        // filename of script, located in cwd
-        config.setProperty("delegate_script", "lookup_test.rb");
-        final File tempFile = new File("./lookup_test.rb");
-        try {
-            FileUtils.copyFile(TestUtil.getFixture("lookup.rb"), tempFile);
-            assertEquals(new Reference("http://example.org/bla/" + IDENTIFIER),
-                    instance.getUrl(IDENTIFIER));
-        } finally {
-            FileUtils.forceDelete(tempFile);
         }
     }
 
