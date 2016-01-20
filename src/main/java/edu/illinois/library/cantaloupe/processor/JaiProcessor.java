@@ -11,9 +11,7 @@ import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.resolver.ChannelSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
-import org.restlet.data.MediaType;
 
-import javax.imageio.ImageIO;
 import javax.media.jai.RenderedOp;
 import java.awt.Dimension;
 import java.awt.image.RenderedImage;
@@ -41,8 +39,6 @@ class JaiProcessor implements FileProcessor, ChannelProcessor {
             SUPPORTED_IIIF_1_1_QUALITIES = new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
             SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
-
-    private static HashMap<SourceFormat,Set<OutputFormat>> formatsMap;
 
     static {
         SUPPORTED_IIIF_1_1_QUALITIES.add(
@@ -81,38 +77,17 @@ class JaiProcessor implements FileProcessor, ChannelProcessor {
      * based on information reported by the ImageIO library.
      */
     public static HashMap<SourceFormat, Set<OutputFormat>> getFormats() {
-        if (formatsMap == null) {
-            final String[] readerMimeTypes = ImageIO.getReaderMIMETypes();
-            final String[] writerMimeTypes = ImageIO.getWriterMIMETypes();
-            formatsMap = new HashMap<>();
-            for (SourceFormat sourceFormat : SourceFormat.values()) {
-                Set<OutputFormat> outputFormats = new HashSet<>();
-                for (String readerMimeType : readerMimeTypes) {
-                    if (sourceFormat.getMediaTypes().contains(
-                            new MediaType(readerMimeType.toLowerCase()))) {
-                        for (OutputFormat outputFormat : OutputFormat.values()) {
-                            if (outputFormat.equals(OutputFormat.JP2)) {
-                                // currently doesn't work
-                                // (see ImageIoImageWriter.write(RenderedOp...))
-                                continue;
-                            }
-                            for (String writerMimeType : writerMimeTypes) {
-                                if (outputFormat.getMediaType().equals(writerMimeType.toLowerCase())) {
-                                    outputFormats.add(outputFormat);
-                                }
-                            }
-                        }
-                    }
-                }
-                formatsMap.put(sourceFormat, outputFormats);
-            }
+        final HashMap<SourceFormat,Set<OutputFormat>> map = new HashMap<>();
+        for (SourceFormat sourceFormat : ImageIoImageReader.supportedFormats()) {
+            map.put(sourceFormat, ImageIoImageWriter.supportedFormats());
         }
-        return formatsMap;
+        return map;
     }
 
     @Override
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
-        return getFormats().get(sourceFormat);
+        Set<OutputFormat> formats = getFormats().get(sourceFormat);
+        return (formats != null) ? formats : new HashSet<OutputFormat>();
     }
 
     @Override

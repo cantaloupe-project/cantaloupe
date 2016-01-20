@@ -76,34 +76,13 @@ class Java2dProcessor implements ChannelProcessor, FileProcessor {
     }
 
     /**
-     * @return Map of available output formats for all known source formats,
-     * based on information reported by the ImageIO library.
+     * @return Map of available output formats for all known source formats.
      */
     public static HashMap<SourceFormat, Set<OutputFormat>>
     getAvailableOutputFormats() {
-        final String[] readerMimeTypes = ImageIO.getReaderMIMETypes();
-        final String[] writerMimeTypes = ImageIO.getWriterMIMETypes();
-        final HashMap<SourceFormat,Set<OutputFormat>> map =
-                new HashMap<>();
-        for (SourceFormat sourceFormat : SourceFormat.values()) {
-            Set<OutputFormat> outputFormats = new HashSet<>();
-            for (int i = 0, length = readerMimeTypes.length; i < length; i++) {
-                if (sourceFormat.getMediaTypes().
-                        contains(new MediaType(readerMimeTypes[i].toLowerCase()))) {
-                    for (OutputFormat outputFormat : OutputFormat.values()) {
-                        // TODO: not working (see inline comment in ProcessorUtil.writeImage())
-                        if (outputFormat.equals(OutputFormat.JP2)) {
-                            continue;
-                        }
-                        for (int i2 = 0, length2 = writerMimeTypes.length; i2 < length2; i2++) {
-                            if (outputFormat.getMediaType().equals(writerMimeTypes[i2].toLowerCase())) {
-                                outputFormats.add(outputFormat);
-                            }
-                        }
-                    }
-                }
-            }
-            map.put(sourceFormat, outputFormats);
+        final HashMap<SourceFormat,Set<OutputFormat>> map = new HashMap<>();
+        for (SourceFormat sourceFormat : ImageIoImageReader.supportedFormats()) {
+            map.put(sourceFormat, ImageIoImageWriter.supportedFormats());
         }
         return map;
     }

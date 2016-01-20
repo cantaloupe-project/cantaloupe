@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.resolver.ChannelSource;
+import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +23,7 @@ import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -64,6 +66,22 @@ class ImageIoImageReader {
         } else {
             throw new UnsupportedSourceFormatException(sourceFormat);
         }
+    }
+
+    /**
+     * @return Map of available output formats for all known source formats,
+     * based on information reported by the ImageIO library.
+     */
+    public static Set<SourceFormat> supportedFormats() {
+        final HashSet<SourceFormat> formats = new HashSet<>();
+        for (String mediaType : ImageIO.getReaderMIMETypes()) {
+            final SourceFormat sourceFormat =
+                    SourceFormat.getSourceFormat(new MediaType(mediaType));
+            if (sourceFormat != null && !sourceFormat.equals(SourceFormat.UNKNOWN)) {
+                formats.add(sourceFormat);
+            }
+        }
+        return formats;
     }
 
     /////////////////////// BufferedImage methods //////////////////////////
