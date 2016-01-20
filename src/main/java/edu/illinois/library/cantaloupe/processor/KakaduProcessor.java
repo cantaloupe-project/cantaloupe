@@ -167,7 +167,7 @@ class KakaduProcessor implements FileProcessor {
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
         Set<OutputFormat> outputFormats = new HashSet<>();
         if (sourceFormat == SourceFormat.JP2) {
-            outputFormats.addAll(ProcessorUtil.imageIoOutputFormats());
+            outputFormats.addAll(new ImageIoImageWriter().supportedFormats());
         }
         return outputFormats;
     }

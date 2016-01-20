@@ -16,12 +16,30 @@ import java.awt.image.BufferedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
 import java.nio.channels.WritableByteChannel;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Image writer using ImageIO.
  */
 class ImageIoImageWriter {
+
+    /**
+     * @return Set of supported output formats.
+     */
+    public Set<OutputFormat> supportedFormats() {
+        final String[] writerMimeTypes = ImageIO.getWriterMIMETypes();
+        final Set<OutputFormat> outputFormats = new HashSet<>();
+        for (OutputFormat outputFormat : OutputFormat.values()) {
+            for (String mimeType : writerMimeTypes) {
+                if (outputFormat.getMediaType().equals(mimeType.toLowerCase())) {
+                    outputFormats.add(outputFormat);
+                }
+            }
+        }
+        return outputFormats;
+    }
 
     /**
      * Writes an image to the given channel.

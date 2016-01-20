@@ -1,16 +1,12 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 
-import javax.imageio.ImageIO;
 import java.awt.Dimension;
 import java.io.FileInputStream;
 import java.nio.channels.ReadableByteChannel;
-import java.util.HashSet;
-import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -57,21 +53,6 @@ public class ProcessorUtilTest {
         Dimension actual = ProcessorUtil.getSize(readableChannel,
                 SourceFormat.JPG);
         assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testImageIoOutputFormats() {
-        // assemble a set of all ImageIO output formats
-        final String[] writerMimeTypes = ImageIO.getWriterMIMETypes();
-        final Set<OutputFormat> outputFormats = new HashSet<>();
-        for (OutputFormat outputFormat : OutputFormat.values()) {
-            for (String mimeType : writerMimeTypes) {
-                if (outputFormat.getMediaType().equals(mimeType.toLowerCase())) {
-                    outputFormats.add(outputFormat);
-                }
-            }
-        }
-        assertEquals(outputFormats, ProcessorUtil.imageIoOutputFormats());
     }
 
 }
