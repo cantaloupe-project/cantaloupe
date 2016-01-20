@@ -1,18 +1,30 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
+import org.junit.Before;
+import org.junit.Test;
 
-public class ParametersTest extends CantaloupeTestCase {
+import static org.junit.Assert.*;
+
+public class ParametersTest {
+
+    private static final float FUDGE = 0.00000001f;
 
     private Parameters params;
 
+    @Before
+    public void setUp() {
+        params = new Parameters("identifier", "full", "full", "0", "default",
+                "jpg");
+    }
+
+    @Test
     public void testFromUri() {
         params = Parameters.fromUri("bla/20,20,50,50/pct:90/15/bitonal.jpg");
         assertEquals("bla", params.getIdentifier().toString());
         assertEquals("20,20,50,50", params.getRegion().toString());
-        assertEquals(90f, params.getSize().getPercent());
-        assertEquals(15f, params.getRotation().getDegrees());
+        assertEquals(90f, params.getSize().getPercent(), FUDGE);
+        assertEquals(15f, params.getRotation().getDegrees(), FUDGE);
         assertEquals(Quality.BITONAL, params.getQuality());
         assertEquals(OutputFormat.JPG, params.getOutputFormat());
 
@@ -30,15 +42,12 @@ public class ParametersTest extends CantaloupeTestCase {
         }
     }
 
-    public void setUp() {
-        params = new Parameters("identifier", "full", "full", "0", "default",
-                "jpg");
-    }
-
+    @Test
     public void testCompareTo() {
         // TODO: write this
     }
 
+    @Test
     public void testToOperationList() {
         // TODO: write this
     }

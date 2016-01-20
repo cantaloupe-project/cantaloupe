@@ -3,9 +3,12 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
+import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.junit.Assert.*;
 
 public class JaiProcessorTest extends ProcessorTest {
 
@@ -15,6 +18,7 @@ public class JaiProcessorTest extends ProcessorTest {
         return instance;
     }
 
+    @Test
     public void testGetFormats() {
         Set<OutputFormat> expectedFormats = JaiProcessor.
                 getFormats().get(SourceFormat.JPG);
@@ -22,12 +26,14 @@ public class JaiProcessorTest extends ProcessorTest {
                 instance.getAvailableOutputFormats(SourceFormat.JPG));
     }
 
+    @Test
     public void testGetAvailableOutputFormatsForUnsupportedSourceFormat() {
         Set<OutputFormat> expectedFormats = new HashSet<>();
         assertEquals(expectedFormats,
                 instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
     }
 
+    @Test
     public void testGetSupportedFeatures() {
         Set<ProcessorFeature> expectedFeatures = new HashSet<>();
         expectedFeatures.add(ProcessorFeature.MIRRORING);

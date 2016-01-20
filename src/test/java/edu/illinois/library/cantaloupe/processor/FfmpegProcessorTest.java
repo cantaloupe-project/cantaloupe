@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.Test;
 
 import java.awt.Dimension;
 import java.io.ByteArrayOutputStream;
@@ -15,6 +16,8 @@ import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.junit.Assert.*;
 
 /**
  * For this to work, the ffmpeg and ffprobe binaries must be on the PATH.
@@ -27,6 +30,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
         return instance;
     }
 
+    @Test
     public void testGetAvailableOutputFormats() throws IOException {
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             Set<OutputFormat> expectedFormats = new HashSet<>();
@@ -39,12 +43,14 @@ public class FfmpegProcessorTest extends ProcessorTest {
         }
     }
 
+    @Test
     public void testGetAvailableOutputFormatsForUnsupportedSourceFormat() {
         Set<OutputFormat> expectedFormats = new HashSet<>();
         assertEquals(expectedFormats,
                 instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
     }
 
+    @Test
     public void testGetSupportedFeatures() {
         Set<ProcessorFeature> expectedFeatures = new HashSet<>();
         expectedFeatures.add(ProcessorFeature.MIRRORING);
@@ -66,6 +72,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
                 instance.getSupportedFeatures(SourceFormat.UNKNOWN));
     }
 
+    @Test
     public void testProcessWithFrameOption() throws Exception {
         final SourceFormat sourceFormat = SourceFormat.MPG;
 
@@ -89,6 +96,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
         assertFalse(Arrays.equals(zeroSecondFrame, fiveSecondFrame));
     }
 
+    @Test
     @Override
     public void testGetSupportedIiif11Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
@@ -107,6 +115,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
                 getProcessor().getSupportedIiif1_1Qualities(SourceFormat.UNKNOWN));
     }
 
+    @Test
     @Override
     public void testGetSupportedIiif20Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>

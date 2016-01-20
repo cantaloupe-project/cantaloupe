@@ -1,9 +1,7 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.Crop;
-import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
@@ -13,6 +11,9 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.IOUtils;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.awt.Dimension;
 import java.io.FileInputStream;
@@ -25,10 +26,13 @@ import java.sql.ResultSet;
 import java.time.Duration;
 import java.time.Instant;
 
-public class JdbcCacheTest extends CantaloupeTestCase {
+import static org.junit.Assert.*;
+
+public class JdbcCacheTest {
 
     JdbcCache instance;
 
+    @Before
     public void setUp() throws Exception {
         BaseConfiguration config = new BaseConfiguration();
         // use an in-memory H2 database
@@ -128,9 +132,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         }
     }
 
-    /**
-     * Clears the persistent store.
-     */
+    @After
     public void tearDown() throws IOException {
         instance.purge();
     }
@@ -166,6 +168,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
 
     /* purge() */
 
+    @Test
     public void testPurge() throws Exception {
         Configuration config = Application.getConfiguration();
 
@@ -193,6 +196,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
 
     /* purge(Identifier) */
 
+    @Test
     public void testPurgeWithIdentifier() throws Exception {
         Configuration config = Application.getConfiguration();
 
@@ -221,6 +225,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
 
     /* purge(OperationList) */
 
+    @Test
     public void testPurgeWithOperations() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
@@ -250,6 +255,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
 
     /* purgeExpired() */
 
+    @Test
     public void testPurgeExpired() throws Exception {
         Application.getConfiguration().setProperty(JdbcCache.TTL_CONFIG_KEY, 1);
 
@@ -288,6 +294,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testGetDimensionWithZeroTtl() throws IOException {
         // existing image
         try {
@@ -301,6 +308,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         assertNull(instance.getDimension(new Identifier("bogus")));
     }
 
+    @Test
     public void testGetDimensionWithNonZeroTtl() throws Exception {
         Application.getConfiguration().setProperty(JdbcCache.TTL_CONFIG_KEY, 1);
 
@@ -329,12 +337,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         assertNull(instance.getDimension(new Identifier("bogus")));
     }
 
+    @Test
     public void testGetImageInputStreamWithZeroTtl() {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
         assertNotNull(instance.getImageReadableChannel(ops));
     }
 
+    @Test
     public void testGetImageInputStreamWithNonzeroTtl() throws Exception {
         Application.getConfiguration().setProperty(JdbcCache.TTL_CONFIG_KEY, 1);
 
@@ -364,12 +374,14 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         assertNull(instance.getImageReadableChannel(ops));
     }
 
+    @Test
     public void testGetImageOutputStream() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
         assertNotNull(instance.getImageWritableChannel(ops));
     }
 
+    @Test
     public void testOldestValidDate() {
         // ttl = 0
         assertEquals(new Date(Long.MIN_VALUE), instance.oldestValidDate());
@@ -380,6 +392,7 @@ public class JdbcCacheTest extends CantaloupeTestCase {
         assertTrue(Math.abs(actualTime - expectedTime) < 100);
     }
 
+    @Test
     public void testPutDimension() throws IOException {
         Identifier identifier = new Identifier("birds");
         Dimension dimension = new Dimension(52, 52);

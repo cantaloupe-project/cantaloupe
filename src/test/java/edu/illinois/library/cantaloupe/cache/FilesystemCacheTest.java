@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.cache;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -13,19 +12,25 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-public class FilesystemCacheTest extends CantaloupeTestCase {
+import static org.junit.Assert.*;
+
+public class FilesystemCacheTest {
 
     File fixturePath;
     File imagePath;
     File infoPath;
     FilesystemCache instance;
 
+    @Before
     public void setUp() throws IOException {
         File directory = new File(".");
         String cwd = directory.getCanonicalPath();
@@ -49,12 +54,14 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         instance = new FilesystemCache();
     }
 
+    @After
     public void tearDown() throws IOException {
         FileUtils.deleteDirectory(fixturePath);
     }
 
     /* purge() */
 
+    @Test
     public void testPurge() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         instance.getImageFile(ops).createNewFile();
@@ -70,6 +77,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         assertEquals(0, infoPath.listFiles().length);
     }
 
+    @Test
     public void testPurgeFailureThrowsException() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         // create an unwritable image cache file
@@ -99,6 +107,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
     /* purge(Identifier) */
 
+    @Test
     public void testPurgeWithIdentifier() throws Exception {
         Identifier id1 = new Identifier("dogs");
         Identifier id2 = new Identifier("ferrets");
@@ -125,6 +134,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
     /* purge(OperationsList) */
 
+    @Test
     public void testPurgeWithOperationList() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         instance.getImageFile(ops).createNewFile();
@@ -134,6 +144,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         assertEquals(0, infoPath.listFiles().length);
     }
 
+    @Test
     public void testPurgeWithOperationListFailureThrowsException()
             throws Exception {
         OperationList ops = TestUtil.newOperationList();
@@ -163,6 +174,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
     /* purgeExpired() */
 
+    @Test
     public void testPurgeExpired() throws Exception {
         Application.getConfiguration().setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
 
@@ -186,6 +198,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         assertEquals(1, infoPath.listFiles().length);
     }
 
+    @Test
     public void testPurgeExpiredFailureThrowsException() throws Exception {
         Application.getConfiguration().setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
 
@@ -220,6 +233,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
     /* getDimension(Identifier) */
 
+    @Test
     public void testGetDimensionWithZeroTtl() throws Exception {
         Identifier identifier = new Identifier("test");
         File file = new File(infoPath + File.separator + identifier + ".json");
@@ -233,6 +247,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         assertEquals(new Dimension(50, 50), instance.getDimension(identifier));
     }
 
+    @Test
     public void testGetDimensionWithNonZeroTtl() throws Exception {
         Application.getConfiguration().setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
         Identifier identifier = new Identifier("test");
@@ -249,12 +264,14 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
     /* getDimensionFile(Identifier) */
 
+    @Test
     public void testGetDimensionFile() {
         // TODO: write this
     }
 
     /* getImageFile(OperationList) */
 
+    @Test
     public void testGetImageFile() {
         String pathname = Application.getConfiguration().
                 getString(FilesystemCache.PATHNAME_CONFIG_KEY);
@@ -291,6 +308,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         assertEquals(new File(expected), instance.getImageFile(ops));
     }
 
+    @Test
     public void testGetImageFileWithNoOpOperations() {
         String pathname = Application.getConfiguration().
                 getString(FilesystemCache.PATHNAME_CONFIG_KEY);
@@ -321,6 +339,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
     /* getImageFiles(Identifier) */
 
+    @Test
     public void testGetImageFiles() throws Exception {
         Identifier identifier = new Identifier("dogs");
 
@@ -337,6 +356,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
     /* getImageInputStream(OperationList) */
 
+    @Test
     public void testGetImageReadableChannelWithZeroTtl() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         assertNull(instance.getImageReadableChannel(ops));
@@ -345,6 +365,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         assertNotNull(instance.getImageReadableChannel(ops));
     }
 
+    @Test
     public void testGetImageReadableChannelWithNonzeroTtl() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         Application.getConfiguration().
@@ -360,11 +381,13 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
     /* getImageWritableChannel(OperationList) */
 
+    @Test
     public void testGetImageWritableChannel() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         assertNotNull(instance.getImageWritableChannel(ops));
     }
 
+    @Test
     public void testImageWritableChannelCreatesFolder() throws IOException {
         FileUtils.deleteDirectory(imagePath);
 
@@ -373,6 +396,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         assertTrue(imagePath.exists());
     }
 
+    @Test
     public void testGetCachedImageFileWithNoOpOperations() {
         String pathname = Application.getConfiguration().
                 getString(FilesystemCache.PATHNAME_CONFIG_KEY);
@@ -403,6 +427,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
 
     /* putDimension(Identifier, Dimension) */
 
+    @Test
     public void testPutDimension() throws IOException {
         Identifier identifier = new Identifier("cats");
         Dimension dimension = new Dimension(52, 52);
@@ -410,6 +435,7 @@ public class FilesystemCacheTest extends CantaloupeTestCase {
         assertEquals(dimension, instance.getDimension(identifier));
     }
 
+    @Test
     public void testPutDimensionFailureThrowsException() throws IOException {
         final Identifier identifier = new Identifier("cats");
         final File cacheFile = instance.getDimensionFile(identifier);

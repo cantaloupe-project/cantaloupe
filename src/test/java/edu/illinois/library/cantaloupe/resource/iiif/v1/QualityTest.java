@@ -1,10 +1,13 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.Filter;
+import org.junit.Test;
 
-public class QualityTest extends CantaloupeTestCase {
+import static org.junit.Assert.*;
 
+public class QualityTest {
+
+    @Test
     public void testValues() {
         assertNotNull(Quality.valueOf("BITONAL"));
         assertNotNull(Quality.valueOf("COLOR"));
@@ -13,6 +16,7 @@ public class QualityTest extends CantaloupeTestCase {
         assertEquals(4, Quality.values().length);
     }
 
+    @Test
     public void testToFilter() {
         assertEquals(Filter.BITONAL, Quality.BITONAL.toFilter());
         assertNull(Quality.COLOR.toFilter());

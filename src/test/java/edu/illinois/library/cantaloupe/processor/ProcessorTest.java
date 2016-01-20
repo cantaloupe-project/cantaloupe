@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -14,6 +13,7 @@ import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.resolver.ChannelSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
+import org.junit.Test;
 
 import java.awt.Dimension;
 import java.io.ByteArrayOutputStream;
@@ -27,10 +27,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.junit.Assert.*;
+
 /**
  * Contains base tests common to all Processors.
  */
-public abstract class ProcessorTest extends CantaloupeTestCase {
+public abstract class ProcessorTest {
 
     private static final String IMAGE = "escher_lego.jpg";
 
@@ -49,6 +51,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
 
     protected abstract Processor getProcessor();
 
+    @Test
     public void testGetSize() throws Exception {
         Dimension expectedSize = new Dimension(594, 522);
         if (getProcessor() instanceof ChannelProcessor) {
@@ -75,11 +78,13 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testProcessWithSupportedSourceFormatsAndNoOperations()
             throws Exception {
         doProcessTest(TestUtil.newOperationList());
     }
 
+    @Test
     public void testProcessWithSupportedSourceFormatsAndNoOpOperations() throws Exception {
         Crop crop = new Crop();
         crop.setFull(true);
@@ -94,6 +99,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         doProcessTest(ops);
     }
 
+    @Test
     public void testProcessWithUnsupportedSourceFormats() throws Exception {
         Crop crop = new Crop();
         crop.setX(20f);
@@ -151,6 +157,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testProcessWithCropOperation() throws Exception {
         List<Crop> crops = new ArrayList<>();
         Crop crop = new Crop();
@@ -176,6 +183,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testProcessWithScaleOperation() throws Exception {
         List<Scale> scales = new ArrayList<>();
         Scale scale = new Scale();
@@ -209,6 +217,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testProcessWithTransposeOperation() throws Exception {
         List<Transpose> transposes = new ArrayList<>();
         transposes.add(Transpose.HORIZONTAL);
@@ -221,6 +230,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testProcessWithRotateOperation() throws Exception {
         Rotate[] rotates = {
                 new Rotate(0), new Rotate(15), new Rotate(275) };
@@ -231,6 +241,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testProcessWithFilterOperation() throws Exception {
         for (Filter filter : Filter.values()) {
             OperationList ops = TestUtil.newOperationList();
@@ -239,6 +250,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testProcessWithSupportedOutputFormats() throws Exception {
         Set<OutputFormat> outputFormats = getProcessor().
                 getAvailableOutputFormats(SourceFormat.JPG);
@@ -253,6 +265,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
      * Tests for the presernce of all available IIIF 1.1 qualities. Subclasses
      * must override if they lack support for any of these.
      */
+    @Test
     public void testGetSupportedIiif11Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
                 expectedQualities = new HashSet<>();
@@ -276,6 +289,7 @@ public abstract class ProcessorTest extends CantaloupeTestCase {
      * Tests for the presernce of all available IIIF 2.0 qualities. Subclasses
      * must override if they lack support for any of these.
      */
+    @Test
     public void testGetSupportedIiif20Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
                 expectedQualities = new HashSet<>();

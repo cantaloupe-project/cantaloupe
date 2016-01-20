@@ -5,11 +5,14 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.Test;
 
 import java.awt.Dimension;
 import java.io.FileInputStream;
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.junit.Assert.*;
 
 public class KakaduProcessorTest extends ProcessorTest {
 
@@ -17,19 +20,21 @@ public class KakaduProcessorTest extends ProcessorTest {
 
     public void setUp() {
         Application.getConfiguration().setProperty(
-                "KakaduProcessor.path_to_binaries", "/usr/local/bin");
+                KakaduProcessor.PATH_TO_BINARIES_CONFIG_KEY, "/usr/local/bin");
     }
 
     protected Processor getProcessor() {
         return instance;
     }
 
+    @Test
     public void testGetAvailableOutputFormatsForUnsupportedSourceFormat() {
         Set<OutputFormat> expectedFormats = new HashSet<>();
         assertEquals(expectedFormats,
                 instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
     }
 
+    @Test
     @Override
     public void testGetSize() throws Exception {
         Dimension expectedSize = new Dimension(100, 88);
@@ -48,6 +53,7 @@ public class KakaduProcessorTest extends ProcessorTest {
         }
     }
 
+    @Test
     public void testGetSupportedFeatures() {
         Set<ProcessorFeature> expectedFeatures = new HashSet<>();
         expectedFeatures.add(ProcessorFeature.MIRRORING);

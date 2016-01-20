@@ -1,9 +1,12 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
-public class NumberUtilTest extends TestCase {
+import static org.junit.Assert.*;
 
+public class NumberUtilTest {
+
+    @Test
     public void testformatForUrl() {
         assertEquals("0", NumberUtil.formatForUrl(0.0f));
         assertEquals("0.5", NumberUtil.formatForUrl(0.5f));

@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.apache.commons.configuration.Configuration;
+import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,6 +14,8 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.junit.Assert.*;
 
 /**
  * For this to work, the ImageMagick binaries must be on the PATH.
@@ -103,6 +106,7 @@ public class ImageMagickProcessorTest extends ProcessorTest {
         return instance;
     }
 
+    @Test
     public void testGetAvailableOutputFormats() throws IOException {
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             Set<OutputFormat> expectedFormats = getFormats().get(sourceFormat);
@@ -111,12 +115,14 @@ public class ImageMagickProcessorTest extends ProcessorTest {
         }
     }
 
+    @Test
     public void testGetAvailableOutputFormatsForUnsupportedSourceFormat() {
         Set<OutputFormat> expectedFormats = new HashSet<>();
         assertEquals(expectedFormats,
                 instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
     }
 
+    @Test
     public void testGetSupportedFeatures() {
         Set<ProcessorFeature> expectedFeatures = new HashSet<>();
         expectedFeatures.add(ProcessorFeature.MIRRORING);
