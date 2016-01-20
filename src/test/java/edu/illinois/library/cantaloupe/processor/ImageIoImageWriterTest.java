@@ -31,7 +31,7 @@ public class ImageIoImageWriterTest {
                 }
             }
         }
-        assertEquals(outputFormats, instance.supportedFormats());
+        assertEquals(outputFormats, ImageIoImageWriter.supportedFormats());
     }
 
     @Test

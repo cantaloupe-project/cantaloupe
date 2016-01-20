@@ -28,7 +28,7 @@ class ImageIoImageWriter {
     /**
      * @return Set of supported output formats.
      */
-    public Set<OutputFormat> supportedFormats() {
+    public static Set<OutputFormat> supportedFormats() {
         final String[] writerMimeTypes = ImageIO.getWriterMIMETypes();
         final Set<OutputFormat> outputFormats = new HashSet<>();
         for (OutputFormat outputFormat : OutputFormat.values()) {
