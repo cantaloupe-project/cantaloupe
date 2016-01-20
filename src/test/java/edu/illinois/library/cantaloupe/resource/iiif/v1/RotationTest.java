@@ -25,10 +25,10 @@ public class RotationTest {
     @Test
     public void testFromUri() {
         Rotation r = Rotation.fromUri("35");
-        assertEquals(35f, r.getDegrees());
+        assertEquals(35f, r.getDegrees(), FUDGE);
 
         r = Rotation.fromUri("35.5");
-        assertEquals(35.5f, r.getDegrees());
+        assertEquals(35.5f, r.getDegrees(), FUDGE);
     }
 
     /**
@@ -80,7 +80,7 @@ public class RotationTest {
     public void testSetDegrees() {
         float degrees = 50.0f;
         this.rotation.setDegrees(degrees);
-        assertEquals(degrees, this.rotation.getDegrees());
+        assertEquals(degrees, this.rotation.getDegrees(), FUDGE);
     }
 
     @Test
