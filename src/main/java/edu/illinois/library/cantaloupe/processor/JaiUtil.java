@@ -117,14 +117,16 @@ abstract class JaiUtil {
             // convert to grayscale
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
-            double[][] matrixRgb = { { 0.114, 0.587, 0.299, 0 } };
-            double[][] matrixRgba = { { 0.114, 0.587, 0.299, 0, 0 } };
-            if (OpImage.getExpandedNumBands(inImage.getSampleModel(),
-                    inImage.getColorModel()) == 4) {
-                pb.add(matrixRgba);
-            } else {
-                pb.add(matrixRgb);
+            final int numBands = OpImage.getExpandedNumBands(
+                    inImage.getSampleModel(), inImage.getColorModel());
+            double[][] matrix = new double[1][numBands + 1];
+            matrix[0][0] = 0.114;
+            matrix[0][1] = 0.587;
+            matrix[0][2] = 0.299;
+            for (int i = 3; i <= numBands; i++) {
+                matrix[0][i] = 0;
             }
+            pb.add(matrix);
             filteredImage = JAI.create("bandcombine", pb, null);
             if (filter == Filter.BITONAL) {
                 pb = new ParameterBlock();
