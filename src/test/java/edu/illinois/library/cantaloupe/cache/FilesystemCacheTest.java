@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -19,7 +20,6 @@ import org.junit.Test;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 
 import static org.junit.Assert.*;
 
@@ -32,12 +32,10 @@ public class FilesystemCacheTest {
 
     @Before
     public void setUp() throws IOException {
-        File directory = new File(".");
-        String cwd = directory.getCanonicalPath();
-        fixturePath = Paths.get(cwd, "src", "test", "resources", "cache").toFile();
-        imagePath = Paths.get(cwd, "src", "test", "resources", "cache", "image").toFile();
-        infoPath = Paths.get(cwd, "src", "test", "resources", "cache", "info").toFile();
-        FileUtils.deleteDirectory(fixturePath);
+        fixturePath = new File(TestUtil.getTempFolder().getAbsolutePath() + "/cache");
+        imagePath = new File(fixturePath.getAbsolutePath() + "/image");
+        infoPath = new File(fixturePath.getAbsolutePath() + "/info");
+
         if (!imagePath.mkdirs()) {
             throw new IOException("Failed to create temp image folder");
         }
@@ -45,7 +43,9 @@ public class FilesystemCacheTest {
             throw new IOException("Failed to create temp info folder");
         }
 
-        BaseConfiguration config = new BaseConfiguration();
+        final BaseConfiguration config = new BaseConfiguration();
+        config.setProperty(FilesystemCache.DIRECTORY_DEPTH_CONFIG_KEY, 3);
+        config.setProperty(FilesystemCache.DIRECTORY_NAME_LENGTH_CONFIG_KEY, 2);
         config.setProperty(FilesystemCache.PATHNAME_CONFIG_KEY,
                 fixturePath.toString());
         config.setProperty(FilesystemCache.TTL_CONFIG_KEY, 0);
@@ -64,28 +64,43 @@ public class FilesystemCacheTest {
     @Test
     public void testPurge() throws Exception {
         OperationList ops = TestUtil.newOperationList();
-        instance.getImageFile(ops).createNewFile();
-        instance.getDimensionFile(ops.getIdentifier()).createNewFile();
 
+        // create new image and info files
+        File imageFile = instance.getImageFile(ops);
+        imageFile.getParentFile().mkdirs();
+        imageFile.createNewFile();
+        File infoFile = instance.getDimensionFile(ops.getIdentifier());
+        infoFile.getParentFile().mkdirs();
+        infoFile.createNewFile();
+
+        // change the op list
         ops.setIdentifier(new Identifier("dogs"));
         ops.add(new Rotate(15));
-        instance.getImageFile(ops).createNewFile();
-        instance.getDimensionFile(ops.getIdentifier()).createNewFile();
+
+        // create new image and info files based on the changed op list
+        imageFile = instance.getImageFile(ops);
+        imageFile.getParentFile().mkdirs();
+        imageFile.createNewFile();
+
+        infoFile = instance.getDimensionFile(ops.getIdentifier());
+        infoFile.getParentFile().mkdirs();
+        infoFile.createNewFile();
 
         instance.purge();
-        assertEquals(0, imagePath.listFiles().length);
-        assertEquals(0, infoPath.listFiles().length);
+        assertEquals(0, fixturePath.listFiles().length);
     }
 
     @Test
     public void testPurgeFailureThrowsException() throws Exception {
         OperationList ops = TestUtil.newOperationList();
-        // create an unwritable image cache file
+        // create unwritable cache files
         File imageFile = instance.getImageFile(ops);
-        File infoFile = instance.getDimensionFile(ops.getIdentifier());
+        imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
-        infoFile.createNewFile();
         imageFile.getParentFile().setWritable(false);
+        File infoFile = instance.getDimensionFile(ops.getIdentifier());
+        infoFile.getParentFile().mkdirs();
+        infoFile.createNewFile();
         infoFile.getParentFile().setWritable(false);
         try {
             try {
@@ -97,8 +112,7 @@ public class FilesystemCacheTest {
             imageFile.getParentFile().setWritable(true);
             infoFile.getParentFile().setWritable(true);
             instance.purge();
-            assertEquals(0, imagePath.listFiles().length);
-            assertEquals(0, infoPath.listFiles().length);
+            assertEquals(0, fixturePath.listFiles().length);
         } finally {
             imageFile.getParentFile().setWritable(true);
             infoFile.getParentFile().setWritable(true);
@@ -109,27 +123,37 @@ public class FilesystemCacheTest {
 
     @Test
     public void testPurgeWithIdentifier() throws Exception {
-        Identifier id1 = new Identifier("dogs");
-        Identifier id2 = new Identifier("ferrets");
-
         OperationList ops = TestUtil.newOperationList();
-        ops.setIdentifier(id1);
-        instance.getImageFile(ops).createNewFile();
-        instance.getDimensionFile(ops.getIdentifier()).createNewFile();
 
+        Identifier id1 = new Identifier("dogs");
+        ops.setIdentifier(id1);
+
+        File imageFile = instance.getImageFile(ops);
+        imageFile.getParentFile().mkdirs();
+        imageFile.createNewFile();
+        File infoFile = instance.getDimensionFile(ops.getIdentifier());
+        infoFile.getParentFile().mkdirs();
+        infoFile.createNewFile();
+
+        Identifier id2 = new Identifier("ferrets");
         ops.setIdentifier(id2);
         ops.add(new Rotate(15));
-        instance.getImageFile(ops).createNewFile();
-        instance.getDimensionFile(ops.getIdentifier()).createNewFile();
 
-        assertEquals(2, imagePath.listFiles().length);
-        assertEquals(2, infoPath.listFiles().length);
+        imageFile = instance.getImageFile(ops);
+        imageFile.getParentFile().mkdirs();
+        imageFile.createNewFile();
+        infoFile = instance.getDimensionFile(ops.getIdentifier());
+        infoFile.getParentFile().mkdirs();
+        infoFile.createNewFile();
+
+        assertEquals(2, FileUtils.listFiles(imagePath, null, true).size());
+        assertEquals(2, FileUtils.listFiles(infoPath, null, true).size());
         instance.purge(id1);
-        assertEquals(1, imagePath.listFiles().length);
-        assertEquals(1, infoPath.listFiles().length);
+        assertEquals(1, FileUtils.listFiles(imagePath, null, true).size());
+        assertEquals(1, FileUtils.listFiles(infoPath, null, true).size());
         instance.purge(id2);
-        assertEquals(0, imagePath.listFiles().length);
-        assertEquals(0, infoPath.listFiles().length);
+        assertEquals(0, FileUtils.listFiles(imagePath, null, true).size());
+        assertEquals(0, FileUtils.listFiles(infoPath, null, true).size());
     }
 
     /* purge(OperationsList) */
@@ -137,23 +161,35 @@ public class FilesystemCacheTest {
     @Test
     public void testPurgeWithOperationList() throws Exception {
         OperationList ops = TestUtil.newOperationList();
-        instance.getImageFile(ops).createNewFile();
-        instance.getDimensionFile(ops.getIdentifier()).createNewFile();
+
+        final File imageFile = instance.getImageFile(ops);
+        imageFile.getParentFile().mkdirs();
+        imageFile.createNewFile();
+
+        final File dimensionFile = instance.getDimensionFile(ops.getIdentifier());
+        dimensionFile.getParentFile().mkdirs();
+        dimensionFile.createNewFile();
+
         instance.purge(ops);
-        assertEquals(0, imagePath.listFiles().length);
-        assertEquals(0, infoPath.listFiles().length);
+        assertEquals(0, FileUtils.listFiles(imagePath, null, true).size());
+        assertEquals(0, FileUtils.listFiles(infoPath, null, true).size());
     }
 
     @Test
     public void testPurgeWithOperationListFailureThrowsException()
             throws Exception {
         OperationList ops = TestUtil.newOperationList();
+
         File imageFile = instance.getImageFile(ops);
-        File dimensionFile = instance.getDimensionFile(ops.getIdentifier());
+        imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
-        dimensionFile.createNewFile();
         imageFile.getParentFile().setWritable(false);
-        dimensionFile.getParentFile().setWritable(false);
+
+        File infoFile = instance.getDimensionFile(ops.getIdentifier());
+        infoFile.getParentFile().mkdirs();
+        infoFile.createNewFile();
+        infoFile.getParentFile().setWritable(false);
+
         try {
             try {
                 instance.purge(ops);
@@ -162,13 +198,13 @@ public class FilesystemCacheTest {
                 assertTrue(e.getMessage().startsWith("Unable to delete"));
             }
             imageFile.getParentFile().setWritable(true);
-            dimensionFile.getParentFile().setWritable(true);
+            infoFile.getParentFile().setWritable(true);
             instance.purge(ops);
-            assertEquals(0, imagePath.listFiles().length);
-            assertEquals(0, infoPath.listFiles().length);
+            assertEquals(0, FileUtils.listFiles(imagePath, null, true).size());
+            assertEquals(0, FileUtils.listFiles(infoPath, null, true).size());
         } finally {
             imageFile.getParentFile().setWritable(true);
-            dimensionFile.getParentFile().setWritable(true);
+            infoFile.getParentFile().setWritable(true);
         }
     }
 
@@ -184,18 +220,26 @@ public class FilesystemCacheTest {
         scale.setMode(Scale.Mode.FULL);
 
         OperationList ops = TestUtil.newOperationList();
-        instance.getImageFile(ops).createNewFile();
-        instance.getDimensionFile(ops.getIdentifier()).createNewFile();
+        File imageFile = instance.getImageFile(ops);
+        imageFile.getParentFile().mkdirs();
+        imageFile.createNewFile();
+        File infoFile = instance.getDimensionFile(ops.getIdentifier());
+        infoFile.getParentFile().mkdirs();
+        infoFile.createNewFile();
 
-        Thread.sleep(2000);
+        Thread.sleep(1500);
 
         ops.setIdentifier(new Identifier("dogs"));
-        instance.getImageFile(ops).createNewFile();
-        instance.getDimensionFile(ops.getIdentifier()).createNewFile();
+        imageFile = instance.getImageFile(ops);
+        imageFile.getParentFile().mkdirs();
+        imageFile.createNewFile();
+        infoFile = instance.getDimensionFile(ops.getIdentifier());
+        infoFile.getParentFile().mkdirs();
+        infoFile.createNewFile();
 
         instance.purgeExpired();
-        assertEquals(1, imagePath.listFiles().length);
-        assertEquals(1, infoPath.listFiles().length);
+        assertEquals(1, FileUtils.listFiles(imagePath, null, true).size());
+        assertEquals(1, FileUtils.listFiles(infoPath, null, true).size());
     }
 
     @Test
@@ -205,10 +249,13 @@ public class FilesystemCacheTest {
         OperationList ops = TestUtil.newOperationList();
         // create an unwritable image cache file
         File imageFile = instance.getImageFile(ops);
-        File infoFile = instance.getDimensionFile(ops.getIdentifier());
+        imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
-        infoFile.createNewFile();
         imageFile.getParentFile().setWritable(false);
+
+        File infoFile = instance.getDimensionFile(ops.getIdentifier());
+        infoFile.getParentFile().mkdirs();
+        infoFile.createNewFile();
         infoFile.getParentFile().setWritable(false);
 
         Thread.sleep(1500);
@@ -223,8 +270,8 @@ public class FilesystemCacheTest {
             imageFile.getParentFile().setWritable(true);
             infoFile.getParentFile().setWritable(true);
             instance.purgeExpired();
-            assertEquals(0, imagePath.listFiles().length);
-            assertEquals(0, infoPath.listFiles().length);
+            assertEquals(0, FileUtils.listFiles(imagePath, null, true).size());
+            assertEquals(0, FileUtils.listFiles(infoPath, null, true).size());
         } finally {
             imageFile.getParentFile().setWritable(true);
             infoFile.getParentFile().setWritable(true);
@@ -236,8 +283,9 @@ public class FilesystemCacheTest {
     @Test
     public void testGetDimensionWithZeroTtl() throws Exception {
         Identifier identifier = new Identifier("test");
-        File file = new File(infoPath + File.separator + identifier + ".json");
-        FileUtils.writeStringToFile(file, "50x50");
+        File file = instance.getDimensionFile(identifier);
+        file.getParentFile().mkdirs();
+        file.createNewFile();
 
         ObjectMapper mapper = new ObjectMapper();
         FilesystemCache.ImageInfo info = new FilesystemCache.ImageInfo();
@@ -250,8 +298,12 @@ public class FilesystemCacheTest {
     @Test
     public void testGetDimensionWithNonZeroTtl() throws Exception {
         Application.getConfiguration().setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
+
         Identifier identifier = new Identifier("test");
-        File file = new File(infoPath + File.separator + identifier + ".json");
+        File file = instance.getDimensionFile(identifier);
+        file.getParentFile().mkdirs();
+        file.createNewFile();
+
         ObjectMapper mapper = new ObjectMapper();
         FilesystemCache.ImageInfo info = new FilesystemCache.ImageInfo();
         info.width = 50;
@@ -266,13 +318,43 @@ public class FilesystemCacheTest {
 
     @Test
     public void testGetDimensionFile() {
-        // TODO: write this
+        final String pathname = Application.getConfiguration().
+                getString(FilesystemCache.PATHNAME_CONFIG_KEY);
+
+        final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
+
+        final String expected = String.format("%s%sinfo%s%s%s.json",
+                pathname,
+                File.separator,
+                instance.getIdentifierBasedSubdirectory(identifier.toString()),
+                File.separator,
+                FilesystemCache.filenameSafe(identifier.toString()));
+        assertEquals(new File(expected), instance.getDimensionFile(identifier));
+    }
+
+    /* getIdentifierBasedSubdirectory(String) */
+
+    @Test
+    public void testGetIdentifierBasedSubdirectory() throws Exception {
+        assertEquals(
+                String.format("/08%s32%sc1", File.separator, File.separator),
+                instance.getIdentifierBasedSubdirectory("cats"));
+
+        Configuration config = Application.getConfiguration();
+        config.setProperty(FilesystemCache.DIRECTORY_DEPTH_CONFIG_KEY, 2);
+        config.setProperty(FilesystemCache.DIRECTORY_NAME_LENGTH_CONFIG_KEY, 3);
+        assertEquals(
+                String.format("/083%s2c1", File.separator, File.separator),
+                instance.getIdentifierBasedSubdirectory("cats"));
+
+        config.setProperty(FilesystemCache.DIRECTORY_DEPTH_CONFIG_KEY, 0);
+        assertEquals("", instance.getIdentifierBasedSubdirectory("cats"));
     }
 
     /* getImageFile(OperationList) */
 
     @Test
-    public void testGetImageFile() {
+    public void testGetImageFile() throws Exception {
         String pathname = Application.getConfiguration().
                 getString(FilesystemCache.PATHNAME_CONFIG_KEY);
 
@@ -295,25 +377,26 @@ public class FilesystemCacheTest {
         ops.add(filter);
         ops.setOutputFormat(format);
 
-        final String search = "[^A-Za-z0-9._-]";
-        final String replacement = "_";
-        String expected = String.format("%s%simage%s%s_%s_%s_%s_%s.%s", pathname,
+        final String expected = String.format("%s%simage%s%s%s_%s_%s_%s_%s.%s",
+                pathname,
                 File.separator,
+                instance.getIdentifierBasedSubdirectory(identifier.toString()),
                 File.separator,
-                identifier.toString().replaceAll(search, replacement),
-                crop.toString().replaceAll(search, replacement),
-                scale.toString().replaceAll(search, replacement),
-                rotate.toString().replaceAll(search, replacement),
-                filter.toString().toLowerCase(), format);
+                FilesystemCache.filenameSafe(identifier.toString()),
+                FilesystemCache.filenameSafe(crop.toString()),
+                FilesystemCache.filenameSafe(scale.toString()),
+                FilesystemCache.filenameSafe(rotate.toString()),
+                FilesystemCache.filenameSafe(filter.toString()),
+                format);
         assertEquals(new File(expected), instance.getImageFile(ops));
     }
 
     @Test
-    public void testGetImageFileWithNoOpOperations() {
+    public void testGetImageFileWithNoOpOperations() throws Exception {
         String pathname = Application.getConfiguration().
                 getString(FilesystemCache.PATHNAME_CONFIG_KEY);
 
-        Identifier identifier = new Identifier("cats_~!@#$%^&*()");
+        final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
@@ -321,19 +404,20 @@ public class FilesystemCacheTest {
         Rotate rotate = new Rotate(0);
         OutputFormat format = OutputFormat.TIF;
 
-        OperationList ops = new OperationList();
+        final OperationList ops = new OperationList();
         ops.setIdentifier(identifier);
         ops.add(crop);
         ops.add(scale);
         ops.add(rotate);
         ops.setOutputFormat(format);
 
-        final String search = "[^A-Za-z0-9._-]";
-        final String replacement = "_";
-        String expected = String.format("%s%simage%s%s.%s", pathname,
+        final String expected = String.format("%s%simage%s%s%s.%s",
+                pathname,
                 File.separator,
+                instance.getIdentifierBasedSubdirectory(ops.getIdentifier().toString()),
                 File.separator,
-                identifier.toString().replaceAll(search, replacement), format);
+                FilesystemCache.filenameSafe(identifier.toString()),
+                format);
         assertEquals(new File(expected), instance.getImageFile(ops));
     }
 
@@ -345,11 +429,19 @@ public class FilesystemCacheTest {
 
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(identifier);
-        instance.getImageFile(ops).createNewFile();
+        File imageFile = instance.getImageFile(ops);
+        imageFile.getParentFile().mkdirs();
+        imageFile.createNewFile();
+
         ops.add(new Rotate(15));
-        instance.getImageFile(ops).createNewFile();
+        imageFile = instance.getImageFile(ops);
+        imageFile.getParentFile().mkdirs();
+        imageFile.createNewFile();
+
         ops.add(Filter.GRAY);
-        instance.getImageFile(ops).createNewFile();
+        imageFile = instance.getImageFile(ops);
+        imageFile.getParentFile().mkdirs();
+        imageFile.createNewFile();
 
         assertEquals(3, instance.getImageFiles(identifier).size());
     }
@@ -361,20 +453,25 @@ public class FilesystemCacheTest {
         OperationList ops = TestUtil.newOperationList();
         assertNull(instance.getImageReadableChannel(ops));
 
-        instance.getImageFile(ops).createNewFile();
+        File imageFile = instance.getImageFile(ops);
+        imageFile.getParentFile().mkdirs();
+        imageFile.createNewFile();
         assertNotNull(instance.getImageReadableChannel(ops));
     }
 
     @Test
     public void testGetImageReadableChannelWithNonzeroTtl() throws Exception {
-        OperationList ops = TestUtil.newOperationList();
         Application.getConfiguration().
                 setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
+
+        OperationList ops = TestUtil.newOperationList();
         File cacheFile = instance.getImageFile(ops);
+        cacheFile.getParentFile().mkdirs();
         cacheFile.createNewFile();
         assertNotNull(instance.getImageReadableChannel(ops));
 
         Thread.sleep(1100);
+
         assertNull(instance.getImageReadableChannel(ops));
         assertFalse(cacheFile.exists());
     }
@@ -396,35 +493,6 @@ public class FilesystemCacheTest {
         assertTrue(imagePath.exists());
     }
 
-    @Test
-    public void testGetCachedImageFileWithNoOpOperations() {
-        String pathname = Application.getConfiguration().
-                getString(FilesystemCache.PATHNAME_CONFIG_KEY);
-
-        Identifier identifier = new Identifier("cats_~!@#$%^&*()");
-        Crop crop = new Crop();
-        crop.setFull(true);
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
-        Rotate rotate = new Rotate(0);
-        OutputFormat format = OutputFormat.TIF;
-
-        OperationList ops = new OperationList();
-        ops.setIdentifier(identifier);
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(rotate);
-        ops.setOutputFormat(format);
-
-        final String search = "[^A-Za-z0-9._-]";
-        final String replacement = "_";
-        String expected = String.format("%s%simage%s%s.%s", pathname,
-                File.separator,
-                File.separator,
-                identifier.toString().replaceAll(search, replacement), format);
-        assertEquals(new File(expected), instance.getImageFile(ops));
-    }
-
     /* putDimension(Identifier, Dimension) */
 
     @Test
@@ -439,6 +507,7 @@ public class FilesystemCacheTest {
     public void testPutDimensionFailureThrowsException() throws IOException {
         final Identifier identifier = new Identifier("cats");
         final File cacheFile = instance.getDimensionFile(identifier);
+        cacheFile.getParentFile().mkdirs();
         cacheFile.getParentFile().setWritable(false);
         try {
             try {

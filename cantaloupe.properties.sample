@@ -338,6 +338,16 @@ FilesystemCache.pathname = /var/cache/cantaloupe
 # blank or 0 for "forever"
 FilesystemCache.ttl_seconds = 2592000
 
+# Levels of folder hierarchy. Deeper depth results in fewer files per
+# directory. Set to 0 to disable subfolders.
+# Purge the cache after changing this.
+FilesystemCache.dir.depth = 3
+
+# Number of characters in hierarchy directory names. Should be set to
+# 16^n < [max number of directory entries your filesystem can deal with].
+# Purge the cache after changing this.
+FilesystemCache.dir.name_length = 2
+
 #----------------------------------------
 # JdbcCache
 #----------------------------------------
