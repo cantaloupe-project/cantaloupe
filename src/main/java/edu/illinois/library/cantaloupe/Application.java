@@ -5,6 +5,7 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 import edu.illinois.library.cantaloupe.cache.Cache;
+import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.logging.AccessLogService;
 import edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute;
@@ -26,7 +27,6 @@ import javax.net.ssl.KeyManagerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Iterator;
@@ -121,7 +121,7 @@ public class Application {
         return versionStr;
     }
 
-    private static void purgeCacheAtLaunch() throws IOException {
+    private static void purgeCacheAtLaunch() throws CacheException {
         Cache cache = CacheFactory.getInstance();
         if (cache != null) {
             cache.purge();
@@ -131,7 +131,7 @@ public class Application {
         }
     }
 
-    private static void purgeExpiredFromCacheAtLaunch() throws IOException {
+    private static void purgeExpiredFromCacheAtLaunch() throws CacheException {
         Cache cache = CacheFactory.getInstance();
         if (cache != null) {
             cache.purgeExpired();

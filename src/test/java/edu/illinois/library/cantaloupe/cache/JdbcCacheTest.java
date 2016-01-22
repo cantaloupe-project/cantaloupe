@@ -133,7 +133,7 @@ public class JdbcCacheTest {
     }
 
     @After
-    public void tearDown() throws IOException {
+    public void tearDown() throws CacheException {
         instance.purge();
     }
 
@@ -295,13 +295,13 @@ public class JdbcCacheTest {
     }
 
     @Test
-    public void testGetDimensionWithZeroTtl() throws IOException {
+    public void testGetDimensionWithZeroTtl() throws CacheException {
         // existing image
         try {
             Dimension actual = instance.getDimension(new Identifier("cats"));
             Dimension expected = new Dimension(50, 40);
             assertEquals(actual, expected);
-        } catch (IOException e) {
+        } catch (CacheException e) {
             fail();
         }
         // nonexistent image
@@ -328,7 +328,7 @@ public class JdbcCacheTest {
             Dimension actual = instance.getDimension(new Identifier("bees"));
             Dimension expected = new Dimension(50, 40);
             assertEquals(actual, expected);
-        } catch (IOException e) {
+        } catch (CacheException e) {
             fail();
         }
         // existing, expired image
@@ -393,7 +393,7 @@ public class JdbcCacheTest {
     }
 
     @Test
-    public void testPutDimension() throws IOException {
+    public void testPutDimension() throws CacheException {
         Identifier identifier = new Identifier("birds");
         Dimension dimension = new Dimension(52, 52);
         instance.putDimension(identifier, dimension);

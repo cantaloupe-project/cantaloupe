@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.cache.Cache;
+import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
@@ -135,7 +136,7 @@ public class ImageRepresentation extends WritableRepresentation {
      * @throws IOException
      */
     private void doCacheAwareWrite(TeeWritableByteChannel writableChannel,
-                                   Cache cache) throws IOException {
+                                   Cache cache) throws CacheException {
         try {
             doWrite(writableChannel);
         } catch (IOException e) {

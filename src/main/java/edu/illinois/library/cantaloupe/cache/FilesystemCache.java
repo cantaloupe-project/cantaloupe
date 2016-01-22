@@ -206,16 +206,23 @@ class FilesystemCache implements Cache {
 
     /**
      * @return Pathname of the root cache folder.
+     * @throws CacheException if {@link #PATHNAME_CONFIG_KEY} is undefined.
      */
-    private static String getRootPathname() {
-        return Application.getConfiguration().getString(PATHNAME_CONFIG_KEY);
+    private static String getRootPathname() throws CacheException {
+        final String pathname = Application.getConfiguration().
+                getString(PATHNAME_CONFIG_KEY);
+        if (pathname == null) {
+            throw new CacheException(PATHNAME_CONFIG_KEY + " is undefined.");
+        }
+        return pathname;
     }
 
     /**
      * @return Pathname of the image cache folder, or null if
      * {@link #PATHNAME_CONFIG_KEY} is not set.
+     * @throws CacheException
      */
-    private static String getRootImagePathname() {
+    private static String getRootImagePathname() throws CacheException {
         final String pathname = getRootPathname();
         if (pathname != null) {
             return pathname + File.separator + IMAGE_FOLDER;
@@ -226,8 +233,9 @@ class FilesystemCache implements Cache {
     /**
      * @return Pathname of the info cache folder, or null if
      * {@link #PATHNAME_CONFIG_KEY} is not set.
+     * @throws CacheException
      */
-    private static String getRootInfoPathname() {
+    private static String getRootInfoPathname() throws CacheException {
         final String pathname = getRootPathname();
         if (pathname != null) {
             return pathname + File.separator + INFO_FOLDER;
@@ -243,7 +251,7 @@ class FilesystemCache implements Cache {
     }
 
     @Override
-    public Dimension getDimension(Identifier identifier) throws IOException {
+    public Dimension getDimension(Identifier identifier) throws CacheException {
         synchronized (lock2) {
             while (infosBeingWritten.contains(identifier)) {
                 try {
@@ -274,6 +282,8 @@ class FilesystemCache implements Cache {
             }
         } catch (FileNotFoundException e) {
             logger.debug(e.getMessage(), e);
+        } catch (IOException e) {
+            throw new CacheException(e.getMessage(), e);
         } finally {
             infosBeingRead.remove(identifier);
         }
@@ -282,10 +292,9 @@ class FilesystemCache implements Cache {
 
     /**
      * @param identifier
-     * @return File corresponding to the given parameters, or null if
-     * {@link #PATHNAME_CONFIG_KEY} is not set.
+     * @return File corresponding to the given parameters.
      */
-    public File getInfoFile(final Identifier identifier) {
+    public File getInfoFile(final Identifier identifier) throws CacheException {
         final String cachePathname = getRootInfoPathname();
         if (cachePathname != null) {
             final String cacheRoot =
@@ -339,7 +348,7 @@ class FilesystemCache implements Cache {
      * @return File corresponding to the given operation list, or null if
      * {@link #PATHNAME_CONFIG_KEY} is not set.
      */
-    public File getImageFile(OperationList ops) {
+    public File getImageFile(OperationList ops) throws CacheException {
         final String cachePathname = getRootImagePathname();
         if (cachePathname != null) {
             final List<String> parts = new ArrayList<>();
@@ -369,8 +378,10 @@ class FilesystemCache implements Cache {
      * @param identifier
      * @return All cached image files deriving from the image with the given
      * identifier.
+     * @throws CacheException
      */
-    public List<File> getImageFiles(Identifier identifier) {
+    public List<File> getImageFiles(Identifier identifier)
+            throws CacheException {
         class IdentifierFilter implements FilenameFilter {
             private Identifier identifier;
 
@@ -392,29 +403,33 @@ class FilesystemCache implements Cache {
 
     @Override
     public ReadableByteChannel getImageReadableChannel(OperationList ops) {
-        final File cacheFile = getImageFile(ops);
-        if (cacheFile != null && cacheFile.exists()) {
-            if (!isExpired(cacheFile)) {
-                try {
-                    logger.info("Hit for image: {}", ops);
-                    return new FileInputStream(cacheFile).getChannel();
-                } catch (FileNotFoundException e) {
-                    logger.error(e.getMessage(), e);
-                }
-            } else {
-                logger.info("Deleting stale cache file: {}",
-                        cacheFile.getName());
-                if (!cacheFile.delete()) {
-                    logger.error("Unable to delete {}", cacheFile);
+        try {
+            final File cacheFile = getImageFile(ops);
+            if (cacheFile != null && cacheFile.exists()) {
+                if (!isExpired(cacheFile)) {
+                    try {
+                        logger.info("Hit for image: {}", ops);
+                        return new FileInputStream(cacheFile).getChannel();
+                    } catch (FileNotFoundException e) {
+                        logger.error(e.getMessage(), e);
+                    }
+                } else {
+                    logger.info("Deleting stale cache file: {}",
+                            cacheFile.getName());
+                    if (!cacheFile.delete()) {
+                        logger.error("Unable to delete {}", cacheFile);
+                    }
                 }
             }
+        } catch (CacheException e) {
+            logger.error(e.getMessage(), e);
         }
         return null;
     }
 
     @Override
     public WritableByteChannel getImageWritableChannel(OperationList ops)
-            throws IOException {
+            throws CacheException {
         if (imagesBeingWritten.contains(ops)) {
             logger.info("Miss, but cache file for {} is being written in " +
                     "another thread, so not caching", ops);
@@ -423,18 +438,22 @@ class FilesystemCache implements Cache {
         imagesBeingWritten.add(ops); // will be removed by ConcurrentNullOutputStream.close()
         logger.info("Miss; caching {}", ops);
         final File cacheFile = getImageFile(ops);
-        if (!cacheFile.getParentFile().exists()) {
-            if (!cacheFile.getParentFile().mkdirs() ||
-                    !cacheFile.createNewFile()) {
-                throw new IOException("Unable to create " + cacheFile);
+        try {
+            if (!cacheFile.getParentFile().exists()) {
+                if (!cacheFile.getParentFile().mkdirs() ||
+                        !cacheFile.createNewFile()) {
+                    throw new CacheException("Unable to create " + cacheFile);
+                }
             }
+            return new ConcurrentFileOutputStream(cacheFile, imagesBeingWritten,
+                    ops).getChannel();
+        } catch (IOException e) {
+            throw new CacheException(e.getMessage(), e);
         }
-        return new ConcurrentFileOutputStream(cacheFile, imagesBeingWritten,
-                ops).getChannel();
     }
 
     @Override
-    public void purge() throws IOException {
+    public void purge() throws CacheException {
         synchronized (lock4) {
             while (purgingInProgress.get() || !imagesBeingPurged.isEmpty() ||
                     !imagesBeingWritten.isEmpty()) {
@@ -460,31 +479,33 @@ class FilesystemCache implements Cache {
             } else {
                 throw new IOException(PATHNAME_CONFIG_KEY + " is not set");
             }
+        } catch (IOException e) {
+            throw new CacheException(e.getMessage(), e);
         } finally {
             purgingInProgress.set(false);
         }
     }
 
     @Override
-    public void purge(Identifier identifier) throws IOException {
+    public void purge(Identifier identifier) throws CacheException {
         // TODO: improve concurrency
         for (File imageFile : getImageFiles(identifier)) {
             logger.info("Deleting {}", imageFile);
             if (!imageFile.delete()) {
-                throw new IOException("Failed to delete " + imageFile);
+                throw new CacheException("Failed to delete " + imageFile);
             }
         }
         final File infoFile = getInfoFile(identifier);
         if (infoFile.exists()) {
             logger.info("Deleting {}", infoFile);
             if (!infoFile.delete()) {
-                throw new IOException("Failed to delete " + infoFile);
+                throw new CacheException("Failed to delete " + infoFile);
             }
         }
     }
 
     @Override
-    public void purge(OperationList opList) throws IOException {
+    public void purge(OperationList opList) throws CacheException {
         synchronized (lock1) {
             // imagesBeingWritten may also contain this opList (meaning it is
             // currently being written in another thread), but the delete
@@ -512,13 +533,15 @@ class FilesystemCache implements Cache {
                     throw new IOException("Unable to delete " + imageFile);
                 }
             }
+        } catch (IOException e) {
+            throw new CacheException(e.getMessage(), e);
         } finally {
             imagesBeingPurged.remove(opList);
         }
     }
 
     @Override
-    public void purgeExpired() throws IOException {
+    public void purgeExpired() throws CacheException {
         synchronized (lock4) {
             while (purgingInProgress.get() || !imagesBeingPurged.isEmpty() ||
                     !imagesBeingWritten.isEmpty()) {
@@ -568,6 +591,8 @@ class FilesystemCache implements Cache {
             } else {
                 throw new IOException(PATHNAME_CONFIG_KEY + " is not set");
             }
+        } catch (IOException e) {
+            throw new CacheException(e.getMessage(), e);
         } finally {
             purgingInProgress.set(false);
         }
@@ -575,7 +600,7 @@ class FilesystemCache implements Cache {
 
     @Override
     public void putDimension(Identifier identifier, Dimension dimension)
-            throws IOException {
+            throws CacheException {
         synchronized (lock3) {
             while (infosBeingWritten.contains(identifier) ||
                     infosBeingRead.contains(identifier)) {
@@ -609,6 +634,8 @@ class FilesystemCache implements Cache {
             } else {
                 throw new IOException(PATHNAME_CONFIG_KEY + " is not set");
             }
+        } catch (IOException e) {
+            throw new CacheException(e.getMessage(), e);
         } finally {
             infosBeingWritten.remove(identifier);
         }

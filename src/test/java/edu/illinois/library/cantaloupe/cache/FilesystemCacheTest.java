@@ -106,7 +106,7 @@ public class FilesystemCacheTest {
             try {
                 instance.purge();
                 fail("Expected exception");
-            } catch (IOException e) {
+            } catch (CacheException e) {
                 assertTrue(e.getMessage().startsWith("Unable to delete"));
             }
             imageFile.getParentFile().setWritable(true);
@@ -194,7 +194,7 @@ public class FilesystemCacheTest {
             try {
                 instance.purge(ops);
                 fail("Expected exception");
-            } catch (IOException e) {
+            } catch (CacheException e) {
                 assertTrue(e.getMessage().startsWith("Unable to delete"));
             }
             imageFile.getParentFile().setWritable(true);
@@ -264,7 +264,7 @@ public class FilesystemCacheTest {
             try {
                 instance.purgeExpired();
                 fail("Expected exception");
-            } catch (IOException e) {
+            } catch (CacheException e) {
                 assertTrue(e.getMessage().startsWith("Unable to delete"));
             }
             imageFile.getParentFile().setWritable(true);
@@ -467,7 +467,7 @@ public class FilesystemCacheTest {
     }
 
     @Test
-    public void testImageWritableChannelCreatesFolder() throws IOException {
+    public void testImageWritableChannelCreatesFolder() throws Exception {
         FileUtils.deleteDirectory(imagePath);
 
         OperationList ops = TestUtil.newOperationList();
@@ -478,7 +478,7 @@ public class FilesystemCacheTest {
     /* getInfoFile(Identifier) */
 
     @Test
-    public void testGetInfoFile() {
+    public void testGetInfoFile() throws CacheException {
         final String pathname = Application.getConfiguration().
                 getString(FilesystemCache.PATHNAME_CONFIG_KEY);
 
@@ -496,7 +496,7 @@ public class FilesystemCacheTest {
     /* putDimension(Identifier, Dimension) */
 
     @Test
-    public void testPutDimension() throws IOException {
+    public void testPutDimension() throws CacheException {
         Identifier identifier = new Identifier("cats");
         Dimension dimension = new Dimension(52, 52);
         instance.putDimension(identifier, dimension);
@@ -504,7 +504,7 @@ public class FilesystemCacheTest {
     }
 
     @Test
-    public void testPutDimensionFailureThrowsException() throws IOException {
+    public void testPutDimensionFailureThrowsException() throws CacheException {
         final Identifier identifier = new Identifier("cats");
         final File cacheFile = instance.getInfoFile(identifier);
         cacheFile.getParentFile().mkdirs();
@@ -513,7 +513,7 @@ public class FilesystemCacheTest {
             try {
                 instance.putDimension(identifier, new Dimension(52, 52));
                 fail("Expected exception");
-            } catch (IOException e) {
+            } catch (CacheException e) {
                 assertTrue(e.getMessage().startsWith("Unable to create"));
             }
         } finally {
