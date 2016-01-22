@@ -353,7 +353,7 @@ public abstract class AbstractResource extends ServerResource {
             final String method = "authorized?";
             return (boolean) engine.invoke(method, args);
         } catch (DelegateScriptDisabledException e) {
-            logger.info("isAuthorized(): delegate script disabled; allowing.");
+            logger.debug("isAuthorized(): delegate script disabled; allowing.");
             return true;
         }
     }
