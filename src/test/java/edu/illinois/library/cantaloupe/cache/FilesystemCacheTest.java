@@ -69,7 +69,7 @@ public class FilesystemCacheTest {
         File imageFile = instance.getImageFile(ops);
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
-        File infoFile = instance.getDimensionFile(ops.getIdentifier());
+        File infoFile = instance.getInfoFile(ops.getIdentifier());
         infoFile.getParentFile().mkdirs();
         infoFile.createNewFile();
 
@@ -82,7 +82,7 @@ public class FilesystemCacheTest {
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
 
-        infoFile = instance.getDimensionFile(ops.getIdentifier());
+        infoFile = instance.getInfoFile(ops.getIdentifier());
         infoFile.getParentFile().mkdirs();
         infoFile.createNewFile();
 
@@ -98,7 +98,7 @@ public class FilesystemCacheTest {
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
         imageFile.getParentFile().setWritable(false);
-        File infoFile = instance.getDimensionFile(ops.getIdentifier());
+        File infoFile = instance.getInfoFile(ops.getIdentifier());
         infoFile.getParentFile().mkdirs();
         infoFile.createNewFile();
         infoFile.getParentFile().setWritable(false);
@@ -131,7 +131,7 @@ public class FilesystemCacheTest {
         File imageFile = instance.getImageFile(ops);
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
-        File infoFile = instance.getDimensionFile(ops.getIdentifier());
+        File infoFile = instance.getInfoFile(ops.getIdentifier());
         infoFile.getParentFile().mkdirs();
         infoFile.createNewFile();
 
@@ -142,7 +142,7 @@ public class FilesystemCacheTest {
         imageFile = instance.getImageFile(ops);
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
-        infoFile = instance.getDimensionFile(ops.getIdentifier());
+        infoFile = instance.getInfoFile(ops.getIdentifier());
         infoFile.getParentFile().mkdirs();
         infoFile.createNewFile();
 
@@ -166,7 +166,7 @@ public class FilesystemCacheTest {
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
 
-        final File dimensionFile = instance.getDimensionFile(ops.getIdentifier());
+        final File dimensionFile = instance.getInfoFile(ops.getIdentifier());
         dimensionFile.getParentFile().mkdirs();
         dimensionFile.createNewFile();
 
@@ -185,7 +185,7 @@ public class FilesystemCacheTest {
         imageFile.createNewFile();
         imageFile.getParentFile().setWritable(false);
 
-        File infoFile = instance.getDimensionFile(ops.getIdentifier());
+        File infoFile = instance.getInfoFile(ops.getIdentifier());
         infoFile.getParentFile().mkdirs();
         infoFile.createNewFile();
         infoFile.getParentFile().setWritable(false);
@@ -223,7 +223,7 @@ public class FilesystemCacheTest {
         File imageFile = instance.getImageFile(ops);
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
-        File infoFile = instance.getDimensionFile(ops.getIdentifier());
+        File infoFile = instance.getInfoFile(ops.getIdentifier());
         infoFile.getParentFile().mkdirs();
         infoFile.createNewFile();
 
@@ -233,7 +233,7 @@ public class FilesystemCacheTest {
         imageFile = instance.getImageFile(ops);
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
-        infoFile = instance.getDimensionFile(ops.getIdentifier());
+        infoFile = instance.getInfoFile(ops.getIdentifier());
         infoFile.getParentFile().mkdirs();
         infoFile.createNewFile();
 
@@ -253,7 +253,7 @@ public class FilesystemCacheTest {
         imageFile.createNewFile();
         imageFile.getParentFile().setWritable(false);
 
-        File infoFile = instance.getDimensionFile(ops.getIdentifier());
+        File infoFile = instance.getInfoFile(ops.getIdentifier());
         infoFile.getParentFile().mkdirs();
         infoFile.createNewFile();
         infoFile.getParentFile().setWritable(false);
@@ -283,7 +283,7 @@ public class FilesystemCacheTest {
     @Test
     public void testGetDimensionWithZeroTtl() throws Exception {
         Identifier identifier = new Identifier("test");
-        File file = instance.getDimensionFile(identifier);
+        File file = instance.getInfoFile(identifier);
         file.getParentFile().mkdirs();
         file.createNewFile();
 
@@ -300,7 +300,7 @@ public class FilesystemCacheTest {
         Application.getConfiguration().setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
 
         Identifier identifier = new Identifier("test");
-        File file = instance.getDimensionFile(identifier);
+        File file = instance.getInfoFile(identifier);
         file.getParentFile().mkdirs();
         file.createNewFile();
 
@@ -312,24 +312,6 @@ public class FilesystemCacheTest {
 
         Thread.sleep(1100);
         assertNull(instance.getDimension(identifier));
-    }
-
-    /* getDimensionFile(Identifier) */
-
-    @Test
-    public void testGetDimensionFile() {
-        final String pathname = Application.getConfiguration().
-                getString(FilesystemCache.PATHNAME_CONFIG_KEY);
-
-        final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
-
-        final String expected = String.format("%s%sinfo%s%s%s.json",
-                pathname,
-                File.separator,
-                instance.getIdentifierBasedSubdirectory(identifier.toString()),
-                File.separator,
-                FilesystemCache.filenameSafe(identifier.toString()));
-        assertEquals(new File(expected), instance.getDimensionFile(identifier));
     }
 
     /* getIdentifierBasedSubdirectory(String) */
@@ -493,6 +475,24 @@ public class FilesystemCacheTest {
         assertTrue(imagePath.exists());
     }
 
+    /* getInfoFile(Identifier) */
+
+    @Test
+    public void testGetInfoFile() {
+        final String pathname = Application.getConfiguration().
+                getString(FilesystemCache.PATHNAME_CONFIG_KEY);
+
+        final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
+
+        final String expected = String.format("%s%sinfo%s%s%s.json",
+                pathname,
+                File.separator,
+                instance.getIdentifierBasedSubdirectory(identifier.toString()),
+                File.separator,
+                FilesystemCache.filenameSafe(identifier.toString()));
+        assertEquals(new File(expected), instance.getInfoFile(identifier));
+    }
+
     /* putDimension(Identifier, Dimension) */
 
     @Test
@@ -506,7 +506,7 @@ public class FilesystemCacheTest {
     @Test
     public void testPutDimensionFailureThrowsException() throws IOException {
         final Identifier identifier = new Identifier("cats");
-        final File cacheFile = instance.getDimensionFile(identifier);
+        final File cacheFile = instance.getInfoFile(identifier);
         cacheFile.getParentFile().mkdirs();
         cacheFile.getParentFile().setWritable(false);
         try {

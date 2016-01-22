@@ -158,12 +158,6 @@ class FilesystemCache implements Cache {
     // serializes ImageInfo instances to JSON
     private static final ObjectMapper infoMapper = new ObjectMapper();
 
-    /** Set of identifiers for which info files are currently being read. */
-    private final Set<Identifier> dimensionsBeingRead =
-            new ConcurrentSkipListSet<>();
-    /** Set of identifiers for which info files are currently being written. */
-    private final Set<Identifier> dimensionsBeingWritten =
-            new ConcurrentSkipListSet<>();
     /** Set of Operations for which image files are currently being purged by
      * purge(OperationList). */
     private final Set<OperationList> imagesBeingPurged =
@@ -171,6 +165,12 @@ class FilesystemCache implements Cache {
     /** Set of operation lists for which image files are currently being
      * written. */
     private final Set<OperationList> imagesBeingWritten =
+            new ConcurrentSkipListSet<>();
+    /** Set of identifiers for which info files are currently being read. */
+    private final Set<Identifier> infosBeingRead =
+            new ConcurrentSkipListSet<>();
+    /** Set of identifiers for which info files are currently being written. */
+    private final Set<Identifier> infosBeingWritten =
             new ConcurrentSkipListSet<>();
 
     private final AtomicBoolean purgingInProgress = new AtomicBoolean(false);
@@ -245,7 +245,7 @@ class FilesystemCache implements Cache {
     @Override
     public Dimension getDimension(Identifier identifier) throws IOException {
         synchronized (lock2) {
-            while (dimensionsBeingWritten.contains(identifier)) {
+            while (infosBeingWritten.contains(identifier)) {
                 try {
                     lock2.wait();
                 } catch (InterruptedException e) {
@@ -255,11 +255,11 @@ class FilesystemCache implements Cache {
         }
 
         try {
-            dimensionsBeingRead.add(identifier);
-            final File cacheFile = getDimensionFile(identifier);
+            infosBeingRead.add(identifier);
+            final File cacheFile = getInfoFile(identifier);
             if (cacheFile != null && cacheFile.exists()) {
                 if (!isExpired(cacheFile)) {
-                    logger.info("Hit for dimension: {}", cacheFile.getName());
+                    logger.info("Hit for info: {}", cacheFile.getName());
 
                     ImageInfo info = infoMapper.readValue(cacheFile,
                             ImageInfo.class);
@@ -275,7 +275,7 @@ class FilesystemCache implements Cache {
         } catch (FileNotFoundException e) {
             logger.debug(e.getMessage(), e);
         } finally {
-            dimensionsBeingRead.remove(identifier);
+            infosBeingRead.remove(identifier);
         }
         return null;
     }
@@ -285,7 +285,7 @@ class FilesystemCache implements Cache {
      * @return File corresponding to the given parameters, or null if
      * {@link #PATHNAME_CONFIG_KEY} is not set.
      */
-    public File getDimensionFile(final Identifier identifier) {
+    public File getInfoFile(final Identifier identifier) {
         final String cachePathname = getRootInfoPathname();
         if (cachePathname != null) {
             final String cacheRoot =
@@ -474,11 +474,11 @@ class FilesystemCache implements Cache {
                 throw new IOException("Failed to delete " + imageFile);
             }
         }
-        final File dimensionFile = getDimensionFile(identifier);
-        if (dimensionFile.exists()) {
-            logger.info("Deleting {}", dimensionFile);
-            if (!dimensionFile.delete()) {
-                throw new IOException("Failed to delete " + dimensionFile);
+        final File infoFile = getInfoFile(identifier);
+        if (infoFile.exists()) {
+            logger.info("Deleting {}", infoFile);
+            if (!infoFile.delete()) {
+                throw new IOException("Failed to delete " + infoFile);
             }
         }
     }
@@ -506,9 +506,9 @@ class FilesystemCache implements Cache {
                     throw new IOException("Unable to delete " + imageFile);
                 }
             }
-            final File dimensionFile = getDimensionFile(opList.getIdentifier());
-            if (dimensionFile != null && dimensionFile.exists()) {
-                if (!dimensionFile.delete()) {
+            final File infoFile = getInfoFile(opList.getIdentifier());
+            if (infoFile != null && infoFile.exists()) {
+                if (!infoFile.delete()) {
                     throw new IOException("Unable to delete " + imageFile);
                 }
             }
@@ -563,7 +563,7 @@ class FilesystemCache implements Cache {
                         }
                     }
                 }
-                logger.info("Purged {} expired images and {} expired dimensions",
+                logger.info("Purged {} expired images and {} expired infos",
                         imageCount, infoCount);
             } else {
                 throw new IOException(PATHNAME_CONFIG_KEY + " is not set");
@@ -577,8 +577,8 @@ class FilesystemCache implements Cache {
     public void putDimension(Identifier identifier, Dimension dimension)
             throws IOException {
         synchronized (lock3) {
-            while (dimensionsBeingWritten.contains(identifier) ||
-                    dimensionsBeingRead.contains(identifier)) {
+            while (infosBeingWritten.contains(identifier) ||
+                    infosBeingRead.contains(identifier)) {
                 try {
                     lock3.wait();
                 } catch (InterruptedException e) {
@@ -587,10 +587,10 @@ class FilesystemCache implements Cache {
             }
         }
         try {
-            dimensionsBeingWritten.add(identifier);
-            final File cacheFile = getDimensionFile(identifier);
+            infosBeingWritten.add(identifier);
+            final File cacheFile = getInfoFile(identifier);
             if (cacheFile != null) {
-                logger.info("Caching dimension: {}", identifier);
+                logger.info("Caching info: {}", identifier);
                 if (!cacheFile.getParentFile().exists() &&
                         !cacheFile.getParentFile().mkdirs()) {
                     throw new IOException("Unable to create directory: " +
@@ -610,7 +610,7 @@ class FilesystemCache implements Cache {
                 throw new IOException(PATHNAME_CONFIG_KEY + " is not set");
             }
         } finally {
-            dimensionsBeingWritten.remove(identifier);
+            infosBeingWritten.remove(identifier);
         }
     }
 
