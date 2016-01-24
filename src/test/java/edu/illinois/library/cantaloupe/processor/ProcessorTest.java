@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  */
 public abstract class ProcessorTest {
 
-    private static final String IMAGE = "images/escher_lego.jpg";
+    private static final String IMAGE = "images/jpg-rgb-64x56x8-baseline.jpg";
 
     static {
         Application.setConfiguration(new BaseConfiguration());

@@ -41,7 +41,8 @@ import static org.junit.Assert.*;
  */
 public class Version2_0ConformanceTest {
 
-    private static final Identifier IMAGE = new Identifier("escher_lego.jpg");
+    private static final Identifier IMAGE =
+            new Identifier("jpg-rgb-64x56x8-baseline.jpg");
     private static final Integer PORT = TestUtil.getOpenPort();
 
     private static Client client = new Client(new Context(), Protocol.HTTP);

@@ -20,7 +20,8 @@ import java.io.IOException;
 
 public class HttpResolverTest {
 
-    private static final Identifier IDENTIFIER = new Identifier("escher_lego.jpg");
+    private static final Identifier IDENTIFIER =
+            new Identifier("jpg-rgb-64x56x8-baseline.jpg");
 
     private HttpResolver instance;
     private WebServer server;

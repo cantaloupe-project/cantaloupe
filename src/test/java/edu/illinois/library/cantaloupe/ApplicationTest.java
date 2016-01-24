@@ -175,7 +175,7 @@ public class ApplicationTest {
         ops.add(new Rotate(15));
         WritableByteChannel wbc = cache.getImageWritableChannel(ops);
         ReadableByteChannel rbc = new FileInputStream(
-                TestUtil.getFixture("images/escher_lego.jpg")).getChannel();
+                TestUtil.getFixture("images/jpg-rgb-64x56x8-baseline.jpg")).getChannel();
         IOUtils.copy(rbc, wbc);
 
         // assert that they've been cached

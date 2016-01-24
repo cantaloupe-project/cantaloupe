@@ -253,13 +253,13 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testUrisInJson() throws IOException {
-        ClientResource client = getClientForUriPath("/escher_lego.jpg/info.json");
+        ClientResource client = getClientForUriPath("/jpg-rgb-64x56x8-baseline.jpg/info.json");
         client.get();
         String json = client.getResponse().getEntityAsText();
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("http://localhost:" + PORT +
-                WebApplication.IIIF_2_PATH + "/escher_lego.jpg", info.id);
+                WebApplication.IIIF_2_PATH + "/jpg-rgb-64x56x8-baseline.jpg", info.id);
     }
 
     @Test
@@ -268,18 +268,18 @@ public class InformationResourceTest extends ResourceTest {
         config.setProperty(AbstractResource.BASE_URI_CONFIG_KEY,
                 "http://example.org/");
 
-        ClientResource client = getClientForUriPath("/escher_lego.jpg/info.json");
+        ClientResource client = getClientForUriPath("/jpg-rgb-64x56x8-baseline.jpg/info.json");
         client.get();
         String json = client.getResponse().getEntityAsText();
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("http://example.org" +
-                WebApplication.IIIF_2_PATH + "/escher_lego.jpg", info.id);
+                WebApplication.IIIF_2_PATH + "/jpg-rgb-64x56x8-baseline.jpg", info.id);
     }
 
     @Test
     public void testUrisInJsonWithProxyHeaders() throws IOException {
-        ClientResource client = getClientForUriPath("/escher_lego.jpg/info.json");
+        ClientResource client = getClientForUriPath("/jpg-rgb-64x56x8-baseline.jpg/info.json");
         client.getRequest().getHeaders().add("X-Forwarded-Proto", "HTTP");
         client.getRequest().getHeaders().add("X-Forwarded-Host", "example.org");
         client.getRequest().getHeaders().add("X-Forwarded-Port", "8080");
@@ -289,7 +289,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("http://example.org:8080/cats" +
-                WebApplication.IIIF_2_PATH + "/escher_lego.jpg", info.id);
+                WebApplication.IIIF_2_PATH + "/jpg-rgb-64x56x8-baseline.jpg", info.id);
     }
 
     @Test
@@ -298,7 +298,7 @@ public class InformationResourceTest extends ResourceTest {
         config.setProperty(AbstractResource.BASE_URI_CONFIG_KEY,
                 "https://example.net/");
 
-        ClientResource client = getClientForUriPath("/escher_lego.jpg/info.json");
+        ClientResource client = getClientForUriPath("/jpg-rgb-64x56x8-baseline.jpg/info.json");
         client.getRequest().getHeaders().add("X-Forwarded-Proto", "HTTP");
         client.getRequest().getHeaders().add("X-Forwarded-Host", "example.org");
         client.getRequest().getHeaders().add("X-Forwarded-Port", "8080");
@@ -308,7 +308,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("https://example.net" +
-                WebApplication.IIIF_2_PATH + "/escher_lego.jpg", info.id);
+                WebApplication.IIIF_2_PATH + "/jpg-rgb-64x56x8-baseline.jpg", info.id);
     }
 
 }

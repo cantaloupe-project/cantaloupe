@@ -19,7 +19,8 @@ import java.nio.file.AccessDeniedException;
 
 public class FilesystemResolverTest {
 
-    private static final Identifier IDENTIFIER = new Identifier("images/escher_lego.jpg");
+    private static final Identifier IDENTIFIER =
+            new Identifier("images/jpg-rgb-64x56x8-baseline.jpg");
 
     FilesystemResolver instance;
 
