@@ -3,18 +3,26 @@ package edu.illinois.library.cantaloupe.test;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.image.SourceFormat;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 
 public abstract class TestUtil {
 
     public static File getCurrentWorkingDirectory() throws IOException {
         File directory = new File(".");
         return directory.getCanonicalFile();
+    }
+
+    public static Collection<File> getImageFixtures(SourceFormat format)
+            throws IOException {
+        return FileUtils.listFiles(getFixture("images"), null, false);
     }
 
     public static File getFixture(String filename) throws IOException {

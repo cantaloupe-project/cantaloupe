@@ -18,9 +18,11 @@ import static org.junit.Assert.*;
 
 public class JaiUtilTest {
 
+    private static final String IMAGE = "images/jpg-rgb-64x56x8-baseline.jpg";
+
     @Test
     public void testCropImage() throws Exception {
-        RenderedOp image = getFixture("images/jpg");
+        RenderedOp image = getFixture(IMAGE);
 
         // test with no-op crop
         Crop crop = new Crop();
@@ -55,18 +57,18 @@ public class JaiUtilTest {
         final ReductionFactor reductionFactor = new ReductionFactor();
         ImageIoImageReader reader = new ImageIoImageReader();
         RenderedImage image = reader.read(
-                TestUtil.getFixture("images/jpg"), SourceFormat.JPG, ops,
+                TestUtil.getFixture(IMAGE), SourceFormat.JPG, ops,
                 reductionFactor);
         PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
         RenderedOp renderedOp = JaiUtil.reformatImage(planarImage,
                 new Dimension(512, 512));
-        assertEquals(100, renderedOp.getWidth());
-        assertEquals(88, renderedOp.getHeight());
+        assertEquals(64, renderedOp.getWidth());
+        assertEquals(56, renderedOp.getHeight());
     }
 
     @Test
     public void testRotateImage() throws Exception {
-        RenderedOp inImage = getFixture("images/jpg");
+        RenderedOp inImage = getFixture(IMAGE);
 
         // test with no-op rotate
         Rotate rotate = new Rotate(0);
@@ -94,7 +96,7 @@ public class JaiUtilTest {
 
     @Test
     public void testScaleImage() throws Exception {
-        RenderedOp image = getFixture("images/jpg");
+        RenderedOp image = getFixture(IMAGE);
 
         // test with no-op scale
         Scale scale = new Scale();
@@ -103,11 +105,13 @@ public class JaiUtilTest {
         assertSame(image, scaledImage);
 
         // test with non-no-op crop
+        final float percent = 0.5f;
+        final double fudge = 0.00000001f;
         scale = new Scale();
-        scale.setPercent(0.5f);
+        scale.setPercent(percent);
         scaledImage = JaiUtil.scaleImage(image, scale);
-        assertEquals(50, scaledImage.getWidth());
-        assertEquals(44, scaledImage.getHeight());
+        assertEquals(image.getWidth() * percent, scaledImage.getWidth(), fudge);
+        assertEquals(image.getHeight() * percent, scaledImage.getHeight(), fudge);
     }
 
     @Test
@@ -118,17 +122,17 @@ public class JaiUtilTest {
     @Test
     public void testTransposeImage() throws Exception {
         // TODO: this test could be better
-        RenderedOp image = getFixture("images/jpg");
+        RenderedOp image = getFixture(IMAGE);
         // horizontal
         Transpose transpose = Transpose.HORIZONTAL;
         RenderedOp result = JaiUtil.transposeImage(image, transpose);
-        assertEquals(100, result.getWidth());
-        assertEquals(88, result.getHeight());
+        assertEquals(image.getWidth(), result.getWidth());
+        assertEquals(image.getHeight(), result.getHeight());
         // vertical
         transpose = Transpose.VERTICAL;
         result = JaiUtil.transposeImage(image, transpose);
-        assertEquals(100, result.getWidth());
-        assertEquals(88, result.getHeight());
+        assertEquals(image.getWidth(), result.getWidth());
+        assertEquals(image.getHeight(), result.getHeight());
     }
 
     private RenderedOp getFixture(final String name) throws Exception {

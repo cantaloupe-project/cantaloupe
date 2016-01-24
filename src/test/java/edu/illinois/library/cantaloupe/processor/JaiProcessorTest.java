@@ -12,6 +12,10 @@ import static org.junit.Assert.*;
 
 public class JaiProcessorTest extends ProcessorTest {
 
+    static {
+        System.setProperty("com.sun.media.jai.disableMediaLib", "true");
+    }
+
     JaiProcessor instance = new JaiProcessor();
 
     protected Processor getProcessor() {

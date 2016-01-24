@@ -13,16 +13,19 @@ import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.resolver.ChannelSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
 import java.awt.Dimension;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -53,7 +56,7 @@ public abstract class ProcessorTest {
 
     @Test
     public void testGetSize() throws Exception {
-        Dimension expectedSize = new Dimension(594, 522);
+        Dimension expectedSize = new Dimension(64, 56);
         if (getProcessor() instanceof ChannelProcessor) {
             ChannelProcessor proc = (ChannelProcessor) getProcessor();
             try (ReadableByteChannel readableChannel = new FileInputStream(
@@ -117,8 +120,9 @@ public abstract class ProcessorTest {
         ops.setOutputFormat(OutputFormat.JPG);
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             if (getProcessor().getAvailableOutputFormats(sourceFormat).size() == 0) {
-                final File fixture = TestUtil.
-                        getFixture("images/" + sourceFormat.getPreferredExtension());
+                final Collection<File> fixtures = TestUtil.
+                        getImageFixtures(sourceFormat);
+                final File fixture = (File) fixtures.toArray()[0];
                 if (getProcessor() instanceof ChannelProcessor) {
                     final ChannelSource source = new TestChannelSource(fixture);
                     try {
@@ -305,33 +309,51 @@ public abstract class ProcessorTest {
                 getProcessor().getSupportedIiif1_1Qualities(SourceFormat.UNKNOWN));
     }
 
+    /**
+     * Tests Processor.process() for every one of the fixtures for every source
+     * format the processor supports.
+     *
+     * @param ops
+     * @throws Exception
+     */
     private void doProcessTest(OperationList ops) throws Exception {
+        final Collection<File> fixtures = FileUtils.
+                listFiles(TestUtil.getFixture("images"), null, false);
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {
-                final File fixture = TestUtil.
-                        getFixture("images/" + sourceFormat.getPreferredExtension());
-                if (getProcessor() instanceof ChannelProcessor) {
-                    ChannelProcessor proc = (ChannelProcessor) getProcessor();
-                    ChannelSource source = new TestChannelSource(fixture);
-                    Dimension size = proc.getSize(source.newChannel(),
-                            sourceFormat);
-                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                    WritableByteChannel outputChannel = Channels.newChannel(outputStream);
-                    proc.process(ops, sourceFormat, size, source,
-                            outputChannel);
-                    // TODO: verify that this is a valid image
-                    assertTrue(outputStream.toByteArray().length > 100);
-                }
-                if (getProcessor() instanceof FileProcessor) {
-                    FileProcessor proc = (FileProcessor) getProcessor();
-                    Dimension size = proc.getSize(fixture, sourceFormat);
-                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                    WritableByteChannel outputChannel = Channels.newChannel(outputStream);
-                    proc.process(ops, sourceFormat, size, fixture, outputChannel);
-                    // TODO: verify that this is a valid image
-                    assertTrue(outputStream.toByteArray().length > 100);
+                for (File fixture : fixtures) {
+                    if (fixture.getName().startsWith(sourceFormat.name().toLowerCase())) {
+                        doProcessTest(sourceFormat, fixture, ops);
+                    }
                 }
             }
+        }
+    }
+
+    private void doProcessTest(final SourceFormat sourceFormat,
+                               final File fixture,
+                               final OperationList opList)
+            throws IOException, ProcessorException {
+        if (getProcessor() instanceof ChannelProcessor) {
+            ChannelProcessor proc = (ChannelProcessor) getProcessor();
+            ChannelSource source = new TestChannelSource(fixture);
+            Dimension size = proc.getSize(source.newChannel(),
+                    sourceFormat);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            WritableByteChannel outputChannel = Channels.newChannel(outputStream);
+            proc.process(opList, sourceFormat, size, source,
+                    outputChannel);
+            // TODO: verify that this is a valid image
+            assertTrue(outputStream.toByteArray().length > 100);
+        }
+        if (getProcessor() instanceof FileProcessor) {
+            FileProcessor proc = (FileProcessor) getProcessor();
+            Dimension size = proc.getSize(fixture, sourceFormat);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            WritableByteChannel outputChannel = Channels.newChannel(outputStream);
+            proc.process(opList, sourceFormat, size, fixture, outputChannel);
+            // TODO: verify that this is a valid image
+            assertTrue(outputStream.toByteArray().length > 100);
         }
     }
 
