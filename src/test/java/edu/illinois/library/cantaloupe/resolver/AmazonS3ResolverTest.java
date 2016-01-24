@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resolver;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -86,8 +87,8 @@ public class AmazonS3ResolverTest {
         Configuration config = Application.getConfiguration();
         config.setProperty(AmazonS3Resolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
-        config.setProperty("delegate_script",
-                TestUtil.getFixture("delegate.rb").getAbsolutePath());
+        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
+                TestUtil.getFixture("delegates.rb").getAbsolutePath());
         // present image
         try {
             ChannelSource source = instance.getChannelSource(IMAGE);
@@ -128,8 +129,8 @@ public class AmazonS3ResolverTest {
         Configuration config = Application.getConfiguration();
         config.setProperty(AmazonS3Resolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
-        config.setProperty("delegate_script",
-                TestUtil.getFixture("delegate.rb").getAbsolutePath());
+        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
+                TestUtil.getFixture("delegates.rb").getAbsolutePath());
         // present image
         assertEquals(SourceFormat.JPG, instance.getSourceFormat(IMAGE));
         // present image without extension TODO: write this

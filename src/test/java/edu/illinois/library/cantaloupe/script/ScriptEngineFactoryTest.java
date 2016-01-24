@@ -18,7 +18,7 @@ public class ScriptEngineFactoryTest {
     public void setUp() throws Exception {
         Configuration config = new BaseConfiguration();
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
-                TestUtil.getFixture("delegate.rb").getAbsolutePath());
+                TestUtil.getFixture("delegates.rb").getAbsolutePath());
         Application.setConfiguration(config);
     }
 

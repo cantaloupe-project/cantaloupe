@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
+import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.junit.After;
@@ -12,7 +13,6 @@ import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.resource.ClientResource;
 
-import java.io.File;
 import java.io.IOException;
 
 public abstract class ResourceTest {
@@ -24,8 +24,8 @@ public abstract class ResourceTest {
     public static BaseConfiguration newConfiguration() throws IOException {
         BaseConfiguration config = new BaseConfiguration();
         config.setProperty("print_stack_trace_on_error_pages", false);
-        config.setProperty("delegate_script",
-                TestUtil.getFixture("delegate.rb").getAbsolutePath());
+        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
+                TestUtil.getFixture("delegates.rb").getAbsolutePath());
         config.setProperty("http.enabled", true);
         config.setProperty("http.port", PORT);
         config.setProperty("processor.fallback", "Java2dProcessor");

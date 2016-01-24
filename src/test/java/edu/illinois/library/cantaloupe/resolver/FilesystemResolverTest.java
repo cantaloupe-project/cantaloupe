@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -24,8 +25,8 @@ public class FilesystemResolverTest {
 
     private static Configuration newConfiguration() throws IOException {
         BaseConfiguration config = new BaseConfiguration();
-        config.setProperty("delegate_script",
-                TestUtil.getFixture("lookup.rb").getAbsolutePath());
+        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
+                TestUtil.getFixture("delegates.rb").getAbsolutePath());
         config.setProperty(FilesystemResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "BasicLookupStrategy");
         config.setProperty(FilesystemResolver.PATH_PREFIX_CONFIG_KEY,
@@ -126,14 +127,14 @@ public class FilesystemResolverTest {
                 "ScriptLookupStrategy");
 
         // valid, present script
-        config.setProperty("delegate_script",
-                TestUtil.getFixture("lookup.rb").getAbsolutePath());
+        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
+                TestUtil.getFixture("delegates.rb").getAbsolutePath());
         assertEquals("/bla/" + IDENTIFIER,
                 instance.getPathname(IDENTIFIER, File.separator));
 
         // missing script
         try {
-            config.setProperty("delegate_script",
+            config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
                     TestUtil.getFixture("bogus.rb").getAbsolutePath());
             instance.getPathname(IDENTIFIER, File.separator);
             fail("Expected exception");
