@@ -113,12 +113,8 @@ public class InformationResourceTest extends ResourceTest {
         if (!cacheFolder.exists()) {
             cacheFolder.mkdir();
         }
-        final File imageCacheFolder =
-                new File(cacheFolder.getAbsolutePath() + "/image");
-        final File infoCacheFolder =
-                new File(cacheFolder.getAbsolutePath() + "/info");
 
-        Configuration config = Application.getConfiguration();
+        final Configuration config = Application.getConfiguration();
         config.setProperty("cache.server", "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
                 cacheFolder.getAbsolutePath());
@@ -129,18 +125,17 @@ public class InformationResourceTest extends ResourceTest {
         File image = TestUtil.getFixture("images/jpg");
         try {
             OperationList ops = TestUtil.newOperationList();
-            ops.setIdentifier(new Identifier("images/jpg"));
+            ops.setIdentifier(new Identifier("jpg"));
             ops.setOutputFormat(OutputFormat.JPG);
 
-            assertEquals(0, cacheFolder.listFiles().length);
+            assertEquals(0, FileUtils.listFiles(cacheFolder, null, true).size());
 
             // request an image to cache it
             getClientForUriPath("/jpg/full/full/0/default.jpg").get();
             getClientForUriPath("/jpg/info.json").get();
 
             // assert that it has been cached
-            assertEquals(1, imageCacheFolder.listFiles().length);
-            assertEquals(1, infoCacheFolder.listFiles().length);
+            assertEquals(2, FileUtils.listFiles(cacheFolder, null, true).size());
             Cache cache = CacheFactory.getInstance();
             assertNotNull(cache.getImageReadableChannel(ops));
             assertNotNull(cache.getDimension(ops.getIdentifier()));
