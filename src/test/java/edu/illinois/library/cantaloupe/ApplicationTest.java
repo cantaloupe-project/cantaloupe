@@ -1,6 +1,12 @@
 package edu.illinois.library.cantaloupe;
 
+import edu.illinois.library.cantaloupe.cache.Cache;
+import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import edu.illinois.library.cantaloupe.util.IOUtils;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
@@ -17,8 +23,12 @@ import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 import org.restlet.util.Series;
 
+import java.awt.Dimension;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -143,30 +153,43 @@ public class ApplicationTest {
 
     @Test
     public void testMainWithPurgeCacheArg() throws Exception {
-        File cacheDir = getCacheDir();
-        File imageDir = new File(cacheDir.getAbsolutePath() + File.separator +
-                "image");
-        File infoDir = new File(cacheDir.getAbsolutePath() + File.separator +
-                "info");
-        imageDir.mkdirs();
-        infoDir.mkdirs();
+        final File cacheDir = getCacheDir();
+        final File imageDir = new File(cacheDir.getAbsolutePath() + "/image");
+        final File infoDir = new File(cacheDir.getAbsolutePath() + "/info");
 
-        Configuration config = newConfiguration();
+        // set up the cache
+        final Configuration config = newConfiguration();
         config.setProperty("cache.server", "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
                 getCacheDir().getAbsolutePath());
-        config.setProperty("FilesystemCache.ttl_seconds", "1");
+        config.setProperty("FilesystemCache.ttl_seconds", "10");
         Application.setConfiguration(config);
 
-        File.createTempFile("bla1", "tmp", imageDir);
-        File.createTempFile("bla2", "tmp", infoDir);
+        // cache a dimension
+        Cache cache = CacheFactory.getInstance();
+        cache.putDimension(new Identifier("cats"), new Dimension(500, 500));
 
+        // cache an image
+        OperationList ops = TestUtil.newOperationList();
+        ops.setIdentifier(new Identifier("dogs"));
+        ops.add(new Rotate(15));
+        WritableByteChannel wbc = cache.getImageWritableChannel(ops);
+        ReadableByteChannel rbc = new FileInputStream(
+                TestUtil.getFixture("images/escher_lego.jpg")).getChannel();
+        IOUtils.copy(rbc, wbc);
+
+        // assert that they've been cached
+        assertEquals(1, FileUtils.listFiles(imageDir, null, true).size());
+        assertEquals(1, FileUtils.listFiles(infoDir, null, true).size());
+
+        // purge the cache
         System.setProperty(Application.PURGE_CACHE_VM_ARGUMENT, "");
         String[] args = {};
         Application.main(args);
 
-        assertEquals(0, imageDir.listFiles().length);
-        assertEquals(0, infoDir.listFiles().length);
+        // assert that they've been purged
+        assertFalse(imageDir.exists());
+        assertFalse(infoDir.exists());
     }
 
     @Test

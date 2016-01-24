@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  */
 public abstract class ProcessorTest {
 
-    private static final String IMAGE = "escher_lego.jpg";
+    private static final String IMAGE = "images/escher_lego.jpg";
 
     static {
         Application.setConfiguration(new BaseConfiguration());
@@ -71,7 +71,7 @@ public abstract class ProcessorTest {
                         SourceFormat.JPG);
             } else if (proc.getAvailableOutputFormats(SourceFormat.MPG).size() > 0) {
                 expectedSize = new Dimension(640, 360);
-                actualSize = proc.getSize(TestUtil.getFixture("mpg"),
+                actualSize = proc.getSize(TestUtil.getFixture("images/mpg"),
                         SourceFormat.MPG);
             }
             assertEquals(expectedSize, actualSize);
@@ -117,12 +117,10 @@ public abstract class ProcessorTest {
         ops.setOutputFormat(OutputFormat.JPG);
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             if (getProcessor().getAvailableOutputFormats(sourceFormat).size() == 0) {
+                final File fixture = TestUtil.
+                        getFixture("images/" + sourceFormat.getPreferredExtension());
                 if (getProcessor() instanceof ChannelProcessor) {
-                    final ChannelSource source = new TestChannelSource(
-                            TestUtil.getFixture(sourceFormat.getPreferredExtension()));
-
-                    final ReadableByteChannel processReadableChannel = new FileInputStream(
-                            TestUtil.getFixture(sourceFormat.getPreferredExtension())).getChannel();
+                    final ChannelSource source = new TestChannelSource(fixture);
                     try {
                         ChannelProcessor proc = (ChannelProcessor) getProcessor();
                         Dimension size = proc.getSize(source.newChannel(),
@@ -134,8 +132,6 @@ public abstract class ProcessorTest {
                         assertEquals("Unsupported source format: " +
                                         sourceFormat.getPreferredExtension(),
                                 e.getMessage());
-                    } finally {
-                        processReadableChannel.close();
                     }
                 }
                 if (getProcessor() instanceof FileProcessor) {
@@ -312,33 +308,28 @@ public abstract class ProcessorTest {
     private void doProcessTest(OperationList ops) throws Exception {
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             if (getProcessor().getAvailableOutputFormats(sourceFormat).size() > 0) {
+                final File fixture = TestUtil.
+                        getFixture("images/" + sourceFormat.getPreferredExtension());
                 if (getProcessor() instanceof ChannelProcessor) {
-                    ChannelSource source = new TestChannelSource(
-                            TestUtil.getFixture(sourceFormat.getPreferredExtension()));
-
-                    ReadableByteChannel processReadableChannel = new FileInputStream(
-                            TestUtil.getFixture(sourceFormat.getPreferredExtension())).getChannel();
-                    try {
-                        ChannelProcessor proc = (ChannelProcessor) getProcessor();
-                        Dimension size = proc.getSize(source.newChannel(),
-                                sourceFormat);
-                        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                        WritableByteChannel outputChannel = Channels.newChannel(outputStream);
-                        proc.process(ops, sourceFormat, size, source,
-                                outputChannel);
-                        assertTrue(outputStream.toByteArray().length > 100); // TODO: actually read this
-                    } finally {
-                        processReadableChannel.close();
-                    }
+                    ChannelProcessor proc = (ChannelProcessor) getProcessor();
+                    ChannelSource source = new TestChannelSource(fixture);
+                    Dimension size = proc.getSize(source.newChannel(),
+                            sourceFormat);
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                    WritableByteChannel outputChannel = Channels.newChannel(outputStream);
+                    proc.process(ops, sourceFormat, size, source,
+                            outputChannel);
+                    // TODO: verify that this is a valid image
+                    assertTrue(outputStream.toByteArray().length > 100);
                 }
                 if (getProcessor() instanceof FileProcessor) {
                     FileProcessor proc = (FileProcessor) getProcessor();
-                    File file = TestUtil.getFixture(sourceFormat.getPreferredExtension());
-                    Dimension size = proc.getSize(file, sourceFormat);
+                    Dimension size = proc.getSize(fixture, sourceFormat);
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                     WritableByteChannel outputChannel = Channels.newChannel(outputStream);
-                    proc.process(ops, sourceFormat, size, file, outputChannel);
-                    assertTrue(outputStream.toByteArray().length > 100); // TODO: actually read this
+                    proc.process(ops, sourceFormat, size, fixture, outputChannel);
+                    // TODO: verify that this is a valid image
+                    assertTrue(outputStream.toByteArray().length > 100);
                 }
             }
         }

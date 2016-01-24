@@ -53,7 +53,8 @@ public class WebServer {
      * @throws IOException
      */
     public WebServer() throws IOException {
-        this.root = TestUtil.getFixturePath().toFile();
+        String path = TestUtil.getFixturePath().toAbsolutePath() + "/images";
+        this.root = new File(path);
     }
 
     public WebServer(File root) {

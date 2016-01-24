@@ -75,23 +75,24 @@ public class FfmpegProcessorTest extends ProcessorTest {
     @Test
     public void testProcessWithFrameOption() throws Exception {
         final SourceFormat sourceFormat = SourceFormat.MPG;
+        final File fixture = TestUtil.
+                getFixture("images/" + sourceFormat.getPreferredExtension());
+        final FileProcessor proc = (FileProcessor) getProcessor();
+        final Dimension size = proc.getSize(fixture, sourceFormat);
 
         // time option missing
-        FileProcessor proc = (FileProcessor) getProcessor();
-        File file = TestUtil.getFixture(sourceFormat.getPreferredExtension());
-        Dimension size = proc.getSize(file, sourceFormat);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         WritableByteChannel outputChannel = Channels.newChannel(outputStream);
         OperationList ops = TestUtil.newOperationList();
-        proc.process(ops, sourceFormat, size, file, outputChannel);
-        byte[] zeroSecondFrame = outputStream.toByteArray();
+        proc.process(ops, sourceFormat, size, fixture, outputChannel);
+        final byte[] zeroSecondFrame = outputStream.toByteArray();
 
         // time option present
         ops.getOptions().put("time", "00:00:05");
         outputStream = new ByteArrayOutputStream();
         outputChannel = Channels.newChannel(outputStream);
-        proc.process(ops, sourceFormat, size, file, outputChannel);
-        byte[] fiveSecondFrame = outputStream.toByteArray();
+        proc.process(ops, sourceFormat, size, fixture, outputChannel);
+        final byte[] fiveSecondFrame = outputStream.toByteArray();
 
         assertFalse(Arrays.equals(zeroSecondFrame, fiveSecondFrame));
     }

@@ -51,7 +51,8 @@ public class Version2_0ConformanceTest {
         try {
             File directory = new File(".");
             String cwd = directory.getCanonicalPath();
-            Path fixturePath = Paths.get(cwd, "src", "test", "resources");
+            Path fixturePath = Paths.get(cwd, "src", "test", "resources",
+                    "images");
             config.setProperty("print_stack_trace_on_error_pages", false);
             config.setProperty("http.port", PORT);
             config.setProperty("processor.fallback", "Java2dProcessor");
@@ -120,14 +121,14 @@ public class Version2_0ConformanceTest {
         // a slash in the identifier
         File directory = new File(".");
         String cwd = directory.getCanonicalPath();
-        Path path = Paths.get(cwd, "src", "test");
+        Path path = Paths.get(cwd, "src", "test", "resources");
         BaseConfiguration config = newConfiguration();
         config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",
                 path + File.separator);
         Application.setConfiguration(config);
 
         // image endpoint
-        String identifier = Reference.encode("resources/" + IMAGE);
+        String identifier = Reference.encode("images/" + IMAGE);
         ClientResource client = getClientForUriPath("/" + identifier + "/full/full/0/default.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());

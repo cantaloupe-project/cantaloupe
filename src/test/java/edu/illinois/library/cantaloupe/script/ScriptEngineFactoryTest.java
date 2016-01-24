@@ -41,7 +41,7 @@ public class ScriptEngineFactoryTest {
 
         // test with present, invalid delegate script
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
-                TestUtil.getFixture("txt").getAbsolutePath());
+                TestUtil.getFixture("images/txt").getAbsolutePath());
         try {
             ScriptEngineFactory.getScriptEngine();
             fail("Expected exception");

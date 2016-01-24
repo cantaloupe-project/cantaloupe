@@ -41,13 +41,13 @@ public class KakaduProcessorTest extends ProcessorTest {
         if (getProcessor() instanceof ChannelProcessor) {
             ChannelProcessor proc = (ChannelProcessor) getProcessor();
             Dimension actualSize = proc.getSize(
-                    new FileInputStream(TestUtil.getFixture("jp2")).getChannel(),
+                    new FileInputStream(TestUtil.getFixture("images/jp2")).getChannel(),
                     SourceFormat.JP2);
             assertEquals(expectedSize, actualSize);
         }
         if (getProcessor() instanceof FileProcessor) {
             FileProcessor proc = (FileProcessor) getProcessor();
-            Dimension actualSize = proc.getSize(TestUtil.getFixture("jp2"),
+            Dimension actualSize = proc.getSize(TestUtil.getFixture("images/jp2"),
                     SourceFormat.JP2);
             assertEquals(expectedSize, actualSize);
         }

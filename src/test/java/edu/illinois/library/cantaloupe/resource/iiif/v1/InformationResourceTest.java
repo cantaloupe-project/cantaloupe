@@ -125,10 +125,10 @@ public class InformationResourceTest extends ResourceTest {
         config.setProperty("cache.server.purge_missing", purgeMissing);
 
         File tempImage = File.createTempFile("temp", ".jpg");
-        File image = TestUtil.getFixture("jpg");
+        File image = TestUtil.getFixture("images/jpg");
         try {
             OperationList ops = TestUtil.newOperationList();
-            ops.setIdentifier(new Identifier("jpg"));
+            ops.setIdentifier(new Identifier("images/jpg"));
             ops.setOutputFormat(OutputFormat.JPG);
 
             assertEquals(0, cacheFolder.listFiles().length);

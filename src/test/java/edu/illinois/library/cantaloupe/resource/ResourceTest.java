@@ -34,7 +34,7 @@ public abstract class ResourceTest {
         config.setProperty("FilesystemResolver.lookup_strategy",
                 "BasicLookupStrategy");
         config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",
-                TestUtil.getFixturePath() + File.separator);
+                TestUtil.getFixturePath() + "/images/");
         return config;
     }
 

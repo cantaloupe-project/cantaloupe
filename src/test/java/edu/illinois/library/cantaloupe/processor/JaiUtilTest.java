@@ -20,7 +20,7 @@ public class JaiUtilTest {
 
     @Test
     public void testCropImage() throws Exception {
-        RenderedOp image = getFixture("jpg");
+        RenderedOp image = getFixture("images/jpg");
 
         // test with no-op crop
         Crop crop = new Crop();
@@ -55,7 +55,7 @@ public class JaiUtilTest {
         final ReductionFactor reductionFactor = new ReductionFactor();
         ImageIoImageReader reader = new ImageIoImageReader();
         RenderedImage image = reader.read(
-                TestUtil.getFixture("jpg"), SourceFormat.JPG, ops,
+                TestUtil.getFixture("images/jpg"), SourceFormat.JPG, ops,
                 reductionFactor);
         PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
         RenderedOp renderedOp = JaiUtil.reformatImage(planarImage,
@@ -66,7 +66,7 @@ public class JaiUtilTest {
 
     @Test
     public void testRotateImage() throws Exception {
-        RenderedOp inImage = getFixture("jpg");
+        RenderedOp inImage = getFixture("images/jpg");
 
         // test with no-op rotate
         Rotate rotate = new Rotate(0);
@@ -94,7 +94,7 @@ public class JaiUtilTest {
 
     @Test
     public void testScaleImage() throws Exception {
-        RenderedOp image = getFixture("jpg");
+        RenderedOp image = getFixture("images/jpg");
 
         // test with no-op scale
         Scale scale = new Scale();
@@ -118,7 +118,7 @@ public class JaiUtilTest {
     @Test
     public void testTransposeImage() throws Exception {
         // TODO: this test could be better
-        RenderedOp image = getFixture("jpg");
+        RenderedOp image = getFixture("images/jpg");
         // horizontal
         Transpose transpose = Transpose.HORIZONTAL;
         RenderedOp result = JaiUtil.transposeImage(image, transpose);

@@ -225,7 +225,7 @@ public class ImageResourceTest extends ResourceTest {
         config.setProperty("cache.server.purge_missing", purgeMissing);
 
         File tempImage = File.createTempFile("temp", ".jpg");
-        File image = TestUtil.getFixture("jpg");
+        File image = TestUtil.getFixture("images/jpg");
         try {
             OperationList ops = TestUtil.newOperationList();
             ops.setIdentifier(new Identifier("jpg"));

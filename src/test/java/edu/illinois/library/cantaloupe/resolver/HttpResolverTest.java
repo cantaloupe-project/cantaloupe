@@ -9,13 +9,11 @@ import edu.illinois.library.cantaloupe.test.WebServer;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.restlet.data.Reference;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 

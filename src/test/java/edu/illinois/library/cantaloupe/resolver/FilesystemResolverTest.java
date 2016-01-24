@@ -8,7 +8,6 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,7 +18,7 @@ import java.nio.file.AccessDeniedException;
 
 public class FilesystemResolverTest {
 
-    private static final Identifier IDENTIFIER = new Identifier("escher_lego.jpg");
+    private static final Identifier IDENTIFIER = new Identifier("images/escher_lego.jpg");
 
     FilesystemResolver instance;
 
@@ -146,21 +145,21 @@ public class FilesystemResolverTest {
     @Test
     public void testGetSourceFormatByDetection() throws IOException {
         assertEquals(SourceFormat.BMP,
-                instance.getSourceFormat(new Identifier("bmp")));
+                instance.getSourceFormat(new Identifier("images/bmp")));
         assertEquals(SourceFormat.GIF,
-                instance.getSourceFormat(new Identifier("gif")));
+                instance.getSourceFormat(new Identifier("images/gif")));
         assertEquals(SourceFormat.JP2,
-                instance.getSourceFormat(new Identifier("jp2")));
+                instance.getSourceFormat(new Identifier("images/jp2")));
         assertEquals(SourceFormat.JPG,
-                instance.getSourceFormat(new Identifier("jpg")));
+                instance.getSourceFormat(new Identifier("images/jpg")));
         assertEquals(SourceFormat.PDF,
-                instance.getSourceFormat(new Identifier("pdf")));
+                instance.getSourceFormat(new Identifier("images/pdf")));
         assertEquals(SourceFormat.PNG,
-                instance.getSourceFormat(new Identifier("png")));
+                instance.getSourceFormat(new Identifier("images/png")));
         assertEquals(SourceFormat.TIF,
-                instance.getSourceFormat(new Identifier("tif")));
+                instance.getSourceFormat(new Identifier("images/tif")));
         assertEquals(SourceFormat.UNKNOWN,
-                instance.getSourceFormat(new Identifier("txt")));
+                instance.getSourceFormat(new Identifier("images/txt")));
     }
 
     @Test

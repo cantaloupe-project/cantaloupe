@@ -40,7 +40,7 @@ public class ProcessorUtilTest {
     @Test
     public void testGetSizeWithFile() throws Exception {
         Dimension expected = new Dimension(100, 88);
-        Dimension actual = ProcessorUtil.getSize(TestUtil.getFixture("jpg"),
+        Dimension actual = ProcessorUtil.getSize(TestUtil.getFixture("images/jpg"),
                 SourceFormat.JPG);
         assertEquals(expected, actual);
     }
@@ -49,7 +49,7 @@ public class ProcessorUtilTest {
     public void testGetSizeWithInputStream() throws Exception {
         Dimension expected = new Dimension(100, 88);
         ReadableByteChannel readableChannel =
-                new FileInputStream(TestUtil.getFixture("jpg")).getChannel();
+                new FileInputStream(TestUtil.getFixture("images/jpg")).getChannel();
         Dimension actual = ProcessorUtil.getSize(readableChannel,
                 SourceFormat.JPG);
         assertEquals(expected, actual);

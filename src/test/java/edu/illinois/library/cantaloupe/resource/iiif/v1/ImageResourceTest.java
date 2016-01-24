@@ -262,7 +262,7 @@ public class ImageResourceTest extends ResourceTest {
 
         File tempImage = File.createTempFile("temp", ".jpg");
         tempImage.delete();
-        File image = TestUtil.getFixture("jpg");
+        File image = TestUtil.getFixture("images/jpg");
         try {
             OperationList ops = TestUtil.newOperationList();
             ops.setIdentifier(new Identifier("jpg"));
