@@ -1,11 +1,11 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.ConfigurationException;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -49,10 +49,12 @@ public abstract class AbstractResource extends ServerResource {
             getLogger(AbstractResource.class);
 
     public static final String BASE_URI_CONFIG_KEY = "base_uri";
-    private static final String MAX_PIXELS_CONFIG_KEY = "max_pixels";
-    protected static final String PURGE_MISSING_CONFIG_KEY =
+    public static final String CONTENT_DISPOSITION_CONFIG_KEY =
+            "endpoint.iiif.content_disposition";
+    public static final String MAX_PIXELS_CONFIG_KEY = "max_pixels";
+    public static final String PURGE_MISSING_CONFIG_KEY =
             "cache.server.purge_missing";
-    protected static final String RESOLVE_FIRST_CONFIG_KEY =
+    public static final String RESOLVE_FIRST_CONFIG_KEY =
             "cache.server.resolve_first";
     public static final String SLASH_SUBSTITUTE_CONFIG_KEY =
             "slash_substitute";
@@ -121,6 +123,34 @@ public abstract class AbstractResource extends ServerResource {
             }
         }
         return rootRef;
+    }
+
+    /**
+     * @param identifier
+     * @param outputFormat
+     * @return A content disposition based on the setting of
+     * {@link #CONTENT_DISPOSITION_CONFIG_KEY} in the application configuration.
+     * If it is set to <code>attachment</code>, the disposition will have a
+     * filename set to a reasonable value based on the given identifier and
+     * output format.
+     */
+    public static Disposition getRepresentationDisposition(
+            Identifier identifier, OutputFormat outputFormat) {
+        Disposition disposition = new Disposition();
+        switch (Application.getConfiguration().
+                getString(CONTENT_DISPOSITION_CONFIG_KEY, "none")) {
+            case "inline":
+                disposition.setType(Disposition.TYPE_INLINE);
+                break;
+            case "attachment":
+                disposition.setType(Disposition.TYPE_ATTACHMENT);
+                disposition.setFilename(
+                        identifier.toString().replaceAll(
+                                ImageRepresentation.FILENAME_CHARACTERS, "_") +
+                                "." + outputFormat.getExtension());
+                break;
+        }
+        return disposition;
     }
 
     @Override

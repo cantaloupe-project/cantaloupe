@@ -11,8 +11,10 @@ import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
+import org.junit.Before;
 import org.junit.Test;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.ChallengeResponse;
@@ -335,6 +337,41 @@ public class ImageResourceTest extends ResourceTest {
         } catch (ResourceException e) {
             assertEquals(Status.CLIENT_ERROR_NOT_FOUND, client.getStatus());
         }
+    }
+
+    @Test
+    public void testGetRepresentationDisposition() {
+        BaseConfiguration config = new BaseConfiguration();
+        Application.setConfiguration(config);
+
+        final Identifier identifier = new Identifier("cats?/\\dogs");
+        final OutputFormat outputFormat = OutputFormat.JPG;
+
+        // test with undefined config key
+        Disposition disposition = AbstractResource.
+                getRepresentationDisposition(identifier, outputFormat);
+        assertEquals(Disposition.TYPE_NONE, disposition.getType());
+
+        // test with empty config key
+        config.setProperty(AbstractResource.CONTENT_DISPOSITION_CONFIG_KEY, "");
+        disposition = AbstractResource.
+                getRepresentationDisposition(identifier, outputFormat);
+        assertEquals(Disposition.TYPE_NONE, disposition.getType());
+
+        // test with config key set to "inline"
+        config.setProperty(AbstractResource.CONTENT_DISPOSITION_CONFIG_KEY,
+                "inline");
+        disposition = AbstractResource.
+                getRepresentationDisposition(identifier, outputFormat);
+        assertEquals(Disposition.TYPE_INLINE, disposition.getType());
+
+        // test with config key set to "attachment"
+        config.setProperty(AbstractResource.CONTENT_DISPOSITION_CONFIG_KEY,
+                "attachment");
+        disposition = AbstractResource.
+                getRepresentationDisposition(identifier, outputFormat);
+        assertEquals(Disposition.TYPE_ATTACHMENT, disposition.getType());
+        assertEquals("cats___dogs.jpg", disposition.getFilename());
     }
 
     /**

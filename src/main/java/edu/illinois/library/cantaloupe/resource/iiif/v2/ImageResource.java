@@ -16,7 +16,6 @@ import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.AccessDeniedException;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
-import edu.illinois.library.cantaloupe.resource.iiif.ResourceUtils;
 import org.restlet.data.Disposition;
 import org.restlet.data.MediaType;
 import org.restlet.representation.WritableRepresentation;
@@ -77,7 +76,7 @@ public class ImageResource extends AbstractResource {
         ops.getOptions().putAll(
                 this.getReference().getQueryAsForm(true).getValuesMap());
 
-        final Disposition disposition = ResourceUtils.getRepresentationDisposition(
+        final Disposition disposition = getRepresentationDisposition(
                 ops.getIdentifier(), ops.getOutputFormat());
 
         // If we don't need to resolve first, and are using a cache, and the
