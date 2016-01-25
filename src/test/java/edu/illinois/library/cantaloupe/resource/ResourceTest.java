@@ -17,6 +17,7 @@ import java.io.IOException;
 
 public abstract class ResourceTest {
 
+    protected static final String IMAGE = "jpg-rgb-64x56x8-baseline.jpg";
     protected static final Integer PORT = TestUtil.getOpenPort();
 
     protected static Client client = new Client(new Context(), Protocol.HTTP);

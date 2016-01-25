@@ -152,8 +152,8 @@ public class Version2_0ConformanceTest {
 
         Representation rep = client.getResponseEntity();
         BufferedImage image = ImageIO.read(rep.getStream());
-        assertEquals(594, image.getWidth());
-        assertEquals(522, image.getHeight());
+        assertEquals(64, image.getWidth());
+        assertEquals(56, image.getHeight());
     }
 
     /**
@@ -169,8 +169,8 @@ public class Version2_0ConformanceTest {
 
         Representation rep = client.getResponseEntity();
         BufferedImage image = ImageIO.read(rep.getStream());
-        assertEquals(100, image.getWidth());
-        assertEquals(100, image.getHeight());
+        assertEquals(44, image.getWidth());
+        assertEquals(36, image.getHeight());
     }
 
     /**
@@ -187,8 +187,8 @@ public class Version2_0ConformanceTest {
 
         Representation rep = client.getResponseEntity();
         BufferedImage image = ImageIO.read(rep.getStream());
-        assertEquals(297, image.getWidth());
-        assertEquals(261, image.getHeight());
+        assertEquals(32, image.getWidth());
+        assertEquals(28, image.getHeight());
 
         // with floats
         client = getClientForUriPath("/" + IMAGE + "/pct:20.2,20.6,50.2,50.6/full/0/color.jpg");
@@ -197,8 +197,8 @@ public class Version2_0ConformanceTest {
 
         rep = client.getResponseEntity();
         image = ImageIO.read(rep.getStream());
-        assertEquals(298, image.getWidth());
-        assertEquals(264, image.getHeight());
+        assertEquals(32, image.getWidth());
+        assertEquals(28, image.getHeight());
     }
 
     /**
@@ -217,8 +217,8 @@ public class Version2_0ConformanceTest {
 
         Representation rep = client.getResponseEntity();
         BufferedImage image = ImageIO.read(rep.getStream());
-        assertEquals(594, image.getWidth());
-        assertEquals(522, image.getHeight());
+        assertEquals(64, image.getWidth());
+        assertEquals(56, image.getHeight());
     }
 
     /**
@@ -285,8 +285,8 @@ public class Version2_0ConformanceTest {
 
         Representation rep = client.getResponseEntity();
         BufferedImage image = ImageIO.read(rep.getStream());
-        assertEquals(594, image.getWidth());
-        assertEquals(522, image.getHeight());
+        assertEquals(64, image.getWidth());
+        assertEquals(56, image.getHeight());
     }
 
     /**
@@ -323,7 +323,7 @@ public class Version2_0ConformanceTest {
 
         Representation rep = client.getResponseEntity();
         BufferedImage image = ImageIO.read(rep.getStream());
-        assertEquals(56, image.getWidth());
+        assertEquals(57, image.getWidth());
         assertEquals(50, image.getHeight());
     }
 
@@ -342,8 +342,8 @@ public class Version2_0ConformanceTest {
 
         Representation rep = client.getResponseEntity();
         BufferedImage image = ImageIO.read(rep.getStream());
-        assertEquals(297, image.getWidth());
-        assertEquals(261, image.getHeight());
+        assertEquals(32, image.getWidth());
+        assertEquals(28, image.getHeight());
     }
 
     /**

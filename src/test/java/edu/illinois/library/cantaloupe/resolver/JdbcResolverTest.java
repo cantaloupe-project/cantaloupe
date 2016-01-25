@@ -18,6 +18,8 @@ import static org.junit.Assert.*;
 
 public class JdbcResolverTest {
 
+    private static final String IMAGE = "jpg-rgb-64x56x8-baseline.jpg";
+
     private JdbcResolver instance;
 
     @Before
@@ -50,7 +52,7 @@ public class JdbcResolverTest {
             statement.setString(1, "jpg.jpg");
             statement.setString(2, "image/jpeg");
             statement.setBinaryStream(3,
-                    new FileInputStream(TestUtil.getFixture("images/jpg")));
+                    new FileInputStream(TestUtil.getFixture("images/" + IMAGE)));
             statement.executeUpdate();
 
             instance = new JdbcResolver();

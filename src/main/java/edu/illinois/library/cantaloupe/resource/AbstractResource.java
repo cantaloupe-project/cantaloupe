@@ -148,23 +148,6 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * Should be called by all relevant resource implementations.
-     *
-     * @throws ConfigurationException If the given resolver and processor are
-     * incompatible.
-     */
-    protected final void checkProcessorResolverCompatibility(Resolver resolver,
-                                                             Processor processor)
-            throws ConfigurationException {
-        if (!resolver.isCompatible(processor)) {
-            throw new ConfigurationException(
-                    String.format("%s is not compatible with %s",
-                            processor.getClass().getSimpleName(),
-                            resolver.getClass().getSimpleName()));
-        }
-    }
-
-    /**
      * Some web servers have issues dealing with encoded slashes (%2F) in URLs.
      * This method enables the use of an alternate string to represent a slash
      * via {@link #SLASH_SUBSTITUTE_CONFIG_KEY}.

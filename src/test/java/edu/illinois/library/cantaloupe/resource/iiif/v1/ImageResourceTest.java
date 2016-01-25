@@ -39,7 +39,7 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testAuthorizationDelegate() throws Exception {
-        ClientResource client = getClientForUriPath("/jpg/full/full/0/native.jpg");
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/native.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 
@@ -64,7 +64,8 @@ public class ImageResourceTest extends ResourceTest {
         Application.startServer();
 
         // no credentials
-        ClientResource client = getClientForUriPath("/jpg/full/full/0/native.jpg");
+        ClientResource client = getClientForUriPath(
+                "/" + IMAGE + "/full/full/0/native.jpg");
         try {
             client.get();
             fail("Expected exception");
@@ -109,7 +110,8 @@ public class ImageResourceTest extends ResourceTest {
         expectedDirectives.put("public", null);
         expectedDirectives.put("no-transform", null);
 
-        ClientResource client = getClientForUriPath("/jpg/full/full/0/native.jpg");
+        ClientResource client = getClientForUriPath(
+                "/" + IMAGE + "/full/full/0/native.jpg");
         client.get();
         List<CacheDirective> actualDirectives = client.getResponse().getCacheDirectives();
         for (CacheDirective d : actualDirectives) {
@@ -139,7 +141,8 @@ public class ImageResourceTest extends ResourceTest {
         config.setProperty("cache.client.no_transform", "true");
         Application.setConfiguration(config);
 
-        ClientResource client = getClientForUriPath("/jpg/full/full/0/native.jpg");
+        ClientResource client = getClientForUriPath(
+                "/" + IMAGE + "/full/full/0/native.jpg");
         client.get();
         assertEquals(0, client.getResponse().getCacheDirectives().size());
     }
@@ -147,7 +150,8 @@ public class ImageResourceTest extends ResourceTest {
     @Test
     public void testContentDispositionHeader() {
         // no header
-        ClientResource client = getClientForUriPath("/jpg/full/full/0/native.jpg");
+        ClientResource client = getClientForUriPath(
+                "/" + IMAGE + "/full/full/0/native.jpg");
         client.get();
         assertNull(client.getResponseEntity().getDisposition());
 
@@ -165,14 +169,15 @@ public class ImageResourceTest extends ResourceTest {
         client.get();
         assertEquals(Disposition.TYPE_ATTACHMENT,
                 client.getResponseEntity().getDisposition().getType());
-        assertEquals("jpg.jpg",
+        assertEquals(IMAGE + ".jpg",
                 client.getResponseEntity().getDisposition().getFilename());
     }
 
     @Test
     public void testEndpointDisabled() {
         Configuration config = Application.getConfiguration();
-        ClientResource client = getClientForUriPath("/jpg/full/full/0/native.jpg");
+        ClientResource client = getClientForUriPath(
+                "/" + IMAGE + "/full/full/0/native.jpg");
 
         config.setProperty("endpoint.iiif.1.enabled", true);
         client.get();
@@ -194,7 +199,8 @@ public class ImageResourceTest extends ResourceTest {
     @Test
     public void testMaxPixels() {
         Configuration config = Application.getConfiguration();
-        ClientResource client = getClientForUriPath("/png/full/full/0/native.jpg");
+        ClientResource client = getClientForUriPath(
+                "/" + IMAGE + "/full/full/0/native.png");
 
         config.setProperty("max_pixels", 100000000);
         client.get();
@@ -212,7 +218,8 @@ public class ImageResourceTest extends ResourceTest {
     @Test
     public void testMaxPixelsIgnoredWhenStreamingSource() {
         Configuration config = Application.getConfiguration();
-        ClientResource client = getClientForUriPath("/jpg/full/full/0/native.jpg");
+        ClientResource client = getClientForUriPath(
+                "/" + IMAGE + "/full/full/0/native.jpg");
         config.setProperty("max_pixels", 1000);
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
@@ -248,35 +255,31 @@ public class ImageResourceTest extends ResourceTest {
         if (!cacheFolder.exists()) {
             cacheFolder.mkdir();
         }
-        final File imageCacheFolder =
-                new File(cacheFolder.getAbsolutePath() + "/image");
-        final File infoCacheFolder =
-                new File(cacheFolder.getAbsolutePath() + "/info");
 
-        Configuration config = Application.getConfiguration();
+        final Configuration config = Application.getConfiguration();
         config.setProperty("cache.server", "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
                 cacheFolder.getAbsolutePath());
         config.setProperty("FilesystemCache.ttl_seconds", 10);
+        config.setProperty("cache.server.resolve_first", true);
         config.setProperty("cache.server.purge_missing", purgeMissing);
 
         File tempImage = File.createTempFile("temp", ".jpg");
         tempImage.delete();
-        File image = TestUtil.getFixture("images/jpg");
+        File image = TestUtil.getFixture("images/" + IMAGE);
         try {
             OperationList ops = TestUtil.newOperationList();
-            ops.setIdentifier(new Identifier("jpg"));
+            ops.setIdentifier(new Identifier(IMAGE));
             ops.setOutputFormat(OutputFormat.JPG);
 
-            assertEquals(0, cacheFolder.listFiles().length);
+            assertEquals(0, FileUtils.listFiles(cacheFolder, null, true).size());
 
             // request an image to cache it
-            getClientForUriPath("/jpg/full/full/0/native.jpg").get();
-            getClientForUriPath("/jpg/info.json").get();
+            getClientForUriPath("/" + IMAGE + "/full/full/0/native.jpg").get();
+            getClientForUriPath("/" + IMAGE + "/info.json").get();
 
             // assert that it has been cached
-            assertEquals(1, imageCacheFolder.listFiles().length);
-            assertEquals(1, infoCacheFolder.listFiles().length);
+            assertEquals(2, FileUtils.listFiles(cacheFolder, null, true).size());
             Cache cache = CacheFactory.getInstance();
             assertNotNull(cache.getImageReadableChannel(ops));
             assertNotNull(cache.getDimension(ops.getIdentifier()));
@@ -290,7 +293,7 @@ public class ImageResourceTest extends ResourceTest {
 
             // request the same image which is now cached but underlying is 404
             try {
-                getClientForUriPath("/jpg/full/full/0/native.jpg").get();
+                getClientForUriPath("/" + IMAGE + "/full/full/0/native.jpg").get();
                 fail("Expected exception");
             } catch (ResourceException e) {
                 // noop
@@ -327,12 +330,13 @@ public class ImageResourceTest extends ResourceTest {
         config.setProperty("HttpResolver.BasicLookupStrategy.url_prefix",
                 server.getUri() + "/");
         config.setProperty("processor.jp2", "KakaduProcessor");
+        config.setProperty("processor.fallback", "KakaduProcessor");
         Application.setConfiguration(config);
 
         try {
             server.start();
             ClientResource client = getClientForUriPath(
-                    "/escher_lego.jp2/full/full/0/native.jpg");
+                    "/jp2/full/full/0/native.jpg");
             try {
                 client.get();
                 fail("Expected exception");
@@ -372,7 +376,8 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testUnavailableOutputFormat() throws IOException {
-        ClientResource client = getClientForUriPath("/escher_logo.jpg/full/full/0/native.bogus");
+        ClientResource client = getClientForUriPath(
+                "/" + IMAGE + "/full/full/0/native.bogus");
         try {
             client.get();
             fail("Expected exception");

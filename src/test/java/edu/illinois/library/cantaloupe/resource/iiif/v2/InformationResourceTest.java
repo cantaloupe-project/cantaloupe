@@ -61,7 +61,7 @@ public class InformationResourceTest extends ResourceTest {
         expectedDirectives.put("proxy-revalidate", null);
         expectedDirectives.put("no-transform", null);
 
-        ClientResource client = getClientForUriPath("/jpg/info.json");
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
         client.get();
         List<CacheDirective> actualDirectives = client.getResponse().getCacheDirectives();
         for (CacheDirective d : actualDirectives) {
@@ -79,7 +79,8 @@ public class InformationResourceTest extends ResourceTest {
     @Test
     public void testEndpointDisabled() {
         Configuration config = Application.getConfiguration();
-        ClientResource client = getClientForUriPath("/jpg/full/full/0/default.jpg");
+        ClientResource client = getClientForUriPath(
+                "/" + IMAGE + "/full/full/0/default.jpg");
 
         config.setProperty("endpoint.iiif.2.enabled", true);
         client.get();
@@ -119,20 +120,21 @@ public class InformationResourceTest extends ResourceTest {
         config.setProperty("FilesystemCache.pathname",
                 cacheFolder.getAbsolutePath());
         config.setProperty("FilesystemCache.ttl_seconds", 10);
+        config.setProperty("cache.server.resolve_first", true);
         config.setProperty("cache.server.purge_missing", purgeMissing);
 
         File tempImage = File.createTempFile("temp", ".jpg");
-        File image = TestUtil.getFixture("images/jpg");
+        File image = TestUtil.getFixture("images/" + IMAGE);
         try {
             OperationList ops = TestUtil.newOperationList();
-            ops.setIdentifier(new Identifier("jpg"));
+            ops.setIdentifier(new Identifier(IMAGE));
             ops.setOutputFormat(OutputFormat.JPG);
 
             assertEquals(0, FileUtils.listFiles(cacheFolder, null, true).size());
 
             // request an image to cache it
-            getClientForUriPath("/jpg/full/full/0/default.jpg").get();
-            getClientForUriPath("/jpg/info.json").get();
+            getClientForUriPath("/" + IMAGE + "/full/full/0/default.jpg").get();
+            getClientForUriPath("/" + IMAGE + "/info.json").get();
 
             // assert that it has been cached
             assertEquals(2, FileUtils.listFiles(cacheFolder, null, true).size());
@@ -146,10 +148,9 @@ public class InformationResourceTest extends ResourceTest {
             }
             FileUtils.moveFile(image, tempImage);
 
-            // request the same image which is now cached but underlying is 404
+            // request the same image which is now cached but underlying is gone
             try {
-                getClientForUriPath("/jpg/info.json").get();
-                fail("Expected exception");
+                getClientForUriPath("/" + IMAGE + "/info.json").get();
             } catch (ResourceException e) {
                 // noop
             }
@@ -196,11 +197,12 @@ public class InformationResourceTest extends ResourceTest {
         config.setProperty("HttpResolver.BasicLookupStrategy.url_prefix",
                 server.getUri() + "/");
         config.setProperty("processor.jp2", "KakaduProcessor");
+        config.setProperty("processor.fallback", "KakaduProcessor");
         Application.setConfiguration(config);
 
         try {
             server.start();
-            ClientResource client = getClientForUriPath("/escher_lego.jp2/info.json");
+            ClientResource client = getClientForUriPath("/jp2/info.json");
             try {
                 client.get();
                 fail("Expected exception");
@@ -214,12 +216,12 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testService() throws Exception {
-        ClientResource client = getClientForUriPath("/jpg/info.json");
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
         client.get();
         String json = client.getResponse().getEntityAsText();
         assertTrue(json.contains("\"service\":"));
 
-        client = getClientForUriPath("/gif/info.json");
+        client = getClientForUriPath("/jpg-rgb-64x56x8-line.jpg/info.json");
         client.get();
         json = client.getResponse().getEntityAsText();
         assertFalse(json.contains("\"service\":"));
@@ -253,13 +255,13 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testUrisInJson() throws IOException {
-        ClientResource client = getClientForUriPath("/jpg-rgb-64x56x8-baseline.jpg/info.json");
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
         client.get();
         String json = client.getResponse().getEntityAsText();
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("http://localhost:" + PORT +
-                WebApplication.IIIF_2_PATH + "/jpg-rgb-64x56x8-baseline.jpg", info.id);
+                WebApplication.IIIF_2_PATH + "/" + IMAGE, info.id);
     }
 
     @Test
@@ -268,18 +270,18 @@ public class InformationResourceTest extends ResourceTest {
         config.setProperty(AbstractResource.BASE_URI_CONFIG_KEY,
                 "http://example.org/");
 
-        ClientResource client = getClientForUriPath("/jpg-rgb-64x56x8-baseline.jpg/info.json");
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
         client.get();
         String json = client.getResponse().getEntityAsText();
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("http://example.org" +
-                WebApplication.IIIF_2_PATH + "/jpg-rgb-64x56x8-baseline.jpg", info.id);
+                WebApplication.IIIF_2_PATH + "/" + IMAGE, info.id);
     }
 
     @Test
     public void testUrisInJsonWithProxyHeaders() throws IOException {
-        ClientResource client = getClientForUriPath("/jpg-rgb-64x56x8-baseline.jpg/info.json");
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
         client.getRequest().getHeaders().add("X-Forwarded-Proto", "HTTP");
         client.getRequest().getHeaders().add("X-Forwarded-Host", "example.org");
         client.getRequest().getHeaders().add("X-Forwarded-Port", "8080");
@@ -289,7 +291,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("http://example.org:8080/cats" +
-                WebApplication.IIIF_2_PATH + "/jpg-rgb-64x56x8-baseline.jpg", info.id);
+                WebApplication.IIIF_2_PATH + "/" + IMAGE, info.id);
     }
 
     @Test
@@ -298,7 +300,7 @@ public class InformationResourceTest extends ResourceTest {
         config.setProperty(AbstractResource.BASE_URI_CONFIG_KEY,
                 "https://example.net/");
 
-        ClientResource client = getClientForUriPath("/jpg-rgb-64x56x8-baseline.jpg/info.json");
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
         client.getRequest().getHeaders().add("X-Forwarded-Proto", "HTTP");
         client.getRequest().getHeaders().add("X-Forwarded-Host", "example.org");
         client.getRequest().getHeaders().add("X-Forwarded-Port", "8080");
@@ -308,7 +310,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("https://example.net" +
-                WebApplication.IIIF_2_PATH + "/jpg-rgb-64x56x8-baseline.jpg", info.id);
+                WebApplication.IIIF_2_PATH + "/" + IMAGE, info.id);
     }
 
 }

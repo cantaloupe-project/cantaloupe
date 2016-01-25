@@ -89,13 +89,7 @@ public class HttpResolverTest {
         try {
             instance.getSourceFormat(new Identifier("image.bogus"));
             fail("Expected exception");
-        } catch (IOException e) {
-            // pass
-        }
-        try {
-            instance.getSourceFormat(new Identifier("image"));
-            fail("Expected exception");
-        } catch (IOException e) {
+        } catch (FileNotFoundException e) {
             // pass
         }
     }
