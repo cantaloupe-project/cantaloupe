@@ -20,7 +20,7 @@ import java.nio.file.AccessDeniedException;
 public class FilesystemResolverTest {
 
     private static final Identifier IDENTIFIER =
-            new Identifier("images/jpg-rgb-64x56x8-baseline.jpg");
+            new Identifier("jpg-rgb-64x56x8-baseline.jpg");
 
     FilesystemResolver instance;
 
@@ -31,7 +31,7 @@ public class FilesystemResolverTest {
         config.setProperty(FilesystemResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "BasicLookupStrategy");
         config.setProperty(FilesystemResolver.PATH_PREFIX_CONFIG_KEY,
-                TestUtil.getFixturePath() + File.separator);
+                TestUtil.getFixturePath() + "/images" + File.separator);
         return config;
     }
 
@@ -147,40 +147,52 @@ public class FilesystemResolverTest {
     @Test
     public void testGetSourceFormatByDetection() throws IOException {
         assertEquals(SourceFormat.BMP,
-                instance.getSourceFormat(new Identifier("images/bmp")));
+                instance.getSourceFormat(new Identifier("bmp")));
         assertEquals(SourceFormat.GIF,
-                instance.getSourceFormat(new Identifier("images/gif")));
+                instance.getSourceFormat(new Identifier("gif")));
         assertEquals(SourceFormat.JP2,
-                instance.getSourceFormat(new Identifier("images/jp2")));
+                instance.getSourceFormat(new Identifier("jp2")));
         assertEquals(SourceFormat.JPG,
-                instance.getSourceFormat(new Identifier("images/jpg")));
+                instance.getSourceFormat(new Identifier("jpg")));
         assertEquals(SourceFormat.PDF,
-                instance.getSourceFormat(new Identifier("images/pdf")));
+                instance.getSourceFormat(new Identifier("pdf")));
         assertEquals(SourceFormat.PNG,
-                instance.getSourceFormat(new Identifier("images/png")));
+                instance.getSourceFormat(new Identifier("png")));
         assertEquals(SourceFormat.TIF,
-                instance.getSourceFormat(new Identifier("images/tif")));
+                instance.getSourceFormat(new Identifier("tif")));
         assertEquals(SourceFormat.UNKNOWN,
-                instance.getSourceFormat(new Identifier("images/txt")));
+                instance.getSourceFormat(new Identifier("txt")));
     }
 
     @Test
     public void testGetSourceFormatByInference() throws IOException {
         assertEquals(SourceFormat.BMP,
-                instance.getSourceFormat(new Identifier("bla.bmp")));
+                instance.getSourceFormat(new Identifier("bmp-rgb-64x56x8.bmp")));
         assertEquals(SourceFormat.GIF,
-                instance.getSourceFormat(new Identifier("bla.gif")));
+                instance.getSourceFormat(new Identifier("gif-rgb-64x56x8.gif")));
         assertEquals(SourceFormat.JP2,
-                instance.getSourceFormat(new Identifier("bla.JP2")));
+                instance.getSourceFormat(new Identifier("jp2-rgb-64x56x8.jp2")));
+        assertEquals(SourceFormat.JPG,
+                instance.getSourceFormat(new Identifier("jpg-rgb-64x56x8-baseline.jpg")));
         assertEquals(SourceFormat.PDF,
-                instance.getSourceFormat(new Identifier("bla.pdf")));
+                instance.getSourceFormat(new Identifier("pdf.pdf")));
         assertEquals(SourceFormat.PNG,
-                instance.getSourceFormat(new Identifier("bla.png")));
+                instance.getSourceFormat(new Identifier("png-rgb-64x56x8.png")));
         assertEquals(SourceFormat.TIF,
-                instance.getSourceFormat(new Identifier("bla.tif")));
+                instance.getSourceFormat(new Identifier("tif-rgb-64x56x8-striped-jpeg.tif")));
+    }
+
+    @Test
+    public void testGetSourceFormatThrowsExceptionWhenResourceIsMissing()
+            throws IOException {
         try {
-            assertEquals(SourceFormat.UNKNOWN,
-                    instance.getSourceFormat(new Identifier("bla.bogus")));
+            instance.getSourceFormat(new Identifier("bogus"));
+            fail("Expected exception");
+        } catch (FileNotFoundException e) {
+            // pass
+        }
+        try {
+            instance.getSourceFormat(new Identifier("bla.jpg"));
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
