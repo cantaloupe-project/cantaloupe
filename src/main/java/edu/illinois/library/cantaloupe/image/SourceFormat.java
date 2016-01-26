@@ -92,6 +92,7 @@ public enum SourceFormat {
                 break;
             case "bmp":
                 extensions.add("bmp");
+                extensions.add("dib");
                 break;
             case "gif":
                 extensions.add("gif");

@@ -57,6 +57,7 @@ public class SourceFormatTest {
     public void testGetExtensions() {
         assertTrue(SourceFormat.AVI.getExtensions().contains("avi"));
         assertTrue(SourceFormat.BMP.getExtensions().contains("bmp"));
+        assertTrue(SourceFormat.BMP.getExtensions().contains("dib"));
         assertTrue(SourceFormat.GIF.getExtensions().contains("gif"));
         assertTrue(SourceFormat.JP2.getExtensions().contains("jp2"));
         assertTrue(SourceFormat.JP2.getExtensions().contains("j2k"));
