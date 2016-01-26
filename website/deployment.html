@@ -12,11 +12,11 @@ layout: default
 
 <p>Response times tend to benefit from multiple fast CPU cores. Even if a particular processor doesn't support multithreading, the operating system is at least likely to schedule different processing threads (from simultaneous requests) on different cores.</p>
 
-<p>That said, some source formats are more CPU-intensive than others. JPEG2000 via OpenJpegProcessor, for example, will put a lot more pressure on the CPU than uncompressed TIFF via Java2dProcessor.</p>
+<p>That said, some source formats are more CPU-intensive than others. JPEG2000 via <a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a>, for example, will put a lot more pressure on the CPU than uncompressed TIFF via <a href="processors.html#Java2dProcessor">Java2dProcessor</a>.</p>
 
 <h4 id="HardwareMemory">Memory</h4>
 
-<p>Memory requirements will vary drastically depending on source format, source image size, request image size, and the number of concurrent requests. Ideally, it is best to serve only source formats that support tiling or that can be selectively decoded (like TIFF or JPEG2000). Images in other formats will have to be fully loaded into memory before being processed, at great cost.</p>
+<p>Memory requirements will vary drastically depending on source format, source image size, request image size, and the number of concurrent requests. Ideally, it is best to serve only source formats that support tiling or that can be selectively decoded (like TIFF or JPEG2000). Images in other formats will have to be fully loaded into memory before being processed, at great (perhaps too great) cost.</p>
 
 <h4 id="HardwareStorage">Storage</h4>
 
@@ -66,4 +66,4 @@ layout: default
 
 <p>SSL/TLS is an involved subject that will not be covered here in any depth. Suffice to say that Cantaloupe supports TLS connections over HTTPS, configurable via the <code>https.*</code> keys in the configuration file. The general process for getting it working is to add a signed certificate (<span class="filename">.crt</span>) file to either a Java KeyStore (JKS) or PKCS#12 key store, and then refer to the key store file with the <code>https.key_store_path</code> configuration option.</p>
 
-<p>HTTPS can also be enabled on a <a href="#Reverse-Proxying">reverse proxy</a>, in which case Cantaloupe requires no special configuration.</p>
+<p>HTTPS can also be enabled on a <a href="#Reverse-Proxying">reverse proxy</a>, in which case the image server requires no special configuration.</p>
