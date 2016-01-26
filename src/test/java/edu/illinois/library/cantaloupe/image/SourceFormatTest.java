@@ -88,6 +88,8 @@ public class SourceFormatTest {
         assertTrue(SourceFormat.BMP.getMediaTypes().
                 contains(new MediaType("image/bmp")));
         assertTrue(SourceFormat.BMP.getMediaTypes().
+                contains(new MediaType("image/x-bmp")));
+        assertTrue(SourceFormat.BMP.getMediaTypes().
                 contains(new MediaType("image/x-ms-bmp")));
         assertTrue(SourceFormat.GIF.getMediaTypes().
                 contains(new MediaType("image/gif")));

@@ -150,6 +150,7 @@ public enum SourceFormat {
                 break;
             case "bmp":
                 types.add(new MediaType("image/bmp"));
+                types.add(new MediaType("image/x-bmp"));
                 types.add(new MediaType("image/x-ms-bmp"));
                 break;
             case "gif":
