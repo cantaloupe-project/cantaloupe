@@ -102,12 +102,12 @@ public class Scale implements Operation {
     }
 
     /**
-     * @param percent Float from 0 to 1
+     * @param percent Float above 0
      * @throws IllegalArgumentException
      */
     public void setPercent(Float percent) throws IllegalArgumentException {
-        if (percent <= 0 || percent > 1) {
-            throw new IllegalArgumentException("Percent must be between 0-1");
+        if (percent <= 0) {
+            throw new IllegalArgumentException("Percent must be greater than zero");
         }
         this.percent = percent;
     }
