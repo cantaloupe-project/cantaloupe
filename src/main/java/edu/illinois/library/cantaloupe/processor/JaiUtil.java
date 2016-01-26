@@ -208,17 +208,16 @@ abstract class JaiUtil {
                 xScale = scale.getWidth() / sourceWidth;
                 yScale = scale.getHeight() / sourceHeight;
             } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                double hScale = scale.getWidth() / sourceWidth;
-                double vScale = scale.getHeight() / sourceHeight;
+                final double hScale = scale.getWidth() / sourceWidth;
+                final double vScale = scale.getHeight() / sourceHeight;
                 xScale = (sourceWidth * Math.min(hScale, vScale)) / 100f;
                 yScale = (sourceHeight * Math.min(hScale, vScale)) / 100f;
             } else if (scale.getPercent() != null) {
-                int reqRf = ProcessorUtil.
-                        getReductionFactor(scale.getPercent(), 0).factor;
-                xScale = yScale = ProcessorUtil.getScale(
-                        new ReductionFactor(reqRf - rf.factor));
+                final double reqScale = scale.getPercent();
+                final double appliedScale = ProcessorUtil.getScale(rf);
+                xScale = yScale = reqScale / appliedScale;
             }
-            ParameterBlock pb = new ParameterBlock();
+            final ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
             pb.add((float) xScale);
             pb.add((float) yScale);
