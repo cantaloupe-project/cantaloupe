@@ -34,6 +34,10 @@ public abstract class TestUtil {
                 "src", "test", "resources");
     }
 
+    public static File getImage(String name) throws IOException {
+        return getFixture("images/" + name);
+    }
+
     public static Integer getOpenPort() {
         try (ServerSocket socket = new ServerSocket(0)) {
             return socket.getLocalPort();

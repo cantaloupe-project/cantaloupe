@@ -56,7 +56,7 @@ public class JdbcCacheTest {
         ops.setIdentifier(new Identifier("cats"));
 
         WritableByteChannel bc = instance.getImageWritableChannel(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getFixture("images/" + IMAGE)).getChannel(), bc);
+        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)).getChannel(), bc);
         bc.close();
 
         Identifier identifier = new Identifier("dogs");
@@ -77,7 +77,7 @@ public class JdbcCacheTest {
         ops.setOutputFormat(format);
 
         bc = instance.getImageWritableChannel(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getFixture("images/" + IMAGE)).getChannel(), bc);
+        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)).getChannel(), bc);
         bc.close();
 
         identifier = new Identifier("bunnies");
@@ -99,7 +99,7 @@ public class JdbcCacheTest {
         ops.setOutputFormat(format);
 
         bc = instance.getImageWritableChannel(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getFixture("images/" + IMAGE)).getChannel(), bc);
+        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)).getChannel(), bc);
         bc.close();
 
         // persist some corresponding dimensions
@@ -268,7 +268,7 @@ public class JdbcCacheTest {
         ops.setIdentifier(new Identifier("cats"));
 
         WritableByteChannel bc = instance.getImageWritableChannel(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getFixture("images/" + IMAGE)).getChannel(), bc);
+        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)).getChannel(), bc);
         bc.close();
         instance.putDimension(new Identifier("bees"), new Dimension(50, 40));
 
@@ -320,7 +320,7 @@ public class JdbcCacheTest {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("bees"));
 
-        IOUtils.copy(new FileInputStream(TestUtil.getFixture("images/" + IMAGE)).getChannel(),
+        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)).getChannel(),
                 instance.getImageWritableChannel(ops));
         instance.putDimension(new Identifier("bees"), new Dimension(50, 40));
 
@@ -357,7 +357,7 @@ public class JdbcCacheTest {
         ops.setIdentifier(new Identifier("bees"));
 
         WritableByteChannel bc = instance.getImageWritableChannel(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getFixture("images/" + IMAGE)).getChannel(), bc);
+        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)).getChannel(), bc);
         bc.close();
         instance.putDimension(new Identifier("bees"), new Dimension(50, 40));
 

@@ -123,7 +123,7 @@ public class InformationResourceTest extends ResourceTest {
         config.setProperty("cache.server.purge_missing", purgeMissing);
 
         File tempImage = File.createTempFile("temp", ".jpg");
-        File image = TestUtil.getFixture("images/" + IMAGE);
+        File image = TestUtil.getImage(IMAGE);
         try {
             OperationList ops = TestUtil.newOperationList();
             ops.setIdentifier(new Identifier(IMAGE));

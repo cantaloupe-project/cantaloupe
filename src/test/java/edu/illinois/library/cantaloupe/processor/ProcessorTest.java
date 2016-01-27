@@ -75,7 +75,7 @@ public abstract class ProcessorTest {
                         SourceFormat.JPG);
             } else if (proc.getAvailableOutputFormats(SourceFormat.MPG).size() > 0) {
                 expectedSize = new Dimension(640, 360);
-                actualSize = proc.getSize(TestUtil.getFixture("images/mpg"),
+                actualSize = proc.getSize(TestUtil.getImage("mpg"),
                         SourceFormat.MPG);
             }
             assertEquals(expectedSize, actualSize);

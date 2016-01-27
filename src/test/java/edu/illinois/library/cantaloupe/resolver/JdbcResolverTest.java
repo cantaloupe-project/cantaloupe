@@ -52,7 +52,7 @@ public class JdbcResolverTest {
             statement.setString(1, "jpg.jpg");
             statement.setString(2, "image/jpeg");
             statement.setBinaryStream(3,
-                    new FileInputStream(TestUtil.getFixture("images/" + IMAGE)));
+                    new FileInputStream(TestUtil.getImage(IMAGE)));
             statement.executeUpdate();
 
             instance = new JdbcResolver();
