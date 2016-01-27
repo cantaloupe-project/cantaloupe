@@ -106,7 +106,7 @@ public class ScaleTest {
             this.scale.setPercent(-0.5f);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
-            assertEquals("Percent must be between 0-1", e.getMessage());
+            assertEquals("Percent must be greater than zero", e.getMessage());
         }
     }
 
@@ -116,7 +116,7 @@ public class ScaleTest {
             this.scale.setPercent(0f);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
-            assertEquals("Percent must be between 0-1", e.getMessage());
+            assertEquals("Percent must be greater than zero", e.getMessage());
         }
     }
 

@@ -171,7 +171,7 @@ public class FilesystemResolverTest {
         assertEquals(SourceFormat.GIF,
                 instance.getSourceFormat(new Identifier("gif-rgb-64x56x8.gif")));
         assertEquals(SourceFormat.JP2,
-                instance.getSourceFormat(new Identifier("jp2-rgb-64x56x8.jp2")));
+                instance.getSourceFormat(new Identifier("jp2-rgb-64x56x8-monotiled-lossy.jp2")));
         assertEquals(SourceFormat.JPG,
                 instance.getSourceFormat(new Identifier("jpg-rgb-64x56x8-baseline.jpg")));
         assertEquals(SourceFormat.PDF,
