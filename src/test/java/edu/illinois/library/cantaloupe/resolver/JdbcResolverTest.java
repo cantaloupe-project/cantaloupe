@@ -69,16 +69,16 @@ public class JdbcResolverTest {
     }
 
     @Test
-    public void testGetChannel() throws IOException {
+    public void testGetStreamSource() throws IOException {
         // present, readable image
         try {
-            assertNotNull(instance.getChannelSource(new Identifier("jpg.jpg")));
+            assertNotNull(instance.getStreamSource(new Identifier("jpg.jpg")));
         } catch (IOException e) {
             fail();
         }
         // missing image
         try {
-            instance.getChannelSource(new Identifier("bogus"));
+            instance.getStreamSource(new Identifier("bogus"));
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass

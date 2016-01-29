@@ -14,7 +14,6 @@ import edu.illinois.library.cantaloupe.test.WebServer;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
 import org.junit.Test;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.ChallengeResponse;
@@ -245,7 +244,7 @@ public class ImageResourceTest extends ResourceTest {
             // assert that it has been cached
             assertEquals(2, FileUtils.listFiles(cacheFolder, null, true).size());
             Cache cache = CacheFactory.getInstance();
-            assertNotNull(cache.getImageReadableChannel(ops));
+            assertNotNull(cache.getImageInputStream(ops));
             assertNotNull(cache.getDimension(ops.getIdentifier()));
 
             // move the source image out of the way
@@ -263,10 +262,10 @@ public class ImageResourceTest extends ResourceTest {
             }
 
             if (purgeMissing) {
-                assertNull(cache.getImageReadableChannel(ops));
+                assertNull(cache.getImageInputStream(ops));
                 assertNull(cache.getDimension(ops.getIdentifier()));
             } else {
-                assertNotNull(cache.getImageReadableChannel(ops));
+                assertNotNull(cache.getImageInputStream(ops));
                 assertNotNull(cache.getDimension(ops.getIdentifier()));
             }
         } finally {
@@ -376,7 +375,7 @@ public class ImageResourceTest extends ResourceTest {
 
     /**
      * Checks that the server responds with HTTP 500 when a non-FileResolver is
-     * used with a non-ChannelProcessor.
+     * used with a non-StreamProcessor.
      *
      * @throws Exception
      */

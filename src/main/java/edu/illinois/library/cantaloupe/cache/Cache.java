@@ -4,8 +4,8 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 
 import java.awt.Dimension;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * <p>Interface to be implemented by all caches. A cache stores and retrieves
@@ -32,28 +32,29 @@ public interface Cache {
     Dimension getDimension(Identifier identifier) throws CacheException;
 
     /**
-     * <p>Returns a readable byte channel corresponding to the given
-     * OperationList.</p>
+     * <p>Returns an input stream corresponding to the given OperationList,
+     * or null if a non-expired image corresponding to the given operation
+     * list does not exist in the cache..</p>
      *
      * <p>If an image corresponding to the given parameters exists in the
      * cache but is expired, implementations should delete it.</p>
      *
-     * @param opList Operation list for which to retrieve an input stream, for
+     * @param opList Operation list for which to retrieve an input stream for
      *               reading from the cache.
-     * @return Readable byte channel corresponding to the given operation list,
-     * or null if a non-expired image corresponding to the given operation list
-     * does not exist in the cache.
+     * @return Input stream corresponding to the given operation list, or null
+     *         if a non-expired image corresponding to the given operation
+     *         list does not exist in the cache.
      */
-    ReadableByteChannel getImageReadableChannel(OperationList opList);
+    InputStream getImageInputStream(OperationList opList);
 
     /**
-     * @param opList Operation list for which to retrieve an output stream, for
+     * @param opList Operation list for which to retrieve an output stream for
      *               writing to the cache.
-     * @return Writable byte channel to which an image corresponding to the
-     * given parameters can be written.
+     * @return Output stream to which an image corresponding to the given
+     *         operation list can be written.
      * @throws CacheException
      */
-    WritableByteChannel getImageWritableChannel(OperationList opList)
+    OutputStream getImageOutputStream(OperationList opList)
             throws CacheException;
 
     /**

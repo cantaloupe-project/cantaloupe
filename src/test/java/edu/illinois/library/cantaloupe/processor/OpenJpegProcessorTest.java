@@ -38,10 +38,10 @@ public class OpenJpegProcessorTest extends ProcessorTest {
     @Override
     public void testGetSize() throws Exception {
         Dimension expectedSize = new Dimension(100, 88);
-        if (getProcessor() instanceof ChannelProcessor) {
-            ChannelProcessor proc = (ChannelProcessor) getProcessor();
+        if (getProcessor() instanceof StreamProcessor) {
+            StreamProcessor proc = (StreamProcessor) getProcessor();
             Dimension actualSize = proc.getSize(
-                    new FileInputStream(TestUtil.getImage("jp2")).getChannel(),
+                    new FileInputStream(TestUtil.getImage("jp2")),
                     SourceFormat.JP2);
             assertEquals(expectedSize, actualSize);
         }

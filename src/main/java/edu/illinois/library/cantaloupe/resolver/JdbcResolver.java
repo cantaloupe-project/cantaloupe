@@ -14,29 +14,28 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-class JdbcResolver extends AbstractResolver implements ChannelResolver {
+class JdbcResolver extends AbstractResolver implements StreamResolver {
 
-    private static class JdbcChannelSource implements ChannelSource {
+    private static class JdbcStreamSource implements StreamSource {
 
         private final int column;
         private final ResultSet resultSet;
 
-        public JdbcChannelSource(ResultSet resultSet, int column) {
+        public JdbcStreamSource(ResultSet resultSet, int column) {
             this.resultSet = resultSet;
             this.column = column;
         }
 
         @Override
-        public ReadableByteChannel newChannel() throws IOException {
+        public InputStream newStream() throws IOException {
             try {
-                return Channels.newChannel(resultSet.getBinaryStream(column));
+                return resultSet.getBinaryStream(column);
             } catch (SQLException e) {
                 throw new IOException(e.getMessage(), e);
             }
@@ -102,7 +101,7 @@ class JdbcResolver extends AbstractResolver implements ChannelResolver {
     }
 
     @Override
-    public ChannelSource getChannelSource(Identifier identifier)
+    public StreamSource getStreamSource(Identifier identifier)
             throws IOException {
         try (Connection connection = getConnection()) {
             Configuration config = Application.getConfiguration();
@@ -117,7 +116,7 @@ class JdbcResolver extends AbstractResolver implements ChannelResolver {
             statement.setString(1, executeGetDatabaseIdentifier(identifier));
             ResultSet result = statement.executeQuery();
             if (result.next()) {
-                return new JdbcChannelSource(result, 1);
+                return new JdbcStreamSource(result, 1);
             }
         } catch (ScriptException | SQLException e) {
             throw new IOException(e.getMessage(), e);

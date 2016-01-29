@@ -30,7 +30,7 @@ public class ImageIoImageReaderTest {
     }
 
     @Test
-    public void testReadImageWithReadableByteChannel() {
+    public void testReadImageWithInputStream() {
         // this will be tested in ProcessorTest
     }
 

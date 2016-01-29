@@ -8,16 +8,16 @@ import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import edu.illinois.library.cantaloupe.util.IOUtils;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.awt.Dimension;
 import java.io.FileInputStream;
-import java.nio.channels.WritableByteChannel;
+import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -55,8 +55,8 @@ public class JdbcCacheTest {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
 
-        WritableByteChannel bc = instance.getImageWritableChannel(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)).getChannel(), bc);
+        OutputStream bc = instance.getImageOutputStream(ops);
+        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), bc);
         bc.close();
 
         Identifier identifier = new Identifier("dogs");
@@ -76,8 +76,8 @@ public class JdbcCacheTest {
         ops.add(rotate);
         ops.setOutputFormat(format);
 
-        bc = instance.getImageWritableChannel(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)).getChannel(), bc);
+        bc = instance.getImageOutputStream(ops);
+        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), bc);
         bc.close();
 
         identifier = new Identifier("bunnies");
@@ -98,8 +98,8 @@ public class JdbcCacheTest {
         ops.add(rotate);
         ops.setOutputFormat(format);
 
-        bc = instance.getImageWritableChannel(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)).getChannel(), bc);
+        bc = instance.getImageOutputStream(ops);
+        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), bc);
         bc.close();
 
         // persist some corresponding dimensions
@@ -267,8 +267,8 @@ public class JdbcCacheTest {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
 
-        WritableByteChannel bc = instance.getImageWritableChannel(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)).getChannel(), bc);
+        OutputStream bc = instance.getImageOutputStream(ops);
+        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), bc);
         bc.close();
         instance.putDimension(new Identifier("bees"), new Dimension(50, 40));
 
@@ -320,8 +320,8 @@ public class JdbcCacheTest {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("bees"));
 
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)).getChannel(),
-                instance.getImageWritableChannel(ops));
+        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)),
+                instance.getImageOutputStream(ops));
         instance.putDimension(new Identifier("bees"), new Dimension(50, 40));
 
         // existing, non-expired image
@@ -342,7 +342,7 @@ public class JdbcCacheTest {
     public void testGetImageInputStreamWithZeroTtl() {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
-        assertNotNull(instance.getImageReadableChannel(ops));
+        assertNotNull(instance.getImageInputStream(ops));
     }
 
     @Test
@@ -356,30 +356,30 @@ public class JdbcCacheTest {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("bees"));
 
-        WritableByteChannel bc = instance.getImageWritableChannel(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)).getChannel(), bc);
+        OutputStream bc = instance.getImageOutputStream(ops);
+        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), bc);
         bc.close();
         instance.putDimension(new Identifier("bees"), new Dimension(50, 40));
 
         // existing, non-expired image
-        assertNotNull(instance.getImageReadableChannel(ops));
+        assertNotNull(instance.getImageInputStream(ops));
 
         // existing, expired image
         ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
-        assertNull(instance.getImageReadableChannel(ops));
+        assertNull(instance.getImageInputStream(ops));
 
         // nonexistent image
         ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("bogus"));
-        assertNull(instance.getImageReadableChannel(ops));
+        assertNull(instance.getImageInputStream(ops));
     }
 
     @Test
     public void testGetImageOutputStream() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
-        assertNotNull(instance.getImageWritableChannel(ops));
+        assertNotNull(instance.getImageOutputStream(ops));
     }
 
     @Test

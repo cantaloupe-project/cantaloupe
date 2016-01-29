@@ -6,10 +6,10 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import edu.illinois.library.cantaloupe.util.IOUtils;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,8 +27,8 @@ import java.awt.Dimension;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -173,9 +173,9 @@ public class ApplicationTest {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("dogs"));
         ops.add(new Rotate(15));
-        WritableByteChannel wbc = cache.getImageWritableChannel(ops);
-        ReadableByteChannel rbc = new FileInputStream(
-                TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg")).getChannel();
+        OutputStream wbc = cache.getImageOutputStream(ops);
+        InputStream rbc = new FileInputStream(
+                TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));
         IOUtils.copy(rbc, wbc);
 
         // assert that they've been cached

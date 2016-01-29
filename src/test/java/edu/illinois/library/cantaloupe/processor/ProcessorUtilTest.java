@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import java.awt.Dimension;
 import java.io.FileInputStream;
-import java.nio.channels.ReadableByteChannel;
+import java.io.InputStream;
 
 import static org.junit.Assert.*;
 
@@ -49,9 +49,9 @@ public class ProcessorUtilTest {
     @Test
     public void testGetSizeWithInputStream() throws Exception {
         Dimension expected = new Dimension(64, 56);
-        ReadableByteChannel readableChannel = new FileInputStream(
-                TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg")).getChannel();
-        Dimension actual = ProcessorUtil.getSize(readableChannel,
+        InputStream inputStream = new FileInputStream(
+                TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));
+        Dimension actual = ProcessorUtil.getSize(inputStream,
                 SourceFormat.JPG);
         assertEquals(expected, actual);
     }

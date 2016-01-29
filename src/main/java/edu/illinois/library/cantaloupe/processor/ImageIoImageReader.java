@@ -7,7 +7,7 @@ import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.resolver.ChannelSource;
+import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,7 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -44,7 +44,7 @@ class ImageIoImageReader {
     }
 
     /**
-     * @param inputSource  {@link File} or {@link ReadableByteChannel}
+     * @param inputSource  {@link File} or {@link InputStream}
      * @param sourceFormat Format of the source image
      * @return New ImageReader instance with input already set. Should be
      * disposed after using.
@@ -57,8 +57,8 @@ class ImageIoImageReader {
         Iterator<ImageReader> it = ImageIO.getImageReadersByMIMEType(
                 sourceFormat.getPreferredMediaType().toString());
         if (it.hasNext()) {
-            if (inputSource instanceof ChannelSource) {
-                inputSource = ((ChannelSource) inputSource).newChannel();
+            if (inputSource instanceof StreamSource) {
+                inputSource = ((StreamSource) inputSource).newStream();
             }
             final ImageReader reader = it.next();
             reader.setInput(ImageIO.createImageInputStream(inputSource));
@@ -91,15 +91,14 @@ class ImageIoImageReader {
      * {@link ImageIO#read} that reads a whole image (excluding subimages) in
      * one shot.
      *
-     * @param readableChannel Image channel to read.
+     * @param inputStream Input stream to read.
      * @return BufferedImage guaranteed to not be of type
      * {@link BufferedImage#TYPE_CUSTOM}.
      * @throws IOException
      */
-    public BufferedImage read(ReadableByteChannel readableChannel)
-            throws IOException {
+    public BufferedImage read(InputStream inputStream) throws IOException {
         final BufferedImage image = ImageIO.read(
-                ImageIO.createImageInputStream(readableChannel));
+                ImageIO.createImageInputStream(inputStream));
         final BufferedImage rgbImage = Java2dUtil.convertCustomToRgb(image);
         if (rgbImage != image) {
             logger.warn("Converted image to RGB (this is very expensive)");
@@ -110,7 +109,7 @@ class ImageIoImageReader {
     /**
      * <p>Attempts to reads an image as efficiently as possible, utilizing its
      * tile layout and/or subimages, if possible.</p>
-     * <p/>
+     *
      * <p>After reading, clients should check the reader hints to see whether
      * the returned image will require cropping.</p>
      *
@@ -121,11 +120,12 @@ class ImageIoImageReader {
      * @param reductionFactor {@link ReductionFactor#factor} property will be
      *                        modified to reflect the reduction factor of the
      *                        returned image.
-     * @param hints           Will be populated by information returned by the reader.
+     * @param hints           Will be populated by information returned by the
+     *                        reader.
      * @return BufferedImage best matching the given parameters, guaranteed to
-     * not be of {@link BufferedImage#TYPE_CUSTOM}. Clients should
-     * check the hints set to see whether they need to perform
-     * additional cropping.
+     *         not be of {@link BufferedImage#TYPE_CUSTOM}. Clients should
+     *         check the hints set to see whether they need to perform
+     *         additional cropping.
      * @throws IOException
      * @throws ProcessorException
      */
@@ -144,7 +144,7 @@ class ImageIoImageReader {
      * @see #read(File, SourceFormat, OperationList, Dimension,
      * ReductionFactor, Set< ReaderHint >)
      *
-     * @param channelSource Source of image channels to read
+     * @param streamSource Source of image streams to read
      * @param sourceFormat Format of the source image
      * @param ops
      * @param fullSize Full size of the source image.
@@ -161,19 +161,19 @@ class ImageIoImageReader {
      * @see #read(File, SourceFormat, OperationList, Dimension,
      * ReductionFactor, Set< ReaderHint >)
      */
-    public BufferedImage read(final ChannelSource channelSource,
+    public BufferedImage read(final StreamSource streamSource,
                               final SourceFormat sourceFormat,
                               final OperationList ops,
                               final Dimension fullSize,
                               final ReductionFactor reductionFactor,
                               final Set<ReaderHint> hints)
             throws IOException, ProcessorException {
-        return multiLevelAwareRead(channelSource.newChannel(), sourceFormat,
+        return multiLevelAwareRead(streamSource.newStream(), sourceFormat,
                 ops, fullSize, reductionFactor, hints);
     }
 
     /**
-     * @param inputSource  {@link ReadableByteChannel} or {@link File}
+     * @param inputSource  {@link InputStream} or {@link File}
      * @param sourceFormat Format of the source image.
      * @param ops
      * @param fullSize     Full size of the source image.
@@ -451,16 +451,16 @@ class ImageIoImageReader {
     /**
      * Reads an image (excluding subimages).
      *
-     * @param readableChannel Image channel to read.
+     * @param inputStream Input stream to read.
      * @param sourceFormat
      * @return RenderedImage
      * @throws IOException
      * @throws UnsupportedSourceFormatException
      */
-    public RenderedImage readRendered(final ReadableByteChannel readableChannel,
+    public RenderedImage readRendered(final InputStream inputStream,
                                       final SourceFormat sourceFormat)
             throws IOException, UnsupportedSourceFormatException {
-        ImageReader reader = newImageReader(readableChannel, sourceFormat);
+        ImageReader reader = newImageReader(inputStream, sourceFormat);
         return reader.readAsRenderedImage(0, reader.getDefaultReadParam());
     }
 
@@ -490,7 +490,7 @@ class ImageIoImageReader {
     /**
      * @see #read(File, SourceFormat, OperationList, ReductionFactor)
      *
-     * @param channelSource Source of image channels to read
+     * @param streamSource Source of image streams to read
      * @param sourceFormat Format of the source image
      * @param ops
      * @param reductionFactor {@link ReductionFactor#factor} property will be
@@ -501,17 +501,17 @@ class ImageIoImageReader {
      * @throws ProcessorException
      * @see #read(File, SourceFormat, OperationList, ReductionFactor)
      */
-    public RenderedImage read(final ChannelSource channelSource,
+    public RenderedImage read(final StreamSource streamSource,
                               final SourceFormat sourceFormat,
                               final OperationList ops,
                               final ReductionFactor reductionFactor)
             throws IOException, ProcessorException {
-        return multiLevelAwareRead(channelSource, sourceFormat,
+        return multiLevelAwareRead(streamSource, sourceFormat,
                 ops, reductionFactor);
     }
 
     /**
-     * @param inputSource {@link ChannelSource} or {@link File}
+     * @param inputSource {@link StreamSource} or {@link File}
      * @param sourceFormat Format of the source image.
      * @param ops
      * @param rf {@link ReductionFactor#factor} property will be modified to

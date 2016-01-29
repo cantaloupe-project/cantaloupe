@@ -431,18 +431,18 @@ public class FilesystemCacheTest {
     /* getImageInputStream(OperationList) */
 
     @Test
-    public void testGetImageReadableChannelWithZeroTtl() throws Exception {
+    public void testGetImageInputStreamWithZeroTtl() throws Exception {
         OperationList ops = TestUtil.newOperationList();
-        assertNull(instance.getImageReadableChannel(ops));
+        assertNull(instance.getImageInputStream(ops));
 
         File imageFile = instance.getImageFile(ops);
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
-        assertNotNull(instance.getImageReadableChannel(ops));
+        assertNotNull(instance.getImageInputStream(ops));
     }
 
     @Test
-    public void testGetImageReadableChannelWithNonzeroTtl() throws Exception {
+    public void testGetImageInputStreamWithNonzeroTtl() throws Exception {
         Application.getConfiguration().
                 setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
 
@@ -450,28 +450,28 @@ public class FilesystemCacheTest {
         File cacheFile = instance.getImageFile(ops);
         cacheFile.getParentFile().mkdirs();
         cacheFile.createNewFile();
-        assertNotNull(instance.getImageReadableChannel(ops));
+        assertNotNull(instance.getImageInputStream(ops));
 
         Thread.sleep(1100);
 
-        assertNull(instance.getImageReadableChannel(ops));
+        assertNull(instance.getImageInputStream(ops));
         assertFalse(cacheFile.exists());
     }
 
-    /* getImageWritableChannel(OperationList) */
+    /* getImageOutputStream(OperationList) */
 
     @Test
-    public void testGetImageWritableChannel() throws Exception {
+    public void testGetImageOutputStream() throws Exception {
         OperationList ops = TestUtil.newOperationList();
-        assertNotNull(instance.getImageWritableChannel(ops));
+        assertNotNull(instance.getImageOutputStream(ops));
     }
 
     @Test
-    public void testImageWritableChannelCreatesFolder() throws Exception {
+    public void testImageOutputStreamCreatesFolder() throws Exception {
         FileUtils.deleteDirectory(imagePath);
 
         OperationList ops = TestUtil.newOperationList();
-        instance.getImageWritableChannel(ops);
+        instance.getImageOutputStream(ops);
         assertTrue(imagePath.exists());
     }
 

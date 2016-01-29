@@ -64,16 +64,16 @@ public class AmazonS3ResolverTest {
     }
 
     @Test
-    public void testGetChannelWithBasicLookupStrategy() {
+    public void testGetStreamSourceWithBasicLookupStrategy() {
         // present, readable image
         try {
-            assertNotNull(instance.getChannelSource(IMAGE));
+            assertNotNull(instance.getStreamSource(IMAGE));
         } catch (IOException e) {
             fail();
         }
         // missing image
         try {
-            instance.getChannelSource(new Identifier("bogus"));
+            instance.getStreamSource(new Identifier("bogus"));
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
@@ -83,7 +83,7 @@ public class AmazonS3ResolverTest {
     }
 
     @Test
-    public void testGetChannelWithScriptLookupStrategy() throws Exception {
+    public void testGetStreamSourceWithScriptLookupStrategy() throws Exception {
         Configuration config = Application.getConfiguration();
         config.setProperty(AmazonS3Resolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
@@ -91,14 +91,14 @@ public class AmazonS3ResolverTest {
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         // present image
         try {
-            ChannelSource source = instance.getChannelSource(IMAGE);
-            assertNotNull(source.newChannel());
+            StreamSource source = instance.getStreamSource(IMAGE);
+            assertNotNull(source.newStream());
         } catch (IOException e) {
             fail();
         }
         // missing image
         try {
-            ChannelSource source = instance.getChannelSource(new Identifier("bogus"));
+            instance.getStreamSource(new Identifier("bogus"));
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass

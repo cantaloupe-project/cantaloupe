@@ -11,8 +11,6 @@ import java.awt.Dimension;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -82,16 +80,14 @@ public class FfmpegProcessorTest extends ProcessorTest {
 
         // time option missing
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        WritableByteChannel outputChannel = Channels.newChannel(outputStream);
         OperationList ops = TestUtil.newOperationList();
-        proc.process(ops, sourceFormat, size, fixture, outputChannel);
+        proc.process(ops, sourceFormat, size, fixture, outputStream);
         final byte[] zeroSecondFrame = outputStream.toByteArray();
 
         // time option present
         ops.getOptions().put("time", "00:00:05");
         outputStream = new ByteArrayOutputStream();
-        outputChannel = Channels.newChannel(outputStream);
-        proc.process(ops, sourceFormat, size, fixture, outputChannel);
+        proc.process(ops, sourceFormat, size, fixture, outputStream);
         final byte[] fiveSecondFrame = outputStream.toByteArray();
 
         assertFalse(Arrays.equals(zeroSecondFrame, fiveSecondFrame));

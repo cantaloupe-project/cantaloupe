@@ -10,7 +10,7 @@ import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Transpose;
-import edu.illinois.library.cantaloupe.resolver.ChannelSource;
+import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.apache.commons.configuration.Configuration;
 import org.im4java.core.ConvertCmd;
@@ -25,10 +25,9 @@ import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -36,7 +35,7 @@ import java.util.Set;
 /**
  * Processor using the ImageMagick `convert` and `identify` command-line tools.
  */
-class ImageMagickProcessor implements ChannelProcessor {
+class ImageMagickProcessor implements StreamProcessor {
 
     private static Logger logger = LoggerFactory.
             getLogger(ImageMagickProcessor.class);
@@ -167,7 +166,7 @@ class ImageMagickProcessor implements ChannelProcessor {
     }
 
     @Override
-    public Dimension getSize(final ReadableByteChannel readableChannel,
+    public Dimension getSize(final InputStream inputStream,
                              final SourceFormat sourceFormat)
             throws ProcessorException {
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
@@ -175,15 +174,15 @@ class ImageMagickProcessor implements ChannelProcessor {
         }
         try {
             Info sourceInfo = new Info(
-                    sourceFormat.getPreferredExtension() + ":-",
-                    Channels.newInputStream(readableChannel), true);
+                    sourceFormat.getPreferredExtension() + ":-", inputStream,
+                    true);
             return new Dimension(sourceInfo.getImageWidth(),
                     sourceInfo.getImageHeight());
         } catch (IM4JavaException e) {
             throw new ProcessorException(e.getMessage(), e);
         } finally {
             try {
-                readableChannel.close();
+                inputStream.close();
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
             }
@@ -226,8 +225,8 @@ class ImageMagickProcessor implements ChannelProcessor {
     public void process(final OperationList ops,
                         final SourceFormat sourceFormat,
                         final Dimension fullSize,
-                        final ChannelSource channelSource,
-                        final WritableByteChannel writableChannel)
+                        final StreamSource streamSource,
+                        final OutputStream outputStream)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
@@ -245,10 +244,8 @@ class ImageMagickProcessor implements ChannelProcessor {
             // format transformation
             op.addImage(ops.getOutputFormat().getExtension() + ":-"); // write to stdout
 
-            Pipe pipeIn = new Pipe(
-                    Channels.newInputStream(channelSource.newChannel()), null);
-            Pipe pipeOut = new Pipe(null,
-                    Channels.newOutputStream(writableChannel));
+            Pipe pipeIn = new Pipe(streamSource.newStream(), null);
+            Pipe pipeOut = new Pipe(null, outputStream);
 
             ConvertCmd convert = new ConvertCmd();
 

@@ -9,7 +9,7 @@ import javax.imageio.ImageReader;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
+import java.io.InputStream;
 import java.util.Iterator;
 
 abstract class ProcessorUtil {
@@ -52,7 +52,7 @@ abstract class ProcessorUtil {
     }
 
     /**
-     * Efficiently reads the width & height of an image.
+     * Efficiently reads the dimensions of an image.
      *
      * @param inputFile
      * @param sourceFormat
@@ -65,21 +65,21 @@ abstract class ProcessorUtil {
     }
 
     /**
-     * Efficiently reads the width & height of an image.
+     * Efficiently reads the dimensions of an image.
      *
-     * @param readableChannel Will be closed.
+     * @param inputStream Will be closed.
      * @param sourceFormat
      * @return Dimensions in pixels
      * @throws ProcessorException
      */
-    public static Dimension getSize(ReadableByteChannel readableChannel,
+    public static Dimension getSize(InputStream inputStream,
                                     SourceFormat sourceFormat)
             throws ProcessorException {
         try {
-            return doGetSize(readableChannel, sourceFormat);
+            return doGetSize(inputStream, sourceFormat);
         } finally {
             try {
-                readableChannel.close();
+                inputStream.close();
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
             }

@@ -42,16 +42,16 @@ public class FilesystemResolverTest {
     }
 
     @Test
-    public void testGetChannel() {
+    public void testGetStreamSource() {
         // present, readable image
         try {
-            assertNotNull(instance.getChannelSource(IDENTIFIER));
+            assertNotNull(instance.getStreamSource(IDENTIFIER));
         } catch (IOException e) {
             fail();
         }
         // missing image
         try {
-            instance.getChannelSource(new Identifier("bogus"));
+            instance.getStreamSource(new Identifier("bogus"));
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass

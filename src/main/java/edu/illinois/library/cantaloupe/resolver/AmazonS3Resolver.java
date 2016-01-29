@@ -8,6 +8,7 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
@@ -22,26 +23,24 @@ import org.slf4j.LoggerFactory;
 import javax.script.ScriptException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 
 /**
  * @see <a href="http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/welcome.html">
  *     AWS SDK for Java</a>
  */
-class AmazonS3Resolver extends AbstractResolver implements ChannelResolver {
+class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
-    private static class AmazonS3ChannelSource implements ChannelSource {
+    private static class AmazonS3StreamSource implements StreamSource {
 
         private final S3Object object;
 
-        public AmazonS3ChannelSource(S3Object object) {
+        public AmazonS3StreamSource(S3Object object) {
             this.object = object;
         }
 
         @Override
-        public ReadableByteChannel newChannel() throws IOException {
-            return Channels.newChannel(object.getObjectContent());
+        public S3ObjectInputStream newStream() throws IOException {
+            return object.getObjectContent();
         }
 
     }
@@ -103,9 +102,9 @@ class AmazonS3Resolver extends AbstractResolver implements ChannelResolver {
     }
 
     @Override
-    public ChannelSource getChannelSource(Identifier identifier)
+    public StreamSource getStreamSource(Identifier identifier)
             throws IOException {
-        return new AmazonS3ChannelSource(getObject(identifier));
+        return new AmazonS3StreamSource(getObject(identifier));
     }
 
     private S3Object getObject(Identifier identifier) throws IOException {

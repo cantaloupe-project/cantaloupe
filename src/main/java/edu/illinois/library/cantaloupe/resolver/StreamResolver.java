@@ -8,19 +8,19 @@ import java.nio.file.AccessDeniedException;
 
 /**
  * Interface to be implemented by all resolvers that support access to source
- * images via NIO readable byte channels.
+ * images via input streams.
  */
-public interface ChannelResolver extends Resolver {
+public interface StreamResolver extends Resolver {
 
     /**
      * @param identifier
-     * @return ChannelSource for reading the source image; never null.
+     * @return StreamSource for reading the source image; never null.
      * @throws FileNotFoundException if the image corresponding to the given
      * identifier does not exist
      * @throws AccessDeniedException if the image corresponding to the given
      * identifier is not readable
      * @throws IOException if there is some other issue accessing the image
      */
-    ChannelSource getChannelSource(Identifier identifier) throws IOException;
+    StreamSource getStreamSource(Identifier identifier) throws IOException;
 
 }

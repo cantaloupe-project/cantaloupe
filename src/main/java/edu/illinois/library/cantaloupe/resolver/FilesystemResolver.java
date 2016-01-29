@@ -18,24 +18,24 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
+import java.io.InputStream;
 import java.nio.file.AccessDeniedException;
 import java.util.Collection;
 
 class FilesystemResolver extends AbstractResolver
-        implements ChannelResolver, FileResolver {
+        implements StreamResolver, FileResolver {
 
-    private static class FilesystemChannelSource implements ChannelSource {
+    private static class FilesystemStreamSource implements StreamSource {
 
         private final File file;
 
-        public FilesystemChannelSource(File file) {
+        public FilesystemStreamSource(File file) {
             this.file = file;
         }
 
         @Override
-        public ReadableByteChannel newChannel() throws IOException {
-            return new FileInputStream(file).getChannel();
+        public InputStream newStream() throws IOException {
+            return new FileInputStream(file);
         }
 
     }
@@ -56,9 +56,9 @@ class FilesystemResolver extends AbstractResolver
     }
 
     @Override
-    public ChannelSource getChannelSource(Identifier identifier)
+    public StreamSource getStreamSource(Identifier identifier)
             throws IOException {
-        return new FilesystemChannelSource(getFile(identifier));
+        return new FilesystemStreamSource(getFile(identifier));
     }
 
     @Override

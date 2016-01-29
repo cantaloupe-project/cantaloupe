@@ -9,7 +9,7 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
-import edu.illinois.library.cantaloupe.resolver.ChannelSource;
+import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
 import javax.media.jai.RenderedOp;
@@ -17,8 +17,8 @@ import java.awt.Dimension;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,7 +26,7 @@ import java.util.Set;
 /**
  * Processor using the Java Advanced Imaging (JAI) framework.
  */
-class JaiProcessor implements FileProcessor, ChannelProcessor {
+class JaiProcessor implements FileProcessor, StreamProcessor {
 
     public static final String JPG_QUALITY_CONFIG_KEY =
             "JaiProcessor.jpg.quality";
@@ -97,10 +97,10 @@ class JaiProcessor implements FileProcessor, ChannelProcessor {
     }
 
     @Override
-    public Dimension getSize(final ReadableByteChannel readableChannel,
+    public Dimension getSize(final InputStream inputStream,
                              final SourceFormat sourceFormat)
             throws ProcessorException {
-        return ProcessorUtil.getSize(readableChannel, sourceFormat);
+        return ProcessorUtil.getSize(inputStream, sourceFormat);
     }
 
     @Override
@@ -140,25 +140,25 @@ class JaiProcessor implements FileProcessor, ChannelProcessor {
                         final SourceFormat sourceFormat,
                         final Dimension fullSize,
                         final File inputFile,
-                        final WritableByteChannel writableChannel)
+                        final OutputStream outputStream)
             throws ProcessorException {
-        doProcess(ops, sourceFormat, inputFile, writableChannel);
+        doProcess(ops, sourceFormat, inputFile, outputStream);
     }
 
     @Override
     public void process(final OperationList ops,
                         final SourceFormat sourceFormat,
                         final Dimension fullSize,
-                        final ChannelSource channelSource,
-                        final WritableByteChannel writableChannel)
+                        final StreamSource streamSource,
+                        final OutputStream outputStream)
             throws ProcessorException {
-        doProcess(ops, sourceFormat, channelSource, writableChannel);
+        doProcess(ops, sourceFormat, streamSource, outputStream);
     }
 
     private void doProcess(final OperationList ops,
                            final SourceFormat sourceFormat,
                            final Object input,
-                           final WritableByteChannel writableChannel)
+                           final OutputStream outputStream)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
@@ -172,8 +172,8 @@ class JaiProcessor implements FileProcessor, ChannelProcessor {
             final ImageIoImageReader reader = new ImageIoImageReader();
             final ReductionFactor rf = new ReductionFactor();
             RenderedImage renderedImage = null;
-            if (input instanceof ChannelSource) {
-                renderedImage = reader.read((ChannelSource) input,
+            if (input instanceof StreamSource) {
+                renderedImage = reader.read((StreamSource) input,
                         sourceFormat, ops, rf);
             } else if (input instanceof File) {
                 renderedImage = reader.read((File) input, sourceFormat, ops,
@@ -204,7 +204,7 @@ class JaiProcessor implements FileProcessor, ChannelProcessor {
                 }
                 ImageIoImageWriter writer = new ImageIoImageWriter();
                 writer.write(renderedOp, ops.getOutputFormat(),
-                        writableChannel);
+                        outputStream);
             }
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);

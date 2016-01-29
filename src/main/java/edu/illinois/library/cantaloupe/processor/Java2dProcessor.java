@@ -10,17 +10,15 @@ import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Transpose;
-import edu.illinois.library.cantaloupe.resolver.ChannelSource;
+import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
-import org.restlet.data.MediaType;
 
-import javax.imageio.ImageIO;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,11 +26,14 @@ import java.util.Set;
 /**
  * Processor using the Java 2D framework.
  */
-class Java2dProcessor implements ChannelProcessor, FileProcessor {
+class Java2dProcessor implements StreamProcessor, FileProcessor {
 
-    public static final String JPG_QUALITY_CONFIG_KEY = "Java2dProcessor.jpg.quality";
-    public static final String SCALE_MODE_CONFIG_KEY = "Java2dProcessor.scale_mode";
-    public static final String TIF_COMPRESSION_CONFIG_KEY = "Java2dProcessor.tif.compression";
+    public static final String JPG_QUALITY_CONFIG_KEY =
+            "Java2dProcessor.jpg.quality";
+    public static final String SCALE_MODE_CONFIG_KEY =
+            "Java2dProcessor.scale_mode";
+    public static final String TIF_COMPRESSION_CONFIG_KEY =
+            "Java2dProcessor.tif.compression";
 
     private static final HashMap<SourceFormat,Set<OutputFormat>> FORMATS =
             getAvailableOutputFormats();
@@ -103,10 +104,10 @@ class Java2dProcessor implements ChannelProcessor, FileProcessor {
     }
 
     @Override
-    public Dimension getSize(ReadableByteChannel readableChannel,
+    public Dimension getSize(InputStream inputStream,
                              SourceFormat sourceFormat)
             throws ProcessorException {
-        return ProcessorUtil.getSize(readableChannel, sourceFormat);
+        return ProcessorUtil.getSize(inputStream, sourceFormat);
     }
 
     @Override
@@ -146,7 +147,7 @@ class Java2dProcessor implements ChannelProcessor, FileProcessor {
                         final SourceFormat sourceFormat,
                         final Dimension fullSize,
                         final File inputFile,
-                        final WritableByteChannel writableChannel)
+                        final OutputStream outputStream)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
@@ -182,7 +183,7 @@ class Java2dProcessor implements ChannelProcessor, FileProcessor {
                 }
             }
             new ImageIoImageWriter().write(image, ops.getOutputFormat(),
-                    writableChannel);
+                    outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
@@ -192,8 +193,8 @@ class Java2dProcessor implements ChannelProcessor, FileProcessor {
     public void process(final OperationList ops,
                         final SourceFormat sourceFormat,
                         final Dimension fullSize,
-                        final ChannelSource channelSource,
-                        final WritableByteChannel writableChannel)
+                        final StreamSource streamSource,
+                        final OutputStream outputStream)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
@@ -207,7 +208,7 @@ class Java2dProcessor implements ChannelProcessor, FileProcessor {
             final ReductionFactor reductionFactor = new ReductionFactor();
             final Set<ImageIoImageReader.ReaderHint> readerHints = new HashSet<>();
             final ImageIoImageReader reader = new ImageIoImageReader();
-            BufferedImage image = reader.read(channelSource,
+            BufferedImage image = reader.read(streamSource,
                     sourceFormat, ops, fullSize, reductionFactor,
                     readerHints);
             for (Operation op : ops) {
@@ -230,7 +231,7 @@ class Java2dProcessor implements ChannelProcessor, FileProcessor {
                 }
             }
             new ImageIoImageWriter().write(image, ops.getOutputFormat(),
-                    writableChannel);
+                    outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }

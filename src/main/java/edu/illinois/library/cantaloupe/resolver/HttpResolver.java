@@ -21,28 +21,28 @@ import org.slf4j.LoggerFactory;
 import javax.script.ScriptException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
+import java.io.InputStream;
 import java.nio.file.AccessDeniedException;
 import java.util.Arrays;
 
-class HttpResolver extends AbstractResolver implements ChannelResolver {
+class HttpResolver extends AbstractResolver implements StreamResolver {
 
-    private static class HttpChannelSource implements ChannelSource {
+    private static class HttpStreamSource implements StreamSource {
 
         private final Client client;
         private final Reference url;
 
-        public HttpChannelSource(Client client, Reference url) {
+        public HttpStreamSource(Client client, Reference url) {
             this.client = client;
             this.url = url;
         }
 
         @Override
-        public ReadableByteChannel newChannel() throws IOException {
+        public InputStream newStream() throws IOException {
             ClientResource resource = newClientResource(url);
             resource.setNext(client);
             try {
-                return resource.get().getChannel();
+                return resource.get().getStream();
             } catch (ResourceException e) {
                 throw new IOException(e.getMessage(), e);
             }
@@ -86,7 +86,7 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
     }
 
     @Override
-    public ChannelSource getChannelSource(final Identifier identifier)
+    public StreamSource getStreamSource(final Identifier identifier)
             throws IOException {
         Reference url = getUrl(identifier);
         logger.debug("Resolved {} to {}", identifier, url);
@@ -96,7 +96,7 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
             ClientResource resource = newClientResource(url);
             resource.setNext(client);
             resource.head();
-            return new HttpChannelSource(client, url);
+            return new HttpStreamSource(client, url);
         } catch (ResourceException e) {
             if (e.getStatus().equals(Status.CLIENT_ERROR_NOT_FOUND) ||
                     e.getStatus().equals(Status.CLIENT_ERROR_GONE)) {
@@ -116,7 +116,7 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
         if (format == SourceFormat.UNKNOWN) {
             format = getSourceFormatFromContentTypeHeader(identifier);
         }
-        getChannelSource(identifier).newChannel(); // throws IOException if not found etc.
+        getStreamSource(identifier).newStream(); // throws IOException if not found etc.
         return format;
     }
 

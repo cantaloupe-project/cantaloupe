@@ -15,7 +15,7 @@ import javax.media.jai.RenderedOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
-import java.nio.channels.WritableByteChannel;
+import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -42,16 +42,16 @@ class ImageIoImageWriter {
     }
 
     /**
-     * Writes an image to the given channel.
+     * Writes an image to the given output stream.
      *
      * @param image Image to write
      * @param outputFormat Format of the output image
-     * @param writableChannel Channel to write the image to
+     * @param outputStream Stream to write the image to
      * @throws IOException
      */
     public void write(BufferedImage image,
                       OutputFormat outputFormat,
-                      WritableByteChannel writableChannel) throws IOException {
+                      OutputStream outputStream) throws IOException {
         switch (outputFormat) {
             case JPG:
                 // JPEG doesn't support alpha, so convert to RGB or else the
@@ -65,7 +65,7 @@ class ImageIoImageWriter {
                     param.setCompressionQuality(Application.getConfiguration().
                             getFloat(Java2dProcessor.JPG_QUALITY_CONFIG_KEY, 0.7f));
                     param.setCompressionType("JPEG");
-                    ImageOutputStream os = ImageIO.createImageOutputStream(writableChannel);
+                    ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
                     writer.setOutput(os);
                     IIOImage iioImage = new IIOImage(image, null, null);
                     writer.write(null, iioImage, param);
@@ -75,7 +75,7 @@ class ImageIoImageWriter {
                 break;
             /*case PNG: // an alternative in case ImageIO.write() ever causes problems
                 writer = ImageIO.getImageWritersByFormatName("png").next();
-                ImageOutputStream os = ImageIO.createImageOutputStream(writableChannel);
+                ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
                 writer.setOutput(os);
                 writer.write(image);
                 break;*/
@@ -94,7 +94,7 @@ class ImageIoImageWriter {
 
                     final IIOImage iioImage = new IIOImage(image, null, null);
                     ImageOutputStream ios =
-                            ImageIO.createImageOutputStream(writableChannel);
+                            ImageIO.createImageOutputStream(outputStream);
                     writer.setOutput(ios);
                     try {
                         writer.write(null, iioImage, param);
@@ -107,23 +107,23 @@ class ImageIoImageWriter {
             default:
                 // TODO: jp2 doesn't seem to work
                 ImageIO.write(image, outputFormat.getExtension(),
-                        ImageIO.createImageOutputStream(writableChannel));
+                        ImageIO.createImageOutputStream(outputStream));
                 break;
         }
     }
 
     /**
-     * Writes an image to the given channel.
+     * Writes an image to the given output stream.
      *
      * @param image Image to write
      * @param outputFormat Format of the output image
-     * @param writableChannel Channel to write the image to
+     * @param outputStream Stream to write the image to
      * @throws IOException
      */
     @SuppressWarnings({ "deprecation" })
     public void write(RenderedOp image,
                       OutputFormat outputFormat,
-                      WritableByteChannel writableChannel) throws IOException {
+                      OutputStream outputStream) throws IOException {
         final Configuration config = Application.getConfiguration();
         switch (outputFormat) {
             case GIF:
@@ -139,7 +139,7 @@ class ImageIoImageWriter {
 
                     ImageWriter writer = writers.next();
                     ImageOutputStream os = ImageIO.
-                            createImageOutputStream(writableChannel);
+                            createImageOutputStream(outputStream);
                     writer.setOutput(os);
                     try {
                         writer.write(image);
@@ -153,7 +153,7 @@ class ImageIoImageWriter {
                 /*
                 TODO: this doesn't write anything
                 ImageIO.write(image, outputFormat.getExtension(),
-                        ImageIO.createImageOutputStream(writableChannel));
+                        ImageIO.createImageOutputStream(outputStream));
                 // and this causes an error
                 writers = ImageIO.getImageWritersByFormatName("JPEG2000");
                 if (writers.hasNext()) {
@@ -165,7 +165,7 @@ class ImageIoImageWriter {
                     j2Param.setTilingMode(ImageWriteParam.MODE_DISABLED);
                     j2Param.setProgressionType("res");
                     ImageOutputStream os = ImageIO.
-                            createImageOutputStream(writableChannel);
+                            createImageOutputStream(outputStream);
                     writer.setOutput(os);
                     IIOImage iioImage = new IIOImage(image, null, null);
                     try {
@@ -194,7 +194,7 @@ class ImageIoImageWriter {
                     param.setCompressionQuality(config.getFloat(
                             JaiProcessor.JPG_QUALITY_CONFIG_KEY, 0.7f));
                     param.setCompressionType("JPEG");
-                    ImageOutputStream os = ImageIO.createImageOutputStream(writableChannel);
+                    ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
                     writer.setOutput(os);
                     // JPEGImageWriter doesn't like RenderedOps, so give it a
                     // BufferedImage
@@ -206,7 +206,7 @@ class ImageIoImageWriter {
                 break;
             case PNG:
                 ImageIO.write(image, outputFormat.getExtension(),
-                        ImageIO.createImageOutputStream(writableChannel));
+                        ImageIO.createImageOutputStream(outputStream));
                 break;
             case TIF:
                 writers = ImageIO.getImageWritersByFormatName("TIFF");
@@ -222,7 +222,7 @@ class ImageIoImageWriter {
 
                     final IIOImage iioImage = new IIOImage(image, null, null);
                     ImageOutputStream ios =
-                            ImageIO.createImageOutputStream(writableChannel);
+                            ImageIO.createImageOutputStream(outputStream);
                     writer.setOutput(ios);
                     try {
                         writer.write(null, iioImage, param);
