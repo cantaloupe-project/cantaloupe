@@ -8,7 +8,6 @@ import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.apache.commons.configuration.Configuration;
 import org.restlet.Client;
-import org.restlet.Context;
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
@@ -30,11 +29,11 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
 
     private static class HttpChannelSource implements ChannelSource {
 
-        private final Client client = new Client(
-                Arrays.asList(Protocol.HTTP, Protocol.HTTPS));
+        private final Client client;
         private final Reference url;
 
-        public HttpChannelSource(Reference url) {
+        public HttpChannelSource(Client client, Reference url) {
+            this.client = client;
             this.url = url;
         }
 
@@ -64,6 +63,9 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
     public static final String URL_SUFFIX_CONFIG_KEY =
             "HttpResolver.BasicLookupStrategy.url_suffix";
 
+    private final Client client = new Client(
+            Arrays.asList(Protocol.HTTP, Protocol.HTTPS));
+
     /**
      * Factory method.
      *
@@ -91,11 +93,10 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
         try {
             // Issue an HTTP HEAD request to check whether the underlying
             // resource is accessible
-            Client client = new Client(new Context(), url.getSchemeProtocol());
-            ClientResource resource = new ClientResource(url);
+            ClientResource resource = newClientResource(url);
             resource.setNext(client);
             resource.head();
-            return new HttpChannelSource(url);
+            return new HttpChannelSource(client, url);
         } catch (ResourceException e) {
             if (e.getStatus().equals(Status.CLIENT_ERROR_NOT_FOUND) ||
                     e.getStatus().equals(Status.CLIENT_ERROR_GONE)) {
@@ -152,8 +153,7 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
         String contentType = "";
         Reference url = getUrl(identifier);
         try {
-            Client client = new Client(new Context(), url.getSchemeProtocol());
-            ClientResource resource = new ClientResource(url);
+            ClientResource resource = newClientResource(url);
             resource.setNext(client);
             resource.head();
 
