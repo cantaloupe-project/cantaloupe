@@ -1,15 +1,17 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Iterator;
 
 abstract class ProcessorUtil {
@@ -61,25 +63,36 @@ abstract class ProcessorUtil {
      */
     public static Dimension getSize(File inputFile, SourceFormat sourceFormat)
             throws ProcessorException {
-        return doGetSize(inputFile, sourceFormat);
+        try {
+            return doGetSize(new FileImageInputStream(inputFile), sourceFormat);
+        } catch (IOException e) {
+            throw new ProcessorException(e.getMessage(), e);
+        }
     }
 
     /**
      * Efficiently reads the dimensions of an image.
      *
-     * @param inputStream Will be closed.
+     * @param streamSource StreamSource from which to obtain a stream to read
+     *                     the size.
      * @param sourceFormat
      * @return Dimensions in pixels
      * @throws ProcessorException
      */
-    public static Dimension getSize(InputStream inputStream,
+    public static Dimension getSize(StreamSource streamSource,
                                     SourceFormat sourceFormat)
             throws ProcessorException {
+        ImageInputStream iis = null;
         try {
-            return doGetSize(inputStream, sourceFormat);
+            iis = streamSource.newImageInputStream();
+            return doGetSize(iis, sourceFormat);
+        } catch (IOException e) {
+            throw new ProcessorException(e.getMessage(), e);
         } finally {
             try {
-                inputStream.close();
+                if (iis != null) {
+                    iis.close();
+                }
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
             }
@@ -87,13 +100,13 @@ abstract class ProcessorUtil {
     }
 
     /**
-     * @param input Object that can be passed to
-     * {@link ImageIO#createImageInputStream(Object)}
+     * @param inputStream
      * @param sourceFormat
      * @return
      * @throws ProcessorException
      */
-    private static Dimension doGetSize(Object input, SourceFormat sourceFormat)
+    private static Dimension doGetSize(ImageInputStream inputStream,
+                                       SourceFormat sourceFormat)
             throws ProcessorException {
         Iterator<ImageReader> iter = ImageIO.
                 getImageReadersBySuffix(sourceFormat.getPreferredExtension());
@@ -101,7 +114,7 @@ abstract class ProcessorUtil {
             ImageReader reader = iter.next();
             int width, height;
             try {
-                reader.setInput(ImageIO.createImageInputStream(input));
+                reader.setInput(inputStream);
                 width = reader.getWidth(reader.getMinIndex());
                 height = reader.getHeight(reader.getMinIndex());
             } catch (IOException e) {

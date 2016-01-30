@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 
 import java.awt.Dimension;
-import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
@@ -15,13 +14,14 @@ import java.io.OutputStream;
 public interface StreamProcessor extends Processor {
 
     /**
-     * @param inputStream Stream for reading the source image.
-     *                    Implementations should close it.
+     * @param streamSource Stream source from which to obtain an input stream
+     *                     for reading the source image. Implementations
+     *                     should close it.
      * @param sourceFormat Format of the source image.
      * @return Pixel dimensions of the source image.
      * @throws ProcessorException
      */
-    Dimension getSize(InputStream inputStream, SourceFormat sourceFormat)
+    Dimension getSize(StreamSource streamSource, SourceFormat sourceFormat)
             throws ProcessorException;
 
     /**

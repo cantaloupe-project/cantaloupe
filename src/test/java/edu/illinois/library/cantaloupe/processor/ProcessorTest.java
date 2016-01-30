@@ -58,12 +58,10 @@ public abstract class ProcessorTest {
         Dimension expectedSize = new Dimension(64, 56);
         if (getProcessor() instanceof StreamProcessor) {
             StreamProcessor proc = (StreamProcessor) getProcessor();
-            try (InputStream inputStream = new FileInputStream(
-                    TestUtil.getFixture(IMAGE))) {
-                Dimension actualSize = proc.getSize(inputStream,
-                        SourceFormat.JPG);
-                assertEquals(expectedSize, actualSize);
-            }
+            StreamSource streamSource = new TestStreamSource(
+                    TestUtil.getFixture(IMAGE));
+            Dimension actualSize = proc.getSize(streamSource, SourceFormat.JPG);
+            assertEquals(expectedSize, actualSize);
         }
         if (getProcessor() instanceof FileProcessor) {
             FileProcessor proc = (FileProcessor) getProcessor();
@@ -126,8 +124,7 @@ public abstract class ProcessorTest {
                     final StreamSource source = new TestStreamSource(fixture);
                     try {
                         StreamProcessor proc = (StreamProcessor) getProcessor();
-                        Dimension size = proc.getSize(source.newInputStream(),
-                                sourceFormat);
+                        Dimension size = proc.getSize(source, sourceFormat);
                         proc.process(ops, sourceFormat, size, source,
                                 new NullOutputStream());
                         fail("Expected exception");
@@ -351,8 +348,7 @@ public abstract class ProcessorTest {
         if (getProcessor() instanceof StreamProcessor) {
             StreamProcessor proc = (StreamProcessor) getProcessor();
             StreamSource source = new TestStreamSource(fixture);
-            Dimension size = proc.getSize(source.newInputStream(),
-                    sourceFormat);
+            Dimension size = proc.getSize(source, sourceFormat);
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             proc.process(opList, sourceFormat, size, source,
                     outputStream);

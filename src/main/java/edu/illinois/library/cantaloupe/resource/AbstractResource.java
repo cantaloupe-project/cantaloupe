@@ -277,8 +277,8 @@ public abstract class AbstractResource extends ServerResource {
                 final StreamProcessor sproc = (StreamProcessor) proc;
                 final StreamSource streamSource = chRes.
                         getStreamSource(ops.getIdentifier());
-                final Dimension fullSize = sproc.getSize(
-                        streamSource.newInputStream(), sourceFormat);
+                final Dimension fullSize = sproc.getSize(streamSource,
+                        sourceFormat);
                 final Dimension effectiveSize = ops.getResultingSize(fullSize);
                 if (maxAllowedSize > 0 &&
                         effectiveSize.width * effectiveSize.height > maxAllowedSize) {
@@ -395,7 +395,7 @@ public abstract class AbstractResource extends ServerResource {
                         sourceFormat);
             } else if (proc instanceof StreamProcessor) {
                 size = ((StreamProcessor) proc).getSize(
-                        ((StreamResolver) resolver).getStreamSource(identifier).newInputStream(),
+                        ((StreamResolver) resolver).getStreamSource(identifier),
                         sourceFormat);
             }
         } else if (resolver instanceof StreamResolver) {
@@ -403,7 +403,7 @@ public abstract class AbstractResource extends ServerResource {
                 // StreamResolvers and FileProcessors are incompatible
             } else {
                 size = ((StreamProcessor) proc).getSize(
-                        ((StreamResolver) resolver).getStreamSource(identifier).newInputStream(),
+                        ((StreamResolver) resolver).getStreamSource(identifier),
                         sourceFormat);
             }
         }

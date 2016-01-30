@@ -3,12 +3,12 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 
 import java.awt.Dimension;
-import java.io.FileInputStream;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,7 +41,7 @@ public class OpenJpegProcessorTest extends ProcessorTest {
         if (getProcessor() instanceof StreamProcessor) {
             StreamProcessor proc = (StreamProcessor) getProcessor();
             Dimension actualSize = proc.getSize(
-                    new FileInputStream(TestUtil.getImage("jp2")),
+                    new TestStreamSource(TestUtil.getImage("jp2")),
                     SourceFormat.JP2);
             assertEquals(expectedSize, actualSize);
         }

@@ -17,7 +17,6 @@ import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -104,10 +103,10 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
     }
 
     @Override
-    public Dimension getSize(InputStream inputStream,
+    public Dimension getSize(StreamSource streamSource,
                              SourceFormat sourceFormat)
             throws ProcessorException {
-        return ProcessorUtil.getSize(inputStream, sourceFormat);
+        return ProcessorUtil.getSize(streamSource, sourceFormat);
     }
 
     @Override

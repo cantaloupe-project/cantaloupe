@@ -166,23 +166,27 @@ class ImageMagickProcessor implements StreamProcessor {
     }
 
     @Override
-    public Dimension getSize(final InputStream inputStream,
+    public Dimension getSize(final StreamSource streamSource,
                              final SourceFormat sourceFormat)
             throws ProcessorException {
         if (getAvailableOutputFormats(sourceFormat).size() < 1) {
             throw new UnsupportedSourceFormatException(sourceFormat);
         }
+        InputStream inputStream = null;
         try {
+            inputStream = streamSource.newInputStream();
             Info sourceInfo = new Info(
                     sourceFormat.getPreferredExtension() + ":-", inputStream,
                     true);
             return new Dimension(sourceInfo.getImageWidth(),
                     sourceInfo.getImageHeight());
-        } catch (IM4JavaException e) {
+        } catch (IM4JavaException | IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         } finally {
             try {
-                inputStream.close();
+                if (inputStream != null) {
+                    inputStream.close();
+                }
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
             }
