@@ -12,7 +12,6 @@ import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.io.InputStreamImageInputStream;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
@@ -21,6 +20,7 @@ import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
 import java.io.FileNotFoundException;
@@ -42,7 +42,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
         @Override
         public ImageInputStream newImageInputStream() throws IOException {
-            return new InputStreamImageInputStream(object.getObjectContent());
+            return ImageIO.createImageInputStream(newInputStream());
         }
 
         @Override

@@ -4,12 +4,12 @@ import com.zaxxer.hikari.HikariDataSource;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.io.InputStreamImageInputStream;
 import org.apache.commons.configuration.Configuration;
 import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -36,7 +36,7 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
 
         @Override
         public ImageInputStream newImageInputStream() throws IOException {
-            return new InputStreamImageInputStream(newInputStream());
+            return ImageIO.createImageInputStream(newInputStream());
         }
 
         @Override

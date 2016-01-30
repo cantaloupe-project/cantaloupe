@@ -58,10 +58,10 @@ class ImageIoImageReader {
                 sourceFormat.getPreferredMediaType().toString());
         if (it.hasNext()) {
             if (inputSource instanceof StreamSource) {
-                inputSource = ((StreamSource) inputSource).newInputStream();
+                inputSource = ((StreamSource) inputSource).newImageInputStream();
             }
             final ImageReader reader = it.next();
-            reader.setInput(ImageIO.createImageInputStream(inputSource));
+            reader.setInput(inputSource);
             return reader;
         } else {
             throw new UnsupportedSourceFormatException(sourceFormat);
@@ -168,8 +168,8 @@ class ImageIoImageReader {
                               final ReductionFactor reductionFactor,
                               final Set<ReaderHint> hints)
             throws IOException, ProcessorException {
-        return multiLevelAwareRead(streamSource.newInputStream(), sourceFormat,
-                ops, fullSize, reductionFactor, hints);
+        return multiLevelAwareRead(streamSource.newImageInputStream(),
+                sourceFormat, ops, fullSize, reductionFactor, hints);
     }
 
     /**
