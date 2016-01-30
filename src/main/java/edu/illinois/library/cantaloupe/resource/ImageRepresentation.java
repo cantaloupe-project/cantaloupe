@@ -153,7 +153,7 @@ public class ImageRepresentation extends OutputRepresentation {
                 if (this.file != null) {
                     IOUtils.copy(new FileInputStream(this.file), outputStream);
                 } else {
-                    IOUtils.copy(streamSource.newStream(), outputStream);
+                    IOUtils.copy(streamSource.newInputStream(), outputStream);
                 }
                 logger.info("Streamed with no processing in {} msec: {}",
                         System.currentTimeMillis() - msec, ops);

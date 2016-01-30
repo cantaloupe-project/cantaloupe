@@ -126,7 +126,7 @@ public abstract class ProcessorTest {
                     final StreamSource source = new TestStreamSource(fixture);
                     try {
                         StreamProcessor proc = (StreamProcessor) getProcessor();
-                        Dimension size = proc.getSize(source.newStream(),
+                        Dimension size = proc.getSize(source.newInputStream(),
                                 sourceFormat);
                         proc.process(ops, sourceFormat, size, source,
                                 new NullOutputStream());
@@ -351,7 +351,7 @@ public abstract class ProcessorTest {
         if (getProcessor() instanceof StreamProcessor) {
             StreamProcessor proc = (StreamProcessor) getProcessor();
             StreamSource source = new TestStreamSource(fixture);
-            Dimension size = proc.getSize(source.newStream(),
+            Dimension size = proc.getSize(source.newInputStream(),
                     sourceFormat);
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             proc.process(opList, sourceFormat, size, source,

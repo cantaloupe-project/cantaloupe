@@ -92,7 +92,7 @@ public class AmazonS3ResolverTest {
         // present image
         try {
             StreamSource source = instance.getStreamSource(IMAGE);
-            assertNotNull(source.newStream());
+            assertNotNull(source.newInputStream());
         } catch (IOException e) {
             fail();
         }

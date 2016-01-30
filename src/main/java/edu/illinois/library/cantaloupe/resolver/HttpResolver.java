@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resolver;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.io.InputStreamImageInputStream;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
@@ -18,6 +19,7 @@ import org.restlet.resource.ResourceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -38,7 +40,12 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         }
 
         @Override
-        public InputStream newStream() throws IOException {
+        public ImageInputStream newImageInputStream() throws IOException {
+            return new InputStreamImageInputStream(newInputStream());
+        }
+
+        @Override
+        public InputStream newInputStream() throws IOException {
             ClientResource resource = newClientResource(url);
             resource.setNext(client);
             try {
@@ -116,7 +123,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         if (format == SourceFormat.UNKNOWN) {
             format = getSourceFormatFromContentTypeHeader(identifier);
         }
-        getStreamSource(identifier).newStream(); // throws IOException if not found etc.
+        getStreamSource(identifier).newInputStream(); // throws IOException if not found etc.
         return format;
     }
 

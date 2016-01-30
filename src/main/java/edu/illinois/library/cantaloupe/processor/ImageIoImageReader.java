@@ -58,7 +58,7 @@ class ImageIoImageReader {
                 sourceFormat.getPreferredMediaType().toString());
         if (it.hasNext()) {
             if (inputSource instanceof StreamSource) {
-                inputSource = ((StreamSource) inputSource).newStream();
+                inputSource = ((StreamSource) inputSource).newInputStream();
             }
             final ImageReader reader = it.next();
             reader.setInput(ImageIO.createImageInputStream(inputSource));
@@ -168,7 +168,7 @@ class ImageIoImageReader {
                               final ReductionFactor reductionFactor,
                               final Set<ReaderHint> hints)
             throws IOException, ProcessorException {
-        return multiLevelAwareRead(streamSource.newStream(), sourceFormat,
+        return multiLevelAwareRead(streamSource.newInputStream(), sourceFormat,
                 ops, fullSize, reductionFactor, hints);
     }
 

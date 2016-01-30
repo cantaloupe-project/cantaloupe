@@ -337,7 +337,7 @@ class GraphicsMagickProcessor implements StreamProcessor {
                 convert.setSearchPath(binaryPath);
             }
 
-            convert.setInputProvider(new Pipe(streamSource.newStream(), null));
+            convert.setInputProvider(new Pipe(streamSource.newInputStream(), null));
             convert.setOutputConsumer(new Pipe(null, outputStream));
             convert.run(op);
         } catch (InterruptedException | IM4JavaException | IOException e) {

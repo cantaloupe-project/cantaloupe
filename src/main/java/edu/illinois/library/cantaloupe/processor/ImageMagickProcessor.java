@@ -244,7 +244,7 @@ class ImageMagickProcessor implements StreamProcessor {
             // format transformation
             op.addImage(ops.getOutputFormat().getExtension() + ":-"); // write to stdout
 
-            Pipe pipeIn = new Pipe(streamSource.newStream(), null);
+            Pipe pipeIn = new Pipe(streamSource.newInputStream(), null);
             Pipe pipeOut = new Pipe(null, outputStream);
 
             ConvertCmd convert = new ConvertCmd();
