@@ -181,7 +181,7 @@ public class Application {
     public static void main(String[] args) throws Exception {
         try {
             validateConfiguration();
-        } catch (Exception e) {
+        } catch (edu.illinois.library.cantaloupe.ConfigurationException e) {
             System.out.println(e.getMessage());
             System.out.println("Exiting.");
             System.exit(-1);
@@ -303,9 +303,11 @@ public class Application {
     }
 
     /**
-     * @throws Exception If the configuration is invalid.
+     * @throws edu.illinois.library.cantaloupe.ConfigurationException
+     * If the configuration is invalid.
      */
-    private static void validateConfiguration() throws Exception {
+    private static void validateConfiguration()
+            throws edu.illinois.library.cantaloupe.ConfigurationException {
         // check that a configuration file exists
         if (getConfiguration() == null) {
             throw new edu.illinois.library.cantaloupe.ConfigurationException(
