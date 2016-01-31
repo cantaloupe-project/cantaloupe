@@ -52,6 +52,8 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                 return resource.get().getStream();
             } catch (ResourceException e) {
                 throw new IOException(e.getMessage(), e);
+            } finally {
+                resource.release();
             }
         }
 
@@ -74,7 +76,8 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
             Arrays.asList(Protocol.HTTP, Protocol.HTTPS));
 
     /**
-     * Factory method.
+     * Factory method. Be sure to call {@link ClientResource#release()} when
+     * done with the instance.
      *
      * @param url
      * @return New ClientResource respecting HttpResolver configuration
@@ -97,11 +100,11 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
             throws IOException {
         Reference url = getUrl(identifier);
         logger.debug("Resolved {} to {}", identifier, url);
+        ClientResource resource = newClientResource(url);
+        resource.setNext(client);
         try {
             // Issue an HTTP HEAD request to check whether the underlying
-            // resource is accessible
-            ClientResource resource = newClientResource(url);
-            resource.setNext(client);
+            // resource is accessible.
             resource.head();
             return new HttpStreamSource(client, url);
         } catch (ResourceException e) {
@@ -113,6 +116,8 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
             } else {
                 throw new IOException(e.getMessage(), e);
             }
+        } finally {
+            resource.release();
         }
     }
 
@@ -159,11 +164,10 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         SourceFormat sourceFormat = SourceFormat.UNKNOWN;
         String contentType = "";
         Reference url = getUrl(identifier);
+        ClientResource resource = newClientResource(url);
+        resource.setNext(client);
         try {
-            ClientResource resource = newClientResource(url);
-            resource.setNext(client);
             resource.head();
-
             contentType = resource.getResponse().getHeaders().
                     getFirstValue("Content-Type", true);
             if (contentType != null) {
@@ -179,6 +183,8 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                 logger.warn("Failed to determine source format (missing " +
                         "Content-Type at {})", url);
             }
+        } finally {
+            resource.release();
         }
         return sourceFormat;
     }
