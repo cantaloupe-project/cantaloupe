@@ -84,6 +84,11 @@ public class HttpResolverTest {
     }
 
     @Test
+    public void testGetStreamWithHttpsSource() throws IOException {
+        // TODO: write this
+    }
+
+    @Test
     public void testGetSourceFormat() throws IOException {
         assertEquals(SourceFormat.JPG, instance.getSourceFormat(IDENTIFIER));
         try {
