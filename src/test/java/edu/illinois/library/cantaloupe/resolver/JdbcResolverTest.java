@@ -18,6 +18,8 @@ import static org.junit.Assert.*;
 
 public class JdbcResolverTest {
 
+    private static final String IMAGE = "jpg-rgb-64x56x8-baseline.jpg";
+
     private JdbcResolver instance;
 
     @Before
@@ -50,7 +52,7 @@ public class JdbcResolverTest {
             statement.setString(1, "jpg.jpg");
             statement.setString(2, "image/jpeg");
             statement.setBinaryStream(3,
-                    new FileInputStream(TestUtil.getFixture("jpg")));
+                    new FileInputStream(TestUtil.getImage(IMAGE)));
             statement.executeUpdate();
 
             instance = new JdbcResolver();
@@ -67,16 +69,16 @@ public class JdbcResolverTest {
     }
 
     @Test
-    public void testGetChannel() throws IOException {
+    public void testGetStreamSource() throws IOException {
         // present, readable image
         try {
-            assertNotNull(instance.getChannel(new Identifier("jpg.jpg")));
+            assertNotNull(instance.getStreamSource(new Identifier("jpg.jpg")));
         } catch (IOException e) {
             fail();
         }
         // missing image
         try {
-            instance.getChannel(new Identifier("bogus"));
+            instance.getStreamSource(new Identifier("bogus"));
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass

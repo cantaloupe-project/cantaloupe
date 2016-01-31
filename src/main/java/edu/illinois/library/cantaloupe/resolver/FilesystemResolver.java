@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resolver;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import eu.medsea.mimeutil.MimeUtil;
@@ -12,17 +13,37 @@ import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.stream.FileImageInputStream;
 import javax.script.ScriptException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.file.AccessDeniedException;
 import java.util.Collection;
 
 class FilesystemResolver extends AbstractResolver
-        implements ChannelResolver, FileResolver {
+        implements StreamResolver, FileResolver {
+
+    private static class FilesystemStreamSource implements StreamSource {
+
+        private final File file;
+
+        public FilesystemStreamSource(File file) {
+            this.file = file;
+        }
+
+        @Override
+        public FileImageInputStream newImageInputStream() throws IOException {
+            return new FileImageInputStream(file);
+        }
+
+        @Override
+        public FileInputStream newInputStream() throws IOException {
+            return new FileInputStream(file);
+        }
+
+    }
 
     private static Logger logger = LoggerFactory.
             getLogger(FilesystemResolver.class);
@@ -40,9 +61,9 @@ class FilesystemResolver extends AbstractResolver
     }
 
     @Override
-    public ReadableByteChannel getChannel(Identifier identifier)
+    public StreamSource getStreamSource(Identifier identifier)
             throws IOException {
-        return new FileInputStream(getFile(identifier)).getChannel();
+        return new FilesystemStreamSource(getFile(identifier));
     }
 
     @Override
@@ -78,7 +99,7 @@ class FilesystemResolver extends AbstractResolver
             case "ScriptLookupStrategy":
                 try {
                     return getPathnameWithScriptStrategy(identifier);
-                } catch (ScriptException e) {
+                } catch (ScriptException | DelegateScriptDisabledException e) {
                     logger.error(e.getMessage(), e);
                     throw new IOException(e);
                 }
@@ -103,16 +124,15 @@ class FilesystemResolver extends AbstractResolver
      * @throws FileNotFoundException If the delegate script does not exist
      * @throws IOException
      * @throws ScriptException If the script fails to execute
+     * @throws DelegateScriptDisabledException
      */
     private String getPathnameWithScriptStrategy(Identifier identifier)
-            throws IOException, ScriptException {
+            throws IOException, ScriptException,
+            DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final String[] args = { identifier.toString() };
-        final String method = "Cantaloupe::get_pathname";
-        final long msec = System.currentTimeMillis();
+        final String method = "get_pathname";
         final Object result = engine.invoke(method, args);
-        logger.debug("{} load+exec time: {} msec", method,
-                System.currentTimeMillis() - msec);
         if (result == null) {
             throw new FileNotFoundException(method + " returned nil for " +
                     identifier);
@@ -123,10 +143,10 @@ class FilesystemResolver extends AbstractResolver
     @Override
     public SourceFormat getSourceFormat(Identifier identifier)
             throws IOException {
+        File file = new File(getPathname(identifier, File.separator));
+        checkAccess(file, identifier);
         SourceFormat sourceFormat = ResolverUtil.inferSourceFormat(identifier);
         if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
-            File file = new File(getPathname(identifier, File.separator));
-            checkAccess(file, identifier);
             sourceFormat = detectSourceFormat(identifier);
         }
         return sourceFormat;

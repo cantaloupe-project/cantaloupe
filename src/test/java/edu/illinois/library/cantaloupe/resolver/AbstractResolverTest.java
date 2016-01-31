@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.processor.ChannelProcessor;
+import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -13,7 +13,7 @@ public class AbstractResolverTest {
     public void testIsCompatible() {
         for (Processor processor : ProcessorFactory.getAllProcessors()) {
             assertTrue(new FilesystemResolver().isCompatible(processor));
-            if (!(processor instanceof ChannelProcessor)) {
+            if (!(processor instanceof StreamProcessor)) {
                 assertFalse(new HttpResolver().isCompatible(processor));
             } else {
                 assertTrue(new HttpResolver().isCompatible(processor));

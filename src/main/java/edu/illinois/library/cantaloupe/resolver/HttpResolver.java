@@ -3,11 +3,11 @@ package edu.illinois.library.cantaloupe.resolver;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.apache.commons.configuration.Configuration;
 import org.restlet.Client;
-import org.restlet.Context;
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
@@ -18,15 +18,46 @@ import org.restlet.resource.ResourceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
+import java.io.InputStream;
 import java.nio.file.AccessDeniedException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
-class HttpResolver extends AbstractResolver implements ChannelResolver {
+class HttpResolver extends AbstractResolver implements StreamResolver {
+
+    private static class HttpStreamSource implements StreamSource {
+
+        private final Client client;
+        private final Reference url;
+
+        public HttpStreamSource(Client client, Reference url) {
+            this.client = client;
+            this.url = url;
+        }
+
+        @Override
+        public ImageInputStream newImageInputStream() throws IOException {
+            return ImageIO.createImageInputStream(newInputStream());
+        }
+
+        @Override
+        public InputStream newInputStream() throws IOException {
+            ClientResource resource = newClientResource(url);
+            resource.setNext(client);
+            try {
+                return resource.get().getStream();
+            } catch (ResourceException e) {
+                throw new IOException(e.getMessage(), e);
+            } finally {
+                resource.release();
+            }
+        }
+
+    }
 
     private static Logger logger = LoggerFactory.getLogger(HttpResolver.class);
 
@@ -41,24 +72,41 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
     public static final String URL_SUFFIX_CONFIG_KEY =
             "HttpResolver.BasicLookupStrategy.url_suffix";
 
-    private static Client client;
+    private final Client client = new Client(
+            Arrays.asList(Protocol.HTTP, Protocol.HTTPS));
 
-    static {
-        List<Protocol> protocols = new ArrayList<>();
-        protocols.add(Protocol.HTTP);
-        protocols.add(Protocol.HTTPS);
-        client = new Client(protocols);
+    /**
+     * Factory method. Be sure to call {@link ClientResource#release()} when
+     * done with the instance.
+     *
+     * @param url
+     * @return New ClientResource respecting HttpResolver configuration
+     * options.
+     */
+    private static ClientResource newClientResource(final Reference url) {
+        final ClientResource resource = new ClientResource(url);
+        final Configuration config = Application.getConfiguration();
+        final String username = config.getString(BASIC_AUTH_USERNAME_CONFIG_KEY, "");
+        final String secret = config.getString(BASIC_AUTH_SECRET_CONFIG_KEY, "");
+        if (username.length() > 0 && secret.length() > 0) {
+            resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC,
+                    username, secret);
+        }
+        return resource;
     }
 
     @Override
-    public ReadableByteChannel getChannel(Identifier identifier)
+    public StreamSource getStreamSource(final Identifier identifier)
             throws IOException {
         Reference url = getUrl(identifier);
         logger.debug("Resolved {} to {}", identifier, url);
         ClientResource resource = newClientResource(url);
         resource.setNext(client);
         try {
-            return resource.get().getChannel();
+            // Issue an HTTP HEAD request to check whether the underlying
+            // resource is accessible.
+            resource.head();
+            return new HttpStreamSource(client, url);
         } catch (ResourceException e) {
             if (e.getStatus().equals(Status.CLIENT_ERROR_NOT_FOUND) ||
                     e.getStatus().equals(Status.CLIENT_ERROR_GONE)) {
@@ -66,8 +114,10 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
             } else if (e.getStatus().equals(Status.CLIENT_ERROR_FORBIDDEN)) {
                 throw new AccessDeniedException(e.getMessage());
             } else {
-                throw new IOException(e.getMessage());
+                throw new IOException(e.getMessage(), e);
             }
+        } finally {
+            resource.release();
         }
     }
 
@@ -78,11 +128,11 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
         if (format == SourceFormat.UNKNOWN) {
             format = getSourceFormatFromContentTypeHeader(identifier);
         }
-        getChannel(identifier); // throws IOException if not found etc.
+        getStreamSource(identifier).newInputStream(); // throws IOException if not found etc.
         return format;
     }
 
-    public Reference getUrl(Identifier identifier) throws IOException {
+    public Reference getUrl(final Identifier identifier) throws IOException {
         final Configuration config = Application.getConfiguration();
 
         switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
@@ -91,7 +141,7 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
             case "ScriptLookupStrategy":
                 try {
                     return getUrlWithScriptStrategy(identifier);
-                } catch (ScriptException e) {
+                } catch (ScriptException | DelegateScriptDisabledException e) {
                     logger.error(e.getMessage(), e);
                     throw new IOException(e);
                 }
@@ -114,12 +164,10 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
         SourceFormat sourceFormat = SourceFormat.UNKNOWN;
         String contentType = "";
         Reference url = getUrl(identifier);
+        ClientResource resource = newClientResource(url);
+        resource.setNext(client);
         try {
-            Client client = new Client(new Context(), Protocol.HTTP);
-            ClientResource resource = new ClientResource(url);
-            resource.setNext(client);
             resource.head();
-
             contentType = resource.getResponse().getHeaders().
                     getFirstValue("Content-Type", true);
             if (contentType != null) {
@@ -135,6 +183,8 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
                 logger.warn("Failed to determine source format (missing " +
                         "Content-Type at {})", url);
             }
+        } finally {
+            resource.release();
         }
         return sourceFormat;
     }
@@ -152,40 +202,20 @@ class HttpResolver extends AbstractResolver implements ChannelResolver {
      * @throws FileNotFoundException If the delegate script does not exist
      * @throws IOException
      * @throws ScriptException If the script fails to execute
+     * @throws DelegateScriptDisabledException
      */
     private Reference getUrlWithScriptStrategy(Identifier identifier)
-            throws IOException, ScriptException {
+            throws IOException, ScriptException,
+            DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final String[] args = { identifier.toString() };
-        final String method = "Cantaloupe::get_url";
-        final long msec = System.currentTimeMillis();
+        final String method = "get_url";
         final Object result = engine.invoke(method, args);
-        logger.debug("{} load+exec time: {} msec", method,
-                System.currentTimeMillis() - msec);
         if (result == null) {
             throw new FileNotFoundException(method + " returned nil for " +
                     identifier);
         }
         return new Reference((String) result);
-    }
-
-    /**
-     * Factory method.
-     *
-     * @param url
-     * @return New ClientResource respecting HttpResolver configuration
-     * options.
-     */
-    private ClientResource newClientResource(final Reference url) {
-        final ClientResource resource = new ClientResource(url);
-        final Configuration config = Application.getConfiguration();
-        final String username = config.getString(BASIC_AUTH_USERNAME_CONFIG_KEY, "");
-        final String secret = config.getString(BASIC_AUTH_SECRET_CONFIG_KEY, "");
-        if (username.length() > 0 && secret.length() > 0) {
-            resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC,
-                    username, secret);
-        }
-        return resource;
     }
 
 }

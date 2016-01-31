@@ -5,16 +5,17 @@ import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.Test;
 
 import java.awt.Dimension;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.junit.Assert.*;
 
 /**
  * For this to work, the ffmpeg and ffprobe binaries must be on the PATH.
@@ -27,6 +28,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
         return instance;
     }
 
+    @Test
     public void testGetAvailableOutputFormats() throws IOException {
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             Set<OutputFormat> expectedFormats = new HashSet<>();
@@ -39,12 +41,14 @@ public class FfmpegProcessorTest extends ProcessorTest {
         }
     }
 
+    @Test
     public void testGetAvailableOutputFormatsForUnsupportedSourceFormat() {
         Set<OutputFormat> expectedFormats = new HashSet<>();
         assertEquals(expectedFormats,
                 instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
     }
 
+    @Test
     public void testGetSupportedFeatures() {
         Set<ProcessorFeature> expectedFeatures = new HashSet<>();
         expectedFeatures.add(ProcessorFeature.MIRRORING);
@@ -66,29 +70,30 @@ public class FfmpegProcessorTest extends ProcessorTest {
                 instance.getSupportedFeatures(SourceFormat.UNKNOWN));
     }
 
+    @Test
     public void testProcessWithFrameOption() throws Exception {
         final SourceFormat sourceFormat = SourceFormat.MPG;
+        final File fixture = TestUtil.
+                getFixture("images/" + sourceFormat.getPreferredExtension());
+        final FileProcessor proc = (FileProcessor) getProcessor();
+        final Dimension size = proc.getSize(fixture, sourceFormat);
 
         // time option missing
-        FileProcessor proc = (FileProcessor) getProcessor();
-        File file = TestUtil.getFixture(sourceFormat.getPreferredExtension());
-        Dimension size = proc.getSize(file, sourceFormat);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        WritableByteChannel outputChannel = Channels.newChannel(outputStream);
         OperationList ops = TestUtil.newOperationList();
-        proc.process(ops, sourceFormat, size, file, outputChannel);
-        byte[] zeroSecondFrame = outputStream.toByteArray();
+        proc.process(ops, sourceFormat, size, fixture, outputStream);
+        final byte[] zeroSecondFrame = outputStream.toByteArray();
 
         // time option present
         ops.getOptions().put("time", "00:00:05");
         outputStream = new ByteArrayOutputStream();
-        outputChannel = Channels.newChannel(outputStream);
-        proc.process(ops, sourceFormat, size, file, outputChannel);
-        byte[] fiveSecondFrame = outputStream.toByteArray();
+        proc.process(ops, sourceFormat, size, fixture, outputStream);
+        final byte[] fiveSecondFrame = outputStream.toByteArray();
 
         assertFalse(Arrays.equals(zeroSecondFrame, fiveSecondFrame));
     }
 
+    @Test
     @Override
     public void testGetSupportedIiif11Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
@@ -107,6 +112,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
                 getProcessor().getSupportedIiif1_1Qualities(SourceFormat.UNKNOWN));
     }
 
+    @Test
     @Override
     public void testGetSupportedIiif20Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>

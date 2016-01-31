@@ -1,12 +1,20 @@
 package edu.illinois.library.cantaloupe;
 
+import edu.illinois.library.cantaloupe.cache.Cache;
+import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 import org.restlet.Client;
 import org.restlet.Context;
 import org.restlet.data.Parameter;
@@ -17,8 +25,12 @@ import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 import org.restlet.util.Series;
 
+import java.awt.Dimension;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -115,27 +127,24 @@ public class ApplicationTest {
         assertSame(newConfig, Application.getConfiguration());
     }
 
+    @Rule
+    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
+
+    /**
+     * @see http://stackoverflow.com/questions/6141252/dealing-with-system-exit0-in-junit-tests
+     * @throws Exception
+     */
     @Test
     public void testMainWithInvalidConfigExits() throws Exception {
-        /* TODO: implement this
-        http://stackoverflow.com/questions/6141252/dealing-with-system-exit0-in-junit-tests
         exit.expectSystemExitWithStatus(-1);
-        String[] args = {};
-        Configuration config = newConfiguration();
-        config.setProperty("resolver.static", null);
-        Application.setConfiguration(config);
-        try {
-            Application.main(args);
-            fail("Expected exception");
-        } catch (Exception e) {
-            // pass
-        } */
+        Application.setConfiguration(null);
+        System.setProperty(Application.CONFIG_FILE_VM_ARGUMENT, "");
+        Application.main(new String[] {});
     }
 
     @Test
     public void testMainWithNoArgsStartsServer() throws Exception {
-        String[] args = {};
-        Application.main(args);
+        Application.main(new String[] {});
         ClientResource resource = getHttpClientForUriPath("/");
         resource.get();
         assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
@@ -143,30 +152,42 @@ public class ApplicationTest {
 
     @Test
     public void testMainWithPurgeCacheArg() throws Exception {
-        File cacheDir = getCacheDir();
-        File imageDir = new File(cacheDir.getAbsolutePath() + File.separator +
-                "image");
-        File infoDir = new File(cacheDir.getAbsolutePath() + File.separator +
-                "info");
-        imageDir.mkdirs();
-        infoDir.mkdirs();
+        final File cacheDir = getCacheDir();
+        final File imageDir = new File(cacheDir.getAbsolutePath() + "/image");
+        final File infoDir = new File(cacheDir.getAbsolutePath() + "/info");
 
-        Configuration config = newConfiguration();
+        // set up the cache
+        final Configuration config = newConfiguration();
         config.setProperty("cache.server", "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
                 getCacheDir().getAbsolutePath());
-        config.setProperty("FilesystemCache.ttl_seconds", "1");
+        config.setProperty("FilesystemCache.ttl_seconds", "10");
         Application.setConfiguration(config);
 
-        File.createTempFile("bla1", "tmp", imageDir);
-        File.createTempFile("bla2", "tmp", infoDir);
+        // cache a dimension
+        Cache cache = CacheFactory.getInstance();
+        cache.putDimension(new Identifier("cats"), new Dimension(500, 500));
 
+        // cache an image
+        OperationList ops = TestUtil.newOperationList();
+        ops.setIdentifier(new Identifier("dogs"));
+        ops.add(new Rotate(15));
+        OutputStream wbc = cache.getImageOutputStream(ops);
+        InputStream rbc = new FileInputStream(
+                TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));
+        IOUtils.copy(rbc, wbc);
+
+        // assert that they've been cached
+        assertEquals(1, FileUtils.listFiles(imageDir, null, true).size());
+        assertEquals(1, FileUtils.listFiles(infoDir, null, true).size());
+
+        // purge the cache
         System.setProperty(Application.PURGE_CACHE_VM_ARGUMENT, "");
-        String[] args = {};
-        Application.main(args);
+        Application.main(new String[] {});
 
-        assertEquals(0, imageDir.listFiles().length);
-        assertEquals(0, infoDir.listFiles().length);
+        // assert that they've been purged
+        assertFalse(imageDir.exists());
+        assertFalse(infoDir.exists());
     }
 
     @Test
@@ -193,8 +214,7 @@ public class ApplicationTest {
         File.createTempFile("bla2", "tmp", infoDir);
 
         System.setProperty(Application.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT, "");
-        String[] args = {};
-        Application.main(args);
+        Application.main(new String[] {});
 
         assertEquals(1, imageDir.listFiles().length);
         assertEquals(1, infoDir.listFiles().length);

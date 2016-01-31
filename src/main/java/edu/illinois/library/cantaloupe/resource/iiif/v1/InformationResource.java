@@ -76,14 +76,13 @@ public class InformationResource extends AbstractResource {
             throw e;
         }
 
+        // Obtain an instance of the processor assigned to that format in
+        // the config file
+        Processor proc = ProcessorFactory.getProcessor(sourceFormat, resolver);
+
         if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
             throw new UnsupportedSourceFormatException();
         }
-        // Obtain an instance of the processor assigned to that format in
-        // the config file
-        Processor proc = ProcessorFactory.getProcessor(sourceFormat);
-
-        checkProcessorResolverCompatibility(resolver, proc);
 
         // Get an ImageInfo instance corresponding to the source image
         ComplianceLevel complianceLevel = ComplianceLevel.getLevel(

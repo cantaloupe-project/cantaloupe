@@ -1,10 +1,44 @@
 # Sample Ruby delegate script, containing placeholders for all available
-# delegate script methods. See the "Delegate Script" section of the user
-# manual for more information.
+# methods. See the "Delegate Script" section of the user manual for more
+# information.
 #
 # DO NOT EDIT! Instead, copy to a file named `delegates.rb` and edit that.
 
 module Cantaloupe
+
+  ##
+  # Tells the server whether the given request is authorized. Will be called
+  # upon all image requests to any endpoint.
+  #
+  # Implementations should assume that the underlying resource is available.
+  #
+  # @param identifier [String] Image identifier
+  # @param full_size [Hash<String,Integer>] Hash with "width" and "height"
+  #                                         keys corresponding to the pixel
+  #                                         dimensions of the source image.
+  # @param operations [Array<Hash<String,Object>] Array of operations in order
+  #                   of execution. Only operations that are not no-ops will
+  #                   be included. Every hash contains an "operation" key
+  #                   corresponding to the type of operation. See the Javadoc
+  #                   of e.i.l.c.image.Operation implementations for a list of
+  #                   possible operations.
+  # @param resulting_size [Hash<String,String>] Hash with "width" and "height"
+  #                       keys corresponding to the pixel dimensions of the
+  #                       resulting image after all operations are applied.
+  # @param output_format [Hash<String,String>] Hash with "media_type" and
+  #                                            "extension" keys.
+  # @param request_uri [String] Full request URI
+  # @param request_headers [Hash<String,String>]
+  # @param client_ip [String]
+  # @param cookies [Hash<String,String>]
+  # @return [Boolean] Whether the request is authorized based on the supplied
+  #                   parameters.
+  #
+  def self.authorized?(identifier, full_size, operations, resulting_size,
+                       output_format, request_uri, request_headers, client_ip,
+                       cookies)
+    true
+  end
 
   ##
   # Used to define a service in the IIIF Image API 2.0 information endpoint.
@@ -12,7 +46,7 @@ module Cantaloupe
   #
   # @param identifier [String] Image identifier
   # @return [Hash,nil] Hash that will be appended to the `service` key in
-  # IIIF Image API 2.x information responses, or nil.
+  #                    IIIF Image API 2.x information responses, or nil.
   #
   def self.get_iiif2_service(identifier)
   end
@@ -22,7 +56,7 @@ module Cantaloupe
   #
   # @param identifier [String] Image identifier
   # @return [String,nil] Absolute pathname of the image corresponding to the
-  # given identifier, or nil if not found.
+  #                      given identifier, or nil if not found.
   #
   def self.get_pathname(identifier)
   end
@@ -41,7 +75,7 @@ module Cantaloupe
   #
   # @param identifier [String] Image identifier
   # @return [String,nil] S3 object key of the image corresponding to the
-  # given identifier, or nil if not found.
+  #                      given identifier, or nil if not found.
   #
   def self.get_s3_object_key(identifier)
   end
@@ -51,7 +85,7 @@ module Cantaloupe
   #
   # @param identifier [String] Image identifier
   # @return [String,nil] URL of the image corresponding to the given
-  # identifier, or nil if not found.
+  #                      identifier, or nil if not found.
   #
   def self.get_url(identifier)
   end

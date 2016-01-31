@@ -1,18 +1,20 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.cache.Cache;
+import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.processor.ChannelProcessor;
+import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.util.IOUtils;
-import edu.illinois.library.cantaloupe.util.TeeWritableByteChannel;
+import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.TeeOutputStream;
 import org.restlet.data.Disposition;
 import org.restlet.data.MediaType;
-import org.restlet.representation.WritableRepresentation;
+import org.restlet.representation.OutputRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,13 +22,13 @@ import java.awt.Dimension;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Restlet representation for images.
  */
-public class ImageRepresentation extends WritableRepresentation {
+public class ImageRepresentation extends OutputRepresentation {
 
     private static Logger logger = LoggerFactory.
             getLogger(ImageRepresentation.class);
@@ -35,7 +37,7 @@ public class ImageRepresentation extends WritableRepresentation {
 
     private File file;
     private Dimension fullSize;
-    private ReadableByteChannel readableChannel;
+    private StreamSource streamSource;
     private OperationList ops;
     private SourceFormat sourceFormat;
 
@@ -47,16 +49,16 @@ public class ImageRepresentation extends WritableRepresentation {
      * @param fullSize
      * @param ops
      * @param disposition
-     * @param readableChannel
+     * @param streamSource
      */
     public ImageRepresentation(final MediaType mediaType,
                                final SourceFormat sourceFormat,
                                final Dimension fullSize,
                                final OperationList ops,
                                final Disposition disposition,
-                               final ReadableByteChannel readableChannel) {
+                               final StreamSource streamSource) {
         super(mediaType);
-        this.readableChannel = readableChannel;
+        this.streamSource = streamSource;
         this.ops = ops;
         this.sourceFormat = sourceFormat;
         this.fullSize = fullSize;
@@ -90,48 +92,37 @@ public class ImageRepresentation extends WritableRepresentation {
     /**
      * Writes the source image to the given output stream.
      *
-     * @param writableChannel Response body channel supplied by Restlet
+     * @param outputStream Response body output stream supplied by Restlet
      * @throws IOException
      */
     @Override
-    public void write(WritableByteChannel writableChannel) throws IOException {
+    public void write(OutputStream outputStream) throws IOException {
         final Cache cache = CacheFactory.getInstance();
-        try {
-            if (cache != null) {
-                WritableByteChannel cacheWritableChannel = null;
-                try (ReadableByteChannel cacheReadableChannel =
-                             cache.getImageReadableChannel(this.ops)) {
-                    if (cacheReadableChannel != null) {
-                        // a cached image is available; write it to the
-                        // response output stream.
-                        IOUtils.copy(cacheReadableChannel, writableChannel);
-                    } else {
-                        // create a TeeOutputStream to write to both the
-                        // response output stream and the cache simultaneously.
-                        cacheWritableChannel = cache.getImageWritableChannel(this.ops);
-                        TeeWritableByteChannel teeChannel = new TeeWritableByteChannel(
-                                writableChannel, cacheWritableChannel);
-                        doCacheAwareWrite(teeChannel, cache);
-                    }
-                } catch (Exception e) {
-                    throw new IOException(e);
-                } finally {
-                    if (cacheWritableChannel != null &&
-                            cacheWritableChannel.isOpen()) {
-                        cacheWritableChannel.close();
-                    }
+        if (cache != null) {
+            OutputStream cacheOutputStream = null;
+            try (InputStream inputStream =
+                         cache.getImageInputStream(this.ops)) {
+                if (inputStream != null) {
+                    // a cached image is available; write it to the
+                    // response output stream.
+                    IOUtils.copy(inputStream, outputStream);
+                } else {
+                    // create a TeeOutputStream to write to both the
+                    // response output stream and the cache simultaneously.
+                    cacheOutputStream = cache.getImageOutputStream(this.ops);
+                    OutputStream teeStream = new TeeOutputStream(
+                            outputStream, cacheOutputStream);
+                    doCacheAwareWrite(teeStream, cache);
                 }
-            } else {
-                doWrite(writableChannel);
-            }
-        } finally {
-            try {
-                if (readableChannel != null && readableChannel.isOpen()) {
-                    readableChannel.close();
+            } catch (Exception e) {
+                throw new IOException(e);
+            } finally {
+                if (cacheOutputStream != null) {
+                    cacheOutputStream.close();
                 }
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
             }
+        } else {
+            doWrite(outputStream);
         }
     }
 
@@ -139,31 +130,30 @@ public class ImageRepresentation extends WritableRepresentation {
      * Variant of doWrite() that cleans up incomplete cached images when
      * the connection has been broken.
      *
-     * @param writableChannel
+     * @param outputStream
      * @param cache
      * @throws IOException
      */
-    private void doCacheAwareWrite(TeeWritableByteChannel writableChannel,
-                                   Cache cache) throws IOException {
+    private void doCacheAwareWrite(OutputStream outputStream,
+                                   Cache cache) throws CacheException {
         try {
-            doWrite(writableChannel);
+            doWrite(outputStream);
         } catch (IOException e) {
             logger.info(e.getMessage());
             cache.purge(this.ops);
         }
     }
 
-    private void doWrite(WritableByteChannel writableChannel) throws IOException {
+    private void doWrite(OutputStream outputStream) throws IOException {
         try {
             final long msec = System.currentTimeMillis();
             // If the operations are effectively a no-op, the source image can
             // be streamed directly.
             if (this.ops.isNoOp(this.sourceFormat)) {
                 if (this.file != null) {
-                    IOUtils.copy(new FileInputStream(this.file).getChannel(),
-                            writableChannel);
+                    IOUtils.copy(new FileInputStream(this.file), outputStream);
                 } else {
-                    IOUtils.copy(readableChannel, writableChannel);
+                    IOUtils.copy(streamSource.newInputStream(), outputStream);
                 }
                 logger.info("Streamed with no processing in {} msec: {}",
                         System.currentTimeMillis() - msec, ops);
@@ -173,11 +163,11 @@ public class ImageRepresentation extends WritableRepresentation {
                 if (this.file != null) {
                     FileProcessor fproc = (FileProcessor) proc;
                     fproc.process(this.ops, this.sourceFormat, this.fullSize,
-                            this.file, writableChannel);
+                            this.file, outputStream);
                 } else {
-                    ChannelProcessor sproc = (ChannelProcessor) proc;
+                    StreamProcessor sproc = (StreamProcessor) proc;
                     sproc.process(this.ops, this.sourceFormat,
-                            this.fullSize, readableChannel, writableChannel);
+                            this.fullSize, streamSource, outputStream);
                 }
                 logger.info("{} processed in {} msec: {}",
                         proc.getClass().getSimpleName(),

@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.image;
 
 import java.awt.Dimension;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Encapsulates a rotation operation.
@@ -55,6 +57,18 @@ public class Rotate implements Operation {
             throw new IllegalArgumentException("Degrees must be between 0 and 360");
         }
         this.degrees = degrees;
+    }
+
+    /**
+     * @param fullSize Ignored.
+     * @return Map with a <code>degrees</code> key and a float degree value.
+     */
+    @Override
+    public Map<String,Object> toMap(Dimension fullSize) {
+        final Map<String,Object> map = new HashMap<>();
+        map.put("operation", "rotate");
+        map.put("degrees", getDegrees());
+        return map;
     }
 
     /**

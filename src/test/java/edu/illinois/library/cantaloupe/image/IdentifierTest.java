@@ -1,9 +1,12 @@
 package edu.illinois.library.cantaloupe.image;
 
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
+import org.junit.Test;
 
-public class IdentifierTest extends CantaloupeTestCase {
+import static org.junit.Assert.*;
 
+public class IdentifierTest {
+
+    @Test
     public void testCompareTo() {
         Identifier id1 = new Identifier("cats");
         Identifier id2 = new Identifier("dogs");
@@ -12,6 +15,7 @@ public class IdentifierTest extends CantaloupeTestCase {
         assertEquals(0, id1.compareTo(id3));
     }
 
+    @Test
     public void testEqualsWithIdentifier() {
         Identifier id1 = new Identifier("cats");
         Identifier id2 = new Identifier("cats");
@@ -20,18 +24,21 @@ public class IdentifierTest extends CantaloupeTestCase {
         assertFalse(id2.equals(id3));
     }
 
+    @Test
     public void testEqualsWithString() {
         Identifier id = new Identifier("cats");
         assertTrue(id.equals("cats"));
         assertFalse(id.equals("dogs"));
     }
 
+    @Test
     public void testHashCode() {
         Identifier id1 = new Identifier("cats");
         Identifier id2 = new Identifier("cats");
         assertEquals(id1.hashCode(), id2.hashCode());
     }
 
+    @Test
     public void testToString() {
         assertEquals("cats", new Identifier("cats").toString());
     }

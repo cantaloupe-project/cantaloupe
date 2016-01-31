@@ -9,19 +9,46 @@ import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-class JdbcResolver extends AbstractResolver implements ChannelResolver {
+class JdbcResolver extends AbstractResolver implements StreamResolver {
+
+    private static class JdbcStreamSource implements StreamSource {
+
+        private final int column;
+        private final ResultSet resultSet;
+
+        public JdbcStreamSource(ResultSet resultSet, int column) {
+            this.resultSet = resultSet;
+            this.column = column;
+        }
+
+        @Override
+        public ImageInputStream newImageInputStream() throws IOException {
+            return ImageIO.createImageInputStream(newInputStream());
+        }
+
+        @Override
+        public InputStream newInputStream() throws IOException {
+            try {
+                return resultSet.getBinaryStream(column);
+            } catch (SQLException e) {
+                throw new IOException(e.getMessage(), e);
+            }
+        }
+
+    }
 
     private static Logger logger = LoggerFactory.getLogger(JdbcResolver.class);
 
@@ -81,7 +108,7 @@ class JdbcResolver extends AbstractResolver implements ChannelResolver {
     }
 
     @Override
-    public ReadableByteChannel getChannel(Identifier identifier)
+    public StreamSource getStreamSource(Identifier identifier)
             throws IOException {
         try (Connection connection = getConnection()) {
             Configuration config = Application.getConfiguration();
@@ -96,7 +123,7 @@ class JdbcResolver extends AbstractResolver implements ChannelResolver {
             statement.setString(1, executeGetDatabaseIdentifier(identifier));
             ResultSet result = statement.executeQuery();
             if (result.next()) {
-                return Channels.newChannel(result.getBinaryStream(1));
+                return new JdbcStreamSource(result, 1);
             }
         } catch (ScriptException | SQLException e) {
             throw new IOException(e.getMessage(), e);

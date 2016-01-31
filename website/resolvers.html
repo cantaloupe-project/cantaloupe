@@ -4,7 +4,7 @@ layout: default
 
 <h2>Resolvers</h2>
 
-<p>Resolvers locate a source image based on the image identifier in a request URL. In Java-speak, they take in an identifier and return a File or ReadableByteChannel object from which the corresponding image can be read by a <a href="processors.html">processor</a>.</p>
+<p>Resolvers locate a source image based on the image identifier in a request URL. In programmer-speak, they take in an identifier and return a source object from which the corresponding image can be read by a <a href="processors.html">processor</a>.</p>
 
 <p>(This distinction is important because <a href="processors.html#Compatibility">not all processors can work with all resolvers</a>.)</p>
 
@@ -20,14 +20,16 @@ layout: default
 
 <p>To enable dynamic resolver selection, set the <code>resolver.delegate</code> configuration key to <code>true</code>. Then, implement the <code>get_resolver(identifier)</code> method in the delegate script, which takes in an identifier and returns a resolver name (such as FilesystemResolver, HttpResolver, etc.) For example:</p>
 
-<pre>module Cantaloupe
+{% highlight ruby %}
+module Cantaloupe
   def self.get_resolver(identifier)
     # Here, you would perform some kind of analysis on `identifier`:
     # parse it, look it up in a web service or database...
     # and then return the name of the resolver to use to serve it.
     'FilesystemResolver'
   end
-end</pre>
+end
+{% endhighlight %}
 
 <p>See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script.</p>
 
@@ -43,9 +45,11 @@ end</pre>
 
 <p>BasicLookupStrategy locates images by concatenating a pre-defined path prefix and/or suffix. For example, with the following configuration options set:</p>
 
-<pre># Note trailing slash!
+{% highlight properties %}
+# Note trailing slash!
 FilesystemResolver.BasicLookupStrategy.path_prefix = /usr/local/images/
-FilesystemResolver.BasicLookupStrategy.path_suffix =</pre>
+FilesystemResolver.BasicLookupStrategy.path_suffix =
+{% endhighlight %}
 
 <p>An identifier of <code>image.jpg</code> in the URL will resolve to
 <span class="filename">/usr/local/images/image.jpg</span>.</p>
@@ -60,7 +64,8 @@ FilesystemResolver.BasicLookupStrategy.path_suffix =</pre>
 
 <p>The delegate script method, <code>get_pathname(identifier)</code>, will take in an identifier and should return a pathname, if available, or <code>nil</code>, if not. A Solr query, for example, could look like:</p>
 
-<pre>require 'net/http'
+{% highlight ruby %}
+require 'net/http'
 require 'cgi'
 
 module Cantaloupe
@@ -78,9 +83,10 @@ module Cantaloupe
     results = eval(response.body)['response']['docs']
     results.any? ? results.first['pathname_si'] : nil
   end
-end</pre>
+end
+{% endhighlight %}
 
-<p>See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script in Cantaloupe.</p>
+<p>See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script.</p>
 
 <hr>
 
@@ -96,9 +102,11 @@ end</pre>
 
 <p>BasicLookupStrategy locates images by concatenating a pre-defined URL prefix and/or suffix. For example, with the following configuration options set:</p>
 
-<pre># Note trailing slash!
+{% highlight properties %}
+# Note trailing slash!
 HttpResolver.url_prefix = http://example.org/images/
-HttpResolver.url_suffix =</pre>
+HttpResolver.url_suffix =
+{% endhighlight %}
 
 <p>An identifier of <code>image.jpg</code> in the URL will resolve to
 <span class="filename">http://example.org/images/image.jpg</span>.
@@ -107,7 +115,7 @@ HttpResolver.url_suffix =</pre>
 
 <p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple URLs, or perhaps your identifiers are opaque and you need to run a database or web service request to locate them.  With this lookup strategy, you can tell FilesystemResolver to invoke a method in your <a href="delegate-script.html">delegate script</a> and capture the URL it returns.</p>
 
-<p>The delegate script method, <code>get_url(identifier)</code>, will take in an identifier and should return a URL, if available, or <code>nil</code>, if not. See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script in Cantaloupe, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for an example of a similar script.</p>
+<p>The delegate script method, <code>get_url(identifier)</code>, will take in an identifier and should return a URL, if available, or <code>nil</code>, if not. See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for an example of a similar script.</p>
 
 <hr>
 
@@ -137,17 +145,21 @@ jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre
 
 <p>This JavaScript function takes in an unencoded identifier and returns the corresponding database value of the identifier. For example, the following will work when the identifiers in the URL map directly to values in the database:</p>
 
-<pre><code>JdbcResolver.function.identifier = function getDatabaseIdentifier(url_identifier) {\
+{% highlight properties %}
+JdbcResolver.function.identifier = function getDatabaseIdentifier(url_identifier) {\
       return url_identifier;\
-  }</code></pre>
+  }
+{% endhighlight %}
 
 <p>Otherwise, if the URL identifiers require some transformation first:</p>
 
-<pre><code>JdbcResolver.function.identifier = function getDatabaseIdentifier(url_identifier) {\
+{% highlight properties %}
+JdbcResolver.function.identifier = function getDatabaseIdentifier(url_identifier) {\
         // Assumes that the identifier is stored in the database as\
         // "identifier-something"\
         return url_identifier + "-something";\
-    }</code></pre>
+    }
+{% endhighlight %}
 
 <div class="alert alert-info">Note that in properties files, all lines in multi-line strings except the last need to end with a backslash (\).</div>
 
@@ -155,11 +167,13 @@ jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre
 
 <p>This JavaScript function returns a media (MIME) type corresponding to the value returned by the <code><a href="#JdbcResolverIdentifierFunction">getDatabaseIdentifier()</a></code> function. If the media type is stored in the database, this example will return an SQL statement to retrieve it.</p>
 
-<pre><code>JdbcResolver.function.media_type = function getMediaType(identifier) {\
+{% highlight properties %}
+JdbcResolver.function.media_type = function getMediaType(identifier) {\
       return "SELECT media_type " +\
           "FROM some_table " +\
           "WHERE some_identifier = ?"\
-  }</code></pre>
+  }
+{% endhighlight %}
 
 <p>If the URL identifier will <strong>always</strong> have a known, valid image extension, like <span class="filename">.jpg</span>, <span class="filename">.tif</span>, etc., the entire <code>JdbcResolver.function.media_type</code> option can be commented out, and Cantaloupe will infer the media type from the extension.</p>
 
@@ -167,9 +181,11 @@ jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre
 
 <p><code>JdbcResolver.lookup_sql</code> is an SQL statement that selects the BLOB corresponding to the value returned by the <code><a href="#JdbcResolverIdentifierFunction">getDatabaseIdentifier()</a></code> function.</p>
 
-<pre><code>JdbcResolver.lookup_sql = SELECT image_blob_column \
+{% highlight properties %}
+JdbcResolver.lookup_sql = SELECT image_blob_column \
     FROM some_table \
-    WHERE some_identifier = ?</code></pre>
+    WHERE some_identifier = ?
+{% endhighlight %}
 
 <hr>
 
@@ -198,4 +214,4 @@ jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre
 
 <p>When your URL identifiers don't match your Amazon S3 object keys, ScriptLookupStrategy is available to tell AmazonS3Resolver to capture the object key returned by a method in your <a href="delegate-script.html">delegate script</a>.</p>
 
-<p>The delegate script method, <code>get_s3_object_key(identifier)</code>, will take in an identifier and should return an S3 object key string, if available, or <code>nil</code>, if not. See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script in Cantaloupe, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for an example of a similar script.</p>
+<p>The delegate script method, <code>get_s3_object_key(identifier)</code>, will take in an identifier and should return an S3 object key string, if available, or <code>nil</code>, if not. See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for an example of a similar script.</p>

@@ -1,12 +1,18 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.Crop;
+import org.junit.Before;
+import org.junit.Test;
 
-public class RegionTest extends CantaloupeTestCase {
+import static org.junit.Assert.*;
+
+public class RegionTest {
+
+    private static final float FUDGE = 0.0000001f;
 
     private Region region;
 
+    @Before
     public void setUp() {
         region = new Region();
         region.setPercent(true);
@@ -21,6 +27,7 @@ public class RegionTest extends CantaloupeTestCase {
     /**
      * Tests fromUri(String) with a value of "full".
      */
+    @Test
     public void testFromUriFull() {
         Region r = Region.fromUri("full");
         assertTrue(r.isFull());
@@ -30,12 +37,13 @@ public class RegionTest extends CantaloupeTestCase {
     /**
      * Tests fromUri(String) with absolute pixel values.
      */
+    @Test
     public void testFromUriAbsolute() {
         Region r = Region.fromUri("0,0,50,40");
-        assertEquals(0f, r.getX());
-        assertEquals(0f, r.getY());
-        assertEquals(50f, r.getWidth());
-        assertEquals(40f, r.getHeight());
+        assertEquals(0f, r.getX(), FUDGE);
+        assertEquals(0f, r.getY(), FUDGE);
+        assertEquals(50f, r.getWidth(), FUDGE);
+        assertEquals(40f, r.getHeight(), FUDGE);
         assertFalse(r.isPercent());
         assertFalse(r.isFull());
     }
@@ -43,16 +51,18 @@ public class RegionTest extends CantaloupeTestCase {
     /**
      * Tests fromUri(String) with percentage values.
      */
+    @Test
     public void testFromUriPercentage() {
         Region r = Region.fromUri("pct:0,0,50,40");
-        assertEquals(0f, r.getX());
-        assertEquals(0f, r.getY());
-        assertEquals(50f, r.getWidth());
-        assertEquals(40f, r.getHeight());
+        assertEquals(0f, r.getX(), FUDGE);
+        assertEquals(0f, r.getY(), FUDGE);
+        assertEquals(50f, r.getWidth(), FUDGE);
+        assertEquals(40f, r.getHeight(), FUDGE);
         assertTrue(r.isPercent());
         assertFalse(r.isFull());
     }
 
+    @Test
     public void testFromUriWithIllegalValues() {
         try {
             Region.fromUri("pct:-2,3,50,50");
@@ -78,6 +88,7 @@ public class RegionTest extends CantaloupeTestCase {
 
     /* equals */
 
+    @Test
     public void testEqualsWithEqualRegion() {
         Region region2 = new Region();
         region2.setPercent(true);
@@ -88,6 +99,7 @@ public class RegionTest extends CantaloupeTestCase {
         assertTrue(region.equals(region2));
     }
 
+    @Test
     public void testEqualsWithUnequalRegion1() {
         Region region2 = new Region();
         region2.setPercent(true);
@@ -98,6 +110,7 @@ public class RegionTest extends CantaloupeTestCase {
         assertFalse(region.equals(region2));
     }
 
+    @Test
     public void testEqualsWithUnequalRegion2() {
         Region region2 = new Region();
         region2.setPercent(true);
@@ -108,6 +121,7 @@ public class RegionTest extends CantaloupeTestCase {
         assertFalse(region.equals(region2));
     }
 
+    @Test
     public void testEqualsWithUnequalRegion3() {
         Region region2 = new Region();
         region2.setPercent(true);
@@ -118,6 +132,7 @@ public class RegionTest extends CantaloupeTestCase {
         assertFalse(region.equals(region2));
     }
 
+    @Test
     public void testEqualsWithUnequalRegion4() {
         Region region2 = new Region();
         region2.setPercent(true);
@@ -128,6 +143,7 @@ public class RegionTest extends CantaloupeTestCase {
         assertFalse(region.equals(region2));
     }
 
+    @Test
     public void testEqualsWithEqualCrop() {
         Crop crop = new Crop();
         crop.setUnit(Crop.Unit.PERCENT);
@@ -138,6 +154,7 @@ public class RegionTest extends CantaloupeTestCase {
         assertTrue(region.equals(crop));
     }
 
+    @Test
     public void testEqualsWithUnequalCrop1() {
         Crop crop = new Crop();
         crop.setUnit(Crop.Unit.PERCENT);
@@ -148,6 +165,7 @@ public class RegionTest extends CantaloupeTestCase {
         assertFalse(region.equals(crop));
     }
 
+    @Test
     public void testEqualsWithUnequalCrop2() {
         Crop crop = new Crop();
         crop.setUnit(Crop.Unit.PERCENT);
@@ -158,6 +176,7 @@ public class RegionTest extends CantaloupeTestCase {
         assertFalse(region.equals(crop));
     }
 
+    @Test
     public void testEqualsWithUnequalCrop3() {
         Crop crop = new Crop();
         crop.setUnit(Crop.Unit.PERCENT);
@@ -168,6 +187,7 @@ public class RegionTest extends CantaloupeTestCase {
         assertFalse(region.equals(crop));
     }
 
+    @Test
     public void testEqualsWithUnequalCrop4() {
         Crop crop = new Crop();
         crop.setUnit(Crop.Unit.PERCENT);
@@ -180,12 +200,14 @@ public class RegionTest extends CantaloupeTestCase {
 
     /* height */
 
+    @Test
     public void testSetHeight() {
         float height = 50f;
         this.region.setHeight(height);
-        assertEquals(height, this.region.getHeight());
+        assertEquals(height, this.region.getHeight(), FUDGE);
     }
 
+    @Test
     public void testSetNegativeHeight() {
         try {
             this.region.setHeight(-1f);
@@ -195,6 +217,7 @@ public class RegionTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testSetZeroHeight() {
         try {
             this.region.setHeight(0f);
@@ -206,12 +229,14 @@ public class RegionTest extends CantaloupeTestCase {
 
     /* width */
 
+    @Test
     public void testSetWidth() {
         float width = 50f;
         this.region.setWidth(width);
-        assertEquals(width, this.region.getWidth());
+        assertEquals(width, this.region.getWidth(), FUDGE);
     }
 
+    @Test
     public void testSetNegativeWidth() {
         try {
             this.region.setWidth(-1f);
@@ -221,6 +246,7 @@ public class RegionTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testSetZeroWidth() {
         try {
             this.region.setWidth(0f);
@@ -232,12 +258,14 @@ public class RegionTest extends CantaloupeTestCase {
 
     /* x */
 
+    @Test
     public void testSetX() {
         Float x = new Float(50.0);
         this.region.setX(x);
         assertEquals(x, this.region.getX());
     }
 
+    @Test
     public void testSetNegativeX() {
         try {
             this.region.setX(-1f);
@@ -249,12 +277,14 @@ public class RegionTest extends CantaloupeTestCase {
 
     /* y */
 
+    @Test
     public void testSetY() {
         float y = 50.0f;
         this.region.setY(y);
-        assertEquals(y, this.region.getY());
+        assertEquals(y, this.region.getY(), FUDGE);
     }
 
+    @Test
     public void testSetNegativeY() {
         try {
             this.region.setY(-1f);
@@ -264,6 +294,7 @@ public class RegionTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testToCrop() {
         region = new Region();
         region.setX(30f);
@@ -277,6 +308,7 @@ public class RegionTest extends CantaloupeTestCase {
         assertTrue(region.equals(crop));
     }
 
+    @Test
     public void testToString() {
         Region r = Region.fromUri("full");
         assertEquals("full", r.toString());

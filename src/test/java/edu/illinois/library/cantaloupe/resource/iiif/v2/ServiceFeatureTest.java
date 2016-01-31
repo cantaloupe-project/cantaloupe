@@ -1,9 +1,12 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
+import org.junit.Test;
 
-public class ServiceFeatureTest extends CantaloupeTestCase {
+import static org.junit.Assert.*;
 
+public class ServiceFeatureTest {
+
+    @Test
     public void testValues() {
         assertNotNull(ServiceFeature.valueOf("BASE_URI_REDIRECT"));
         assertNotNull(ServiceFeature.valueOf("CANONICAL_LINK_HEADER"));
@@ -13,6 +16,7 @@ public class ServiceFeatureTest extends CantaloupeTestCase {
         assertNotNull(ServiceFeature.valueOf("SIZE_BY_WHITELISTED"));
     }
 
+    @Test
     public void testGetName() {
         assertEquals("baseUriRedirect", ServiceFeature.BASE_URI_REDIRECT.getName());
         assertEquals("canonicalLinkHeader", ServiceFeature.CANONICAL_LINK_HEADER.getName());
@@ -22,6 +26,7 @@ public class ServiceFeatureTest extends CantaloupeTestCase {
         assertEquals("sizeByWhListed", ServiceFeature.SIZE_BY_WHITELISTED.getName());
     }
 
+    @Test
     public void testToString() {
         assertEquals("baseUriRedirect", ServiceFeature.BASE_URI_REDIRECT.toString());
         assertEquals("canonicalLinkHeader", ServiceFeature.CANONICAL_LINK_HEADER.toString());

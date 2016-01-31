@@ -1,18 +1,24 @@
 package edu.illinois.library.cantaloupe.image;
 
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.awt.Dimension;
+import java.util.Map;
 
-public class RotateTest extends CantaloupeTestCase {
+import static org.junit.Assert.*;
+
+public class RotateTest {
 
     private Rotate rotate;
 
+    @Before
     public void setUp() {
         this.rotate = new Rotate();
-        assertEquals(0f, this.rotate.getDegrees());
+        assertEquals(0f, this.rotate.getDegrees(), 0.0000001f);
     }
 
+    @Test
     public void testGetEffectiveSize() {
         Dimension fullSize = new Dimension(300, 200);
         assertEquals(fullSize, rotate.getResultingSize(fullSize));
@@ -30,6 +36,7 @@ public class RotateTest extends CantaloupeTestCase {
         assertEquals(expectedSize, rotate.getResultingSize(fullSize));
     }
 
+    @Test
     public void testIsNoOp() {
         assertTrue(rotate.isNoOp());
         rotate.setDegrees(30);
@@ -40,12 +47,14 @@ public class RotateTest extends CantaloupeTestCase {
         assertTrue(rotate.isNoOp());
     }
 
+    @Test
     public void testSetDegrees() {
         float degrees = 50f;
         this.rotate.setDegrees(degrees);
-        assertEquals(degrees, this.rotate.getDegrees());
+        assertEquals(degrees, this.rotate.getDegrees(), 0.000001f);
     }
 
+    @Test
     public void testSetLargeDegrees() {
         float degrees = 530f;
         try {
@@ -55,6 +64,7 @@ public class RotateTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testSetNegativeDegrees() {
         float degrees = -50f;
         try {
@@ -64,6 +74,15 @@ public class RotateTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
+    public void testToMap() {
+        this.rotate.setDegrees(15);
+        Map<String,Object> map = this.rotate.toMap(new Dimension(0, 0));
+        assertEquals("rotate", map.get("operation"));
+        assertEquals(15f, map.get("degrees"));
+    }
+
+    @Test
     public void testToString() {
         Rotate r = new Rotate(50f);
         assertEquals("50", r.toString());

@@ -1,18 +1,21 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
+import org.junit.Test;
 
-public class ParametersTest extends CantaloupeTestCase {
+import static org.junit.Assert.*;
+
+public class ParametersTest {
 
     private Parameters params;
 
+    @Test
     public void testFromUri() {
         params = Parameters.fromUri("bla/20,20,50,50/pct:90/15/native.jpg");
         assertEquals("bla", params.getIdentifier().toString());
         assertEquals("20,20,50,50", params.getRegion().toString());
-        assertEquals(90f, params.getSize().getPercent());
-        assertEquals(15f, params.getRotation().getDegrees());
+        assertEquals(90f, params.getSize().getPercent(), 0.0000001f);
+        assertEquals(15f, params.getRotation().getDegrees(), 0.0000001f);
         assertEquals(Quality.NATIVE, params.getQuality());
         assertEquals(OutputFormat.JPG, params.getOutputFormat());
 
@@ -30,10 +33,12 @@ public class ParametersTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testCompareTo() {
         // TODO: write this
     }
 
+    @Test
     public void testToOperationList() {
         // TODO: write this
     }

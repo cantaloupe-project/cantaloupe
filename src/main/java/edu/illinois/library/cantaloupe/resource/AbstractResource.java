@@ -1,19 +1,23 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.ConfigurationException;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
-import edu.illinois.library.cantaloupe.processor.ChannelProcessor;
-import edu.illinois.library.cantaloupe.resolver.ChannelResolver;
+import edu.illinois.library.cantaloupe.processor.StreamProcessor;
+import edu.illinois.library.cantaloupe.resolver.StreamResolver;
+import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resolver.FileResolver;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
+import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
+import edu.illinois.library.cantaloupe.script.ScriptEngine;
+import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.Request;
@@ -29,10 +33,10 @@ import org.restlet.util.Series;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.script.ScriptException;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,10 +49,12 @@ public abstract class AbstractResource extends ServerResource {
             getLogger(AbstractResource.class);
 
     public static final String BASE_URI_CONFIG_KEY = "base_uri";
-    private static final String MAX_PIXELS_CONFIG_KEY = "max_pixels";
-    protected static final String PURGE_MISSING_CONFIG_KEY =
+    public static final String CONTENT_DISPOSITION_CONFIG_KEY =
+            "endpoint.iiif.content_disposition";
+    public static final String MAX_PIXELS_CONFIG_KEY = "max_pixels";
+    public static final String PURGE_MISSING_CONFIG_KEY =
             "cache.server.purge_missing";
-    protected static final String RESOLVE_FIRST_CONFIG_KEY =
+    public static final String RESOLVE_FIRST_CONFIG_KEY =
             "cache.server.resolve_first";
     public static final String SLASH_SUBSTITUTE_CONFIG_KEY =
             "slash_substitute";
@@ -119,6 +125,34 @@ public abstract class AbstractResource extends ServerResource {
         return rootRef;
     }
 
+    /**
+     * @param identifier
+     * @param outputFormat
+     * @return A content disposition based on the setting of
+     * {@link #CONTENT_DISPOSITION_CONFIG_KEY} in the application configuration.
+     * If it is set to <code>attachment</code>, the disposition will have a
+     * filename set to a reasonable value based on the given identifier and
+     * output format.
+     */
+    public static Disposition getRepresentationDisposition(
+            Identifier identifier, OutputFormat outputFormat) {
+        Disposition disposition = new Disposition();
+        switch (Application.getConfiguration().
+                getString(CONTENT_DISPOSITION_CONFIG_KEY, "none")) {
+            case "inline":
+                disposition.setType(Disposition.TYPE_INLINE);
+                break;
+            case "attachment":
+                disposition.setType(Disposition.TYPE_ATTACHMENT);
+                disposition.setFilename(
+                        identifier.toString().replaceAll(
+                                ImageRepresentation.FILENAME_CHARACTERS, "_") +
+                                "." + outputFormat.getExtension());
+                break;
+        }
+        return disposition;
+    }
+
     @Override
     protected void doInit() throws ResourceException {
         super.doInit();
@@ -132,7 +166,7 @@ public abstract class AbstractResource extends ServerResource {
      * @param value Header value
      */
     @SuppressWarnings({"unchecked"})
-    protected void addHeader(String key, String value) {
+    protected final void addHeader(String key, String value) {
         Series<Header> responseHeaders = (Series<Header>) getResponse().
                 getAttributes().get("org.restlet.http.headers");
         if (responseHeaders == null) {
@@ -144,31 +178,15 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * Should be called by all relevant resource implementations.
-     *
-     * @throws ConfigurationException If the given resolver and processor are
-     * incompatible.
-     */
-    protected void checkProcessorResolverCompatibility(Resolver resolver,
-                                                       Processor processor)
-            throws ConfigurationException {
-        if (!resolver.isCompatible(processor)) {
-            throw new ConfigurationException(
-                    String.format("%s is not compatible with %s",
-                            processor.getClass().getSimpleName(),
-                            resolver.getClass().getSimpleName()));
-        }
-    }
-
-    /**
      * Some web servers have issues dealing with encoded slashes (%2F) in URLs.
      * This method enables the use of an alternate string to represent a slash
      * via {@link #SLASH_SUBSTITUTE_CONFIG_KEY}.
      *
-     * @param uriPathComponent
-     * @return
+     * @param uriPathComponent Path component (a part of the path before,
+     *                         after, or between slashes)
+     * @return Path component with slashes decoded
      */
-    protected String decodeSlashes(final String uriPathComponent) {
+    protected final String decodeSlashes(final String uriPathComponent) {
         final String substitute = Application.getConfiguration().
                 getString(SLASH_SUBSTITUTE_CONFIG_KEY, "");
         if (substitute.length() > 0) {
@@ -177,11 +195,11 @@ public abstract class AbstractResource extends ServerResource {
         return uriPathComponent;
     }
 
-    protected Identifier decodeSlashes(final Identifier identifier) {
+    protected final Identifier decodeSlashes(final Identifier identifier) {
         return new Identifier(decodeSlashes(identifier.toString()));
     }
 
-    protected List<CacheDirective> getCacheDirectives() {
+    protected final List<CacheDirective> getCacheDirectives() {
         List<CacheDirective> directives = new ArrayList<>();
         try {
             Configuration config = Application.getConfiguration();
@@ -251,28 +269,26 @@ public abstract class AbstractResource extends ServerResource {
             }
             return new ImageRepresentation(mediaType, sourceFormat, fullSize,
                     ops, disposition, inputFile);
-        } else if (resolver instanceof ChannelResolver) {
-            logger.debug("Using {} as a ChannelProcessor",
+        } else if (resolver instanceof StreamResolver) {
+            logger.debug("Using {} as a StreamProcessor",
                     proc.getClass().getSimpleName());
-            final ChannelResolver chRes = (ChannelResolver) resolver;
-            if (proc instanceof ChannelProcessor) {
-                final ChannelProcessor sproc = (ChannelProcessor) proc;
-                ReadableByteChannel readableChannel = chRes.
-                        getChannel(ops.getIdentifier());
-                final Dimension fullSize = sproc.getSize(readableChannel,
+            final StreamResolver chRes = (StreamResolver) resolver;
+            if (proc instanceof StreamProcessor) {
+                final StreamProcessor sproc = (StreamProcessor) proc;
+                final StreamSource streamSource = chRes.
+                        getStreamSource(ops.getIdentifier());
+                final Dimension fullSize = sproc.getSize(streamSource,
                         sourceFormat);
                 final Dimension effectiveSize = ops.getResultingSize(fullSize);
                 if (maxAllowedSize > 0 &&
                         effectiveSize.width * effectiveSize.height > maxAllowedSize) {
                     throw new PayloadTooLargeException();
                 }
-                // avoid reusing the channel
-                readableChannel = chRes.getChannel(ops.getIdentifier());
                 return new ImageRepresentation(mediaType, sourceFormat,
-                        fullSize, ops, disposition, readableChannel);
+                        fullSize, ops, disposition, streamSource);
             }
         }
-        return null; // should never happen
+        return null; // should never hit
     }
 
     /**
@@ -287,14 +303,20 @@ public abstract class AbstractResource extends ServerResource {
      * @return
      * @throws Exception
      */
-    protected Dimension getSize(Identifier identifier, Processor proc,
-                                Resolver resolver, SourceFormat sourceFormat)
+    protected final Dimension getSize(final Identifier identifier,
+                                      final Processor proc,
+                                      final Resolver resolver,
+                                      final SourceFormat sourceFormat)
             throws Exception {
         Dimension size = null;
         Cache cache = CacheFactory.getInstance();
         if (cache != null) {
+            long msec = System.currentTimeMillis();
             size = cache.getDimension(identifier);
-            if (size == null) {
+            if (size != null) {
+                logger.debug("Retrieved dimensions of {} from cache in {} msec",
+                        identifier, System.currentTimeMillis() - msec);
+            } else {
                 size = readSize(identifier, resolver, proc, sourceFormat);
                 cache.putDimension(identifier, size);
             }
@@ -306,7 +328,51 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * Reads the size from the source image.
+     * Invokes a delegate script method to determine whether the request is
+     * authorized.
+     *
+     * @param fullSize
+     * @param opList
+     * @return
+     * @throws IOException
+     * @throws ScriptException
+     */
+    protected final boolean isAuthorized(final OperationList opList,
+                                         final Dimension fullSize)
+            throws IOException, ScriptException {
+        final Map<String,Integer> fullSizeArg = new HashMap<>();
+        fullSizeArg.put("width", fullSize.width);
+        fullSizeArg.put("height", fullSize.height);
+
+        final Dimension resultingSize = opList.getResultingSize(fullSize);
+        final Map<String,Integer> resultingSizeArg = new HashMap<>();
+        resultingSizeArg.put("width", resultingSize.width);
+        resultingSizeArg.put("height", resultingSize.height);
+
+        // delegate method parameters
+        final Object args[] = new Object[9];
+        args[0] = opList.getIdentifier().toString();           // identifier
+        args[1] = fullSizeArg;                                 // full_size
+        args[2] = opList.toMap(fullSize).get("operations");    // operations
+        args[3] = resultingSizeArg;                            // resulting_size
+        args[4] = opList.toMap(fullSize).get("output_format"); // output_format
+        args[5] = getReference().toString();                   // request_uri
+        args[6] = getRequest().getHeaders().getValuesMap();    // request_headers
+        args[7] = getRequest().getClientInfo().getAddress();   // client_ip
+        args[8] = getRequest().getCookies().getValuesMap();    // cookies
+
+        try {
+            final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
+            final String method = "authorized?";
+            return (boolean) engine.invoke(method, args);
+        } catch (DelegateScriptDisabledException e) {
+            logger.debug("isAuthorized(): delegate script disabled; allowing.");
+            return true;
+        }
+    }
+
+    /**
+     * Reads the size of the source image.
      *
      * @param identifier
      * @param resolver
@@ -315,29 +381,34 @@ public abstract class AbstractResource extends ServerResource {
      * @return
      * @throws Exception
      */
-    protected Dimension readSize(Identifier identifier, Resolver resolver,
-                                 Processor proc, SourceFormat sourceFormat)
+    protected final Dimension readSize(final Identifier identifier,
+                                       final Resolver resolver,
+                                       final Processor proc,
+                                       final SourceFormat sourceFormat)
             throws Exception {
+        final long msec = System.currentTimeMillis();
         Dimension size = null;
         if (resolver instanceof FileResolver) {
             if (proc instanceof FileProcessor) {
                 size = ((FileProcessor) proc).getSize(
                         ((FileResolver) resolver).getFile(identifier),
                         sourceFormat);
-            } else if (proc instanceof ChannelProcessor) {
-                size = ((ChannelProcessor) proc).getSize(
-                        ((ChannelResolver) resolver).getChannel(identifier),
+            } else if (proc instanceof StreamProcessor) {
+                size = ((StreamProcessor) proc).getSize(
+                        ((StreamResolver) resolver).getStreamSource(identifier),
                         sourceFormat);
             }
-        } else if (resolver instanceof ChannelResolver) {
-            if (!(proc instanceof ChannelProcessor)) {
-                // ChannelResolvers and FileProcessors are incompatible
+        } else if (resolver instanceof StreamResolver) {
+            if (!(proc instanceof StreamProcessor)) {
+                // StreamResolvers and FileProcessors are incompatible
             } else {
-                size = ((ChannelProcessor) proc).getSize(
-                        ((ChannelResolver) resolver).getChannel(identifier),
+                size = ((StreamProcessor) proc).getSize(
+                        ((StreamResolver) resolver).getStreamSource(identifier),
                         sourceFormat);
             }
         }
+        logger.debug("Read dimensions of {} in {} msec", identifier,
+                System.currentTimeMillis() - msec);
         return size;
     }
 

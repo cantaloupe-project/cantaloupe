@@ -1,19 +1,22 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 
 abstract class ProcessorUtil {
+
+    private static Logger logger = LoggerFactory.getLogger(ProcessorUtil.class);
 
     /**
      * Gets a reduction factor where the corresponding scale is 1/(2^rf).
@@ -51,8 +54,7 @@ abstract class ProcessorUtil {
     }
 
     /**
-     * Efficiently reads the width & height of an image without reading the
-     * entire image into memory.
+     * Efficiently reads the dimensions of an image.
      *
      * @param inputFile
      * @param sourceFormat
@@ -61,32 +63,50 @@ abstract class ProcessorUtil {
      */
     public static Dimension getSize(File inputFile, SourceFormat sourceFormat)
             throws ProcessorException {
-        return doGetSize(inputFile, sourceFormat);
+        try {
+            return doGetSize(new FileImageInputStream(inputFile), sourceFormat);
+        } catch (IOException e) {
+            throw new ProcessorException(e.getMessage(), e);
+        }
     }
 
     /**
-     * Efficiently reads the width & height of an image without reading the
-     * entire image into memory.
+     * Efficiently reads the dimensions of an image.
      *
-     * @param readableChannel
+     * @param streamSource StreamSource from which to obtain a stream to read
+     *                     the size.
      * @param sourceFormat
      * @return Dimensions in pixels
      * @throws ProcessorException
      */
-    public static Dimension getSize(ReadableByteChannel readableChannel,
+    public static Dimension getSize(StreamSource streamSource,
                                     SourceFormat sourceFormat)
             throws ProcessorException {
-        return doGetSize(readableChannel, sourceFormat);
+        ImageInputStream iis = null;
+        try {
+            iis = streamSource.newImageInputStream();
+            return doGetSize(iis, sourceFormat);
+        } catch (IOException e) {
+            throw new ProcessorException(e.getMessage(), e);
+        } finally {
+            try {
+                if (iis != null) {
+                    iis.close();
+                }
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
     }
 
     /**
-     * @param input Object that can be passed to
-     * {@link ImageIO#createImageInputStream(Object)}
+     * @param inputStream
      * @param sourceFormat
      * @return
      * @throws ProcessorException
      */
-    private static Dimension doGetSize(Object input, SourceFormat sourceFormat)
+    private static Dimension doGetSize(ImageInputStream inputStream,
+                                       SourceFormat sourceFormat)
             throws ProcessorException {
         Iterator<ImageReader> iter = ImageIO.
                 getImageReadersBySuffix(sourceFormat.getPreferredExtension());
@@ -94,7 +114,7 @@ abstract class ProcessorUtil {
             ImageReader reader = iter.next();
             int width, height;
             try {
-                reader.setInput(ImageIO.createImageInputStream(input));
+                reader.setInput(inputStream);
                 width = reader.getWidth(reader.getMinIndex());
                 height = reader.getHeight(reader.getMinIndex());
             } catch (IOException e) {
@@ -107,19 +127,4 @@ abstract class ProcessorUtil {
         return null;
     }
 
-    /**
-     * @return Set of all output formats supported by ImageIO.
-     */
-    public static Set<OutputFormat> imageIoOutputFormats() {
-        final String[] writerMimeTypes = ImageIO.getWriterMIMETypes();
-        final Set<OutputFormat> outputFormats = new HashSet<>();
-        for (OutputFormat outputFormat : OutputFormat.values()) {
-            for (String mimeType : writerMimeTypes) {
-                if (outputFormat.getMediaType().equals(mimeType.toLowerCase())) {
-                    outputFormats.add(outputFormat);
-                }
-            }
-        }
-        return outputFormats;
-    }
 }

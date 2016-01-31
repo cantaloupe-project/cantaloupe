@@ -12,9 +12,9 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
+import edu.illinois.library.cantaloupe.resource.AccessDeniedException;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
-import edu.illinois.library.cantaloupe.resource.iiif.ResourceUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Disposition;
 import org.restlet.data.MediaType;
@@ -88,14 +88,15 @@ public class ImageResource extends AbstractResource {
             }
             throw e;
         }
+
+        // Obtain an instance of the processor assigned to that format in
+        // the config file
+        final Processor proc = ProcessorFactory.getProcessor(
+                sourceFormat, resolver);
+
         if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
             throw new UnsupportedSourceFormatException();
         }
-        // Obtain an instance of the processor assigned to that format in
-        // the config file
-        final Processor proc = ProcessorFactory.getProcessor(sourceFormat);
-
-        checkProcessorResolverCompatibility(resolver, proc);
 
         final Set<OutputFormat> availableOutputFormats =
                 proc.getAvailableOutputFormats(sourceFormat);
@@ -130,6 +131,11 @@ public class ImageResource extends AbstractResource {
         ops.getOptions().putAll(
                 this.getReference().getQueryAsForm(true).getValuesMap());
 
+        if (!isAuthorized(ops,
+                getSize(ops.getIdentifier(), proc, resolver, sourceFormat))) {
+            throw new AccessDeniedException();
+        }
+
         // Find out whether the processor supports that source format by
         // asking it whether it offers any output formats for it
         if (!availableOutputFormats.contains(ops.getOutputFormat())) {
@@ -140,7 +146,7 @@ public class ImageResource extends AbstractResource {
             throw new UnsupportedSourceFormatException(msg);
         }
 
-        Disposition disposition = ResourceUtils.getRepresentationDisposition(
+        Disposition disposition = getRepresentationDisposition(
                 ops.getIdentifier(), ops.getOutputFormat());
         return getRepresentation(ops, sourceFormat, disposition, resolver,
                 proc);

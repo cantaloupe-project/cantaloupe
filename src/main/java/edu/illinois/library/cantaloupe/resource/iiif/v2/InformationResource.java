@@ -28,6 +28,7 @@ import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatExceptio
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
+import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.apache.commons.configuration.Configuration;
@@ -106,15 +107,14 @@ public class InformationResource extends AbstractResource {
             }
             throw e;
         }
-        if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
-            throw new UnsupportedSourceFormatException();
-        }
 
         // Obtain an instance of the processor assigned to that format in
         // the config file
-        Processor proc = ProcessorFactory.getProcessor(sourceFormat);
+        Processor proc = ProcessorFactory.getProcessor(sourceFormat, resolver);
 
-        checkProcessorResolverCompatibility(resolver, proc);
+        if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
+            throw new UnsupportedSourceFormatException();
+        }
 
         // Get an ImageInfo instance corresponding to the source image
         ImageInfo imageInfo = assembleImageInfo(identifier,
@@ -194,11 +194,6 @@ public class InformationResource extends AbstractResource {
         // supports
         Set<String> featureStrings = new HashSet<>();
         for (Feature feature : processorFeatures) {
-            if (feature.equals(ProcessorFeature.SIZE_ABOVE_FULL)) {
-                // Though processors may support this, Cantaloupe currently
-                // doesn't.
-                continue;
-            }
             featureStrings.add(feature.getName());
         }
         for (Feature feature : SUPPORTED_SERVICE_FEATURES) {
@@ -208,20 +203,12 @@ public class InformationResource extends AbstractResource {
 
         // service
         try {
-            final Configuration config = Application.getConfiguration();
-            final String scriptValue = config.getString("delegate_script");
-            if (scriptValue != null) {
-                final ScriptEngine engine = ScriptEngineFactory.
-                        getScriptEngine();
-                if (engine.methodExists(SERVICE_METHOD)) {
-                    final String[] args = { identifier.toString() };
-                    imageInfo.service = (Map) engine.
-                            invoke("Cantaloupe::" + SERVICE_METHOD, args);
-                } else {
-                    logger.info("Delegate script does not implement {}(); " +
-                            "skipping service information.", SERVICE_METHOD);
-                }
-            }
+            final String[] args = { identifier.toString() };
+            imageInfo.service = (Map) ScriptEngineFactory.getScriptEngine().
+                    invoke(SERVICE_METHOD, args);
+        } catch (DelegateScriptDisabledException e) {
+            logger.info("Delegate script disabled; skipping service " +
+                    "information.");
         } catch (ScriptException | IOException e) {
             logger.error(e.getMessage());
         }

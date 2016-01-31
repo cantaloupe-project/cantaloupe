@@ -38,7 +38,8 @@ layout: default
 
 <p>Cantaloupe supports an optional <a href="http://iiif.io/api/annex/services/">service profile</a> in information responses. The <a href="delegate-script.html">delegate script</a> merely needs to implement the <code>get_iiif2_service()</code> method. An example implementation of the <a href="http://iiif.io/api/annex/services/#physical-dimensions">Physical Dimensions</a> service follows:</p>
 
-<pre>module Cantaloupe
+{% highlight ruby %}
+module Cantaloupe
   ##
   # @param identifier [String] Image identifier
   # @return [Hash] that will be transformed to JSON and appended to a
@@ -54,4 +55,5 @@ layout: default
       'physicalUnits' => 'cm'
     }
   end
-end</pre>
+end
+{% endhighlight %}

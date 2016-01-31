@@ -4,7 +4,7 @@ layout: default
 
 <h2>Processors</h2>
 
-<p>Cantaloupe can use different image processors for different source formats. (Assignments are made in the configuration file.) Different processors have different quality, compatibility, dependency, and performance characteristics. The ability to choose among different processors is intended to make it easy to add support for new image formats; improve support for existing image formats via the substitution of better decoders; and decouple the image server implementation from any one decoder.</p>
+<p>Cantaloupe can use different image processors for different source formats. (Assignments are made in the configuration file.) Different processors have different quality, compatibility, dependency, and performance characteristics. The ability to choose among different processors is intended to make it easy to add support for new image formats; improve support for existing image formats via the substitution of better codecs; and decouple the image server implementation from any one codec.</p>
 
 <p>In terms of format support, a distinction is made between the concepts of source format and output format. Available output formats may differ on a per-platform or per-instance basis depending on the source format.</p>
 
@@ -12,7 +12,89 @@ layout: default
 libraries/delegates, etc., as well. Lists of these are displayed on the
 landing page. A list of output formats supported <em>for a given source format</em> is contained within the response to an information request (such as <span class="filename">/iiif/2/{identifier}/info.json</span>).</p>
 
-<p>For all of the rest of the source formats you would like to serve, it's a good idea to experiment with different processors, comparing their performance, resource usage, and output quality.</p>
+<hr>
+
+<h3 id="Source Format Support">Source Format Support</h3>
+
+<table class="table table-bordered">
+  <tr>
+    <th></th>
+    <th>BMP</th>
+    <th>GIF</th>
+    <th>JPEG</th>
+    <th>JPEG2000</th>
+    <th>PDF</th>
+    <th>PNG</th>
+    <th>TIFF</th>
+    <th>WebP</th>
+  </tr>
+  <tr>
+    <td><a href="#GraphicsMagickProcessor">GraphicsMagickProcessor</a></td>
+    <td class="bg-success">Yes</td>
+    <td class="bg-success">Yes</td>
+    <td class="bg-success">RGB, 8-bit, baseline, line-interlaced, plane-interlaced</td>
+    <td class="bg-warning">Uses JasPer (requires plugin). No level-reduction or region decoding.</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-success">RGB, RGBA, 8-bit</td>
+    <td class="bg-warning">RGB, RGBA; 8-bit, 16-bit; uncompressed, PackBits, LZW (8-bit only), ZIP, JPEG</td>
+    <td class="bg-warning">Requires plugin</td>
+  </tr>
+  <tr>
+    <td><a href="#ImageMagickProcessor">ImageMagickProcessor</a></td>
+    <td class="bg-success">Yes</td>
+    <td class="bg-success">Yes</td>
+    <td class="bg-success">RGB, 8-bit, baseline, line-interlaced, plane-interlaced</td>
+    <td class="bg-warning">Uses OpenJPEG (requires delegate). No level-reduction or region decoding.</td>
+    <td class="bg-warning">Requires delegate</td>
+    <td class="bg-success">RGB, RGBA, 8-bit</td>
+    <td class="bg-warning">RGB, RGBA; 8-bit, 16-bit; uncompressed, PackBits, LZW (8-bit only), ZIP, JPEG</td>
+    <td class="bg-warning">Requires delegate</td>
+  </tr>
+  <tr>
+    <td><a href="#JaiProcessor">JaiProcessor</a></td>
+    <td class="bg-success">Yes</td>
+    <td class="bg-success">Yes</td>
+    <td class="bg-success">RGB, 8-bit, baseline, line-interlaced, plane-interlaced</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-success">RGB, RGBA, 8-bit</td>
+    <td class="bg-success">RGB, RGBA; 8-bit, 16-bit; uncompressed, PackBits, LZW (8-bit only), ZIP (8-bit only), JPEG (8-bit only); striped, tiled, and multi-resolution reading</td>
+    <td class="bg-danger">No</td>
+  </tr>
+  <tr>
+    <td><a href="#Java2dProcessor">Java2dProcessor</a></td>
+    <td class="bg-success">Yes</td>
+    <td class="bg-success">Yes</td>
+    <td class="bg-success">RGB, 8-bit, baseline, line-interlaced, plane-interlaced</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-success">RGB, RGBA, 8-bit</td>
+    <td class="bg-success">RGB, RGBA; 8-bit, 16-bit; uncompressed, PackBits, LZW (8-bit only), ZIP (8-bit only), JPEG (8-bit only); striped, tiled, and multi-resolution reading</td>
+    <td class="bg-danger">No</td>
+  </tr>
+  <tr>
+    <td><a href="#KakaduProcessor">KakaduProcessor</a></td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-success">Yes</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+  </tr>
+  <tr>
+    <td><a href="#OpenJpegProcessor">OpenJpegProcessor</a></td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-success">Yes</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+  </tr>
+</table>
 
 <hr>
 
@@ -85,7 +167,7 @@ landing page. A list of output formats supported <em>for a given source format</
 
 <p>ImageIO, as its name implies, is simply an I/O interface that does not care about image formats, and therefore the list of formats supported by this processor varies depending on the codec JARs available in the classpath. Cantaloupe includes support for some common ones.</p>
 
-<p>Java2dProcessor has been written to exploit the ImageIO image readers as efficiently as possible. Special attention has been paid to its handling of tiled images, such as tile-encoded TIFFs, for which it reads only the necessary tiles for a given request. It is also capable of reading the sub-images contained within multi-resolution (pyramidal) TIFF images. (Striped TIFF images work, too, but are not recommended except at small sizes.)</p>
+<p>Java2dProcessor has been written to exploit the ImageIO image readers as efficiently as possible. Special attention has been paid to its handling of tiled images, such as tile-encoded TIFFs, for which it reads only the necessary tiles for a given request. It is also capable of reading the sub-images contained within multi-resolution (pyramidal) TIFF images.</p>
 
 <p>Because Java2dProcessor does all its work in Java, it places a burden on the JVM heap. Although it tries to be efficient at reading images, it does have to create derivative images at every processing step (scaling, rotating, etc.), which have to be temporarily buffered in RAM. (See the section on <a href="deployment.html#HardwareMemory">memory considerations</a>.)</p>
 
@@ -98,7 +180,7 @@ landing page. A list of output formats supported <em>for a given source format</
 
 <p>GraphicsMagick produces high-quality output and supports all of the IIIF transforms and most IIIF output formats (assuming the necessary libraries are installed; see <a href="http://www.graphicsmagick.org/formats.html">Supported Formats</a>).</p>
 
-<p>GraphicsMagickProcessor is generally faster than <a href="#ImageMagickProcessor">ImageMagickProcessor</a>. However, like ImageMagickProcessor, it deals poorly with large images.</p>
+<p>GraphicsMagickProcessor is typically faster than <a href="#ImageMagickProcessor">ImageMagickProcessor</a>. However, like ImageMagickProcessor, it fares poorly with large images.</p>
 
 <div class="alert alert-info">It is recommended to find or compile a "Q8" version of GraphicsMagick, as its memory use will be halved.</div>
 
@@ -112,7 +194,7 @@ landing page. A list of output formats supported <em>for a given source format</
 <p>ImageMagick produces high-quality output and supports all of the IIIF
 transforms and all IIIF output formats, assuming the necessary delegates are installed. It also supports a wide array of source formats.</p>
 
-<p>ImageMagick is not known for being particularly fast or efficient, but it is generally usable with small images (into the low tens of megapixels).</p>
+<div class="alert alert-warning">ImageMagick is not known for being particularly fast or efficient. Because it runs in an external process, it is not constrained by the JVM's memory limits, so using it with large images can cause memory consumption to spiral out of control and effectively hang the server.</div>
 
 <div class="alert alert-info">It is recommended to find or compile a "Q8" version of ImageMagick, as its memory use will be halved.</div>
 
@@ -120,24 +202,20 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 
 <h3 id="JaiProcessor">JaiProcessor</h3>
 
-<p>Java Advanced Imaging (JAI) is a sophisticated image processing library developed by Sun until around 2006. JaiProcessor uses an updated fork called <a href="https://github.com/geosolutions-it/jai-ext">JAI-EXT</a>.</p>
+<p>Java Advanced Imaging (JAI) is a sophisticated image processing library developed in the 2000s by Sun. It offers several advantages over Java 2D: a pull-based rendering pipeline that can reduce memory usage, and efficient region-of-interest decoding with some formats.</p>
 
-<p>JAI offers several theoretical advantages over Java 2D for this application: a more efficient rendering pipeline that should reduce memory usage, and capability of region-of-interest decoding with some formats. Whether these advantages play out in reality is an open question; the author's own profiling seems to indicate maybe not.</p>
-
-<p>JaiProcessor can read and write the same formats as Java2dProcessor.</p>
+<p>As JaiProcessor and Java2dProcessor use the same ImageIO readers and writers, they can read and write the same formats.</p>
 
 <p>Years ago, Sun published <a href="http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-java-client-419417.html">platform-native accelerator JARs</a> called <a href="http://www.oracle.com/technetwork/java/install-1-1-2-135866.html">mediaLib</a> for Windows, Linux, and Solaris, which improved JAI's performance. It is unknown whether these still work on modern platforms.</p>
-
-<div class="alert alert-warning">Note: JaiProcessor is buggy and most development effort thus far has been applied to Java2dProcessor instead. This processor should be considered experimental and Java2dProcessor should be preferred in all cases.</div>
 
 <hr>
 
 <h3 id="KakaduProcessor">KakaduProcessor</h3>
 
 <p>KakaduProcessor uses the <span class="filename">kdu_expand</span> and <span class="filename">kdu_jp2info</span> binaries from the
-<a href="http://www.kakadusoftware.com">Kakadu</a> SDK to efficiently decode JPEG2000 source images. This processor is capable of performing well even with large JP2s.</p>
+<a href="http://www.kakadusoftware.com">Kakadu</a> SDK to efficiently decode JPEG2000 source images. This processor is capable of performing well even with large JP2s. Kakadu is extensively SIMD-accelerated and will make full use of all available CPU cores.</p>
 
-<p>Although it does support some other operations, <span class="filename">kdu_expand</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. The rest of the IIIF operations (differential scaling, rotation, etc.) are performed using either the Java 2D or JAI APIs (configurable).</p>
+<p>Although it does support some other operations, <span class="filename">kdu_expand</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. All other operations (differential scaling, rotation, etc.) are performed using either the Java 2D or JAI APIs (configurable).</p>
 
 <div class="alert alert-warning">Note: KakaduProcessor does not work in Windows, as it requires access to <span class="filename">/dev/stdout</span>.</div>
 
@@ -168,4 +246,4 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 
 <pre>http://example.org/iiif/2/video.mp4/full/full/0/default.jpg?time=00:02:15</pre>
 
-<p>If the <code>time</code> parameter is not present, the first frame will be returned.</p>
+<p>If the <code>time</code> parameter is missing, the first frame will be returned.</p>

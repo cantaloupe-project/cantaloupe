@@ -11,12 +11,13 @@ import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
-import edu.illinois.library.cantaloupe.util.IOUtils;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.imageio.ImageIO;
@@ -33,10 +34,10 @@ import java.awt.image.RenderedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringReader;
 import java.math.RoundingMode;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -165,7 +166,7 @@ class KakaduProcessor implements FileProcessor {
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
         Set<OutputFormat> outputFormats = new HashSet<>();
         if (sourceFormat == SourceFormat.JP2) {
-            outputFormats.addAll(ProcessorUtil.imageIoOutputFormats());
+            outputFormats.addAll(ImageIoImageWriter.supportedFormats());
         }
         return outputFormats;
     }
@@ -195,9 +196,19 @@ class KakaduProcessor implements FileProcessor {
             logger.debug("Invoking {}", StringUtils.join(pb.command(), " "));
             Process process = pb.start();
 
+            // Ideally we could just call
+            // DocumentBuilder.parse(process.getInputStream()), but the XML
+            // output of kdu_jp2info may contain leading whitespace that
+            // causes a SAXParseException. So, read into a byte array in
+            // order to trim it, and then parse that.
+            ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
+            org.apache.commons.io.IOUtils.copy(process.getInputStream(),
+                    outputBucket);
+            final String outputXml = outputBucket.toString("UTF-8").trim();
+
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.parse(process.getInputStream());
+            Document doc = db.parse(new InputSource(new StringReader(outputXml)));
 
             XPath xpath = XPathFactory.newInstance().newXPath();
             XPathExpression expr = xpath.compile("//codestream/width");
@@ -249,7 +260,7 @@ class KakaduProcessor implements FileProcessor {
                         final SourceFormat sourceFormat,
                         final Dimension fullSize,
                         final File inputFile,
-                        final WritableByteChannel writableChannel)
+                        final OutputStream outputStream)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
@@ -259,18 +270,18 @@ class KakaduProcessor implements FileProcessor {
             throw new UnsupportedOutputFormatException();
         }
 
-        class ChannelCopier implements Runnable {
-            private final ReadableByteChannel inputChannel;
-            private final WritableByteChannel outputChannel;
+        class StreamCopier implements Runnable {
+            private final InputStream inputStream;
+            private final OutputStream outputStream;
 
-            public ChannelCopier(ReadableByteChannel in, WritableByteChannel out) {
-                inputChannel = in;
-                outputChannel = out;
+            public StreamCopier(InputStream in, OutputStream out) {
+                inputStream = in;
+                outputStream = out;
             }
 
             public void run() {
                 try {
-                    IOUtils.copy(inputChannel, outputChannel);
+                    IOUtils.copy(inputStream, outputStream);
                 } catch (IOException e) {
                     if (!e.getMessage().startsWith("Broken pipe")) {
                         logger.error(e.getMessage(), e);
@@ -281,7 +292,6 @@ class KakaduProcessor implements FileProcessor {
 
         // will receive stderr output from kdu_expand
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
-        final WritableByteChannel errorBucketChannel = Channels.newChannel(errorBucket);
         try {
             final ReductionFactor reductionFactor = new ReductionFactor();
             final ProcessBuilder pb = getProcessBuilder(inputFile, ops,
@@ -290,23 +300,21 @@ class KakaduProcessor implements FileProcessor {
             final Process process = pb.start();
 
             executorService.submit(
-                    new ChannelCopier(
-                            Channels.newChannel(process.getErrorStream()),
-                            errorBucketChannel));
+                    new StreamCopier(process.getErrorStream(), errorBucket));
 
             Configuration config = Application.getConfiguration();
             switch (config.getString(POST_PROCESSOR_CONFIG_KEY, "java2d").toLowerCase()) {
                 case "jai":
                     logger.debug("Post-processing using JAI");
                     postProcessUsingJai(
-                            Channels.newChannel(process.getInputStream()), ops,
-                            reductionFactor, writableChannel);
+                            process.getInputStream(), ops,
+                            reductionFactor, outputStream);
                     break;
                 default:
                     logger.debug("Post-processing using Java2D");
                     postProcessUsingJava2d(
-                            Channels.newChannel(process.getInputStream()), ops,
-                            reductionFactor, writableChannel);
+                            process.getInputStream(), ops,
+                            reductionFactor, outputStream);
                     break;
             }
             try {
@@ -461,13 +469,13 @@ class KakaduProcessor implements FileProcessor {
         return tileSize;
     }
 
-    private void postProcessUsingJai(final ReadableByteChannel readableChannel,
+    private void postProcessUsingJai(final InputStream inputStream,
                                      final OperationList opList,
                                      final ReductionFactor reductionFactor,
-                                     final WritableByteChannel writableChannel)
+                                     final OutputStream outputStream)
             throws IOException, ProcessorException {
-        RenderedImage renderedImage =
-                JaiUtil.readImage(readableChannel);
+        RenderedImage renderedImage = new ImageIoImageReader().
+                readRendered(inputStream, SourceFormat.BMP);
         RenderedOp renderedOp = JaiUtil.reformatImage(
                 RenderedOp.wrapRenderedImage(renderedImage),
                 new Dimension(512, 512));
@@ -485,15 +493,15 @@ class KakaduProcessor implements FileProcessor {
             }
         }
         ImageIO.write(renderedOp, opList.getOutputFormat().getExtension(),
-                ImageIO.createImageOutputStream(writableChannel));
+                outputStream);
     }
 
-    private void postProcessUsingJava2d(final ReadableByteChannel readableChannel,
+    private void postProcessUsingJava2d(final InputStream inputStream,
                                         final OperationList opList,
                                         final ReductionFactor reductionFactor,
-                                        final WritableByteChannel writableChannel)
+                                        final OutputStream outputStream)
             throws IOException, ProcessorException {
-        BufferedImage image = new ImageIoImageReader().read(readableChannel);
+        BufferedImage image = new ImageIoImageReader().read(inputStream);
         for (Operation op : opList) {
             if (op instanceof Scale) {
                 final boolean highQuality = Application.getConfiguration().
@@ -513,7 +521,7 @@ class KakaduProcessor implements FileProcessor {
             }
         }
         new ImageIoImageWriter().write(image, opList.getOutputFormat(),
-                writableChannel);
+                outputStream);
         image.flush();
     }
 

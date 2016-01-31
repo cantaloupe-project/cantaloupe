@@ -5,6 +5,7 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 import edu.illinois.library.cantaloupe.cache.Cache;
+import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.logging.AccessLogService;
 import edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute;
@@ -26,7 +27,6 @@ import javax.net.ssl.KeyManagerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Iterator;
@@ -121,7 +121,7 @@ public class Application {
         return versionStr;
     }
 
-    private static void purgeCacheAtLaunch() throws IOException {
+    private static void purgeCacheAtLaunch() throws CacheException {
         Cache cache = CacheFactory.getInstance();
         if (cache != null) {
             cache.purge();
@@ -131,7 +131,7 @@ public class Application {
         }
     }
 
-    private static void purgeExpiredFromCacheAtLaunch() throws IOException {
+    private static void purgeExpiredFromCacheAtLaunch() throws CacheException {
         Cache cache = CacheFactory.getInstance();
         if (cache != null) {
             cache.purgeExpired();
@@ -181,7 +181,7 @@ public class Application {
     public static void main(String[] args) throws Exception {
         try {
             validateConfiguration();
-        } catch (Exception e) {
+        } catch (edu.illinois.library.cantaloupe.ConfigurationException e) {
             System.out.println(e.getMessage());
             System.out.println("Exiting.");
             System.exit(-1);
@@ -218,6 +218,8 @@ public class Application {
         Runtime runtime = Runtime.getRuntime();
         logger.info(System.getProperty("java.vm.name") + " / " +
                 System.getProperty("java.vm.info"));
+        logger.info("{} available processor cores",
+                runtime.availableProcessors());
         logger.info("Heap total: {}MB; max: {}MB", runtime.totalMemory() / mb,
                 runtime.maxMemory() / mb);
         logger.info("\uD83C\uDF48 Starting Cantaloupe {}", getVersion());
@@ -301,9 +303,11 @@ public class Application {
     }
 
     /**
-     * @throws Exception If the configuration is invalid.
+     * @throws edu.illinois.library.cantaloupe.ConfigurationException
+     * If the configuration is invalid.
      */
-    private static void validateConfiguration() throws Exception {
+    private static void validateConfiguration()
+            throws edu.illinois.library.cantaloupe.ConfigurationException {
         // check that a configuration file exists
         if (getConfiguration() == null) {
             throw new edu.illinois.library.cantaloupe.ConfigurationException(

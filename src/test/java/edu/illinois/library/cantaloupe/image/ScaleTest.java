@@ -1,17 +1,24 @@
 package edu.illinois.library.cantaloupe.image;
 
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.awt.Dimension;
+import java.util.HashMap;
+import java.util.Map;
 
-public class ScaleTest extends CantaloupeTestCase {
+import static org.junit.Assert.*;
+
+public class ScaleTest {
 
     private Scale scale;
 
+    @Before
     public void setUp() {
         this.scale = new Scale();
     }
 
+    @Test
     public void testGetEffectiveSize() {
         final Dimension fullSize = new Dimension(300, 200);
         scale.setMode(Scale.Mode.FULL);
@@ -37,6 +44,7 @@ public class ScaleTest extends CantaloupeTestCase {
         assertEquals(new Dimension(150, 100), scale.getResultingSize(fullSize));
     }
 
+    @Test
     public void testIsNoOp() {
         scale.setMode(Scale.Mode.FULL);
         assertTrue(scale.isNoOp());
@@ -58,12 +66,14 @@ public class ScaleTest extends CantaloupeTestCase {
         assertFalse(scale.isNoOp());
     }
 
+    @Test
     public void testSetHeight() {
         Integer height = 50;
         this.scale.setHeight(height);
         assertEquals(height, this.scale.getHeight());
     }
 
+    @Test
     public void testSetNegativeHeight() {
         try {
             this.scale.setHeight(-1);
@@ -73,6 +83,7 @@ public class ScaleTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testSetZeroHeight() {
         try {
             this.scale.setHeight(0);
@@ -82,36 +93,41 @@ public class ScaleTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testSetPercent() {
         float percent = 0.5f;
         this.scale.setPercent(percent);
-        assertEquals(percent, this.scale.getPercent());
+        assertEquals(percent, this.scale.getPercent(), 0.000001f);
     }
 
+    @Test
     public void testSetNegativePercent() {
         try {
             this.scale.setPercent(-0.5f);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
-            assertEquals("Percent must be between 0-1", e.getMessage());
+            assertEquals("Percent must be greater than zero", e.getMessage());
         }
     }
 
+    @Test
     public void testSetZeroPercent() {
         try {
             this.scale.setPercent(0f);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
-            assertEquals("Percent must be between 0-1", e.getMessage());
+            assertEquals("Percent must be greater than zero", e.getMessage());
         }
     }
 
+    @Test
     public void testSetWidth() {
         Integer width = 50;
         this.scale.setWidth(width);
         assertEquals(width, this.scale.getWidth());
     }
 
+    @Test
     public void testSetNegativeWidth() {
         try {
             this.scale.setWidth(-1);
@@ -121,6 +137,7 @@ public class ScaleTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
     public void testSetZeroWidth() {
         try {
             this.scale.setWidth(0);
@@ -130,6 +147,22 @@ public class ScaleTest extends CantaloupeTestCase {
         }
     }
 
+    @Test
+    public void testToMap() {
+        scale.setWidth(50);
+        scale.setHeight(45);
+        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+
+        Dimension fullSize = new Dimension(100, 100);
+        Dimension resultingSize = scale.getResultingSize(fullSize);
+
+        Map<String,Object> map = scale.toMap(fullSize);
+        assertEquals("scale", map.get("operation"));
+        assertEquals(resultingSize.width, map.get("width"));
+        assertEquals(resultingSize.height, map.get("height"));
+    }
+
+    @Test
     public void testToString() {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);

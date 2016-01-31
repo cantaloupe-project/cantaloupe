@@ -4,7 +4,6 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
@@ -14,19 +13,19 @@ import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatExceptio
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
+import edu.illinois.library.cantaloupe.resource.AccessDeniedException;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
-import edu.illinois.library.cantaloupe.resource.iiif.ResourceUtils;
 import org.restlet.data.Disposition;
 import org.restlet.data.MediaType;
-import org.restlet.representation.WritableRepresentation;
+import org.restlet.representation.OutputRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
-import java.nio.channels.ReadableByteChannel;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.Set;
 
@@ -62,7 +61,7 @@ public class ImageResource extends AbstractResource {
      * @throws Exception
      */
     @Get
-    public WritableRepresentation doGet() throws Exception {
+    public OutputRepresentation doGet() throws Exception {
         final Map<String,Object> attrs = this.getRequest().getAttributes();
         // Assemble the URI parameters into a Parameters object
         final Parameters params = new Parameters(
@@ -77,7 +76,7 @@ public class ImageResource extends AbstractResource {
         ops.getOptions().putAll(
                 this.getReference().getQueryAsForm(true).getValuesMap());
 
-        final Disposition disposition = ResourceUtils.getRepresentationDisposition(
+        final Disposition disposition = getRepresentationDisposition(
                 ops.getIdentifier(), ops.getOutputFormat());
 
         // If we don't need to resolve first, and are using a cache, and the
@@ -87,13 +86,12 @@ public class ImageResource extends AbstractResource {
                 getBoolean(RESOLVE_FIRST_CONFIG_KEY, true)) {
             Cache cache = CacheFactory.getInstance();
             if (cache != null) {
-                ReadableByteChannel readableChannel =
-                        cache.getImageReadableChannel(ops);
-                if (readableChannel != null) {
+                InputStream inputStream = cache.getImageInputStream(ops);
+                if (inputStream != null) {
                     this.addLinkHeader(params);
                     return new CachedImageRepresentation(
                             new MediaType(params.getOutputFormat().getMediaType()),
-                            disposition, readableChannel);
+                            disposition, inputStream);
                 }
             }
         }
@@ -114,14 +112,19 @@ public class ImageResource extends AbstractResource {
             }
             throw e;
         }
+
+        // Obtain an instance of the processor assigned to that format in
+        // the config file
+        Processor proc = ProcessorFactory.getProcessor(sourceFormat, resolver);
+
         if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
             throw new UnsupportedSourceFormatException();
         }
-        // Obtain an instance of the processor assigned to that format in
-        // the config file
-        Processor proc = ProcessorFactory.getProcessor(sourceFormat);
 
-        checkProcessorResolverCompatibility(resolver, proc);
+        if (!isAuthorized(ops,
+                getSize(ops.getIdentifier(), proc, resolver, sourceFormat))) {
+            throw new AccessDeniedException();
+        }
 
         // Find out whether the processor supports that source format by
         // asking it whether it offers any output formats for it

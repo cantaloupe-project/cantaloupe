@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -243,6 +244,26 @@ public class CropTest {
         } catch (IllegalArgumentException e) {
             assertEquals("Y percentage must be <= 1", e.getMessage());
         }
+    }
+
+    @Test
+    public void testToMap() {
+        final Crop crop = new Crop();
+        crop.setX(25);
+        crop.setY(25);
+        crop.setWidth(50);
+        crop.setHeight(50);
+        crop.setUnit(Crop.Unit.PIXELS);
+        crop.setFull(false);
+
+        final Dimension fullSize = new Dimension(100, 100);
+
+        Map<String,Object> map = crop.toMap(fullSize);
+        assertEquals("crop", map.get("operation"));
+        assertEquals(25, map.get("x"));
+        assertEquals(25, map.get("y"));
+        assertEquals(50, map.get("width"));
+        assertEquals(50, map.get("height"));
     }
 
     @Test

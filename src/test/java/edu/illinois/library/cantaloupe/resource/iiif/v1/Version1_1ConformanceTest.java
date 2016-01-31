@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -11,6 +10,9 @@ import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.restlet.Client;
 import org.restlet.Context;
 import org.restlet.data.MediaType;
@@ -30,6 +32,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.*;
+
 /**
  * <p>Functional test of conformance to the IIIF Image API 1.1 spec. Methods
  * are implemented in the order of the assertions in the spec document.</p>
@@ -37,9 +41,10 @@ import java.util.List;
  * @see <a href="http://iiif.io/api/image/1.1/#image-info-request">IIIF Image
  * API 1.1</a>
  */
-public class Version1_1ConformanceTest extends CantaloupeTestCase {
+public class Version1_1ConformanceTest {
 
-    private static final Identifier IMAGE = new Identifier("escher_lego.jpg");
+    private static final Identifier IMAGE =
+            new Identifier("jpg-rgb-64x56x8-baseline.jpg");
     private static final Integer PORT = TestUtil.getOpenPort();
 
     private static Client client = new Client(new Context(), Protocol.HTTP);
@@ -49,7 +54,8 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
         try {
             File directory = new File(".");
             String cwd = directory.getCanonicalPath();
-            Path fixturePath = Paths.get(cwd, "src", "test", "resources");
+            Path fixturePath = Paths.get(cwd, "src", "test", "resources",
+                    "images");
             config.setProperty("print_stack_trace_on_error_pages", false);
             config.setProperty("http.port", PORT);
             config.setProperty("processor.fallback", "Java2dProcessor");
@@ -75,11 +81,13 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
         return "http://localhost:" + PORT + WebApplication.IIIF_1_PATH;
     }
 
+    @Before
     public void setUp() throws Exception {
         Application.setConfiguration(newConfiguration());
         Application.startServer();
     }
 
+    @After
     public void tearDown() throws Exception {
         Application.stopServer();
     }
@@ -91,6 +99,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testBaseUriReturnsImageInfoViaHttp303() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE);
         client.setFollowingRedirects(false);
@@ -109,19 +118,20 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testIdentifierWithEncodedCharacters() throws IOException {
         // override the filesystem prefix to one folder level up so we can use
         // a slash in the identifier
         File directory = new File(".");
         String cwd = directory.getCanonicalPath();
-        Path path = Paths.get(cwd, "src", "test");
+        Path path = Paths.get(cwd, "src", "test", "resources");
         BaseConfiguration config = newConfiguration();
         config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",
                 path + File.separator);
         Application.setConfiguration(config);
 
         // image endpoint
-        String identifier = Reference.encode("resources/" + IMAGE);
+        String identifier = Reference.encode("images/" + IMAGE);
         ClientResource client = getClientForUriPath("/" + identifier + "/full/full/0/native.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
@@ -136,6 +146,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testFullRegion() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/native.jpg");
         client.get();
@@ -143,8 +154,8 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
 
         Representation rep = client.getResponseEntity();
         BufferedImage image = ImageIO.read(rep.getStream());
-        assertEquals(594, image.getWidth());
-        assertEquals(522, image.getHeight());
+        assertEquals(64, image.getWidth());
+        assertEquals(56, image.getHeight());
     }
 
     /**
@@ -152,6 +163,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testAbsolutePixelRegion() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/20,20,100,100/full/0/color.jpg");
         client.get();
@@ -159,8 +171,8 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
 
         Representation rep = client.getResponseEntity();
         BufferedImage image = ImageIO.read(rep.getStream());
-        assertEquals(100, image.getWidth());
-        assertEquals(100, image.getHeight());
+        assertEquals(44, image.getWidth());
+        assertEquals(36, image.getHeight());
     }
 
     /**
@@ -168,6 +180,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testPercentageRegion() throws IOException {
         // with ints
         ClientResource client = getClientForUriPath("/" + IMAGE + "/pct:20,20,50,50/full/0/color.jpg");
@@ -176,8 +189,8 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
 
         Representation rep = client.getResponseEntity();
         BufferedImage image = ImageIO.read(rep.getStream());
-        assertEquals(297, image.getWidth());
-        assertEquals(261, image.getHeight());
+        assertEquals(32, image.getWidth());
+        assertEquals(28, image.getHeight());
 
         // with floats
         client = getClientForUriPath("/" + IMAGE + "/pct:20.2,20.6,50.2,50.6/full/0/color.jpg");
@@ -186,8 +199,8 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
 
         rep = client.getResponseEntity();
         image = ImageIO.read(rep.getStream());
-        assertEquals(298, image.getWidth());
-        assertEquals(264, image.getHeight());
+        assertEquals(32, image.getWidth());
+        assertEquals(28, image.getHeight());
     }
 
     /**
@@ -197,6 +210,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testAbsolutePixelRegionLargerThanSource() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/0,0,99999,99999/full/0/color.jpg");
         client.get();
@@ -204,8 +218,8 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
 
         Representation rep = client.getResponseEntity();
         BufferedImage image = ImageIO.read(rep.getStream());
-        assertEquals(594, image.getWidth());
-        assertEquals(522, image.getHeight());
+        assertEquals(64, image.getWidth());
+        assertEquals(56, image.getHeight());
     }
 
     /**
@@ -215,6 +229,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testPixelRegionOutOfBounds() throws IOException {
         // zero width/height
         ClientResource client = getClientForUriPath("/" + IMAGE + "/0,0,0,0/full/0/native.jpg");
@@ -246,6 +261,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testFullSize() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/color.jpg");
         client.get();
@@ -253,8 +269,8 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
 
         Representation rep = client.getResponseEntity();
         BufferedImage image = ImageIO.read(rep.getStream());
-        assertEquals(594, image.getWidth());
-        assertEquals(522, image.getHeight());
+        assertEquals(64, image.getWidth());
+        assertEquals(56, image.getHeight());
     }
 
     /**
@@ -264,6 +280,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testSizeScaledToFitWidth() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/50,/0/color.jpg");
         client.get();
@@ -282,6 +299,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testSizeScaledToFitHeight() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/,50/0/color.jpg");
         client.get();
@@ -289,7 +307,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
 
         Representation rep = client.getResponseEntity();
         BufferedImage image = ImageIO.read(rep.getStream());
-        assertEquals(56, image.getWidth());
+        assertEquals(57, image.getWidth());
         assertEquals(50, image.getHeight());
     }
 
@@ -300,15 +318,17 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testSizeScaledToPercent() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/pct:50/0/color.jpg");
+        ClientResource client = getClientForUriPath(
+                "/" + IMAGE + "/full/pct:50/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 
         Representation rep = client.getResponseEntity();
         BufferedImage image = ImageIO.read(rep.getStream());
-        assertEquals(297, image.getWidth());
-        assertEquals(261, image.getHeight());
+        assertEquals(32, image.getWidth());
+        assertEquals(28, image.getHeight());
     }
 
     /**
@@ -318,6 +338,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testAbsoluteWidthAndHeight() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/50,50/0/color.jpg");
         client.get();
@@ -339,6 +360,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testSizeScaledToFitInside() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/20,20/0/native.jpg");
         client.get();
@@ -354,6 +376,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testResultingWidthOrHeightIsZero() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/pct:0/15/color.jpg");
         try {
@@ -380,6 +403,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testRotation() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/15.5/color.jpg");
         client.get();
@@ -392,6 +416,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testInvalidRotation() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/-15/native.jpg");
         try {
@@ -415,6 +440,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testNativeQuality() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/native.jpg");
         client.get();
@@ -427,6 +453,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testColorQuality() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/color.jpg");
         client.get();
@@ -440,6 +467,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testGrayQuality() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/gray.jpg");
         client.get();
@@ -452,6 +480,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testBitonalQuality() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/bitonal.jpg");
         client.get();
@@ -464,6 +493,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testUnsupportedQuality() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/bogus.jpg");
         try {
@@ -479,6 +509,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testFormats() throws Exception {
         testFormat(OutputFormat.JPG);
         testFormat(OutputFormat.TIF);
@@ -515,6 +546,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testUnsupportedFormat() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/native.bogus");
         try {
@@ -532,6 +564,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      * response) or 30x (redirect to the correct URI with a format extension)
      * style content negotiation."
      */
+    @Test
     public void testFormatInAcceptHeader() {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/native");
         client.accept(MediaType.IMAGE_PNG);
@@ -545,6 +578,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      * 4.5 "If neither [format in URL or in Accept header] are given, then the
      * server should use a default format of its own choosing."
      */
+    @Test
     public void testNoFormat() {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/native");
         client.accept(MediaType.ALL);
@@ -566,6 +600,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testInformationRequest() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
         client.get();
@@ -578,6 +613,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testInformationRequestContentType() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
         client.get();
@@ -590,6 +626,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testInformationRequestJson() throws IOException {
         // this will be tested in InformationResourceTest
     }
@@ -599,6 +636,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testUriTooLong() throws IOException {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
         Reference uri = client.getReference();
@@ -633,6 +671,7 @@ public class Version1_1ConformanceTest extends CantaloupeTestCase {
      * (RFC5988) entry pointing to the description of the highest level of
      * conformance of which ALL of the requirements are met."
      */
+    @Test
     public void testComplianceLevelLinkHeader() {
         ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
         client.get();

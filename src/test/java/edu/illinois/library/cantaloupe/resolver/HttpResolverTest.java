@@ -5,25 +5,23 @@ import static org.junit.Assert.*;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.restlet.data.Reference;
 
-import javax.script.ScriptException;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.AccessDeniedException;
 
 public class HttpResolverTest {
 
-    private static final Identifier IDENTIFIER = new Identifier("escher_lego.jpg");
+    private static final Identifier IDENTIFIER =
+            new Identifier("jpg-rgb-64x56x8-baseline.jpg");
 
     private HttpResolver instance;
     private WebServer server;
@@ -49,18 +47,18 @@ public class HttpResolverTest {
     }
 
     @Test
-    public void testGetChannelWithPresentReadableImage() throws IOException {
+    public void testGetStreamSourceWithPresentReadableImage() throws IOException {
         try {
-            assertNotNull(instance.getChannel(IDENTIFIER));
+            assertNotNull(instance.getStreamSource(IDENTIFIER));
         } catch (IOException e) {
             fail();
         }
     }
 
     @Test
-    public void testGetChannelWithMissingImage() throws IOException {
+    public void testGetStreamSourceWithMissingImage() throws IOException {
         try {
-            instance.getChannel(new Identifier("bogus"));
+            instance.getStreamSource(new Identifier("bogus"));
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
@@ -70,12 +68,12 @@ public class HttpResolverTest {
     }
 
     @Test
-    public void testGetChannelWithPresentUnreadableImage() throws IOException {
+    public void testGetStreamSourceWithPresentUnreadableImage() throws IOException {
         /* TODO: possible restlet bug: https://github.com/restlet/restlet-framework-java/issues/1179
         File image = TestUtil.getFixture("gif");
         try {
             image.setReadable(false);
-            instance.getChannel(new Identifier("gif"));
+            instance.getStreamSource(new Identifier("gif"));
             fail("Expected exception");
         } catch (AccessDeniedException e) {
             // pass
@@ -86,18 +84,17 @@ public class HttpResolverTest {
     }
 
     @Test
+    public void testGetStreamWithHttpsSource() throws IOException {
+        // TODO: write this
+    }
+
+    @Test
     public void testGetSourceFormat() throws IOException {
         assertEquals(SourceFormat.JPG, instance.getSourceFormat(IDENTIFIER));
         try {
             instance.getSourceFormat(new Identifier("image.bogus"));
             fail("Expected exception");
-        } catch (IOException e) {
-            // pass
-        }
-        try {
-            instance.getSourceFormat(new Identifier("image"));
-            fail("Expected exception");
-        } catch (IOException e) {
+        } catch (FileNotFoundException e) {
             // pass
         }
     }
@@ -122,45 +119,25 @@ public class HttpResolverTest {
     }
 
     @Test
-    public void testGetUrlWithScriptLookupStrategyAndAbsolutePath()
-            throws Exception {
+    public void testGetUrlWithScriptLookupStrategy() throws Exception {
         Configuration config = Application.getConfiguration();
         config.setProperty(HttpResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
 
         // valid, present script
-        config.setProperty("delegate_script",
-                TestUtil.getFixture("lookup.rb").getAbsolutePath());
+        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
+                TestUtil.getFixture("delegates.rb").getAbsolutePath());
         assertEquals(new Reference("http://example.org/bla/" + IDENTIFIER),
                 instance.getUrl(IDENTIFIER));
 
         // missing script
         try {
-            config.setProperty("delegate_script",
+            config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
                     TestUtil.getFixture("bogus.rb").getAbsolutePath());
             instance.getUrl(IDENTIFIER);
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
-        }
-    }
-
-    @Test
-    public void testGetUrlWithScriptLookupStrategyAndRelativePath()
-            throws Exception {
-        Configuration config = Application.getConfiguration();
-        config.setProperty(HttpResolver.LOOKUP_STRATEGY_CONFIG_KEY,
-                "ScriptLookupStrategy");
-
-        // filename of script, located in cwd
-        config.setProperty("delegate_script", "lookup_test.rb");
-        final File tempFile = new File("./lookup_test.rb");
-        try {
-            FileUtils.copyFile(TestUtil.getFixture("lookup.rb"), tempFile);
-            assertEquals(new Reference("http://example.org/bla/" + IDENTIFIER),
-                    instance.getUrl(IDENTIFIER));
-        } finally {
-            FileUtils.forceDelete(tempFile);
         }
     }
 

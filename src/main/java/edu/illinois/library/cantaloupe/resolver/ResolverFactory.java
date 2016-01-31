@@ -25,7 +25,7 @@ public abstract class ResolverFactory {
     public static final String DELEGATE_RESOLVER_CONFIG_KEY =
             "resolver.delegate";
     public static final String RESOLVER_CHOOSER_DELEGATE_METHOD =
-            "Cantaloupe::get_resolver";
+            "get_resolver";
     public static final String STATIC_RESOLVER_CONFIG_KEY = "resolver.static";
 
     /**
@@ -94,12 +94,7 @@ public abstract class ResolverFactory {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final String[] args = {identifier.toString()};
 
-        final long msec = System.currentTimeMillis();
         final Object result = engine.invoke(RESOLVER_CHOOSER_DELEGATE_METHOD, args);
-        logger.debug("{}() load+exec time: {} msec",
-                RESOLVER_CHOOSER_DELEGATE_METHOD,
-                System.currentTimeMillis() - msec);
-
         return newResolver((String) result);
     }
 

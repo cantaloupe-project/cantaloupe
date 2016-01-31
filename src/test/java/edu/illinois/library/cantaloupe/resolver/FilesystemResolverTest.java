@@ -5,14 +5,13 @@ import static org.junit.Assert.*;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.script.ScriptException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -20,18 +19,19 @@ import java.nio.file.AccessDeniedException;
 
 public class FilesystemResolverTest {
 
-    private static final Identifier IDENTIFIER = new Identifier("escher_lego.jpg");
+    private static final Identifier IDENTIFIER =
+            new Identifier("jpg-rgb-64x56x8-baseline.jpg");
 
     FilesystemResolver instance;
 
     private static Configuration newConfiguration() throws IOException {
         BaseConfiguration config = new BaseConfiguration();
-        config.setProperty("delegate_script",
-                TestUtil.getFixture("lookup.rb").getAbsolutePath());
+        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
+                TestUtil.getFixture("delegates.rb").getAbsolutePath());
         config.setProperty(FilesystemResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "BasicLookupStrategy");
         config.setProperty(FilesystemResolver.PATH_PREFIX_CONFIG_KEY,
-                TestUtil.getFixturePath() + File.separator);
+                TestUtil.getFixturePath() + "/images" + File.separator);
         return config;
     }
 
@@ -42,16 +42,16 @@ public class FilesystemResolverTest {
     }
 
     @Test
-    public void testGetChannel() {
+    public void testGetStreamSource() {
         // present, readable image
         try {
-            assertNotNull(instance.getChannel(IDENTIFIER));
+            assertNotNull(instance.getStreamSource(IDENTIFIER));
         } catch (IOException e) {
             fail();
         }
         // missing image
         try {
-            instance.getChannel(new Identifier("bogus"));
+            instance.getStreamSource(new Identifier("bogus"));
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
@@ -121,46 +121,26 @@ public class FilesystemResolverTest {
     }
 
     @Test
-    public void testGetPathnameWithScriptLookupStrategyAndAbsolutePath()
+    public void testGetPathnameWithScriptLookupStrategy()
             throws IOException {
         Configuration config = Application.getConfiguration();
         config.setProperty(FilesystemResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
 
         // valid, present script
-        config.setProperty("delegate_script",
-                TestUtil.getFixture("lookup.rb").getAbsolutePath());
+        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
+                TestUtil.getFixture("delegates.rb").getAbsolutePath());
         assertEquals("/bla/" + IDENTIFIER,
                 instance.getPathname(IDENTIFIER, File.separator));
 
         // missing script
         try {
-            config.setProperty("delegate_script",
+            config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
                     TestUtil.getFixture("bogus.rb").getAbsolutePath());
             instance.getPathname(IDENTIFIER, File.separator);
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
-        }
-    }
-
-    @Test
-    public void testGetPathnameWithScriptLookupStrategyAndRelativePath()
-            throws Exception {
-        Configuration config = Application.getConfiguration();
-        config.setProperty(FilesystemResolver.LOOKUP_STRATEGY_CONFIG_KEY,
-                "ScriptLookupStrategy");
-
-        // filename of script, located in cwd
-        config.setProperty("delegate_script", "lookup_test.rb");
-        final File tempFile = new File("./lookup_test.rb");
-        try {
-            FileUtils.copyFile(TestUtil.getFixture("lookup.rb"), tempFile);
-            Thread.sleep(50);
-            assertEquals("/bla/" + IDENTIFIER,
-                    instance.getPathname(IDENTIFIER, File.separator));
-        } finally {
-            FileUtils.forceDelete(tempFile);
         }
     }
 
@@ -187,20 +167,32 @@ public class FilesystemResolverTest {
     @Test
     public void testGetSourceFormatByInference() throws IOException {
         assertEquals(SourceFormat.BMP,
-                instance.getSourceFormat(new Identifier("bla.bmp")));
+                instance.getSourceFormat(new Identifier("bmp-rgb-64x56x8.bmp")));
         assertEquals(SourceFormat.GIF,
-                instance.getSourceFormat(new Identifier("bla.gif")));
+                instance.getSourceFormat(new Identifier("gif-rgb-64x56x8.gif")));
         assertEquals(SourceFormat.JP2,
-                instance.getSourceFormat(new Identifier("bla.JP2")));
+                instance.getSourceFormat(new Identifier("jp2-rgb-64x56x8-monotiled-lossy.jp2")));
+        assertEquals(SourceFormat.JPG,
+                instance.getSourceFormat(new Identifier("jpg-rgb-64x56x8-baseline.jpg")));
         assertEquals(SourceFormat.PDF,
-                instance.getSourceFormat(new Identifier("bla.pdf")));
+                instance.getSourceFormat(new Identifier("pdf.pdf")));
         assertEquals(SourceFormat.PNG,
-                instance.getSourceFormat(new Identifier("bla.png")));
+                instance.getSourceFormat(new Identifier("png-rgb-64x56x8.png")));
         assertEquals(SourceFormat.TIF,
-                instance.getSourceFormat(new Identifier("bla.tif")));
+                instance.getSourceFormat(new Identifier("tif-rgb-64x56x8-striped-jpeg.tif")));
+    }
+
+    @Test
+    public void testGetSourceFormatThrowsExceptionWhenResourceIsMissing()
+            throws IOException {
         try {
-            assertEquals(SourceFormat.UNKNOWN,
-                    instance.getSourceFormat(new Identifier("bla.bogus")));
+            instance.getSourceFormat(new Identifier("bogus"));
+            fail("Expected exception");
+        } catch (FileNotFoundException e) {
+            // pass
+        }
+        try {
+            instance.getSourceFormat(new Identifier("bla.jpg"));
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass

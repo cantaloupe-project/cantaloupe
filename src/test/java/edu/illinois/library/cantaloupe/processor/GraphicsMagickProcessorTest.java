@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
+import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,6 +11,8 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.junit.Assert.*;
 
 /**
  * For this to work, the GraphicsMagick binaries must be on the PATH.
@@ -89,6 +92,7 @@ public class GraphicsMagickProcessorTest extends ProcessorTest {
         return instance;
     }
 
+    @Test
     public void testGetAvailableOutputFormats() throws IOException {
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             Set<OutputFormat> expectedFormats = getAvailableOutputFormats().
@@ -98,12 +102,14 @@ public class GraphicsMagickProcessorTest extends ProcessorTest {
         }
     }
 
+    @Test
     public void testGetAvailableOutputFormatsForUnsupportedSourceFormat() {
         Set<OutputFormat> expectedFormats = new HashSet<>();
         assertEquals(expectedFormats,
                 instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
     }
 
+    @Test
     public void testGetSupportedFeatures() {
         Set<ProcessorFeature> expectedFeatures = new HashSet<>();
         expectedFeatures.add(ProcessorFeature.MIRRORING);

@@ -1,14 +1,17 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
+import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class ComplianceLevelTest extends CantaloupeTestCase {
+import static org.junit.Assert.*;
 
+public class ComplianceLevelTest {
+
+    @Test
     public void testGetLevel() {
         Set<ProcessorFeature> processorFeatures = new HashSet<>();
         Set<Quality> qualities = new HashSet<>();
@@ -42,6 +45,7 @@ public class ComplianceLevelTest extends CantaloupeTestCase {
                         outputFormats));
     }
 
+    @Test
     public void testGetUri() {
         assertEquals("http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level0",
                 ComplianceLevel.LEVEL_0.getUri());

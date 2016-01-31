@@ -1,10 +1,13 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
+import org.junit.Test;
 
-public class ProcessorFeatureTest extends CantaloupeTestCase {
+import static org.junit.Assert.*;
 
+public class ProcessorFeatureTest {
+
+    @Test
     public void testValues() {
         assertNotNull(ProcessorFeature.valueOf("MIRRORING"));
         assertNotNull(ProcessorFeature.valueOf("REGION_BY_PERCENT"));
@@ -19,6 +22,7 @@ public class ProcessorFeatureTest extends CantaloupeTestCase {
         assertNotNull(ProcessorFeature.valueOf("SIZE_BY_WIDTH_HEIGHT"));
     }
 
+    @Test
     public void testGetName() {
         assertEquals("mirroring", ProcessorFeature.MIRRORING.getName());
         assertEquals("regionByPct", ProcessorFeature.REGION_BY_PERCENT.getName());
@@ -33,6 +37,7 @@ public class ProcessorFeatureTest extends CantaloupeTestCase {
         assertEquals("sizeByWh", ProcessorFeature.SIZE_BY_WIDTH_HEIGHT.getName());
     }
 
+    @Test
     public void testToString() {
         assertEquals("mirroring", ProcessorFeature.MIRRORING.toString());
         assertEquals("regionByPct", ProcessorFeature.REGION_BY_PERCENT.toString());

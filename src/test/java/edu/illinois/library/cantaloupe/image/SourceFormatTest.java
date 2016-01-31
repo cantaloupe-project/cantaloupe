@@ -1,10 +1,13 @@
 package edu.illinois.library.cantaloupe.image;
 
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
+import org.junit.Test;
 import org.restlet.data.MediaType;
 
-public class SourceFormatTest extends CantaloupeTestCase {
+import static org.junit.Assert.*;
 
+public class SourceFormatTest {
+
+    @Test
     public void testValues() {
         assertNotNull(SourceFormat.valueOf("AVI"));
         assertNotNull(SourceFormat.valueOf("BMP"));
@@ -22,6 +25,7 @@ public class SourceFormatTest extends CantaloupeTestCase {
         assertNotNull(SourceFormat.valueOf("UNKNOWN"));
     }
 
+    @Test
     public void testGetSourceFormatWithMediaType() {
         assertEquals(SourceFormat.JP2,
                 SourceFormat.getSourceFormat(new MediaType("image/jp2")));
@@ -35,6 +39,7 @@ public class SourceFormatTest extends CantaloupeTestCase {
                 SourceFormat.getSourceFormat(new MediaType("image/bogus")));
     }
 
+    @Test
     public void testGetSourceFormatWithString() {
         assertEquals(SourceFormat.JP2,
                 SourceFormat.getSourceFormat(new Identifier("bla.jp2")));
@@ -48,9 +53,11 @@ public class SourceFormatTest extends CantaloupeTestCase {
                 SourceFormat.getSourceFormat(new Identifier("bla.bogus")));
     }
 
+    @Test
     public void testGetExtensions() {
         assertTrue(SourceFormat.AVI.getExtensions().contains("avi"));
         assertTrue(SourceFormat.BMP.getExtensions().contains("bmp"));
+        assertTrue(SourceFormat.BMP.getExtensions().contains("dib"));
         assertTrue(SourceFormat.GIF.getExtensions().contains("gif"));
         assertTrue(SourceFormat.JP2.getExtensions().contains("jp2"));
         assertTrue(SourceFormat.JP2.getExtensions().contains("j2k"));
@@ -70,6 +77,7 @@ public class SourceFormatTest extends CantaloupeTestCase {
         assertTrue(SourceFormat.UNKNOWN.getExtensions().contains("unknown"));
     }
 
+    @Test
     public void testGetMediaTypes() {
         assertTrue(SourceFormat.AVI.getMediaTypes().
                 contains(new MediaType("video/avi")));
@@ -79,6 +87,8 @@ public class SourceFormatTest extends CantaloupeTestCase {
                 contains(new MediaType("video/x-msvideo")));
         assertTrue(SourceFormat.BMP.getMediaTypes().
                 contains(new MediaType("image/bmp")));
+        assertTrue(SourceFormat.BMP.getMediaTypes().
+                contains(new MediaType("image/x-bmp")));
         assertTrue(SourceFormat.BMP.getMediaTypes().
                 contains(new MediaType("image/x-ms-bmp")));
         assertTrue(SourceFormat.GIF.getMediaTypes().
@@ -109,6 +119,7 @@ public class SourceFormatTest extends CantaloupeTestCase {
                 contains(new MediaType("unknown/unknown")));
     }
 
+    @Test
     public void testGetName() {
         assertEquals("AVI", SourceFormat.AVI.getName());
         assertEquals("BMP", SourceFormat.BMP.getName());
@@ -126,6 +137,7 @@ public class SourceFormatTest extends CantaloupeTestCase {
         assertEquals("Unknown", SourceFormat.UNKNOWN.getName());
     }
 
+    @Test
     public void testGetPreferredMediaType() {
         assertEquals("video/avi",
                 SourceFormat.AVI.getPreferredMediaType().toString());
@@ -157,6 +169,7 @@ public class SourceFormatTest extends CantaloupeTestCase {
                 SourceFormat.UNKNOWN.getPreferredMediaType().toString());
     }
 
+    @Test
     public void testGetPreferredExtension() {
         assertEquals("avi", SourceFormat.AVI.getPreferredExtension());
         assertEquals("bmp", SourceFormat.BMP.getPreferredExtension());
@@ -174,6 +187,7 @@ public class SourceFormatTest extends CantaloupeTestCase {
         assertEquals("unknown", SourceFormat.UNKNOWN.getPreferredExtension());
     }
 
+    @Test
     public void testGetType() {
         assertEquals(SourceFormat.Type.VIDEO, SourceFormat.AVI.getType());
         assertEquals(SourceFormat.Type.IMAGE, SourceFormat.BMP.getType());
@@ -191,6 +205,7 @@ public class SourceFormatTest extends CantaloupeTestCase {
         assertNull(SourceFormat.UNKNOWN.getType());
     }
 
+    @Test
     public void testIsImage() {
         assertFalse(SourceFormat.AVI.isImage());
         assertTrue(SourceFormat.BMP.isImage());
@@ -208,6 +223,7 @@ public class SourceFormatTest extends CantaloupeTestCase {
         assertFalse(SourceFormat.UNKNOWN.isImage());
     }
 
+    @Test
     public void testIsVideo() {
         assertTrue(SourceFormat.AVI.isVideo());
         assertFalse(SourceFormat.BMP.isVideo());
@@ -225,6 +241,7 @@ public class SourceFormatTest extends CantaloupeTestCase {
         assertFalse(SourceFormat.UNKNOWN.isVideo());
     }
 
+    @Test
     public void testToString() {
         for (SourceFormat sourceFormat : SourceFormat.values()) {
             assertEquals(sourceFormat.getPreferredExtension(),

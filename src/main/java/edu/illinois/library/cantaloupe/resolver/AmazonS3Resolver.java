@@ -8,9 +8,11 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.apache.commons.configuration.Configuration;
@@ -18,17 +20,37 @@ import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 
 /**
  * @see <a href="http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/welcome.html">
  *     AWS SDK for Java</a>
  */
-class AmazonS3Resolver extends AbstractResolver implements ChannelResolver {
+class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
+
+    private static class AmazonS3StreamSource implements StreamSource {
+
+        private final S3Object object;
+
+        public AmazonS3StreamSource(S3Object object) {
+            this.object = object;
+        }
+
+        @Override
+        public ImageInputStream newImageInputStream() throws IOException {
+            return ImageIO.createImageInputStream(newInputStream());
+        }
+
+        @Override
+        public S3ObjectInputStream newInputStream() throws IOException {
+            return object.getObjectContent();
+        }
+
+    }
 
     private static Logger logger = LoggerFactory.
             getLogger(AmazonS3Resolver.class);
@@ -87,10 +109,9 @@ class AmazonS3Resolver extends AbstractResolver implements ChannelResolver {
     }
 
     @Override
-    public ReadableByteChannel getChannel(Identifier identifier)
+    public StreamSource getStreamSource(Identifier identifier)
             throws IOException {
-        final S3Object object = getObject(identifier);
-        return Channels.newChannel(object.getObjectContent());
+        return new AmazonS3StreamSource(getObject(identifier));
     }
 
     private S3Object getObject(Identifier identifier) throws IOException {
@@ -120,7 +141,7 @@ class AmazonS3Resolver extends AbstractResolver implements ChannelResolver {
             case "ScriptLookupStrategy":
                 try {
                     return getObjectKeyWithDelegateStrategy(identifier);
-                } catch (ScriptException e) {
+                } catch (ScriptException | DelegateScriptDisabledException e) {
                     logger.error(e.getMessage(), e);
                     throw new IOException(e);
                 }
@@ -138,14 +159,12 @@ class AmazonS3Resolver extends AbstractResolver implements ChannelResolver {
      * @throws ScriptException If the script fails to execute
      */
     private String getObjectKeyWithDelegateStrategy(Identifier identifier)
-            throws IOException, ScriptException {
+            throws IOException, ScriptException,
+            DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final String[] args = { identifier.toString() };
-        final String method = "Cantaloupe::get_s3_object_key";
-        final long msec = System.currentTimeMillis();
+        final String method = "get_s3_object_key";
         final Object result = engine.invoke(method, args);
-        logger.debug("{} load+exec time: {} msec", method,
-                System.currentTimeMillis() - msec);
         if (result == null) {
             throw new FileNotFoundException(method + " returned nil for " +
                     identifier);

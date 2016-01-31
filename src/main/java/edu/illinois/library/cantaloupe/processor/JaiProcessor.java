@@ -9,18 +9,15 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
-import it.geosolutions.jaiext.JAIExt;
-import org.restlet.data.MediaType;
 
-import javax.imageio.ImageIO;
 import javax.media.jai.RenderedOp;
 import java.awt.Dimension;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,10 +25,13 @@ import java.util.Set;
 /**
  * Processor using the Java Advanced Imaging (JAI) framework.
  */
-class JaiProcessor implements FileProcessor, ChannelProcessor {
+class JaiProcessor implements FileProcessor, StreamProcessor {
 
-    // TODO: this should be used in conjunction with tile offset to match the crop region
-    private static final int JAI_TILE_SIZE = 512;
+    public static final String JPG_QUALITY_CONFIG_KEY =
+            "JaiProcessor.jpg.quality";
+    public static final String TIF_COMPRESSION_CONFIG_KEY =
+            "JaiProcessor.tif.compression";
+
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
@@ -39,12 +39,7 @@ class JaiProcessor implements FileProcessor, ChannelProcessor {
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
             SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
 
-    private static HashMap<SourceFormat,Set<OutputFormat>> formatsMap;
-
     static {
-        // use GeoTools JAI-EXT instead of Sun JAI
-        JAIExt.initJAIEXT();
-
         SUPPORTED_IIIF_1_1_QUALITIES.add(
                 edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL);
         SUPPORTED_IIIF_1_1_QUALITIES.add(
@@ -81,39 +76,17 @@ class JaiProcessor implements FileProcessor, ChannelProcessor {
      * based on information reported by the ImageIO library.
      */
     public static HashMap<SourceFormat, Set<OutputFormat>> getFormats() {
-        if (formatsMap == null) {
-            final String[] readerMimeTypes = ImageIO.getReaderMIMETypes();
-            final String[] writerMimeTypes = ImageIO.getWriterMIMETypes();
-            formatsMap = new HashMap<>();
-            for (SourceFormat sourceFormat : SourceFormat.values()) {
-                Set<OutputFormat> outputFormats = new HashSet<>();
-                for (int i = 0, length = readerMimeTypes.length; i < length; i++) {
-                    if (sourceFormat.getMediaTypes().
-                            contains(new MediaType(readerMimeTypes[i].toLowerCase()))) {
-                        for (OutputFormat outputFormat : OutputFormat.values()) {
-                            if (outputFormat == OutputFormat.GIF ||
-                                    outputFormat == OutputFormat.JP2) {
-                                // these currently don't work
-                                // (see ProcessorUtil.writeImage(RenderedOp))
-                                continue;
-                            }
-                            for (int i2 = 0, length2 = writerMimeTypes.length; i2 < length2; i2++) {
-                                if (outputFormat.getMediaType().equals(writerMimeTypes[i2].toLowerCase())) {
-                                    outputFormats.add(outputFormat);
-                                }
-                            }
-                        }
-                    }
-                }
-                formatsMap.put(sourceFormat, outputFormats);
-            }
+        final HashMap<SourceFormat,Set<OutputFormat>> map = new HashMap<>();
+        for (SourceFormat sourceFormat : ImageIoImageReader.supportedFormats()) {
+            map.put(sourceFormat, ImageIoImageWriter.supportedFormats());
         }
-        return formatsMap;
+        return map;
     }
 
     @Override
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
-        return getFormats().get(sourceFormat);
+        Set<OutputFormat> formats = getFormats().get(sourceFormat);
+        return (formats != null) ? formats : new HashSet<OutputFormat>();
     }
 
     @Override
@@ -123,10 +96,10 @@ class JaiProcessor implements FileProcessor, ChannelProcessor {
     }
 
     @Override
-    public Dimension getSize(final ReadableByteChannel readableChannel,
+    public Dimension getSize(final StreamSource streamSource,
                              final SourceFormat sourceFormat)
             throws ProcessorException {
-        return ProcessorUtil.getSize(readableChannel, sourceFormat);
+        return ProcessorUtil.getSize(streamSource, sourceFormat);
     }
 
     @Override
@@ -166,26 +139,25 @@ class JaiProcessor implements FileProcessor, ChannelProcessor {
                         final SourceFormat sourceFormat,
                         final Dimension fullSize,
                         final File inputFile,
-                        final WritableByteChannel writableChannel)
+                        final OutputStream outputStream)
             throws ProcessorException {
-        doProcess(ops, sourceFormat, fullSize, inputFile, writableChannel);
+        doProcess(ops, sourceFormat, inputFile, outputStream);
     }
 
     @Override
     public void process(final OperationList ops,
                         final SourceFormat sourceFormat,
                         final Dimension fullSize,
-                        final ReadableByteChannel readableChannel,
-                        final WritableByteChannel writableChannel)
+                        final StreamSource streamSource,
+                        final OutputStream outputStream)
             throws ProcessorException {
-        doProcess(ops, sourceFormat, fullSize, readableChannel, writableChannel);
+        doProcess(ops, sourceFormat, streamSource, outputStream);
     }
 
     private void doProcess(final OperationList ops,
                            final SourceFormat sourceFormat,
-                           final Dimension fullSize,
                            final Object input,
-                           final WritableByteChannel writableChannel)
+                           final OutputStream outputStream)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
@@ -196,20 +168,21 @@ class JaiProcessor implements FileProcessor, ChannelProcessor {
         }
 
         try {
+            final ImageIoImageReader reader = new ImageIoImageReader();
+            final ReductionFactor rf = new ReductionFactor();
             RenderedImage renderedImage = null;
-            ReductionFactor rf = new ReductionFactor();
-            if (input instanceof ReadableByteChannel) {
-                renderedImage = JaiUtil.readImage(
-                        (ReadableByteChannel) input, sourceFormat, ops,
-                        fullSize, rf);
+            if (input instanceof StreamSource) {
+                renderedImage = reader.read((StreamSource) input,
+                        sourceFormat, ops, rf);
             } else if (input instanceof File) {
-                renderedImage = JaiUtil.readImage(
-                        (File) input, sourceFormat, ops, fullSize, rf);
+                renderedImage = reader.read((File) input, sourceFormat, ops,
+                        rf);
             }
             if (renderedImage != null) {
                 RenderedOp renderedOp = JaiUtil.reformatImage(
                         RenderedOp.wrapRenderedImage(renderedImage),
-                        new Dimension(JAI_TILE_SIZE, JAI_TILE_SIZE));
+                        new Dimension(renderedImage.getTileWidth(),
+                                renderedImage.getTileHeight()));
                 for (Operation op : ops) {
                     if (op instanceof Crop) {
                         renderedOp = JaiUtil.
@@ -228,8 +201,9 @@ class JaiProcessor implements FileProcessor, ChannelProcessor {
                                 filterImage(renderedOp, (Filter) op);
                     }
                 }
-                JaiUtil.writeImage(renderedOp, ops.getOutputFormat(),
-                        writableChannel);
+                ImageIoImageWriter writer = new ImageIoImageWriter();
+                writer.write(renderedOp, ops.getOutputFormat(),
+                        outputStream);
             }
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);

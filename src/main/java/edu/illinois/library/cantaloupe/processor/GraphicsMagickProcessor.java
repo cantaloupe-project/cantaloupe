@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.apache.commons.configuration.Configuration;
 import org.im4java.core.ConvertCmd;
@@ -24,10 +25,9 @@ import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -38,7 +38,7 @@ import java.util.Set;
  * <p>Does not implement <code>FileProcessor</code> because testing indicates
  * that input streams are significantly faster.</p>
  */
-class GraphicsMagickProcessor implements ChannelProcessor {
+class GraphicsMagickProcessor implements StreamProcessor {
 
     private static Logger logger = LoggerFactory.
             getLogger(GraphicsMagickProcessor.class);
@@ -167,17 +167,32 @@ class GraphicsMagickProcessor implements ChannelProcessor {
         return formats;
     }
 
-    public Dimension getSize(File file, SourceFormat sourceFormat)
-            throws ProcessorException {
-        return doGetSize(file.getAbsolutePath(), null, sourceFormat);
-    }
-
     @Override
-    public Dimension getSize(ReadableByteChannel readableChannel,
-                             SourceFormat sourceFormat)
+    public Dimension getSize(final StreamSource streamSource,
+                             final SourceFormat sourceFormat)
             throws ProcessorException {
-        return doGetSize(sourceFormat.getPreferredExtension() + ":-",
-                readableChannel, sourceFormat);
+        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
+            throw new UnsupportedSourceFormatException(sourceFormat);
+        }
+        InputStream inputStream = null;
+        try {
+            inputStream = streamSource.newInputStream();
+            Info sourceInfo = new Info(
+                    sourceFormat.getPreferredExtension() + ":-",
+                    inputStream, true);
+            return new Dimension(sourceInfo.getImageWidth(),
+                    sourceInfo.getImageHeight());
+        } catch (IM4JavaException | IOException e) {
+            throw new ProcessorException(e.getMessage(), e);
+        } finally {
+            try {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
     }
 
     @Override
@@ -216,11 +231,11 @@ class GraphicsMagickProcessor implements ChannelProcessor {
     public void process(final OperationList ops,
                         final SourceFormat sourceFormat,
                         final Dimension fullSize,
-                        final ReadableByteChannel readableChannel,
-                        final WritableByteChannel writableChannel)
+                        final StreamSource streamSource,
+                        final OutputStream outputStream)
             throws ProcessorException {
-        doProcess(sourceFormat.getPreferredExtension() + ":-", readableChannel,
-                ops, sourceFormat, fullSize, writableChannel);
+        doProcess(sourceFormat.getPreferredExtension() + ":-", streamSource,
+                ops, sourceFormat, fullSize, outputStream);
     }
 
     private void assembleOperation(IMOperation imOp, OperationList ops,
@@ -289,48 +304,19 @@ class GraphicsMagickProcessor implements ChannelProcessor {
 
     /**
      * @param inputPath Absolute filename pathname or "-" to use a stream
-     * @param readableChannel Can be null
-     * @param sourceFormat
-     * @return
-     * @throws ProcessorException
-     */
-    private Dimension doGetSize(final String inputPath,
-                                final ReadableByteChannel readableChannel,
-                                final SourceFormat sourceFormat)
-            throws ProcessorException {
-        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
-            throw new UnsupportedSourceFormatException(sourceFormat);
-        }
-        try {
-            Info sourceInfo;
-            if (readableChannel != null) {
-                sourceInfo = new Info(inputPath,
-                        Channels.newInputStream(readableChannel), true);
-            } else {
-                sourceInfo = new Info(inputPath, true);
-            }
-            return new Dimension(sourceInfo.getImageWidth(),
-                    sourceInfo.getImageHeight());
-        } catch (IM4JavaException e) {
-            throw new ProcessorException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * @param inputPath Absolute filename pathname or "-" to use a stream
-     * @param readableChannel Can be null
+     * @param streamSource
      * @param ops
      * @param sourceFormat
      * @param fullSize
-     * @param writableChannel Stream to write to
+     * @param outputStream Stream to write to
      * @throws ProcessorException
      */
     private void doProcess(final String inputPath,
-                           final ReadableByteChannel readableChannel,
+                           final StreamSource streamSource,
                            final OperationList ops,
                            final SourceFormat sourceFormat,
                            final Dimension fullSize,
-                           final WritableByteChannel writableChannel)
+                           final OutputStream outputStream)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
@@ -354,12 +340,9 @@ class GraphicsMagickProcessor implements ChannelProcessor {
             if (binaryPath.length() > 0) {
                 convert.setSearchPath(binaryPath);
             }
-            if (readableChannel != null) {
-                convert.setInputProvider(new Pipe(
-                        Channels.newInputStream(readableChannel), null));
-            }
-            convert.setOutputConsumer(
-                    new Pipe(null, Channels.newOutputStream(writableChannel)));
+
+            convert.setInputProvider(new Pipe(streamSource.newInputStream(), null));
+            convert.setOutputConsumer(new Pipe(null, outputStream));
             convert.run(op);
         } catch (InterruptedException | IM4JavaException | IOException e) {
             throw new ProcessorException(e.getMessage(), e);

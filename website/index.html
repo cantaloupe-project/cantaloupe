@@ -2,15 +2,26 @@
 layout: default
 ---
 
-<script type="text/javascript">
-    $(document).ready(function() { getLatestReleaseInfo(); });
-</script>
-
 <h2 id="About">About</h2>
 
-<p>Cantaloupe is a free, open-source image server enabling dynamic delivery of high-resolution source image derivatives. With available processing operations including cropping, scaling, and rotation, it can support deep-zooming image viewers, as well as on-the-fly thumbnail generation. Compliance with the <a href="http://iiif.io/api/image/">IIIF Image API</a> enables it to work with <a href="http://iiif.io/apps-demos.html">a growing number of client applications</a>.</p>
+<p>Cantaloupe is a free, open-source image server that enables on-the-fly derivative generation from high-resolution source images. With available processing operations including cropping, scaling, and rotation, it can support deep-zooming image viewers, as well as on-the-fly thumbnail generation. Compliance with the <a href="http://iiif.io/api/image/">IIIF Image API</a> enables it to work with <a href="http://iiif.io/apps-demos.html">a growing number of client applications</a>.</p>
 
-<p>Developed at the <a href="http://www.library.illinois.edu/">University of Illinois at Urbana-Champaign Library</a>, Cantaloupe augments an emerging digital image repository containing thousands of high-resolution scanned maps and photographs. Project goals include performance, scalability, and extensibility, without sacrificing ease-of-use.</p>
+<p>Developed at the <a href="http://www.library.illinois.edu/">University of Illinois at Urbana-Champaign Library</a>, Cantaloupe augments an emerging digital image repository containing thousands of high-resolution scanned images. Project goals include performance, scalability, and extensibility, without sacrificing ease-of-use.</p>
+
+<figure>
+  <div id="openseadragon1" style="width: 95%; height: 500px; margin: 0 auto"></div>
+  <figcaption>Cantaloupe driving the <a href="https://openseadragon.github.io">OpenSeadragon</a> viewer.
+    <br>JPEG2000 &ndash; 11952&times;8416 pixels &ndash; 95 MB</figcaption>
+</figure>
+
+<script src="{{ site.baseurl }}/scripts/openseadragon.min.js"></script>
+<script type="text/javascript">
+    var viewer = OpenSeadragon({
+        id: "openseadragon1",
+        prefixUrl: "images/openseadragon/",
+        tileSources: "http://iiif.library.illinois.edu/dls/iiif/2/milwaukee.jp2"
+    });
+</script>
 
 <p>Cantaloupe features a configurable processing pipeline based on:</p>
 
@@ -26,13 +37,14 @@ layout: default
 <h2 id="Features">Features</h2>
 
 <ul>
-  <li><strong>Easy to get working</strong>. Cantaloupe is an <a href="getting-started.html#Configuration">uncharacteristically simple</a> Java application with no Servlet containers or XML files to deal with. A <strong>fast, non-blocking web server</strong> is built right in.</li>
+  <li><strong>Easy to get working</strong>. Cantaloupe is an <a href="getting-started.html#Configuration">uncharacteristically simple</a> Java application with no Servlet containers or XML files to deal with. A <strong>fast web server</strong> is built right in.</li>
   <li><strong>Self-contained</strong> for easy prototyping, deployment, and upgrading.</li>
   <li><strong>Pluggable resolvers</strong> for retrieving images from a <a href="resolvers.html">variety of sources</a>, with optional scriptable "hooks" to enable dynamic resolver selection and image lookup.</li>
   <li>Supports <strong>opaque image identifiers</strong> for secure and stable URIs.</li>
   <li><strong>Pluggable processors</strong> to support a variety of source image formats&mdash;as well as <a href="processors.html#FfmpegProcessor">still-frame extraction from videos</a> in a variety of formats.</li>
   <li><strong>Optimized JPEG2000 and TIFF readers</strong> capable of excellent performance even with very large source images.</li>
   <li>Optional <strong>server-side caching</strong> with configurable aggressiveness.</li>
+  <li>Supports <strong>fine-grained authorization policies</strong> for integration with diverse infrastructures.</li>
 </ul>
 
 <h2 id="Download">Download</h2>
@@ -46,3 +58,7 @@ layout: default
 </p>
 
 <p>Releases are hosted on <a href="https://github.com/medusa-project/cantaloupe/releases">GitHub</a>.</p>
+
+<script type="text/javascript">
+    $(document).ready(function() { getLatestReleaseInfo(); });
+</script>

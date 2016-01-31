@@ -11,8 +11,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
+import static org.junit.Assert.*;
 
 public class Java2dUtilTest {
 
@@ -24,7 +23,8 @@ public class Java2dUtilTest {
         assertSame(custom, Java2dUtil.convertCustomToRgb(custom));
 
         // test with image of TYPE_CUSTOM
-        custom = ImageIO.read(TestUtil.getFixture("tif"));
+        custom = ImageIO.read(TestUtil.
+                getFixture("images/tif-rgb-64x56x8-striped-uncompressed.tif"));
         BufferedImage output = Java2dUtil.convertCustomToRgb(custom);
         assertEquals(BufferedImage.TYPE_INT_RGB, output.getType());
     }

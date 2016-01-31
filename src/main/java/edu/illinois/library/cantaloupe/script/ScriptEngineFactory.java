@@ -11,43 +11,46 @@ import java.io.IOException;
 
 public abstract class ScriptEngineFactory {
 
+    public static final String DELEGATE_SCRIPT_CONFIG_KEY = "delegate_script";
+
     /**
      * @return New ScriptEngine instance with the delegate script code loaded;
-     * or, if there is no delegate script, an empty module.
+     *         or, if there is no delegate script, an empty module.
+     * @throws FileNotFoundException If the delegate script specified in the
+     *                               application configuration was not found.
+     * @throws DelegateScriptDisabledException If there is no delegate script
+     *                                         specified in the application
+     *                                         configuration.
      * @throws IOException
      * @throws ScriptException
      */
-    public static ScriptEngine getScriptEngine()
-            throws IOException, ScriptException {
+    public static ScriptEngine getScriptEngine() throws IOException,
+            DelegateScriptDisabledException, ScriptException {
         final ScriptEngine engine = new RubyScriptEngine();
-        final File script = getScript();
-        if (script != null) {
-            engine.load(FileUtils.readFileToString(script));
-        } else {
-            engine.load("module Cantaloupe\nend");
-        }
+        engine.load(FileUtils.readFileToString(getScript()));
         return engine;
     }
 
-    private static File getScript() throws FileNotFoundException {
+    private static File getScript() throws FileNotFoundException,
+            DelegateScriptDisabledException {
         final Configuration config = Application.getConfiguration();
         // The script name may be an absolute path or a filename.
-        final String scriptValue = config.getString("delegate_script");
-        if (scriptValue != null) {
+        final String scriptValue = config.getString(DELEGATE_SCRIPT_CONFIG_KEY);
+        if (scriptValue != null && scriptValue.length() > 0) {
             File script = findScript(scriptValue);
             if (!script.exists()) {
-                throw new FileNotFoundException("Does not exist: " +
-                        script.getAbsolutePath());
+                throw new FileNotFoundException(script.getAbsolutePath());
             }
             return script;
+        } else {
+            throw new DelegateScriptDisabledException();
         }
-        return null;
     }
 
     /**
      * @param scriptNameOrPathname
      * @return Canonical file representing a given script name or absolute
-     * pathname. Existence of the underlying file is not checked.
+     *         pathname. Existence of the underlying file is not checked.
      */
     private static File findScript(String scriptNameOrPathname) {
         File script = new File(scriptNameOrPathname);

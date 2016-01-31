@@ -1,9 +1,14 @@
 package edu.illinois.library.cantaloupe.image;
 
-import edu.illinois.library.cantaloupe.CantaloupeTestCase;
+import org.junit.Test;
 
-public class OutputFormatTest extends CantaloupeTestCase {
+import java.util.Map;
 
+import static org.junit.Assert.*;
+
+public class OutputFormatTest {
+
+    @Test
     public void testValues() {
         assertNotNull(OutputFormat.valueOf("GIF"));
         assertNotNull(OutputFormat.valueOf("JP2"));
@@ -14,6 +19,7 @@ public class OutputFormatTest extends CantaloupeTestCase {
         assertNotNull(OutputFormat.valueOf("WEBP"));
     }
 
+    @Test
     public void testGetOutputFormatWithString() {
         assertEquals(OutputFormat.GIF,
                 OutputFormat.getOutputFormat("image/gif"));
@@ -31,6 +37,7 @@ public class OutputFormatTest extends CantaloupeTestCase {
                 OutputFormat.getOutputFormat("image/webp"));
     }
 
+    @Test
     public void testExtensions() {
         assertEquals("gif", OutputFormat.GIF.getExtension());
         assertEquals("jp2", OutputFormat.JP2.getExtension());
@@ -41,6 +48,7 @@ public class OutputFormatTest extends CantaloupeTestCase {
         assertEquals("webp", OutputFormat.WEBP.getExtension());
     }
 
+    @Test
     public void testIsEqualWithOutputFormat() {
         assertTrue(OutputFormat.GIF.isEqual(OutputFormat.GIF));
         assertTrue(OutputFormat.JP2.isEqual(OutputFormat.JP2));
@@ -52,6 +60,7 @@ public class OutputFormatTest extends CantaloupeTestCase {
         assertFalse(OutputFormat.GIF.isEqual(OutputFormat.JPG));
     }
 
+    @Test
     public void testIsEqualWithSourceFormat() {
         assertTrue(OutputFormat.GIF.isEqual(SourceFormat.GIF));
         assertTrue(OutputFormat.JP2.isEqual(SourceFormat.JP2));
@@ -64,6 +73,7 @@ public class OutputFormatTest extends CantaloupeTestCase {
         assertFalse(OutputFormat.GIF.isEqual(SourceFormat.JPG));
     }
 
+    @Test
     public void testMediaTypes() {
         assertEquals("image/gif", OutputFormat.GIF.getMediaType());
         assertEquals("image/jp2", OutputFormat.JP2.getMediaType());
@@ -74,6 +84,14 @@ public class OutputFormatTest extends CantaloupeTestCase {
         assertEquals("image/webp", OutputFormat.WEBP.getMediaType());
     }
 
+    @Test
+    public void testToMap() {
+        Map<String,Object> map = OutputFormat.JPG.toMap();
+        assertEquals("jpg", map.get("extension"));
+        assertEquals("image/jpeg", map.get("media_type"));
+    }
+
+    @Test
     public void testToString() {
         for (OutputFormat outputFormat : OutputFormat.values()) {
             assertEquals(outputFormat.getExtension(), outputFormat.toString());

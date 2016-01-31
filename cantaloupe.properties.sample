@@ -50,6 +50,7 @@ max_pixels = 400000000
 # website for more information.) This can be an absolute path, or a
 # filename; if only a filename is specified, it will be searched for in the
 # same folder as this file, and then the current working directory.
+# Comment out or set blank to disable the delegate script mechanism.
 #delegate_script = delegates.rb
 
 # Helpful in development
@@ -231,6 +232,18 @@ processor.fallback = Java2dProcessor
 #ImageMagickProcessor.path_to_binaries = /usr/local/bin
 
 #----------------------------------------
+# JaiProcessor
+#----------------------------------------
+
+# JPEG output quality. Should be a number between 0-1 ending in "f"
+JaiProcessor.jpg.quality = 0.7f
+
+# TIFF output compression type. Available values are `LZW`, `Deflate`,
+# `ZLib`, `JPEG`, and `PackBits`. Comment out or leave blank for no
+# compression.
+JaiProcessor.tif.compression = LZW
+
+#----------------------------------------
 # Java2dProcessor
 #----------------------------------------
 
@@ -240,6 +253,11 @@ Java2dProcessor.scale_mode = speed
 
 # JPEG output quality. Should be a number between 0-1 ending in "f"
 Java2dProcessor.jpg.quality = 0.7f
+
+# TIFF output compression type. Available values are `LZW`, `Deflate`,
+# `ZLib`, `JPEG`, and `PackBits`. Comment out or leave blank for no
+# compression.
+Java2dProcessor.tif.compression = LZW
 
 #----------------------------------------
 # KakaduProcessor
@@ -320,6 +338,16 @@ FilesystemCache.pathname = /var/cache/cantaloupe
 # blank or 0 for "forever"
 FilesystemCache.ttl_seconds = 2592000
 
+# Levels of folder hierarchy. Deeper depth results in fewer files per
+# directory. Set to 0 to disable subfolders.
+# Purge the cache after changing this.
+FilesystemCache.dir.depth = 3
+
+# Number of characters in hierarchy directory names. Should be set to
+# 16^n < [max number of directory entries your filesystem can deal with].
+# Purge the cache after changing this.
+FilesystemCache.dir.name_length = 2
+
 #----------------------------------------
 # JdbcCache
 #----------------------------------------
@@ -369,6 +397,13 @@ log.application.RollingFileAppender.policy = TimeBasedRollingPolicy
 log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/cantaloupe-%d{yyyy-MM-dd}.log
 log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30
 
+# See the "SyslogAppender" section for a list of facilities:
+# http://logback.qos.ch/manual/appenders.html
+log.application.SyslogAppender.enabled = false
+log.application.SyslogAppender.host =
+log.application.SyslogAppender.port = 514
+log.application.SyslogAppender.facility = LOCAL0
+
 #----------------------------------------
 # !! Access Log
 #----------------------------------------
@@ -383,3 +418,10 @@ log.access.RollingFileAppender.pathname = /path/to/logs/access.log
 log.access.RollingFileAppender.policy = TimeBasedRollingPolicy
 log.access.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/access-%d{yyyy-MM-dd}.log
 log.access.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30
+
+# See the "SyslogAppender" section for a list of facilities:
+# http://logback.qos.ch/manual/appenders.html
+log.access.SyslogAppender.enabled = false
+log.access.SyslogAppender.host =
+log.access.SyslogAppender.port = 514
+log.access.SyslogAppender.facility = LOCAL0
