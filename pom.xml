@@ -65,6 +65,13 @@
       <artifactId>jai-imageio-core</artifactId>
       <version>1.3.1</version>
     </dependency>
+    <!-- Used in tests to test for System.exit() -->
+    <dependency>
+      <groupId>com.github.stefanbirkner</groupId>
+      <artifactId>system-rules</artifactId>
+      <version>1.15.1</version>
+      <scope>test</scope>
+    </dependency>
     <!-- Used by JdbcResolverTest and JdbcCacheTest -->
     <dependency>
       <groupId>com.h2database</groupId>

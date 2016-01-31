@@ -12,7 +12,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 import org.restlet.Client;
 import org.restlet.Context;
 import org.restlet.data.Parameter;
@@ -125,27 +127,24 @@ public class ApplicationTest {
         assertSame(newConfig, Application.getConfiguration());
     }
 
+    @Rule
+    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
+
+    /**
+     * @see http://stackoverflow.com/questions/6141252/dealing-with-system-exit0-in-junit-tests
+     * @throws Exception
+     */
     @Test
     public void testMainWithInvalidConfigExits() throws Exception {
-        /* TODO: implement this
-        http://stackoverflow.com/questions/6141252/dealing-with-system-exit0-in-junit-tests
         exit.expectSystemExitWithStatus(-1);
-        String[] args = {};
-        Configuration config = newConfiguration();
-        config.setProperty("resolver.static", null);
-        Application.setConfiguration(config);
-        try {
-            Application.main(args);
-            fail("Expected exception");
-        } catch (Exception e) {
-            // pass
-        } */
+        Application.setConfiguration(null);
+        System.setProperty(Application.CONFIG_FILE_VM_ARGUMENT, "");
+        Application.main(new String[] {});
     }
 
     @Test
     public void testMainWithNoArgsStartsServer() throws Exception {
-        String[] args = {};
-        Application.main(args);
+        Application.main(new String[] {});
         ClientResource resource = getHttpClientForUriPath("/");
         resource.get();
         assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
@@ -184,8 +183,7 @@ public class ApplicationTest {
 
         // purge the cache
         System.setProperty(Application.PURGE_CACHE_VM_ARGUMENT, "");
-        String[] args = {};
-        Application.main(args);
+        Application.main(new String[] {});
 
         // assert that they've been purged
         assertFalse(imageDir.exists());
@@ -216,8 +214,7 @@ public class ApplicationTest {
         File.createTempFile("bla2", "tmp", infoDir);
 
         System.setProperty(Application.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT, "");
-        String[] args = {};
-        Application.main(args);
+        Application.main(new String[] {});
 
         assertEquals(1, imageDir.listFiles().length);
         assertEquals(1, infoDir.listFiles().length);
