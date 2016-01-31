@@ -65,4 +65,6 @@ puts Cantaloupe::get_pathname('identifier-to-test')
 
 And running it on the command line with a command like <code>ruby delegates.rb</code>.</p>
 
-<p>The delegate script is standard Ruby code that will work in any Ruby interpreter. The only thing to be aware of is that, because of JRuby, gems with platform-native extensions cannot be used. For that reason, it would be best to install a standalone <a href="http://jruby.org">JRuby interpreter</a> and test with that.</p>
+<p>The delegate script is standard Ruby code that will work in any Ruby interpreter. The only thing to be aware of is that gems with platform-native extensions will not work in JRuby. For that reason, it would be best to install a standalone <a href="http://jruby.org">JRuby interpreter</a> and test with that.</p>
+
+<p>You may also want to look into something like <a href="http://rvm.io/">RVM</a>, which can make it easier to switch between different versions of the Ruby interpreter.</p>
