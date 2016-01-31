@@ -137,7 +137,7 @@ public abstract class ProcessorTest {
                 if (getProcessor() instanceof FileProcessor) {
                     try {
                         FileProcessor proc = (FileProcessor) getProcessor();
-                        File file = TestUtil.getFixture(
+                        File file = TestUtil.getImage(
                                 sourceFormat.getPreferredExtension());
                         Dimension size = proc.getSize(file, sourceFormat);
                         proc.process(ops, sourceFormat, size,

@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import com.sun.imageio.plugins.gif.GIFImageReader;
 import com.sun.imageio.plugins.png.PNGImageReader;
+import com.sun.imageio.spi.FileImageInputStreamSpi;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -44,7 +45,7 @@ class ImageIoImageReader {
     }
 
     /**
-     * @param inputSource  {@link File} or {@link InputStream}
+     * @param inputSource  {@link File} or {@link StreamSource}
      * @param sourceFormat Format of the source image
      * @return New ImageReader instance with input already set. Should be
      * disposed after using.
@@ -59,6 +60,8 @@ class ImageIoImageReader {
         if (it.hasNext()) {
             if (inputSource instanceof StreamSource) {
                 inputSource = ((StreamSource) inputSource).newImageInputStream();
+            } else if (inputSource instanceof File) {
+                inputSource = ImageIO.createImageInputStream(inputSource);
             }
             final ImageReader reader = it.next();
             reader.setInput(inputSource);
