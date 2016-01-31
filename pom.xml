@@ -14,7 +14,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <cantaloupe.version>2.1-SNAPSHOT</cantaloupe.version>
-    <restlet.version>2.3.5</restlet.version>
+    <restlet.version>2.3.6</restlet.version>
   </properties>
 
   <developers>
