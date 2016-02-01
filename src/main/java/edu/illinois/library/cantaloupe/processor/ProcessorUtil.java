@@ -147,22 +147,6 @@ abstract class ProcessorUtil {
     }
 
     /**
-     * @return Watermark opacity, or 1 if
-     *         {@link Processor#WATERMARK_OPACITY_CONFIG_KEY} is not set.
-     */
-    public static float getWatermarkOpacity() {
-        final Configuration config = Application.getConfiguration();
-        float configValue = 1f;
-        try {
-            configValue = config.getFloat(Processor.WATERMARK_OPACITY_CONFIG_KEY, 1f);
-        } catch (ConversionException e) {
-            logger.error("Invalid {} value: {}",
-                    Processor.WATERMARK_OPACITY_CONFIG_KEY, configValue);
-        }
-        return configValue;
-    }
-
-    /**
      * @return Watermark position, or null if
      *         {@link Processor#WATERMARK_POSITION_CONFIG_KEY} is not set.
      */

@@ -78,25 +78,6 @@ public class ProcessorUtilTest {
     }
 
     @Test
-    public void testGetWatermarkOpacity() {
-        Configuration config = new BaseConfiguration();
-        Application.setConfiguration(config);
-        final float fudge = 0.00000001f;
-        // null value
-        config.setProperty(Processor.WATERMARK_OPACITY_CONFIG_KEY, null);
-        assertEquals(1, ProcessorUtil.getWatermarkOpacity(), fudge);
-        // empty value
-        config.setProperty(Processor.WATERMARK_OPACITY_CONFIG_KEY, "");
-        assertEquals(1, ProcessorUtil.getWatermarkOpacity(), fudge);
-        // invalid value
-        config.setProperty(Processor.WATERMARK_OPACITY_CONFIG_KEY, "bogus");
-        assertEquals(1, ProcessorUtil.getWatermarkOpacity(), fudge);
-        // valid value
-        config.setProperty(Processor.WATERMARK_OPACITY_CONFIG_KEY, "0.4f");
-        assertEquals(0.4f, ProcessorUtil.getWatermarkOpacity(), fudge);
-    }
-
-    @Test
     public void testGetWatermarkPosition() {
         Configuration config = new BaseConfiguration();
         Application.setConfiguration(config);

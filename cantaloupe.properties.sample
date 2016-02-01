@@ -61,9 +61,6 @@ max_pixels = 400000000
 # bottom center, bottom right, left center, right center, center.
 #watermark.position = bottom right
 
-# Opacity of the watermark; a number between 0 and 1 ending in "f".
-watermark.opacity = 0.8f
-
 # Helpful in development
 print_stack_trace_on_error_pages = true
 
