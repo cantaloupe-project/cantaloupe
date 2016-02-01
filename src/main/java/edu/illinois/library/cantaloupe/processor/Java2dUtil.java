@@ -1,10 +1,12 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import org.apache.commons.configuration.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +17,8 @@ import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * A collection of methods for operating on {@link BufferedImage}s.
@@ -209,6 +213,22 @@ abstract class Java2dUtil {
                     System.currentTimeMillis() - msec);
         }
         return filteredImage;
+    }
+
+    /**
+     * @return Watermark image, or null if
+     *         {@link Processor#WATERMARK_FILE_CONFIG_KEY} is not set.
+     * @throws IOException
+     */
+    public static BufferedImage getWatermarkImage() throws IOException {
+        final Configuration config = Application.getConfiguration();
+        final String path = config.
+                getString(Processor.WATERMARK_FILE_CONFIG_KEY, "");
+        if (path.length() > 0) {
+            ImageIoImageReader reader = new ImageIoImageReader();
+            return reader.read(new File(path));
+        }
+        return null;
     }
 
     public static BufferedImage removeAlpha(final BufferedImage inImage) {

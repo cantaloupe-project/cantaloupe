@@ -59,25 +59,6 @@ public class ProcessorUtilTest {
     }
 
     @Test
-    public void testGetWatermarkImage() throws Exception {
-        Configuration config = new BaseConfiguration();
-        Application.setConfiguration(config);
-        // null value
-        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, null);
-        assertNull(ProcessorUtil.getWatermarkImage());
-        // empty value
-        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, "");
-        assertNull(ProcessorUtil.getWatermarkImage());
-        // invalid path value
-        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, "/dev/null");
-        assertNull(ProcessorUtil.getWatermarkImage());
-        // valid path value
-        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY,
-                TestUtil.getImage("jpg").getAbsolutePath());
-        assertNotNull(ProcessorUtil.getWatermarkImage());
-    }
-
-    @Test
     public void testGetWatermarkPosition() {
         Configuration config = new BaseConfiguration();
         Application.setConfiguration(config);

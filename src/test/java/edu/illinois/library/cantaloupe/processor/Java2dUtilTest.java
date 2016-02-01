@@ -1,10 +1,13 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
@@ -96,6 +99,25 @@ public class Java2dUtilTest {
     @Test
     public void testFilterImage() {
         // TODO: write this
+    }
+
+    @Test
+    public void testGetWatermarkImage() throws Exception {
+        Configuration config = new BaseConfiguration();
+        Application.setConfiguration(config);
+        // null value
+        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, null);
+        assertNull(Java2dUtil.getWatermarkImage());
+        // empty value
+        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, "");
+        assertNull(Java2dUtil.getWatermarkImage());
+        // invalid path value
+        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, "/dev/null");
+        assertNull(Java2dUtil.getWatermarkImage());
+        // valid path value
+        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY,
+                TestUtil.getImage("jpg").getAbsolutePath());
+        assertNotNull(Java2dUtil.getWatermarkImage());
     }
 
     @Test
