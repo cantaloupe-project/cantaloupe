@@ -67,6 +67,21 @@ public class WatermarkServiceTest {
     }
 
     @Test
+    public void testIsEnabled() {
+        Configuration config = new BaseConfiguration();
+        Application.setConfiguration(config);
+        // null value
+        config.setProperty(WatermarkService.WATERMARK_ENABLED_CONFIG_KEY, null);
+        assertFalse(WatermarkService.isEnabled());
+        // false
+        config.setProperty(WatermarkService.WATERMARK_ENABLED_CONFIG_KEY, false);
+        assertFalse(WatermarkService.isEnabled());
+        // true
+        config.setProperty(WatermarkService.WATERMARK_ENABLED_CONFIG_KEY, true);
+        assertTrue(WatermarkService.isEnabled());
+    }
+
+    @Test
     public void testShouldApplyToImage() {
         Configuration config = new BaseConfiguration();
         Application.setConfiguration(config);
