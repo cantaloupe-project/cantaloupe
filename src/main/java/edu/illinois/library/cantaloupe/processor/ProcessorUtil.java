@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConversionException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,6 +129,22 @@ abstract class ProcessorUtil {
             return new Dimension(width, height);
         }
         return null;
+    }
+
+    /**
+     * @return Watermark opacity, or 1 if
+     *         {@link Processor#WATERMARK_OPACITY_CONFIG_KEY} is not set.
+     */
+    public static float getWatermarkOpacity() {
+        final Configuration config = Application.getConfiguration();
+        float configValue = 1f;
+        try {
+            configValue = config.getFloat(Processor.WATERMARK_OPACITY_CONFIG_KEY, 1f);
+        } catch (ConversionException e) {
+            logger.error("Invalid {} value: {}",
+                    Processor.WATERMARK_OPACITY_CONFIG_KEY, configValue);
+        }
+        return configValue;
     }
 
     /**

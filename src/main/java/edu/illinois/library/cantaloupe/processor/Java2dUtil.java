@@ -17,6 +17,7 @@ import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.RescaleOp;
 import java.io.File;
 import java.io.IOException;
 
@@ -31,12 +32,15 @@ abstract class Java2dUtil {
      * @param baseImage
      * @param overlayImage
      * @param position
+     * @param overlayOpacity Value between 0-1
      * @return
      */
     public static BufferedImage overlayImage(final BufferedImage baseImage,
                                              final BufferedImage overlayImage,
-                                             final Position position) {
-        if (overlayImage != null && position != null) {
+                                             final Position position,
+                                             final float overlayOpacity) {
+        if (overlayImage != null && position != null &&
+                Math.abs(1 - overlayOpacity) < 1) {
             final long msec = System.currentTimeMillis();
             int overlayX = 0, overlayY = 0; // top left
             switch (position) {
@@ -69,11 +73,23 @@ abstract class Java2dUtil {
                     overlayY = (baseImage.getHeight() - overlayImage.getHeight()) / 2;
                     break;
             }
+
             final Graphics2D g2d = baseImage.createGraphics();
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
             g2d.drawImage(baseImage, 0, 0, null);
-            g2d.drawImage(overlayImage, overlayX, overlayY, null);
+
+            if (Math.abs(1 - overlayOpacity) > 0) { // if opacity < 1
+                logger.debug("overlayImage(): using opacity of {}",
+                        overlayOpacity);
+                final float[] scales = {1f, 1f, 1f, overlayOpacity};
+                final float[] offsets = new float[4];
+                final RescaleOp rescaleOp = new RescaleOp(scales, offsets, null);
+                g2d.drawImage(overlayImage, rescaleOp, overlayX, overlayY);
+            } else {
+                g2d.drawImage(overlayImage, overlayX, overlayY, null);
+            }
+
             g2d.dispose();
             logger.info("overlayImage() executed in {} msec",
                     System.currentTimeMillis() - msec);
@@ -294,7 +310,7 @@ abstract class Java2dUtil {
                     RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             g2d.setRenderingHints(hints);
             g2d.drawImage(inImage, tx, null);
-            logger.info("rotateImage(): executed in {} msec",
+            logger.info("rotateImage() executed in {} msec",
                     System.currentTimeMillis() - msec);
         }
         return rotatedImage;
