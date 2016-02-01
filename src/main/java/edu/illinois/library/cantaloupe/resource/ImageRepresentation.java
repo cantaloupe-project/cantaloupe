@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.processor.WatermarkService;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
@@ -147,9 +148,10 @@ public class ImageRepresentation extends OutputRepresentation {
     private void doWrite(OutputStream outputStream) throws IOException {
         try {
             final long msec = System.currentTimeMillis();
-            // If the operations are effectively a no-op, the source image can
-            // be streamed directly.
-            if (this.ops.isNoOp(this.sourceFormat)) {
+            // If the operations are effectively a no-op AND watermarking is
+            // disabled, the source image can be streamed right through.
+            if (this.ops.isNoOp(this.sourceFormat) &&
+                    !WatermarkService.isEnabled()) {
                 if (this.file != null) {
                     IOUtils.copy(new FileInputStream(this.file), outputStream);
                 } else {
