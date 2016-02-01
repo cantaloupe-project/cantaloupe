@@ -10,14 +10,16 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 
 /**
- * Provides information about watermarking configuration. Actual processing is
- * handled in more imaging-library-specific classes.
+ * Provides information about watermarking configuration. Actual
+ * watermark-related image processing is handled in more codec-specific
+ * classes.
  */
 public abstract class WatermarkService {
 
     private static Logger logger = LoggerFactory.
             getLogger(WatermarkService.class);
 
+    public static final String WATERMARK_ENABLED_CONFIG_KEY = "watermark.enabled";
     public static final String WATERMARK_FILE_CONFIG_KEY = "watermark.image";
     public static final String WATERMARK_INSET_CONFIG_KEY = "watermark.inset";
     public static final String WATERMARK_POSITION_CONFIG_KEY = "watermark.position";
@@ -80,10 +82,11 @@ public abstract class WatermarkService {
     }
 
     /**
-     * @return Whether watermarking is enabled.
+     * @return Whether {@link #WATERMARK_ENABLED_CONFIG_KEY} is true.
      */
     public static boolean isEnabled() {
-        return (getWatermarkImage() != null);
+        return Application.getConfiguration().
+                getBoolean(WATERMARK_ENABLED_CONFIG_KEY, false);
     }
 
 }
