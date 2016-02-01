@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Dimension;
 import java.io.File;
 
 /**
@@ -19,10 +20,16 @@ public abstract class WatermarkService {
     private static Logger logger = LoggerFactory.
             getLogger(WatermarkService.class);
 
-    public static final String WATERMARK_ENABLED_CONFIG_KEY = "watermark.enabled";
+    public static final String WATERMARK_ENABLED_CONFIG_KEY =
+            "watermark.enabled";
     public static final String WATERMARK_FILE_CONFIG_KEY = "watermark.image";
     public static final String WATERMARK_INSET_CONFIG_KEY = "watermark.inset";
-    public static final String WATERMARK_POSITION_CONFIG_KEY = "watermark.position";
+    public static final String WATERMARK_OUTPUT_HEIGHT_THRESHOLD_CONFIG_KEY =
+            "watermark.output_height_threshold";
+    public static final String WATERMARK_OUTPUT_WIDTH_THRESHOLD_CONFIG_KEY =
+            "watermark.output_width_threshold";
+    public static final String WATERMARK_POSITION_CONFIG_KEY =
+            "watermark.position";
 
     /**
      * @return File corresponding to
@@ -87,6 +94,21 @@ public abstract class WatermarkService {
     public static boolean isEnabled() {
         return Application.getConfiguration().
                 getBoolean(WATERMARK_ENABLED_CONFIG_KEY, false);
+    }
+
+    /**
+     * @param outputImageSize
+     * @return Whether a watermark should be applied to an output image with
+     * the given dimensions.
+     */
+    public static boolean shouldApplyToImage(Dimension outputImageSize) {
+        final Configuration config = Application.getConfiguration();
+        final int minOutputWidth =
+                config.getInt(WATERMARK_OUTPUT_WIDTH_THRESHOLD_CONFIG_KEY, 0);
+        final int minOutputHeight =
+                config.getInt(WATERMARK_OUTPUT_HEIGHT_THRESHOLD_CONFIG_KEY, 0);
+        return (outputImageSize.width > minOutputWidth &&
+                outputImageSize.height > minOutputHeight);
     }
 
 }

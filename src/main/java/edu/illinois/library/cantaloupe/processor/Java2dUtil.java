@@ -35,10 +35,16 @@ abstract class Java2dUtil {
      */
     public static BufferedImage applyWatermark(final BufferedImage baseImage)
             throws IOException {
-        return overlayImage(baseImage,
-                getWatermarkImage(),
-                WatermarkService.getWatermarkPosition(),
-                WatermarkService.getWatermarkInset());
+        BufferedImage markedImage = baseImage;
+        final Dimension imageSize = new Dimension(baseImage.getWidth(),
+                baseImage.getHeight());
+        if (WatermarkService.shouldApplyToImage(imageSize)) {
+            markedImage = overlayImage(baseImage,
+                    getWatermarkImage(),
+                    WatermarkService.getWatermarkPosition(),
+                    WatermarkService.getWatermarkInset());
+        }
+        return markedImage;
     }
 
     /**

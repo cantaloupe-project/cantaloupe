@@ -73,6 +73,14 @@ watermark.position = bottom right
 # Margin between the watermark and the edge of the image, in pixels.
 watermark.inset = 10
 
+# Output images less than this many pixels wide will not receive a watermark.
+# Comment out or set to 0 to add the watermark regardless.
+watermark.output_width_threshold = 400
+
+# Output images less than this many pixels tall will not receive a watermark.
+# Comment out or set to 0 to add the watermark regardless.
+watermark.output_height_threshold = 300
+
 ###########################################################################
 # ENDPOINTS
 ###########################################################################
