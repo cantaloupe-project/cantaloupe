@@ -82,7 +82,7 @@ abstract class Java2dUtil {
             logger.debug("No need to crop; skipping.");
             croppedImage = inImage;
         } else {
-            logger.debug("Cropping {}x{} image: {}",
+            logger.info("Cropping {}x{} image: {}",
                     inImage.getWidth(), inImage.getHeight(), crop);
             final double scale = ProcessorUtil.getScale(rf);
             final double regionX = crop.getX() * scale;
@@ -227,7 +227,7 @@ abstract class Java2dUtil {
             logger.debug("No need to scale; skipping.");
             scaledImage = inImage;
         } else {
-            logger.debug("Scaling {}x{} image to {}x{}",
+            logger.info("Scaling {}x{} image to {}x{}",
                     inImage.getWidth(), inImage.getHeight(),
                     scaledSize.width, scaledSize.height);
             double xScale = 0.0f, yScale = 0.0f;
@@ -300,7 +300,7 @@ abstract class Java2dUtil {
             logger.debug("No need to scale; skipping.");
             scaledImage = inImage;
         } else {
-            logger.debug("Scaling {}x{} image to {}x{}",
+            logger.info("Scaling {}x{} image to {}x{}",
                     inImage.getWidth(), inImage.getHeight(),
                     scaledSize.width, scaledSize.height);
             final int sourceWidth = inImage.getWidth();

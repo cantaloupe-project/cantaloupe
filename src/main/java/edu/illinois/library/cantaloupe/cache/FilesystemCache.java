@@ -274,7 +274,7 @@ class FilesystemCache implements Cache {
                 }
             }
         } catch (FileNotFoundException e) {
-            logger.debug(e.getMessage(), e);
+            logger.info(e.getMessage(), e);
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);
         } finally {
@@ -608,7 +608,7 @@ class FilesystemCache implements Cache {
             infosBeingWritten.add(identifier);
             final File cacheFile = getInfoFile(identifier);
             if (cacheFile != null) {
-                logger.info("Caching info: {}", identifier);
+                logger.info("Caching dimension: {}", identifier);
                 if (!cacheFile.getParentFile().exists() &&
                         !cacheFile.getParentFile().mkdirs()) {
                     throw new IOException("Unable to create directory: " +

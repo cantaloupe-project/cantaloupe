@@ -71,7 +71,7 @@ class FilesystemResolver extends AbstractResolver
         File file = new File(getPathname(identifier, File.separator));
         try {
             checkAccess(file, identifier);
-            logger.debug("Resolved {} to {}", identifier,
+            logger.info("Resolved {} to {}", identifier,
                     file.getAbsolutePath());
         } catch (FileNotFoundException | AccessDeniedException e) {
             logger.info(e.getMessage());

@@ -119,10 +119,10 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
         Configuration config = Application.getConfiguration();
         final String bucketName = config.getString(BUCKET_NAME_CONFIG_KEY);
-        logger.debug("Using bucket: {}", bucketName);
+        logger.info("Using bucket: {}", bucketName);
         final String objectKey = getObjectKey(identifier);
         try {
-            logger.debug("Requesting {}", objectKey);
+            logger.info("Requesting {}", objectKey);
             return s3.getObject(new GetObjectRequest(bucketName, objectKey));
         } catch (AmazonS3Exception e) {
             if (e.getErrorCode().equals("NoSuchKey")) {

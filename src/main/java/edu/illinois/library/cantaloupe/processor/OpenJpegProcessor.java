@@ -179,7 +179,7 @@ class OpenJpegProcessor implements FileProcessor {
         try {
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.redirectErrorStream(true);
-            logger.debug("Invoking {}", StringUtils.join(pb.command(), " "));
+            logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
             Process process = pb.start();
 
             BufferedReader stdInput = new BufferedReader(
@@ -282,7 +282,7 @@ class OpenJpegProcessor implements FileProcessor {
             final ReductionFactor reductionFactor = new ReductionFactor();
             final ProcessBuilder pb = getProcessBuilder(inputFile, ops,
                     fullSize, reductionFactor);
-            logger.debug("Invoking {}", StringUtils.join(pb.command(), " "));
+            logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
             executorService.submit(new StreamCopier(
@@ -291,13 +291,15 @@ class OpenJpegProcessor implements FileProcessor {
             Configuration config = Application.getConfiguration();
             switch (config.getString(POST_PROCESSOR_CONFIG_KEY, "java2d").toLowerCase()) {
                 case "jai":
-                    logger.debug("Post-processing using JAI");
+                    logger.info("Post-processing using JAI ({} = jai)",
+                            POST_PROCESSOR_CONFIG_KEY);
                     postProcessUsingJai(
                             process.getInputStream(), ops,
                             reductionFactor, outputStream);
                     break;
                 default:
-                    logger.debug("Post-processing using Java2D");
+                    logger.info("Post-processing using Java 2D ({} = java2d)",
+                            POST_PROCESSOR_CONFIG_KEY);
                     postProcessUsingJava2d(
                             process.getInputStream(), ops,
                             reductionFactor, outputStream);

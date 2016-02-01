@@ -99,7 +99,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     public StreamSource getStreamSource(final Identifier identifier)
             throws IOException {
         Reference url = getUrl(identifier);
-        logger.debug("Resolved {} to {}", identifier, url);
+        logger.info("Resolved {} to {}", identifier, url);
         ClientResource resource = newClientResource(url);
         resource.setNext(client);
         try {

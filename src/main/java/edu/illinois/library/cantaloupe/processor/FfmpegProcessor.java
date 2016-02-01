@@ -140,7 +140,7 @@ class FfmpegProcessor implements FileProcessor {
         try {
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.redirectErrorStream(true);
-            logger.debug("Executing {}", StringUtils.join(pb.command(), " "));
+            logger.info("Executing {}", StringUtils.join(pb.command(), " "));
             Process process = pb.start();
 
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -231,7 +231,7 @@ class FfmpegProcessor implements FileProcessor {
         try {
             final ProcessBuilder pb = getProcessBuilder(ops, fullSize,
                     inputFile);
-            logger.debug("Executing {}", StringUtils.join(pb.command(), " "));
+            logger.info("Executing {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
             executorService.submit(

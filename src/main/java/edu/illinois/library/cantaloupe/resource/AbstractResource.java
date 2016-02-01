@@ -103,7 +103,7 @@ public abstract class AbstractResource extends ServerResource {
             final String pathStr = headers.getFirstValue("X-Forwarded-Path",
                     true, null);
             if (hostStr != null) {
-                logger.debug("Assembling base URI from X-Forwarded-* headers. " +
+                logger.info("Assembling base URI from X-Forwarded-* headers. " +
                                 "Proto: {}; Host: {}; Port: {}; Path: {}",
                         protocolStr, hostStr, portStr, pathStr);
 
@@ -314,7 +314,7 @@ public abstract class AbstractResource extends ServerResource {
             long msec = System.currentTimeMillis();
             size = cache.getDimension(identifier);
             if (size != null) {
-                logger.debug("Retrieved dimensions of {} from cache in {} msec",
+                logger.info("Retrieved dimensions of {} from cache in {} msec",
                         identifier, System.currentTimeMillis() - msec);
             } else {
                 size = readSize(identifier, resolver, proc, sourceFormat);
@@ -366,7 +366,7 @@ public abstract class AbstractResource extends ServerResource {
             final String method = "authorized?";
             return (boolean) engine.invoke(method, args);
         } catch (DelegateScriptDisabledException e) {
-            logger.debug("isAuthorized(): delegate script disabled; allowing.");
+            logger.info("isAuthorized(): delegate script disabled; allowing.");
             return true;
         }
     }
@@ -407,7 +407,7 @@ public abstract class AbstractResource extends ServerResource {
                         sourceFormat);
             }
         }
-        logger.debug("Read dimensions of {} in {} msec", identifier,
+        logger.info("Read dimensions of {} in {} msec", identifier,
                 System.currentTimeMillis() - msec);
         return size;
     }

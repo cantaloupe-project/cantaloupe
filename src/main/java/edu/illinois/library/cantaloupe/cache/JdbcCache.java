@@ -47,6 +47,7 @@ class JdbcCache implements Cache {
 
         @Override
         public void close() throws IOException {
+            logger.debug("Closing stream for {}", ops);
             try {
                 Configuration config = Application.getConfiguration();
                 String sql = String.format(
@@ -469,6 +470,7 @@ class JdbcCache implements Cache {
     @Override
     public void putDimension(Identifier identifier, Dimension dimension)
             throws CacheException {
+        logger.info("Caching dimension: {}", identifier);
         try (Connection conn = getConnection()) {
             String sql = String.format(
                     "INSERT INTO %s (%s, %s, %s, %s) VALUES (?, ?, ?, ?)",
@@ -482,7 +484,6 @@ class JdbcCache implements Cache {
             statement.setTimestamp(4, now());
             logger.debug(sql);
             statement.executeUpdate();
-            logger.info("Cached dimension: {}", identifier);
         } catch (SQLException e) {
             throw new CacheException(e.getMessage(), e);
         }
