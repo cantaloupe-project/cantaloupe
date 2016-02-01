@@ -14,7 +14,164 @@ landing page. A list of output formats supported <em>for a given source format</
 
 <hr>
 
-<h3 id="Source Format Support">Source Format Support</h3>
+<h3 id="Supported Features">Supported Features</h3>
+
+<table class="table table-bordered">
+  <tr>
+    <th></th>
+    <th><a href="#GraphicsMagickProcessor">GraphicsMagick</a></th>
+    <th><a href="#ImageMagickProcessor">ImageMagick</a></th>
+    <th><a href="#Java2dProcessor">Java 2D</a></th>
+    <th><a href="#JaiProcessor">JAI</a></th>
+    <th><a href="#KakaduProcessor">Kakadu</a></th>
+    <th><a href="#OpenJpegProcessor">OpenJPEG</a></th>
+    <th><a href="#FfmpegProcessor">FFmpeg</a></th>
+  </tr>
+  <tr>
+    <td>Mirroring</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Region By Percent</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Region By Pixels</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Arbitrary Rotation</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-danger"></td>
+  </tr>
+  <tr>
+    <td>Rotation By 90&deg;s</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Size Above Full</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Size By Forced Width/Height</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Size By Height</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Size By Width</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Size By Percent</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Size By Width/Height</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Grayscale Output</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Bitonal Output</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-danger"></td>
+  </tr>
+  <tr>
+    <td>Watermarking</td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+  </tr>
+</table>
+
+<hr>
+
+<h3 id="Supported Source Formats">Supported Source Formats</h3>
 
 <table class="table table-bordered">
   <tr>
@@ -30,19 +187,19 @@ landing page. A list of output formats supported <em>for a given source format</
   </tr>
   <tr>
     <td><a href="#GraphicsMagickProcessor">GraphicsMagickProcessor</a></td>
-    <td class="bg-success">Yes</td>
-    <td class="bg-success">Yes</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
     <td class="bg-success">RGB, 8-bit, baseline, line-interlaced, plane-interlaced</td>
     <td class="bg-warning">Uses JasPer (requires plugin). No level-reduction or region decoding.</td>
-    <td class="bg-danger">No</td>
+    <td class="bg-danger"></td>
     <td class="bg-success">RGB, RGBA, 8-bit</td>
     <td class="bg-warning">RGB, RGBA; 8-bit, 16-bit; uncompressed, PackBits, LZW (8-bit only), ZIP, JPEG</td>
     <td class="bg-warning">Requires plugin</td>
   </tr>
   <tr>
     <td><a href="#ImageMagickProcessor">ImageMagickProcessor</a></td>
-    <td class="bg-success">Yes</td>
-    <td class="bg-success">Yes</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
     <td class="bg-success">RGB, 8-bit, baseline, line-interlaced, plane-interlaced</td>
     <td class="bg-warning">Uses OpenJPEG (requires delegate). No level-reduction or region decoding.</td>
     <td class="bg-warning">Requires delegate</td>
@@ -52,53 +209,53 @@ landing page. A list of output formats supported <em>for a given source format</
   </tr>
   <tr>
     <td><a href="#JaiProcessor">JaiProcessor</a></td>
-    <td class="bg-success">Yes</td>
-    <td class="bg-success">Yes</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
     <td class="bg-success">RGB, 8-bit, baseline, line-interlaced, plane-interlaced</td>
-    <td class="bg-danger">No</td>
-    <td class="bg-danger">No</td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
     <td class="bg-success">RGB, RGBA, 8-bit</td>
     <td class="bg-success">RGB, RGBA; 8-bit, 16-bit; uncompressed, PackBits, LZW (8-bit only), ZIP (8-bit only), JPEG (8-bit only); striped, tiled, and multi-resolution reading</td>
-    <td class="bg-danger">No</td>
+    <td class="bg-danger"></td>
   </tr>
   <tr>
     <td><a href="#Java2dProcessor">Java2dProcessor</a></td>
-    <td class="bg-success">Yes</td>
-    <td class="bg-success">Yes</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
     <td class="bg-success">RGB, 8-bit, baseline, line-interlaced, plane-interlaced</td>
-    <td class="bg-danger">No</td>
-    <td class="bg-danger">No</td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
     <td class="bg-success">RGB, RGBA, 8-bit</td>
     <td class="bg-success">RGB, RGBA; 8-bit, 16-bit; uncompressed, PackBits, LZW (8-bit only), ZIP (8-bit only), JPEG (8-bit only); striped, tiled, and multi-resolution reading</td>
-    <td class="bg-danger">No</td>
+    <td class="bg-danger"></td>
   </tr>
   <tr>
     <td><a href="#KakaduProcessor">KakaduProcessor</a></td>
-    <td class="bg-danger">No</td>
-    <td class="bg-danger">No</td>
-    <td class="bg-danger">No</td>
-    <td class="bg-success">Yes</td>
-    <td class="bg-danger">No</td>
-    <td class="bg-danger">No</td>
-    <td class="bg-danger">No</td>
-    <td class="bg-danger">No</td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
   </tr>
   <tr>
     <td><a href="#OpenJpegProcessor">OpenJpegProcessor</a></td>
-    <td class="bg-danger">No</td>
-    <td class="bg-danger">No</td>
-    <td class="bg-danger">No</td>
-    <td class="bg-success">Yes</td>
-    <td class="bg-danger">No</td>
-    <td class="bg-danger">No</td>
-    <td class="bg-danger">No</td>
-    <td class="bg-danger">No</td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
   </tr>
 </table>
 
 <hr>
 
-<h3 id="Compatibility">Processor/Resolver Compatibility</h3>
+<h3 id="Compatibility">Resolver Compatibility</h3>
 
 <table class="table table-striped table-bordered">
   <tr>
