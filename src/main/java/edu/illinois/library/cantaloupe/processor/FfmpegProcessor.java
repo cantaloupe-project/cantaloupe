@@ -104,6 +104,41 @@ class FfmpegProcessor implements FileProcessor {
         return path;
     }
 
+    private static String getWatermarkFilterPosition(int edgeMargin) {
+        final Position position = ProcessorUtil.getWatermarkPosition();
+        if (position != null) {
+            switch (position) {
+                case TOP_LEFT:
+                    return String.format("%d:%d", edgeMargin, edgeMargin);
+                case TOP_RIGHT:
+                    return String.format("main_w-overlay_w-%d:%d",
+                            edgeMargin, edgeMargin);
+                case BOTTOM_LEFT:
+                    return String.format("%d:main_h-overlay_h-%d",
+                            edgeMargin, edgeMargin);
+                case BOTTOM_RIGHT:
+                    return String.format(
+                            "main_w-overlay_w-%d:main_h-overlay_h-%d",
+                            edgeMargin, edgeMargin);
+                case TOP_CENTER:
+                    return String.format("(main_w-overlay_w)/2:%d", edgeMargin);
+                case BOTTOM_CENTER:
+                    return String.format(
+                            "(main_w-overlay_w)/2:main_h-overlay_h-%d",
+                            edgeMargin);
+                case LEFT_CENTER:
+                    return String.format("%d:(main_h-overlay_h)/2", edgeMargin);
+                case RIGHT_CENTER:
+                    return String.format(
+                            "main_w-overlay_w-%d:(main_h-overlay_h)/2",
+                            edgeMargin, edgeMargin);
+                case CENTER:
+                    return "(main_w-overlay_w)/2:(main_h-overlay_h)/2";
+            }
+        }
+        return null;
+    }
+
     @Override
     public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
         Set<OutputFormat> outputFormats = new HashSet<>();
@@ -241,7 +276,7 @@ class FfmpegProcessor implements FileProcessor {
             try {
                 int code = process.waitFor();
                 if (code != 0) {
-                    logger.warn("ffmpeg returned with code {}", code);
+                    logger.error("ffmpeg returned with code {}", code);
                     final String errorStr = errorBucket.toString();
                     if (errorStr != null && errorStr.length() > 0) {
                         throw new ProcessorException(errorStr);
@@ -272,7 +307,6 @@ class FfmpegProcessor implements FileProcessor {
     private ProcessBuilder getProcessBuilder(OperationList ops,
                                              Dimension fullSize,
                                              File inputFile) {
-        // ffmpeg -i pipe:0 -nostdin -v quiet -vframes 1 -an -vf [ops] -f image2pipe pipe:1 < video.mpg > out.jpg
         final List<String> command = new ArrayList<>();
         command.add(getPath("ffmpeg"));
 
@@ -299,77 +333,106 @@ class FfmpegProcessor implements FileProcessor {
         command.add("1");
         command.add("-an"); // disable audio
 
-        List<String> filters = new ArrayList<>();
+        final List<String> filters = new ArrayList<>();
+        String filterId = "in";
         for (Operation op : ops) {
             if (op instanceof Crop) {
                 Crop crop = (Crop) op;
-                if (!crop.isFull()) {
+                if (!crop.isNoOp()) {
                     Rectangle cropArea = crop.getRectangle(fullSize);
                     // ffmpeg will complain if given an out-of-bounds crop area
                     cropArea.width = Math.min(cropArea.width, fullSize.width - cropArea.x);
                     cropArea.height = Math.min(cropArea.height, fullSize.height - cropArea.y);
-                    filters.add(String.format("crop=%d:%d:%d:%d", cropArea.width,
-                            cropArea.height, cropArea.x, cropArea.y));
+                    filters.add(String.format("[%s] crop=%d:%d:%d:%d [crop]",
+                            filterId, cropArea.width, cropArea.height,
+                            cropArea.x, cropArea.y));
+                    filterId = "crop";
                 }
             } else if (op instanceof Scale) {
-                Scale scale = (Scale) op;
-                if (scale.getMode() != Scale.Mode.FULL) {
+                final Scale scale = (Scale) op;
+                if (!scale.isNoOp()) {
                     if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                        filters.add(String.format("scale=%d:-1", scale.getWidth()));
+                        filters.add(String.format("[%s] scale=%d:-1 [scale]",
+                                filterId, scale.getWidth()));
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                        filters.add(String.format("scale=-1:%d", scale.getHeight()));
+                        filters.add(String.format("[%s] scale=-1:%d [scale]",
+                                filterId, scale.getHeight()));
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
                         int min = Math.min(scale.getWidth(), scale.getHeight());
-                        filters.add(String.format("scale=min(%d\\, iw):-1", min));
+                        filters.add(String.format("[%s] scale=min(%d\\, iw):-1 [scale]",
+                                filterId, min));
                     } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
-                        filters.add(String.format("scale=%d:%d", scale.getWidth(),
-                                scale.getHeight()));
+                        filters.add(String.format("[%s] scale=%d:%d [scale]",
+                                filterId, scale.getWidth(), scale.getHeight()));
                     } else if (scale.getPercent() != 0) {
                         int width = Math.round(fullSize.width * scale.getPercent());
                         int height = Math.round(fullSize.height * scale.getPercent());
-                        filters.add(String.format("scale=%d:%d", width, height));
+                        filters.add(String.format("[%s] scale=%d:%d [scale]",
+                                filterId, width, height));
                     }
+                    filterId = "scale";
                 }
             } else if (op instanceof Transpose) {
-                Transpose transpose = (Transpose) op;
+                final Transpose transpose = (Transpose) op;
                 switch (transpose) {
                     case HORIZONTAL:
-                        filters.add("hflip");
+                        filters.add(String.format("[%s] hflip [transpose]",
+                                filterId));
                         break;
                     case VERTICAL:
-                        filters.add("vflip");
+                        filters.add(String.format("[%s] vflip [transpose]",
+                                filterId));
                         break;
                 }
+                filterId = "transpose";
             } else if (op instanceof Rotate) {
-                Rotate rotate = (Rotate) op;
-                if (rotate.getDegrees() > 0) {
+                final Rotate rotate = (Rotate) op;
+                if (!rotate.isNoOp()) {
                     // 0 = 90CounterClockwise and Vertical Transpose (default)
                     // 1 = 90Clockwise
                     // 2 = 90CounterClockwise
                     // 3 = 90Clockwise and Vertical Transpose
                     switch (Math.round(rotate.getDegrees())) {
                         case 90:
-                            filters.add("transpose=1");
+                            filters.add(String.format("[%s] transpose=1 [rotate]",
+                                    filterId));
+                            filterId = "rotate";
                             break;
                         case 180:
-                            filters.add("transpose=1");
-                            filters.add("transpose=1");
+                            filters.add(String.format("[%s] transpose=1 [rotate1]",
+                                    filterId));
+                            filters.add("[rotate1] transpose=1 [rotate2]");
+                            filterId = "rotate2";
                             break;
                         case 270:
-                            filters.add("transpose=2");
+                            filters.add(String.format("[%s] transpose=2 [rotate]",
+                                    filterId));
+                            filterId = "rotate";
                             break;
                     }
                 }
             } else if (op instanceof Filter) {
-                Filter filter = (Filter) op;
+                final Filter filter = (Filter) op;
                 if (filter.equals(Filter.GRAY)) {
-                    filters.add("colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3");
+                    filters.add(String.format(
+                            "[%s] colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3 [filter]",
+                            filterId));
+                    filterId = "filter";
                 }
             }
         }
+
+        final File watermark = ProcessorUtil.getWatermarkImage();
+        if (watermark != null) {
+            filters.add(0, String.format("movie=%s [wm]",
+                    watermark.getAbsolutePath()));
+            filters.add(String.format("[%s][wm] overlay=%s [out]",
+                    filterId, getWatermarkFilterPosition(0)));
+        }
+
         if (filters.size() > 0) {
             command.add("-vf");
-            command.add(StringUtils.join(filters, ","));
+            command.add(StringUtils.join(filters, "; "));
         }
 
         command.add("-f"); // source or output format depending on position
