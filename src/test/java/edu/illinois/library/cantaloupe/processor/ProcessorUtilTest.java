@@ -78,6 +78,24 @@ public class ProcessorUtilTest {
     }
 
     @Test
+    public void testGetWatermarkInset() {
+        Configuration config = new BaseConfiguration();
+        Application.setConfiguration(config);
+        // null value
+        config.setProperty(Processor.WATERMARK_INSET_CONFIG_KEY, null);
+        assertEquals(0, ProcessorUtil.getWatermarkInset());
+        // empty value
+        config.setProperty(Processor.WATERMARK_INSET_CONFIG_KEY, "");
+        assertEquals(0, ProcessorUtil.getWatermarkInset());
+        // invalid value
+        config.setProperty(Processor.WATERMARK_INSET_CONFIG_KEY, "bogus");
+        assertEquals(0, ProcessorUtil.getWatermarkInset());
+        // valid value
+        config.setProperty(Processor.WATERMARK_INSET_CONFIG_KEY, "50");
+        assertEquals(50, ProcessorUtil.getWatermarkInset());
+    }
+
+    @Test
     public void testGetWatermarkPosition() {
         Configuration config = new BaseConfiguration();
         Application.setConfiguration(config);

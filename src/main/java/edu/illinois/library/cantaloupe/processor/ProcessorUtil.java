@@ -147,6 +147,28 @@ abstract class ProcessorUtil {
     }
 
     /**
+     * Returns the space in pixels between the edge of the watermark and the
+     * edge of the image.
+     *
+     * @return Watermark inset, defaulting to 0 if
+     *         {@link Processor#WATERMARK_INSET_CONFIG_KEY} is not set.
+     */
+    public static int getWatermarkInset() {
+        final Configuration config = Application.getConfiguration();
+        try {
+            final int configValue = config.
+                    getInt(Processor.WATERMARK_INSET_CONFIG_KEY, 0);
+            if (configValue > 0) {
+                return configValue;
+            }
+        } catch (ConversionException e) {
+            logger.error("Invalid {} value",
+                    Processor.WATERMARK_INSET_CONFIG_KEY);
+        }
+        return 0;
+    }
+
+    /**
      * @return Watermark position, or null if
      *         {@link Processor#WATERMARK_POSITION_CONFIG_KEY} is not set.
      */
