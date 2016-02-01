@@ -11,7 +11,7 @@ dependency-reduced-pom.xml
 # App config
 /cantaloupe.properties
 /delegates.rb
-/watermark.png
+/watermark.*
 
 # Auto-generated content
 /target
