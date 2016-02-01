@@ -57,6 +57,10 @@ max_pixels = 400000000
 # watermarking.
 #watermark.image = /path/to/watermark.png
 
+# Allowed values: top left, top center, top right, bottom left,
+# bottom center, bottom right, left center, right center, center.
+#watermark.position = bottom right
+
 # Helpful in development
 print_stack_trace_on_error_pages = true
 

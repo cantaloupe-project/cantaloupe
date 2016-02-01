@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -142,6 +143,27 @@ abstract class ProcessorUtil {
         if (path.length() > 0) {
             ImageIoImageReader reader = new ImageIoImageReader();
             return reader.read(new File(path));
+        }
+        return null;
+    }
+
+    /**
+     * @return Watermark position, or null if
+     *         {@link Processor#WATERMARK_POSITION_CONFIG_KEY} is not set.
+     */
+    public static Position getWatermarkPosition() {
+        final Configuration config = Application.getConfiguration();
+        final String configValue = config.
+                getString(Processor.WATERMARK_POSITION_CONFIG_KEY, "");
+        if (configValue.length() > 0) {
+            final String enumStr = StringUtils.replace(configValue, " ", "_").
+                    toUpperCase();
+            try {
+                return Position.valueOf(enumStr);
+            } catch (IllegalArgumentException e) {
+                logger.error("Invalid {} value: {}",
+                        Processor.WATERMARK_POSITION_CONFIG_KEY, configValue);
+            }
         }
         return null;
     }

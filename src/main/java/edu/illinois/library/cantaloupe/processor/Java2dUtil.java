@@ -26,17 +26,50 @@ abstract class Java2dUtil {
     /**
      * @param baseImage
      * @param overlayImage
+     * @param position
      * @return
      */
-    public static BufferedImage overlayImage(BufferedImage baseImage,
-                                             BufferedImage overlayImage) {
-        if (overlayImage != null) {
+    public static BufferedImage overlayImage(final BufferedImage baseImage,
+                                             final BufferedImage overlayImage,
+                                             final Position position) {
+        if (overlayImage != null && position != null) {
             final long msec = System.currentTimeMillis();
+            int overlayX = 0, overlayY = 0; // top left
+            switch (position) {
+                case TOP_RIGHT:
+                    overlayX = baseImage.getWidth() - overlayImage.getWidth();
+                    break;
+                case BOTTOM_LEFT:
+                    overlayY = baseImage.getHeight() - overlayImage.getHeight();
+                    break;
+                case BOTTOM_RIGHT:
+                    overlayX = baseImage.getWidth() - overlayImage.getWidth();
+                    overlayY = baseImage.getHeight() - overlayImage.getHeight();
+                    break;
+                case TOP_CENTER:
+                    overlayX = (baseImage.getWidth() - overlayImage.getWidth()) / 2;
+                    break;
+                case BOTTOM_CENTER:
+                    overlayX = (baseImage.getWidth() - overlayImage.getWidth()) / 2;
+                    overlayY = baseImage.getHeight() - overlayImage.getHeight();
+                    break;
+                case LEFT_CENTER:
+                    overlayY = (baseImage.getHeight() - overlayImage.getHeight()) / 2;
+                    break;
+                case RIGHT_CENTER:
+                    overlayX = baseImage.getWidth() - overlayImage.getWidth();
+                    overlayY = (baseImage.getHeight() - overlayImage.getHeight()) / 2;
+                    break;
+                case CENTER:
+                    overlayX = (baseImage.getWidth() - overlayImage.getWidth()) / 2;
+                    overlayY = (baseImage.getHeight() - overlayImage.getHeight()) / 2;
+                    break;
+            }
             final Graphics2D g2d = baseImage.createGraphics();
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
             g2d.drawImage(baseImage, 0, 0, null);
-            g2d.drawImage(overlayImage, 0, 0, null);
+            g2d.drawImage(overlayImage, overlayX, overlayY, null);
             g2d.dispose();
             logger.info("overlayImage() executed in {} msec",
                     System.currentTimeMillis() - msec);

@@ -13,6 +13,7 @@ import java.util.Set;
 public interface Processor {
 
     String WATERMARK_FILE_CONFIG_KEY = "watermark.image";
+    String WATERMARK_POSITION_CONFIG_KEY = "watermark.position";
 
     /**
      * @param sourceFormat The source format for which to get a list of

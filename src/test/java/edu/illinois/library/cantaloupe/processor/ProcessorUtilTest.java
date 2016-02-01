@@ -1,8 +1,11 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
 import java.awt.Dimension;
@@ -53,6 +56,43 @@ public class ProcessorUtilTest {
         Dimension actual = ProcessorUtil.getSize(streamSource,
                 SourceFormat.JPG);
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testGetWatermarkImage() throws Exception {
+        Configuration config = new BaseConfiguration();
+        Application.setConfiguration(config);
+        // null value
+        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, null);
+        assertNull(ProcessorUtil.getWatermarkImage());
+        // empty value
+        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, "");
+        assertNull(ProcessorUtil.getWatermarkImage());
+        // invalid path value
+        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, "/dev/null");
+        assertNull(ProcessorUtil.getWatermarkImage());
+        // valid path value
+        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY,
+                TestUtil.getImage("jpg").getAbsolutePath());
+        assertNotNull(ProcessorUtil.getWatermarkImage());
+    }
+
+    @Test
+    public void testGetWatermarkPosition() {
+        Configuration config = new BaseConfiguration();
+        Application.setConfiguration(config);
+        // null value
+        config.setProperty(Processor.WATERMARK_POSITION_CONFIG_KEY, null);
+        assertNull(ProcessorUtil.getWatermarkPosition());
+        // empty value
+        config.setProperty(Processor.WATERMARK_POSITION_CONFIG_KEY, "");
+        assertNull(ProcessorUtil.getWatermarkPosition());
+        // invalid value
+        config.setProperty(Processor.WATERMARK_POSITION_CONFIG_KEY, "bogus");
+        assertNull(ProcessorUtil.getWatermarkPosition());
+        // valid value
+        config.setProperty(Processor.WATERMARK_POSITION_CONFIG_KEY, "top left");
+        assertEquals(Position.TOP_LEFT, ProcessorUtil.getWatermarkPosition());
     }
 
 }
