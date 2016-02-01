@@ -106,16 +106,16 @@ public class Java2dUtilTest {
         Configuration config = new BaseConfiguration();
         Application.setConfiguration(config);
         // null value
-        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, null);
+        config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, null);
         assertNull(Java2dUtil.getWatermarkImage());
         // empty value
-        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, "");
+        config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, "");
         assertNull(Java2dUtil.getWatermarkImage());
         // invalid path value
-        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, "/dev/null");
+        config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, "/dev/null");
         assertNull(Java2dUtil.getWatermarkImage());
         // valid path value
-        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY,
+        config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY,
                 TestUtil.getImage("jpg").getAbsolutePath());
         assertNotNull(Java2dUtil.getWatermarkImage());
     }

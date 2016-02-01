@@ -18,15 +18,19 @@ public abstract class WatermarkService {
     private static Logger logger = LoggerFactory.
             getLogger(WatermarkService.class);
 
+    public static final String WATERMARK_FILE_CONFIG_KEY = "watermark.image";
+    public static final String WATERMARK_INSET_CONFIG_KEY = "watermark.inset";
+    public static final String WATERMARK_POSITION_CONFIG_KEY = "watermark.position";
+
     /**
      * @return File corresponding to
-     *         {@link Processor#WATERMARK_FILE_CONFIG_KEY}, or null if it is
+     *         {@link WatermarkService#WATERMARK_FILE_CONFIG_KEY}, or null if it is
      *         not set.
      */
     public static File getWatermarkImage() {
         final Configuration config = Application.getConfiguration();
         final String path = config.
-                getString(Processor.WATERMARK_FILE_CONFIG_KEY, "");
+                getString(WATERMARK_FILE_CONFIG_KEY, "");
         if (path.length() > 0) {
             return new File(path);
         }
@@ -38,30 +42,30 @@ public abstract class WatermarkService {
      * edge of the image.
      *
      * @return Watermark inset, defaulting to 0 if
-     *         {@link Processor#WATERMARK_INSET_CONFIG_KEY} is not set.
+     *         {@link WatermarkService#WATERMARK_INSET_CONFIG_KEY} is not set.
      */
     public static int getWatermarkInset() {
         final Configuration config = Application.getConfiguration();
         try {
             final int configValue = config.
-                    getInt(Processor.WATERMARK_INSET_CONFIG_KEY, 0);
+                    getInt(WATERMARK_INSET_CONFIG_KEY, 0);
             if (configValue > 0) {
                 return configValue;
             }
         } catch (ConversionException e) {
-            logger.error("Invalid {} value",Processor.WATERMARK_INSET_CONFIG_KEY);
+            logger.error("Invalid {} value", WATERMARK_INSET_CONFIG_KEY);
         }
         return 0;
     }
 
     /**
      * @return Watermark position, or null if
-     *         {@link Processor#WATERMARK_POSITION_CONFIG_KEY} is not set.
+     *         {@link WatermarkService#WATERMARK_POSITION_CONFIG_KEY} is not set.
      */
     public static Position getWatermarkPosition() {
         final Configuration config = Application.getConfiguration();
         final String configValue = config.
-                getString(Processor.WATERMARK_POSITION_CONFIG_KEY, "");
+                getString(WATERMARK_POSITION_CONFIG_KEY, "");
         if (configValue.length() > 0) {
             final String enumStr = StringUtils.replace(configValue, " ", "_").
                     toUpperCase();
@@ -69,7 +73,7 @@ public abstract class WatermarkService {
                 return Position.valueOf(enumStr);
             } catch (IllegalArgumentException e) {
                 logger.error("Invalid {} value: {}",
-                        Processor.WATERMARK_POSITION_CONFIG_KEY, configValue);
+                        WATERMARK_POSITION_CONFIG_KEY, configValue);
             }
         }
         return null;

@@ -16,16 +16,16 @@ public class WatermarkServiceTest {
         Configuration config = new BaseConfiguration();
         Application.setConfiguration(config);
         // null value
-        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, null);
+        config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, null);
         assertNull(WatermarkService.getWatermarkImage());
         // empty value
-        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, "");
+        config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, "");
         assertNull(WatermarkService.getWatermarkImage());
         // invalid value
-        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, "bogus");
+        config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, "bogus");
         assertEquals(new File("bogus"), WatermarkService.getWatermarkImage());
         // valid value
-        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, "/dev/null");
+        config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, "/dev/null");
         assertEquals(new File("/dev/null"), WatermarkService.getWatermarkImage());
     }
 
@@ -34,16 +34,16 @@ public class WatermarkServiceTest {
         Configuration config = new BaseConfiguration();
         Application.setConfiguration(config);
         // null value
-        config.setProperty(Processor.WATERMARK_INSET_CONFIG_KEY, null);
+        config.setProperty(WatermarkService.WATERMARK_INSET_CONFIG_KEY, null);
         assertEquals(0, WatermarkService.getWatermarkInset());
         // empty value
-        config.setProperty(Processor.WATERMARK_INSET_CONFIG_KEY, "");
+        config.setProperty(WatermarkService.WATERMARK_INSET_CONFIG_KEY, "");
         assertEquals(0, WatermarkService.getWatermarkInset());
         // invalid value
-        config.setProperty(Processor.WATERMARK_INSET_CONFIG_KEY, "bogus");
+        config.setProperty(WatermarkService.WATERMARK_INSET_CONFIG_KEY, "bogus");
         assertEquals(0, WatermarkService.getWatermarkInset());
         // valid value
-        config.setProperty(Processor.WATERMARK_INSET_CONFIG_KEY, "50");
+        config.setProperty(WatermarkService.WATERMARK_INSET_CONFIG_KEY, "50");
         assertEquals(50, WatermarkService.getWatermarkInset());
     }
 
@@ -52,16 +52,16 @@ public class WatermarkServiceTest {
         Configuration config = new BaseConfiguration();
         Application.setConfiguration(config);
         // null value
-        config.setProperty(Processor.WATERMARK_POSITION_CONFIG_KEY, null);
+        config.setProperty(WatermarkService.WATERMARK_POSITION_CONFIG_KEY, null);
         assertNull(WatermarkService.getWatermarkPosition());
         // empty value
-        config.setProperty(Processor.WATERMARK_POSITION_CONFIG_KEY, "");
+        config.setProperty(WatermarkService.WATERMARK_POSITION_CONFIG_KEY, "");
         assertNull(WatermarkService.getWatermarkPosition());
         // invalid value
-        config.setProperty(Processor.WATERMARK_POSITION_CONFIG_KEY, "bogus");
+        config.setProperty(WatermarkService.WATERMARK_POSITION_CONFIG_KEY, "bogus");
         assertNull(WatermarkService.getWatermarkPosition());
         // valid value
-        config.setProperty(Processor.WATERMARK_POSITION_CONFIG_KEY, "top left");
+        config.setProperty(WatermarkService.WATERMARK_POSITION_CONFIG_KEY, "top left");
         assertEquals(Position.TOP_LEFT, WatermarkService.getWatermarkPosition());
     }
 
