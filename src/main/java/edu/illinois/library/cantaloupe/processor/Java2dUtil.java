@@ -29,16 +29,32 @@ abstract class Java2dUtil {
     private static Logger logger = LoggerFactory.getLogger(Java2dUtil.class);
 
     /**
+     * Applies the watermark to the given image.
+     *
+     * @param baseImage Image to apply the watermark on top of.
+     * @return Watermarked image, or the input image if there is no watermark
+     *         set in the application configuration.
+     * @throws IOException
+     */
+    public static BufferedImage applyWatermark(final BufferedImage baseImage)
+            throws IOException {
+        return overlayImage(baseImage,
+                getWatermarkImage(),
+                ProcessorUtil.getWatermarkPosition(),
+                ProcessorUtil.getWatermarkOpacity());
+    }
+
+    /**
      * @param baseImage
      * @param overlayImage
      * @param position
      * @param overlayOpacity Value between 0-1
      * @return
      */
-    public static BufferedImage overlayImage(final BufferedImage baseImage,
-                                             final BufferedImage overlayImage,
-                                             final Position position,
-                                             final float overlayOpacity) {
+    private static BufferedImage overlayImage(final BufferedImage baseImage,
+                                              final BufferedImage overlayImage,
+                                              final Position position,
+                                              final float overlayOpacity) {
         if (overlayImage != null && position != null &&
                 Math.abs(1 - overlayOpacity) < 1) {
             final long msec = System.currentTimeMillis();

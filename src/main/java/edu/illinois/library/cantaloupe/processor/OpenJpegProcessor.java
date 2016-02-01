@@ -477,6 +477,9 @@ class OpenJpegProcessor implements FileProcessor {
                         (Filter) op);
             }
         }
+
+        image = Java2dUtil.applyWatermark(image);
+
         new ImageIoImageWriter().write(image, opList.getOutputFormat(),
                 outputStream);
         image.flush();
