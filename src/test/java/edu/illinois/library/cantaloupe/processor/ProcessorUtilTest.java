@@ -9,6 +9,7 @@ import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
 import java.awt.Dimension;
+import java.io.File;
 
 import static org.junit.Assert.*;
 
@@ -56,6 +57,24 @@ public class ProcessorUtilTest {
         Dimension actual = ProcessorUtil.getSize(streamSource,
                 SourceFormat.JPG);
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testGetWatermarkImage() {
+        Configuration config = new BaseConfiguration();
+        Application.setConfiguration(config);
+        // null value
+        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, null);
+        assertNull(ProcessorUtil.getWatermarkImage());
+        // empty value
+        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, "");
+        assertNull(ProcessorUtil.getWatermarkImage());
+        // invalid value
+        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, "bogus");
+        assertEquals(new File("bogus"), ProcessorUtil.getWatermarkImage());
+        // valid value
+        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, "/dev/null");
+        assertEquals(new File("/dev/null"), ProcessorUtil.getWatermarkImage());
     }
 
     @Test

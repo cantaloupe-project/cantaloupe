@@ -132,6 +132,21 @@ abstract class ProcessorUtil {
     }
 
     /**
+     * @return File corresponding to
+     *         {@link Processor#WATERMARK_FILE_CONFIG_KEY}, or null if it is
+     *         not set.
+     */
+    public static File getWatermarkImage() {
+        final Configuration config = Application.getConfiguration();
+        final String path = config.
+                getString(Processor.WATERMARK_FILE_CONFIG_KEY, "");
+        if (path.length() > 0) {
+            return new File(path);
+        }
+        return null;
+    }
+
+    /**
      * @return Watermark opacity, or 1 if
      *         {@link Processor#WATERMARK_OPACITY_CONFIG_KEY} is not set.
      */
