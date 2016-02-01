@@ -105,7 +105,7 @@ class FfmpegProcessor implements FileProcessor {
     }
 
     private static String getWatermarkFilterPosition(int edgeMargin) {
-        final Position position = ProcessorUtil.getWatermarkPosition();
+        final Position position = WatermarkService.getWatermarkPosition();
         if (position != null) {
             switch (position) {
                 case TOP_LEFT:
@@ -422,7 +422,7 @@ class FfmpegProcessor implements FileProcessor {
             }
         }
 
-        final File watermark = ProcessorUtil.getWatermarkImage();
+        final File watermark = WatermarkService.getWatermarkImage();
         if (watermark != null) {
             filters.add(0, String.format("movie=%s [wm]",
                     watermark.getAbsolutePath()));

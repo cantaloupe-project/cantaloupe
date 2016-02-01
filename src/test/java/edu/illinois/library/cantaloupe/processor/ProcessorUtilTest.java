@@ -1,15 +1,11 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
 import java.awt.Dimension;
-import java.io.File;
 
 import static org.junit.Assert.*;
 
@@ -57,60 +53,6 @@ public class ProcessorUtilTest {
         Dimension actual = ProcessorUtil.getSize(streamSource,
                 SourceFormat.JPG);
         assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testGetWatermarkImage() {
-        Configuration config = new BaseConfiguration();
-        Application.setConfiguration(config);
-        // null value
-        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, null);
-        assertNull(ProcessorUtil.getWatermarkImage());
-        // empty value
-        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, "");
-        assertNull(ProcessorUtil.getWatermarkImage());
-        // invalid value
-        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, "bogus");
-        assertEquals(new File("bogus"), ProcessorUtil.getWatermarkImage());
-        // valid value
-        config.setProperty(Processor.WATERMARK_FILE_CONFIG_KEY, "/dev/null");
-        assertEquals(new File("/dev/null"), ProcessorUtil.getWatermarkImage());
-    }
-
-    @Test
-    public void testGetWatermarkInset() {
-        Configuration config = new BaseConfiguration();
-        Application.setConfiguration(config);
-        // null value
-        config.setProperty(Processor.WATERMARK_INSET_CONFIG_KEY, null);
-        assertEquals(0, ProcessorUtil.getWatermarkInset());
-        // empty value
-        config.setProperty(Processor.WATERMARK_INSET_CONFIG_KEY, "");
-        assertEquals(0, ProcessorUtil.getWatermarkInset());
-        // invalid value
-        config.setProperty(Processor.WATERMARK_INSET_CONFIG_KEY, "bogus");
-        assertEquals(0, ProcessorUtil.getWatermarkInset());
-        // valid value
-        config.setProperty(Processor.WATERMARK_INSET_CONFIG_KEY, "50");
-        assertEquals(50, ProcessorUtil.getWatermarkInset());
-    }
-
-    @Test
-    public void testGetWatermarkPosition() {
-        Configuration config = new BaseConfiguration();
-        Application.setConfiguration(config);
-        // null value
-        config.setProperty(Processor.WATERMARK_POSITION_CONFIG_KEY, null);
-        assertNull(ProcessorUtil.getWatermarkPosition());
-        // empty value
-        config.setProperty(Processor.WATERMARK_POSITION_CONFIG_KEY, "");
-        assertNull(ProcessorUtil.getWatermarkPosition());
-        // invalid value
-        config.setProperty(Processor.WATERMARK_POSITION_CONFIG_KEY, "bogus");
-        assertNull(ProcessorUtil.getWatermarkPosition());
-        // valid value
-        config.setProperty(Processor.WATERMARK_POSITION_CONFIG_KEY, "top left");
-        assertEquals(Position.TOP_LEFT, ProcessorUtil.getWatermarkPosition());
     }
 
 }

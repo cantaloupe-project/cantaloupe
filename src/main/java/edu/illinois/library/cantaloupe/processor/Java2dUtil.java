@@ -37,8 +37,8 @@ abstract class Java2dUtil {
             throws IOException {
         return overlayImage(baseImage,
                 getWatermarkImage(),
-                ProcessorUtil.getWatermarkPosition(),
-                ProcessorUtil.getWatermarkInset());
+                WatermarkService.getWatermarkPosition(),
+                WatermarkService.getWatermarkInset());
     }
 
     /**
@@ -259,7 +259,7 @@ abstract class Java2dUtil {
      * @throws IOException
      */
     public static BufferedImage getWatermarkImage() throws IOException {
-        final File file = ProcessorUtil.getWatermarkImage();
+        final File file = WatermarkService.getWatermarkImage();
         if (file != null) {
             ImageIoImageReader reader = new ImageIoImageReader();
             return reader.read(file);

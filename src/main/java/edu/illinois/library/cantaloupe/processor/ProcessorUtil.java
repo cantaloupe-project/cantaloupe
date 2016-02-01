@@ -1,11 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConversionException;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,64 +123,6 @@ abstract class ProcessorUtil {
                 reader.dispose();
             }
             return new Dimension(width, height);
-        }
-        return null;
-    }
-
-    /**
-     * @return File corresponding to
-     *         {@link Processor#WATERMARK_FILE_CONFIG_KEY}, or null if it is
-     *         not set.
-     */
-    public static File getWatermarkImage() {
-        final Configuration config = Application.getConfiguration();
-        final String path = config.
-                getString(Processor.WATERMARK_FILE_CONFIG_KEY, "");
-        if (path.length() > 0) {
-            return new File(path);
-        }
-        return null;
-    }
-
-    /**
-     * Returns the space in pixels between the edge of the watermark and the
-     * edge of the image.
-     *
-     * @return Watermark inset, defaulting to 0 if
-     *         {@link Processor#WATERMARK_INSET_CONFIG_KEY} is not set.
-     */
-    public static int getWatermarkInset() {
-        final Configuration config = Application.getConfiguration();
-        try {
-            final int configValue = config.
-                    getInt(Processor.WATERMARK_INSET_CONFIG_KEY, 0);
-            if (configValue > 0) {
-                return configValue;
-            }
-        } catch (ConversionException e) {
-            logger.error("Invalid {} value",
-                    Processor.WATERMARK_INSET_CONFIG_KEY);
-        }
-        return 0;
-    }
-
-    /**
-     * @return Watermark position, or null if
-     *         {@link Processor#WATERMARK_POSITION_CONFIG_KEY} is not set.
-     */
-    public static Position getWatermarkPosition() {
-        final Configuration config = Application.getConfiguration();
-        final String configValue = config.
-                getString(Processor.WATERMARK_POSITION_CONFIG_KEY, "");
-        if (configValue.length() > 0) {
-            final String enumStr = StringUtils.replace(configValue, " ", "_").
-                    toUpperCase();
-            try {
-                return Position.valueOf(enumStr);
-            } catch (IllegalArgumentException e) {
-                logger.error("Invalid {} value: {}",
-                        Processor.WATERMARK_POSITION_CONFIG_KEY, configValue);
-            }
         }
         return null;
     }
