@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.processor;
 
 import com.sun.imageio.plugins.gif.GIFImageReader;
 import com.sun.imageio.plugins.png.PNGImageReader;
-import com.sun.imageio.spi.FileImageInputStreamSpi;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -94,19 +93,31 @@ class ImageIoImageReader {
      * {@link ImageIO#read} that reads a whole image (excluding subimages) in
      * one shot.
      *
+     * @param file File to read.
+     * @return BufferedImage guaranteed to not be of type
+     *         {@link BufferedImage#TYPE_CUSTOM}.
+     * @throws IOException
+     */
+    public BufferedImage read(File file) throws IOException {
+        final BufferedImage image = ImageIO.read(
+                ImageIO.createImageInputStream(file));
+        return Java2dUtil.convertCustomToRgb(image);
+    }
+
+    /**
+     * Expedient but not necessarily efficient method wrapping
+     * {@link ImageIO#read} that reads a whole image (excluding subimages) in
+     * one shot.
+     *
      * @param inputStream Input stream to read.
      * @return BufferedImage guaranteed to not be of type
-     * {@link BufferedImage#TYPE_CUSTOM}.
+     *         {@link BufferedImage#TYPE_CUSTOM}.
      * @throws IOException
      */
     public BufferedImage read(InputStream inputStream) throws IOException {
         final BufferedImage image = ImageIO.read(
                 ImageIO.createImageInputStream(inputStream));
-        final BufferedImage rgbImage = Java2dUtil.convertCustomToRgb(image);
-        if (rgbImage != image) {
-            logger.warn("Converted image to RGB (this is very expensive)");
-        }
-        return rgbImage;
+        return Java2dUtil.convertCustomToRgb(image);
     }
 
     /**

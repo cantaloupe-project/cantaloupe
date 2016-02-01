@@ -12,6 +12,8 @@ import java.util.Set;
  */
 public interface Processor {
 
+    String WATERMARK_FILE_CONFIG_KEY = "watermark.image";
+
     /**
      * @param sourceFormat The source format for which to get a list of
      *                     available output formats.

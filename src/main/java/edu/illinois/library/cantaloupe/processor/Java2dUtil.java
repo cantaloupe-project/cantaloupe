@@ -24,6 +24,27 @@ abstract class Java2dUtil {
     private static Logger logger = LoggerFactory.getLogger(Java2dUtil.class);
 
     /**
+     * @param baseImage
+     * @param overlayImage
+     * @return
+     */
+    public static BufferedImage overlayImage(BufferedImage baseImage,
+                                             BufferedImage overlayImage) {
+        if (overlayImage != null) {
+            final long msec = System.currentTimeMillis();
+            final Graphics2D g2d = baseImage.createGraphics();
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+            g2d.drawImage(baseImage, 0, 0, null);
+            g2d.drawImage(overlayImage, 0, 0, null);
+            g2d.dispose();
+            logger.info("overlayImage() executed in {} msec",
+                    System.currentTimeMillis() - msec);
+        }
+        return baseImage;
+    }
+
+    /**
      * <p>Copies the given BufferedImage of type
      * {@link BufferedImage#TYPE_CUSTOM} into a new image of type
      * {@link BufferedImage#TYPE_INT_RGB}, to make it work with the
@@ -46,7 +67,7 @@ abstract class Java2dUtil {
             g.drawImage(inImage, 0, 0, null);
             g.dispose();
 
-            logger.debug("convertCustomToRgb() executed in {} msec",
+            logger.info("convertCustomToRgb() executed in {} msec",
                     System.currentTimeMillis() - msec);
         }
         return outImage;

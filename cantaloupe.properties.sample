@@ -53,6 +53,10 @@ max_pixels = 400000000
 # Comment out or set blank to disable the delegate script mechanism.
 #delegate_script = delegates.rb
 
+# Absolute path to a watermark image. Comment out or leave blank to disable
+# watermarking.
+#watermark.image = /path/to/watermark.png
+
 # Helpful in development
 print_stack_trace_on_error_pages = true
 

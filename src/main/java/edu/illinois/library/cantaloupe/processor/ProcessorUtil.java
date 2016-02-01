@@ -1,7 +1,9 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import org.apache.commons.configuration.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +12,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
@@ -123,6 +126,22 @@ abstract class ProcessorUtil {
                 reader.dispose();
             }
             return new Dimension(width, height);
+        }
+        return null;
+    }
+
+    /**
+     * @return Watermark image, or null if
+     *         {@link Processor#WATERMARK_FILE_CONFIG_KEY} is not set.
+     * @throws IOException
+     */
+    public static BufferedImage getWatermarkImage() throws IOException {
+        final Configuration config = Application.getConfiguration();
+        final String path = config.
+                getString(Processor.WATERMARK_FILE_CONFIG_KEY, "");
+        if (path.length() > 0) {
+            ImageIoImageReader reader = new ImageIoImageReader();
+            return reader.read(new File(path));
         }
         return null;
     }

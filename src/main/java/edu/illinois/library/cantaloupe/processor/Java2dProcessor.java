@@ -181,6 +181,11 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
                     image = Java2dUtil.filterImage(image, (Filter) op);
                 }
             }
+
+            // apply watermark
+            BufferedImage watermark = ProcessorUtil.getWatermarkImage();
+            image = Java2dUtil.overlayImage(image, watermark);
+
             new ImageIoImageWriter().write(image, ops.getOutputFormat(),
                     outputStream);
         } catch (IOException e) {

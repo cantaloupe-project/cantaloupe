@@ -38,6 +38,9 @@ public interface StreamProcessor extends Processor {
      * the sourceSize parameter instead of their {#link #getSize} method,
      * for efficiency's sake.</p>
      *
+     * <p>Implementations should also apply the watermark image defined in
+     * {@link Processor#WATERMARK_FILE_CONFIG_KEY}.</p>
+     *
      * @param ops OperationList of the image to process.
      * @param sourceFormat Format of the source image. Will never be
      * {@link SourceFormat#UNKNOWN}.
