@@ -38,11 +38,16 @@ abstract class Java2dUtil {
     public static BufferedImage convertCustomToRgb(final BufferedImage inImage) {
         BufferedImage outImage = inImage;
         if (inImage != null && inImage.getType() == BufferedImage.TYPE_CUSTOM) {
+            final long msec = System.currentTimeMillis();
+
             outImage = new BufferedImage(inImage.getWidth(),
                     inImage.getHeight(), BufferedImage.TYPE_INT_RGB);
             Graphics2D g = outImage.createGraphics();
             g.drawImage(inImage, 0, 0, null);
             g.dispose();
+
+            logger.debug("convertCustomToRgb() executed in {} msec",
+                    System.currentTimeMillis() - msec);
         }
         return outImage;
     }
@@ -79,11 +84,9 @@ abstract class Java2dUtil {
         BufferedImage croppedImage;
         if (crop.isNoOp() || (croppedSize.width == inImage.getWidth() &&
                 croppedSize.height == inImage.getHeight())) {
-            logger.debug("No need to crop; skipping.");
             croppedImage = inImage;
         } else {
-            logger.info("Cropping {}x{} image: {}",
-                    inImage.getWidth(), inImage.getHeight(), crop);
+            final long msec = System.currentTimeMillis();
             final double scale = ProcessorUtil.getScale(rf);
             final double regionX = crop.getX() * scale;
             final double regionY = crop.getY() * scale;
@@ -113,6 +116,10 @@ abstract class Java2dUtil {
                     inImage.getHeight() - y : requestedHeight;
             croppedImage = inImage.getSubimage(x, y, croppedWidth,
                     croppedHeight);
+
+            logger.info("cropImage(): cropped {}x{} image to {} in {} msec",
+                    inImage.getWidth(), inImage.getHeight(), crop,
+                    System.currentTimeMillis() - msec);
         }
         return croppedImage;
     }
@@ -126,6 +133,7 @@ abstract class Java2dUtil {
     public static BufferedImage filterImage(final BufferedImage inImage,
                                             final Filter filter) {
         BufferedImage filteredImage = inImage;
+        final long msec = System.currentTimeMillis();
         switch (filter) {
             case GRAY:
                 filteredImage = new BufferedImage(inImage.getWidth(),
@@ -141,6 +149,10 @@ abstract class Java2dUtil {
         if (filteredImage != inImage) {
             Graphics2D g2d = filteredImage.createGraphics();
             g2d.drawImage(inImage, 0, 0, null);
+
+            logger.info("filterImage(): filtered {}x{} image in {} msec",
+                    inImage.getWidth(), inImage.getHeight(),
+                    System.currentTimeMillis() - msec);
         }
         return filteredImage;
     }
@@ -148,6 +160,7 @@ abstract class Java2dUtil {
     public static BufferedImage removeAlpha(final BufferedImage inImage) {
         BufferedImage outImage = inImage;
         if (inImage.getColorModel().hasAlpha()) {
+            final long msec = System.currentTimeMillis();
             int newType;
             switch (inImage.getType()) {
                 case BufferedImage.TYPE_4BYTE_ABGR:
@@ -157,13 +170,14 @@ abstract class Java2dUtil {
                     newType = BufferedImage.TYPE_INT_RGB;
                     break;
             }
-            logger.warn("Converting BufferedImage type {} to RGB (this is " +
-                    "very expensive)", inImage.getType());
             outImage = new BufferedImage(inImage.getWidth(),
                     inImage.getHeight(), newType);
             Graphics2D g = outImage.createGraphics();
             g.drawImage(inImage, 0, 0, null);
             g.dispose();
+            logger.info("removeAlpha(): converted BufferedImage type {} to " +
+                    "RGB in {} msec", inImage.getType(),
+                    System.currentTimeMillis() - msec);
         }
         return outImage;
     }
@@ -178,6 +192,7 @@ abstract class Java2dUtil {
                                             final Rotate rotate) {
         BufferedImage rotatedImage = inImage;
         if (!rotate.isNoOp()) {
+            final long msec = System.currentTimeMillis();
             final double radians = Math.toRadians(rotate.getDegrees());
             final int sourceWidth = inImage.getWidth();
             final int sourceHeight = inImage.getHeight();
@@ -205,6 +220,8 @@ abstract class Java2dUtil {
                     RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             g2d.setRenderingHints(hints);
             g2d.drawImage(inImage, tx, null);
+            logger.info("rotateImage(): executed in {} msec",
+                    System.currentTimeMillis() - msec);
         }
         return rotatedImage;
     }
@@ -224,12 +241,9 @@ abstract class Java2dUtil {
         BufferedImage scaledImage;
         if (scale.isNoOp() || (scaledSize.width == inImage.getWidth() &&
                 scaledSize.height == inImage.getHeight())) {
-            logger.debug("No need to scale; skipping.");
             scaledImage = inImage;
         } else {
-            logger.info("Scaling {}x{} image to {}x{}",
-                    inImage.getWidth(), inImage.getHeight(),
-                    scaledSize.width, scaledSize.height);
+            final long msec = System.currentTimeMillis();
             double xScale = 0.0f, yScale = 0.0f;
             if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                 xScale = yScale = scale.getWidth() / (double) inImage.getWidth();
@@ -256,6 +270,10 @@ abstract class Java2dUtil {
             AffineTransformOp scaleOp = new AffineTransformOp(at,
                     AffineTransformOp.TYPE_BILINEAR);
             scaledImage = scaleOp.filter(inImage, scaledImage);
+            logger.info("Scaled {}x{} image to {}x{} in {} msec",
+                    inImage.getWidth(), inImage.getHeight(),
+                    scaledSize.width, scaledSize.height,
+                    System.currentTimeMillis() - msec);
         }
         return scaledImage;
     }
@@ -297,12 +315,9 @@ abstract class Java2dUtil {
         BufferedImage scaledImage;
         if (scale.isNoOp() || (scaledSize.width == inImage.getWidth() &&
                 scaledSize.height == inImage.getHeight())) {
-            logger.debug("No need to scale; skipping.");
             scaledImage = inImage;
         } else {
-            logger.info("Scaling {}x{} image to {}x{}",
-                    inImage.getWidth(), inImage.getHeight(),
-                    scaledSize.width, scaledSize.height);
+            final long msec = System.currentTimeMillis();
             final int sourceWidth = inImage.getWidth();
             final int sourceHeight = inImage.getHeight();
             int width = 0, height = 0;
@@ -351,6 +366,12 @@ abstract class Java2dUtil {
                 g2d.drawImage(inImage, 0, 0, width, height, null);
             }
             g2d.dispose();
+
+            logger.info("scaleImageWithG2d(): scaled {}x{} image to {}x{} " +
+                    "in {} msec",
+                    inImage.getWidth(), inImage.getHeight(),
+                    scaledSize.width, scaledSize.height,
+                    System.currentTimeMillis() - msec);
         }
         return scaledImage;
     }
@@ -362,6 +383,7 @@ abstract class Java2dUtil {
      */
     public static BufferedImage transposeImage(final BufferedImage inImage,
                                                final Transpose transpose) {
+        final long msec = System.currentTimeMillis();
         AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
         switch (transpose) {
             case HORIZONTAL:
@@ -373,7 +395,11 @@ abstract class Java2dUtil {
         }
         AffineTransformOp op = new AffineTransformOp(tx,
                 AffineTransformOp.TYPE_BILINEAR);
-        return op.filter(inImage, null);
+        BufferedImage outImage = op.filter(inImage, null);
+
+        logger.info("transposeImage(): transposed image in {} msec",
+                System.currentTimeMillis() - msec);
+        return outImage;
     }
 
 }
