@@ -253,12 +253,10 @@ abstract class Java2dUtil {
      * @throws IOException
      */
     public static BufferedImage getWatermarkImage() throws IOException {
-        final Configuration config = Application.getConfiguration();
-        final String path = config.
-                getString(Processor.WATERMARK_FILE_CONFIG_KEY, "");
-        if (path.length() > 0) {
+        final File file = ProcessorUtil.getWatermarkImage();
+        if (file != null) {
             ImageIoImageReader reader = new ImageIoImageReader();
-            return reader.read(new File(path));
+            return reader.read(file);
         }
         return null;
     }
