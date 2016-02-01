@@ -13,6 +13,7 @@ import java.util.Set;
 public interface Processor {
 
     String WATERMARK_FILE_CONFIG_KEY = "watermark.image";
+    String WATERMARK_INSET_CONFIG_KEY = "watermark.inset";
     String WATERMARK_POSITION_CONFIG_KEY = "watermark.position";
 
     /**

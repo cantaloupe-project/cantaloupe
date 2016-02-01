@@ -1,12 +1,10 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
-import org.apache.commons.configuration.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +15,6 @@ import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.awt.image.RescaleOp;
 import java.io.File;
 import java.io.IOException;
 
@@ -40,49 +37,73 @@ abstract class Java2dUtil {
             throws IOException {
         return overlayImage(baseImage,
                 getWatermarkImage(),
-                ProcessorUtil.getWatermarkPosition());
+                ProcessorUtil.getWatermarkPosition(),
+                ProcessorUtil.getWatermarkInset());
     }
 
     /**
      * @param baseImage
      * @param overlayImage
      * @param position
+     * @param inset Inset in pixels.
      * @return
      */
     private static BufferedImage overlayImage(final BufferedImage baseImage,
                                               final BufferedImage overlayImage,
-                                              final Position position) {
+                                              final Position position,
+                                              final int inset) {
         if (overlayImage != null && position != null) {
             final long msec = System.currentTimeMillis();
-            int overlayX = 0, overlayY = 0; // top left
+            int overlayX, overlayY;
             switch (position) {
+                case TOP_LEFT:
+                    overlayX = inset;
+                    overlayY = inset;
+                    break;
                 case TOP_RIGHT:
-                    overlayX = baseImage.getWidth() - overlayImage.getWidth();
+                    overlayX = baseImage.getWidth() -
+                            overlayImage.getWidth() - inset;
+                    overlayY = inset;
                     break;
                 case BOTTOM_LEFT:
-                    overlayY = baseImage.getHeight() - overlayImage.getHeight();
+                    overlayX = inset;
+                    overlayY = baseImage.getHeight() -
+                            overlayImage.getHeight() - inset;
                     break;
-                case BOTTOM_RIGHT:
-                    overlayX = baseImage.getWidth() - overlayImage.getWidth();
-                    overlayY = baseImage.getHeight() - overlayImage.getHeight();
-                    break;
+                // case BOTTOM_RIGHT: will be handled in default:
                 case TOP_CENTER:
-                    overlayX = (baseImage.getWidth() - overlayImage.getWidth()) / 2;
+                    overlayX = (baseImage.getWidth() -
+                            overlayImage.getWidth()) / 2;
+                    overlayY = inset;
                     break;
                 case BOTTOM_CENTER:
-                    overlayX = (baseImage.getWidth() - overlayImage.getWidth()) / 2;
-                    overlayY = baseImage.getHeight() - overlayImage.getHeight();
+                    overlayX = (baseImage.getWidth() -
+                            overlayImage.getWidth()) / 2;
+                    overlayY = baseImage.getHeight() -
+                            overlayImage.getHeight() - inset;
                     break;
                 case LEFT_CENTER:
-                    overlayY = (baseImage.getHeight() - overlayImage.getHeight()) / 2;
+                    overlayX = inset;
+                    overlayY = (baseImage.getHeight() -
+                            overlayImage.getHeight()) / 2;
                     break;
                 case RIGHT_CENTER:
-                    overlayX = baseImage.getWidth() - overlayImage.getWidth();
-                    overlayY = (baseImage.getHeight() - overlayImage.getHeight()) / 2;
+                    overlayX = baseImage.getWidth() -
+                            overlayImage.getWidth() - inset;
+                    overlayY = (baseImage.getHeight() -
+                            overlayImage.getHeight()) / 2;
                     break;
                 case CENTER:
-                    overlayX = (baseImage.getWidth() - overlayImage.getWidth()) / 2;
-                    overlayY = (baseImage.getHeight() - overlayImage.getHeight()) / 2;
+                    overlayX = (baseImage.getWidth() -
+                            overlayImage.getWidth()) / 2;
+                    overlayY = (baseImage.getHeight() -
+                            overlayImage.getHeight()) / 2;
+                    break;
+                default: // bottom right
+                    overlayX = baseImage.getWidth() -
+                            overlayImage.getWidth() - inset;
+                    overlayY = baseImage.getHeight() -
+                            overlayImage.getHeight() - inset;
                     break;
             }
 
