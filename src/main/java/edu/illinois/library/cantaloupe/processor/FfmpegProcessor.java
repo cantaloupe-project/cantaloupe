@@ -422,12 +422,14 @@ class FfmpegProcessor implements FileProcessor {
             }
         }
 
-        final File watermark = WatermarkService.getWatermarkImage();
-        if (watermark != null) {
-            filters.add(0, String.format("movie=%s [wm]",
-                    watermark.getAbsolutePath()));
-            filters.add(String.format("[%s][wm] overlay=%s [out]",
-                    filterId, getWatermarkFilterPosition(0)));
+        if (WatermarkService.isEnabled()) {
+            final File watermark = WatermarkService.getWatermarkImage();
+            if (watermark != null) {
+                filters.add(0, String.format("movie=%s [wm]",
+                        watermark.getAbsolutePath()));
+                filters.add(String.format("[%s][wm] overlay=%s [out]",
+                        filterId, getWatermarkFilterPosition(0)));
+            }
         }
 
         if (filters.size() > 0) {

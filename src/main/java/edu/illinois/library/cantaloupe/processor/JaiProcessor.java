@@ -204,7 +204,9 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
                                 filterImage(renderedOp, (Filter) op);
                     }
                 }
-                renderedOp = JaiUtil.applyWatermark(renderedOp);
+                if (WatermarkService.isEnabled()) {
+                    renderedOp = JaiUtil.applyWatermark(renderedOp);
+                }
 
                 ImageIoImageWriter writer = new ImageIoImageWriter();
                 writer.write(renderedOp, ops.getOutputFormat(),

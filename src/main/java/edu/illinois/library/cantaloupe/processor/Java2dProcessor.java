@@ -182,7 +182,9 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
                 }
             }
 
-            image = Java2dUtil.applyWatermark(image);
+            if (WatermarkService.isEnabled()) {
+                image = Java2dUtil.applyWatermark(image);
+            }
 
             new ImageIoImageWriter().write(image, ops.getOutputFormat(),
                     outputStream);
@@ -232,6 +234,11 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
                     image = Java2dUtil.filterImage(image, (Filter) op);
                 }
             }
+
+            if (WatermarkService.isEnabled()) {
+                image = Java2dUtil.applyWatermark(image);
+            }
+
             new ImageIoImageWriter().write(image, ops.getOutputFormat(),
                     outputStream);
         } catch (IOException e) {
