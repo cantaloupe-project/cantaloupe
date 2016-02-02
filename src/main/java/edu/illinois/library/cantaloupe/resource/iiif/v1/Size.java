@@ -47,28 +47,36 @@ class Size {
      */
     public static Size fromUri(String uriSize) throws IllegalArgumentException {
         Size size = new Size();
-        if (uriSize.equals("full")) {
-            size.setScaleMode(ScaleMode.FULL);
-        } else {
-            if (uriSize.endsWith(",")) {
-                size.setScaleMode(ScaleMode.ASPECT_FIT_WIDTH);
-                size.setWidth(Integer.parseInt(StringUtils.stripEnd(uriSize, ",")));
-            } else if (uriSize.startsWith(",")) {
-                size.setScaleMode(ScaleMode.ASPECT_FIT_HEIGHT);
-                size.setHeight(Integer.parseInt(StringUtils.stripStart(uriSize, ",")));
-            } else if (uriSize.startsWith("pct:")) {
-                size.setPercent(Float.parseFloat(StringUtils.stripStart(uriSize, "pct:")));
-            } else if (uriSize.startsWith("!")) {
-                size.setScaleMode(ScaleMode.ASPECT_FIT_INSIDE);
-                String[] parts = StringUtils.stripStart(uriSize, "!").split(",");
-                size.setWidth(Integer.parseInt(parts[0]));
-                size.setHeight(Integer.parseInt(parts[1]));
+        try {
+            if (uriSize.equals("full")) {
+                size.setScaleMode(ScaleMode.FULL);
             } else {
-                size.setScaleMode(ScaleMode.NON_ASPECT_FILL);
-                String[] parts = uriSize.split(",");
-                size.setWidth(Integer.parseInt(parts[0]));
-                size.setHeight(Integer.parseInt(parts[1]));
+                if (uriSize.endsWith(",")) {
+                    size.setScaleMode(ScaleMode.ASPECT_FIT_WIDTH);
+                    size.setWidth(Integer.parseInt(StringUtils.stripEnd(uriSize, ",")));
+                } else if (uriSize.startsWith(",")) {
+                    size.setScaleMode(ScaleMode.ASPECT_FIT_HEIGHT);
+                    size.setHeight(Integer.parseInt(StringUtils.stripStart(uriSize, ",")));
+                } else if (uriSize.startsWith("pct:")) {
+                    size.setPercent(Float.parseFloat(StringUtils.stripStart(uriSize, "pct:")));
+                } else if (uriSize.startsWith("!")) {
+                    size.setScaleMode(ScaleMode.ASPECT_FIT_INSIDE);
+                    String[] parts = StringUtils.stripStart(uriSize, "!").split(",");
+                    size.setWidth(Integer.parseInt(parts[0]));
+                    size.setHeight(Integer.parseInt(parts[1]));
+                } else {
+                    size.setScaleMode(ScaleMode.NON_ASPECT_FILL);
+                    String[] parts = uriSize.split(",");
+                    if (parts.length == 2) {
+                        size.setWidth(Integer.parseInt(parts[0]));
+                        size.setHeight(Integer.parseInt(parts[1]));
+                    } else {
+                        throw new IllegalArgumentException("Invalid size");
+                    }
+                }
             }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid size");
         }
         return size;
     }
