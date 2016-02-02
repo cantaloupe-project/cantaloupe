@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
@@ -10,8 +11,11 @@ import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.image.watermark.WatermarkingDisabledException;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
@@ -26,6 +30,9 @@ import java.util.Set;
  * Processor using the Java 2D framework.
  */
 class Java2dProcessor implements StreamProcessor, FileProcessor {
+
+    private static Logger logger = LoggerFactory.
+            getLogger(Java2dProcessor.class);
 
     public static final String JPG_QUALITY_CONFIG_KEY =
             "Java2dProcessor.jpg.quality";
@@ -182,8 +189,12 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
                 }
             }
 
-            if (WatermarkService.isEnabled()) {
+            try {
                 image = Java2dUtil.applyWatermark(image);
+            } catch (WatermarkingDisabledException e) {
+                // that's OK
+            } catch (ConfigurationException e) {
+                logger.error(e.getMessage());
             }
 
             new ImageIoImageWriter().write(image, ops.getOutputFormat(),
@@ -235,8 +246,12 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
                 }
             }
 
-            if (WatermarkService.isEnabled()) {
+            try {
                 image = Java2dUtil.applyWatermark(image);
+            } catch (WatermarkingDisabledException e) {
+                // that's OK
+            } catch (ConfigurationException e) {
+                logger.error(e.getMessage());
             }
 
             new ImageIoImageWriter().write(image, ops.getOutputFormat(),

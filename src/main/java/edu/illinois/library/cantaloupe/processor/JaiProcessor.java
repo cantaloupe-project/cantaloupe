@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -9,8 +10,11 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.media.jai.RenderedOp;
 import java.awt.Dimension;
@@ -30,6 +34,8 @@ import java.util.Set;
  *     Programming in Java Advanced Imaging</a>
  */
 class JaiProcessor implements FileProcessor, StreamProcessor {
+
+    private static Logger logger = LoggerFactory.getLogger(JaiProcessor.class);
 
     public static final String JPG_QUALITY_CONFIG_KEY =
             "JaiProcessor.jpg.quality";
@@ -211,7 +217,11 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
                     // There seems to be minimal performance penalty in doing
                     // this, and doing it in JAI is harder.
                     BufferedImage image = renderedOp.getAsBufferedImage();
-                    image = Java2dUtil.applyWatermark(image);
+                    try {
+                        image = Java2dUtil.applyWatermark(image);
+                    } catch (ConfigurationException e) {
+                        logger.error(e.getMessage());
+                    }
                     writer.write(image, ops.getOutputFormat(), outputStream);
                 } else {
                     writer.write(renderedOp, ops.getOutputFormat(),

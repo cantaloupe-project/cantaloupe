@@ -5,6 +5,8 @@ import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.image.watermark.Watermark;
+import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -105,19 +107,22 @@ public class Java2dUtilTest {
     public void testGetWatermarkImage() throws Exception {
         Configuration config = new BaseConfiguration();
         Application.setConfiguration(config);
+
+        Watermark watermark = new Watermark();
+
         // null value
         config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, null);
-        assertNull(Java2dUtil.getWatermarkImage());
+        assertNull(Java2dUtil.getWatermarkImage(watermark));
         // empty value
         config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, "");
-        assertNull(Java2dUtil.getWatermarkImage());
+        assertNull(Java2dUtil.getWatermarkImage(watermark));
         // invalid path value
         config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, "/dev/null");
-        assertNull(Java2dUtil.getWatermarkImage());
+        assertNull(Java2dUtil.getWatermarkImage(watermark));
         // valid path value
         config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY,
                 TestUtil.getImage("jpg").getAbsolutePath());
-        assertNotNull(Java2dUtil.getWatermarkImage());
+        assertNotNull(Java2dUtil.getWatermarkImage(watermark));
     }
 
     @Test

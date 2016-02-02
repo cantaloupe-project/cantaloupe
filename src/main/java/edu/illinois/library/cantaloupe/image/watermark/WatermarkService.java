@@ -1,24 +1,19 @@
-package edu.illinois.library.cantaloupe.processor;
+package edu.illinois.library.cantaloupe.image.watermark;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.ConfigurationException;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConversionException;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.io.File;
 
 /**
- * Provides information about watermarking configuration. Actual
- * watermark-related image processing is handled in more codec-specific
- * classes.
+ * Provides information about watermarking, including whether it is enabled,
+ * and access to new {@link Watermark} instances, if so.
  */
 public abstract class WatermarkService {
-
-    private static Logger logger = LoggerFactory.
-            getLogger(WatermarkService.class);
 
     public static final String WATERMARK_ENABLED_CONFIG_KEY =
             "watermark.enabled";
@@ -32,18 +27,36 @@ public abstract class WatermarkService {
             "watermark.position";
 
     /**
-     * @return File corresponding to
-     *         {@link WatermarkService#WATERMARK_FILE_CONFIG_KEY}, or null if it is
-     *         not set.
+     * Factory method.
+     *
+     * @return Watermark corresponding to the application configuration.
+     * @throws ConfigurationException
+     * @throws WatermarkingDisabledException
      */
-    public static File getWatermarkImage() {
+    public static Watermark newWatermark()
+            throws ConfigurationException, WatermarkingDisabledException {
+        if (isEnabled()) {
+            return new Watermark(getWatermarkImage(), getWatermarkPosition(),
+                    getWatermarkInset());
+        }
+        throw new WatermarkingDisabledException();
+    }
+
+    /**
+     * @return File corresponding to
+     *         {@link WatermarkService#WATERMARK_FILE_CONFIG_KEY}, or null if
+     *         it is not set.
+     * @throws ConfigurationException
+     */
+    private static File getWatermarkImage() throws ConfigurationException {
         final Configuration config = Application.getConfiguration();
         final String path = config.
                 getString(WATERMARK_FILE_CONFIG_KEY, "");
         if (path.length() > 0) {
             return new File(path);
         }
-        return null;
+        throw new ConfigurationException(
+                WATERMARK_FILE_CONFIG_KEY + " is not set.");
     }
 
     /**
@@ -52,8 +65,9 @@ public abstract class WatermarkService {
      *
      * @return Watermark inset, defaulting to 0 if
      *         {@link WatermarkService#WATERMARK_INSET_CONFIG_KEY} is not set.
+     * @throws ConfigurationException
      */
-    public static int getWatermarkInset() {
+    private static int getWatermarkInset() throws ConfigurationException {
         final Configuration config = Application.getConfiguration();
         try {
             final int configValue = config.
@@ -62,16 +76,20 @@ public abstract class WatermarkService {
                 return configValue;
             }
         } catch (ConversionException e) {
-            logger.error("Invalid {} value", WATERMARK_INSET_CONFIG_KEY);
+            throw new ConfigurationException(e.getMessage());
         }
-        return 0;
+        throw new ConfigurationException(
+                WATERMARK_INSET_CONFIG_KEY + " is not set.");
     }
 
     /**
      * @return Watermark position, or null if
-     *         {@link WatermarkService#WATERMARK_POSITION_CONFIG_KEY} is not set.
+     *         {@link WatermarkService#WATERMARK_POSITION_CONFIG_KEY} is not
+     *         set.
+     * @throws ConfigurationException
      */
-    public static Position getWatermarkPosition() {
+    private static Position getWatermarkPosition()
+            throws ConfigurationException {
         final Configuration config = Application.getConfiguration();
         final String configValue = config.
                 getString(WATERMARK_POSITION_CONFIG_KEY, "");
@@ -81,11 +99,13 @@ public abstract class WatermarkService {
             try {
                 return Position.valueOf(enumStr);
             } catch (IllegalArgumentException e) {
-                logger.error("Invalid {} value: {}",
-                        WATERMARK_POSITION_CONFIG_KEY, configValue);
+                throw new ConfigurationException(
+                        "Invalid " + WATERMARK_POSITION_CONFIG_KEY +
+                                " value: " + configValue);
             }
         }
-        return null;
+        throw new ConfigurationException(
+                WATERMARK_POSITION_CONFIG_KEY + " is not set.");
     }
 
     /**

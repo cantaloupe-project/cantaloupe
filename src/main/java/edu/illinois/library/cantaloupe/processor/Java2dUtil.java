@@ -1,10 +1,15 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
+import edu.illinois.library.cantaloupe.image.watermark.Position;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.image.watermark.Watermark;
+import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
+import edu.illinois.library.cantaloupe.image.watermark.WatermarkingDisabledException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,18 +36,25 @@ abstract class Java2dUtil {
      * @param baseImage Image to apply the watermark on top of.
      * @return Watermarked image, or the input image if there is no watermark
      *         set in the application configuration.
+     * @throws ConfigurationException
+     * @throws WatermarkingDisabledException
      * @throws IOException
      */
     public static BufferedImage applyWatermark(final BufferedImage baseImage)
-            throws IOException {
+            throws ConfigurationException, WatermarkingDisabledException,
+            IOException {
+        if (!WatermarkService.isEnabled()) {
+            throw new WatermarkingDisabledException();
+        }
         BufferedImage markedImage = baseImage;
         final Dimension imageSize = new Dimension(baseImage.getWidth(),
                 baseImage.getHeight());
         if (WatermarkService.shouldApplyToImage(imageSize)) {
+            final Watermark watermark = WatermarkService.newWatermark();
             markedImage = overlayImage(baseImage,
-                    getWatermarkImage(),
-                    WatermarkService.getWatermarkPosition(),
-                    WatermarkService.getWatermarkInset());
+                    getWatermarkImage(watermark),
+                    watermark.getPosition(),
+                    watermark.getInset());
         }
         return markedImage;
     }
@@ -260,17 +272,16 @@ abstract class Java2dUtil {
     }
 
     /**
+     * @param watermark
      * @return Watermark image, or null if
      *         {@link WatermarkService#WATERMARK_FILE_CONFIG_KEY} is not set.
      * @throws IOException
      */
-    public static BufferedImage getWatermarkImage() throws IOException {
-        final File file = WatermarkService.getWatermarkImage();
-        if (file != null) {
-            ImageIoImageReader reader = new ImageIoImageReader();
-            return reader.read(file);
-        }
-        return null;
+    public static BufferedImage getWatermarkImage(Watermark watermark)
+            throws IOException {
+        final File file = watermark.getImage();
+        ImageIoImageReader reader = new ImageIoImageReader();
+        return reader.read(file);
     }
 
     public static BufferedImage removeAlpha(final BufferedImage inImage) {

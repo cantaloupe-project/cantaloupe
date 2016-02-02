@@ -1,8 +1,10 @@
-package edu.illinois.library.cantaloupe.processor;
+package edu.illinois.library.cantaloupe.image.watermark;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.ConfigurationException;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.awt.Dimension;
@@ -12,58 +14,47 @@ import static org.junit.Assert.*;
 
 public class WatermarkServiceTest {
 
-    @Test
-    public void testGetWatermarkImage() {
+    @Before
+    public void setUp() {
         Configuration config = new BaseConfiguration();
         Application.setConfiguration(config);
-        // null value
-        config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, null);
-        assertNull(WatermarkService.getWatermarkImage());
-        // empty value
-        config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, "");
-        assertNull(WatermarkService.getWatermarkImage());
-        // invalid value
-        config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, "bogus");
-        assertEquals(new File("bogus"), WatermarkService.getWatermarkImage());
-        // valid value
+        // valid config options
+        config.setProperty(WatermarkService.WATERMARK_ENABLED_CONFIG_KEY, true);
         config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, "/dev/null");
-        assertEquals(new File("/dev/null"), WatermarkService.getWatermarkImage());
-    }
-
-    @Test
-    public void testGetWatermarkInset() {
-        Configuration config = new BaseConfiguration();
-        Application.setConfiguration(config);
-        // null value
-        config.setProperty(WatermarkService.WATERMARK_INSET_CONFIG_KEY, null);
-        assertEquals(0, WatermarkService.getWatermarkInset());
-        // empty value
-        config.setProperty(WatermarkService.WATERMARK_INSET_CONFIG_KEY, "");
-        assertEquals(0, WatermarkService.getWatermarkInset());
-        // invalid value
-        config.setProperty(WatermarkService.WATERMARK_INSET_CONFIG_KEY, "bogus");
-        assertEquals(0, WatermarkService.getWatermarkInset());
-        // valid value
-        config.setProperty(WatermarkService.WATERMARK_INSET_CONFIG_KEY, "50");
-        assertEquals(50, WatermarkService.getWatermarkInset());
-    }
-
-    @Test
-    public void testGetWatermarkPosition() {
-        Configuration config = new BaseConfiguration();
-        Application.setConfiguration(config);
-        // null value
-        config.setProperty(WatermarkService.WATERMARK_POSITION_CONFIG_KEY, null);
-        assertNull(WatermarkService.getWatermarkPosition());
-        // empty value
-        config.setProperty(WatermarkService.WATERMARK_POSITION_CONFIG_KEY, "");
-        assertNull(WatermarkService.getWatermarkPosition());
-        // invalid value
-        config.setProperty(WatermarkService.WATERMARK_POSITION_CONFIG_KEY, "bogus");
-        assertNull(WatermarkService.getWatermarkPosition());
-        // valid value
+        config.setProperty(WatermarkService.WATERMARK_INSET_CONFIG_KEY, 10);
         config.setProperty(WatermarkService.WATERMARK_POSITION_CONFIG_KEY, "top left");
-        assertEquals(Position.TOP_LEFT, WatermarkService.getWatermarkPosition());
+    }
+
+    @Test
+    public void testNewWatermarkWithValidConfig() throws Exception {
+        Watermark watermark = WatermarkService.newWatermark();
+        assertEquals(new File("/dev/null"), watermark.getImage());
+        assertEquals(10, watermark.getInset());
+        assertEquals(Position.TOP_LEFT, watermark.getPosition());
+    }
+
+    @Test
+    public void testNewWatermarkWhenDisabled() throws Exception {
+        Configuration config = Application.getConfiguration();
+        config.setProperty(WatermarkService.WATERMARK_ENABLED_CONFIG_KEY, false);
+        try {
+            WatermarkService.newWatermark();
+            fail();
+        } catch (WatermarkingDisabledException e) {
+            // pass
+        }
+    }
+
+    @Test
+    public void testNewWatermarkWithInvalidConfig() throws Exception {
+        Configuration config = Application.getConfiguration();
+        config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, null);
+        try {
+            WatermarkService.newWatermark();
+            fail();
+        } catch (ConfigurationException e) {
+            // pass
+        }
     }
 
     @Test

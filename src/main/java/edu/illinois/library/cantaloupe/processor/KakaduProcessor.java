@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -10,6 +11,7 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.image.watermark.WatermarkingDisabledException;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.IOUtils;
@@ -494,8 +496,12 @@ class KakaduProcessor implements FileProcessor {
                 renderedOp = JaiUtil.filterImage(renderedOp, (Filter) op);
             }
         }
-        if (WatermarkService.isEnabled()) {
+        try {
             renderedOp = JaiUtil.applyWatermark(renderedOp);
+        } catch (WatermarkingDisabledException e) {
+            // that's OK
+        } catch (ConfigurationException e) {
+            logger.error(e.getMessage());
         }
 
         ImageIO.write(renderedOp, opList.getOutputFormat().getExtension(),
@@ -526,8 +532,12 @@ class KakaduProcessor implements FileProcessor {
                         (Filter) op);
             }
         }
-        if (WatermarkService.isEnabled()) {
+        try {
             image = Java2dUtil.applyWatermark(image);
+        } catch (WatermarkingDisabledException e) {
+            // that's OK
+        } catch (ConfigurationException e) {
+            logger.error(e.getMessage());
         }
 
         new ImageIoImageWriter().write(image, opList.getOutputFormat(),

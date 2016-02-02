@@ -1,15 +1,20 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.image.watermark.Position;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.image.watermark.Watermark;
+import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
+import edu.illinois.library.cantaloupe.image.watermark.WatermarkingDisabledException;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -104,8 +109,9 @@ class FfmpegProcessor implements FileProcessor {
         return path;
     }
 
-    private static String getWatermarkFilterPosition(int edgeMargin) {
-        final Position position = WatermarkService.getWatermarkPosition();
+    private static String getWatermarkFilterPosition(final Watermark watermark) {
+        final Position position = watermark.getPosition();
+        final int edgeMargin = watermark.getInset();
         if (position != null) {
             switch (position) {
                 case TOP_LEFT:
@@ -422,14 +428,17 @@ class FfmpegProcessor implements FileProcessor {
             }
         }
 
-        if (WatermarkService.isEnabled()) {
-            final File watermark = WatermarkService.getWatermarkImage();
-            if (watermark != null) {
-                filters.add(0, String.format("movie=%s [wm]",
-                        watermark.getAbsolutePath()));
-                filters.add(String.format("[%s][wm] overlay=%s [out]",
-                        filterId, getWatermarkFilterPosition(0)));
-            }
+        try {
+            final Watermark watermark = WatermarkService.newWatermark();
+            final File watermarkFile = watermark.getImage();
+            filters.add(0, String.format("movie=%s [wm]",
+                    watermarkFile.getAbsolutePath()));
+            filters.add(String.format("[%s][wm] overlay=%s [out]",
+                    filterId, getWatermarkFilterPosition(watermark)));
+        } catch (WatermarkingDisabledException e) {
+            // that's OK
+        } catch (ConfigurationException e) {
+            logger.error(e.getMessage());
         }
 
         if (filters.size() > 0) {
