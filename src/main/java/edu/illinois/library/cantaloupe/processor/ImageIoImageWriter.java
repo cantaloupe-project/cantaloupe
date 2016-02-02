@@ -11,7 +11,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.JAI;
 import javax.media.jai.OpImage;
-import javax.media.jai.RenderedOp;
+import javax.media.jai.PlanarImage;
 import java.awt.image.BufferedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
@@ -121,7 +121,7 @@ class ImageIoImageWriter {
      * @throws IOException
      */
     @SuppressWarnings({ "deprecation" })
-    public void write(RenderedOp image,
+    public void write(PlanarImage image,
                       OutputFormat outputFormat,
                       OutputStream outputStream) throws IOException {
         final Configuration config = Application.getConfiguration();
