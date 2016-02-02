@@ -14,6 +14,7 @@ import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
 import javax.media.jai.RenderedOp;
 import java.awt.Dimension;
+import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
@@ -204,13 +205,18 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
                                 filterImage(renderedOp, (Filter) op);
                     }
                 }
-                if (WatermarkService.isEnabled()) {
-                    renderedOp = JaiUtil.applyWatermark(renderedOp);
-                }
-
                 ImageIoImageWriter writer = new ImageIoImageWriter();
-                writer.write(renderedOp, ops.getOutputFormat(),
-                        outputStream);
+                if (WatermarkService.isEnabled()) {
+                    // Let's cheat and apply the watermark using Java 2D.
+                    // There seems to be minimal performance penalty in doing
+                    // this, and doing it in JAI is harder.
+                    BufferedImage image = renderedOp.getAsBufferedImage();
+                    image = Java2dUtil.applyWatermark(image);
+                    writer.write(image, ops.getOutputFormat(), outputStream);
+                } else {
+                    writer.write(renderedOp, ops.getOutputFormat(),
+                            outputStream);
+                }
             }
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);

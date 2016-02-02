@@ -17,6 +17,7 @@ import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TransposeDescriptor;
 import java.awt.Dimension;
 import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
@@ -26,6 +27,10 @@ abstract class JaiUtil {
 
     /**
      * Applies the watermark to the given image.
+     *
+     * TODO: this doesn't work properly with rotations. JaiProcessor is
+     * currently using {@link Java2dUtil#applyWatermark(BufferedImage)}
+     * instead.
      *
      * @param baseImage Image to apply the watermark on top of.
      * @return Watermarked image, or the input image if there is no watermark
@@ -195,31 +200,31 @@ abstract class JaiUtil {
                 // case BOTTOM_RIGHT: will be handled in default:
                 case TOP_CENTER:
                     overlayX = (baseImage.getWidth() -
-                            overlayImage.getWidth()) / 2;
+                            overlayImage.getWidth()) / 2f;
                     overlayY = inset;
                     break;
                 case BOTTOM_CENTER:
                     overlayX = (baseImage.getWidth() -
-                            overlayImage.getWidth()) / 2;
+                            overlayImage.getWidth()) / 2f;
                     overlayY = baseImage.getHeight() -
                             overlayImage.getHeight() - inset;
                     break;
                 case LEFT_CENTER:
                     overlayX = inset;
                     overlayY = (baseImage.getHeight() -
-                            overlayImage.getHeight()) / 2;
+                            overlayImage.getHeight()) / 2f;
                     break;
                 case RIGHT_CENTER:
                     overlayX = baseImage.getWidth() -
                             overlayImage.getWidth() - inset;
                     overlayY = (baseImage.getHeight() -
-                            overlayImage.getHeight()) / 2;
+                            overlayImage.getHeight()) / 2f;
                     break;
                 case CENTER:
                     overlayX = (baseImage.getWidth() -
-                            overlayImage.getWidth()) / 2;
+                            overlayImage.getWidth()) / 2f;
                     overlayY = (baseImage.getHeight() -
-                            overlayImage.getHeight()) / 2;
+                            overlayImage.getHeight()) / 2f;
                     break;
                 default: // bottom right
                     overlayX = baseImage.getWidth() -
@@ -311,9 +316,9 @@ abstract class JaiUtil {
         if (!rotate.isNoOp()) {
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(rotatedImage);
-            pb.add(inImage.getWidth() / 2.0f);
-            pb.add(inImage.getHeight() / 2.0f);
-            pb.add((float) Math.toRadians(rotate.getDegrees()));
+            pb.add(inImage.getWidth() / 2.0f);                   // x origin
+            pb.add(inImage.getHeight() / 2.0f);                  // y origin
+            pb.add((float) Math.toRadians(rotate.getDegrees())); // radians
             pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
             rotatedImage = JAI.create("rotate", pb);
         }
