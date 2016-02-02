@@ -449,6 +449,8 @@ class OpenJpegProcessor implements FileProcessor {
                 renderedOp = JaiUtil.filterImage(renderedOp, (Filter) op);
             }
         }
+        renderedOp = JaiUtil.applyWatermark(renderedOp);
+
         ImageIO.write(renderedOp, opList.getOutputFormat().getExtension(),
                 ImageIO.createImageOutputStream(outputStream));
     }
@@ -477,7 +479,6 @@ class OpenJpegProcessor implements FileProcessor {
                         (Filter) op);
             }
         }
-
         image = Java2dUtil.applyWatermark(image);
 
         new ImageIoImageWriter().write(image, opList.getOutputFormat(),

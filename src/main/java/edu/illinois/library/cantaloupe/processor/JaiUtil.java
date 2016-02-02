@@ -10,16 +10,43 @@ import javax.media.jai.ImageLayout;
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
 import javax.media.jai.OpImage;
+import javax.media.jai.ParameterBlockJAI;
 import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderableOp;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.TileCache;
+import javax.media.jai.operator.CompositeDescriptor;
 import javax.media.jai.operator.TransposeDescriptor;
 import java.awt.Dimension;
 import java.awt.RenderingHints;
+import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
+import java.io.IOException;
 import java.util.HashMap;
 
 abstract class JaiUtil {
+
+    /**
+     * Applies the watermark to the given image.
+     *
+     * @param baseImage Image to apply the watermark on top of.
+     * @return Watermarked image, or the input image if there is no watermark
+     *         set in the application configuration.
+     * @throws IOException
+     */
+    public static RenderedOp applyWatermark(final RenderedOp baseImage)
+            throws IOException {
+        RenderedOp markedImage = baseImage;
+        final Dimension imageSize = new Dimension(baseImage.getWidth(),
+                baseImage.getHeight());
+        if (WatermarkService.shouldApplyToImage(imageSize)) {
+            markedImage = overlayImage(baseImage,
+                    Java2dUtil.getWatermarkImage(),
+                    WatermarkService.getWatermarkPosition(),
+                    WatermarkService.getWatermarkInset());
+        }
+        return markedImage;
+    }
 
     /**
      * @param inImage Image to crop
@@ -136,6 +163,113 @@ abstract class JaiUtil {
             }
         }
         return filteredImage;
+    }
+
+    /**
+     * @param baseImage Base image over which to draw the overlay.
+     * @param overlayImage Image to overlay on top of the base image.
+     * @param position Position in which to render the overlay image.
+     * @param inset Minimum distance between the edges of the overlay image and
+     *              the edge of the base image, in pixels.
+     * @return The base image with the overlay image overlaid on top of it.
+     */
+    private static RenderedOp overlayImage(RenderedOp baseImage,
+                                           RenderedImage overlayImage,
+                                           final Position position,
+                                           final int inset) {
+        if (overlayImage != null && position != null) {
+            float overlayX, overlayY;
+            switch (position) {
+                case TOP_LEFT:
+                    overlayX = inset;
+                    overlayY = inset;
+                    break;
+                case TOP_RIGHT:
+                    overlayX = baseImage.getWidth() -
+                            overlayImage.getWidth() - inset;
+                    overlayY = inset;
+                    break;
+                case BOTTOM_LEFT:
+                    overlayX = inset;
+                    overlayY = baseImage.getHeight() -
+                            overlayImage.getHeight() - inset;
+                    break;
+                // case BOTTOM_RIGHT: will be handled in default:
+                case TOP_CENTER:
+                    overlayX = (baseImage.getWidth() -
+                            overlayImage.getWidth()) / 2;
+                    overlayY = inset;
+                    break;
+                case BOTTOM_CENTER:
+                    overlayX = (baseImage.getWidth() -
+                            overlayImage.getWidth()) / 2;
+                    overlayY = baseImage.getHeight() -
+                            overlayImage.getHeight() - inset;
+                    break;
+                case LEFT_CENTER:
+                    overlayX = inset;
+                    overlayY = (baseImage.getHeight() -
+                            overlayImage.getHeight()) / 2;
+                    break;
+                case RIGHT_CENTER:
+                    overlayX = baseImage.getWidth() -
+                            overlayImage.getWidth() - inset;
+                    overlayY = (baseImage.getHeight() -
+                            overlayImage.getHeight()) / 2;
+                    break;
+                case CENTER:
+                    overlayX = (baseImage.getWidth() -
+                            overlayImage.getWidth()) / 2;
+                    overlayY = (baseImage.getHeight() -
+                            overlayImage.getHeight()) / 2;
+                    break;
+                default: // bottom right
+                    overlayX = baseImage.getWidth() -
+                            overlayImage.getWidth() - inset;
+                    overlayY = baseImage.getHeight() -
+                            overlayImage.getHeight() - inset;
+                    break;
+            }
+            // Move the overlay into the correct position.
+            ParameterBlock pb = new ParameterBlock();
+            pb.addSource(overlayImage);
+            pb.add(overlayX);
+            pb.add(overlayY);
+            pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
+            overlayImage = JAI.create("translate", pb);
+
+            // The overlay image may have a different number of bands than the
+            // base image, but the JAI "overlay" operation requires both images
+            // to have the same number of bands.
+            if (overlayImage.getSampleModel().getNumBands() !=
+                    baseImage.getSampleModel().getNumBands()) {
+                // Get the RGB bands of the base image.
+                pb = new ParameterBlock();
+                pb.addSource(baseImage);
+                pb.add(new int[] {0, 1, 2});
+                baseImage = JAI.create("bandselect", pb);
+
+                // Create a constant 1-band byte image to represent the alpha
+                // channel. It has the baseImage dimensions and is filled with
+                // 255 to indicate that the entire source is opaque.
+                pb = new ParameterBlock();
+                pb.add((float) baseImage.getWidth());
+                pb.add((float) baseImage.getHeight());
+                pb.add(new Byte[] { new Byte((byte) 0xFF) });
+                RenderedOp baseAlpha = JAI.create("constant", pb);
+
+                pb = new ParameterBlock();
+                pb.addSource(baseImage);
+                pb.addSource(baseAlpha);
+                baseImage = JAI.create("bandmerge", pb);
+            }
+
+            pb = new ParameterBlock();
+            pb.addSource(baseImage);
+            pb.addSource(overlayImage);
+            baseImage = JAI.create("overlay", pb);
+        }
+        return baseImage;
     }
 
     /**

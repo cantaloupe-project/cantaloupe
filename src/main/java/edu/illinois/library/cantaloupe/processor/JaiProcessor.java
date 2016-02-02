@@ -24,6 +24,9 @@ import java.util.Set;
 
 /**
  * Processor using the Java Advanced Imaging (JAI) framework.
+ *
+ * @see <a href="http://docs.oracle.com/cd/E19957-01/806-5413-10/806-5413-10.pdf">
+ *     Programming in Java Advanced Imaging</a>
  */
 class JaiProcessor implements FileProcessor, StreamProcessor {
 
@@ -201,6 +204,8 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
                                 filterImage(renderedOp, (Filter) op);
                     }
                 }
+                renderedOp = JaiUtil.applyWatermark(renderedOp);
+
                 ImageIoImageWriter writer = new ImageIoImageWriter();
                 writer.write(renderedOp, ops.getOutputFormat(),
                         outputStream);

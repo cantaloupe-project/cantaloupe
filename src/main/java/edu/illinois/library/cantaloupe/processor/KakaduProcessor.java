@@ -494,6 +494,8 @@ class KakaduProcessor implements FileProcessor {
                 renderedOp = JaiUtil.filterImage(renderedOp, (Filter) op);
             }
         }
+        renderedOp = JaiUtil.applyWatermark(renderedOp);
+
         ImageIO.write(renderedOp, opList.getOutputFormat().getExtension(),
                 outputStream);
     }
@@ -522,7 +524,6 @@ class KakaduProcessor implements FileProcessor {
                         (Filter) op);
             }
         }
-
         image = Java2dUtil.applyWatermark(image);
 
         new ImageIoImageWriter().write(image, opList.getOutputFormat(),

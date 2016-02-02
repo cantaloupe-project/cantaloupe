@@ -465,6 +465,22 @@ class ImageIoImageReader {
     /**
      * Reads an image (excluding subimages).
      *
+     * @param file File to read.
+     * @param sourceFormat
+     * @return RenderedImage
+     * @throws IOException
+     * @throws UnsupportedSourceFormatException
+     */
+    public RenderedImage readRendered(final File file,
+                                      final SourceFormat sourceFormat)
+            throws IOException, UnsupportedSourceFormatException {
+        ImageReader reader = newImageReader(file, sourceFormat);
+        return reader.readAsRenderedImage(0, reader.getDefaultReadParam());
+    }
+
+    /**
+     * Reads an image (excluding subimages).
+     *
      * @param inputStream Input stream to read.
      * @param sourceFormat
      * @return RenderedImage
