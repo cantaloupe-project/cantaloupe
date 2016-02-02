@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.image.watermark.Position;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -109,19 +110,9 @@ public class Java2dUtilTest {
         Application.setConfiguration(config);
 
         Watermark watermark = new Watermark();
+        watermark.setImage(TestUtil.getImage("jpg"));
+        watermark.setPosition(Position.BOTTOM_RIGHT);
 
-        // null value
-        config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, null);
-        assertNull(Java2dUtil.getWatermarkImage(watermark));
-        // empty value
-        config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, "");
-        assertNull(Java2dUtil.getWatermarkImage(watermark));
-        // invalid path value
-        config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, "/dev/null");
-        assertNull(Java2dUtil.getWatermarkImage(watermark));
-        // valid path value
-        config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY,
-                TestUtil.getImage("jpg").getAbsolutePath());
         assertNotNull(Java2dUtil.getWatermarkImage(watermark));
     }
 
