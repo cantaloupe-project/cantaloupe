@@ -10,12 +10,10 @@ import javax.media.jai.ImageLayout;
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
 import javax.media.jai.OpImage;
-import javax.media.jai.ParameterBlockJAI;
 import javax.media.jai.PlanarImage;
-import javax.media.jai.RenderableOp;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.TileCache;
-import javax.media.jai.operator.CompositeDescriptor;
+import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TransposeDescriptor;
 import java.awt.Dimension;
 import java.awt.RenderingHints;
@@ -239,35 +237,52 @@ abstract class JaiUtil {
             overlayImage = JAI.create("translate", pb);
 
             // The overlay image may have a different number of bands than the
-            // base image, but the JAI "overlay" operation requires both images
-            // to have the same number of bands.
-            if (overlayImage.getSampleModel().getNumBands() !=
+            // base image. The JAI "overlay" operation requires both images to
+            // have the same number of bands.
+            if (overlayImage.getSampleModel().getNumBands() ==
                     baseImage.getSampleModel().getNumBands()) {
-                // Get the RGB bands of the base image.
+                pb = new ParameterBlock();
+                pb.addSource(baseImage);
+                pb.addSource(overlayImage);
+                baseImage = JAI.create("overlay", pb);
+            } else {
+                // The base image and overlay image have a different number of
+                // bands. We will use the mosaic operator to combine them.
+
+                // First, get the RGB bands of the base image.
                 pb = new ParameterBlock();
                 pb.addSource(baseImage);
                 pb.add(new int[] {0, 1, 2});
-                baseImage = JAI.create("bandselect", pb);
+                final RenderedOp rgbBaseImage = JAI.create("bandselect", pb);
 
-                // Create a constant 1-band byte image to represent the alpha
-                // channel. It has the baseImage dimensions and is filled with
-                // 255 to indicate that the entire source is opaque.
+                // Create a constant 1-band byte image to represent the base
+                // image's alpha channel. It has the same dimensions and is
+                // filled with 255 to indicate that the entire source is
+                // opaque.
                 pb = new ParameterBlock();
-                pb.add((float) baseImage.getWidth());
-                pb.add((float) baseImage.getHeight());
+                pb.add((float) rgbBaseImage.getWidth());
+                pb.add((float) rgbBaseImage.getHeight());
                 pb.add(new Byte[] { new Byte((byte) 0xFF) });
-                RenderedOp baseAlpha = JAI.create("constant", pb);
+                final RenderedOp baseAlpha = JAI.create("constant", pb);
 
+                // Merge the RGB and alpha images together into an RGBA image.
                 pb = new ParameterBlock();
                 pb.addSource(baseImage);
                 pb.addSource(baseAlpha);
-                baseImage = JAI.create("bandmerge", pb);
-            }
+                final RenderedOp rgbaBaseImage = JAI.create("bandmerge", pb);
 
-            pb = new ParameterBlock();
-            pb.addSource(baseImage);
-            pb.addSource(overlayImage);
-            baseImage = JAI.create("overlay", pb);
+                // Use the mosaic operation to blend the overlay into the new
+                // RGBA base image.
+                pb = new ParameterBlock();
+                pb.addSource(rgbaBaseImage);
+                pb.addSource(overlayImage);
+                pb.add(MosaicDescriptor.MOSAIC_TYPE_BLEND);
+                pb.add(null);                   // sourceAlpha
+                pb.add(null);                   // sourceROI
+                pb.add(new double[][] {{1.0}}); // sourceThreshold
+                pb.add(new double[] {0.0});     // backgroundValues
+                baseImage = JAI.create("mosaic", pb);
+            }
         }
         return baseImage;
     }
