@@ -11,7 +11,7 @@ import java.io.File;
 public class Watermark {
 
     private File image;
-    private int inset;
+    private int inset = 0;
     private Position position;
 
     /**
