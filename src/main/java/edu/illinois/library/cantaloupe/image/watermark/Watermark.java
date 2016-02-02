@@ -49,4 +49,14 @@ public class Watermark {
         this.position = position;
     }
 
+    /**
+     * @return String representation of the instance, in the format
+     * "{image filename}_{position}_{inset}".
+     */
+    @Override
+    public String toString() {
+        return String.format("%s_%s_%d",
+                getImage().getName(), getPosition(), getInset());
+    }
+
 }
