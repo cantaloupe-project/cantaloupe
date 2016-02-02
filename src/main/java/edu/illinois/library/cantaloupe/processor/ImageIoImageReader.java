@@ -1,8 +1,5 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import com.sun.imageio.plugins.gif.GIFImageReader;
-import com.sun.imageio.plugins.png.PNGImageReader;
-import com.sun.imageio.spi.FileImageInputStreamSpi;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -19,7 +16,6 @@ import javax.imageio.ImageReader;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
@@ -221,15 +217,18 @@ class ImageIoImageReader {
                 // subimages, which is costly to do.
                 default:
                     crop = null;
+                    scale = new Scale();
+                    scale.setMode(Scale.Mode.FULL);
                     for (Operation op : ops) {
                         if (op instanceof Crop) {
                             crop = (Crop) op;
-                            break;
+                        } else if (op instanceof Scale) {
+                            scale = (Scale) op;
                         }
                     }
                     if (crop != null) {
                         image = tileAwareRead(reader, 0,
-                                crop.getRectangle(fullSize), hints);
+                                crop.getRectangle(fullSize), scale, rf, hints);
                     } else {
                         image = reader.read(0);
                     }
@@ -290,7 +289,7 @@ class ImageIoImageReader {
             // ImageReadParam does not match!" during writing.
             // param.setDestinationType(ImageTypeSpecifier.
             //        createFromBufferedImageType(BufferedImage.TYPE_INT_RGB));
-            bestImage = tileAwareRead(reader, 0, regionRect, hints);
+            bestImage = tileAwareRead(reader, 0, regionRect, scale, rf, hints);
             logger.debug("Using a {}x{} source image (0x reduction factor)",
                     bestImage.getWidth(), bestImage.getHeight());
         } else {
@@ -308,7 +307,8 @@ class ImageIoImageReader {
                 }
             }
             if (numImages == 1) {
-                bestImage = tileAwareRead(reader, 0, regionRect, hints);
+                bestImage = tileAwareRead(reader, 0, regionRect, scale, rf,
+                        hints);
                 logger.debug("Using a {}x{} source image (0x reduction factor)",
                         bestImage.getWidth(), bestImage.getHeight());
             } else if (numImages > 1) {
@@ -346,7 +346,8 @@ class ImageIoImageReader {
                                 (int) Math.round(regionRect.y * reducedScale),
                                 (int) Math.round(regionRect.width * reducedScale),
                                 (int) Math.round(regionRect.height * reducedScale));
-                        bestImage = tileAwareRead(reader, i, reducedRect, hints);
+                        bestImage = tileAwareRead(reader, i, reducedRect,
+                                scale, rf, hints);
                         break;
                     }
                 }
@@ -357,25 +358,33 @@ class ImageIoImageReader {
 
     /**
      * <p>Returns an image for the requested source area by reading the tiles
-     * (or strips) of the source image and joining them into a single image.</p>
-     * <p/>
+     * (or strips) of the source image and joining them into a single image.
+     * Subsampling will be used if possible.</p>
+     *
      * <p>This method is intended to be compatible with all source images, no
      * matter the data layout (tiled or not). For some image types, including
      * GIF and PNG, a tiled reading strategy will not work, and so this method
      * will read the entire image.</p>
-     * <p/>
+     *
      * <p>This method may populate <code>hints</code> with
      * {@link ReaderHint#ALREADY_CROPPED}, in which case cropping will have
      * already been performed according to the
      * <code>requestedSourceArea</code> parameter.</p>
      *
      * @param reader              ImageReader with input source already set
-     * @param imageIndex          Index of the image to read from the ImageReader.
+     * @param imageIndex          Index of the image to read from the
+     *                            ImageReader.
      * @param requestedSourceArea Source image area to retrieve. The returned
      *                            image will be this size or smaller if it
      *                            would overlap the right or bottom edge of the
      *                            source image.
-     * @param hints               Will be populated by information returned by the reader.
+     * @param scale               Scale that is to be applied to the returned
+     *                            image. Will be used to calculate a
+     *                            subsampling rate.
+     * @param rf                  Will be populated with the reduction factor
+     *                            of the returned image.
+     * @param hints               Will be populated by information returned from
+     *                            the reader.
      * @return Cropped image
      * @throws IOException
      * @throws IllegalArgumentException If the source image is not tiled.
@@ -383,73 +392,33 @@ class ImageIoImageReader {
     private BufferedImage tileAwareRead(final ImageReader reader,
                                         final int imageIndex,
                                         final Rectangle requestedSourceArea,
+                                        final Scale scale,
+                                        final ReductionFactor rf,
                                         final Set<ReaderHint> hints)
             throws IOException, IllegalArgumentException {
+        final Dimension fullSize = new Dimension(reader.getWidth(imageIndex),
+                reader.getHeight(imageIndex));
+        final Dimension scaledSize = scale.getResultingSize(fullSize);
+        final float xScale = (float) scaledSize.width / (float) fullSize.width;
+        final float yScale = (float) scaledSize.height / (float) fullSize.height;
+        rf.factor = ProcessorUtil.
+                getReductionFactor(Math.max(xScale, yScale), 0).factor;
 
-        // These formats are uncooperative with the tile-aware loading
-        // strategy.
-        if (reader instanceof GIFImageReader ||
-                reader instanceof PNGImageReader) {
-            logger.debug("tileAwareRead(): reading full image {}", imageIndex);
-            return reader.read(imageIndex);
-        }
-
-        final int imageWidth = reader.getWidth(imageIndex);
-        final int imageHeight = reader.getHeight(imageIndex);
-        final int tileWidth = reader.getTileWidth(imageIndex);
-        final int tileHeight = reader.getTileHeight(imageIndex);
-        final int numXTiles = (int) Math.ceil((double) imageWidth /
-                (double) tileWidth);
-        final int numYTiles = (int) Math.ceil((double) imageHeight /
-                (double) tileHeight);
-        final int tileX1 = (int) Math.floor((double) requestedSourceArea.x /
-                (double) tileWidth);
-        final int tileX2 = Math.min((int) Math.ceil((double) (requestedSourceArea.x +
-                requestedSourceArea.width) / (double) tileWidth) - 1, numXTiles - 1);
-        final int tileY1 = (int) Math.floor((double) requestedSourceArea.y /
-                (double) tileHeight);
-        final int tileY2 = Math.min((int) Math.ceil((double) (requestedSourceArea.y +
-                requestedSourceArea.height) / (double) tileHeight) - 1, numYTiles - 1);
-        final int offsetX = requestedSourceArea.x - tileX1 * tileWidth;
-        final int offsetY = requestedSourceArea.y - tileY1 * tileHeight;
-
-        if (tileHeight == 1) {
-            logger.debug("tileAwareRead(): reading {}-column strip", numYTiles);
-        } else {
-            logger.debug("tileAwareRead(): reading tile rows {}-{} of {} and " +
-                            "columns {}-{} of {} ({}x{} tiles; {}x{} offset)",
-                    tileX1 + 1, tileX2 + 1, numXTiles,
-                    tileY1 + 1, tileY2 + 1, numYTiles,
-                    tileWidth, tileHeight, offsetX, offsetY);
-        }
-
-        BufferedImage outImage = null;
-        // Copy the tile rasters into outImage
-        for (int tx = tileX1, ix = 0; tx <= tileX2; tx++, ix++) {
-            for (int ty = tileY1, iy = 0; ty <= tileY2; ty++, iy++) {
-                final BufferedImage tile = reader.readTile(imageIndex, tx, ty);
-                // ImageReader.readTileRaster() doesn't always work, so get a
-                // Raster from the tile BufferedImage and translate it.
-                final Raster raster = tile.getData().createTranslatedChild(
-                        ix * tileWidth - offsetX,
-                        iy * tileHeight - offsetY);
-                if (ix == 0 && iy == 0) {
-                    final int outImageType = tile.getColorModel().hasAlpha() ?
-                            BufferedImage.TYPE_INT_ARGB :
-                            BufferedImage.TYPE_INT_RGB;
-                    outImage = new BufferedImage(
-                            Math.min(requestedSourceArea.width, imageWidth - requestedSourceArea.x),
-                            Math.min(requestedSourceArea.height, imageHeight - requestedSourceArea.y),
-                            outImageType);
-                }
-                outImage.setData(raster);
-            }
+        ImageReadParam param = reader.getDefaultReadParam();
+        param.setSourceRegion(requestedSourceArea);
+        if (rf.factor > 0) {
+            logger.debug("tileAwareRead(): using subsampling factor of {}",
+                    rf.factor);
+            final int subsample = (int) Math.pow(2, rf.factor);
+            param.setSourceSubsampling(subsample, subsample, 0, 0);
         }
         hints.add(ReaderHint.ALREADY_CROPPED);
-        return outImage;
+        return reader.read(imageIndex, param);
     }
 
+    ////////////////////////////////////////////////////////////////////////
     /////////////////////// RenderedImage methods //////////////////////////
+    ////////////////////////////////////////////////////////////////////////
 
     /**
      * Reads an image (excluding subimages).
