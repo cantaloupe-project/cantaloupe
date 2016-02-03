@@ -87,7 +87,7 @@ abstract class Java2dUtil {
             croppedImage = inImage;
         } else {
             final long msec = System.currentTimeMillis();
-            final double scale = ProcessorUtil.getScale(rf);
+            final double scale = rf.getScale();
             final double regionX = crop.getX() * scale;
             final double regionY = crop.getY() * scale;
             final double regionWidth = crop.getWidth() * scale;
@@ -340,9 +340,7 @@ abstract class Java2dUtil {
                 height = (int) Math.round(sourceHeight *
                         Math.min(hScale, vScale));
             } else if (scale.getPercent() != null) {
-                final double reqScale = scale.getPercent();
-                final double appliedScale = ProcessorUtil.getScale(rf);
-                final double pct = reqScale / appliedScale;
+                final double pct = scale.getPercent() / rf.getScale();
                 width = (int) Math.round(sourceWidth * pct);
                 height = (int) Math.round(sourceHeight * pct);
             }

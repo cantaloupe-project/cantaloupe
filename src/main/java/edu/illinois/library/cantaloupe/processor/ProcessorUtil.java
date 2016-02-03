@@ -24,7 +24,6 @@ abstract class ProcessorUtil {
      * @param scalePercent Scale percentage between 0 and 1
      * @param maxFactor 0 for no max
      * @return
-     * @see #getScale
      */
     public static ReductionFactor getReductionFactor(double scalePercent,
                                                      int maxFactor) {
@@ -38,19 +37,6 @@ abstract class ProcessorUtil {
             factor++;
         }
         return new ReductionFactor(factor);
-    }
-
-    /**
-     * @param reductionFactor Reduction factor
-     * @return Scale corresponding to the given reduction factor (1/(2^rf)).
-     * @see #getReductionFactor
-     */
-    public static double getScale(ReductionFactor reductionFactor) {
-        double scale = 1f;
-        for (int i = 0; i < reductionFactor.factor; i++) {
-            scale /= 2;
-        }
-        return scale;
     }
 
     /**

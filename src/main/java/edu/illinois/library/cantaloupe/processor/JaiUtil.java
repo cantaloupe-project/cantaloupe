@@ -55,7 +55,7 @@ abstract class JaiUtil {
         RenderedOp croppedImage = inImage;
         if (!crop.isNoOp()) {
             // calculate the region x, y, and actual width/height
-            final double scale = ProcessorUtil.getScale(rf);
+            final double scale = rf.getScale();
             final double regionX = crop.getX() * scale;
             final double regionY = crop.getY() * scale;
             final double regionWidth = crop.getWidth() * scale;
@@ -225,8 +225,7 @@ abstract class JaiUtil {
                 yScale = (sourceHeight * Math.min(hScale, vScale)) / 100f;
             } else if (scale.getPercent() != null) {
                 final double reqScale = scale.getPercent();
-                final double appliedScale = ProcessorUtil.getScale(rf);
-                xScale = yScale = reqScale / appliedScale;
+                xScale = yScale = reqScale / rf.getScale();
             }
             logger.debug("scaleImage(): width: {}%; height: {}%",
                     xScale * 100, yScale * 100);

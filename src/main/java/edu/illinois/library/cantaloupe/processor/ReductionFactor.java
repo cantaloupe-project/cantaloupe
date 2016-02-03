@@ -23,4 +23,16 @@ class ReductionFactor {
         }
         return super.equals(obj);
     }
+
+    /**
+     * @return Scale corresponding to the instance (1/(2^rf)).
+     */
+    public double getScale() {
+        double scale = 1f;
+        for (int i = 0; i < this.factor; i++) {
+            scale /= 2;
+        }
+        return scale;
+    }
+
 }

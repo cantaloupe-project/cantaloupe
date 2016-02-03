@@ -26,17 +26,6 @@ public class ProcessorUtilTest {
     }
 
     @Test
-    public void testGetScale() {
-        final double fudge = 0.0000001f;
-        assertTrue(Math.abs(ProcessorUtil.getScale(new ReductionFactor(0))) - Math.abs(1.0f) < fudge);
-        assertTrue(Math.abs(ProcessorUtil.getScale(new ReductionFactor(1))) - Math.abs(0.5f) < fudge);
-        assertTrue(Math.abs(ProcessorUtil.getScale(new ReductionFactor(2))) - Math.abs(0.25f) < fudge);
-        assertTrue(Math.abs(ProcessorUtil.getScale(new ReductionFactor(3))) - Math.abs(0.125f) < fudge);
-        assertTrue(Math.abs(ProcessorUtil.getScale(new ReductionFactor(4))) - Math.abs(0.0625f) < fudge);
-        assertTrue(Math.abs(ProcessorUtil.getScale(new ReductionFactor(5))) - Math.abs(0.03125f) < fudge);
-    }
-
-    @Test
     public void testGetSizeWithFile() throws Exception {
         Dimension expected = new Dimension(64, 56);
         Dimension actual = ProcessorUtil.getSize(
