@@ -332,9 +332,7 @@ class ImageIoImageReader {
                         fits = (scale.getWidth() / (double) regionRect.width <= reducedScale &&
                                 scale.getHeight() / (double) regionRect.height <= reducedScale);
                     } else if (scale.getPercent() != null) {
-                        float pct = scale.getPercent();
-                        fits = ((pct * fullSize.width) / (double) regionRect.width <= reducedScale &&
-                                (pct * fullSize.height) / (double) regionRect.height <= reducedScale);
+                        fits = (scale.getPercent() <= reducedScale);
                     }
                     if (fits) {
                         rf.factor = ProcessorUtil.
@@ -643,9 +641,7 @@ class ImageIoImageReader {
                         fits = (scale.getWidth() / (double) regionRect.width <= reducedScale &&
                                 scale.getHeight() / (double) regionRect.height <= reducedScale);
                     } else if (scale.getPercent() != null) {
-                        double pct = scale.getPercent();
-                        fits = ((pct * fullSize.width) / (double) regionRect.width <= reducedScale &&
-                                (pct * fullSize.height) / (double) regionRect.height <= reducedScale);
+                        fits = (scale.getPercent() <= reducedScale);
                     }
                     if (fits) {
                         rf.factor = ProcessorUtil.
