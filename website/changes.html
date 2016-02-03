@@ -8,6 +8,8 @@ layout: default
 
 <ul>
   <li>Fixed an HTTP 500 error when an invalid size parameter was used in an IIIF Image API endpoint.</li>
+  <li>Fixed a bug in Java2dProcessor where an unnecessarily large TIFF pyramid level would be used when scaling by percent.</li>
+  <li>Changed the JaiProcessor scaler to use nearest-neighbor interpolation in order to work around a bug in JAI.</li>
 </ul>
 
 <h3>2.1</h3>
