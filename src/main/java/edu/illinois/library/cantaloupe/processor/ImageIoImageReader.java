@@ -315,32 +315,32 @@ class ImageIoImageReader {
                 // Loop through the reduced images from smallest to largest to
                 // find the first one that can supply the requested scale
                 for (int i = numImages - 1; i >= 0; i--) {
-                    final int reducedWidth = reader.getWidth(i);
-                    final int reducedHeight = reader.getHeight(i);
+                    final int subimageWidth = reader.getWidth(i);
+                    final int subimageHeight = reader.getHeight(i);
 
-                    final double reducedScale = (double) reducedWidth /
+                    final double reducedScale = (double) subimageWidth /
                             (double) fullSize.width;
                     boolean fits = false;
                     if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                        fits = (scale.getWidth() / (float) regionRect.width <= reducedScale);
+                        fits = (scale.getWidth() / (double) regionRect.width <= reducedScale);
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                        fits = (scale.getHeight() / (float) regionRect.height <= reducedScale);
+                        fits = (scale.getHeight() / (double) regionRect.height <= reducedScale);
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                        fits = (scale.getWidth() / (float) regionRect.width <= reducedScale &&
-                                scale.getHeight() / (float) regionRect.height <= reducedScale);
+                        fits = (scale.getWidth() / (double) regionRect.width <= reducedScale &&
+                                scale.getHeight() / (double) regionRect.height <= reducedScale);
                     } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
-                        fits = (scale.getWidth() / (float) regionRect.width <= reducedScale &&
-                                scale.getHeight() / (float) regionRect.height <= reducedScale);
+                        fits = (scale.getWidth() / (double) regionRect.width <= reducedScale &&
+                                scale.getHeight() / (double) regionRect.height <= reducedScale);
                     } else if (scale.getPercent() != null) {
                         float pct = scale.getPercent();
-                        fits = ((pct * fullSize.width) / (float) regionRect.width <= reducedScale &&
-                                (pct * fullSize.height) / (float) regionRect.height <= reducedScale);
+                        fits = ((pct * fullSize.width) / (double) regionRect.width <= reducedScale &&
+                                (pct * fullSize.height) / (double) regionRect.height <= reducedScale);
                     }
                     if (fits) {
                         rf.factor = ProcessorUtil.
                                 getReductionFactor(reducedScale, 0).factor;
                         logger.debug("Using a {}x{} source image ({}x reduction factor)",
-                                reducedWidth, reducedHeight, rf.factor);
+                                subimageWidth, subimageHeight, rf.factor);
                         final Rectangle reducedRect = new Rectangle(
                                 (int) Math.round(regionRect.x * reducedScale),
                                 (int) Math.round(regionRect.y * reducedScale),
@@ -348,6 +348,9 @@ class ImageIoImageReader {
                                 (int) Math.round(regionRect.height * reducedScale));
                         bestImage = tileAwareRead(reader, i, reducedRect, hints);
                         break;
+                    } else {
+                        logger.debug("Subimage {}: {}x{} (too small)",
+                                i + 1, subimageWidth, subimageHeight);
                     }
                 }
             }
@@ -623,34 +626,37 @@ class ImageIoImageReader {
                 // Loop through the reduced images from smallest to largest to
                 // find the first one that can supply the requested scale
                 for (int i = numImages - 1; i >= 0; i--) {
-                    final int reducedWidth = reader.getWidth(i);
-                    final int reducedHeight = reader.getHeight(i);
+                    final int subimageWidth = reader.getWidth(i);
+                    final int subimageHeight = reader.getHeight(i);
 
-                    final double reducedScale = (double) reducedWidth /
+                    final double reducedScale = (double) subimageWidth /
                             (double) fullSize.width;
                     boolean fits = false;
                     if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                        fits = (scale.getWidth() / (float) regionRect.width <= reducedScale);
+                        fits = (scale.getWidth() / (double) regionRect.width <= reducedScale);
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                        fits = (scale.getHeight() / (float) regionRect.height <= reducedScale);
+                        fits = (scale.getHeight() / (double) regionRect.height <= reducedScale);
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                        fits = (scale.getWidth() / (float) regionRect.width <= reducedScale &&
-                                scale.getHeight() / (float) regionRect.height <= reducedScale);
+                        fits = (scale.getWidth() / (double) regionRect.width <= reducedScale &&
+                                scale.getHeight() / (double) regionRect.height <= reducedScale);
                     } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
-                        fits = (scale.getWidth() / (float) regionRect.width <= reducedScale &&
-                                scale.getHeight() / (float) regionRect.height <= reducedScale);
+                        fits = (scale.getWidth() / (double) regionRect.width <= reducedScale &&
+                                scale.getHeight() / (double) regionRect.height <= reducedScale);
                     } else if (scale.getPercent() != null) {
-                        float pct = scale.getPercent();
-                        fits = ((pct * fullSize.width) / (float) regionRect.width <= reducedScale &&
-                                (pct * fullSize.height) / (float) regionRect.height <= reducedScale);
+                        double pct = scale.getPercent();
+                        fits = ((pct * fullSize.width) / (double) regionRect.width <= reducedScale &&
+                                (pct * fullSize.height) / (double) regionRect.height <= reducedScale);
                     }
                     if (fits) {
                         rf.factor = ProcessorUtil.
                                 getReductionFactor(reducedScale, 0).factor;
                         logger.debug("Using a {}x{} source image ({}x reduction factor)",
-                                reducedWidth, reducedHeight, rf.factor);
+                                subimageWidth, subimageHeight, rf.factor);
                         bestImage = reader.readAsRenderedImage(i, param);
                         break;
+                    } else {
+                        logger.debug("Subimage {}: {}x{} (too small)",
+                                i + 1, subimageWidth, subimageHeight);
                     }
                 }
             }
