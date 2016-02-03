@@ -335,8 +335,8 @@ class ImageIoImageReader {
                         fits = (scale.getPercent() <= reducedScale);
                     }
                     if (fits) {
-                        rf.factor = ProcessorUtil.
-                                getReductionFactor(reducedScale, 0).factor;
+                        rf.factor = ReductionFactor.
+                                forScale(reducedScale, 0).factor;
                         logger.debug("Using a {}x{} source image ({}x reduction factor)",
                                 subimageWidth, subimageHeight, rf.factor);
                         final Rectangle reducedRect = new Rectangle(
@@ -402,8 +402,7 @@ class ImageIoImageReader {
         final Dimension scaledSize = scale.getResultingSize(fullSize);
         final float xScale = (float) scaledSize.width / (float) fullSize.width;
         final float yScale = (float) scaledSize.height / (float) fullSize.height;
-        rf.factor = ProcessorUtil.
-                getReductionFactor(Math.max(xScale, yScale), 0).factor;
+        rf.factor = ReductionFactor.forScale(Math.max(xScale, yScale), 0).factor;
 
         ImageReadParam param = reader.getDefaultReadParam();
         param.setSourceRegion(requestedSourceArea);
@@ -613,8 +612,7 @@ class ImageIoImageReader {
                         fits = (scale.getPercent() <= reducedScale);
                     }
                     if (fits) {
-                        rf.factor = ProcessorUtil.
-                                getReductionFactor(reducedScale, 0).factor;
+                        rf.factor = ReductionFactor.forScale(reducedScale, 0).factor;
                         logger.debug("Using a {}x{} source image ({}x reduction factor)",
                                 subimageWidth, subimageHeight, rf.factor);
                         bestImage = reader.readAsRenderedImage(i, param);

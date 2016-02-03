@@ -7,6 +7,20 @@ import static org.junit.Assert.*;
 public class ReductionFactorTest {
 
     @Test
+    public void testForScale() {
+        assertEquals(new ReductionFactor(0), ReductionFactor.forScale(0.75f, 5));
+        assertEquals(new ReductionFactor(1), ReductionFactor.forScale(0.5f, 5));
+        assertEquals(new ReductionFactor(1), ReductionFactor.forScale(0.45f, 5));
+        assertEquals(new ReductionFactor(2), ReductionFactor.forScale(0.25f, 5));
+        assertEquals(new ReductionFactor(2), ReductionFactor.forScale(0.2f, 5));
+        assertEquals(new ReductionFactor(3), ReductionFactor.forScale(0.125f, 5));
+        assertEquals(new ReductionFactor(4), ReductionFactor.forScale(0.0625f, 5));
+        assertEquals(new ReductionFactor(5), ReductionFactor.forScale(0.03125f, 5));
+        // max
+        assertEquals(new ReductionFactor(1), ReductionFactor.forScale(0.2f, 1));
+    }
+
+    @Test
     public void testGetScale() {
         final double fudge = 0.0000001f;
         assertTrue(Math.abs(new ReductionFactor(0).getScale() - 1.0f) < fudge);

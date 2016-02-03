@@ -19,27 +19,6 @@ abstract class ProcessorUtil {
     private static Logger logger = LoggerFactory.getLogger(ProcessorUtil.class);
 
     /**
-     * Gets a reduction factor where the corresponding scale is 1/(2^rf).
-     *
-     * @param scalePercent Scale percentage between 0 and 1
-     * @param maxFactor 0 for no max
-     * @return
-     */
-    public static ReductionFactor getReductionFactor(double scalePercent,
-                                                     int maxFactor) {
-        if (maxFactor == 0) {
-            maxFactor = 999999;
-        }
-        short factor = 0;
-        double nextPct = 0.5f;
-        while (scalePercent <= nextPct && factor < maxFactor) {
-            nextPct /= 2.0f;
-            factor++;
-        }
-        return new ReductionFactor(factor);
-    }
-
-    /**
      * Efficiently reads the dimensions of an image.
      *
      * @param inputFile

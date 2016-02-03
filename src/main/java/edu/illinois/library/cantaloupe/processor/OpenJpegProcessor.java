@@ -373,22 +373,22 @@ class OpenJpegProcessor implements FileProcessor {
                     if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                         double hvScale = (double) scale.getWidth() /
                                 (double) tileSize.width;
-                        reduction.factor = ProcessorUtil.getReductionFactor(
+                        reduction.factor = ReductionFactor.forScale(
                                 hvScale, MAX_REDUCTION_FACTOR).factor;
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                         double hvScale = (double) scale.getHeight() /
                                 (double) tileSize.height;
-                        reduction.factor = ProcessorUtil.getReductionFactor(
+                        reduction.factor = ReductionFactor.forScale(
                                 hvScale, MAX_REDUCTION_FACTOR).factor;
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
                         double hScale = (double) scale.getWidth() /
                                 (double) tileSize.width;
                         double vScale = (double) scale.getHeight() /
                                 (double) tileSize.height;
-                        reduction.factor = ProcessorUtil.getReductionFactor(
+                        reduction.factor = ReductionFactor.forScale(
                                 Math.min(hScale, vScale), MAX_REDUCTION_FACTOR).factor;
                     } else if (scale.getPercent() != null) {
-                        reduction.factor = ProcessorUtil.getReductionFactor(
+                        reduction.factor = ReductionFactor.forScale(
                                 scale.getPercent(), MAX_REDUCTION_FACTOR).factor;
                     } else {
                         reduction.factor = 0;

@@ -10,6 +10,30 @@ class ReductionFactor {
 
     public int factor = 0;
 
+    /**
+     * Factory method.
+     *
+     * @param scalePercent Scale percentage between 0 and 1
+     * @param maxFactor Maximum factor to return.
+     * @return Instance corresponding to the given scale.
+     */
+    public static ReductionFactor forScale(final double scalePercent,
+                                           int maxFactor) {
+        if (maxFactor == 0) {
+            maxFactor = 9999;
+        }
+        short factor = 0;
+        double nextPct = 0.5f;
+        while (scalePercent <= nextPct && factor < maxFactor) {
+            nextPct /= 2.0f;
+            factor++;
+        }
+        return new ReductionFactor(factor);
+    }
+
+    /**
+     * No-op constructor.
+     */
     public ReductionFactor() {}
 
     public ReductionFactor(int factor) {

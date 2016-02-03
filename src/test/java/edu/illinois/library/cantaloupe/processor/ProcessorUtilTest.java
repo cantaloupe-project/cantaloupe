@@ -12,20 +12,6 @@ import static org.junit.Assert.*;
 public class ProcessorUtilTest {
 
     @Test
-    public void testGetReductionFactor() {
-        assertEquals(new ReductionFactor(0), ProcessorUtil.getReductionFactor(0.75f, 5));
-        assertEquals(new ReductionFactor(1), ProcessorUtil.getReductionFactor(0.5f, 5));
-        assertEquals(new ReductionFactor(1), ProcessorUtil.getReductionFactor(0.45f, 5));
-        assertEquals(new ReductionFactor(2), ProcessorUtil.getReductionFactor(0.25f, 5));
-        assertEquals(new ReductionFactor(2), ProcessorUtil.getReductionFactor(0.2f, 5));
-        assertEquals(new ReductionFactor(3), ProcessorUtil.getReductionFactor(0.125f, 5));
-        assertEquals(new ReductionFactor(4), ProcessorUtil.getReductionFactor(0.0625f, 5));
-        assertEquals(new ReductionFactor(5), ProcessorUtil.getReductionFactor(0.03125f, 5));
-        // max
-        assertEquals(new ReductionFactor(1), ProcessorUtil.getReductionFactor(0.2f, 1));
-    }
-
-    @Test
     public void testGetSizeWithFile() throws Exception {
         Dimension expected = new Dimension(64, 56);
         Dimension actual = ProcessorUtil.getSize(
