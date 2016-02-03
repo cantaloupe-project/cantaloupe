@@ -223,7 +223,20 @@ abstract class JaiUtil {
             pb.add((float) yScale);
             pb.add(0.0f);
             pb.add(0.0f);
-            pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
+            // JAI bug: The Interpolation.INTERP_BI* interpolations may result
+            // in an ArrayIndexOutOfBoundsException in PlanarImage.cobbleByte()
+            // during writing, for some images that border the right edge.
+            // For example: /iiif/2/56324x18006-tiled-pyramidal.tif/32768,0,23556,18006/737,/0/default.jpg
+            // The quality of Nearest-neighbor is terrible, but better than
+            // nothing.
+            // (This also happens when using the "SubsampleAverage" operator
+            // instead.)
+            // (Also, incremental downscaling by halves doesn't solve the
+            // problem, nor improve output quality.)
+            // TODO: see if this affects JAI-EXT
+            // TODO: improve downscale quality somehow
+            // TODO: add a JaiProcessor.scale_mode option offering this or INTERP_BILINEAR?
+            pb.add(Interpolation.getInstance(Interpolation.INTERP_NEAREST));
             scaledImage = JAI.create("scale", pb);
         }
         return scaledImage;
