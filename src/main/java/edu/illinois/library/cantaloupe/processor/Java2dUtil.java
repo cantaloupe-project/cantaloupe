@@ -300,9 +300,6 @@ abstract class Java2dUtil {
             logger.debug("No need to scale; skipping.");
             scaledImage = inImage;
         } else {
-            logger.debug("Scaling {}x{} image to {}x{}",
-                    inImage.getWidth(), inImage.getHeight(),
-                    scaledSize.width, scaledSize.height);
             final int sourceWidth = inImage.getWidth();
             final int sourceHeight = inImage.getHeight();
             int width = 0, height = 0;
@@ -331,6 +328,8 @@ abstract class Java2dUtil {
                 width = (int) Math.round(sourceWidth * pct);
                 height = (int) Math.round(sourceHeight * pct);
             }
+            logger.debug("Scaling {}x{} image to {}x{}",
+                    inImage.getWidth(), inImage.getHeight(), width, height);
             scaledImage = new BufferedImage(width, height,
                     inImage.getType());
 
