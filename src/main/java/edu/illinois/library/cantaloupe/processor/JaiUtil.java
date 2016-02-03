@@ -5,6 +5,8 @@ import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.media.jai.ImageLayout;
 import javax.media.jai.Interpolation;
@@ -20,6 +22,8 @@ import java.awt.image.renderable.ParameterBlock;
 import java.util.HashMap;
 
 abstract class JaiUtil {
+
+    private static Logger logger = LoggerFactory.getLogger(JaiUtil.class);
 
     /**
      * @param inImage Image to crop
@@ -77,6 +81,10 @@ abstract class JaiUtil {
                     inImage.getWidth() - x : requestedWidth;
             croppedHeight = (y + requestedHeight > inImage.getHeight()) ?
                     inImage.getHeight() - y : requestedHeight;
+
+            logger.debug("cropImage(): x: {}; y: {}; width: {}; height: {}",
+                    x, y, croppedWidth, croppedHeight);
+
             final ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
             pb.add(x);
@@ -160,6 +168,9 @@ abstract class JaiUtil {
                                          Rotate rotate) {
         RenderedOp rotatedImage = inImage;
         if (!rotate.isNoOp()) {
+            logger.debug("rotateImage(): rotating {} degrees",
+                    rotate.getDegrees());
+
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(rotatedImage);
             pb.add(inImage.getWidth() / 2.0f);
@@ -217,6 +228,8 @@ abstract class JaiUtil {
                 final double appliedScale = ProcessorUtil.getScale(rf);
                 xScale = yScale = reqScale / appliedScale;
             }
+            logger.debug("scaleImage(): width: {}%; height: {}%",
+                    xScale * 100, yScale * 100);
             final ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
             pb.add((float) xScale);
@@ -241,9 +254,11 @@ abstract class JaiUtil {
         pb.addSource(inImage);
         switch (transpose) {
             case HORIZONTAL:
+                logger.debug("transposeImage(): horizontal");
                 pb.add(TransposeDescriptor.FLIP_HORIZONTAL);
                 break;
             case VERTICAL:
+                logger.debug("transposeImage(): vertical");
                 pb.add(TransposeDescriptor.FLIP_VERTICAL);
                 break;
         }
