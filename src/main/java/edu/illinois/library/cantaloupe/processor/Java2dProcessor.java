@@ -99,14 +99,16 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
     @Override
     public Dimension getSize(File inputFile, SourceFormat sourceFormat)
             throws ProcessorException {
-        return ProcessorUtil.getSize(inputFile, sourceFormat);
+        ImageIoImageReader reader = new ImageIoImageReader();
+        return reader.readSize(inputFile, sourceFormat);
     }
 
     @Override
     public Dimension getSize(StreamSource streamSource,
                              SourceFormat sourceFormat)
             throws ProcessorException {
-        return ProcessorUtil.getSize(streamSource, sourceFormat);
+        ImageIoImageReader reader = new ImageIoImageReader();
+        return reader.readSize(streamSource, sourceFormat);
     }
 
     @Override

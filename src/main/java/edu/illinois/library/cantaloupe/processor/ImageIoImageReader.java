@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -81,6 +83,80 @@ class ImageIoImageReader {
             }
         }
         return formats;
+    }
+
+    /**
+     * Efficiently reads the dimensions of an image.
+     *
+     * @param inputFile
+     * @param sourceFormat
+     * @return Dimensions in pixels
+     * @throws ProcessorException
+     */
+    public Dimension readSize(File inputFile, SourceFormat sourceFormat)
+            throws ProcessorException {
+        try {
+            return doReadSize(new FileImageInputStream(inputFile), sourceFormat);
+        } catch (IOException e) {
+            throw new ProcessorException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Efficiently reads the dimensions of an image.
+     *
+     * @param streamSource StreamSource from which to obtain a stream to read
+     *                     the size.
+     * @param sourceFormat
+     * @return Dimensions in pixels
+     * @throws ProcessorException
+     */
+    public Dimension readSize(StreamSource streamSource,
+                              SourceFormat sourceFormat)
+            throws ProcessorException {
+        ImageInputStream iis = null;
+        try {
+            iis = streamSource.newImageInputStream();
+            return doReadSize(iis, sourceFormat);
+        } catch (IOException e) {
+            throw new ProcessorException(e.getMessage(), e);
+        } finally {
+            try {
+                if (iis != null) {
+                    iis.close();
+                }
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+    }
+
+    /**
+     * @param inputStream
+     * @param sourceFormat
+     * @return
+     * @throws ProcessorException
+     */
+    private Dimension doReadSize(ImageInputStream inputStream,
+                                SourceFormat sourceFormat)
+            throws ProcessorException {
+        Iterator<ImageReader> iter = ImageIO.
+                getImageReadersBySuffix(sourceFormat.getPreferredExtension());
+        if (iter.hasNext()) {
+            ImageReader reader = iter.next();
+            int width, height;
+            try {
+                reader.setInput(inputStream);
+                width = reader.getWidth(reader.getMinIndex());
+                height = reader.getHeight(reader.getMinIndex());
+            } catch (IOException e) {
+                throw new ProcessorException(e.getMessage(), e);
+            } finally {
+                reader.dispose();
+            }
+            return new Dimension(width, height);
+        }
+        return null;
     }
 
     /////////////////////// BufferedImage methods //////////////////////////
