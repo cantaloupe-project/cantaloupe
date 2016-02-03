@@ -370,7 +370,7 @@ abstract class Java2dUtil {
             logger.info("scaleImageWithG2d(): scaled {}x{} image to {}x{} " +
                     "in {} msec",
                     inImage.getWidth(), inImage.getHeight(),
-                    scaledSize.width, scaledSize.height,
+                    width, height,
                     System.currentTimeMillis() - msec);
         }
         return scaledImage;
