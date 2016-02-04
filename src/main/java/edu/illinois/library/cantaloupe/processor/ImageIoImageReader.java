@@ -114,20 +114,10 @@ class ImageIoImageReader {
     public Dimension readSize(StreamSource streamSource,
                               SourceFormat sourceFormat)
             throws ProcessorException {
-        ImageInputStream iis = null;
-        try {
-            iis = streamSource.newImageInputStream();
+        try (ImageInputStream iis = streamSource.newImageInputStream()) {
             return doReadSize(iis, sourceFormat);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
-        } finally {
-            try {
-                if (iis != null) {
-                    iis.close();
-                }
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
         }
     }
 
