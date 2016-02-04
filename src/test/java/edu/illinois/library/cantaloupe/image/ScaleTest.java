@@ -4,7 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.awt.Dimension;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -16,6 +15,14 @@ public class ScaleTest {
     @Before
     public void setUp() {
         this.scale = new Scale();
+    }
+
+    @Test
+    public void testInitialization() {
+        assertEquals(Scale.Mode.ASPECT_FIT_INSIDE, scale.getMode());
+        assertNull(scale.getPercent());
+        assertNull(scale.getHeight());
+        assertNull(scale.getWidth());
     }
 
     @Test

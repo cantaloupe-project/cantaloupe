@@ -18,7 +18,7 @@ public class Scale implements Operation {
     }
 
     private Integer height;
-    private Mode scaleMode;
+    private Mode scaleMode = Mode.ASPECT_FIT_INSIDE;
     private Float percent;
     private Integer width;
 
