@@ -356,7 +356,8 @@ class ImageIoImageReader {
             // param.setDestinationType(ImageTypeSpecifier.
             //        createFromBufferedImageType(BufferedImage.TYPE_INT_RGB));
             bestImage = tileAwareRead(reader, 0, regionRect, scale, rf, hints);
-            logger.debug("Using a {}x{} source image (0x reduction factor)",
+            logger.debug("readSmallestUsableSubimage(): using a {}x{} source " +
+                    "image (0x reduction factor)",
                     bestImage.getWidth(), bestImage.getHeight());
         } else {
             // Pyramidal TIFFs will have > 1 image, each with half the
@@ -365,17 +366,20 @@ class ImageIoImageReader {
             // for at least some files, but is slower.
             int numImages = reader.getNumImages(false);
             if (numImages > 1) {
-                logger.debug("Detected {} subimage(s)", numImages - 1);
+                logger.debug("readSmallestUsableSubimage(): " +
+                        "detected {} subimage(s)", numImages);
             } else if (numImages == -1) {
                 numImages = reader.getNumImages(true);
                 if (numImages > 1) {
-                    logger.debug("Scan revealed {} subimage(s)", numImages - 1);
+                    logger.debug("readSmallestUsableSubimage(): " +
+                            "scan revealed {} subimage(s)", numImages);
                 }
             }
             if (numImages == 1) {
                 bestImage = tileAwareRead(reader, 0, regionRect, scale, rf,
                         hints);
-                logger.debug("Using a {}x{} source image (0x reduction factor)",
+                logger.debug("readSmallestUsableSubimage(): using a {}x{} " +
+                        "source image (0x reduction factor)",
                         bestImage.getWidth(), bestImage.getHeight());
             } else if (numImages > 1) {
                 // Loop through the reduced images from smallest to largest to
@@ -403,8 +407,11 @@ class ImageIoImageReader {
                     if (fits) {
                         rf.factor = ReductionFactor.
                                 forScale(reducedScale, 0).factor;
-                        logger.debug("Using a {}x{} source image ({}x reduction factor)",
-                                subimageWidth, subimageHeight, rf.factor);
+                        logger.debug("readSmallestUsableSubimage(): " +
+                                "subimage {}: {}x{} - fits! " +
+                                "({}x reduction factor)",
+                                i + 1, subimageWidth, subimageHeight,
+                                rf.factor);
                         final Rectangle reducedRect = new Rectangle(
                                 (int) Math.round(regionRect.x * reducedScale),
                                 (int) Math.round(regionRect.y * reducedScale),
@@ -414,7 +421,8 @@ class ImageIoImageReader {
                                 scale, rf, hints);
                         break;
                     } else {
-                        logger.debug("Subimage {}: {}x{} (too small)",
+                        logger.debug("readSmallestUsableSubimage(): " +
+                                "subimage {}: {}x{} - too small",
                                 i + 1, subimageWidth, subimageHeight);
                     }
                 }
@@ -484,15 +492,21 @@ class ImageIoImageReader {
             }
         }
 
+        logger.debug("tileAwareRead(): acquiring region {},{}/{}x{} from {}x{} image",
+                region.x, region.y, region.width, region.height,
+                imageSize.width, imageSize.height);
+
         final ImageReadParam param = reader.getDefaultReadParam();
         param.setSourceRegion(region);
 
         final int subsampleReductionFactor = ReductionFactor.
                 forScale(Math.max(xScale, yScale), 0).factor;
+
+        logger.debug("tileAwareRead(): using a subsampling factor of {}",
+                subsampleReductionFactor);
+
         subimageRf.factor += subsampleReductionFactor;
         if (subsampleReductionFactor > 0) {
-            logger.debug("tileAwareRead(): using subsampling factor of {}",
-                    subsampleReductionFactor);
             // Determine the number of rows/columns to skip between pixels.
             int subsample = 0;
             for (int i = 0; i <= subsampleReductionFactor; i++) {
@@ -656,7 +670,8 @@ class ImageIoImageReader {
         RenderedImage bestImage = null;
         if (scale.isNoOp()) {
             bestImage = reader.readAsRenderedImage(0, param);
-            logger.debug("Using a {}x{} source image (0x reduction factor)",
+            logger.debug("readSmallestUsableSubimage(): using a {}x{} " +
+                    "source image (0x reduction factor)",
                     bestImage.getWidth(), bestImage.getHeight());
         } else {
             // Pyramidal TIFFs will have > 1 image, each half the dimensions of
@@ -665,16 +680,19 @@ class ImageIoImageReader {
             // files, but is slower.
             int numImages = reader.getNumImages(false);
             if (numImages > 1) {
-                logger.debug("Detected {} subimage(s)", numImages - 1);
+                logger.debug("readSmallestUsableSubimage(): detected {} " +
+                        "subimage(s)", numImages - 1);
             } else if (numImages == -1) {
                 numImages = reader.getNumImages(true);
                 if (numImages > 1) {
-                    logger.debug("Scan revealed {} subimage(s)", numImages - 1);
+                    logger.debug("readSmallestUsableSubimage(): " +
+                            "scan revealed {} subimage(s)", numImages - 1);
                 }
             }
             if (numImages == 1) {
                 bestImage = reader.read(0, param);
-                logger.debug("Using a {}x{} source image (0x reduction factor)",
+                logger.debug("readSmallestUsableSubimage(): using a {}x{} " +
+                        "source image (0x reduction factor)",
                         bestImage.getWidth(), bestImage.getHeight());
             } else if (numImages > 1) {
                 // Loop through the reduced images from smallest to largest to
@@ -701,12 +719,16 @@ class ImageIoImageReader {
                     }
                     if (fits) {
                         rf.factor = ReductionFactor.forScale(reducedScale, 0).factor;
-                        logger.debug("Using a {}x{} source image ({}x reduction factor)",
-                                subimageWidth, subimageHeight, rf.factor);
+                        logger.debug("readSmallestUsableSubimage(): " +
+                                        "subimage {}: {}x{} - fits! " +
+                                        "({}x reduction factor)",
+                                i + 1, subimageWidth, subimageHeight,
+                                rf.factor);
                         bestImage = reader.readAsRenderedImage(i, param);
                         break;
                     } else {
-                        logger.debug("Subimage {}: {}x{} (too small)",
+                        logger.debug("readSmallestUsableSubimage(): " +
+                                        "subimage {}: {}x{} - too small",
                                 i + 1, subimageWidth, subimageHeight);
                     }
                 }
