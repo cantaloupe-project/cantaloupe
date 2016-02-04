@@ -126,40 +126,6 @@ public class Java2dUtilTest {
     }
 
     @Test
-    public void testScaleImageWithAffineTransform() {
-        BufferedImage inImage = new BufferedImage(100, 100,
-                BufferedImage.TYPE_INT_RGB);
-
-        // Scale.Mode.FULL
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
-        BufferedImage outImage = Java2dUtil.scaleImageWithAffineTransform(inImage, scale);
-        assertSame(inImage, outImage);
-
-        // Scale.Mode.ASPECT_FIT_WIDTH
-        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
-        scale.setWidth(50);
-        outImage = Java2dUtil.scaleImageWithAffineTransform(inImage, scale);
-        assertEquals(50, outImage.getWidth());
-        assertEquals(50, outImage.getHeight());
-
-        // Scale.Mode.ASPECT_FIT_HEIGHT
-        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
-        scale.setHeight(50);
-        outImage = Java2dUtil.scaleImageWithAffineTransform(inImage, scale);
-        assertEquals(50, outImage.getWidth());
-        assertEquals(50, outImage.getHeight());
-
-        // Scale.Mode.ASPECT_FIT_INSIDE
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        scale.setWidth(50);
-        scale.setHeight(50);
-        outImage = Java2dUtil.scaleImageWithAffineTransform(inImage, scale);
-        assertEquals(50, outImage.getWidth());
-        assertEquals(50, outImage.getHeight());
-    }
-
-    @Test
     public void testScaleImageWithG2d() {
         BufferedImage inImage = new BufferedImage(100, 100,
                 BufferedImage.TYPE_INT_RGB);

@@ -227,58 +227,6 @@ abstract class Java2dUtil {
     }
 
     /**
-     * Scales an image using an AffineTransform.
-     *
-     * @param inImage Image to scale
-     * @param scale Scale operation
-     * @return Downscaled image, or the input image if the given scale is a
-     * no-op.
-     */
-    public static BufferedImage scaleImageWithAffineTransform(
-            BufferedImage inImage, Scale scale) {
-        final Dimension scaledSize = scale.getResultingSize(
-                new Dimension(inImage.getWidth(), inImage.getHeight()));
-        BufferedImage scaledImage;
-        if (scale.isNoOp() || (scaledSize.width == inImage.getWidth() &&
-                scaledSize.height == inImage.getHeight())) {
-            scaledImage = inImage;
-        } else {
-            final long msec = System.currentTimeMillis();
-            double xScale = 0.0f, yScale = 0.0f;
-            if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                xScale = yScale = scale.getWidth() / (double) inImage.getWidth();
-            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                xScale = yScale = scale.getHeight() / (double) inImage.getHeight();
-            } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
-                xScale = scale.getWidth() / (double) inImage.getWidth();
-                yScale = scale.getHeight() / (double) inImage.getHeight();
-            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                double hScale = (double) scale.getWidth() /
-                        (double) inImage.getWidth();
-                double vScale = (double) scale.getHeight() /
-                        (double) inImage.getHeight();
-                xScale = inImage.getWidth() * Math.min(hScale, vScale) / 100f;
-                yScale = inImage.getHeight() * Math.min(hScale, vScale) / 100f;
-            } else if (scale.getPercent() != null) {
-                xScale = yScale = scale.getPercent();
-            }
-            int width = (int) Math.round(inImage.getWidth() * xScale);
-            int height = (int) Math.round(inImage.getHeight() * yScale);
-            scaledImage = new BufferedImage(width, height, inImage.getType());
-            AffineTransform at = new AffineTransform();
-            at.scale(xScale, yScale);
-            AffineTransformOp scaleOp = new AffineTransformOp(at,
-                    AffineTransformOp.TYPE_BILINEAR);
-            scaledImage = scaleOp.filter(inImage, scaledImage);
-            logger.info("Scaled {}x{} image to {}x{} in {} msec",
-                    inImage.getWidth(), inImage.getHeight(),
-                    scaledSize.width, scaledSize.height,
-                    System.currentTimeMillis() - msec);
-        }
-        return scaledImage;
-    }
-
-    /**
      * Scales an image using Graphics2D.
      *
      * @param inImage Image to scale
