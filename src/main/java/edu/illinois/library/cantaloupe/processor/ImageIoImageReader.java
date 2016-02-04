@@ -361,9 +361,10 @@ class ImageIoImageReader {
                     bestImage.getWidth(), bestImage.getHeight());
         } else {
             // Pyramidal TIFFs will have > 1 image, each with half the
-            // dimensions of the previous one. The "true" parameter tells
-            // getNumImages() to scan for images, which seems to be necessary
-            // for at least some files, but is slower.
+            // dimensions of the previous one. The boolean parameter tells
+            // getNumImages() whether to scan for images, which seems to be
+            // necessary for at least some files, but is slower. If it is
+            // false, and getNumImages() can't find anything, it will return -1.
             int numImages = reader.getNumImages(false);
             if (numImages > 1) {
                 logger.debug("readSmallestUsableSubimage(): " +
@@ -375,6 +376,7 @@ class ImageIoImageReader {
                             "scan revealed {} subimage(s)", numImages);
                 }
             }
+            // At this point, we know how many images are available.
             if (numImages == 1) {
                 bestImage = tileAwareRead(reader, 0, regionRect, scale, rf,
                         hints);
@@ -437,9 +439,7 @@ class ImageIoImageReader {
      * Subsampling will be used if possible.</p>
      *
      * <p>This method is intended to be compatible with all source images, no
-     * matter the data layout (tiled or not). For some image types, including
-     * GIF and PNG, a tiled reading strategy will not work, and so this method
-     * will read the entire image.</p>
+     * matter the data layout (tiled, striped, etc.).</p>
      *
      * <p>This method may populate <code>hints</code> with
      * {@link ReaderHint#ALREADY_CROPPED}, in which case cropping will have
@@ -457,7 +457,7 @@ class ImageIoImageReader {
      * @param subimageRf   Already-applied reduction factor from reading a
      *                     subimage, to which a subsampling-related reduction
      *                     factor may be added.
-     * @param hints        Will be populated by information returned from the
+     * @param hints        Will be populated with information returned from the
      *                     reader.
      * @return Image
      * @throws IOException
@@ -472,7 +472,9 @@ class ImageIoImageReader {
         final Dimension imageSize = new Dimension(
                 reader.getWidth(imageIndex),
                 reader.getHeight(imageIndex));
-
+        // xScale and yScale are the percentages of the image axes needed
+        // based on the given region and scale. If either are less than 0.5,
+        // subsampling can be used for better efficiency.
         double xScale, yScale;
         if (scale.getPercent() != null) {
             xScale = scale.getPercent() * (region.width / (double) imageSize.width);
