@@ -477,8 +477,10 @@ class ImageIoImageReader {
         // subsampling can be used for better efficiency.
         double xScale, yScale;
         if (scale.getPercent() != null) {
-            xScale = scale.getPercent() * (region.width / (double) imageSize.width);
-            yScale = scale.getPercent() * (region.height / (double) imageSize.height);
+            xScale = (scale.getPercent() / subimageRf.getScale()) *
+                    (region.width / (double) imageSize.width);
+            yScale = (scale.getPercent() / subimageRf.getScale()) *
+                    (region.height / (double) imageSize.height);
         } else {
             switch (scale.getMode()) {
                 case ASPECT_FIT_WIDTH:
