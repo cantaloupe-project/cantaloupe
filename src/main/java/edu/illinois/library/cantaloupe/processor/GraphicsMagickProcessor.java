@@ -262,7 +262,10 @@ class GraphicsMagickProcessor implements StreamProcessor {
             } else if (op instanceof Scale) {
                 Scale scale = (Scale) op;
                 if (!scale.isNoOp()) {
-                    if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+                    if (scale.getPercent() != null) {
+                        imOp.resize(Math.round(scale.getPercent() * 100),
+                                Math.round(scale.getPercent() * 100), "%");
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                         imOp.resize(scale.getWidth());
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                         imOp.resize(null, scale.getHeight());
@@ -270,9 +273,6 @@ class GraphicsMagickProcessor implements StreamProcessor {
                         imOp.resize(scale.getWidth(), scale.getHeight(), "!");
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
                         imOp.resize(scale.getWidth(), scale.getHeight());
-                    } else if (scale.getPercent() != null) {
-                        imOp.resize(Math.round(scale.getPercent() * 100),
-                                Math.round(scale.getPercent() * 100), "%");
                     }
                 }
             } else if (op instanceof Transpose) {

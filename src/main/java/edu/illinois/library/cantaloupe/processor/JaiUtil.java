@@ -209,9 +209,11 @@ abstract class JaiUtil {
         if (!scale.isNoOp()) {
             final double sourceWidth = inImage.getWidth();
             final double sourceHeight = inImage.getHeight();
-            double xScale = 1.0f;
-            double yScale = 1.0f;
-            if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+            double xScale = 1.0f, yScale = 1.0f;
+            if (scale.getPercent() != null) {
+                final double reqScale = scale.getPercent();
+                xScale = yScale = reqScale / rf.getScale();
+            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                 xScale = yScale = scale.getWidth() / sourceWidth;
             } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                 xScale = yScale = scale.getHeight() / sourceHeight;
@@ -223,9 +225,6 @@ abstract class JaiUtil {
                 final double vScale = scale.getHeight() / sourceHeight;
                 xScale = (sourceWidth * Math.min(hScale, vScale)) / 100f;
                 yScale = (sourceHeight * Math.min(hScale, vScale)) / 100f;
-            } else if (scale.getPercent() != null) {
-                final double reqScale = scale.getPercent();
-                xScale = yScale = reqScale / rf.getScale();
             }
             logger.debug("scaleImage(): width: {}%; height: {}%",
                     xScale * 100, yScale * 100);

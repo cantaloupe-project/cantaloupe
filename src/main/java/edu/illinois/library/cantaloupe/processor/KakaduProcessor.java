@@ -415,7 +415,10 @@ class KakaduProcessor implements FileProcessor {
                 final Scale scale = (Scale) op;
                 final Dimension tileSize = getCroppedSize(opList, imageSize);
                 if (scale.getMode() != Scale.Mode.FULL) {
-                    if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+                    if (scale.getPercent() != null) {
+                        reduction.factor = ReductionFactor.forScale(
+                                scale.getPercent(), MAX_REDUCTION_FACTOR).factor;
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                         double hvScale = (double) scale.getWidth() /
                                 (double) tileSize.width;
                         reduction.factor = ReductionFactor.forScale(
@@ -432,9 +435,6 @@ class KakaduProcessor implements FileProcessor {
                                 (double) tileSize.height;
                         reduction.factor = ReductionFactor.forScale(
                                 Math.min(hScale, vScale), MAX_REDUCTION_FACTOR).factor;
-                    } else if (scale.getPercent() != null) {
-                        reduction.factor = ReductionFactor.forScale(
-                                scale.getPercent(), MAX_REDUCTION_FACTOR).factor;
                     } else {
                         reduction.factor = 0;
                     }

@@ -397,7 +397,9 @@ class ImageIoImageReader {
                     final double reducedScale = (double) subimageWidth /
                             (double) fullSize.width;
                     boolean fits = false;
-                    if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+                    if (scale.getPercent() != null) {
+                        fits = (scale.getPercent() <= reducedScale);
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                         fits = (scale.getWidth() / (double) regionRect.width <= reducedScale);
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                         fits = (scale.getHeight() / (double) regionRect.height <= reducedScale);
@@ -407,8 +409,6 @@ class ImageIoImageReader {
                     } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
                         fits = (scale.getWidth() / (double) regionRect.width <= reducedScale &&
                                 scale.getHeight() / (double) regionRect.height <= reducedScale);
-                    } else if (scale.getPercent() != null) {
-                        fits = (scale.getPercent() <= reducedScale);
                     }
                     if (fits) {
                         rf.factor = ReductionFactor.
@@ -696,7 +696,9 @@ class ImageIoImageReader {
                     final double reducedScale = (double) subimageWidth /
                             (double) fullSize.width;
                     boolean fits = false;
-                    if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+                    if (scale.getPercent() != null) {
+                        fits = (scale.getPercent() <= reducedScale);
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                         fits = (scale.getWidth() / (double) regionRect.width <= reducedScale);
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                         fits = (scale.getHeight() / (double) regionRect.height <= reducedScale);
@@ -706,8 +708,6 @@ class ImageIoImageReader {
                     } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
                         fits = (scale.getWidth() / (double) regionRect.width <= reducedScale &&
                                 scale.getHeight() / (double) regionRect.height <= reducedScale);
-                    } else if (scale.getPercent() != null) {
-                        fits = (scale.getPercent() <= reducedScale);
                     }
                     if (fits) {
                         rf.factor = ReductionFactor.forScale(reducedScale, 0).factor;

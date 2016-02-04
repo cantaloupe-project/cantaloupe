@@ -269,7 +269,11 @@ abstract class Java2dUtil {
             final int sourceWidth = inImage.getWidth();
             final int sourceHeight = inImage.getHeight();
             int width = 0, height = 0;
-            if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+            if (scale.getPercent() != null) {
+                final double pct = scale.getPercent() / rf.getScale();
+                width = (int) Math.round(sourceWidth * pct);
+                height = (int) Math.round(sourceHeight * pct);
+            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                 width = scale.getWidth();
                 height = sourceHeight * width / sourceWidth;
             } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
@@ -287,10 +291,6 @@ abstract class Java2dUtil {
                         Math.min(hScale, vScale));
                 height = (int) Math.round(sourceHeight *
                         Math.min(hScale, vScale));
-            } else if (scale.getPercent() != null) {
-                final double pct = scale.getPercent() / rf.getScale();
-                width = (int) Math.round(sourceWidth * pct);
-                height = (int) Math.round(sourceHeight * pct);
             }
             scaledImage = new BufferedImage(width, height,
                     inImage.getType());
