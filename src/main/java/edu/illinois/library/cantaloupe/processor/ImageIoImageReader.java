@@ -369,10 +369,10 @@ class ImageIoImageReader {
             logger.debug("Using a {}x{} source image (0x reduction factor)",
                     bestImage.getWidth(), bestImage.getHeight());
         } else {
-            // Pyramidal TIFFs will have > 1 image, each half the dimensions of
-            // the next larger. The "true" parameter tells getNumImages() to
-            // scan for images, which seems to be necessary for at least some
-            // files, but is slower.
+            // Pyramidal TIFFs will have > 1 image, each with half the
+            // dimensions of the previous one. The "true" parameter tells
+            // getNumImages() to scan for images, which seems to be necessary
+            // for at least some files, but is slower.
             int numImages = reader.getNumImages(false);
             if (numImages > 1) {
                 logger.debug("Detected {} subimage(s)", numImages - 1);
@@ -448,44 +448,66 @@ class ImageIoImageReader {
      * already been performed according to the
      * <code>requestedSourceArea</code> parameter.</p>
      *
-     * @param reader              ImageReader with input source already set
-     * @param imageIndex          Index of the image to read from the
-     *                            ImageReader.
-     * @param requestedSourceArea Source image area to retrieve. The returned
-     *                            image will be this size or smaller if it
-     *                            would overlap the right or bottom edge of the
-     *                            source image.
-     * @param scale               Scale that is to be applied to the returned
-     *                            image. Will be used to calculate a
-     *                            subsampling rate.
-     * @param rf                  Will be populated with the reduction factor
-     *                            of the returned image.
-     * @param hints               Will be populated by information returned from
-     *                            the reader.
-     * @return Cropped image
+     * @param reader       ImageReader with input source already set
+     * @param imageIndex   Index of the image to read from the ImageReader.
+     * @param region       Image region to retrieve. The returned image will be
+     *                     this size or smaller if it would overlap the right
+     *                     or bottom edge of the source image.
+     * @param scale        Scale that is to be applied to the returned
+     *                     image. Will be used to calculate a subsampling
+     *                     rate.
+     * @param subimageRf   Already-applied reduction factor from reading a
+     *                     subimage, to which a subsampling-related reduction
+     *                     factor may be added.
+     * @param hints        Will be populated by information returned from the
+     *                     reader.
+     * @return Image
      * @throws IOException
-     * @throws IllegalArgumentException If the source image is not tiled.
      */
     private BufferedImage tileAwareRead(final ImageReader reader,
                                         final int imageIndex,
-                                        final Rectangle requestedSourceArea,
+                                        final Rectangle region,
                                         final Scale scale,
-                                        final ReductionFactor rf,
+                                        final ReductionFactor subimageRf,
                                         final Set<ReaderHint> hints)
-            throws IOException, IllegalArgumentException {
-        final Dimension fullSize = new Dimension(reader.getWidth(imageIndex),
+            throws IOException {
+        final Dimension imageSize = new Dimension(
+                reader.getWidth(imageIndex),
                 reader.getHeight(imageIndex));
-        final Dimension scaledSize = scale.getResultingSize(fullSize);
-        final float xScale = (float) scaledSize.width / (float) fullSize.width;
-        final float yScale = (float) scaledSize.height / (float) fullSize.height;
-        rf.factor = ReductionFactor.forScale(Math.max(xScale, yScale), 0).factor;
 
-        ImageReadParam param = reader.getDefaultReadParam();
-        param.setSourceRegion(requestedSourceArea);
-        if (rf.factor > 0) {
+        double xScale, yScale;
+        if (scale.getPercent() != null) {
+            xScale = scale.getPercent() * (region.width / (double) imageSize.width);
+            yScale = scale.getPercent() * (region.height / (double) imageSize.height);
+        } else {
+            switch (scale.getMode()) {
+                case ASPECT_FIT_WIDTH:
+                    xScale = yScale = scale.getWidth() / (double) region.width;
+                    break;
+                case ASPECT_FIT_HEIGHT:
+                    xScale = yScale = scale.getHeight() / (double) region.height;
+                    break;
+                default:
+                    xScale = scale.getWidth() / (double) region.width;
+                    yScale = scale.getHeight() / (double) region.height;
+                    break;
+            }
+        }
+
+        final ImageReadParam param = reader.getDefaultReadParam();
+        param.setSourceRegion(region);
+
+        final int subsampleReductionFactor = ReductionFactor.
+                forScale(Math.max(xScale, yScale), 0).factor;
+        subimageRf.factor += subsampleReductionFactor;
+        if (subsampleReductionFactor > 0) {
             logger.debug("tileAwareRead(): using subsampling factor of {}",
-                    rf.factor);
-            final int subsample = (int) Math.pow(2, rf.factor);
+                    subsampleReductionFactor);
+            // Determine the number of rows/columns to skip between pixels.
+            int subsample = 0;
+            for (int i = 0; i <= subsampleReductionFactor; i++) {
+                subsample = (subsample == 0) ? subsample + 1 : subsample * 2;
+            }
             param.setSourceSubsampling(subsample, subsample, 0, 0);
         }
         hints.add(ReaderHint.ALREADY_CROPPED);

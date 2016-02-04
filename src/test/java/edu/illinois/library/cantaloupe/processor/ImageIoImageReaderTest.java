@@ -1,5 +1,8 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -9,9 +12,12 @@ import org.restlet.data.MediaType;
 
 import javax.imageio.ImageIO;
 import java.awt.Dimension;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.HashSet;
+import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class ImageIoImageReaderTest {
 
@@ -54,13 +60,107 @@ public class ImageIoImageReaderTest {
     }
 
     @Test
-    public void testReadImageWithFile() {
-        // this will be tested in ProcessorTest
+    public void testReadWithMonoResolutionImageAndNoScaleFactor() throws Exception {
+        final File fixture = TestUtil.getImage("jpg");
+        final Dimension fullSize = new Dimension(64, 56);
+
+        OperationList ops = new OperationList();
+        Crop crop = new Crop();
+        crop.setX(10f);
+        crop.setY(10f);
+        crop.setWidth(40f);
+        crop.setHeight(40f);
+        ops.add(crop);
+        Scale scale = new Scale();
+        scale.setWidth(35);
+        scale.setHeight(35);
+        ops.add(scale);
+        ReductionFactor rf = new ReductionFactor();
+        Set<ImageIoImageReader.ReaderHint> hints = new HashSet<>();
+
+        BufferedImage image = reader.read(fixture, SourceFormat.JPG, ops,
+                fullSize, rf, hints);
+
+        assertEquals(40, image.getWidth());
+        assertEquals(40, image.getHeight());
+        assertEquals(0, rf.factor);
+        assertTrue(hints.contains(ImageIoImageReader.ReaderHint.ALREADY_CROPPED));
     }
 
     @Test
-    public void testReadImageWithInputStream() {
-        // this will be tested in ProcessorTest
+    public void testReadWithMonoResolutionImageAndScaleFactor() throws Exception {
+        final File fixture = TestUtil.getImage("jpg");
+        final Dimension fullSize = new Dimension(64, 56);
+
+        OperationList ops = new OperationList();
+        Crop crop = new Crop();
+        crop.setX(10f);
+        crop.setY(10f);
+        crop.setWidth(40f);
+        crop.setHeight(40f);
+        ops.add(crop);
+        Scale scale = new Scale();
+        scale.setWidth(10);
+        scale.setHeight(10);
+        ops.add(scale);
+        ReductionFactor rf = new ReductionFactor();
+        Set<ImageIoImageReader.ReaderHint> hints = new HashSet<>();
+
+        BufferedImage image = reader.read(fixture, SourceFormat.JPG, ops,
+                fullSize, rf, hints);
+
+        assertEquals(10, image.getWidth());
+        assertEquals(10, image.getHeight());
+        assertEquals(2, rf.factor);
+        assertTrue(hints.contains(ImageIoImageReader.ReaderHint.ALREADY_CROPPED));
+    }
+
+    @Test
+    public void testReadWithMonoResolutionImageAndSubsamplingAndAbsoluteScale() throws Exception {
+        final File fixture = TestUtil.getImage("tif-rgb-64x56x16-striped-uncompressed.tif");
+        final Dimension fullSize = new Dimension(64, 56);
+
+        OperationList ops = new OperationList();
+        Scale scale = new Scale();
+        scale.setWidth(16);
+        scale.setHeight(14);
+        ops.add(scale);
+        ReductionFactor rf = new ReductionFactor();
+        Set<ImageIoImageReader.ReaderHint> hints = new HashSet<>();
+
+        BufferedImage image = reader.read(fixture, SourceFormat.TIF, ops,
+                fullSize, rf, hints);
+
+        assertEquals(16, image.getWidth());
+        assertEquals(14, image.getHeight());
+        assertEquals(2, rf.factor);
+        assertTrue(hints.contains(ImageIoImageReader.ReaderHint.ALREADY_CROPPED));
+    }
+
+    @Test
+    public void testReadWithMonoResolutionImageAndSubsamplingAndPercentScale() throws Exception {
+        final File fixture = TestUtil.getImage("tif-rgb-64x56x16-striped-uncompressed.tif");
+        final Dimension fullSize = new Dimension(64, 56);
+
+        OperationList ops = new OperationList();
+        Scale scale = new Scale();
+        scale.setPercent(0.25f);
+        ops.add(scale);
+        ReductionFactor rf = new ReductionFactor();
+        Set<ImageIoImageReader.ReaderHint> hints = new HashSet<>();
+
+        BufferedImage image = reader.read(fixture, SourceFormat.TIF, ops,
+                fullSize, rf, hints);
+
+        assertEquals(16, image.getWidth());
+        assertEquals(14, image.getHeight());
+        assertEquals(2, rf.factor);
+        assertTrue(hints.contains(ImageIoImageReader.ReaderHint.ALREADY_CROPPED));
+    }
+
+    @Test
+    public void testReadWithMultiResolutionImage() {
+        // TODO: write this
     }
 
 }
