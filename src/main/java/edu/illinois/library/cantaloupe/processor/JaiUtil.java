@@ -207,25 +207,18 @@ abstract class JaiUtil {
                                         ReductionFactor rf) {
         RenderedOp scaledImage = inImage;
         if (!scale.isNoOp()) {
-            final double sourceWidth = inImage.getWidth();
-            final double sourceHeight = inImage.getHeight();
-            double xScale = 1.0f, yScale = 1.0f;
+            final int sourceWidth = inImage.getWidth();
+            final int sourceHeight = inImage.getHeight();
+            final Dimension scaledSize = scale.getResultingSize(
+                    new Dimension(sourceWidth, sourceHeight));
+
+            double xScale = scaledSize.width / (double) sourceWidth;
+            double yScale = scaledSize.height / (double) sourceHeight;
             if (scale.getPercent() != null) {
-                final double reqScale = scale.getPercent();
-                xScale = yScale = reqScale / rf.getScale();
-            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                xScale = yScale = scale.getWidth() / sourceWidth;
-            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                xScale = yScale = scale.getHeight() / sourceHeight;
-            } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
-                xScale = scale.getWidth() / sourceWidth;
-                yScale = scale.getHeight() / sourceHeight;
-            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                final double hScale = scale.getWidth() / sourceWidth;
-                final double vScale = scale.getHeight() / sourceHeight;
-                xScale = (sourceWidth * Math.min(hScale, vScale)) / 100f;
-                yScale = (sourceHeight * Math.min(hScale, vScale)) / 100f;
+                xScale = scale.getPercent() / rf.getScale();
+                yScale = scale.getPercent() / rf.getScale();
             }
+
             logger.debug("scaleImage(): width: {}%; height: {}%",
                     xScale * 100, yScale * 100);
             final ParameterBlock pb = new ParameterBlock();
@@ -238,13 +231,13 @@ abstract class JaiUtil {
             // in an ArrayIndexOutOfBoundsException in PlanarImage.cobbleByte()
             // during writing, for some images that border the right edge.
             // For example: /iiif/2/56324x18006-tiled-pyramidal.tif/32768,0,23556,18006/737,/0/default.jpg
-            // The quality of Nearest-neighbor is terrible, but better than
+            // The quality of nearest-neighbor is terrible, but better than
             // nothing.
             // (This also happens when using the "SubsampleAverage" operator
             // instead.)
-            // (Also, incremental downscaling by halves doesn't solve the
-            // problem, nor improve output quality.)
-            // TODO: see if this affects JAI-EXT
+            // (Incremental downscaling by halves doesn't solve the problem,
+            // nor improve output quality.)
+            // TODO: see if JAI-EXT is affected
             // TODO: improve downscale quality somehow
             // TODO: add a JaiProcessor.scale_mode option offering this or INTERP_BILINEAR?
             pb.add(Interpolation.getInstance(Interpolation.INTERP_NEAREST));
