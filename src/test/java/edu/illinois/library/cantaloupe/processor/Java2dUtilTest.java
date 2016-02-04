@@ -24,7 +24,7 @@ public class Java2dUtilTest {
 
         // test with image of TYPE_CUSTOM
         custom = ImageIO.read(TestUtil.
-                getFixture("images/tif-rgb-64x56x8-striped-uncompressed.tif"));
+                getFixture("images/tif-rgb-monores-64x56x8-striped-uncompressed.tif"));
         BufferedImage output = Java2dUtil.convertCustomToRgb(custom);
         assertEquals(BufferedImage.TYPE_INT_RGB, output.getType());
     }

@@ -117,7 +117,7 @@ public class ImageIoImageReaderTest {
 
     @Test
     public void testReadWithMonoResolutionImageAndSubsamplingAndAbsoluteScale() throws Exception {
-        final File fixture = TestUtil.getImage("tif-rgb-64x56x16-striped-uncompressed.tif");
+        final File fixture = TestUtil.getImage("tif-rgb-monores-64x56x16-striped-uncompressed.tif");
         final Dimension fullSize = new Dimension(64, 56);
 
         OperationList ops = new OperationList();
@@ -139,7 +139,7 @@ public class ImageIoImageReaderTest {
 
     @Test
     public void testReadWithMonoResolutionImageAndSubsamplingAndPercentScale() throws Exception {
-        final File fixture = TestUtil.getImage("tif-rgb-64x56x16-striped-uncompressed.tif");
+        final File fixture = TestUtil.getImage("tif-rgb-monores-64x56x16-striped-uncompressed.tif");
         final Dimension fullSize = new Dimension(64, 56);
 
         OperationList ops = new OperationList();
