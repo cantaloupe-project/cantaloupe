@@ -173,7 +173,7 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
                     final boolean highQuality = Application.getConfiguration().
                             getString(SCALE_MODE_CONFIG_KEY, "speed").
                             equals("quality");
-                    image = Java2dUtil.scaleImageWithG2d(image, (Scale) op,
+                    image = Java2dUtil.scaleImage(image, (Scale) op,
                             reductionFactor, highQuality);
                 } else if (op instanceof Transpose) {
                     image = Java2dUtil.transposeImage(image, (Transpose) op);
@@ -221,7 +221,7 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
                     final boolean highQuality = Application.getConfiguration().
                             getString(SCALE_MODE_CONFIG_KEY, "speed").
                             equals("quality");
-                    image = Java2dUtil.scaleImageWithG2d(image, (Scale) op,
+                    image = Java2dUtil.scaleImage(image, (Scale) op,
                             reductionFactor, highQuality);
                 } else if (op instanceof Transpose) {
                     image = Java2dUtil.transposeImage(image, (Transpose) op);

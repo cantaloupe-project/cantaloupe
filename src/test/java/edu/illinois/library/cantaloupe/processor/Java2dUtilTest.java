@@ -133,20 +133,20 @@ public class Java2dUtilTest {
         // Scale.Mode.FULL
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
-        BufferedImage outImage = Java2dUtil.scaleImageWithG2d(inImage, scale);
+        BufferedImage outImage = Java2dUtil.scaleImage(inImage, scale);
         assertSame(inImage, outImage);
 
         // Scale.Mode.ASPECT_FIT_WIDTH
         scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
         scale.setWidth(50);
-        outImage = Java2dUtil.scaleImageWithG2d(inImage, scale);
+        outImage = Java2dUtil.scaleImage(inImage, scale);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // Scale.Mode.ASPECT_FIT_HEIGHT
         scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
         scale.setHeight(50);
-        outImage = Java2dUtil.scaleImageWithG2d(inImage, scale);
+        outImage = Java2dUtil.scaleImage(inImage, scale);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
@@ -154,7 +154,7 @@ public class Java2dUtilTest {
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setWidth(50);
         scale.setHeight(50);
-        outImage = Java2dUtil.scaleImageWithG2d(inImage, scale);
+        outImage = Java2dUtil.scaleImage(inImage, scale);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
     }
@@ -169,7 +169,7 @@ public class Java2dUtilTest {
         scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
         scale.setWidth(50);
         ReductionFactor rf = new ReductionFactor(1);
-        BufferedImage outImage = Java2dUtil.scaleImageWithG2d(inImage, scale,
+        BufferedImage outImage = Java2dUtil.scaleImage(inImage, scale,
                 rf, true);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
@@ -179,7 +179,7 @@ public class Java2dUtilTest {
         scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
         scale.setHeight(50);
         rf = new ReductionFactor(1);
-        outImage = Java2dUtil.scaleImageWithG2d(inImage, scale, rf, false);
+        outImage = Java2dUtil.scaleImage(inImage, scale, rf, false);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
@@ -189,7 +189,7 @@ public class Java2dUtilTest {
         scale.setWidth(50);
         scale.setHeight(50);
         rf = new ReductionFactor(1);
-        outImage = Java2dUtil.scaleImageWithG2d(inImage, scale, rf, true);
+        outImage = Java2dUtil.scaleImage(inImage, scale, rf, true);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
     }

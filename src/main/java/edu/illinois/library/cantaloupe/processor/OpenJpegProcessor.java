@@ -464,7 +464,7 @@ class OpenJpegProcessor implements FileProcessor {
                 final boolean highQuality = Application.getConfiguration().
                         getString(JAVA2D_SCALE_MODE_CONFIG_KEY, "speed").
                         equals("quality");
-                image = Java2dUtil.scaleImageWithG2d(image,
+                image = Java2dUtil.scaleImage(image,
                         (Scale) op, reductionFactor, highQuality);
             } else if (op instanceof Transpose) {
                 image = Java2dUtil.transposeImage(image,

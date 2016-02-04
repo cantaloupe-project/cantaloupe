@@ -230,13 +230,13 @@ abstract class Java2dUtil {
      * Scales an image using Graphics2D.
      *
      * @param inImage Image to scale
-     * @param scale Scale operation
+     * @param scale   Scale operation
      * @return Downscaled image, or the input image if the given scale is a
-     * no-op.
+     *         no-op.
      */
-    public static BufferedImage scaleImageWithG2d(final BufferedImage inImage,
-                                                  final Scale scale) {
-        return scaleImageWithG2d(inImage, scale, new ReductionFactor(0), false);
+    public static BufferedImage scaleImage(final BufferedImage inImage,
+                                           final Scale scale) {
+        return scaleImage(inImage, scale, new ReductionFactor(0), false);
     }
 
     /**
@@ -252,12 +252,12 @@ abstract class Java2dUtil {
      * @param highQuality Whether to use a high-quality but more expensive
      *                    scaling method.
      * @return Downscaled image, or the input image if the given scale is a
-     * no-op.
+     *         no-op.
      */
-    public static BufferedImage scaleImageWithG2d(final BufferedImage inImage,
-                                                  final Scale scale,
-                                                  final ReductionFactor rf,
-                                                  final boolean highQuality) {
+    public static BufferedImage scaleImage(final BufferedImage inImage,
+                                           final Scale scale,
+                                           final ReductionFactor rf,
+                                           final boolean highQuality) {
         final Dimension scaledSize = scale.getResultingSize(
                 new Dimension(inImage.getWidth(), inImage.getHeight()));
         BufferedImage scaledImage;
@@ -313,8 +313,7 @@ abstract class Java2dUtil {
             }
             g2d.dispose();
 
-            logger.info("scaleImageWithG2d(): scaled {}x{} image to {}x{} " +
-                    "in {} msec",
+            logger.info("scaleImage(): scaled {}x{} image to {}x{} in {} msec",
                     inImage.getWidth(), inImage.getHeight(),
                     width, height,
                     System.currentTimeMillis() - msec);
