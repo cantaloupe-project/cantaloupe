@@ -314,7 +314,11 @@ class FfmpegProcessor implements FileProcessor {
             } else if (op instanceof Scale) {
                 Scale scale = (Scale) op;
                 if (scale.getMode() != Scale.Mode.FULL) {
-                    if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+                    if (scale.getPercent() != 0) {
+                        int width = Math.round(fullSize.width * scale.getPercent());
+                        int height = Math.round(fullSize.height * scale.getPercent());
+                        filters.add(String.format("scale=%d:%d", width, height));
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                         filters.add(String.format("scale=%d:-1", scale.getWidth()));
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                         filters.add(String.format("scale=-1:%d", scale.getHeight()));
@@ -324,10 +328,6 @@ class FfmpegProcessor implements FileProcessor {
                     } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
                         filters.add(String.format("scale=%d:%d", scale.getWidth(),
                                 scale.getHeight()));
-                    } else if (scale.getPercent() != 0) {
-                        int width = Math.round(fullSize.width * scale.getPercent());
-                        int height = Math.round(fullSize.height * scale.getPercent());
-                        filters.add(String.format("scale=%d:%d", width, height));
                     }
                 }
             } else if (op instanceof Transpose) {
