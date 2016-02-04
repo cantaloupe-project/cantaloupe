@@ -93,7 +93,11 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
     public Dimension getSize(File inputFile, SourceFormat sourceFormat)
             throws ProcessorException {
         ImageIoImageReader reader = new ImageIoImageReader();
-        return reader.readSize(inputFile, sourceFormat);
+        try {
+            return reader.readSize(inputFile, sourceFormat);
+        } catch (IOException e) {
+            throw new ProcessorException(e.getMessage(), e);
+        }
     }
 
     @Override
@@ -101,7 +105,11 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
                              final SourceFormat sourceFormat)
             throws ProcessorException {
         ImageIoImageReader reader = new ImageIoImageReader();
-        return reader.readSize(streamSource, sourceFormat);
+        try {
+            return reader.readSize(streamSource, sourceFormat);
+        } catch (IOException e) {
+            throw new ProcessorException(e.getMessage(), e);
+        }
     }
 
     @Override

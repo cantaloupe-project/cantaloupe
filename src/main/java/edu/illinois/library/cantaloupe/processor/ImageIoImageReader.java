@@ -91,15 +91,11 @@ class ImageIoImageReader {
      * @param inputFile
      * @param sourceFormat
      * @return Dimensions in pixels
-     * @throws ProcessorException
+     * @throws IOException
      */
     public Dimension readSize(File inputFile, SourceFormat sourceFormat)
-            throws ProcessorException {
-        try (ImageInputStream inputStream = new FileImageInputStream(inputFile)) {
-            return doReadSize(inputStream, sourceFormat);
-        } catch (IOException e) {
-            throw new ProcessorException(e.getMessage(), e);
-        }
+            throws IOException {
+        return doReadSize(new FileImageInputStream(inputFile), sourceFormat);
     }
 
     /**
@@ -109,42 +105,38 @@ class ImageIoImageReader {
      *                     the size.
      * @param sourceFormat
      * @return Dimensions in pixels
-     * @throws ProcessorException
+     * @throws IOException
      */
     public Dimension readSize(StreamSource streamSource,
-                              SourceFormat sourceFormat)
-            throws ProcessorException {
-        try (ImageInputStream iis = streamSource.newImageInputStream()) {
-            return doReadSize(iis, sourceFormat);
-        } catch (IOException e) {
-            throw new ProcessorException(e.getMessage(), e);
-        }
+                              SourceFormat sourceFormat) throws IOException {
+        return doReadSize(streamSource.newImageInputStream(), sourceFormat);
     }
 
     /**
-     * @param inputStream
+     * @param inputStream Will be closed.
      * @param sourceFormat
      * @return
-     * @throws ProcessorException
+     * @throws IOException
      */
     private Dimension doReadSize(ImageInputStream inputStream,
-                                SourceFormat sourceFormat)
-            throws ProcessorException {
-        Iterator<ImageReader> iter = ImageIO.
-                getImageReadersBySuffix(sourceFormat.getPreferredExtension());
-        if (iter.hasNext()) {
-            ImageReader reader = iter.next();
-            int width, height;
-            try {
-                reader.setInput(inputStream);
-                width = reader.getWidth(reader.getMinIndex());
-                height = reader.getHeight(reader.getMinIndex());
-            } catch (IOException e) {
-                throw new ProcessorException(e.getMessage(), e);
-            } finally {
-                reader.dispose();
+                                SourceFormat sourceFormat) throws IOException {
+        try {
+            Iterator<ImageReader> iter = ImageIO.
+                    getImageReadersBySuffix(sourceFormat.getPreferredExtension());
+            if (iter.hasNext()) {
+                ImageReader reader = iter.next();
+                int width, height;
+                try {
+                    reader.setInput(inputStream);
+                    width = reader.getWidth(reader.getMinIndex());
+                    height = reader.getHeight(reader.getMinIndex());
+                } finally {
+                    reader.dispose();
+                }
+                return new Dimension(width, height);
             }
-            return new Dimension(width, height);
+        } finally {
+            inputStream.close();
         }
         return null;
     }
