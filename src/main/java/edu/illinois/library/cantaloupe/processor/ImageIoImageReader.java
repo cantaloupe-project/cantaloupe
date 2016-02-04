@@ -95,8 +95,8 @@ class ImageIoImageReader {
      */
     public Dimension readSize(File inputFile, SourceFormat sourceFormat)
             throws ProcessorException {
-        try {
-            return doReadSize(new FileImageInputStream(inputFile), sourceFormat);
+        try (ImageInputStream inputStream = new FileImageInputStream(inputFile)) {
+            return doReadSize(inputStream, sourceFormat);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
