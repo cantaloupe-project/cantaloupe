@@ -258,65 +258,59 @@ abstract class Java2dUtil {
                                            final Scale scale,
                                            final ReductionFactor rf,
                                            final boolean highQuality) {
-        final Dimension scaledSize = scale.getResultingSize(
-                new Dimension(inImage.getWidth(), inImage.getHeight()));
-        BufferedImage scaledImage;
-        if (scale.isNoOp() || (scaledSize.width == inImage.getWidth() &&
-                scaledSize.height == inImage.getHeight())) {
-            scaledImage = inImage;
+        final Dimension sourceSize = new Dimension(
+                inImage.getWidth(), inImage.getHeight());
+
+        // Calculate the size that the image will need to be scaled to based
+        // on the source image size, scale, and already-applied reduction
+        // factor.
+        Dimension resultingSize;
+        if (scale.getPercent() != null) {
+            resultingSize = new Dimension();
+            resultingSize.width = (int) Math.round(sourceSize.width *
+                    (scale.getPercent() / rf.getScale()));
+            resultingSize.height = (int) Math.round(sourceSize.height *
+                    (scale.getPercent() / rf.getScale()));
         } else {
-            final long msec = System.currentTimeMillis();
-            final int sourceWidth = inImage.getWidth();
-            final int sourceHeight = inImage.getHeight();
-            int width = 0, height = 0;
-            if (scale.getPercent() != null) {
-                final double pct = scale.getPercent() / rf.getScale();
-                width = (int) Math.round(sourceWidth * pct);
-                height = (int) Math.round(sourceHeight * pct);
-            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                width = scale.getWidth();
-                height = sourceHeight * width / sourceWidth;
-            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                height = scale.getHeight();
-                width = sourceWidth * height / sourceHeight;
-            } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
-                width = scale.getWidth();
-                height = scale.getHeight();
-            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                final double hScale = (double) scale.getWidth() /
-                        (double) sourceWidth;
-                final double vScale = (double) scale.getHeight() /
-                        (double) sourceHeight;
-                width = (int) Math.round(sourceWidth *
-                        Math.min(hScale, vScale));
-                height = (int) Math.round(sourceHeight *
-                        Math.min(hScale, vScale));
-            }
-            scaledImage = new BufferedImage(width, height,
+            resultingSize = scale.getResultingSize(sourceSize);
+        }
+
+        BufferedImage scaledImage = inImage;
+        if (!scale.isNoOp() && (resultingSize.width != sourceSize.width &&
+                resultingSize.height != sourceSize.height)) {
+            final long startMsec = System.currentTimeMillis();
+
+            scaledImage = new BufferedImage(
+                    resultingSize.width, resultingSize.height,
                     inImage.getType());
 
             final Graphics2D g2d = scaledImage.createGraphics();
-            // The "non-high-quality" technique results in images with
-            // noticeable aliasing at small scales.
-            // See: https://community.oracle.com/docs/DOC-983611
-            // http://stackoverflow.com/a/34266703/177529
-            if (highQuality) {
-                g2d.drawImage(
-                        inImage.getScaledInstance(width, height, Image.SCALE_SMOOTH),
-                        0, 0, width, height, null);
-            } else {
-                final RenderingHints hints = new RenderingHints(
-                        RenderingHints.KEY_INTERPOLATION,
-                        RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-                g2d.setRenderingHints(hints);
-                g2d.drawImage(inImage, 0, 0, width, height, null);
+            try {
+                // The "non-high-quality" technique results in images with
+                // noticeable aliasing at small scales.
+                // See: https://community.oracle.com/docs/DOC-983611
+                // http://stackoverflow.com/a/34266703/177529
+                if (highQuality) {
+                    g2d.drawImage(
+                            inImage.getScaledInstance(
+                                    resultingSize.width, resultingSize.height,
+                                    Image.SCALE_SMOOTH),
+                            0, 0, resultingSize.width, resultingSize.height, null);
+                } else {
+                    final RenderingHints hints = new RenderingHints(
+                            RenderingHints.KEY_INTERPOLATION,
+                            RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                    g2d.setRenderingHints(hints);
+                    g2d.drawImage(inImage, 0, 0,
+                            resultingSize.width, resultingSize.height, null);
+                }
+                logger.info("scaleImage(): scaled {}x{} image to {}x{} in {} msec",
+                        sourceSize.width, sourceSize.height,
+                        resultingSize.width, resultingSize.height,
+                        System.currentTimeMillis() - startMsec);
+            } finally {
+                g2d.dispose();
             }
-            g2d.dispose();
-
-            logger.info("scaleImage(): scaled {}x{} image to {}x{} in {} msec",
-                    inImage.getWidth(), inImage.getHeight(),
-                    width, height,
-                    System.currentTimeMillis() - msec);
         }
         return scaledImage;
     }

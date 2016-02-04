@@ -126,7 +126,7 @@ public class Java2dUtilTest {
     }
 
     @Test
-    public void testScaleImageWithG2d() {
+    public void testScaleImage() {
         BufferedImage inImage = new BufferedImage(100, 100,
                 BufferedImage.TYPE_INT_RGB);
 
@@ -157,11 +157,18 @@ public class Java2dUtilTest {
         outImage = Java2dUtil.scaleImage(inImage, scale);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
+
+        // scale-by percent
+        scale = new Scale();
+        scale.setPercent(0.25f);
+        outImage = Java2dUtil.scaleImage(inImage, scale);
+        assertEquals(25, outImage.getWidth());
+        assertEquals(25, outImage.getHeight());
     }
 
     @Test
-    public void testScaleImageWithG2dWithReductionFactor() {
-        BufferedImage inImage = new BufferedImage(50, 50,
+    public void testScaleImageWithReductionFactor() {
+        BufferedImage inImage = new BufferedImage(100, 100,
                 BufferedImage.TYPE_INT_RGB);
 
         // Scale.Mode.ASPECT_FIT_WIDTH
@@ -192,6 +199,14 @@ public class Java2dUtilTest {
         outImage = Java2dUtil.scaleImage(inImage, scale, rf, true);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
+
+        // scale-by-percent
+        scale = new Scale();
+        scale.setPercent(0.25f);
+        rf = new ReductionFactor(2);
+        outImage = Java2dUtil.scaleImage(inImage, scale, rf, true);
+        assertEquals(100, outImage.getWidth());
+        assertEquals(100, outImage.getHeight());
     }
 
     @Test
