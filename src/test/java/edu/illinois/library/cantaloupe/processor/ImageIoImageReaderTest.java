@@ -53,9 +53,9 @@ public class ImageIoImageReaderTest {
     }
 
     @Test
-    public void testReadSize() throws Exception {
+    public void testGetSize() throws Exception {
         Dimension expected = new Dimension(64, 56);
-        Dimension actual = reader.readSize();
+        Dimension actual = reader.getSize();
         assertEquals(expected, actual);
     }
 

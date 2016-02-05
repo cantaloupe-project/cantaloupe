@@ -108,7 +108,7 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
         try {
             try {
                 reader = new ImageIoImageReader(inputFile, sourceFormat);
-                return reader.readSize();
+                return reader.getSize();
             } finally {
                 if (reader != null) {
                     reader.dispose();
@@ -127,7 +127,7 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
         try {
             try {
                 reader = new ImageIoImageReader(streamSource, sourceFormat);
-                return reader.readSize();
+                return reader.getSize();
             } finally {
                 if (reader != null) {
                     reader.dispose();
