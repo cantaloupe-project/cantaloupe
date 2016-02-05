@@ -29,6 +29,19 @@ public class ImageIoImageReaderTest {
     }
 
     @Test
+    public void testGetNumResolutionsWithFile() throws Exception {
+        assertEquals(1, reader.getNumResolutions(TestUtil.getImage("jpg")));
+        // TODO: multiresolution
+    }
+
+    @Test
+    public void testGetNumResolutionsWithStreamSource() throws Exception {
+        StreamSource ss = new TestStreamSource(TestUtil.getImage("jpg"));
+        assertEquals(1, reader.getNumResolutions(ss));
+        // TODO: multiresolution
+    }
+
+    @Test
     public void testReadSizeWithFile() throws Exception {
         Dimension expected = new Dimension(64, 56);
         Dimension actual = reader.readSize(

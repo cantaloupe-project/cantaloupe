@@ -86,6 +86,46 @@ class ImageIoImageReader {
     }
 
     /**
+     * @param inputFile
+     * @return The number of images contained inside the given image file.
+     * @throws IOException
+     */
+    public int getNumResolutions(File inputFile) throws IOException {
+        return doGetNumResolutions(new FileImageInputStream(inputFile));
+    }
+
+    /**
+     * @param streamSource
+     * @return The number of images contained inside the given image file.
+     * @throws IOException
+     */
+    public int getNumResolutions(StreamSource streamSource) throws IOException {
+        return doGetNumResolutions(streamSource.newImageInputStream());
+    }
+
+    private int doGetNumResolutions(ImageInputStream inputStream) throws IOException {
+        int numImages = 0;
+        try {
+            Iterator<ImageReader> it = ImageIO.getImageReaders(inputStream);
+            if (it.hasNext()) {
+                ImageReader reader = it.next();
+                reader.setInput(inputStream);
+                try {
+                    numImages = reader.getNumImages(false);
+                    if (numImages == -1) {
+                        numImages = reader.getNumImages(true);
+                    }
+                } finally {
+                    reader.dispose();
+                }
+            }
+        } finally {
+            inputStream.close();
+        }
+        return numImages;
+    }
+
+    /**
      * Efficiently reads the dimensions of an image.
      *
      * @param inputFile
