@@ -475,6 +475,9 @@ class ImageIoImageReader {
                     (region.height / (double) imageSize.height);
         } else {
             switch (scale.getMode()) {
+                case FULL:
+                    xScale = yScale = 1f;
+                    break;
                 case ASPECT_FIT_WIDTH:
                     xScale = yScale = scale.getWidth() / (double) region.width;
                     break;
