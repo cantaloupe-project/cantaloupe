@@ -26,7 +26,9 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * <p>Image reader using ImageIO to efficiently read source images.</p>
+ * <p>Image reader wrapping an ImageIO {@link ImageReader} instance, with
+ * enhancements to support efficient reading of multi-resolution and/or tiled
+ * source images with scale-appropriate subsampling.</p>
  *
  * <p>Clients should remember to call {@link #dispose()} when done with an
  * instance.</p>
@@ -185,6 +187,8 @@ class ImageIoImageReader {
      * @throws IOException
      */
     public int getNumResolutions() throws IOException {
+        // The boolean parameter tells getNumImages() whether to scan for
+        // images, which seems to be necessary for some, but is slower.
         int numImages = reader.getNumImages(false);
         if (numImages == -1) {
             numImages = reader.getNumImages(true);
@@ -204,7 +208,21 @@ class ImageIoImageReader {
         return new Dimension(width, height);
     }
 
+    /**
+     * @param imageIndex
+     * @return Tile size of the image at the given index. If the image is not
+     *         tiled, the full image dimensions are returned.
+     * @throws IOException
+     */
+    public Dimension getTileSize(int imageIndex) throws IOException {
+        final int width = reader.getTileWidth(imageIndex);
+        final int height = reader.getTileHeight(imageIndex);
+        return new Dimension(width, height);
+    }
+
+    ////////////////////////////////////////////////////////////////////////
     /////////////////////// BufferedImage methods //////////////////////////
+    ////////////////////////////////////////////////////////////////////////
 
     /**
      * Expedient but not necessarily efficient method wrapping

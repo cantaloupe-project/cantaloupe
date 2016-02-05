@@ -60,6 +60,24 @@ public class ImageIoImageReaderTest {
     }
 
     @Test
+    public void testGetTileSizeWithTiledSource() throws Exception {
+        reader.setSource(TestUtil.
+                getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif"));
+        Dimension expected = new Dimension(16, 16);
+        Dimension actual = reader.getTileSize(0);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testGetTileSizeWithUntiledSource() throws Exception {
+        reader.setSource(TestUtil.
+                getImage("tif-rgb-monores-64x56x8-striped-uncompressed.tif"));
+        Dimension expected = new Dimension(64, 42);
+        Dimension actual = reader.getTileSize(0);
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testReadWithMonoResolutionImageAndNoScaleFactor() throws Exception {
         OperationList ops = new OperationList();
         Crop crop = new Crop();
