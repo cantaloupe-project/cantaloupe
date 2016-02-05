@@ -36,7 +36,7 @@ public class LandingResource extends AbstractResource {
     protected void doInit() throws ResourceException {
         super.doInit();
         // add a "Cache-Control: no-cache" header because this page contains
-        // dynamic information pertaining to the function of the application
+        // live information pertaining to the function of the application
         getResponseCacheDirectives().add(CacheDirective.noCache());
     }
 

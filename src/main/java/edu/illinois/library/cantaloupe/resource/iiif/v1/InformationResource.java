@@ -12,13 +12,11 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
-import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
@@ -78,22 +76,19 @@ public class InformationResource extends AbstractResource {
 
         // Obtain an instance of the processor assigned to that format in
         // the config file
-        Processor proc = ProcessorFactory.getProcessor(sourceFormat, resolver);
-
-        if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
-            throw new UnsupportedSourceFormatException();
-        }
+        Processor proc = ProcessorFactory.getProcessor(resolver, identifier,
+                sourceFormat);
 
         // Get an ImageInfo instance corresponding to the source image
         ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
-                proc.getSupportedFeatures(sourceFormat),
-                proc.getSupportedIiif1_1Qualities(sourceFormat),
-                proc.getAvailableOutputFormats(sourceFormat));
+                proc.getSupportedFeatures(),
+                proc.getSupportedIiif1_1Qualities(),
+                proc.getAvailableOutputFormats());
         ImageInfo imageInfo = getImageInfo(identifier,
-                getSize(identifier, proc, resolver, sourceFormat),
+                getSize(identifier, proc),
                 complianceLevel,
-                proc.getSupportedIiif1_1Qualities(sourceFormat),
-                proc.getAvailableOutputFormats(sourceFormat));
+                proc.getSupportedIiif1_1Qualities(),
+                proc.getAvailableOutputFormats());
         // Transform the ImageInfo into JSON
         ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writer().

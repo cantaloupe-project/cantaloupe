@@ -19,22 +19,16 @@ public class Java2dProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void testGetAvailableOutputFormats() {
+    public void testGetAvailableOutputFormats() throws Exception {
+        instance.setSourceFormat(SourceFormat.JPG);
         Set<OutputFormat> expectedFormats = Java2dProcessor.
-                getAvailableOutputFormats().get(SourceFormat.JPG);
-        assertEquals(expectedFormats,
-                instance.getAvailableOutputFormats(SourceFormat.JPG));
+                availableOutputFormats().get(SourceFormat.JPG);
+        assertEquals(expectedFormats, instance.getAvailableOutputFormats());
     }
 
     @Test
-    public void testGetAvailableOutputFormatsForUnsupportedSourceFormat() {
-        Set<OutputFormat> expectedFormats = new HashSet<>();
-        assertEquals(expectedFormats,
-                instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
-    }
-
-    @Test
-    public void testGetSupportedFeatures() {
+    public void testGetSupportedFeatures() throws Exception {
+        instance.setSourceFormat(getAnySupportedSourceFormat(instance));
         Set<ProcessorFeature> expectedFeatures = new HashSet<>();
         expectedFeatures.add(ProcessorFeature.MIRRORING);
         expectedFeatures.add(ProcessorFeature.REGION_BY_PERCENT);
@@ -47,12 +41,7 @@ public class Java2dProcessorTest extends ProcessorTest {
         expectedFeatures.add(ProcessorFeature.SIZE_BY_PERCENT);
         expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH);
         expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
-        assertEquals(expectedFeatures,
-                instance.getSupportedFeatures(getAnySupportedSourceFormat(instance)));
-
-        expectedFeatures = new HashSet<>();
-        assertEquals(expectedFeatures,
-                instance.getSupportedFeatures(SourceFormat.UNKNOWN));
+        assertEquals(expectedFeatures, instance.getSupportedFeatures());
     }
 
 }

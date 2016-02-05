@@ -38,7 +38,8 @@ import java.util.Set;
  * <p>Does not implement <code>FileProcessor</code> because testing indicates
  * that input streams are significantly faster.</p>
  */
-class GraphicsMagickProcessor implements StreamProcessor {
+class GraphicsMagickProcessor extends AbstractProcessor
+        implements StreamProcessor {
 
     private static Logger logger = LoggerFactory.
             getLogger(GraphicsMagickProcessor.class);
@@ -53,6 +54,8 @@ class GraphicsMagickProcessor implements StreamProcessor {
             SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
     // Lazy-initialized by getFormats()
     private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
+
+    private StreamSource streamSource;
 
     static {
         SUPPORTED_IIIF_1_1_QUALITIES.add(
@@ -159,7 +162,7 @@ class GraphicsMagickProcessor implements StreamProcessor {
     }
 
     @Override
-    public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
+    public Set<OutputFormat> getAvailableOutputFormats() {
         Set<OutputFormat> formats = getFormats().get(sourceFormat);
         if (formats == null) {
             formats = new HashSet<>();
@@ -168,10 +171,8 @@ class GraphicsMagickProcessor implements StreamProcessor {
     }
 
     @Override
-    public Dimension getSize(final StreamSource streamSource,
-                             final SourceFormat sourceFormat)
-            throws ProcessorException {
-        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
+    public Dimension getSize() throws ProcessorException {
+        if (getAvailableOutputFormats().size() < 1) {
             throw new UnsupportedSourceFormatException(sourceFormat);
         }
         InputStream inputStream = null;
@@ -196,10 +197,14 @@ class GraphicsMagickProcessor implements StreamProcessor {
     }
 
     @Override
-    public Set<ProcessorFeature> getSupportedFeatures(
-            final SourceFormat sourceFormat) {
+    public StreamSource getStreamSource() {
+        return this.streamSource;
+    }
+
+    @Override
+    public Set<ProcessorFeature> getSupportedFeatures() {
         Set<ProcessorFeature> features = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             features.addAll(SUPPORTED_FEATURES);
         }
         return features;
@@ -207,10 +212,10 @@ class GraphicsMagickProcessor implements StreamProcessor {
 
     @Override
     public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-    getSupportedIiif1_1Qualities(final SourceFormat sourceFormat) {
+    getSupportedIiif1_1Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
                 qualities = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             qualities.addAll(SUPPORTED_IIIF_1_1_QUALITIES);
         }
         return qualities;
@@ -218,10 +223,10 @@ class GraphicsMagickProcessor implements StreamProcessor {
 
     @Override
     public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-    getSupportedIiif2_0Qualities(final SourceFormat sourceFormat) {
+    getSupportedIiif2_0Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
                 qualities = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             qualities.addAll(SUPPORTED_IIIF_2_0_QUALITIES);
         }
         return qualities;
@@ -229,13 +234,16 @@ class GraphicsMagickProcessor implements StreamProcessor {
 
     @Override
     public void process(final OperationList ops,
-                        final SourceFormat sourceFormat,
                         final Dimension fullSize,
-                        final StreamSource streamSource,
                         final OutputStream outputStream)
             throws ProcessorException {
-        doProcess(sourceFormat.getPreferredExtension() + ":-", streamSource,
-                ops, sourceFormat, fullSize, outputStream);
+        doProcess(sourceFormat.getPreferredExtension() + ":-", ops, fullSize,
+                outputStream);
+    }
+
+    @Override
+    public void setStreamSource(StreamSource streamSource) {
+        this.streamSource = streamSource;
     }
 
     private void assembleOperation(IMOperation imOp, OperationList ops,
@@ -304,23 +312,19 @@ class GraphicsMagickProcessor implements StreamProcessor {
 
     /**
      * @param inputPath Absolute filename pathname or "-" to use a stream
-     * @param streamSource
      * @param ops
-     * @param sourceFormat
      * @param fullSize
      * @param outputStream Stream to write to
      * @throws ProcessorException
      */
     private void doProcess(final String inputPath,
-                           final StreamSource streamSource,
                            final OperationList ops,
-                           final SourceFormat sourceFormat,
                            final Dimension fullSize,
                            final OutputStream outputStream)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
-                getAvailableOutputFormats(sourceFormat);
-        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
+                getAvailableOutputFormats();
+        if (getAvailableOutputFormats().size() < 1) {
             throw new UnsupportedSourceFormatException(sourceFormat);
         } else if (!availableOutputFormats.contains(ops.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();

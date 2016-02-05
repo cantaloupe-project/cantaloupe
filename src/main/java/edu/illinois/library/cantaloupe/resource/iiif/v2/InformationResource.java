@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import java.awt.Dimension;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
@@ -24,14 +23,11 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
-import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
-import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
-import org.apache.commons.configuration.Configuration;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
@@ -110,18 +106,15 @@ public class InformationResource extends AbstractResource {
 
         // Obtain an instance of the processor assigned to that format in
         // the config file
-        Processor proc = ProcessorFactory.getProcessor(sourceFormat, resolver);
-
-        if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
-            throw new UnsupportedSourceFormatException();
-        }
+        Processor proc = ProcessorFactory.getProcessor(resolver, identifier,
+                sourceFormat);
 
         // Get an ImageInfo instance corresponding to the source image
         ImageInfo imageInfo = assembleImageInfo(identifier,
-                getSize(identifier, proc, resolver, sourceFormat),
-                proc.getSupportedIiif2_0Qualities(sourceFormat),
-                proc.getSupportedFeatures(sourceFormat),
-                proc.getAvailableOutputFormats(sourceFormat));
+                getSize(identifier, proc),
+                proc.getSupportedIiif2_0Qualities(),
+                proc.getSupportedFeatures(),
+                proc.getAvailableOutputFormats());
         // Transform the ImageInfo into JSON
         ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writer().

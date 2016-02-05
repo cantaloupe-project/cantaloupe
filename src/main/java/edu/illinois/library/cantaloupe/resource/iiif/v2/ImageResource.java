@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
@@ -72,7 +73,8 @@ public class ImageResource extends AbstractResource {
                 (String) attrs.get("quality"),
                 (String) attrs.get("format"));
         final OperationList ops = params.toOperationList();
-        ops.setIdentifier(decodeSlashes(ops.getIdentifier()));
+        final Identifier identifier = decodeSlashes(ops.getIdentifier());
+        ops.setIdentifier(identifier);
         ops.getOptions().putAll(
                 this.getReference().getQueryAsForm(true).getValuesMap());
 
@@ -115,21 +117,17 @@ public class ImageResource extends AbstractResource {
 
         // Obtain an instance of the processor assigned to that format in
         // the config file
-        Processor proc = ProcessorFactory.getProcessor(sourceFormat, resolver);
+        Processor proc = ProcessorFactory.getProcessor(resolver, identifier,
+                sourceFormat);
 
-        if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
-            throw new UnsupportedSourceFormatException();
-        }
-
-        if (!isAuthorized(ops,
-                getSize(ops.getIdentifier(), proc, resolver, sourceFormat))) {
+        if (!isAuthorized(ops, getSize(ops.getIdentifier(), proc))) {
             throw new AccessDeniedException();
         }
 
         // Find out whether the processor supports that source format by
         // asking it whether it offers any output formats for it
         Set<OutputFormat> availableOutputFormats =
-                proc.getAvailableOutputFormats(sourceFormat);
+                proc.getAvailableOutputFormats();
         if (!availableOutputFormats.contains(ops.getOutputFormat())) {
             String msg = String.format("%s does not support the \"%s\" output format",
                     proc.getClass().getSimpleName(),
@@ -140,8 +138,7 @@ public class ImageResource extends AbstractResource {
 
         this.addLinkHeader(params);
 
-        return getRepresentation(ops, sourceFormat, disposition, resolver,
-                proc);
+        return getRepresentation(ops, sourceFormat, disposition, proc);
     }
 
     private void addLinkHeader(Parameters params) {

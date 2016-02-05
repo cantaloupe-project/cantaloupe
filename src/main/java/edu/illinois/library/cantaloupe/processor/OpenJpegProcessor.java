@@ -11,7 +11,6 @@ import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.IOUtils;
@@ -20,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.RenderedOp;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -52,7 +50,7 @@ import java.util.concurrent.Executors;
  * generates BMP output which is streamed directly to the ImageIO or JAI
  * reader, which are really fast with BMP for some reason.
  */
-class OpenJpegProcessor implements FileProcessor {
+class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
 
     private static Logger logger = LoggerFactory.
             getLogger(OpenJpegProcessor.class);
@@ -76,6 +74,8 @@ class OpenJpegProcessor implements FileProcessor {
             Executors.newCachedThreadPool();
 
     private static Path stdoutSymlink;
+
+    private File sourceFile;
 
     static {
         SUPPORTED_IIIF_1_1_QUALITIES.add(
@@ -153,7 +153,7 @@ class OpenJpegProcessor implements FileProcessor {
     }
 
     @Override
-    public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
+    public Set<OutputFormat> getAvailableOutputFormats() {
         Set<OutputFormat> outputFormats = new HashSet<>();
         if (sourceFormat == SourceFormat.JP2) {
             outputFormats.addAll(ImageIoImageWriter.supportedFormats());
@@ -164,21 +164,18 @@ class OpenJpegProcessor implements FileProcessor {
     /**
      * Gets the size of the given image by parsing the output of opj_dump.
      *
-     * @param inputFile Source image
-     * @param sourceFormat Format of the source image
      * @return
      * @throws ProcessorException
      */
     @Override
-    public Dimension getSize(File inputFile, SourceFormat sourceFormat)
-            throws ProcessorException {
-        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
-            throw new UnsupportedSourceFormatException(sourceFormat);
+    public Dimension getSize() throws ProcessorException {
+        if (getAvailableOutputFormats().size() < 1) {
+            throw new UnsupportedSourceFormatException();
         }
         final List<String> command = new ArrayList<>();
         command.add(getPath("opj_dump"));
         command.add("-i");
-        command.add(inputFile.getAbsolutePath());
+        command.add(sourceFile.getAbsolutePath());
         try {
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.redirectErrorStream(true);
@@ -214,9 +211,14 @@ class OpenJpegProcessor implements FileProcessor {
     }
 
     @Override
-    public Set<ProcessorFeature> getSupportedFeatures(SourceFormat sourceFormat) {
+    public File getSourceFile() {
+        return this.sourceFile;
+    }
+
+    @Override
+    public Set<ProcessorFeature> getSupportedFeatures() {
         Set<ProcessorFeature> features = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             features.addAll(SUPPORTED_FEATURES);
         }
         return features;
@@ -224,10 +226,10 @@ class OpenJpegProcessor implements FileProcessor {
 
     @Override
     public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-    getSupportedIiif1_1Qualities(final SourceFormat sourceFormat) {
+    getSupportedIiif1_1Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
                 qualities = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             qualities.addAll(SUPPORTED_IIIF_1_1_QUALITIES);
         }
         return qualities;
@@ -235,10 +237,10 @@ class OpenJpegProcessor implements FileProcessor {
 
     @Override
     public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-    getSupportedIiif2_0Qualities(final SourceFormat sourceFormat) {
+    getSupportedIiif2_0Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
                 qualities = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             qualities.addAll(SUPPORTED_IIIF_2_0_QUALITIES);
         }
         return qualities;
@@ -246,14 +248,12 @@ class OpenJpegProcessor implements FileProcessor {
 
     @Override
     public void process(final OperationList ops,
-                        final SourceFormat sourceFormat,
                         final Dimension fullSize,
-                        final File inputFile,
                         final OutputStream outputStream)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
-                getAvailableOutputFormats(sourceFormat);
-        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
+                getAvailableOutputFormats();
+        if (getAvailableOutputFormats().size() < 1) {
             throw new UnsupportedSourceFormatException(sourceFormat);
         } else if (!availableOutputFormats.contains(ops.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
@@ -283,8 +283,8 @@ class OpenJpegProcessor implements FileProcessor {
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
             final ReductionFactor reductionFactor = new ReductionFactor();
-            final ProcessBuilder pb = getProcessBuilder(inputFile, ops,
-                    fullSize, reductionFactor);
+            final ProcessBuilder pb = getProcessBuilder(ops, fullSize,
+                    reductionFactor);
             logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
@@ -331,24 +331,27 @@ class OpenJpegProcessor implements FileProcessor {
         }
     }
 
+    @Override
+    public void setSourceFile(File sourceFile) {
+        this.sourceFile = sourceFile;
+    }
+
     /**
      * Gets a ProcessBuilder corresponding to the given parameters.
      *
-     * @param inputFile
      * @param opList
      * @param imageSize The full size of the source image
      * @param reduction {@link ReductionFactor#factor} property modified by
      * reference
      * @return Command string
      */
-    private ProcessBuilder getProcessBuilder(final File inputFile,
-                                             final OperationList opList,
+    private ProcessBuilder getProcessBuilder(final OperationList opList,
                                              final Dimension imageSize,
                                              final ReductionFactor reduction) {
         final List<String> command = new ArrayList<>();
         command.add(getPath("opj_decompress"));
         command.add("-i");
-        command.add(inputFile.getAbsolutePath());
+        command.add(sourceFile.getAbsolutePath());
 
         for (Operation op : opList) {
             if (op instanceof Crop) {

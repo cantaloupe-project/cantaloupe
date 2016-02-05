@@ -595,7 +595,7 @@ public class Version1_1ConformanceTest {
         // does the current processor support this output format?
         SourceFormat sourceFormat = SourceFormat.getSourceFormat(IMAGE);
         Processor processor = ProcessorFactory.getProcessor(sourceFormat);
-        if (processor.getAvailableOutputFormats(sourceFormat).contains(format)) {
+        if (processor.getAvailableOutputFormats().contains(format)) {
             client.get();
             assertEquals(Status.SUCCESS_OK, client.getStatus());
             assertEquals(format.getMediaType(),
