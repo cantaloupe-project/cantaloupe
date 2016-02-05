@@ -10,6 +10,8 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
+import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.IOUtils;
@@ -18,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.RenderedOp;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -293,15 +296,13 @@ class OpenJpegProcessor implements FileProcessor {
                 case "jai":
                     logger.info("Post-processing using JAI ({} = jai)",
                             POST_PROCESSOR_CONFIG_KEY);
-                    postProcessUsingJai(
-                            process.getInputStream(), ops,
+                    postProcessUsingJai(process.getInputStream(), ops,
                             reductionFactor, outputStream);
                     break;
                 default:
                     logger.info("Post-processing using Java 2D ({} = java2d)",
                             POST_PROCESSOR_CONFIG_KEY);
-                    postProcessUsingJava2d(
-                            process.getInputStream(), ops,
+                    postProcessUsingJava2d(process.getInputStream(), ops,
                             reductionFactor, outputStream);
                     break;
             }
@@ -431,8 +432,10 @@ class OpenJpegProcessor implements FileProcessor {
                                      final ReductionFactor reductionFactor,
                                      final OutputStream outputStream)
             throws IOException, ProcessorException {
-        RenderedImage renderedImage = new ImageIoImageReader().
-                readRendered(inputStream, SourceFormat.BMP);
+        final ImageIoImageReader reader = new ImageIoImageReader();
+        reader.setSource(new InputStreamStreamSource(inputStream),
+                SourceFormat.BMP);
+        RenderedImage renderedImage = reader.readRendered();
         RenderedOp renderedOp = JaiUtil.reformatImage(
                 RenderedOp.wrapRenderedImage(renderedImage),
                 new Dimension(512, 512));
@@ -458,7 +461,10 @@ class OpenJpegProcessor implements FileProcessor {
                                         final ReductionFactor reductionFactor,
                                         final OutputStream outputStream)
             throws IOException, ProcessorException {
-        BufferedImage image = new ImageIoImageReader().read(inputStream);
+        final ImageIoImageReader reader = new ImageIoImageReader();
+        reader.setSource(new InputStreamStreamSource(inputStream),
+                SourceFormat.BMP);
+        BufferedImage image = reader.read();
         for (Operation op : opList) {
             if (op instanceof Scale) {
                 final boolean highQuality = Application.getConfiguration().

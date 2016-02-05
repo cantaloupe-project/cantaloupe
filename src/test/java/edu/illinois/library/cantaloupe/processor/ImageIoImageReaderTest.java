@@ -4,8 +4,8 @@ import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.restlet.data.MediaType;
@@ -13,7 +13,6 @@ import org.restlet.data.MediaType;
 import javax.imageio.ImageIO;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,39 +23,14 @@ public class ImageIoImageReaderTest {
     private ImageIoImageReader reader;
 
     @Before
-    public void setUp() {
-        reader = new ImageIoImageReader();
-    }
-
-    @Test
-    public void testGetNumResolutionsWithFile() throws Exception {
-        assertEquals(1, reader.getNumResolutions(TestUtil.getImage("jpg")));
-        // TODO: multiresolution
-    }
-
-    @Test
-    public void testGetNumResolutionsWithStreamSource() throws Exception {
-        StreamSource ss = new TestStreamSource(TestUtil.getImage("jpg"));
-        assertEquals(1, reader.getNumResolutions(ss));
-        // TODO: multiresolution
-    }
-
-    @Test
-    public void testReadSizeWithFile() throws Exception {
-        Dimension expected = new Dimension(64, 56);
-        Dimension actual = reader.readSize(
-                TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"),
-                SourceFormat.JPG);
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testReadSizeWithInputStream() throws Exception {
-        Dimension expected = new Dimension(64, 56);
-        StreamSource streamSource = new TestStreamSource(
+    public void setUp() throws Exception {
+        reader = new ImageIoImageReader(
                 TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));
-        Dimension actual = reader.readSize(streamSource, SourceFormat.JPG);
-        assertEquals(expected, actual);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        reader.dispose();
     }
 
     @Test
@@ -73,10 +47,20 @@ public class ImageIoImageReaderTest {
     }
 
     @Test
-    public void testReadWithMonoResolutionImageAndNoScaleFactor() throws Exception {
-        final File fixture = TestUtil.getImage("jpg");
-        final Dimension fullSize = new Dimension(64, 56);
+    public void testGetNumResolutionsWithFile() throws Exception {
+        assertEquals(1, reader.getNumResolutions());
+        // TODO: multiresolution
+    }
 
+    @Test
+    public void testReadSize() throws Exception {
+        Dimension expected = new Dimension(64, 56);
+        Dimension actual = reader.readSize();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testReadWithMonoResolutionImageAndNoScaleFactor() throws Exception {
         OperationList ops = new OperationList();
         Crop crop = new Crop();
         crop.setX(10f);
@@ -91,8 +75,7 @@ public class ImageIoImageReaderTest {
         ReductionFactor rf = new ReductionFactor();
         Set<ImageIoImageReader.ReaderHint> hints = new HashSet<>();
 
-        BufferedImage image = reader.read(fixture, SourceFormat.JPG, ops,
-                fullSize, rf, hints);
+        BufferedImage image = reader.read(ops, rf, hints);
 
         assertEquals(40, image.getWidth());
         assertEquals(40, image.getHeight());
@@ -102,9 +85,6 @@ public class ImageIoImageReaderTest {
 
     @Test
     public void testReadWithMonoResolutionImageAndScaleFactor() throws Exception {
-        final File fixture = TestUtil.getImage("jpg");
-        final Dimension fullSize = new Dimension(64, 56);
-
         OperationList ops = new OperationList();
         Crop crop = new Crop();
         crop.setX(10f);
@@ -119,8 +99,7 @@ public class ImageIoImageReaderTest {
         ReductionFactor rf = new ReductionFactor();
         Set<ImageIoImageReader.ReaderHint> hints = new HashSet<>();
 
-        BufferedImage image = reader.read(fixture, SourceFormat.JPG, ops,
-                fullSize, rf, hints);
+        BufferedImage image = reader.read(ops, rf, hints);
 
         assertEquals(10, image.getWidth());
         assertEquals(10, image.getHeight());
@@ -130,8 +109,7 @@ public class ImageIoImageReaderTest {
 
     @Test
     public void testReadWithMonoResolutionImageAndSubsamplingAndAbsoluteScale() throws Exception {
-        final File fixture = TestUtil.getImage("tif-rgb-monores-64x56x16-striped-uncompressed.tif");
-        final Dimension fullSize = new Dimension(64, 56);
+        reader.setSource(TestUtil.getImage("tif-rgb-monores-64x56x16-striped-uncompressed.tif"));
 
         OperationList ops = new OperationList();
         Scale scale = new Scale();
@@ -141,8 +119,7 @@ public class ImageIoImageReaderTest {
         ReductionFactor rf = new ReductionFactor();
         Set<ImageIoImageReader.ReaderHint> hints = new HashSet<>();
 
-        BufferedImage image = reader.read(fixture, SourceFormat.TIF, ops,
-                fullSize, rf, hints);
+        BufferedImage image = reader.read(ops, rf, hints);
 
         assertEquals(16, image.getWidth());
         assertEquals(14, image.getHeight());
@@ -152,8 +129,7 @@ public class ImageIoImageReaderTest {
 
     @Test
     public void testReadWithMonoResolutionImageAndSubsamplingAndPercentScale() throws Exception {
-        final File fixture = TestUtil.getImage("tif-rgb-monores-64x56x16-striped-uncompressed.tif");
-        final Dimension fullSize = new Dimension(64, 56);
+        reader.setSource(TestUtil.getImage("tif-rgb-monores-64x56x16-striped-uncompressed.tif"));
 
         OperationList ops = new OperationList();
         Scale scale = new Scale();
@@ -162,8 +138,7 @@ public class ImageIoImageReaderTest {
         ReductionFactor rf = new ReductionFactor();
         Set<ImageIoImageReader.ReaderHint> hints = new HashSet<>();
 
-        BufferedImage image = reader.read(fixture, SourceFormat.TIF, ops,
-                fullSize, rf, hints);
+        BufferedImage image = reader.read(ops, rf, hints);
 
         assertEquals(16, image.getWidth());
         assertEquals(14, image.getHeight());

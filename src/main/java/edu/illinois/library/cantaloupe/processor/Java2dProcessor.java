@@ -12,6 +12,8 @@ import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
@@ -26,6 +28,9 @@ import java.util.Set;
  * Processor using the Java 2D framework.
  */
 class Java2dProcessor implements StreamProcessor, FileProcessor {
+
+    private static Logger logger = LoggerFactory.
+            getLogger(Java2dProcessor.class);
 
     public static final String JPG_QUALITY_CONFIG_KEY =
             "Java2dProcessor.jpg.quality";
@@ -99,21 +104,35 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
     @Override
     public Dimension getSize(File inputFile, SourceFormat sourceFormat)
             throws ProcessorException {
-        ImageIoImageReader reader = new ImageIoImageReader();
+        ImageIoImageReader reader = null;
         try {
-            return reader.readSize(inputFile, sourceFormat);
+            try {
+                reader = new ImageIoImageReader(inputFile, sourceFormat);
+                return reader.readSize();
+            } finally {
+                if (reader != null) {
+                    reader.dispose();
+                }
+            }
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
     }
 
     @Override
-    public Dimension getSize(StreamSource streamSource,
-                             SourceFormat sourceFormat)
+    public Dimension getSize(final StreamSource streamSource,
+                             final SourceFormat sourceFormat)
             throws ProcessorException {
-        ImageIoImageReader reader = new ImageIoImageReader();
+        ImageIoImageReader reader = null;
         try {
-            return reader.readSize(streamSource, sourceFormat);
+            try {
+                reader = new ImageIoImageReader(streamSource, sourceFormat);
+                return reader.readSize();
+            } finally {
+                if (reader != null) {
+                    reader.dispose();
+                }
+            }
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
@@ -158,44 +177,7 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
                         final File inputFile,
                         final OutputStream outputStream)
             throws ProcessorException {
-        final Set<OutputFormat> availableOutputFormats =
-                getAvailableOutputFormats(sourceFormat);
-        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
-            throw new UnsupportedSourceFormatException(sourceFormat);
-        } else if (!availableOutputFormats.contains(ops.getOutputFormat())) {
-            throw new UnsupportedOutputFormatException();
-        }
-
-        try {
-            final ReductionFactor reductionFactor = new ReductionFactor();
-            final Set<ImageIoImageReader.ReaderHint> readerHints = new HashSet<>();
-            final ImageIoImageReader reader = new ImageIoImageReader();
-            BufferedImage image = reader.read(inputFile,
-                    sourceFormat, ops, fullSize, reductionFactor, readerHints);
-            for (Operation op : ops) {
-                if (op instanceof Crop &&
-                        !readerHints.contains(ImageIoImageReader.ReaderHint.ALREADY_CROPPED)) {
-                    image = Java2dUtil.cropImage(image, (Crop) op,
-                            reductionFactor);
-                } else if (op instanceof Scale) {
-                    final boolean highQuality = Application.getConfiguration().
-                            getString(SCALE_MODE_CONFIG_KEY, "speed").
-                            equals("quality");
-                    image = Java2dUtil.scaleImage(image, (Scale) op,
-                            reductionFactor, highQuality);
-                } else if (op instanceof Transpose) {
-                    image = Java2dUtil.transposeImage(image, (Transpose) op);
-                } else if (op instanceof Rotate) {
-                    image = Java2dUtil.rotateImage(image, (Rotate) op);
-                } else if (op instanceof Filter) {
-                    image = Java2dUtil.filterImage(image, (Filter) op);
-                }
-            }
-            new ImageIoImageWriter().write(image, ops.getOutputFormat(),
-                    outputStream);
-        } catch (IOException e) {
-            throw new ProcessorException(e.getMessage(), e);
-        }
+        doProcess(ops, sourceFormat, inputFile, outputStream);
     }
 
     @Override
@@ -204,6 +186,14 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
                         final Dimension fullSize,
                         final StreamSource streamSource,
                         final OutputStream outputStream)
+            throws ProcessorException {
+        doProcess(ops, sourceFormat, streamSource, outputStream);
+    }
+
+    private void doProcess(final OperationList ops,
+                           final SourceFormat sourceFormat,
+                           final Object source,
+                           final OutputStream outputStream)
             throws ProcessorException {
         final Set<OutputFormat> availableOutputFormats =
                 getAvailableOutputFormats(sourceFormat);
@@ -214,23 +204,26 @@ class Java2dProcessor implements StreamProcessor, FileProcessor {
         }
 
         try {
-            final ReductionFactor reductionFactor = new ReductionFactor();
-            final Set<ImageIoImageReader.ReaderHint> readerHints = new HashSet<>();
             final ImageIoImageReader reader = new ImageIoImageReader();
-            BufferedImage image = reader.read(streamSource,
-                    sourceFormat, ops, fullSize, reductionFactor,
-                    readerHints);
+            if (source instanceof StreamSource) {
+                reader.setSource((StreamSource) source, sourceFormat);
+            } else {
+                reader.setSource((File) source, sourceFormat);
+            }
+            final ReductionFactor rf = new ReductionFactor();
+            final Set<ImageIoImageReader.ReaderHint> hints = new HashSet<>();
+            BufferedImage image = reader.read(ops, rf, hints);
+
             for (Operation op : ops) {
                 if (op instanceof Crop &&
-                        !readerHints.contains(ImageIoImageReader.ReaderHint.ALREADY_CROPPED)) {
-                    image = Java2dUtil.cropImage(image, (Crop) op,
-                            reductionFactor);
+                        !hints.contains(ImageIoImageReader.ReaderHint.ALREADY_CROPPED)) {
+                    image = Java2dUtil.cropImage(image, (Crop) op, rf);
                 } else if (op instanceof Scale) {
                     final boolean highQuality = Application.getConfiguration().
                             getString(SCALE_MODE_CONFIG_KEY, "speed").
                             equals("quality");
-                    image = Java2dUtil.scaleImage(image, (Scale) op,
-                            reductionFactor, highQuality);
+                    image = Java2dUtil.scaleImage(image, (Scale) op, rf,
+                            highQuality);
                 } else if (op instanceof Transpose) {
                     image = Java2dUtil.transposeImage(image, (Transpose) op);
                 } else if (op instanceof Rotate) {

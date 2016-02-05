@@ -11,6 +11,8 @@ import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.media.jai.RenderedOp;
 import java.awt.Dimension;
@@ -26,6 +28,8 @@ import java.util.Set;
  * Processor using the Java Advanced Imaging (JAI) framework.
  */
 class JaiProcessor implements FileProcessor, StreamProcessor {
+
+    private static Logger logger = LoggerFactory.getLogger(JaiProcessor.class);
 
     public static final String JPG_QUALITY_CONFIG_KEY =
             "JaiProcessor.jpg.quality";
@@ -92,24 +96,14 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
     @Override
     public Dimension getSize(File inputFile, SourceFormat sourceFormat)
             throws ProcessorException {
-        ImageIoImageReader reader = new ImageIoImageReader();
-        try {
-            return reader.readSize(inputFile, sourceFormat);
-        } catch (IOException e) {
-            throw new ProcessorException(e.getMessage(), e);
-        }
+        return new Java2dProcessor().getSize(inputFile, sourceFormat);
     }
 
     @Override
     public Dimension getSize(final StreamSource streamSource,
                              final SourceFormat sourceFormat)
             throws ProcessorException {
-        ImageIoImageReader reader = new ImageIoImageReader();
-        try {
-            return reader.readSize(streamSource, sourceFormat);
-        } catch (IOException e) {
-            throw new ProcessorException(e.getMessage(), e);
-        }
+        return new Java2dProcessor().getSize(streamSource, sourceFormat);
     }
 
     @Override
@@ -179,15 +173,15 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
 
         try {
             final ImageIoImageReader reader = new ImageIoImageReader();
-            final ReductionFactor rf = new ReductionFactor();
-            RenderedImage renderedImage = null;
             if (input instanceof StreamSource) {
-                renderedImage = reader.read((StreamSource) input,
-                        sourceFormat, ops, rf);
-            } else if (input instanceof File) {
-                renderedImage = reader.read((File) input, sourceFormat, ops,
-                        rf);
+                reader.setSource((StreamSource) input, sourceFormat);
+            } else {
+                reader.setSource((File) input, sourceFormat);
             }
+
+            final ReductionFactor rf = new ReductionFactor();
+            RenderedImage renderedImage = reader.readRendered(ops, rf);
+
             if (renderedImage != null) {
                 RenderedOp renderedOp = JaiUtil.reformatImage(
                         RenderedOp.wrapRenderedImage(renderedImage),

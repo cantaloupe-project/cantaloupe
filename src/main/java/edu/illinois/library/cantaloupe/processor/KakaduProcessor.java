@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.IOUtils;
@@ -476,8 +477,10 @@ class KakaduProcessor implements FileProcessor {
                                      final ReductionFactor reductionFactor,
                                      final OutputStream outputStream)
             throws IOException, ProcessorException {
-        RenderedImage renderedImage = new ImageIoImageReader().
-                readRendered(inputStream, SourceFormat.BMP);
+        final ImageIoImageReader reader = new ImageIoImageReader();
+        reader.setSource(new InputStreamStreamSource(inputStream),
+                SourceFormat.BMP);
+        RenderedImage renderedImage = reader.readRendered();
         RenderedOp renderedOp = JaiUtil.reformatImage(
                 RenderedOp.wrapRenderedImage(renderedImage),
                 new Dimension(512, 512));
@@ -503,7 +506,10 @@ class KakaduProcessor implements FileProcessor {
                                         final ReductionFactor reductionFactor,
                                         final OutputStream outputStream)
             throws IOException, ProcessorException {
-        BufferedImage image = new ImageIoImageReader().read(inputStream);
+        final ImageIoImageReader reader = new ImageIoImageReader();
+        reader.setSource(new InputStreamStreamSource(inputStream),
+                SourceFormat.BMP);
+        BufferedImage image = reader.read();
         for (Operation op : opList) {
             if (op instanceof Scale) {
                 final boolean highQuality = Application.getConfiguration().
