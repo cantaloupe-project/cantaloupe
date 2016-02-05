@@ -203,8 +203,19 @@ class ImageIoImageReader {
      * @throws IOException
      */
     public Dimension getSize() throws IOException {
-        final int width = reader.getWidth(reader.getMinIndex());
-        final int height = reader.getHeight(reader.getMinIndex());
+        return getSize(reader.getMinIndex());
+    }
+
+    /**
+     * Gets the dimensions of the image at the given index.
+     *
+     * @param imageIndex
+     * @return Dimensions in pixels
+     * @throws IOException
+     */
+    public Dimension getSize(int imageIndex) throws IOException {
+        final int width = reader.getWidth(imageIndex);
+        final int height = reader.getHeight(imageIndex);
         return new Dimension(width, height);
     }
 

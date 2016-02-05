@@ -47,15 +47,28 @@ public class ImageIoImageReaderTest {
     }
 
     @Test
-    public void testGetNumResolutionsWithFile() throws Exception {
+    public void testGetNumResolutions() throws Exception {
+        // monoresolution
         assertEquals(1, reader.getNumResolutions());
-        // TODO: multiresolution
+        // multiresolution
+        reader.setSource(TestUtil.getImage(
+                "tif-rgb-multires-64x56x16-tiled-uncompressed.tif"));
+        assertEquals(3, reader.getNumResolutions());
     }
 
     @Test
     public void testGetSize() throws Exception {
         Dimension expected = new Dimension(64, 56);
         Dimension actual = reader.getSize();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testGetSizeWithIndex() throws Exception {
+        reader.setSource(TestUtil.getImage(
+                "tif-rgb-multires-64x56x16-tiled-uncompressed.tif"));
+        Dimension expected = new Dimension(16, 14);
+        Dimension actual = reader.getSize(2);
         assertEquals(expected, actual);
     }
 
