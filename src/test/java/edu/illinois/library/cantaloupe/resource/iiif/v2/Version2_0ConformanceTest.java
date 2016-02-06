@@ -757,7 +757,7 @@ public class Version2_0ConformanceTest {
      */
     @Test
     public void testInformationRequestJson() throws IOException {
-        // this will be tested in InformationResourceTest
+        // this will be tested in ImageInfoFactoryTest
     }
 
     /**
