@@ -3,6 +3,9 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,20 +39,11 @@ class ImageInfo {
         }
     }
 
-    @JsonPropertyOrder({ "width", "height" })
+    @JsonPropertyOrder({ "width", "height", "scaleFactors" })
     public static final class Tile {
         public Integer height;
         public List<Integer> scaleFactors = new ArrayList<>();
         public Integer width;
-
-        /** No-op constructor needed by Jackson */
-        public Tile() {}
-
-        public Tile(Integer width, Integer height, List<Integer> scaleFactors) {
-            this.width = width;
-            this.height = height;
-            this.scaleFactors = scaleFactors;
-        }
     }
 
     @JsonProperty("@context")
