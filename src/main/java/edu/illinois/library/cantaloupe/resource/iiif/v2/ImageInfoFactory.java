@@ -22,13 +22,13 @@ import java.util.Set;
 abstract class ImageInfoFactory {
 
     private static Logger logger = LoggerFactory.
-            getLogger(InformationResource.class);
+            getLogger(ImageInfoFactory.class);
 
     /** Minimum size that will be used in info.json "sizes" keys. */
     private static final int MIN_SIZE = 64;
 
     /** Minimum size that will be used in info.json "tiles" keys. */
-    private static final int MIN_TILE_SIZE = 512;
+    private static final int MIN_TILE_SIZE = 256;
 
     /** Delegate script method that returns the JSON object (actually Ruby
      * hash) corresponding to the "service" key. */

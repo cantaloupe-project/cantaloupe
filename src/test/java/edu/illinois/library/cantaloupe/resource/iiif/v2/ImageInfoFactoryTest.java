@@ -79,8 +79,8 @@ public class ImageInfoFactoryTest {
     @Test
     public void testNewImageInfoTilesWithUntiledImage() {
         assertEquals(1, info.tiles.size());
-        assertEquals(594, (long) info.tiles.get(0).width);
-        assertEquals(522, (long) info.tiles.get(0).height);
+        assertEquals(297, (long) info.tiles.get(0).width);
+        assertEquals(261, (long) info.tiles.get(0).height);
 
         assertEquals(4, (long) info.tiles.get(0).scaleFactors.size());
         assertEquals(1, (long) info.tiles.get(0).scaleFactors.get(0));
