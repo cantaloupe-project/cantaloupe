@@ -104,4 +104,15 @@ class ImageInfo {
      */
     public Integer width;
 
+    /**
+     * @return JSON representation of the instance.
+     * @throws JsonProcessingException
+     */
+    public String toJson() throws JsonProcessingException {
+        return new ObjectMapper().writer().
+                without(SerializationFeature.WRITE_NULL_MAP_VALUES).
+                without(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS).
+                writeValueAsString(this);
+    }
+
 }
