@@ -201,7 +201,7 @@ abstract class Java2dUtil {
             croppedImage = inImage;
         } else {
             final long msec = System.currentTimeMillis();
-            final double scale = ProcessorUtil.getScale(rf);
+            final double scale = rf.getScale();
             final double regionX = crop.getX() * scale;
             final double regionY = crop.getY() * scale;
             final double regionWidth = crop.getWidth() * scale;
@@ -354,68 +354,16 @@ abstract class Java2dUtil {
     }
 
     /**
-     * Scales an image using an AffineTransform.
-     *
-     * @param inImage Image to scale
-     * @param scale Scale operation
-     * @return Downscaled image, or the input image if the given scale is a
-     * no-op.
-     */
-    public static BufferedImage scaleImageWithAffineTransform(
-            BufferedImage inImage, Scale scale) {
-        final Dimension scaledSize = scale.getResultingSize(
-                new Dimension(inImage.getWidth(), inImage.getHeight()));
-        BufferedImage scaledImage;
-        if (scale.isNoOp() || (scaledSize.width == inImage.getWidth() &&
-                scaledSize.height == inImage.getHeight())) {
-            scaledImage = inImage;
-        } else {
-            final long msec = System.currentTimeMillis();
-            double xScale = 0.0f, yScale = 0.0f;
-            if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                xScale = yScale = scale.getWidth() / (double) inImage.getWidth();
-            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                xScale = yScale = scale.getHeight() / (double) inImage.getHeight();
-            } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
-                xScale = scale.getWidth() / (double) inImage.getWidth();
-                yScale = scale.getHeight() / (double) inImage.getHeight();
-            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                double hScale = (double) scale.getWidth() /
-                        (double) inImage.getWidth();
-                double vScale = (double) scale.getHeight() /
-                        (double) inImage.getHeight();
-                xScale = inImage.getWidth() * Math.min(hScale, vScale) / 100f;
-                yScale = inImage.getHeight() * Math.min(hScale, vScale) / 100f;
-            } else if (scale.getPercent() != null) {
-                xScale = yScale = scale.getPercent();
-            }
-            int width = (int) Math.round(inImage.getWidth() * xScale);
-            int height = (int) Math.round(inImage.getHeight() * yScale);
-            scaledImage = new BufferedImage(width, height, inImage.getType());
-            AffineTransform at = new AffineTransform();
-            at.scale(xScale, yScale);
-            AffineTransformOp scaleOp = new AffineTransformOp(at,
-                    AffineTransformOp.TYPE_BILINEAR);
-            scaledImage = scaleOp.filter(inImage, scaledImage);
-            logger.info("Scaled {}x{} image to {}x{} in {} msec",
-                    inImage.getWidth(), inImage.getHeight(),
-                    scaledSize.width, scaledSize.height,
-                    System.currentTimeMillis() - msec);
-        }
-        return scaledImage;
-    }
-
-    /**
      * Scales an image using Graphics2D.
      *
      * @param inImage Image to scale
-     * @param scale Scale operation
+     * @param scale   Scale operation
      * @return Downscaled image, or the input image if the given scale is a
-     * no-op.
+     *         no-op.
      */
-    public static BufferedImage scaleImageWithG2d(final BufferedImage inImage,
-                                                  final Scale scale) {
-        return scaleImageWithG2d(inImage, scale, new ReductionFactor(0), false);
+    public static BufferedImage scaleImage(final BufferedImage inImage,
+                                           final Scale scale) {
+        return scaleImage(inImage, scale, new ReductionFactor(0), false);
     }
 
     /**
@@ -431,74 +379,65 @@ abstract class Java2dUtil {
      * @param highQuality Whether to use a high-quality but more expensive
      *                    scaling method.
      * @return Downscaled image, or the input image if the given scale is a
-     * no-op.
+     *         no-op.
      */
-    public static BufferedImage scaleImageWithG2d(final BufferedImage inImage,
-                                                  final Scale scale,
-                                                  final ReductionFactor rf,
-                                                  final boolean highQuality) {
-        final Dimension scaledSize = scale.getResultingSize(
-                new Dimension(inImage.getWidth(), inImage.getHeight()));
-        BufferedImage scaledImage;
-        if (scale.isNoOp() || (scaledSize.width == inImage.getWidth() &&
-                scaledSize.height == inImage.getHeight())) {
-            scaledImage = inImage;
+    public static BufferedImage scaleImage(final BufferedImage inImage,
+                                           final Scale scale,
+                                           final ReductionFactor rf,
+                                           final boolean highQuality) {
+        final Dimension sourceSize = new Dimension(
+                inImage.getWidth(), inImage.getHeight());
+
+        // Calculate the size that the image will need to be scaled to based
+        // on the source image size, scale, and already-applied reduction
+        // factor.
+        Dimension resultingSize;
+        if (scale.getPercent() != null) {
+            resultingSize = new Dimension();
+            resultingSize.width = (int) Math.round(sourceSize.width *
+                    (scale.getPercent() / rf.getScale()));
+            resultingSize.height = (int) Math.round(sourceSize.height *
+                    (scale.getPercent() / rf.getScale()));
         } else {
-            final long msec = System.currentTimeMillis();
-            final int sourceWidth = inImage.getWidth();
-            final int sourceHeight = inImage.getHeight();
-            int width = 0, height = 0;
-            if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                width = scale.getWidth();
-                height = sourceHeight * width / sourceWidth;
-            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                height = scale.getHeight();
-                width = sourceWidth * height / sourceHeight;
-            } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
-                width = scale.getWidth();
-                height = scale.getHeight();
-            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                final double hScale = (double) scale.getWidth() /
-                        (double) sourceWidth;
-                final double vScale = (double) scale.getHeight() /
-                        (double) sourceHeight;
-                width = (int) Math.round(sourceWidth *
-                        Math.min(hScale, vScale));
-                height = (int) Math.round(sourceHeight *
-                        Math.min(hScale, vScale));
-            } else if (scale.getPercent() != null) {
-                final double reqScale = scale.getPercent();
-                final double appliedScale = ProcessorUtil.getScale(rf);
-                final double pct = reqScale / appliedScale;
-                width = (int) Math.round(sourceWidth * pct);
-                height = (int) Math.round(sourceHeight * pct);
-            }
-            scaledImage = new BufferedImage(width, height,
+            resultingSize = scale.getResultingSize(sourceSize);
+        }
+
+        BufferedImage scaledImage = inImage;
+        if (!scale.isNoOp() && (resultingSize.width != sourceSize.width &&
+                resultingSize.height != sourceSize.height)) {
+            final long startMsec = System.currentTimeMillis();
+
+            scaledImage = new BufferedImage(
+                    resultingSize.width, resultingSize.height,
                     inImage.getType());
 
             final Graphics2D g2d = scaledImage.createGraphics();
-            // The "non-high-quality" technique results in images with
-            // noticeable aliasing at small scales.
-            // See: https://community.oracle.com/docs/DOC-983611
-            // http://stackoverflow.com/a/34266703/177529
-            if (highQuality) {
-                g2d.drawImage(
-                        inImage.getScaledInstance(width, height, Image.SCALE_SMOOTH),
-                        0, 0, width, height, null);
-            } else {
-                final RenderingHints hints = new RenderingHints(
-                        RenderingHints.KEY_INTERPOLATION,
-                        RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-                g2d.setRenderingHints(hints);
-                g2d.drawImage(inImage, 0, 0, width, height, null);
+            try {
+                // The "non-high-quality" technique results in images with
+                // noticeable aliasing at small scales.
+                // See: https://community.oracle.com/docs/DOC-983611
+                // http://stackoverflow.com/a/34266703/177529
+                if (highQuality) {
+                    g2d.drawImage(
+                            inImage.getScaledInstance(
+                                    resultingSize.width, resultingSize.height,
+                                    Image.SCALE_SMOOTH),
+                            0, 0, resultingSize.width, resultingSize.height, null);
+                } else {
+                    final RenderingHints hints = new RenderingHints(
+                            RenderingHints.KEY_INTERPOLATION,
+                            RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                    g2d.setRenderingHints(hints);
+                    g2d.drawImage(inImage, 0, 0,
+                            resultingSize.width, resultingSize.height, null);
+                }
+                logger.info("scaleImage(): scaled {}x{} image to {}x{} in {} msec",
+                        sourceSize.width, sourceSize.height,
+                        resultingSize.width, resultingSize.height,
+                        System.currentTimeMillis() - startMsec);
+            } finally {
+                g2d.dispose();
             }
-            g2d.dispose();
-
-            logger.info("scaleImageWithG2d(): scaled {}x{} image to {}x{} " +
-                    "in {} msec",
-                    inImage.getWidth(), inImage.getHeight(),
-                    scaledSize.width, scaledSize.height,
-                    System.currentTimeMillis() - msec);
         }
         return scaledImage;
     }

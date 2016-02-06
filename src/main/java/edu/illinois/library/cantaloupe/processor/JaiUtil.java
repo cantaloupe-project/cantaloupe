@@ -11,6 +11,9 @@ import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
 import edu.illinois.library.cantaloupe.image.watermark.WatermarkingDisabledException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.media.jai.ImageLayout;
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
@@ -29,6 +32,8 @@ import java.io.IOException;
 import java.util.HashMap;
 
 abstract class JaiUtil {
+
+    private static Logger logger = LoggerFactory.getLogger(JaiUtil.class);
 
     /**
      * Applies the watermark to the given image.
@@ -89,7 +94,7 @@ abstract class JaiUtil {
         RenderedOp croppedImage = inImage;
         if (!crop.isNoOp()) {
             // calculate the region x, y, and actual width/height
-            final double scale = ProcessorUtil.getScale(rf);
+            final double scale = rf.getScale();
             final double regionX = crop.getX() * scale;
             final double regionY = crop.getY() * scale;
             final double regionWidth = crop.getWidth() * scale;
@@ -115,6 +120,10 @@ abstract class JaiUtil {
                     inImage.getWidth() - x : requestedWidth;
             croppedHeight = (y + requestedHeight > inImage.getHeight()) ?
                     inImage.getHeight() - y : requestedHeight;
+
+            logger.debug("cropImage(): x: {}; y: {}; width: {}; height: {}",
+                    x, y, croppedWidth, croppedHeight);
+
             final ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
             pb.add(x);
@@ -322,6 +331,9 @@ abstract class JaiUtil {
                                          Rotate rotate) {
         RenderedOp rotatedImage = inImage;
         if (!rotate.isNoOp()) {
+            logger.debug("rotateImage(): rotating {} degrees",
+                    rotate.getDegrees());
+
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(rotatedImage);
             pb.add(inImage.getWidth() / 2.0f);                   // x origin
@@ -358,34 +370,40 @@ abstract class JaiUtil {
                                         ReductionFactor rf) {
         RenderedOp scaledImage = inImage;
         if (!scale.isNoOp()) {
-            final double sourceWidth = inImage.getWidth();
-            final double sourceHeight = inImage.getHeight();
-            double xScale = 1.0f;
-            double yScale = 1.0f;
-            if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                xScale = yScale = scale.getWidth() / sourceWidth;
-            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                xScale = yScale = scale.getHeight() / sourceHeight;
-            } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
-                xScale = scale.getWidth() / sourceWidth;
-                yScale = scale.getHeight() / sourceHeight;
-            } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                final double hScale = scale.getWidth() / sourceWidth;
-                final double vScale = scale.getHeight() / sourceHeight;
-                xScale = (sourceWidth * Math.min(hScale, vScale)) / 100f;
-                yScale = (sourceHeight * Math.min(hScale, vScale)) / 100f;
-            } else if (scale.getPercent() != null) {
-                final double reqScale = scale.getPercent();
-                final double appliedScale = ProcessorUtil.getScale(rf);
-                xScale = yScale = reqScale / appliedScale;
+            final int sourceWidth = inImage.getWidth();
+            final int sourceHeight = inImage.getHeight();
+            final Dimension scaledSize = scale.getResultingSize(
+                    new Dimension(sourceWidth, sourceHeight));
+
+            double xScale = scaledSize.width / (double) sourceWidth;
+            double yScale = scaledSize.height / (double) sourceHeight;
+            if (scale.getPercent() != null) {
+                xScale = scale.getPercent() / rf.getScale();
+                yScale = scale.getPercent() / rf.getScale();
             }
+
+            logger.debug("scaleImage(): width: {}%; height: {}%",
+                    xScale * 100, yScale * 100);
             final ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
             pb.add((float) xScale);
             pb.add((float) yScale);
             pb.add(0.0f);
             pb.add(0.0f);
-            pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
+            // JAI bug: The Interpolation.INTERP_BI* interpolations may result
+            // in an ArrayIndexOutOfBoundsException in PlanarImage.cobbleByte()
+            // during writing, for some images that border the right edge.
+            // For example: /iiif/2/56324x18006-tiled-pyramidal.tif/32768,0,23556,18006/737,/0/default.jpg
+            // The quality of nearest-neighbor is terrible, but better than
+            // nothing.
+            // (This also happens when using the "SubsampleAverage" operator
+            // instead.)
+            // (Incremental downscaling by halves doesn't solve the problem,
+            // nor improve output quality.)
+            // TODO: see if JAI-EXT is affected
+            // TODO: improve downscale quality somehow
+            // TODO: add a JaiProcessor.scale_mode option offering this or INTERP_BILINEAR?
+            pb.add(Interpolation.getInstance(Interpolation.INTERP_NEAREST));
             scaledImage = JAI.create("scale", pb);
         }
         return scaledImage;
@@ -403,9 +421,11 @@ abstract class JaiUtil {
         pb.addSource(inImage);
         switch (transpose) {
             case HORIZONTAL:
+                logger.debug("transposeImage(): horizontal");
                 pb.add(TransposeDescriptor.FLIP_HORIZONTAL);
                 break;
             case VERTICAL:
+                logger.debug("transposeImage(): vertical");
                 pb.add(TransposeDescriptor.FLIP_VERTICAL);
                 break;
         }

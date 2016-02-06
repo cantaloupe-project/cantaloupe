@@ -179,7 +179,7 @@ public class FilesystemResolverTest {
         assertEquals(SourceFormat.PNG,
                 instance.getSourceFormat(new Identifier("png-rgb-64x56x8.png")));
         assertEquals(SourceFormat.TIF,
-                instance.getSourceFormat(new Identifier("tif-rgb-64x56x8-striped-jpeg.tif")));
+                instance.getSourceFormat(new Identifier("tif-rgb-monores-64x56x8-striped-jpeg.tif")));
     }
 
     @Test

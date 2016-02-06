@@ -78,6 +78,40 @@ public class SizeTest {
         assertEquals(Size.ScaleMode.ASPECT_FIT_INSIDE, s.getScaleMode());
     }
 
+    @Test
+    public void testFromUriWithInvalidArgument() {
+        try {
+            Size.fromUri("cats");
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+        try {
+            Size.fromUri("pct:cats");
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+        try {
+            Size.fromUri("120,cats");
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+        try {
+            Size.fromUri("cats,120");
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+        try {
+            Size.fromUri("!cats,120");
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+    }
+
     /* setHeight() */
 
     @Test

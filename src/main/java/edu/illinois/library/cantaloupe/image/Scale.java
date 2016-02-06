@@ -4,6 +4,12 @@ import java.awt.Dimension;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * <p>Encapsulates an absolute or relative scale operation.</p>
+ *
+ * <p>Absolute instances will have a non-null width and/or height. Relative
+ * instances will have a non-null percent and a null width and height.</p>
+ */
 public class Scale implements Operation {
 
     public enum Mode {
@@ -12,10 +18,13 @@ public class Scale implements Operation {
     }
 
     private Integer height;
-    private Mode scaleMode;
+    private Mode scaleMode = Mode.ASPECT_FIT_INSIDE;
     private Float percent;
     private Integer width;
 
+    /**
+     * @return Absolute pixel height. May be null.
+     */
     public Integer getHeight() {
         return height;
     }
@@ -25,7 +34,7 @@ public class Scale implements Operation {
     }
 
     /**
-     * @return Float from 0 to 1
+     * @return Float from 0 to 1. May be null.
      */
     public Float getPercent() {
         return percent;
@@ -83,6 +92,9 @@ public class Scale implements Operation {
         return size;
     }
 
+    /**
+     * @return Absolute pixel width. May be null.
+     */
     public Integer getWidth() {
         return width;
     }
@@ -102,7 +114,7 @@ public class Scale implements Operation {
     }
 
     /**
-     * @param percent Float above 0
+     * @param percent Float greater than 0
      * @throws IllegalArgumentException
      */
     public void setPercent(Float percent) throws IllegalArgumentException {

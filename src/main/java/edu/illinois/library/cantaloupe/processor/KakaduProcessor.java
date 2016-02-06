@@ -12,6 +12,7 @@ import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.watermark.WatermarkingDisabledException;
+import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.IOUtils;
@@ -26,6 +27,7 @@ import javax.imageio.ImageIO;
 import javax.media.jai.RenderedOp;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -45,8 +47,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -64,7 +68,7 @@ import java.util.concurrent.Executors;
  *     Usage Examples for the Demonstration Applications Supplied with Kakadu
  *     V7.7</a>
  */
-class KakaduProcessor implements FileProcessor {
+class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
 
     private static Logger logger = LoggerFactory.
             getLogger(KakaduProcessor.class);
@@ -88,6 +92,10 @@ class KakaduProcessor implements FileProcessor {
             Executors.newCachedThreadPool();
 
     private static Path stdoutSymlink;
+
+    /** will cache the output of kdu_jp2info */
+    private Document imageInfo;
+    private File sourceFile;
 
     static {
         SUPPORTED_IIIF_1_1_QUALITIES.add(
@@ -165,7 +173,7 @@ class KakaduProcessor implements FileProcessor {
     }
 
     @Override
-    public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
+    public Set<OutputFormat> getAvailableOutputFormats() {
         Set<OutputFormat> outputFormats = new HashSet<>();
         if (sourceFormat == SourceFormat.JP2) {
             outputFormats.addAll(ImageIoImageWriter.supportedFormats());
@@ -177,59 +185,70 @@ class KakaduProcessor implements FileProcessor {
      * Gets the size of the given image by parsing the XML output of
      * kdu_jp2info.
      *
-     * @param inputFile Source image
-     * @param sourceFormat Format of the source image
      * @return
      * @throws ProcessorException
      */
     @Override
-    public Dimension getSize(File inputFile, SourceFormat sourceFormat)
-            throws ProcessorException {
-        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
-            throw new UnsupportedSourceFormatException(sourceFormat);
-        }
-        final List<String> command = new ArrayList<>();
-        command.add(getPath("kdu_jp2info"));
-        command.add("-i");
-        command.add(inputFile.getAbsolutePath());
+    public Dimension getSize() throws ProcessorException {
         try {
-            ProcessBuilder pb = new ProcessBuilder(command);
-            pb.redirectErrorStream(true);
-            logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
-            Process process = pb.start();
-
-            // Ideally we could just call
-            // DocumentBuilder.parse(process.getInputStream()), but the XML
-            // output of kdu_jp2info may contain leading whitespace that
-            // causes a SAXParseException. So, read into a byte array in
-            // order to trim it, and then parse that.
-            ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
-            org.apache.commons.io.IOUtils.copy(process.getInputStream(),
-                    outputBucket);
-            final String outputXml = outputBucket.toString("UTF-8").trim();
-
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.parse(new InputSource(new StringReader(outputXml)));
-
+            if (imageInfo == null) {
+                readImageInfo();
+            }
             XPath xpath = XPathFactory.newInstance().newXPath();
             XPathExpression expr = xpath.compile("//codestream/width");
-            int width = (int) Math.round((double) expr.evaluate(doc, XPathConstants.NUMBER));
+            int width = (int) Math.round((double) expr.evaluate(imageInfo, XPathConstants.NUMBER));
             expr = xpath.compile("//codestream/height");
-            int height = (int) Math.round((double) expr.evaluate(doc, XPathConstants.NUMBER));
+            int height = (int) Math.round((double) expr.evaluate(imageInfo, XPathConstants.NUMBER));
             return new Dimension(width, height);
-        } catch (SAXException e) {
-            throw new ProcessorException("Failed to parse XML. Command: " +
-                    StringUtils.join(command, " "), e);
         } catch (Exception e) {
             throw new ProcessorException(e.getMessage(), e);
         }
     }
 
+    /**
+     * Executes kdu_jp2info and parses the output into a Document object,
+     * saved in an instance variable.
+     *
+     * @throws SAXException
+     * @throws IOException
+     * @throws ParserConfigurationException
+     */
+    private void readImageInfo()
+            throws SAXException, IOException,ParserConfigurationException {
+        final List<String> command = new ArrayList<>();
+        command.add(getPath("kdu_jp2info"));
+        command.add("-i");
+        command.add(sourceFile.getAbsolutePath());
+        command.add("-siz");
+
+        final ProcessBuilder pb = new ProcessBuilder(command);
+        pb.redirectErrorStream(true);
+        logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
+        Process process = pb.start();
+
+        // Ideally we could just call
+        // DocumentBuilder.parse(process.getInputStream()), but the XML
+        // output of kdu_jp2info may contain leading whitespace that
+        // causes a SAXParseException. So, read into a byte array in
+        // order to trim it, and then parse that. TODO: use a FilterInputStream
+        ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
+        IOUtils.copy(process.getInputStream(), outputBucket);
+        final String outputXml = outputBucket.toString("UTF-8").trim();
+
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        imageInfo = db.parse(new InputSource(new StringReader(outputXml)));
+    }
+
     @Override
-    public Set<ProcessorFeature> getSupportedFeatures(SourceFormat sourceFormat) {
+    public File getSourceFile() {
+        return this.sourceFile;
+    }
+
+    @Override
+    public Set<ProcessorFeature> getSupportedFeatures() {
         Set<ProcessorFeature> features = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             features.addAll(SUPPORTED_FEATURES);
         }
         return features;
@@ -237,10 +256,10 @@ class KakaduProcessor implements FileProcessor {
 
     @Override
     public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-    getSupportedIiif1_1Qualities(final SourceFormat sourceFormat) {
+    getSupportedIiif1_1Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
                 qualities = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             qualities.addAll(SUPPORTED_IIIF_1_1_QUALITIES);
         }
         return qualities;
@@ -248,27 +267,51 @@ class KakaduProcessor implements FileProcessor {
 
     @Override
     public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-    getSupportedIiif2_0Qualities(final SourceFormat sourceFormat) {
+    getSupportedIiif2_0Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
                 qualities = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             qualities.addAll(SUPPORTED_IIIF_2_0_QUALITIES);
         }
         return qualities;
     }
 
     @Override
+    public List<Dimension> getTileSizes() throws ProcessorException {
+        try {
+            if (imageInfo == null) {
+                readImageInfo();
+            }
+            XPath xpath = XPathFactory.newInstance().newXPath();
+            XPathExpression expr = xpath.compile("//codestream/SIZ");
+            String result = (String) expr.evaluate(imageInfo, XPathConstants.STRING);
+
+            // read the tile dimensions out of the Stiles={n,n} line
+            final Scanner scan = new Scanner(result);
+            while (scan.hasNextLine()) {
+                String line = scan.nextLine();
+                if (line.trim().startsWith("Stiles=")) {
+                    String[] parts = StringUtils.split(line, ",");
+                    if (parts.length == 2) {
+                        Dimension size = new Dimension(
+                                Integer.parseInt(parts[0].replaceAll("[^0-9]", "")),
+                                Integer.parseInt(parts[1].replaceAll("[^0-9]", "")));
+                        return new ArrayList<>(Collections.singletonList(size));
+                    }
+                }
+            }
+            throw new ProcessorException("Failed to parse tile sizes");
+        } catch (Exception e) {
+            throw new ProcessorException(e.getMessage(), e);
+        }
+    }
+
+    @Override
     public void process(final OperationList ops,
-                        final SourceFormat sourceFormat,
                         final Dimension fullSize,
-                        final File inputFile,
                         final OutputStream outputStream)
             throws ProcessorException {
-        final Set<OutputFormat> availableOutputFormats =
-                getAvailableOutputFormats(sourceFormat);
-        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
-            throw new UnsupportedSourceFormatException(sourceFormat);
-        } else if (!availableOutputFormats.contains(ops.getOutputFormat())) {
+        if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
 
@@ -296,8 +339,8 @@ class KakaduProcessor implements FileProcessor {
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
             final ReductionFactor reductionFactor = new ReductionFactor();
-            final ProcessBuilder pb = getProcessBuilder(inputFile, ops,
-                    fullSize, reductionFactor);
+            final ProcessBuilder pb = getProcessBuilder(ops, fullSize,
+                    reductionFactor);
             logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
@@ -346,18 +389,22 @@ class KakaduProcessor implements FileProcessor {
         }
     }
 
+    @Override
+    public void setSourceFile(File sourceFile) {
+        reset();
+        this.sourceFile = sourceFile;
+    }
+
     /**
      * Gets a ProcessBuilder corresponding to the given parameters.
      *
-     * @param inputFile
      * @param opList
      * @param imageSize The full size of the source image
      * @param reduction {@link ReductionFactor#factor} property modified by
      * reference
      * @return Command string
      */
-    private ProcessBuilder getProcessBuilder(final File inputFile,
-                                             final OperationList opList,
+    private ProcessBuilder getProcessBuilder(final OperationList opList,
                                              final Dimension imageSize,
                                              final ReductionFactor reduction) {
         final List<String> command = new ArrayList<>();
@@ -365,7 +412,7 @@ class KakaduProcessor implements FileProcessor {
         command.add("-quiet");
         command.add("-no_alpha");
         command.add("-i");
-        command.add(inputFile.getAbsolutePath());
+        command.add(sourceFile.getAbsolutePath());
 
         for (Operation op : opList) {
             if (op instanceof Crop) {
@@ -417,26 +464,26 @@ class KakaduProcessor implements FileProcessor {
                 final Scale scale = (Scale) op;
                 final Dimension tileSize = getCroppedSize(opList, imageSize);
                 if (scale.getMode() != Scale.Mode.FULL) {
-                    if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+                    if (scale.getPercent() != null) {
+                        reduction.factor = ReductionFactor.forScale(
+                                scale.getPercent(), MAX_REDUCTION_FACTOR).factor;
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                         double hvScale = (double) scale.getWidth() /
                                 (double) tileSize.width;
-                        reduction.factor = ProcessorUtil.getReductionFactor(
+                        reduction.factor = ReductionFactor.forScale(
                                 hvScale, MAX_REDUCTION_FACTOR).factor;
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                         double hvScale = (double) scale.getHeight() /
                                 (double) tileSize.height;
-                        reduction.factor = ProcessorUtil.getReductionFactor(
+                        reduction.factor = ReductionFactor.forScale(
                                 hvScale, MAX_REDUCTION_FACTOR).factor;
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
                         double hScale = (double) scale.getWidth() /
                                 (double) tileSize.width;
                         double vScale = (double) scale.getHeight() /
                                 (double) tileSize.height;
-                        reduction.factor = ProcessorUtil.getReductionFactor(
+                        reduction.factor = ReductionFactor.forScale(
                                 Math.min(hScale, vScale), MAX_REDUCTION_FACTOR).factor;
-                    } else if (scale.getPercent() != null) {
-                        reduction.factor = ProcessorUtil.getReductionFactor(
-                                scale.getPercent(), MAX_REDUCTION_FACTOR).factor;
                     } else {
                         reduction.factor = 0;
                     }
@@ -478,8 +525,10 @@ class KakaduProcessor implements FileProcessor {
                                      final ReductionFactor reductionFactor,
                                      final OutputStream outputStream)
             throws IOException, ProcessorException {
-        RenderedImage renderedImage = new ImageIoImageReader().
-                readRendered(inputStream, SourceFormat.BMP);
+        final ImageIoImageReader reader = new ImageIoImageReader();
+        reader.setSource(new InputStreamStreamSource(inputStream),
+                SourceFormat.BMP);
+        RenderedImage renderedImage = reader.readRendered();
         RenderedOp renderedOp = JaiUtil.reformatImage(
                 RenderedOp.wrapRenderedImage(renderedImage),
                 new Dimension(512, 512));
@@ -513,13 +562,16 @@ class KakaduProcessor implements FileProcessor {
                                         final ReductionFactor reductionFactor,
                                         final OutputStream outputStream)
             throws IOException, ProcessorException {
-        BufferedImage image = new ImageIoImageReader().read(inputStream);
+        final ImageIoImageReader reader = new ImageIoImageReader();
+        reader.setSource(new InputStreamStreamSource(inputStream),
+                SourceFormat.BMP);
+        BufferedImage image = reader.read();
         for (Operation op : opList) {
             if (op instanceof Scale) {
                 final boolean highQuality = Application.getConfiguration().
                         getString(JAVA2D_SCALE_MODE_CONFIG_KEY, "speed").
                         equals("quality");
-                image = Java2dUtil.scaleImageWithG2d(image,
+                image = Java2dUtil.scaleImage(image,
                         (Scale) op, reductionFactor, highQuality);
             } else if (op instanceof Transpose) {
                 image = Java2dUtil.transposeImage(image,
@@ -543,6 +595,10 @@ class KakaduProcessor implements FileProcessor {
         new ImageIoImageWriter().write(image, opList.getOutputFormat(),
                 outputStream);
         image.flush();
+    }
+
+    private void reset() {
+        imageInfo = null;
     }
 
 }

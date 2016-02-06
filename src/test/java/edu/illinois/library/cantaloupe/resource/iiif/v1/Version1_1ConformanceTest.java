@@ -396,6 +396,75 @@ public class Version1_1ConformanceTest {
     }
 
     /**
+     * IIIF Image API 1.1 doesn't say anything about an invalid size
+     * parameter, so we will check for an HTTP 400.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testInvalidSize() throws IOException {
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/cats/0/native.jpg");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
+        } finally {
+            client.release();
+        }
+
+        client = getClientForUriPath("/" + IMAGE + "/full/cats,50/0/native.jpg");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
+        } finally {
+            client.release();
+        }
+
+        client = getClientForUriPath("/" + IMAGE + "/full/50,cats/0/native.jpg");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
+        } finally {
+            client.release();
+        }
+
+        client = getClientForUriPath("/" + IMAGE + "/full/cats,/0/native.jpg");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
+        } finally {
+            client.release();
+        }
+
+        client = getClientForUriPath("/" + IMAGE + "/full/,cats/0/native.jpg");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
+        } finally {
+            client.release();
+        }
+
+        client = getClientForUriPath("/" + IMAGE + "/full/!cats,50/0/native.jpg");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
+        } finally {
+            client.release();
+        }
+    }
+
+    /**
      * 4.3. "The rotation value represents the number of degrees of clockwise
      * rotation from the original, and may be any floating point number from 0
      * to 360. Initially most services will only support 0, 90, 180 or 270 as
@@ -526,7 +595,7 @@ public class Version1_1ConformanceTest {
         // does the current processor support this output format?
         SourceFormat sourceFormat = SourceFormat.getSourceFormat(IMAGE);
         Processor processor = ProcessorFactory.getProcessor(sourceFormat);
-        if (processor.getAvailableOutputFormats(sourceFormat).contains(format)) {
+        if (processor.getAvailableOutputFormats().contains(format)) {
             client.get();
             assertEquals(Status.SUCCESS_OK, client.getStatus());
             assertEquals(format.getMediaType(),

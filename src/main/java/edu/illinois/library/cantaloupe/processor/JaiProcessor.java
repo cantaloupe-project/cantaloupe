@@ -23,8 +23,10 @@ import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -33,7 +35,8 @@ import java.util.Set;
  * @see <a href="http://docs.oracle.com/cd/E19957-01/806-5413-10/806-5413-10.pdf">
  *     Programming in Java Advanced Imaging</a>
  */
-class JaiProcessor implements FileProcessor, StreamProcessor {
+class JaiProcessor extends AbstractProcessor
+        implements FileProcessor, StreamProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(JaiProcessor.class);
 
@@ -48,6 +51,9 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
             SUPPORTED_IIIF_1_1_QUALITIES = new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
             SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
+
+    private File sourceFile;
+    private StreamSource streamSource;
 
     static {
         SUPPORTED_IIIF_1_1_QUALITIES.add(
@@ -94,29 +100,37 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
     }
 
     @Override
-    public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
+    public Set<OutputFormat> getAvailableOutputFormats() {
         Set<OutputFormat> formats = getFormats().get(sourceFormat);
         return (formats != null) ? formats : new HashSet<OutputFormat>();
     }
 
     @Override
-    public Dimension getSize(File inputFile, SourceFormat sourceFormat)
-            throws ProcessorException {
-        return ProcessorUtil.getSize(inputFile, sourceFormat);
+    public Dimension getSize() throws ProcessorException {
+        Java2dProcessor j2dproc = new Java2dProcessor();
+        j2dproc.setSourceFormat(sourceFormat);
+        if (sourceFile != null) {
+            j2dproc.setSourceFile(sourceFile);
+        } else {
+            j2dproc.setStreamSource(streamSource);
+        }
+        return j2dproc.getSize();
     }
 
     @Override
-    public Dimension getSize(final StreamSource streamSource,
-                             final SourceFormat sourceFormat)
-            throws ProcessorException {
-        return ProcessorUtil.getSize(streamSource, sourceFormat);
+    public File getSourceFile() {
+        return this.sourceFile;
     }
 
     @Override
-    public Set<ProcessorFeature> getSupportedFeatures(
-            final SourceFormat sourceFormat) {
+    public StreamSource getStreamSource() {
+        return this.streamSource;
+    }
+
+    @Override
+    public Set<ProcessorFeature> getSupportedFeatures() {
         Set<ProcessorFeature> features = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             features.addAll(SUPPORTED_FEATURES);
         }
         return features;
@@ -124,10 +138,10 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
 
     @Override
     public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-    getSupportedIiif1_1Qualities(final SourceFormat sourceFormat) {
+    getSupportedIiif1_1Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
                 qualities = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             qualities.addAll(SUPPORTED_IIIF_1_1_QUALITIES);
         }
         return qualities;
@@ -135,59 +149,47 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
 
     @Override
     public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-    getSupportedIiif2_0Qualities(final SourceFormat sourceFormat) {
+    getSupportedIiif2_0Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
                 qualities = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             qualities.addAll(SUPPORTED_IIIF_2_0_QUALITIES);
         }
         return qualities;
     }
 
     @Override
-    public void process(final OperationList ops,
-                        final SourceFormat sourceFormat,
-                        final Dimension fullSize,
-                        final File inputFile,
-                        final OutputStream outputStream)
-            throws ProcessorException {
-        doProcess(ops, sourceFormat, inputFile, outputStream);
+    public List<Dimension> getTileSizes() throws ProcessorException {
+        Java2dProcessor j2dproc = new Java2dProcessor();
+        j2dproc.setSourceFormat(sourceFormat);
+        if (sourceFile != null) {
+            j2dproc.setSourceFile(sourceFile);
+        } else {
+            j2dproc.setStreamSource(streamSource);
+        }
+        return j2dproc.getTileSizes();
     }
 
     @Override
     public void process(final OperationList ops,
-                        final SourceFormat sourceFormat,
                         final Dimension fullSize,
-                        final StreamSource streamSource,
                         final OutputStream outputStream)
             throws ProcessorException {
-        doProcess(ops, sourceFormat, streamSource, outputStream);
-    }
-
-    private void doProcess(final OperationList ops,
-                           final SourceFormat sourceFormat,
-                           final Object input,
-                           final OutputStream outputStream)
-            throws ProcessorException {
-        final Set<OutputFormat> availableOutputFormats =
-                getAvailableOutputFormats(sourceFormat);
-        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
-            throw new UnsupportedSourceFormatException(sourceFormat);
-        } else if (!availableOutputFormats.contains(ops.getOutputFormat())) {
+        if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
 
         try {
             final ImageIoImageReader reader = new ImageIoImageReader();
-            final ReductionFactor rf = new ReductionFactor();
-            RenderedImage renderedImage = null;
-            if (input instanceof StreamSource) {
-                renderedImage = reader.read((StreamSource) input,
-                        sourceFormat, ops, rf);
-            } else if (input instanceof File) {
-                renderedImage = reader.read((File) input, sourceFormat, ops,
-                        rf);
+            if (streamSource != null) {
+                reader.setSource(streamSource, sourceFormat);
+            } else {
+                reader.setSource(sourceFile, sourceFormat);
             }
+
+            final ReductionFactor rf = new ReductionFactor();
+            RenderedImage renderedImage = reader.readRendered(ops, rf);
+
             if (renderedImage != null) {
                 RenderedOp renderedOp = JaiUtil.reformatImage(
                         RenderedOp.wrapRenderedImage(renderedImage),
@@ -231,6 +233,16 @@ class JaiProcessor implements FileProcessor, StreamProcessor {
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void setSourceFile(File sourceFile) {
+        this.sourceFile = sourceFile;
+    }
+
+    @Override
+    public void setStreamSource(StreamSource streamSource) {
+        this.streamSource = streamSource;
     }
 
 }

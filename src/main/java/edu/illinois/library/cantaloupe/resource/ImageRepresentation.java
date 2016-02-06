@@ -4,12 +4,10 @@ import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
+import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
@@ -36,57 +34,26 @@ public class ImageRepresentation extends OutputRepresentation {
 
     public static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
 
-    private File file;
     private Dimension fullSize;
-    private StreamSource streamSource;
+    private Processor processor;
     private OperationList ops;
-    private SourceFormat sourceFormat;
 
     /**
-     * Constructor for images from InputStreams.
-     *
      * @param mediaType
-     * @param sourceFormat
      * @param fullSize
      * @param ops
      * @param disposition
-     * @param streamSource
+     * @param processor
      */
     public ImageRepresentation(final MediaType mediaType,
-                               final SourceFormat sourceFormat,
                                final Dimension fullSize,
+                               final Processor processor,
                                final OperationList ops,
-                               final Disposition disposition,
-                               final StreamSource streamSource) {
+                               final Disposition disposition) {
         super(mediaType);
-        this.streamSource = streamSource;
-        this.ops = ops;
-        this.sourceFormat = sourceFormat;
         this.fullSize = fullSize;
-        this.setDisposition(disposition);
-    }
-
-    /**
-     * Constructor for images from Files.
-     *
-     * @param mediaType
-     * @param sourceFormat
-     * @param fullSize
-     * @param ops
-     * @param disposition
-     * @param file
-     */
-    public ImageRepresentation(MediaType mediaType,
-                               SourceFormat sourceFormat,
-                               Dimension fullSize,
-                               OperationList ops,
-                               Disposition disposition,
-                               File file) {
-        super(mediaType);
-        this.file = file;
-        this.fullSize = fullSize;
+        this.processor = processor;
         this.ops = ops;
-        this.sourceFormat = sourceFormat;
         this.setDisposition(disposition);
     }
 
@@ -150,29 +117,24 @@ public class ImageRepresentation extends OutputRepresentation {
             final long msec = System.currentTimeMillis();
             // If the operations are effectively a no-op AND watermarking is
             // disabled, the source image can be streamed right through.
-            if (this.ops.isNoOp(this.sourceFormat) &&
-                    !WatermarkService.isEnabled()) {
-                if (this.file != null) {
-                    IOUtils.copy(new FileInputStream(this.file), outputStream);
+            if (ops.isNoOp(processor.getSourceFormat()) &&
+                        !WatermarkService.isEnabled()) {
+                if (processor instanceof FileProcessor) {
+                    final File sourceFile = ((FileProcessor) processor).getSourceFile();
+                    final InputStream inputStream = new FileInputStream(sourceFile);
+                    IOUtils.copy(inputStream, outputStream);
                 } else {
-                    IOUtils.copy(streamSource.newInputStream(), outputStream);
+                    final StreamSource streamSource = ((StreamProcessor) processor).getStreamSource();
+                    final InputStream inputStream = streamSource.newInputStream();
+                    IOUtils.copy(inputStream, outputStream);
                 }
                 logger.info("Streamed with no processing in {} msec: {}",
                         System.currentTimeMillis() - msec, ops);
             } else {
-                Processor proc = ProcessorFactory.
-                        getProcessor(this.sourceFormat);
-                if (this.file != null) {
-                    FileProcessor fproc = (FileProcessor) proc;
-                    fproc.process(this.ops, this.sourceFormat, this.fullSize,
-                            this.file, outputStream);
-                } else {
-                    StreamProcessor sproc = (StreamProcessor) proc;
-                    sproc.process(this.ops, this.sourceFormat,
-                            this.fullSize, streamSource, outputStream);
-                }
+                processor.process(this.ops, this.fullSize, outputStream);
+
                 logger.info("{} processed in {} msec: {}",
-                        proc.getClass().getSimpleName(),
+                        processor.getClass().getSimpleName(),
                         System.currentTimeMillis() - msec, ops);
             }
         } catch (Exception e) {

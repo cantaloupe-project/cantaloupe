@@ -90,16 +90,13 @@ public class ImageResource extends AbstractResource {
         }
 
         // Obtain an instance of the processor assigned to that format in
-        // the config file
+        // the config file. This will throw a variety of exceptions if there
+        // are any issues.
         final Processor proc = ProcessorFactory.getProcessor(
-                sourceFormat, resolver);
-
-        if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
-            throw new UnsupportedSourceFormatException();
-        }
+                resolver, identifier, sourceFormat);
 
         final Set<OutputFormat> availableOutputFormats =
-                proc.getAvailableOutputFormats(sourceFormat);
+                proc.getAvailableOutputFormats();
 
         // Extract the quality and format from the URI
         String[] qualityAndFormat = StringUtils.split((String) attrs.get("quality_format"), ".");
@@ -113,9 +110,9 @@ public class ImageResource extends AbstractResource {
         }
 
         final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
-                proc.getSupportedFeatures(sourceFormat),
-                proc.getSupportedIiif1_1Qualities(sourceFormat),
-                proc.getAvailableOutputFormats(sourceFormat));
+                proc.getSupportedFeatures(),
+                proc.getSupportedIiif1_1Qualities(),
+                proc.getAvailableOutputFormats());
         this.addHeader("Link", String.format("<%s>;rel=\"profile\";",
                 complianceLevel.getUri()));
 
@@ -131,8 +128,7 @@ public class ImageResource extends AbstractResource {
         ops.getOptions().putAll(
                 this.getReference().getQueryAsForm(true).getValuesMap());
 
-        if (!isAuthorized(ops,
-                getSize(ops.getIdentifier(), proc, resolver, sourceFormat))) {
+        if (!isAuthorized(ops, getSize(ops.getIdentifier(), proc))) {
             throw new AccessDeniedException();
         }
 
@@ -148,8 +144,7 @@ public class ImageResource extends AbstractResource {
 
         Disposition disposition = getRepresentationDisposition(
                 ops.getIdentifier(), ops.getOutputFormat());
-        return getRepresentation(ops, sourceFormat, disposition, resolver,
-                proc);
+        return getRepresentation(ops, sourceFormat, disposition, proc);
     }
 
     /**

@@ -55,10 +55,9 @@ public class JaiUtilTest {
     public void testReformatImage() throws Exception {
         final OperationList ops = new OperationList();
         final ReductionFactor reductionFactor = new ReductionFactor();
-        ImageIoImageReader reader = new ImageIoImageReader();
-        RenderedImage image = reader.read(
-                TestUtil.getFixture(IMAGE), SourceFormat.JPG, ops,
-                reductionFactor);
+        ImageIoImageReader reader = new ImageIoImageReader(
+                TestUtil.getFixture(IMAGE), SourceFormat.JPG);
+        RenderedImage image = reader.readRendered(ops, reductionFactor);
         PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
         RenderedOp renderedOp = JaiUtil.reformatImage(planarImage,
                 new Dimension(512, 512));
@@ -138,10 +137,9 @@ public class JaiUtilTest {
     private RenderedOp getFixture(final String name) throws Exception {
         final OperationList ops = new OperationList();
         final ReductionFactor reductionFactor = new ReductionFactor();
-        ImageIoImageReader reader = new ImageIoImageReader();
-        RenderedImage image = reader.read(
-                TestUtil.getFixture(name), SourceFormat.JPG, ops,
-                reductionFactor);
+        ImageIoImageReader reader = new ImageIoImageReader(
+                TestUtil.getFixture(name), SourceFormat.JPG);
+        RenderedImage image = reader.readRendered(ops, reductionFactor);
         PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
         return JaiUtil.reformatImage(planarImage, new Dimension(512, 512));
     }

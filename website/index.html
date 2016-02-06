@@ -4,14 +4,19 @@ layout: default
 
 <h2 id="About">About</h2>
 
-<p>Cantaloupe is a free, open-source image server that enables on-the-fly derivative generation from high-resolution source images. With available processing operations including cropping, scaling, and rotation, it can support deep-zooming image viewers, as well as on-the-fly thumbnail generation. Compliance with the <a href="http://iiif.io/api/image/">IIIF Image API</a> enables it to work with <a href="http://iiif.io/apps-demos.html">a growing number of client applications</a>.</p>
+<p>Cantaloupe is an open-source image server enabling on-demand derivative generation from high-resolution source images. With available processing operations including cropping, scaling, and rotation, it can support deep-zooming image viewers, as well as on-the-fly thumbnail generation. Compliance with the <a href="http://iiif.io/api/image/">IIIF Image API</a> enables it to work with <a href="http://iiif.io/apps-demos.html">a growing number of client applications</a>.</p>
 
 <p>Developed at the <a href="http://www.library.illinois.edu/">University of Illinois at Urbana-Champaign Library</a>, Cantaloupe augments an emerging digital image repository containing thousands of high-resolution scanned images. Project goals include performance, scalability, and extensibility, without sacrificing ease-of-use.</p>
 
 <figure>
-  <div id="openseadragon1" style="width: 95%; height: 500px; margin: 0 auto"></div>
-  <figcaption>Cantaloupe driving the <a href="https://openseadragon.github.io">OpenSeadragon</a> viewer.
-    <br>JPEG2000 &ndash; 11952&times;8416 pixels &ndash; 95 MB</figcaption>
+  <div id="openseadragon1" style="width: 98%; height: 280px; margin: 0 auto"></div>
+  <figcaption>
+    Andromeda Galaxy in <a href="https://openseadragon.github.io">OpenSeadragon</a>, powered by Cantaloupe
+    <br>
+    Multi-Resolution Tiled TIFF | 3.6 GB | 56324&times;18006 (1 gigapixel)
+    <br>
+    <a href="http://www.spacetelescope.org/images/heic1502a/">ESA/Hubble</a>
+  </figcaption>
 </figure>
 
 <script src="{{ site.baseurl }}/scripts/openseadragon.min.js"></script>
@@ -19,7 +24,7 @@ layout: default
     var viewer = OpenSeadragon({
         id: "openseadragon1",
         prefixUrl: "images/openseadragon/",
-        tileSources: "https://iiif.library.illinois.edu/dls/iiif/2/milwaukee.jp2"
+        tileSources: "https://iiif.library.illinois.edu/dls/iiif/2/andromeda-pyramidal-tiled-deflate.tif"
     });
 </script>
 

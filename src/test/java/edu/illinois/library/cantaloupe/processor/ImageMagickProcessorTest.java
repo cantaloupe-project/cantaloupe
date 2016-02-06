@@ -4,15 +4,18 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
+import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
+import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -107,23 +110,21 @@ public class ImageMagickProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void testGetAvailableOutputFormats() throws IOException {
+    public void testGetAvailableOutputFormats() throws Exception {
         for (SourceFormat sourceFormat : SourceFormat.values()) {
-            Set<OutputFormat> expectedFormats = getFormats().get(sourceFormat);
-            assertEquals(expectedFormats,
-                    instance.getAvailableOutputFormats(sourceFormat));
+            try {
+                instance.setSourceFormat(sourceFormat);
+                Set<OutputFormat> expectedFormats = getFormats().get(sourceFormat);
+                assertEquals(expectedFormats, instance.getAvailableOutputFormats());
+            } catch (UnsupportedSourceFormatException e) {
+                // continue
+            }
         }
     }
 
     @Test
-    public void testGetAvailableOutputFormatsForUnsupportedSourceFormat() {
-        Set<OutputFormat> expectedFormats = new HashSet<>();
-        assertEquals(expectedFormats,
-                instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
-    }
-
-    @Test
-    public void testGetSupportedFeatures() {
+    public void testGetSupportedFeatures() throws Exception {
+        instance.setSourceFormat(getAnySupportedSourceFormat(instance));
         Set<ProcessorFeature> expectedFeatures = new HashSet<>();
         expectedFeatures.add(ProcessorFeature.MIRRORING);
         expectedFeatures.add(ProcessorFeature.REGION_BY_PERCENT);
@@ -136,12 +137,29 @@ public class ImageMagickProcessorTest extends ProcessorTest {
         expectedFeatures.add(ProcessorFeature.SIZE_BY_PERCENT);
         expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH);
         expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
-        assertEquals(expectedFeatures,
-                instance.getSupportedFeatures(getAnySupportedSourceFormat(instance)));
+        assertEquals(expectedFeatures, instance.getSupportedFeatures());
+    }
 
-        expectedFeatures = new HashSet<>();
-        assertEquals(expectedFeatures,
-                instance.getSupportedFeatures(SourceFormat.UNKNOWN));
+    @Test
+    public void testGetTileSizes() throws Exception {
+        // untiled image
+        instance.setStreamSource(new TestStreamSource(TestUtil.getImage("jpg")));
+        instance.setSourceFormat(SourceFormat.JPG);
+        Dimension expectedSize = new Dimension(64, 56);
+        List<Dimension> tileSizes = instance.getTileSizes();
+        assertEquals(1, tileSizes.size());
+        assertEquals(expectedSize, tileSizes.get(0));
+
+        try {
+            // tiled image (this processor doesn't recognize tiles)
+            instance.setStreamSource(new TestStreamSource(
+                    TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif")));
+            instance.setSourceFormat(SourceFormat.TIF);
+            tileSizes = instance.getTileSizes();
+            assertEquals(expectedSize, tileSizes.get(0));
+        } catch (UnsupportedSourceFormatException e) {
+            // oh well
+        }
     }
 
 }

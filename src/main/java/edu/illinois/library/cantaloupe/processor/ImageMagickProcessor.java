@@ -28,14 +28,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
  * Processor using the ImageMagick `convert` and `identify` command-line tools.
  */
-class ImageMagickProcessor implements StreamProcessor {
+class ImageMagickProcessor extends AbstractProcessor
+        implements StreamProcessor {
 
     private static Logger logger = LoggerFactory.
             getLogger(ImageMagickProcessor.class);
@@ -50,6 +54,8 @@ class ImageMagickProcessor implements StreamProcessor {
             SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
     // Lazy-initialized by getFormats()
     private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
+
+    private StreamSource streamSource;
 
     static {
         SUPPORTED_IIIF_1_1_QUALITIES.add(
@@ -157,7 +163,7 @@ class ImageMagickProcessor implements StreamProcessor {
     }
 
     @Override
-    public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
+    public Set<OutputFormat> getAvailableOutputFormats() {
         Set<OutputFormat> formats = getFormats().get(sourceFormat);
         if (formats == null) {
             formats = new HashSet<>();
@@ -166,10 +172,8 @@ class ImageMagickProcessor implements StreamProcessor {
     }
 
     @Override
-    public Dimension getSize(final StreamSource streamSource,
-                             final SourceFormat sourceFormat)
-            throws ProcessorException {
-        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
+    public Dimension getSize() throws ProcessorException {
+        if (getAvailableOutputFormats().size() < 1) {
             throw new UnsupportedSourceFormatException(sourceFormat);
         }
         InputStream inputStream = null;
@@ -194,10 +198,14 @@ class ImageMagickProcessor implements StreamProcessor {
     }
 
     @Override
-    public Set<ProcessorFeature> getSupportedFeatures(
-            final SourceFormat sourceFormat) {
+    public StreamSource getStreamSource() {
+        return this.streamSource;
+    }
+
+    @Override
+    public Set<ProcessorFeature> getSupportedFeatures() {
         Set<ProcessorFeature> features = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             features.addAll(SUPPORTED_FEATURES);
         }
         return features;
@@ -205,10 +213,10 @@ class ImageMagickProcessor implements StreamProcessor {
 
     @Override
     public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-    getSupportedIiif1_1Qualities(final SourceFormat sourceFormat) {
+    getSupportedIiif1_1Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
                 qualities = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             qualities.addAll(SUPPORTED_IIIF_1_1_QUALITIES);
         }
         return qualities;
@@ -216,27 +224,31 @@ class ImageMagickProcessor implements StreamProcessor {
 
     @Override
     public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-    getSupportedIiif2_0Qualities(final SourceFormat sourceFormat) {
+    getSupportedIiif2_0Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
                 qualities = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             qualities.addAll(SUPPORTED_IIIF_2_0_QUALITIES);
         }
         return qualities;
     }
 
+    /**
+     * @return One-element list of the full image dimensions, as this processor
+     * doesn't recognize tiles.
+     * @throws ProcessorException
+     */
+    @Override
+    public List<Dimension> getTileSizes() throws ProcessorException {
+        return new ArrayList<>(Collections.singletonList(getSize()));
+    }
+
     @Override
     public void process(final OperationList ops,
-                        final SourceFormat sourceFormat,
                         final Dimension fullSize,
-                        final StreamSource streamSource,
                         final OutputStream outputStream)
             throws ProcessorException {
-        final Set<OutputFormat> availableOutputFormats =
-                getAvailableOutputFormats(sourceFormat);
-        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
-            throw new UnsupportedSourceFormatException(sourceFormat);
-        } else if (!availableOutputFormats.contains(ops.getOutputFormat())) {
+        if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
 
@@ -266,6 +278,11 @@ class ImageMagickProcessor implements StreamProcessor {
         }
     }
 
+    @Override
+    public void setStreamSource(StreamSource streamSource) {
+        this.streamSource = streamSource;
+    }
+
     private void assembleOperation(IMOperation imOp, OperationList ops,
                                    Dimension fullSize) {
         for (Operation op : ops) {
@@ -290,7 +307,10 @@ class ImageMagickProcessor implements StreamProcessor {
             } else if (op instanceof Scale) {
                 Scale scale = (Scale) op;
                 if (!scale.isNoOp()) {
-                    if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+                    if (scale.getPercent() != null) {
+                        imOp.resize(Math.round(scale.getPercent() * 100),
+                                Math.round(scale.getPercent() * 100), "%");
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                         imOp.resize(scale.getWidth());
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                         imOp.resize(null, scale.getHeight());
@@ -298,9 +318,6 @@ class ImageMagickProcessor implements StreamProcessor {
                         imOp.resize(scale.getWidth(), scale.getHeight(), "!");
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
                         imOp.resize(scale.getWidth(), scale.getHeight());
-                    } else if (scale.getPercent() != null) {
-                        imOp.resize(Math.round(scale.getPercent() * 100),
-                                Math.round(scale.getPercent() * 100), "%");
                     }
                 }
             } else if (op instanceof Transpose) {

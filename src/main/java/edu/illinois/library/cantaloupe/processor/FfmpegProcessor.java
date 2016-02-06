@@ -10,7 +10,6 @@ import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.watermark.Position;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
@@ -37,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -48,9 +48,10 @@ import java.util.concurrent.Executors;
  * and the ffprobe tool to get video information. Works with ffmpeg 2.8 (other
  * versions untested).
  */
-class FfmpegProcessor implements FileProcessor {
+class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
 
-    private static Logger logger = LoggerFactory.getLogger(FfmpegProcessor.class);
+    private static Logger logger = LoggerFactory.
+            getLogger(FfmpegProcessor.class);
 
     public static final String PATH_TO_BINARIES_CONFIG_KEY =
             "FfmpegProcessor.path_to_binaries";
@@ -64,6 +65,8 @@ class FfmpegProcessor implements FileProcessor {
 
     private static final ExecutorService executorService =
             Executors.newCachedThreadPool();
+
+    private File sourceFile;
 
     static {
         SUPPORTED_IIIF_1_1_QUALITIES.add(
@@ -146,7 +149,7 @@ class FfmpegProcessor implements FileProcessor {
     }
 
     @Override
-    public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
+    public Set<OutputFormat> getAvailableOutputFormats() {
         Set<OutputFormat> outputFormats = new HashSet<>();
         if (sourceFormat.isVideo()) {
             outputFormats.add(OutputFormat.JPG);
@@ -157,18 +160,11 @@ class FfmpegProcessor implements FileProcessor {
     /**
      * Gets the size of the given video by parsing the output of ffprobe.
      *
-     * @param inputFile Source image
-     * @param sourceFormat Format of the source image
      * @return
      * @throws ProcessorException
      */
     @Override
-    public Dimension getSize(File inputFile, SourceFormat sourceFormat)
-            throws ProcessorException {
-        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
-            throw new UnsupportedSourceFormatException(sourceFormat);
-        }
-
+    public Dimension getSize() throws ProcessorException {
         final List<String> command = new ArrayList<>();
         // ffprobe -v quiet -print_format xml -show_streams <file>
         command.add(getPath("ffprobe"));
@@ -177,7 +173,7 @@ class FfmpegProcessor implements FileProcessor {
         command.add("-print_format");
         command.add("xml");
         command.add("-show_streams");
-        command.add(inputFile.getAbsolutePath());
+        command.add(sourceFile.getAbsolutePath());
         try {
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.redirectErrorStream(true);
@@ -203,9 +199,14 @@ class FfmpegProcessor implements FileProcessor {
     }
 
     @Override
-    public Set<ProcessorFeature> getSupportedFeatures(SourceFormat sourceFormat) {
+    public File getSourceFile() {
+        return this.sourceFile;
+    }
+
+    @Override
+    public Set<ProcessorFeature> getSupportedFeatures() {
         Set<ProcessorFeature> features = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             features.addAll(SUPPORTED_FEATURES);
         }
         return features;
@@ -213,10 +214,10 @@ class FfmpegProcessor implements FileProcessor {
 
     @Override
     public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-    getSupportedIiif1_1Qualities(SourceFormat sourceFormat) {
+    getSupportedIiif1_1Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
                 qualities = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             qualities.addAll(SUPPORTED_IIIF_1_1_QUALITIES);
         }
         return qualities;
@@ -224,27 +225,31 @@ class FfmpegProcessor implements FileProcessor {
 
     @Override
     public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-    getSupportedIiif2_0Qualities(SourceFormat sourceFormat) {
+    getSupportedIiif2_0Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
                 qualities = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             qualities.addAll(SUPPORTED_IIIF_2_0_QUALITIES);
         }
         return qualities;
     }
 
+    /**
+     * @return One-element list of the full image dimensions, as this processor
+     * doesn't support tiled sources.
+     * @throws ProcessorException
+     */
+    @Override
+    public List<Dimension> getTileSizes() throws ProcessorException {
+        return new ArrayList<>(Collections.singletonList(getSize()));
+    }
+
     @Override
     public void process(final OperationList ops,
-                        final SourceFormat sourceFormat,
                         final Dimension fullSize,
-                        final File inputFile,
                         final OutputStream outputStream)
             throws ProcessorException {
-        final Set<OutputFormat> availableOutputFormats =
-                getAvailableOutputFormats(sourceFormat);
-        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
-            throw new UnsupportedSourceFormatException(sourceFormat);
-        } else if (!availableOutputFormats.contains(ops.getOutputFormat())) {
+        if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
 
@@ -270,8 +275,7 @@ class FfmpegProcessor implements FileProcessor {
 
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
-            final ProcessBuilder pb = getProcessBuilder(ops, fullSize,
-                    inputFile);
+            final ProcessBuilder pb = getProcessBuilder(ops, fullSize);
             logger.info("Executing {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
@@ -304,15 +308,18 @@ class FfmpegProcessor implements FileProcessor {
         }
     }
 
+    @Override
+    public void setSourceFile(File sourceFile) {
+        this.sourceFile = sourceFile;
+    }
+
     /**
      * @param ops
      * @param fullSize The full size of the source image
-     * @param inputFile
      * @return Command string
      */
     private ProcessBuilder getProcessBuilder(OperationList ops,
-                                             Dimension fullSize,
-                                             File inputFile) {
+                                             Dimension fullSize) {
         final List<String> command = new ArrayList<>();
         command.add(getPath("ffmpeg"));
 
@@ -331,7 +338,7 @@ class FfmpegProcessor implements FileProcessor {
         }
 
         command.add("-i");
-        command.add(inputFile.getAbsolutePath());
+        command.add(sourceFile.getAbsolutePath());
         command.add("-nostdin");
         command.add("-v");
         command.add("quiet");

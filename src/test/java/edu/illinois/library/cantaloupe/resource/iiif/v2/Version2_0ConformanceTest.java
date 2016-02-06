@@ -411,6 +411,75 @@ public class Version2_0ConformanceTest {
     }
 
     /**
+     * IIIF Image API 2.0 doesn't say anything about an invalid size
+     * parameter, so we will check for an HTTP 400.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testInvalidSize() throws IOException {
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/cats/0/default.jpg");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
+        } finally {
+            client.release();
+        }
+
+        client = getClientForUriPath("/" + IMAGE + "/full/cats,50/0/default.jpg");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
+        } finally {
+            client.release();
+        }
+
+        client = getClientForUriPath("/" + IMAGE + "/full/50,cats/0/default.jpg");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
+        } finally {
+            client.release();
+        }
+
+        client = getClientForUriPath("/" + IMAGE + "/full/cats,/0/default.jpg");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
+        } finally {
+            client.release();
+        }
+
+        client = getClientForUriPath("/" + IMAGE + "/full/,cats/0/default.jpg");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
+        } finally {
+            client.release();
+        }
+
+        client = getClientForUriPath("/" + IMAGE + "/full/!cats,50/0/default.jpg");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
+        } finally {
+            client.release();
+        }
+    }
+
+    /**
      * 4.3. "The degrees of clockwise rotation from 0 up to 360."
      *
      * @throws IOException
@@ -550,7 +619,7 @@ public class Version2_0ConformanceTest {
         // does the current processor support this output format?
         SourceFormat sourceFormat = SourceFormat.getSourceFormat(IMAGE);
         Processor processor = ProcessorFactory.getProcessor(sourceFormat);
-        if (processor.getAvailableOutputFormats(sourceFormat).contains(format)) {
+        if (processor.getAvailableOutputFormats().contains(format)) {
             client.get();
             assertEquals(Status.SUCCESS_OK, client.getStatus());
             assertEquals(format.getMediaType(),
@@ -688,7 +757,7 @@ public class Version2_0ConformanceTest {
      */
     @Test
     public void testInformationRequestJson() throws IOException {
-        // this will be tested in InformationResourceTest
+        // this will be tested in ImageInfoFactoryTest
     }
 
     /**
