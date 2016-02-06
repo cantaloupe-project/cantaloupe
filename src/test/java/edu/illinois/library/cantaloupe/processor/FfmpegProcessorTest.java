@@ -13,6 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -29,8 +30,13 @@ public class FfmpegProcessorTest extends ProcessorTest {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         instance = new FfmpegProcessor();
+        final SourceFormat sourceFormat = SourceFormat.MPG;
+        final File fixture = TestUtil.
+                getFixture("images/" + sourceFormat.getPreferredExtension());
+        instance.setSourceFile(fixture);
+        instance.setSourceFormat(sourceFormat);
     }
 
     @Test
@@ -69,12 +75,15 @@ public class FfmpegProcessorTest extends ProcessorTest {
     }
 
     @Test
+    public void testGetTileSizes() throws Exception {
+        List<Dimension> sizes = instance.getTileSizes();
+        assertEquals(1, sizes.size());
+        assertEquals(640, sizes.get(0).width);
+        assertEquals(360, sizes.get(0).height);
+    }
+
+    @Test
     public void testProcessWithFrameOption() throws Exception {
-        final SourceFormat sourceFormat = SourceFormat.MPG;
-        final File fixture = TestUtil.
-                getFixture("images/" + sourceFormat.getPreferredExtension());
-        instance.setSourceFile(fixture);
-        instance.setSourceFormat(sourceFormat);
         final Dimension size = instance.getSize();
 
         // time option missing

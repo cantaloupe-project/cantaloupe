@@ -18,8 +18,10 @@ import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -147,15 +149,23 @@ class JaiProcessor extends AbstractProcessor
     }
 
     @Override
+    public List<Dimension> getTileSizes() throws ProcessorException {
+        Java2dProcessor j2dproc = new Java2dProcessor();
+        j2dproc.setSourceFormat(sourceFormat);
+        if (sourceFile != null) {
+            j2dproc.setSourceFile(sourceFile);
+        } else {
+            j2dproc.setStreamSource(streamSource);
+        }
+        return j2dproc.getTileSizes();
+    }
+
+    @Override
     public void process(final OperationList ops,
                         final Dimension fullSize,
                         final OutputStream outputStream)
             throws ProcessorException {
-        final Set<OutputFormat> availableOutputFormats =
-                getAvailableOutputFormats();
-        if (getAvailableOutputFormats().size() < 1) {
-            throw new UnsupportedSourceFormatException();
-        } else if (!availableOutputFormats.contains(ops.getOutputFormat())) {
+        if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
 

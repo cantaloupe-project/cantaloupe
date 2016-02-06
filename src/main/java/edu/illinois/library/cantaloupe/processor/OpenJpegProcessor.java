@@ -24,19 +24,19 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -75,6 +75,8 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
 
     private static Path stdoutSymlink;
 
+    // will cache opj_dump output
+    private String imageInfo;
     private File sourceFile;
 
     static {
@@ -169,26 +171,17 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
      */
     @Override
     public Dimension getSize() throws ProcessorException {
-        if (getAvailableOutputFormats().size() < 1) {
-            throw new UnsupportedSourceFormatException();
-        }
-        final List<String> command = new ArrayList<>();
-        command.add(getPath("opj_dump"));
-        command.add("-i");
-        command.add(sourceFile.getAbsolutePath());
         try {
-            ProcessBuilder pb = new ProcessBuilder(command);
-            pb.redirectErrorStream(true);
-            logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
-            Process process = pb.start();
+            if (imageInfo == null) {
+                readImageInfo();
+            }
 
-            BufferedReader stdInput = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()));
-            String s;
             int width = 0, height = 0;
-            while ((s = stdInput.readLine()) != null) {
-                if (s.trim().startsWith("x1=")) {
-                    String[] parts = StringUtils.split(s.trim(), ",");
+            final Scanner scan = new Scanner(imageInfo);
+            while (scan.hasNextLine()) {
+                String line = scan.nextLine();
+                if (line.trim().startsWith("x1=")) {
+                    String[] parts = StringUtils.split(line.trim(), ",");
                     for (int i = 0; i < 2; i++) {
                         String[] kv = StringUtils.split(parts[i], "=");
                         if (kv.length == 2) {
@@ -202,12 +195,24 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                     return new Dimension(width, height);
                 }
             }
-            throw new ProcessorException("Failsed to parse output. Command: " +
-                            StringUtils.join(command, " "));
+            throw new ProcessorException("Failsed to parse size");
         } catch (IOException e) {
-            throw new ProcessorException("Failed to parse output. Command: " +
-                    StringUtils.join(command, " "), e);
+            throw new ProcessorException("Failed to parse size", e);
         }
+    }
+
+    private void readImageInfo() throws IOException {
+        final List<String> command = new ArrayList<>();
+        command.add(getPath("opj_dump"));
+        command.add("-i");
+        command.add(sourceFile.getAbsolutePath());
+
+        ProcessBuilder pb = new ProcessBuilder(command);
+        pb.redirectErrorStream(true);
+        logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
+        Process process = pb.start();
+
+        imageInfo = IOUtils.toString(process.getInputStream(), "UTF-8");
     }
 
     @Override
@@ -247,15 +252,37 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
     }
 
     @Override
+    public List<Dimension> getTileSizes() throws ProcessorException {
+        try {
+            if (imageInfo == null) {
+                readImageInfo();
+            }
+            // read the tile dimensions
+            final Scanner scan = new Scanner(imageInfo);
+            while (scan.hasNextLine()) {
+                String line = scan.nextLine();
+                if (line.trim().startsWith("tdx=")) {
+                    String[] parts = StringUtils.split(line, ",");
+                    if (parts.length == 2) {
+                        Dimension size = new Dimension(
+                                Integer.parseInt(parts[0].replaceAll("[^0-9]", "")),
+                                Integer.parseInt(parts[1].replaceAll("[^0-9]", "")));
+                        return new ArrayList<>(Collections.singletonList(size));
+                    }
+                }
+            }
+            throw new ProcessorException("Failed to parse tile sizes");
+        } catch (Exception e) {
+            throw new ProcessorException(e.getMessage(), e);
+        }
+    }
+
+    @Override
     public void process(final OperationList ops,
                         final Dimension fullSize,
                         final OutputStream outputStream)
             throws ProcessorException {
-        final Set<OutputFormat> availableOutputFormats =
-                getAvailableOutputFormats();
-        if (getAvailableOutputFormats().size() < 1) {
-            throw new UnsupportedSourceFormatException(sourceFormat);
-        } else if (!availableOutputFormats.contains(ops.getOutputFormat())) {
+        if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
 
@@ -333,6 +360,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
 
     @Override
     public void setSourceFile(File sourceFile) {
+        reset();
         this.sourceFile = sourceFile;
     }
 
@@ -489,6 +517,10 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
         new ImageIoImageWriter().write(image, opList.getOutputFormat(),
                 outputStream);
         image.flush();
+    }
+
+    private void reset() {
+        imageInfo = null;
     }
 
 }

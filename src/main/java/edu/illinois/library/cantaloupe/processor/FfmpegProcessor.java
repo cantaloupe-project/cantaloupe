@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -193,14 +194,22 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
         return qualities;
     }
 
+    /**
+     * @return One-element list of the full image dimensions, as this processor
+     * doesn't support tiled sources.
+     * @throws ProcessorException
+     */
+    @Override
+    public List<Dimension> getTileSizes() throws ProcessorException {
+        return new ArrayList<>(Collections.singletonList(getSize()));
+    }
+
     @Override
     public void process(final OperationList ops,
                         final Dimension fullSize,
                         final OutputStream outputStream)
             throws ProcessorException {
-        final Set<OutputFormat> availableOutputFormats =
-                getAvailableOutputFormats();
-        if (!availableOutputFormats.contains(ops.getOutputFormat())) {
+        if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
 

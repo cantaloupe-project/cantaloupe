@@ -86,6 +86,8 @@ public abstract class ProcessorTest {
         }
     }
 
+    public abstract void testGetTileSizes() throws Exception;
+
     @Test
     public void testProcessWithSupportedSourceFormatsAndNoOperations()
             throws Exception {

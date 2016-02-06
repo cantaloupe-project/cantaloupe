@@ -18,8 +18,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -161,15 +163,33 @@ class Java2dProcessor extends AbstractProcessor
     }
 
     @Override
+    public List<Dimension> getTileSizes() throws ProcessorException {
+        try {
+            // TODO: share a reader
+            final ImageIoImageReader reader = new ImageIoImageReader();
+            if (streamSource != null) {
+                reader.setSource(streamSource, sourceFormat);
+            } else {
+                reader.setSource(sourceFile, sourceFormat);
+            }
+            final List<Dimension> sizes = new ArrayList<>();
+
+            for (int i = 0, numResolutions = reader.getNumResolutions();
+                 i < numResolutions; i++) {
+                sizes.add(reader.getTileSize(i));
+            }
+            return sizes;
+        } catch (IOException e) {
+            throw new ProcessorException(e.getMessage(), e);
+        }
+    }
+
+    @Override
     public void process(final OperationList ops,
                         final Dimension fullSize,
                         final OutputStream outputStream)
             throws ProcessorException {
-        final Set<OutputFormat> availableOutputFormats =
-                getAvailableOutputFormats();
-        if (getAvailableOutputFormats().size() < 1) {
-            throw new UnsupportedSourceFormatException(sourceFormat);
-        } else if (!availableOutputFormats.contains(ops.getOutputFormat())) {
+        if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
 

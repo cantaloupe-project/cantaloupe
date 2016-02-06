@@ -25,6 +25,7 @@ import javax.imageio.ImageIO;
 import javax.media.jai.RenderedOp;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -44,8 +45,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -88,6 +91,8 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
 
     private static Path stdoutSymlink;
 
+    /** will cache the output of kdu_jp2info */
+    private Document imageInfo;
     private File sourceFile;
 
     static {
@@ -183,45 +188,54 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
      */
     @Override
     public Dimension getSize() throws ProcessorException {
-        if (getAvailableOutputFormats().size() < 1) {
-            throw new UnsupportedSourceFormatException(sourceFormat);
+        try {
+            if (imageInfo == null) {
+                readImageInfo();
+            }
+            XPath xpath = XPathFactory.newInstance().newXPath();
+            XPathExpression expr = xpath.compile("//codestream/width");
+            int width = (int) Math.round((double) expr.evaluate(imageInfo, XPathConstants.NUMBER));
+            expr = xpath.compile("//codestream/height");
+            int height = (int) Math.round((double) expr.evaluate(imageInfo, XPathConstants.NUMBER));
+            return new Dimension(width, height);
+        } catch (Exception e) {
+            throw new ProcessorException(e.getMessage(), e);
         }
+    }
+
+    /**
+     * Executes kdu_jp2info and parses the output into a Document object,
+     * saved in an instance variable.
+     *
+     * @throws SAXException
+     * @throws IOException
+     * @throws ParserConfigurationException
+     */
+    private void readImageInfo()
+            throws SAXException, IOException,ParserConfigurationException {
         final List<String> command = new ArrayList<>();
         command.add(getPath("kdu_jp2info"));
         command.add("-i");
         command.add(sourceFile.getAbsolutePath());
-        try {
-            ProcessBuilder pb = new ProcessBuilder(command);
-            pb.redirectErrorStream(true);
-            logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
-            Process process = pb.start();
+        command.add("-siz");
 
-            // Ideally we could just call
-            // DocumentBuilder.parse(process.getInputStream()), but the XML
-            // output of kdu_jp2info may contain leading whitespace that
-            // causes a SAXParseException. So, read into a byte array in
-            // order to trim it, and then parse that.
-            ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
-            org.apache.commons.io.IOUtils.copy(process.getInputStream(),
-                    outputBucket);
-            final String outputXml = outputBucket.toString("UTF-8").trim();
+        final ProcessBuilder pb = new ProcessBuilder(command);
+        pb.redirectErrorStream(true);
+        logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
+        Process process = pb.start();
 
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.parse(new InputSource(new StringReader(outputXml)));
+        // Ideally we could just call
+        // DocumentBuilder.parse(process.getInputStream()), but the XML
+        // output of kdu_jp2info may contain leading whitespace that
+        // causes a SAXParseException. So, read into a byte array in
+        // order to trim it, and then parse that. TODO: use a FilterInputStream
+        ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
+        IOUtils.copy(process.getInputStream(), outputBucket);
+        final String outputXml = outputBucket.toString("UTF-8").trim();
 
-            XPath xpath = XPathFactory.newInstance().newXPath();
-            XPathExpression expr = xpath.compile("//codestream/width");
-            int width = (int) Math.round((double) expr.evaluate(doc, XPathConstants.NUMBER));
-            expr = xpath.compile("//codestream/height");
-            int height = (int) Math.round((double) expr.evaluate(doc, XPathConstants.NUMBER));
-            return new Dimension(width, height);
-        } catch (SAXException e) {
-            throw new ProcessorException("Failed to parse XML. Command: " +
-                    StringUtils.join(command, " "), e);
-        } catch (Exception e) {
-            throw new ProcessorException(e.getMessage(), e);
-        }
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        imageInfo = db.parse(new InputSource(new StringReader(outputXml)));
     }
 
     @Override
@@ -261,15 +275,41 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
     }
 
     @Override
+    public List<Dimension> getTileSizes() throws ProcessorException {
+        try {
+            if (imageInfo == null) {
+                readImageInfo();
+            }
+            XPath xpath = XPathFactory.newInstance().newXPath();
+            XPathExpression expr = xpath.compile("//codestream/SIZ");
+            String result = (String) expr.evaluate(imageInfo, XPathConstants.STRING);
+
+            // read the tile dimensions out of the Stiles={n,n} line
+            final Scanner scan = new Scanner(result);
+            while (scan.hasNextLine()) {
+                String line = scan.nextLine();
+                if (line.trim().startsWith("Stiles=")) {
+                    String[] parts = StringUtils.split(line, ",");
+                    if (parts.length == 2) {
+                        Dimension size = new Dimension(
+                                Integer.parseInt(parts[0].replaceAll("[^0-9]", "")),
+                                Integer.parseInt(parts[1].replaceAll("[^0-9]", "")));
+                        return new ArrayList<>(Collections.singletonList(size));
+                    }
+                }
+            }
+            throw new ProcessorException("Failed to parse tile sizes");
+        } catch (Exception e) {
+            throw new ProcessorException(e.getMessage(), e);
+        }
+    }
+
+    @Override
     public void process(final OperationList ops,
                         final Dimension fullSize,
                         final OutputStream outputStream)
             throws ProcessorException {
-        final Set<OutputFormat> availableOutputFormats =
-                getAvailableOutputFormats();
-        if (getAvailableOutputFormats().size() < 1) {
-            throw new UnsupportedSourceFormatException(sourceFormat);
-        } else if (!availableOutputFormats.contains(ops.getOutputFormat())) {
+        if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
 
@@ -349,6 +389,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
 
     @Override
     public void setSourceFile(File sourceFile) {
+        reset();
         this.sourceFile = sourceFile;
     }
 
@@ -536,6 +577,10 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
         new ImageIoImageWriter().write(image, opList.getOutputFormat(),
                 outputStream);
         image.flush();
+    }
+
+    private void reset() {
+        imageInfo = null;
     }
 
 }

@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
 import java.awt.Dimension;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -56,6 +57,15 @@ public interface Processor {
      */
     Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
     getSupportedIiif2_0Qualities();
+
+    /**
+     * @return List of tile sizes of each resolution of a multiresolution
+     * image, in order of image index. For monoresolution images, this
+     * should be a one-element list. If the image is not tiled, the size
+     * should be the full image size.
+     * @throws ProcessorException
+     */
+    List<Dimension> getTileSizes() throws ProcessorException;
 
     /**
      * <p>Performs the supplied operations on an image, reading it from the
