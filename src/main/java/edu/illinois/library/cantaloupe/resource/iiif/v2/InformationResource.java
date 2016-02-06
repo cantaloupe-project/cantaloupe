@@ -1,43 +1,27 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import java.awt.Dimension;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
-import edu.illinois.library.cantaloupe.resource.iiif.Feature;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
-import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
-import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.script.ScriptException;
 
 /**
  * Handles IIIF information requests.
@@ -46,23 +30,6 @@ import javax.script.ScriptException;
  * Requests</a>
  */
 public class InformationResource extends AbstractResource {
-
-    private static Logger logger = LoggerFactory.
-            getLogger(InformationResource.class);
-
-    private static final String SERVICE_METHOD = "get_iiif2_service";
-
-    private static final Set<ServiceFeature> SUPPORTED_SERVICE_FEATURES =
-            new HashSet<>();
-
-    static {
-        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.SIZE_BY_WHITELISTED);
-        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.BASE_URI_REDIRECT);
-        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.CANONICAL_LINK_HEADER);
-        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.CORS);
-        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.JSON_LD_MEDIA_TYPE);
-        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.PROFILE_LINK_HEADER);
-    }
 
     @Override
     protected void doInit() throws ResourceException {
@@ -110,19 +77,9 @@ public class InformationResource extends AbstractResource {
                 sourceFormat);
 
         // Get an ImageInfo instance corresponding to the source image
-        ImageInfo imageInfo = assembleImageInfo(identifier,
-                getSize(identifier, proc),
-                proc.getSupportedIiif2_0Qualities(),
-                proc.getSupportedFeatures(),
-                proc.getAvailableOutputFormats());
-        // Transform the ImageInfo into JSON
-        ObjectMapper mapper = new ObjectMapper();
-        String json = mapper.writer().
-                without(SerializationFeature.WRITE_NULL_MAP_VALUES).
-                without(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS).
-                writeValueAsString(imageInfo);
-        // could use JacksonRepresentation here; not sure whether it's worth bothering
-        StringRepresentation rep = new StringRepresentation(json);
+        ImageInfo imageInfo = ImageInfoFactory.newImageInfo(
+                identifier, getImageUri(identifier), proc);
+        StringRepresentation rep = new StringRepresentation(imageInfo.toJson());
 
         this.addHeader("Link", "<http://iiif.io/api/image/2/context.json>; " +
                 "rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"");
@@ -138,75 +95,6 @@ public class InformationResource extends AbstractResource {
             rep.setMediaType(new MediaType("application/json"));
         }
         return rep;
-    }
-
-    private ImageInfo assembleImageInfo(final Identifier identifier,
-                                        final Dimension fullSize,
-                                        final Set<Quality> qualities,
-                                        final Set<ProcessorFeature> processorFeatures,
-                                        final Set<OutputFormat> outputFormats) {
-        final ImageInfo imageInfo = new ImageInfo();
-        imageInfo.id = getImageUri(identifier);
-        imageInfo.width = fullSize.width;
-        imageInfo.height = fullSize.height;
-
-        final String complianceUri = ComplianceLevel.getLevel(
-                SUPPORTED_SERVICE_FEATURES, processorFeatures, qualities,
-                outputFormats).getUri();
-        imageInfo.profile.add(complianceUri);
-
-        // sizes
-        final short maxReductionFactor = 4;
-        final short minSize = 256;
-        for (double i = 2; i <= Math.pow(2, maxReductionFactor); i *= 2) {
-            final int width = (int) Math.round(fullSize.width / i);
-            final int height = (int) Math.round(fullSize.height / i);
-            if (width < minSize || height < minSize) {
-                break;
-            }
-            ImageInfo.Size size = new ImageInfo.Size(width, height);
-            imageInfo.sizes.add(0, size);
-        }
-
-        // formats
-        Map<String, Set<String>> profileMap = new HashMap<>();
-        Set<String> formatStrings = new HashSet<>();
-        for (OutputFormat format : outputFormats) {
-            formatStrings.add(format.getExtension());
-        }
-        profileMap.put("formats", formatStrings);
-        imageInfo.profile.add(profileMap);
-
-        // qualities
-        Set<String> qualityStrings = new HashSet<>();
-        for (Quality quality : qualities) {
-            qualityStrings.add(quality.toString().toLowerCase());
-        }
-        profileMap.put("qualities", qualityStrings);
-
-        // supports
-        Set<String> featureStrings = new HashSet<>();
-        for (Feature feature : processorFeatures) {
-            featureStrings.add(feature.getName());
-        }
-        for (Feature feature : SUPPORTED_SERVICE_FEATURES) {
-            featureStrings.add(feature.getName());
-        }
-        profileMap.put("supports", featureStrings);
-
-        // service
-        try {
-            final String[] args = { identifier.toString() };
-            imageInfo.service = (Map) ScriptEngineFactory.getScriptEngine().
-                    invoke(SERVICE_METHOD, args);
-        } catch (DelegateScriptDisabledException e) {
-            logger.info("Delegate script disabled; skipping service " +
-                    "information.");
-        } catch (ScriptException | IOException e) {
-            logger.error(e.getMessage());
-        }
-
-        return imageInfo;
     }
 
     private String getImageUri(Identifier identifier) {
