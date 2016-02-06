@@ -1,19 +1,14 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import java.awt.Dimension;
 import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
@@ -80,26 +75,12 @@ public class InformationResource extends AbstractResource {
                 sourceFormat);
 
         // Get an ImageInfo instance corresponding to the source image
-        ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
-                proc.getSupportedFeatures(),
-                proc.getSupportedIiif1_1Qualities(),
-                proc.getAvailableOutputFormats());
-        ImageInfo imageInfo = getImageInfo(identifier,
-                getSize(identifier, proc),
-                complianceLevel,
-                proc.getSupportedIiif1_1Qualities(),
-                proc.getAvailableOutputFormats());
-        // Transform the ImageInfo into JSON
-        ObjectMapper mapper = new ObjectMapper();
-        String json = mapper.writer().
-                without(SerializationFeature.WRITE_NULL_MAP_VALUES).
-                without(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS).
-                writeValueAsString(imageInfo);
-        // could use JacksonRepresentation here; not sure whether it's worth bothering
-        StringRepresentation rep = new StringRepresentation(json);
+        ImageInfo imageInfo = ImageInfoFactory.newImageInfo(
+                getImageUri(identifier), proc);
+        StringRepresentation rep = new StringRepresentation(imageInfo.toJson());
 
         this.addHeader("Link", String.format("<%s>;rel=\"profile\";",
-                complianceLevel.getUri()));
+                imageInfo.profile));
 
         // If the client has requested JSON-LD, set the content type to
         // that; otherwise set it to JSON
@@ -112,37 +93,6 @@ public class InformationResource extends AbstractResource {
             rep.setMediaType(new MediaType("application/json"));
         }
         return rep;
-    }
-
-    private ImageInfo getImageInfo(Identifier identifier, Dimension fullSize,
-                                   ComplianceLevel complianceLevel,
-                                   Set<Quality> qualities,
-                                   Set<OutputFormat> outputFormats) {
-        ImageInfo imageInfo = new ImageInfo();
-        imageInfo.id = getImageUri(identifier);
-        imageInfo.width = fullSize.width;
-        imageInfo.height = fullSize.height;
-        imageInfo.profile = complianceLevel.getUri();
-        // totally arbitrary
-        imageInfo.tileWidth = 512;
-        imageInfo.tileHeight = 512;
-
-        // scale factors
-        for (short i = 0; i < 5; i++) {
-            imageInfo.scaleFactors.add((int) Math.pow(2, i));
-        }
-
-        // formats
-        for (OutputFormat format : outputFormats) {
-            imageInfo.formats.add(format.getExtension());
-        }
-
-        // qualities
-        for (Quality quality : qualities) {
-            imageInfo.qualities.add(quality.toString().toLowerCase());
-        }
-
-        return imageInfo;
     }
 
     private String getImageUri(Identifier identifier) {
