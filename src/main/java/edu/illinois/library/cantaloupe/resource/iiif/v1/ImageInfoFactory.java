@@ -52,7 +52,9 @@ abstract class ImageInfoFactory {
         imageInfo.tileHeight = tileSize.height;
 
         // scale factors
-        for (short i = 0; i < 5; i++) {
+        int maxReductionFactor =
+                ImageInfoUtil.maxReductionFactor(fullSize, MIN_SIZE);
+        for (int i = 0; i <= maxReductionFactor; i++) {
             imageInfo.scaleFactors.add((int) Math.pow(2, i));
         }
 
