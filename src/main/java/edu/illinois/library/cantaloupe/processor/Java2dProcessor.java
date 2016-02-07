@@ -7,27 +7,24 @@ import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Transpose;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
- * Processor using the Java 2D framework.
+ * <p>Processor using the Java 2D and ImageIO frameworks.</p>
+ *
+ * <p>Because they both use ImageIO, this processor has a lot in common with
+ * {@link JaiProcessor} and so a lot of functionality in both has been
+ * extracted into a base class.</p>
  */
-class Java2dProcessor extends AbstractProcessor
+class Java2dProcessor extends AbstractImageIoProcessor
         implements StreamProcessor, FileProcessor {
 
     public static final String JPG_QUALITY_CONFIG_KEY =
@@ -37,17 +34,12 @@ class Java2dProcessor extends AbstractProcessor
     public static final String TIF_COMPRESSION_CONFIG_KEY =
             "Java2dProcessor.tif.compression";
 
-    private static final HashMap<SourceFormat,Set<OutputFormat>> FORMATS =
-            availableOutputFormats();
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
             SUPPORTED_IIIF_1_1_QUALITIES = new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
             SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
-
-    private File sourceFile;
-    private StreamSource streamSource;
 
     static {
         SUPPORTED_IIIF_1_1_QUALITIES.add(
@@ -79,56 +71,6 @@ class Java2dProcessor extends AbstractProcessor
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_PERCENT);
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH);
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
-    }
-
-    /**
-     * @return Map of available output formats for all known source formats.
-     */
-    public static HashMap<SourceFormat, Set<OutputFormat>>
-    availableOutputFormats() {
-        final HashMap<SourceFormat,Set<OutputFormat>> map = new HashMap<>();
-        for (SourceFormat sourceFormat : ImageIoImageReader.supportedFormats()) {
-            map.put(sourceFormat, ImageIoImageWriter.supportedFormats());
-        }
-        return map;
-    }
-
-    @Override
-    public Set<OutputFormat> getAvailableOutputFormats() {
-        Set<OutputFormat> formats = FORMATS.get(sourceFormat);
-        if (formats == null) {
-            formats = new HashSet<>();
-        }
-        return formats;
-    }
-
-    @Override
-    public Dimension getSize() throws ProcessorException {
-        ImageIoImageReader reader = new ImageIoImageReader();
-        try {
-            try {
-                if (streamSource != null) {
-                    reader.setSource(streamSource, sourceFormat);
-                } else {
-                    reader.setSource(sourceFile, sourceFormat);
-                }
-                return reader.getSize();
-            } finally {
-                reader.dispose();
-            }
-        } catch (IOException e) {
-            throw new ProcessorException(e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public File getSourceFile() {
-        return this.sourceFile;
-    }
-
-    @Override
-    public StreamSource getStreamSource() {
-        return this.streamSource;
     }
 
     @Override
@@ -163,28 +105,6 @@ class Java2dProcessor extends AbstractProcessor
     }
 
     @Override
-    public List<Dimension> getTileSizes() throws ProcessorException {
-        try {
-            // TODO: share a reader
-            final ImageIoImageReader reader = new ImageIoImageReader();
-            if (streamSource != null) {
-                reader.setSource(streamSource, sourceFormat);
-            } else {
-                reader.setSource(sourceFile, sourceFormat);
-            }
-            final List<Dimension> sizes = new ArrayList<>();
-
-            for (int i = 0, numResolutions = reader.getNumResolutions();
-                 i < numResolutions; i++) {
-                sizes.add(reader.getTileSize(i));
-            }
-            return sizes;
-        } catch (IOException e) {
-            throw new ProcessorException(e.getMessage(), e);
-        }
-    }
-
-    @Override
     public void process(final OperationList ops,
                         final Dimension fullSize,
                         final OutputStream outputStream)
@@ -194,12 +114,6 @@ class Java2dProcessor extends AbstractProcessor
         }
 
         try {
-            final ImageIoImageReader reader = new ImageIoImageReader();
-            if (streamSource != null) {
-                reader.setSource(streamSource, sourceFormat);
-            } else {
-                reader.setSource(sourceFile, sourceFormat);
-            }
             final ReductionFactor rf = new ReductionFactor();
             final Set<ImageIoImageReader.ReaderHint> hints = new HashSet<>();
             BufferedImage image = reader.read(ops, rf, hints);
@@ -227,16 +141,6 @@ class Java2dProcessor extends AbstractProcessor
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
-    }
-
-    @Override
-    public void setSourceFile(File sourceFile) {
-        this.sourceFile = sourceFile;
-    }
-
-    @Override
-    public void setStreamSource(StreamSource streamSource) {
-        this.streamSource = streamSource;
     }
 
 }

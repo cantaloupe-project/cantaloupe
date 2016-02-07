@@ -318,19 +318,24 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
             executorService.submit(new StreamCopier(
                     process.getErrorStream(), errorBucket));
 
+            final ImageIoImageReader reader = new ImageIoImageReader();
+            reader.setSourceFormat(SourceFormat.BMP);
+            reader.setSource(
+                    new InputStreamStreamSource(process.getInputStream()));
+
             Configuration config = Application.getConfiguration();
             switch (config.getString(POST_PROCESSOR_CONFIG_KEY, "java2d").toLowerCase()) {
                 case "jai":
                     logger.info("Post-processing using JAI ({} = jai)",
                             POST_PROCESSOR_CONFIG_KEY);
-                    postProcessUsingJai(process.getInputStream(), ops,
-                            reductionFactor, outputStream);
+                    postProcessUsingJai(reader, ops, reductionFactor,
+                            outputStream);
                     break;
                 default:
                     logger.info("Post-processing using Java 2D ({} = java2d)",
                             POST_PROCESSOR_CONFIG_KEY);
-                    postProcessUsingJava2d(process.getInputStream(), ops,
-                            reductionFactor, outputStream);
+                    postProcessUsingJava2d(reader, ops, reductionFactor,
+                            outputStream);
                     break;
             }
             try {
@@ -458,14 +463,11 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
         return tileSize;
     }
 
-    private void postProcessUsingJai(final InputStream inputStream,
+    private void postProcessUsingJai(final ImageIoImageReader reader,
                                      final OperationList opList,
                                      final ReductionFactor reductionFactor,
                                      final OutputStream outputStream)
             throws IOException, ProcessorException {
-        final ImageIoImageReader reader = new ImageIoImageReader();
-        reader.setSource(new InputStreamStreamSource(inputStream),
-                SourceFormat.BMP);
         RenderedImage renderedImage = reader.readRendered();
         RenderedOp renderedOp = JaiUtil.reformatImage(
                 RenderedOp.wrapRenderedImage(renderedImage),
@@ -487,14 +489,11 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                 ImageIO.createImageOutputStream(outputStream));
     }
 
-    private void postProcessUsingJava2d(final InputStream inputStream,
+    private void postProcessUsingJava2d(final ImageIoImageReader reader,
                                         final OperationList opList,
                                         final ReductionFactor reductionFactor,
                                         final OutputStream outputStream)
             throws IOException, ProcessorException {
-        final ImageIoImageReader reader = new ImageIoImageReader();
-        reader.setSource(new InputStreamStreamSource(inputStream),
-                SourceFormat.BMP);
         BufferedImage image = reader.read();
         for (Operation op : opList) {
             if (op instanceof Scale) {

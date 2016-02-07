@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 
 import java.awt.Dimension;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -23,9 +24,13 @@ public class Java2dProcessorTest extends ProcessorTest {
 
     @Test
     public void testGetAvailableOutputFormats() throws Exception {
+        final HashMap<SourceFormat,Set<OutputFormat>> formats = new HashMap<>();
+        for (SourceFormat sourceFormat : ImageIoImageReader.supportedFormats()) {
+            formats.put(sourceFormat, ImageIoImageWriter.supportedFormats());
+        }
+
         instance.setSourceFormat(SourceFormat.JPG);
-        Set<OutputFormat> expectedFormats = Java2dProcessor.
-                availableOutputFormats().get(SourceFormat.JPG);
+        Set<OutputFormat> expectedFormats = formats.get(SourceFormat.JPG);
         assertEquals(expectedFormats, instance.getAvailableOutputFormats());
     }
 

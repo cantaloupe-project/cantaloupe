@@ -5,29 +5,22 @@ import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
 import javax.media.jai.RenderedOp;
 import java.awt.Dimension;
 import java.awt.image.RenderedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
  * Processor using the Java Advanced Imaging (JAI) framework.
  */
-class JaiProcessor extends AbstractProcessor
+class JaiProcessor extends AbstractImageIoProcessor
         implements FileProcessor, StreamProcessor {
 
     public static final String JPG_QUALITY_CONFIG_KEY =
@@ -41,9 +34,6 @@ class JaiProcessor extends AbstractProcessor
             SUPPORTED_IIIF_1_1_QUALITIES = new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
             SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
-
-    private File sourceFile;
-    private StreamSource streamSource;
 
     static {
         SUPPORTED_IIIF_1_1_QUALITIES.add(
@@ -75,46 +65,6 @@ class JaiProcessor extends AbstractProcessor
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_PERCENT);
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH);
         SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
-    }
-
-    /**
-     * @return Map of available output formats for all known source formats,
-     * based on information reported by the ImageIO library.
-     */
-    public static HashMap<SourceFormat, Set<OutputFormat>> getFormats() {
-        final HashMap<SourceFormat,Set<OutputFormat>> map = new HashMap<>();
-        for (SourceFormat sourceFormat : ImageIoImageReader.supportedFormats()) {
-            map.put(sourceFormat, ImageIoImageWriter.supportedFormats());
-        }
-        return map;
-    }
-
-    @Override
-    public Set<OutputFormat> getAvailableOutputFormats() {
-        Set<OutputFormat> formats = getFormats().get(sourceFormat);
-        return (formats != null) ? formats : new HashSet<OutputFormat>();
-    }
-
-    @Override
-    public Dimension getSize() throws ProcessorException {
-        Java2dProcessor j2dproc = new Java2dProcessor();
-        j2dproc.setSourceFormat(sourceFormat);
-        if (sourceFile != null) {
-            j2dproc.setSourceFile(sourceFile);
-        } else {
-            j2dproc.setStreamSource(streamSource);
-        }
-        return j2dproc.getSize();
-    }
-
-    @Override
-    public File getSourceFile() {
-        return this.sourceFile;
-    }
-
-    @Override
-    public StreamSource getStreamSource() {
-        return this.streamSource;
     }
 
     @Override
@@ -149,18 +99,6 @@ class JaiProcessor extends AbstractProcessor
     }
 
     @Override
-    public List<Dimension> getTileSizes() throws ProcessorException {
-        Java2dProcessor j2dproc = new Java2dProcessor();
-        j2dproc.setSourceFormat(sourceFormat);
-        if (sourceFile != null) {
-            j2dproc.setSourceFile(sourceFile);
-        } else {
-            j2dproc.setStreamSource(streamSource);
-        }
-        return j2dproc.getTileSizes();
-    }
-
-    @Override
     public void process(final OperationList ops,
                         final Dimension fullSize,
                         final OutputStream outputStream)
@@ -170,13 +108,6 @@ class JaiProcessor extends AbstractProcessor
         }
 
         try {
-            final ImageIoImageReader reader = new ImageIoImageReader();
-            if (streamSource != null) {
-                reader.setSource(streamSource, sourceFormat);
-            } else {
-                reader.setSource(sourceFile, sourceFormat);
-            }
-
             final ReductionFactor rf = new ReductionFactor();
             RenderedImage renderedImage = reader.readRendered(ops, rf);
 
@@ -210,16 +141,6 @@ class JaiProcessor extends AbstractProcessor
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
-    }
-
-    @Override
-    public void setSourceFile(File sourceFile) {
-        this.sourceFile = sourceFile;
-    }
-
-    @Override
-    public void setStreamSource(StreamSource streamSource) {
-        this.streamSource = streamSource;
     }
 
 }
