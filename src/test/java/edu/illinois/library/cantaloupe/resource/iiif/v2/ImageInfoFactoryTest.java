@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -29,7 +28,6 @@ public class ImageInfoFactoryTest {
     public void setUp() throws Exception {
         Configuration config = new BaseConfiguration();
         config.setProperty("processor.fallback", "Java2dProcessor");
-        config.setProperty("endpoint.iiif.default_tile_size", 256);
         Application.setConfiguration(config);
 
         identifier = new Identifier("bla");
@@ -79,8 +77,8 @@ public class ImageInfoFactoryTest {
     @Test
     public void testNewImageInfoTilesWithUntiledImage() {
         assertEquals(1, info.tiles.size());
-        assertEquals(297, (long) info.tiles.get(0).width);
-        assertEquals(261, (long) info.tiles.get(0).height);
+        assertEquals(594, (long) info.tiles.get(0).width);
+        assertEquals(522, (long) info.tiles.get(0).height);
 
         assertEquals(4, (long) info.tiles.get(0).scaleFactors.size());
         assertEquals(1, (long) info.tiles.get(0).scaleFactors.get(0));
@@ -97,8 +95,8 @@ public class ImageInfoFactoryTest {
         info = ImageInfoFactory.newImageInfo(identifier, imageUri, processor);
 
         assertEquals(1, info.tiles.size());
-        assertEquals(16, (long) info.tiles.get(0).width);
-        assertEquals(16, (long) info.tiles.get(0).height);
+        assertEquals(64, (long) info.tiles.get(0).width);
+        assertEquals(56, (long) info.tiles.get(0).height);
 
         assertEquals(1, (long) info.tiles.get(0).scaleFactors.size());
         assertEquals(1, (long) info.tiles.get(0).scaleFactors.get(0));
