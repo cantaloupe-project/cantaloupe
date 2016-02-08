@@ -1,12 +1,18 @@
+# OS junk
 .DS_Store
+Thumbs.db
 
-# IDE junk
+# IDE/Maven junk
 .idea/*
 *.iml
 nbactions.xml
-delegates.rb
+dependency-reduced-pom.xml
 
+# App config
+/cantaloupe.properties
+/delegates.rb
+/watermark.*
+
+# Auto-generated content
 /target
 /website/javadoc
-cantaloupe.properties
-dependency-reduced-pom.xml
