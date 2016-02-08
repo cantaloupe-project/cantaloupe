@@ -46,12 +46,18 @@ class ImageIoImageReader {
     private static Logger logger = LoggerFactory.
             getLogger(ImageIoImageReader.class);
 
+    /** Set in setSource(). */
     private ImageInputStream inputStream;
+
+    /** Assigned by createReader() if inputStream is not null. */
     private ImageReader reader;
+
+    /** Set in setSourceFormat() */
+    private SourceFormat sourceFormat;
 
     /**
      * @return Map of available output formats for all known source formats,
-     * based on information reported by the ImageIO library.
+     * based on information reported by ImageIO.
      */
     public static Set<SourceFormat> supportedFormats() {
         final HashSet<SourceFormat> formats = new HashSet<>();
@@ -93,7 +99,8 @@ class ImageIoImageReader {
      */
     public ImageIoImageReader(File inputFile, SourceFormat sourceFormat)
             throws IOException {
-        setSource(inputFile, sourceFormat);
+        setSource(inputFile);
+        setSourceFormat(sourceFormat);
     }
 
     /**
@@ -118,7 +125,29 @@ class ImageIoImageReader {
      */
     public ImageIoImageReader(StreamSource streamSource,
                               SourceFormat sourceFormat) throws IOException {
-        setSource(streamSource, sourceFormat);
+        setSource(streamSource);
+        setSourceFormat(sourceFormat);
+    }
+
+    private void createReader() throws IOException { // TODO: consider disallowing use without source format set
+        if (inputStream == null) {
+            throw new IOException("No source set.");
+        }
+
+        Iterator<ImageReader> it;
+        if (sourceFormat != null) {
+            it = ImageIO.getImageReadersByMIMEType(
+                    sourceFormat.getPreferredMediaType().toString());
+        } else {
+            it = ImageIO.getImageReaders(inputStream);
+        }
+        if (it.hasNext()) {
+            reader = it.next();
+            reader.setInput(inputStream);
+        } else {
+            throw new IOException("Unable to determine the format of the " +
+                    "source.");
+        }
     }
 
     /**
@@ -134,6 +163,7 @@ class ImageIoImageReader {
         } finally {
             if (reader != null) {
                 reader.dispose();
+                reader = null;
             }
         }
     }
@@ -141,45 +171,15 @@ class ImageIoImageReader {
     public void setSource(File inputFile) throws IOException {
         dispose();
         inputStream = new FileImageInputStream(inputFile);
-        Iterator<ImageReader> it = ImageIO.getImageReaders(inputStream);
-        if (it.hasNext()) {
-            reader = it.next();
-            reader.setInput(inputStream);
-        }
-    }
-
-    public void setSource(File inputFile, SourceFormat sourceFormat)
-            throws IOException {
-        dispose();
-        inputStream = new FileImageInputStream(inputFile);
-        Iterator<ImageReader> it = ImageIO.getImageReadersByMIMEType(
-                sourceFormat.getPreferredMediaType().toString());
-        if (it.hasNext()) {
-            reader = it.next();
-            reader.setInput(inputStream);
-        }
     }
 
     public void setSource(StreamSource streamSource) throws IOException {
         dispose();
         inputStream = streamSource.newImageInputStream();
-        Iterator<ImageReader> it = ImageIO.getImageReaders(inputStream);
-        if (it.hasNext()) {
-            reader = it.next();
-            reader.setInput(inputStream);
-        }
     }
 
-    public void setSource(StreamSource streamSource, SourceFormat sourceFormat)
-            throws IOException {
-        dispose();
-        inputStream = streamSource.newImageInputStream();
-        Iterator<ImageReader> it = ImageIO.getImageReadersByMIMEType(
-                sourceFormat.getPreferredMediaType().toString());
-        if (it.hasNext()) {
-            reader = it.next();
-            reader.setInput(inputStream);
-        }
+    public void setSourceFormat(SourceFormat sourceFormat) {
+        this.sourceFormat = sourceFormat;
     }
 
     /**
@@ -187,6 +187,9 @@ class ImageIoImageReader {
      * @throws IOException
      */
     public int getNumResolutions() throws IOException {
+        if (reader == null) {
+            createReader();
+        }
         // The boolean parameter tells getNumImages() whether to scan for
         // images, which seems to be necessary for some, but is slower.
         int numImages = reader.getNumImages(false);
@@ -203,6 +206,9 @@ class ImageIoImageReader {
      * @throws IOException
      */
     public Dimension getSize() throws IOException {
+        if (reader == null) {
+            createReader();
+        }
         return getSize(reader.getMinIndex());
     }
 
@@ -214,6 +220,9 @@ class ImageIoImageReader {
      * @throws IOException
      */
     public Dimension getSize(int imageIndex) throws IOException {
+        if (reader == null) {
+            createReader();
+        }
         final int width = reader.getWidth(imageIndex);
         final int height = reader.getHeight(imageIndex);
         return new Dimension(width, height);
@@ -226,6 +235,9 @@ class ImageIoImageReader {
      * @throws IOException
      */
     public Dimension getTileSize(int imageIndex) throws IOException {
+        if (reader == null) {
+            createReader();
+        }
         final int width = reader.getTileWidth(imageIndex);
         final int height = reader.getTileHeight(imageIndex);
         return new Dimension(width, height);
@@ -277,6 +289,9 @@ class ImageIoImageReader {
                               final ReductionFactor reductionFactor,
                               final Set<ReaderHint> hints)
             throws IOException, ProcessorException {
+        if (reader == null) {
+            createReader();
+        }
         BufferedImage image = null;
         try {
             switch (reader.getFormatName().substring(0, 3).toUpperCase()) {
@@ -551,6 +566,9 @@ class ImageIoImageReader {
      */
     public RenderedImage readRendered() throws IOException,
             UnsupportedSourceFormatException {
+        if (reader == null) {
+            createReader();
+        }
         return reader.readAsRenderedImage(0, reader.getDefaultReadParam());
     }
 
@@ -569,6 +587,9 @@ class ImageIoImageReader {
     public RenderedImage readRendered(final OperationList ops,
                                       final ReductionFactor reductionFactor)
             throws IOException, ProcessorException {
+        if (reader == null) {
+            createReader();
+        }
         RenderedImage image = null;
         try {
             switch (reader.getFormatName().substring(0, 3).toUpperCase()) {

@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.resource.iiif.Feature;
+import edu.illinois.library.cantaloupe.resource.iiif.ImageInfoUtil;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.slf4j.Logger;
@@ -28,7 +29,7 @@ abstract class ImageInfoFactory {
     private static final int MIN_SIZE = 64;
 
     /** Minimum size that will be used in info.json "tiles" keys. */
-    private static final int MIN_TILE_SIZE = 256;
+    private static final int MIN_TILE_SIZE = 512;
 
     /** Delegate script method that returns the JSON object (actually Ruby
      * hash) corresponding to the "service" key. */
@@ -69,7 +70,8 @@ abstract class ImageInfoFactory {
 
         // sizes -- this will be a 2^n series that will work for both multi-
         // and monoresolution images.
-        final int maxReductionFactor = getMaxReductionFactor(fullSize, MIN_SIZE);
+        final int maxReductionFactor =
+                ImageInfoUtil.maxReductionFactor(fullSize, MIN_SIZE);
         for (double i = 2; i <= Math.pow(2, maxReductionFactor); i *= 2) {
             final int width = (int) Math.round(fullSize.width / i);
             final int height = (int) Math.round(fullSize.height / i);
@@ -83,32 +85,33 @@ abstract class ImageInfoFactory {
         // tiles -- this is not a canonical listing of tiles that are
         // actually encoded in the image, but rather a hint to the client as
         // to what can be delivered efficiently.
-        try {
-            final List<Dimension> tileSizes = processor.getTileSizes();
-            final Set<Dimension> uniqueTileSizes = new HashSet<>();
+        final List<Dimension> tileSizes = processor.getTileSizes();
+        final Set<Dimension> uniqueTileSizes = new HashSet<>();
 
-            // if the image is not tiled, calculate a tile size close to
-            // MIN_TILE_SIZE pixels. Otherwise, use the image's tile size.
-            if (tileSizes.size() == 1 &&
-                    tileSizes.get(0).width == fullSize.width &&
-                    tileSizes.get(0).height == fullSize.height) {
-                uniqueTileSizes.add(calculateTileSize(fullSize, MIN_TILE_SIZE));
-            } else {
-                uniqueTileSizes.addAll(tileSizes);
+        // Find a tile width and height. If the image is not tiled,
+        // calculate a tile size close to MIN_TILE_SIZE pixels. Otherwise,
+        // use the smallest multiple of the tile size above MIN_TILE_SIZE
+        // of image resolution 0.
+        if (tileSizes.size() == 1 &&
+                tileSizes.get(0).width == fullSize.width &&
+                tileSizes.get(0).height == fullSize.height) {
+            uniqueTileSizes.add(
+                    ImageInfoUtil.smallestTileSize(fullSize, MIN_TILE_SIZE));
+        } else {
+            for (Dimension tileSize : tileSizes) {
+                uniqueTileSizes.add(
+                        ImageInfoUtil.smallestTileSize(fullSize, tileSize, MIN_TILE_SIZE));
             }
-
-            for (Dimension uniqueTileSize : uniqueTileSizes) {
-                final ImageInfo.Tile tile = new ImageInfo.Tile();
-                tile.width = uniqueTileSize.width;
-                tile.height = uniqueTileSize.height;
-                // Add every scale factor up to 2^n.
-                for (int i = 0; i < maxReductionFactor; i++) {
-                    tile.scaleFactors.add((int) Math.pow(2, i));
-                }
-                imageInfo.tiles.add(tile);
+        }
+        for (Dimension uniqueTileSize : uniqueTileSizes) {
+            final ImageInfo.Tile tile = new ImageInfo.Tile();
+            tile.width = uniqueTileSize.width;
+            tile.height = uniqueTileSize.height;
+            // Add every scale factor up to 2^n.
+            for (int i = 0; i <= maxReductionFactor; i++) {
+                tile.scaleFactors.add((int) Math.pow(2, i));
             }
-        } catch (ProcessorException e) {
-            logger.error(e.getMessage(), e);
+            imageInfo.tiles.add(tile);
         }
 
         // formats
@@ -150,49 +153,6 @@ abstract class ImageInfoFactory {
         }
 
         return imageInfo;
-    }
-
-    /**
-     * @param fullSize Full size of the source image.
-     * @param minDimension Minimum allowed dimension.
-     * @return Maximum reduction factor to be able to fit above minDimension.
-     */
-    private static int getMaxReductionFactor(Dimension fullSize,
-                                             int minDimension) {
-        int nextDimension = Math.min(fullSize.width, fullSize.height);
-
-        for (int i = 1; i < 9999; i++) {
-            nextDimension /= 2f;
-            if (nextDimension < minDimension) {
-                return i;
-            }
-        }
-        return 1;
-    }
-
-    /**
-     * Returns the closest tile size to the given minimum dimension based on
-     * the series of 1/(2^n).
-     *
-     * @param fullSize Full size of the source image.
-     * @param minDimension Minimum allowed dimension.
-     * @return Tile size
-     */
-    private static Dimension calculateTileSize(Dimension fullSize,
-                                               int minDimension) {
-        Dimension size = new Dimension(fullSize.width, fullSize.height);
-        int nextWidth = size.width;
-        int nextHeight = size.height;
-        for (int i = 0; i < 9999; i++) {
-            nextWidth /= 2f;
-            nextHeight /= 2f;
-            if (nextWidth < minDimension || nextHeight < minDimension) {
-                return size;
-            }
-            size.width = nextWidth;
-            size.height = nextHeight;
-        }
-        return fullSize;
     }
 
 }

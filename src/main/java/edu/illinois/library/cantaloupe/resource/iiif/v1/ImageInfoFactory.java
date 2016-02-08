@@ -3,19 +3,18 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import edu.illinois.library.cantaloupe.resource.iiif.ImageInfoUtil;
 
 import java.awt.Dimension;
 import java.util.List;
 
 abstract class ImageInfoFactory {
 
-    private static Logger logger = LoggerFactory.
-            getLogger(ImageInfoFactory.class);
+    /** Will be used to calculate a maximum scale factor. */
+    private static final int MIN_SIZE = 64;
 
     /** Minimum size that will be used in info.json "tiles" keys. */
-    private static final int MIN_TILE_SIZE = 256;
+    private static final int MIN_TILE_SIZE = 512;
 
     public static ImageInfo newImageInfo(final String imageUri,
                                          final Processor processor)
@@ -27,20 +26,19 @@ abstract class ImageInfoFactory {
                 processor.getSupportedIiif1_1Qualities(),
                 processor.getAvailableOutputFormats());
 
+        // Find a tile width and height. If the image is not tiled,
+        // calculate a tile size close to MIN_TILE_SIZE pixels. Otherwise,
+        // use the smallest multiple of the tile size above MIN_TILE_SIZE
+        // of image resolution 0.
+        Dimension tileSize =
+                ImageInfoUtil.smallestTileSize(fullSize, MIN_TILE_SIZE);
 
-        // Find a tile width and height. If the image is not tiled, calculate
-        // a tile size close to MIN_TILE_SIZE pixels. Otherwise, use the
-        // tile size of image resolution 0.
-        Dimension tileSize = calculateTileSize(fullSize, MIN_TILE_SIZE);;
-        try {
-            final List<Dimension> tileSizes = processor.getTileSizes();
-            if (tileSizes.size() > 0 &&
-                    (tileSizes.get(0).width != fullSize.width ||
-                            tileSizes.get(0).height != fullSize.height)) {
-                tileSize = calculateTileSize(tileSizes.get(0), MIN_TILE_SIZE);
-            }
-        } catch (ProcessorException e) {
-            logger.error(e.getMessage(), e);
+        final List<Dimension> tileSizes = processor.getTileSizes();
+        if (tileSizes.size() > 0 &&
+                (tileSizes.get(0).width != fullSize.width ||
+                        tileSizes.get(0).height != fullSize.height)) {
+            tileSize = ImageInfoUtil.
+                    smallestTileSize(fullSize, tileSizes.get(0), MIN_TILE_SIZE);
         }
 
         // Create an ImageInfo instance, which will eventually be serialized
@@ -54,7 +52,9 @@ abstract class ImageInfoFactory {
         imageInfo.tileHeight = tileSize.height;
 
         // scale factors
-        for (short i = 0; i < 5; i++) {
+        int maxReductionFactor =
+                ImageInfoUtil.maxReductionFactor(fullSize, MIN_SIZE);
+        for (int i = 0; i <= maxReductionFactor; i++) {
             imageInfo.scaleFactors.add((int) Math.pow(2, i));
         }
 
@@ -69,31 +69,6 @@ abstract class ImageInfoFactory {
         }
 
         return imageInfo;
-    }
-
-    /**
-     * Returns the closest tile size to the given minimum dimension based on
-     * the series of 1/(2^n).
-     *
-     * @param fullSize Full size of the source image.
-     * @param minDimension Minimum allowed dimension.
-     * @return Tile size
-     */
-    private static Dimension calculateTileSize(Dimension fullSize,
-                                               int minDimension) {
-        Dimension size = new Dimension(fullSize.width, fullSize.height);
-        int nextWidth = size.width;
-        int nextHeight = size.height;
-        for (int i = 0; i < 9999; i++) {
-            nextWidth /= 2f;
-            nextHeight /= 2f;
-            if (nextWidth < minDimension || nextHeight < minDimension) {
-                return size;
-            }
-            size.width = nextWidth;
-            size.height = nextHeight;
-        }
-        return fullSize;
     }
 
 }

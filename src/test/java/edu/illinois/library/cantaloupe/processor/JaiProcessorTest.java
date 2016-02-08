@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.awt.Dimension;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,10 +33,14 @@ public class JaiProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void testGetFormats() throws Exception {
+    public void testAvailableOutputFormats() throws Exception {
+        final HashMap<SourceFormat,Set<OutputFormat>> formats = new HashMap<>();
+        for (SourceFormat sourceFormat : ImageIoImageReader.supportedFormats()) {
+            formats.put(sourceFormat, ImageIoImageWriter.supportedFormats());
+        }
+
         instance.setSourceFormat(SourceFormat.JPG);
-        Set<OutputFormat> expectedFormats = JaiProcessor.
-                getFormats().get(SourceFormat.JPG);
+        Set<OutputFormat> expectedFormats = formats.get(SourceFormat.JPG);
         assertEquals(expectedFormats, instance.getAvailableOutputFormats());
     }
 
