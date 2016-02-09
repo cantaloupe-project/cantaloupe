@@ -63,11 +63,11 @@ print_stack_trace_on_error_pages = true
 # Whether to enable watermarking.
 watermark.enabled = false
 
-# Absolute path of a watermark image.
+# Absolute path of the watermark image, which must be a .png file.
 watermark.image = /path/to/watermark.png
 
-# Allowed values: top left, top center, top right, bottom left,
-# bottom center, bottom right, left center, right center, center.
+# Allowed values: `top left`, `top center`, `top right`, `bottom left`,
+# `bottom center`, `bottom right`, `left center`, `right center`, `center`.
 watermark.position = bottom right
 
 # Margin between the watermark and the edge of the image, in pixels.
