@@ -34,6 +34,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -63,7 +64,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
     public static final String POST_PROCESSOR_CONFIG_KEY =
             "OpenJpegProcessor.post_processor";
 
-    private static final short MAX_REDUCTION_FACTOR = 5;
+    private static final short MAX_REDUCTION_FACTOR = 0;
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
@@ -81,35 +82,28 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
     private File sourceFile;
 
     static {
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL);
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR);
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY);
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE);
-
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL);
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR);
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT);
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY);
-
-        SUPPORTED_FEATURES.add(ProcessorFeature.MIRRORING);
-        SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PERCENT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PIXELS);
-        SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_ARBITRARY);
-        SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_BY_90S);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_ABOVE_FULL);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_HEIGHT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_PERCENT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
+        SUPPORTED_IIIF_1_1_QUALITIES.addAll(Arrays.asList(
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
+        SUPPORTED_IIIF_2_0_QUALITIES.addAll(Arrays.asList(
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
+        SUPPORTED_FEATURES.addAll(Arrays.asList(
+                ProcessorFeature.MIRRORING,
+                ProcessorFeature.REGION_BY_PERCENT,
+                ProcessorFeature.REGION_BY_PIXELS,
+                ProcessorFeature.ROTATION_ARBITRARY,
+                ProcessorFeature.ROTATION_BY_90S,
+                ProcessorFeature.SIZE_ABOVE_FULL,
+                ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
+                ProcessorFeature.SIZE_BY_HEIGHT,
+                ProcessorFeature.SIZE_BY_PERCENT,
+                ProcessorFeature.SIZE_BY_WIDTH,
+                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
 
         // Due to a quirk of opj_decompress, this processor requires access to
         // /dev/stdout.
@@ -213,7 +207,12 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
         logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
         Process process = pb.start();
 
-        imageInfo = IOUtils.toString(process.getInputStream(), "UTF-8");
+        InputStream processInputStream = process.getInputStream();
+        try {
+            imageInfo = IOUtils.toString(processInputStream, "UTF-8");
+        } finally {
+            processInputStream.close();
+        }
     }
 
     @Override
@@ -315,31 +314,35 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                     reductionFactor);
             logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
+            final InputStream processInputStream = process.getInputStream();
+            final InputStream processErrorStream = process.getErrorStream();
+            final OutputStream processOutputStream = process.getOutputStream();
 
-            executorService.submit(new StreamCopier(
-                    process.getErrorStream(), errorBucket));
-
-            final ImageIoImageReader reader = new ImageIoImageReader();
-            reader.setSourceFormat(SourceFormat.BMP);
-            reader.setSource(
-                    new InputStreamStreamSource(process.getInputStream()));
-
-            Configuration config = Application.getConfiguration();
-            switch (config.getString(POST_PROCESSOR_CONFIG_KEY, "java2d").toLowerCase()) {
-                case "jai":
-                    logger.info("Post-processing using JAI ({} = jai)",
-                            POST_PROCESSOR_CONFIG_KEY);
-                    postProcessUsingJai(reader, ops, reductionFactor,
-                            outputStream);
-                    break;
-                default:
-                    logger.info("Post-processing using Java 2D ({} = java2d)",
-                            POST_PROCESSOR_CONFIG_KEY);
-                    postProcessUsingJava2d(reader, ops, reductionFactor,
-                            outputStream);
-                    break;
-            }
             try {
+                executorService.submit(new StreamCopier(
+                        processErrorStream, errorBucket));
+
+                final ImageIoImageReader reader = new ImageIoImageReader();
+                reader.setSourceFormat(SourceFormat.BMP);
+                reader.setSource(
+                        new InputStreamStreamSource(processInputStream));
+
+                Configuration config = Application.getConfiguration();
+                switch (config.getString(POST_PROCESSOR_CONFIG_KEY, "java2d").toLowerCase()) {
+                    case "jai":
+                        logger.info("Post-processing using JAI ({} = jai)",
+                                POST_PROCESSOR_CONFIG_KEY);
+                        postProcessUsingJai(reader, ops, reductionFactor,
+                                outputStream);
+                        break;
+                    default:
+                        logger.info("Post-processing using Java 2D ({} = java2d)",
+                                POST_PROCESSOR_CONFIG_KEY);
+                        postProcessUsingJava2d(reader, ops, reductionFactor,
+                                outputStream);
+                        break;
+                }
+
                 final int code = process.waitFor();
                 if (code != 0) {
                     logger.warn("opj_decompress returned with code {}", code);
@@ -349,9 +352,9 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                     }
                 }
             } finally {
-                process.getInputStream().close();
-                process.getOutputStream().close();
-                process.getErrorStream().close();
+                processInputStream.close();
+                processOutputStream.close();
+                processErrorStream.close();
                 process.destroy();
             }
         } catch (IOException | InterruptedException e) {
@@ -376,7 +379,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
      * @param opList
      * @param imageSize The full size of the source image
      * @param reduction {@link ReductionFactor#factor} property modified by
-     * reference
+     *                  reference
      * @return Command string
      */
     private ProcessBuilder getProcessBuilder(final OperationList opList,

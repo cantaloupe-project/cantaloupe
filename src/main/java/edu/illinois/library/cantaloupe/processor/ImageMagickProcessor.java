@@ -12,7 +12,7 @@ import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.lang3.StringUtils;
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
 import org.im4java.core.IMOperation;
@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,7 +45,7 @@ class ImageMagickProcessor extends AbstractProcessor
     private static Logger logger = LoggerFactory.
             getLogger(ImageMagickProcessor.class);
 
-    private static final String BINARIES_PATH_CONFIG_KEY =
+    private static final String PATH_TO_BINARIES_CONFIG_KEY =
             "ImageMagickProcessor.path_to_binaries";
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
@@ -58,35 +59,44 @@ class ImageMagickProcessor extends AbstractProcessor
     private StreamSource streamSource;
 
     static {
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL);
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR);
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY);
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE);
+        SUPPORTED_IIIF_1_1_QUALITIES.addAll(Arrays.asList(
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
+        SUPPORTED_IIIF_2_0_QUALITIES.addAll(Arrays.asList(
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
+        SUPPORTED_FEATURES.addAll(Arrays.asList(
+                ProcessorFeature.MIRRORING,
+                ProcessorFeature.REGION_BY_PERCENT,
+                ProcessorFeature.REGION_BY_PIXELS,
+                ProcessorFeature.ROTATION_ARBITRARY,
+                ProcessorFeature.ROTATION_BY_90S,
+                ProcessorFeature.SIZE_ABOVE_FULL,
+                ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
+                ProcessorFeature.SIZE_BY_HEIGHT,
+                ProcessorFeature.SIZE_BY_PERCENT,
+                ProcessorFeature.SIZE_BY_WIDTH,
+                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
+    }
 
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL);
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR);
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT);
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY);
-
-        SUPPORTED_FEATURES.add(ProcessorFeature.MIRRORING);
-        SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PERCENT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PIXELS);
-        SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_ARBITRARY);
-        SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_BY_90S);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_ABOVE_FULL);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_HEIGHT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_PERCENT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
+    /**
+     * @param binaryName Name of an executable
+     * @return
+     */
+    private static String getPath(String binaryName) {
+        String path = Application.getConfiguration().
+                getString(PATH_TO_BINARIES_CONFIG_KEY);
+        if (path != null) {
+            path = StringUtils.stripEnd(path, File.separator) + File.separator +
+                    binaryName;
+        } else {
+            path = binaryName;
+        }
+        return path;
     }
 
     /**
@@ -97,61 +107,70 @@ class ImageMagickProcessor extends AbstractProcessor
         if (supportedFormats == null) {
             final Set<SourceFormat> sourceFormats = new HashSet<>();
             final Set<OutputFormat> outputFormats = new HashSet<>();
-            String cmdPath = "identify";
+
+            // Retrieve the output of the `identify -list format` command,
+            // which contains a list of all supported formats.
+            final ProcessBuilder pb = new ProcessBuilder();
+            final List<String> command = new ArrayList<>();
+            command.add(getPath("identify"));
+            command.add("-list");
+            command.add("format");
+            pb.command(command);
+            final String commandString = StringUtils.join(pb.command(), " ");
+
             try {
-                // retrieve the output of the `identify -list format` command,
-                // which contains a list of all supported formats
-                Configuration config = Application.getConfiguration();
-                String pathPrefix = config.getString(BINARIES_PATH_CONFIG_KEY);
-                if (pathPrefix != null) {
-                    cmdPath = pathPrefix + File.separator + cmdPath;
-                }
-                String[] commands = {cmdPath, "-list", "format"};
-                Runtime runtime = Runtime.getRuntime();
-                Process proc = runtime.exec(commands);
-                BufferedReader stdInput = new BufferedReader(
-                        new InputStreamReader(proc.getInputStream()));
-                String s;
+                logger.info("Executing {}", commandString);
+                final Process process = pb.start();
+                final InputStream processInputStream = process.getInputStream();
 
-                while ((s = stdInput.readLine()) != null) {
-                    s = s.trim();
-                    if (s.startsWith("JP2")) {
-                        sourceFormats.add(SourceFormat.JP2);
-                        if (s.contains(" rw")) {
-                            outputFormats.add(OutputFormat.JP2);
+                try {
+                    BufferedReader stdInput = new BufferedReader(
+                            new InputStreamReader(processInputStream));
+                    String s;
+                    while ((s = stdInput.readLine()) != null) {
+                        s = s.trim();
+                        if (s.startsWith("JP2")) {
+                            sourceFormats.add(SourceFormat.JP2);
+                            if (s.contains(" rw")) {
+                                outputFormats.add(OutputFormat.JP2);
+                            }
+                        }
+                        if (s.startsWith("JPEG")) {
+                            sourceFormats.add(SourceFormat.JPG);
+                            if (s.contains(" rw")) {
+                                outputFormats.add(OutputFormat.JPG);
+                            }
+                        }
+                        if (s.startsWith("PNG")) {
+                            sourceFormats.add(SourceFormat.PNG);
+                            if (s.contains(" rw")) {
+                                outputFormats.add(OutputFormat.PNG);
+                            }
+                        }
+                        if (s.startsWith("PDF") && s.contains(" rw")) {
+                            outputFormats.add(OutputFormat.PDF);
+                        }
+                        if (s.startsWith("TIFF")) {
+                            sourceFormats.add(SourceFormat.TIF);
+                            if (s.contains(" rw")) {
+                                outputFormats.add(OutputFormat.TIF);
+                            }
+                        }
+                        if (s.startsWith("WEBP")) {
+                            sourceFormats.add(SourceFormat.WEBP);
+                            if (s.contains(" rw")) {
+                                outputFormats.add(OutputFormat.WEBP);
+                            }
                         }
                     }
-                    if (s.startsWith("JPEG")) {
-                        sourceFormats.add(SourceFormat.JPG);
-                        if (s.contains(" rw")) {
-                            outputFormats.add(OutputFormat.JPG);
-                        }
-                    }
-                    if (s.startsWith("PNG")) {
-                        sourceFormats.add(SourceFormat.PNG);
-                        if (s.contains(" rw")) {
-                            outputFormats.add(OutputFormat.PNG);
-                        }
-                    }
-                    if (s.startsWith("PDF") && s.contains(" rw")) {
-                        outputFormats.add(OutputFormat.PDF);
-                    }
-                    if (s.startsWith("TIFF")) {
-                        sourceFormats.add(SourceFormat.TIF);
-                        if (s.contains(" rw")) {
-                            outputFormats.add(OutputFormat.TIF);
-                        }
-                    }
-                    if (s.startsWith("WEBP")) {
-                        sourceFormats.add(SourceFormat.WEBP);
-                        if (s.contains(" rw")) {
-                            outputFormats.add(OutputFormat.WEBP);
-                        }
-                    }
-
+                    process.waitFor();
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage(), e);
+                } finally {
+                    processInputStream.close();
                 }
             } catch (IOException e) {
-                logger.error("Failed to execute {}", cmdPath);
+                logger.error(e.getMessage(), e);
             }
 
             supportedFormats = new HashMap<>();
@@ -257,23 +276,25 @@ class ImageMagickProcessor extends AbstractProcessor
             op.addImage(sourceFormat.getPreferredExtension() + ":-"); // read from stdin
             assembleOperation(op, ops, fullSize);
 
-            // format transformation
             op.addImage(ops.getOutputFormat().getExtension() + ":-"); // write to stdout
-
-            Pipe pipeIn = new Pipe(streamSource.newInputStream(), null);
-            Pipe pipeOut = new Pipe(null, outputStream);
 
             ConvertCmd convert = new ConvertCmd();
 
             String binaryPath = Application.getConfiguration().
-                    getString(BINARIES_PATH_CONFIG_KEY, "");
+                    getString(PATH_TO_BINARIES_CONFIG_KEY, "");
             if (binaryPath.length() > 0) {
                 convert.setSearchPath(binaryPath);
             }
-            convert.setInputProvider(pipeIn);
-            convert.setOutputConsumer(pipeOut);
-            convert.run(op);
-        } catch (IOException|IM4JavaException|InterruptedException e) {
+
+            InputStream inputStream = streamSource.newInputStream();
+            try {
+                convert.setInputProvider(new Pipe(inputStream, null));
+                convert.setOutputConsumer(new Pipe(null, outputStream));
+                convert.run(op);
+            } finally {
+                inputStream.close();
+            }
+        } catch (IOException | IM4JavaException | InterruptedException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
     }

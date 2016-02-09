@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -66,31 +67,25 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
     private File sourceFile;
 
     static {
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR);
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY);
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE);
-
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR);
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT);
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY);
-
-        SUPPORTED_FEATURES.add(ProcessorFeature.MIRRORING);
-        SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PERCENT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PIXELS);
-        //SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_ARBITRARY);
-        SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_BY_90S);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_ABOVE_FULL);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_HEIGHT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_PERCENT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
+        SUPPORTED_IIIF_1_1_QUALITIES.addAll(Arrays.asList(
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
+        SUPPORTED_IIIF_2_0_QUALITIES.addAll(Arrays.asList(
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
+        SUPPORTED_FEATURES.addAll(Arrays.asList(
+                ProcessorFeature.MIRRORING,
+                ProcessorFeature.REGION_BY_PERCENT,
+                ProcessorFeature.REGION_BY_PIXELS,
+                ProcessorFeature.ROTATION_BY_90S,
+                ProcessorFeature.SIZE_ABOVE_FULL,
+                ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
+                ProcessorFeature.SIZE_BY_HEIGHT,
+                ProcessorFeature.SIZE_BY_PERCENT,
+                ProcessorFeature.SIZE_BY_WIDTH,
+                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
     }
 
     /**
@@ -171,6 +166,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
         command.add("xml");
         command.add("-show_streams");
         command.add(sourceFile.getAbsolutePath());
+        InputStream processInputStream = null;
         try {
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.redirectErrorStream(true);
@@ -179,7 +175,8 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
 
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.parse(process.getInputStream());
+            processInputStream = process.getInputStream();
+            Document doc = db.parse(processInputStream);
 
             XPath xpath = XPathFactory.newInstance().newXPath();
             XPathExpression expr = xpath.compile("//stream[@index=\"0\"]/@width");
@@ -192,6 +189,14 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
                     StringUtils.join(command, " "), e);
         } catch (Exception e) {
             throw new ProcessorException(e.getMessage(), e);
+        } finally {
+            if (processInputStream != null) {
+                try {
+                    processInputStream.close();
+                } catch (IOException e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
         }
     }
 
@@ -276,10 +281,14 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
             logger.info("Executing {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
+            InputStream processInputStream = process.getInputStream();
+            InputStream processErrorStream = process.getErrorStream();
+            OutputStream processOutputStream = process.getOutputStream();
+
             executorService.submit(
-                    new StreamCopier(process.getInputStream(), outputStream));
+                    new StreamCopier(processInputStream, outputStream));
             executorService.submit(
-                    new StreamCopier(process.getErrorStream(), errorBucket));
+                    new StreamCopier(processErrorStream, errorBucket));
             try {
                 int code = process.waitFor();
                 if (code != 0) {
@@ -290,9 +299,9 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
                     }
                 }
             } finally {
-                process.getInputStream().close();
-                process.getOutputStream().close();
-                process.getErrorStream().close();
+                processInputStream.close();
+                processOutputStream.close();
+                processErrorStream.close();
                 process.destroy();
             }
         } catch (IOException | InterruptedException e) {

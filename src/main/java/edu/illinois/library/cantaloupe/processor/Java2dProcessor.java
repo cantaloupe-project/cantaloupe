@@ -18,6 +18,7 @@ import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -49,35 +50,28 @@ class Java2dProcessor extends AbstractImageIoProcessor
             SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
 
     static {
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL);
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR);
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY);
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE);
-
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL);
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR);
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT);
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY);
-
-        SUPPORTED_FEATURES.add(ProcessorFeature.MIRRORING);
-        SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PERCENT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PIXELS);
-        SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_ARBITRARY);
-        SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_BY_90S);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_ABOVE_FULL);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_HEIGHT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_PERCENT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
+        SUPPORTED_IIIF_1_1_QUALITIES.addAll(Arrays.asList(
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
+        SUPPORTED_IIIF_2_0_QUALITIES.addAll(Arrays.asList(
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
+        SUPPORTED_FEATURES.addAll(Arrays.asList(
+                ProcessorFeature.MIRRORING,
+                ProcessorFeature.REGION_BY_PERCENT,
+                ProcessorFeature.REGION_BY_PIXELS,
+                ProcessorFeature.ROTATION_ARBITRARY,
+                ProcessorFeature.ROTATION_BY_90S,
+                ProcessorFeature.SIZE_ABOVE_FULL,
+                ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
+                ProcessorFeature.SIZE_BY_HEIGHT,
+                ProcessorFeature.SIZE_BY_PERCENT,
+                ProcessorFeature.SIZE_BY_WIDTH,
+                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
     }
 
     @Override
