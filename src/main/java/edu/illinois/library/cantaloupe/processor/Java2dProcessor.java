@@ -9,7 +9,7 @@ import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
-import edu.illinois.library.cantaloupe.image.watermark.WatermarkingDisabledException;
+import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,15 +141,14 @@ class Java2dProcessor extends AbstractImageIoProcessor
                     image = Java2dUtil.rotateImage(image, (Rotate) op);
                 } else if (op instanceof Filter) {
                     image = Java2dUtil.filterImage(image, (Filter) op);
+                } else if (op instanceof Watermark) {
+                    try {
+                        image = Java2dUtil.applyWatermark(image,
+                                (Watermark) op);
+                    } catch (ConfigurationException e) {
+                        logger.error(e.getMessage());
+                    }
                 }
-            }
-
-            try {
-                image = Java2dUtil.applyWatermark(image);
-            } catch (WatermarkingDisabledException e) {
-                // that's OK
-            } catch (ConfigurationException e) {
-                logger.error(e.getMessage());
             }
 
             new ImageIoImageWriter().write(image, ops.getOutputFormat(),

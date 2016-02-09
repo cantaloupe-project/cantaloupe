@@ -3,13 +3,13 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
+import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.watermark.Position;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
-import edu.illinois.library.cantaloupe.image.watermark.WatermarkingDisabledException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +20,6 @@ import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 
 /**
@@ -34,23 +33,19 @@ abstract class Java2dUtil {
      * Applies the watermark to the given image.
      *
      * @param baseImage Image to apply the watermark on top of.
+     * @param watermark Watermark to apply to the base image.
      * @return Watermarked image, or the input image if there is no watermark
      *         set in the application configuration.
      * @throws ConfigurationException
-     * @throws WatermarkingDisabledException
      * @throws IOException
      */
-    public static BufferedImage applyWatermark(final BufferedImage baseImage)
-            throws ConfigurationException, WatermarkingDisabledException,
-            IOException {
-        if (!WatermarkService.isEnabled()) {
-            throw new WatermarkingDisabledException();
-        }
+    public static BufferedImage applyWatermark(final BufferedImage baseImage,
+                                               final Watermark watermark)
+            throws ConfigurationException, IOException {
         BufferedImage markedImage = baseImage;
         final Dimension imageSize = new Dimension(baseImage.getWidth(),
                 baseImage.getHeight());
         if (WatermarkService.shouldApplyToImage(imageSize)) {
-            final Watermark watermark = WatermarkService.newWatermark();
             markedImage = overlayImage(baseImage,
                     getWatermarkImage(watermark),
                     watermark.getPosition(),
@@ -279,9 +274,10 @@ abstract class Java2dUtil {
      */
     public static BufferedImage getWatermarkImage(Watermark watermark)
             throws IOException {
-        final File file = watermark.getImage();
-        ImageIoImageReader reader = new ImageIoImageReader();
-        return reader.read(file);
+        final ImageIoImageReader reader = new ImageIoImageReader();
+        reader.setSource(watermark.getImage());
+        reader.setSourceFormat(SourceFormat.PNG);
+        return reader.read();
     }
 
     public static BufferedImage removeAlpha(final BufferedImage inImage) {

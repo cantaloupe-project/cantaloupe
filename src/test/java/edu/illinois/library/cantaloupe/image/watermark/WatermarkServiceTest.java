@@ -34,18 +34,6 @@ public class WatermarkServiceTest {
     }
 
     @Test
-    public void testNewWatermarkWhenDisabled() throws Exception {
-        Configuration config = Application.getConfiguration();
-        config.setProperty(WatermarkService.WATERMARK_ENABLED_CONFIG_KEY, false);
-        try {
-            WatermarkService.newWatermark();
-            fail();
-        } catch (WatermarkingDisabledException e) {
-            // pass
-        }
-    }
-
-    @Test
     public void testNewWatermarkWithInvalidConfig() throws Exception {
         Configuration config = Application.getConfiguration();
         config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, null);

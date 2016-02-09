@@ -11,7 +11,7 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
-import edu.illinois.library.cantaloupe.image.watermark.WatermarkingDisabledException;
+import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.apache.commons.configuration.Configuration;
@@ -20,7 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
 import javax.media.jai.RenderedOp;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -470,6 +469,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                                      final ReductionFactor reductionFactor,
                                      final OutputStream outputStream)
             throws IOException, ProcessorException {
+        BufferedImage image = null;
         RenderedImage renderedImage = reader.readRendered();
         RenderedOp renderedOp = JaiUtil.reformatImage(
                 RenderedOp.wrapRenderedImage(renderedImage),
@@ -485,18 +485,28 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                 renderedOp = JaiUtil.rotateImage(renderedOp, (Rotate) op);
             } else if (op instanceof Filter) {
                 renderedOp = JaiUtil.filterImage(renderedOp, (Filter) op);
+            } else if (op instanceof Watermark) {
+                // Let's cheat and apply the watermark using Java 2D.
+                // There seems to be minimal performance penalty in doing
+                // this, and doing it in JAI is harder.
+                image = renderedOp.getAsBufferedImage();
+                try {
+                    image = Java2dUtil.applyWatermark(image, (Watermark) op);
+                } catch (ConfigurationException e) {
+                    logger.error(e.getMessage());
+                }
             }
         }
-        try {
-            renderedOp = JaiUtil.applyWatermark(renderedOp);
-        } catch (WatermarkingDisabledException e) {
-            // that's OK
-        } catch (ConfigurationException e) {
-            logger.error(e.getMessage());
-        }
 
-        ImageIO.write(renderedOp, opList.getOutputFormat().getExtension(),
-                ImageIO.createImageOutputStream(outputStream));
+        ImageIoImageWriter writer = new ImageIoImageWriter();
+
+        if (image != null) {
+            writer.write(image, opList.getOutputFormat(), outputStream);
+            image.flush();
+        } else {
+            writer.write(renderedOp, opList.getOutputFormat(),
+                    outputStream);
+        }
     }
 
     private void postProcessUsingJava2d(final ImageIoImageReader reader,
@@ -513,22 +523,18 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                 image = Java2dUtil.scaleImage(image,
                         (Scale) op, reductionFactor, highQuality);
             } else if (op instanceof Transpose) {
-                image = Java2dUtil.transposeImage(image,
-                        (Transpose) op);
+                image = Java2dUtil.transposeImage(image, (Transpose) op);
             } else if (op instanceof Rotate) {
-                image = Java2dUtil.rotateImage(image,
-                        (Rotate) op);
+                image = Java2dUtil.rotateImage(image, (Rotate) op);
             } else if (op instanceof Filter) {
-                image = Java2dUtil.filterImage(image,
-                        (Filter) op);
+                image = Java2dUtil.filterImage(image, (Filter) op);
+            } else if (op instanceof Watermark) {
+                try {
+                    image = Java2dUtil.applyWatermark(image, (Watermark) op);
+                } catch (ConfigurationException e) {
+                    logger.error(e.getMessage());
+                }
             }
-        }
-        try {
-            image = Java2dUtil.applyWatermark(image);
-        } catch (WatermarkingDisabledException e) {
-            // that's OK
-        } catch (ConfigurationException e) {
-            logger.error(e.getMessage());
         }
 
         new ImageIoImageWriter().write(image, opList.getOutputFormat(),

@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
 import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.apache.commons.io.IOUtils;
@@ -115,10 +114,9 @@ public class ImageRepresentation extends OutputRepresentation {
     private void doWrite(OutputStream outputStream) throws IOException {
         try {
             final long msec = System.currentTimeMillis();
-            // If the operations are effectively a no-op AND watermarking is
-            // disabled, the source image can be streamed right through.
-            if (ops.isNoOp(processor.getSourceFormat()) &&
-                        !WatermarkService.isEnabled()) {
+            // If the operations are effectively a no-op, the source image can
+            // be streamed right through.
+            if (ops.isNoOp(processor.getSourceFormat())) {
                 if (processor instanceof FileProcessor) {
                     final File sourceFile = ((FileProcessor) processor).getSourceFile();
                     final InputStream inputStream = new FileInputStream(sourceFile);

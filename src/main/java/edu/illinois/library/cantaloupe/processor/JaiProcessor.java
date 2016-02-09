@@ -8,7 +8,7 @@ import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
-import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
+import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,6 +122,7 @@ class JaiProcessor extends AbstractImageIoProcessor
             RenderedImage renderedImage = reader.readRendered(ops, rf);
 
             if (renderedImage != null) {
+                BufferedImage image = null;
                 RenderedOp renderedOp = JaiUtil.reformatImage(
                         RenderedOp.wrapRenderedImage(renderedImage),
                         new Dimension(renderedImage.getTileWidth(),
@@ -142,19 +143,22 @@ class JaiProcessor extends AbstractImageIoProcessor
                     } else if (op instanceof Filter) {
                         renderedOp = JaiUtil.
                                 filterImage(renderedOp, (Filter) op);
+                    } else if (op instanceof Watermark) {
+                        // Let's cheat and apply the watermark using Java 2D.
+                        // There seems to be minimal performance penalty in doing
+                        // this, and doing it in JAI is harder.
+                        image = renderedOp.getAsBufferedImage();
+                        try {
+                            image = Java2dUtil.applyWatermark(image,
+                                    (Watermark) op);
+                        } catch (ConfigurationException e) {
+                            logger.error(e.getMessage());
+                        }
                     }
                 }
                 ImageIoImageWriter writer = new ImageIoImageWriter();
-                if (WatermarkService.isEnabled()) {
-                    // Let's cheat and apply the watermark using Java 2D.
-                    // There seems to be minimal performance penalty in doing
-                    // this, and doing it in JAI is harder.
-                    BufferedImage image = renderedOp.getAsBufferedImage();
-                    try {
-                        image = Java2dUtil.applyWatermark(image);
-                    } catch (ConfigurationException e) {
-                        logger.error(e.getMessage());
-                    }
+
+                if (image != null) {
                     writer.write(image, ops.getOutputFormat(), outputStream);
                 } else {
                     writer.write(renderedOp, ops.getOutputFormat(),

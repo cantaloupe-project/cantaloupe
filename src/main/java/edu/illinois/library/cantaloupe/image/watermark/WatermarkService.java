@@ -31,15 +31,11 @@ public abstract class WatermarkService {
      *
      * @return Watermark corresponding to the application configuration.
      * @throws ConfigurationException
-     * @throws WatermarkingDisabledException
      */
     public static Watermark newWatermark()
-            throws ConfigurationException, WatermarkingDisabledException {
-        if (isEnabled()) {
-            return new Watermark(getWatermarkImage(), getWatermarkPosition(),
-                    getWatermarkInset());
-        }
-        throw new WatermarkingDisabledException();
+            throws ConfigurationException {
+        return new Watermark(getWatermarkImage(), getWatermarkPosition(),
+                getWatermarkInset());
     }
 
     /**

@@ -1,6 +1,11 @@
 package edu.illinois.library.cantaloupe.image.watermark;
 
+import edu.illinois.library.cantaloupe.image.Operation;
+
+import java.awt.Dimension;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <p>Encapsulates a watermark applied to an image.</p>
@@ -8,7 +13,7 @@ import java.io.File;
  * <p>Instances should be obtained from the
  * {@link WatermarkService}.</p>
  */
-public class Watermark {
+public class Watermark implements Operation {
 
     private File image;
     private int inset = 0;
@@ -37,6 +42,16 @@ public class Watermark {
         return position;
     }
 
+    @Override
+    public Dimension getResultingSize(Dimension fullSize) {
+        return fullSize;
+    }
+
+    @Override
+    public boolean isNoOp() {
+        return false;
+    }
+
     public void setImage(File image) {
         this.image = image;
     }
@@ -47,6 +62,16 @@ public class Watermark {
 
     public void setPosition(Position position) {
         this.position = position;
+    }
+
+    @Override
+    public Map<String, Object> toMap(Dimension fullSize) {
+        final HashMap<String,Object> map = new HashMap<>();
+        map.put("operation", "watermark");
+        map.put("filename", getImage().getName());
+        map.put("position", getPosition().toString());
+        map.put("inset", getInset());
+        return map;
     }
 
     /**

@@ -1,15 +1,11 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.watermark.Position;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
-import edu.illinois.library.cantaloupe.image.watermark.Watermark;
-import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
-import edu.illinois.library.cantaloupe.image.watermark.WatermarkingDisabledException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,12 +41,10 @@ abstract class JaiUtil {
      * @param baseImage Image to apply the watermark on top of.
      * @return Watermarked image, or the input image if there is no watermark
      *         set in the application configuration.
-     * @throws WatermarkingDisabledException
      * @throws IOException
-     */
+
     public static RenderedOp applyWatermark(final RenderedOp baseImage)
-            throws ConfigurationException, WatermarkingDisabledException,
-            IOException {
+            throws ConfigurationException, IOException {
         RenderedOp markedImage = baseImage;
         final Dimension imageSize = new Dimension(baseImage.getWidth(),
                 baseImage.getHeight());
@@ -62,7 +56,7 @@ abstract class JaiUtil {
                     watermark.getInset());
         }
         return markedImage;
-    }
+    } */
 
     /**
      * @param inImage Image to crop

@@ -2,7 +2,11 @@ package edu.illinois.library.cantaloupe.image;
 
 import static org.junit.Assert.*;
 
+import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,9 +21,8 @@ public class OperationListTest {
 
     private OperationList ops;
 
-    @Before
-    public void setUp() {
-        ops = new OperationList();
+    private static OperationList newOperationList() {
+        OperationList ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier.jpg"));
         Crop crop = new Crop();
         crop.setFull(true);
@@ -29,6 +32,16 @@ public class OperationListTest {
         ops.add(scale);
         ops.add(new Rotate(0));
         ops.setOutputFormat(OutputFormat.JPG);
+        return ops;
+    }
+
+    @Before
+    public void setUp() {
+        Configuration config = new BaseConfiguration();
+        config.setProperty(WatermarkService.WATERMARK_ENABLED_CONFIG_KEY, false);
+        Application.setConfiguration(config);
+
+        ops = newOperationList();
 
         assertNotNull(ops.getOptions());
     }
@@ -288,6 +301,39 @@ public class OperationListTest {
         ops.setIdentifier(new Identifier("identifier.jpg"));
         ops.setOutputFormat(OutputFormat.GIF);
         assertFalse(ops.isNoOp(SourceFormat.JPG));
+    }
+
+    /* iterator() */
+
+    @Test
+    public void testIteratorWithWatermarkingDisabled() {
+        int count = 0;
+        Iterator it = ops.iterator();
+        while (it.hasNext()) {
+            it.next();
+            count++;
+        }
+        assertEquals(3, count);
+    }
+
+    @Test
+    public void testIteratorWithWatermarkingEnabled() {
+        Application.getConfiguration().setProperty(
+                WatermarkService.WATERMARK_ENABLED_CONFIG_KEY, true);
+        Application.getConfiguration().setProperty(
+                WatermarkService.WATERMARK_FILE_CONFIG_KEY, "/bla");
+        Application.getConfiguration().setProperty(
+                WatermarkService.WATERMARK_POSITION_CONFIG_KEY, "bottom right");
+        Application.getConfiguration().setProperty(
+                WatermarkService.WATERMARK_INSET_CONFIG_KEY, 10);
+
+        int count = 0;
+        Iterator it = newOperationList().iterator();
+        while (it.hasNext()) {
+            it.next();
+            count++;
+        }
+        assertEquals(4, count);
     }
 
     /* toMap() */

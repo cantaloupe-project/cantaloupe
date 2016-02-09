@@ -11,7 +11,7 @@ import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
-import edu.illinois.library.cantaloupe.image.watermark.WatermarkingDisabledException;
+import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.apache.commons.configuration.Configuration;
@@ -23,7 +23,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.imageio.ImageIO;
 import javax.media.jai.RenderedOp;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -528,6 +527,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
                                      final ReductionFactor reductionFactor,
                                      final OutputStream outputStream)
             throws IOException, ProcessorException {
+        BufferedImage image = null;
         RenderedImage renderedImage = reader.readRendered();
         RenderedOp renderedOp = JaiUtil.reformatImage(
                 RenderedOp.wrapRenderedImage(renderedImage),
@@ -537,24 +537,33 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
                 renderedOp = JaiUtil.scaleImage(renderedOp, (Scale) op,
                         reductionFactor);
             } else if (op instanceof Transpose) {
-                renderedOp = JaiUtil.transposeImage(renderedOp,
-                        (Transpose) op);
+                renderedOp = JaiUtil.transposeImage(renderedOp, (Transpose) op);
             } else if (op instanceof Rotate) {
                 renderedOp = JaiUtil.rotateImage(renderedOp, (Rotate) op);
             } else if (op instanceof Filter) {
                 renderedOp = JaiUtil.filterImage(renderedOp, (Filter) op);
+            } else if (op instanceof Watermark) {
+                // Let's cheat and apply the watermark using Java 2D.
+                // There seems to be minimal performance penalty in doing
+                // this, and doing it in JAI is harder.
+                image = renderedOp.getAsBufferedImage();
+                try {
+                    image = Java2dUtil.applyWatermark(image, (Watermark) op);
+                } catch (ConfigurationException e) {
+                    logger.error(e.getMessage());
+                }
             }
         }
-        try {
-            renderedOp = JaiUtil.applyWatermark(renderedOp);
-        } catch (WatermarkingDisabledException e) {
-            // that's OK
-        } catch (ConfigurationException e) {
-            logger.error(e.getMessage());
-        }
 
-        ImageIO.write(renderedOp, opList.getOutputFormat().getExtension(),
-                outputStream);
+        ImageIoImageWriter writer = new ImageIoImageWriter();
+
+        if (image != null) {
+            writer.write(image, opList.getOutputFormat(), outputStream);
+            image.flush();
+        } else {
+            writer.write(renderedOp, opList.getOutputFormat(),
+                    outputStream);
+        }
     }
 
     private void postProcessUsingJava2d(final ImageIoImageReader reader,
@@ -579,14 +588,13 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
             } else if (op instanceof Filter) {
                 image = Java2dUtil.filterImage(image,
                         (Filter) op);
+            } else if (op instanceof Watermark) {
+                try {
+                    image = Java2dUtil.applyWatermark(image, (Watermark) op);
+                } catch (ConfigurationException e) {
+                    logger.error(e.getMessage());
+                }
             }
-        }
-        try {
-            image = Java2dUtil.applyWatermark(image);
-        } catch (WatermarkingDisabledException e) {
-            // that's OK
-        } catch (ConfigurationException e) {
-            logger.error(e.getMessage());
         }
 
         new ImageIoImageWriter().write(image, opList.getOutputFormat(),
