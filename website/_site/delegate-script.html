@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Extensible multi-protocol image server in Java
+">
+
+  <title>Cantaloupe</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/cantaloupe/css/syntax.css">
+  <link rel="stylesheet" href="/cantaloupe/css/base.css">
+
+  <script src="/cantaloupe/scripts/jquery.min.js"></script>
+</head>
+
+
+  <body>
+
+    <div class="container-fluid">
+
+      <div class="clearfix">
+        <header>
+  <a href="/cantaloupe/">
+    <img src="images/cantaloupe.jpg" width="154" height="81">
+  </a>
+  <h1>
+    <a href="/cantaloupe/">Cantaloupe</a>
+    <br>
+    <small>Extensible multi-protocol dynamic image server in Java</small>
+  </h1>
+</header>
+
+      </div>
+
+      <div class="row">
+        <div class="col-sm-3">
+          <nav id="toc">
+  <ul>
+    <li><a href="/cantaloupe/">Home</a>
+      <ul>
+        <li><a href="/cantaloupe/#About">About</a></li>
+        <li><a href="/cantaloupe/#Features">Features</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="getting-started.html">Getting Started</a>
+      <ul>
+        <li><a href="getting-started.html#Requirements">Requirements</a></li>
+        <li><a href="getting-started.html#Download">Download</a></li>
+        <li><a href="getting-started.html#Configuration">Configuration</a></li>
+        <li><a href="getting-started.html#Running">Running</a></li>
+        <li><a href="getting-started.html#Upgrading">Upgrading</a></li>
+        <li><a href="getting-started.html#GettingHelp">Getting Help</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="deployment.html">Deployment</a>
+      <ul>
+        <li><a href="deployment.html#Hardware">Hardware</a></li>
+        <li><a href="deployment.html#Caching">Caching</a></li>
+        <li><a href="deployment.html#Limiting">Limiting</a></li>
+        <li><a href="deployment.html#Reverse-Proxying">Reverse-Proxying</a></li>
+        <li><a href="deployment.html#SSL%2FTLS">SSL/TLS</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="endpoints.html">Endpoints</a>
+      <ul>
+        <li><a href="endpoints.html#IIIFImageAPI1">IIIF Image API 1.x</a></li>
+        <li><a href="endpoints.html#IIIFImageAPI2">IIIF Image API 2.x</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="resolvers.html">Resolvers</a>
+      <ul>
+        <li><a href="resolvers.html#Static%20Resolution">Static Resolver</a></li>
+        <li><a href="resolvers.html#Dynamic%20Resolution">Dynamic Resolvers</a></li>
+        <li><a href="resolvers.html#FilesystemResolver">Filesystem</a></li>
+        <li><a href="resolvers.html#HttpResolver">HTTP</a></li>
+        <li><a href="resolvers.html#JdbcResolver">JDBC</a></li>
+        <li><a href="resolvers.html#AmazonS3Resolver">Amazon S3</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="processors.html">Processors</a>
+      <ul>
+        <li><a href="processors.html#Source%20Format%20Support">Format Support</a></li>
+        <li><a href="processors.html#Compatibility">Resolver Compatibility</a></li>
+        <li><a href="processors.html#Java2dProcessor">Java 2D</a></li>
+        <li><a href="processors.html#GraphicsMagickProcessor">GraphicsMagick</a></li>
+        <li><a href="processors.html#ImageMagickProcessor">ImageMagick</a></li>
+        <li><a href="processors.html#JaiProcessor">JAI</a></li>
+        <li><a href="processors.html#KakaduProcessor">Kakadu</a></li>
+        <li><a href="processors.html#OpenJpegProcessor">OpenJPEG</a></li>
+        <li><a href="processors.html#FfmpegProcessor">FFmpeg</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="caches.html">Caches (Server-Side)</a>
+      <ul>
+        <li><a href="caches.html#Purging">Purging</a></li>
+        <li><a href="caches.html#FilesystemCache">Filesystem</a></li>
+        <li><a href="caches.html#JdbcCache">JDBC</a></li>
+      </ul>
+    </li>
+    <li><a href="client-caching.html">Caching (Client-Side)</a></li>
+    <li>
+      <a href="access-control.html">Access Control</a>
+      <ul>
+        <li><a href="access-control.html#Authentication">Authentication</a></li>
+        <li><a href="access-control.html#Authorization">Authorization</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="logging.html">Logging</a>
+      <ul>
+        <li><a href="logging.html#Application%20Log">Application Log</a></li>
+        <li><a href="logging.html#Access%20Log">Access Log</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="source-formats.html">Source Formats</a>
+      <ul>
+        <li><a href="source-formats.html#JPEG">JPEG</a></li>
+        <li><a href="source-formats.html#JPEG2000">JPEG2000</a></li>
+        <li><a href="source-formats.html#TIFF">TIFF</a></li>
+      </ul>
+    </li>
+    <li><a href="delegate-script.html">Delegate Script</a></li>
+    <li>
+      <a href="developers.html">For Developers</a>
+      <ul>
+        <li><a href="/cantaloupe/javadoc/">Javadoc</a></li>
+        <li><a href="developers.html#Contributing">Contributing</a></li>
+      </ul>
+    </li>
+    <li><a href="changes.html">Change Log</a>
+  </ul>
+</nav>
+
+        </div> <!-- .col-sm-3 -->
+
+        <div class="col-sm-9">
+          <h2>Delegate Script</h2>
+
+<p>The delegate script mechanism enables the use of custom Ruby methods as "hooks" to provide dynamic information back to the image server. A truly customized image server can be created with minimal lines of code.</p>
+
+<p>Delegate methods are implemented in Ruby, and run inside a JRuby interpreter bundled into Cantaloupe. There is no need to install an external Ruby environment and no need to know Java; just type some code into a file, and go.</p>
+
+<h3>Enabling</h3>
+
+<p>The delegate script mechanism is disabled by default. To enable it, copy the sample delegate script, <span class="filename">delegates.rb.sample</span>, included in the distribution, to <span class="filename">delegates.rb</span>, and reference it from the <code>delegate_script</code> configuration option.</p>
+
+<h3>Rules</h3>
+
+<p>While the arguments and return types of each method will vary, all delegate methods must be contained within a <code>Cantaloupe</code> module. Inside a method, anything goes, and you can use any (non-platform-native) gems that you have installed with <code>gem install</code>.</p>
+
+<p>Because delegate methods will be called frequently, though, they should be written with efficiency in mind.</p>
+
+<p>The delegate script will be reloaded on each request, so it can be edited without restarting. But, code that has been loaded into the JRuby runtime cannot be unloaded. For example, when a method is changed, it will overwrite the old version; but a constant that has already been defined cannot be redefined.</p>
+
+<div class="alert alert-danger">Note: typically, neither method arguments nor return values are sanitized or validated. <strong>Be very careful to write defensive, injection-aware code.</strong></div>
+
+<h3>Example</h3>
+
+<p>Here is an example of a script used by <a href="resolvers.html#FilesystemResolver">FilesystemResolver</a> that performs a Solr query to return a pathname based on an identifier. The documentation in that section describes the contract that this method must abide by: its name, arguments, and return value.</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s1">'cgi'</span>
+<span class="nb">require</span> <span class="s1">'net/http'</span>
+
+<span class="k">module</span> <span class="nn">Cantaloupe</span>
+  <span class="c1">##</span>
+  <span class="c1"># Used by FilesystemResolver's ScriptLookupStrategy.</span>
+  <span class="c1">#</span>
+  <span class="c1"># @param identifier [String] Image identifier</span>
+  <span class="c1"># @return [String,nil] Absolute pathname of the image corresponding to the</span>
+  <span class="c1">#                      given identifier, or nil if not found.</span>
+  <span class="c1">#</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">get_pathname</span><span class="p">(</span><span class="n">identifier</span><span class="p">)</span>
+    <span class="n">uri</span> <span class="o">=</span> <span class="s1">'http://localhost:8983/solr/collection1/select?q='</span> <span class="o">+</span>
+        <span class="no">CGI</span><span class="p">.</span><span class="nf">escape</span><span class="p">(</span><span class="s1">'id:"'</span> <span class="o">+</span> <span class="n">identifier</span> <span class="o">+</span> <span class="s1">'"'</span><span class="p">)</span> <span class="o">+</span>
+        <span class="s1">'&amp;amp;fl=pathname_si&amp;amp;wt=ruby'</span>
+    <span class="n">uri</span> <span class="o">=</span> <span class="no">URI</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span><span class="n">uri</span><span class="p">)</span>
+
+    <span class="n">http</span> <span class="o">=</span> <span class="no">Net</span><span class="o">::</span><span class="no">HTTP</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">uri</span><span class="p">.</span><span class="nf">host</span><span class="p">,</span> <span class="n">uri</span><span class="p">.</span><span class="nf">port</span><span class="p">)</span>
+    <span class="n">request</span> <span class="o">=</span> <span class="no">Net</span><span class="o">::</span><span class="no">HTTP</span><span class="o">::</span><span class="no">Get</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">uri</span><span class="p">.</span><span class="nf">request_uri</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">http</span><span class="p">.</span><span class="nf">request</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kp">nil</span> <span class="k">if</span> <span class="n">response</span><span class="p">.</span><span class="nf">code</span><span class="p">.</span><span class="nf">to_i</span> <span class="o">&gt;=</span> <span class="mi">400</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">response</span><span class="p">.</span><span class="nf">body</span><span class="p">)[</span><span class="s1">'response'</span><span class="p">][</span><span class="s1">'docs'</span><span class="p">]</span>
+    <span class="n">results</span><span class="p">.</span><span class="nf">any?</span> <span class="p">?</span> <span class="n">results</span><span class="p">.</span><span class="nf">first</span><span class="p">[</span><span class="s1">'pathname_si'</span><span class="p">]</span> <span class="p">:</span> <span class="kp">nil</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></figure>
+
+<h3>Testing Script Methods</h3>
+
+<p>Using the example above, <code>get_pathname()</code> could be tested by adding a line to the end of the script:
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="nb">puts</span> <span class="no">Cantaloupe</span><span class="o">::</span><span class="n">get_pathname</span><span class="p">(</span><span class="s1">'identifier-to-test'</span><span class="p">)</span></code></pre></figure>
+
+And running it on the command line with a command like <code>ruby delegates.rb</code>.</p>
+
+<p>The delegate script is standard Ruby code that will work in any Ruby interpreter. The only thing to be aware of is that gems with platform-native extensions will not work in JRuby. For that reason, it would be best to install a standalone <a href="http://jruby.org">JRuby interpreter</a> and test with that.</p>
+
+<p>You may also want to look into something like <a href="http://rvm.io/">RVM</a>, which can make it easier to switch between different versions of the Ruby interpreter.</p>
+
+        </div>
+      </div>
+
+      <footer>
+</footer>
+
+<script src="/cantaloupe/scripts/bootstrap.min.js"></script>
+<script src="/cantaloupe/scripts/base.js"></script>
+
+
+    </div>
+
+  </body>
+
+</html>

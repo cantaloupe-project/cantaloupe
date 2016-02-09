@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Extensible multi-protocol image server in Java
+">
+
+  <title>Cantaloupe</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/cantaloupe/css/syntax.css">
+  <link rel="stylesheet" href="/cantaloupe/css/base.css">
+
+  <script src="/cantaloupe/scripts/jquery.min.js"></script>
+</head>
+
+
+  <body>
+
+    <div class="container-fluid">
+
+      <div class="clearfix">
+        <header>
+  <a href="/cantaloupe/">
+    <img src="images/cantaloupe.jpg" width="154" height="81">
+  </a>
+  <h1>
+    <a href="/cantaloupe/">Cantaloupe</a>
+    <br>
+    <small>Extensible multi-protocol dynamic image server in Java</small>
+  </h1>
+</header>
+
+      </div>
+
+      <div class="row">
+        <div class="col-sm-3">
+          <nav id="toc">
+  <ul>
+    <li><a href="/cantaloupe/">Home</a>
+      <ul>
+        <li><a href="/cantaloupe/#About">About</a></li>
+        <li><a href="/cantaloupe/#Features">Features</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="getting-started.html">Getting Started</a>
+      <ul>
+        <li><a href="getting-started.html#Requirements">Requirements</a></li>
+        <li><a href="getting-started.html#Download">Download</a></li>
+        <li><a href="getting-started.html#Configuration">Configuration</a></li>
+        <li><a href="getting-started.html#Running">Running</a></li>
+        <li><a href="getting-started.html#Upgrading">Upgrading</a></li>
+        <li><a href="getting-started.html#GettingHelp">Getting Help</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="deployment.html">Deployment</a>
+      <ul>
+        <li><a href="deployment.html#Hardware">Hardware</a></li>
+        <li><a href="deployment.html#Caching">Caching</a></li>
+        <li><a href="deployment.html#Limiting">Limiting</a></li>
+        <li><a href="deployment.html#Reverse-Proxying">Reverse-Proxying</a></li>
+        <li><a href="deployment.html#SSL%2FTLS">SSL/TLS</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="endpoints.html">Endpoints</a>
+      <ul>
+        <li><a href="endpoints.html#IIIFImageAPI1">IIIF Image API 1.x</a></li>
+        <li><a href="endpoints.html#IIIFImageAPI2">IIIF Image API 2.x</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="resolvers.html">Resolvers</a>
+      <ul>
+        <li><a href="resolvers.html#Static%20Resolution">Static Resolver</a></li>
+        <li><a href="resolvers.html#Dynamic%20Resolution">Dynamic Resolvers</a></li>
+        <li><a href="resolvers.html#FilesystemResolver">Filesystem</a></li>
+        <li><a href="resolvers.html#HttpResolver">HTTP</a></li>
+        <li><a href="resolvers.html#JdbcResolver">JDBC</a></li>
+        <li><a href="resolvers.html#AmazonS3Resolver">Amazon S3</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="processors.html">Processors</a>
+      <ul>
+        <li><a href="processors.html#Source%20Format%20Support">Format Support</a></li>
+        <li><a href="processors.html#Compatibility">Resolver Compatibility</a></li>
+        <li><a href="processors.html#Java2dProcessor">Java 2D</a></li>
+        <li><a href="processors.html#GraphicsMagickProcessor">GraphicsMagick</a></li>
+        <li><a href="processors.html#ImageMagickProcessor">ImageMagick</a></li>
+        <li><a href="processors.html#JaiProcessor">JAI</a></li>
+        <li><a href="processors.html#KakaduProcessor">Kakadu</a></li>
+        <li><a href="processors.html#OpenJpegProcessor">OpenJPEG</a></li>
+        <li><a href="processors.html#FfmpegProcessor">FFmpeg</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="caches.html">Caches (Server-Side)</a>
+      <ul>
+        <li><a href="caches.html#Purging">Purging</a></li>
+        <li><a href="caches.html#FilesystemCache">Filesystem</a></li>
+        <li><a href="caches.html#JdbcCache">JDBC</a></li>
+      </ul>
+    </li>
+    <li><a href="client-caching.html">Caching (Client-Side)</a></li>
+    <li>
+      <a href="access-control.html">Access Control</a>
+      <ul>
+        <li><a href="access-control.html#Authentication">Authentication</a></li>
+        <li><a href="access-control.html#Authorization">Authorization</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="logging.html">Logging</a>
+      <ul>
+        <li><a href="logging.html#Application%20Log">Application Log</a></li>
+        <li><a href="logging.html#Access%20Log">Access Log</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="source-formats.html">Source Formats</a>
+      <ul>
+        <li><a href="source-formats.html#JPEG">JPEG</a></li>
+        <li><a href="source-formats.html#JPEG2000">JPEG2000</a></li>
+        <li><a href="source-formats.html#TIFF">TIFF</a></li>
+      </ul>
+    </li>
+    <li><a href="delegate-script.html">Delegate Script</a></li>
+    <li>
+      <a href="developers.html">For Developers</a>
+      <ul>
+        <li><a href="/cantaloupe/javadoc/">Javadoc</a></li>
+        <li><a href="developers.html#Contributing">Contributing</a></li>
+      </ul>
+    </li>
+    <li><a href="changes.html">Change Log</a>
+  </ul>
+</nav>
+
+        </div> <!-- .col-sm-3 -->
+
+        <div class="col-sm-9">
+          <h2>Endpoints</h2>
+
+<h3 id="IIIFImageAPI1">IIIF Image API 1.x</h3>
+
+<h4>Location</h4>
+
+<p>This endpoint is available at <span class="filename">/iiif/1</span>.</p>
+
+<h4>Compliance</h4>
+
+<p>Cantaloupe implements version 1.1 of this API, for compatibility with all 1.x clients. Compliance level is dynamically computed and declared on a per-processor basis. Most processors are "Level 2"-compliant.</p>
+
+<h4>Information Response Notes</h4>
+
+<dl>
+  <dt><code>tile_width</code> and <code>tile_height</code></dt>
+  <dd>These keys contain refer to tile dimensions that will be relatively efficient to deliver.
+    <ul>
+      <li>For images that are natively tiled, these will be the smallest of the native tile dimensions, 512&times;512, or the full image dimensions.</li>
+      <li>For untiled images, these will be the smallest result of the formula: <i>(smallest dimension) * 1/2<sup>n</sup> &gt; 512</i>.</li>
+    </ul>
+  </dd>
+  <dt><code>formats</code></dt>
+  <dd>This list of output formats depends on the processor assigned to the format of the source image.</dd>
+  <dt><code>qualities</code></dt>
+  <dd>Depends on the qualities supported by the processor assigned to the format of the source image.</dd>
+</dl>
+
+<h4>Enabling/Disabling</h4>
+
+<p>This endpoint can be enabled or disabled by setting <code>endpoint.iiif.1.enabled</code> to <code>true</code> or <code>false</code> in the <a href="getting-started.html#Configuration">configuration file</a>.</p>
+
+<hr>
+
+<h3 id="IIIFImageAPI2">IIIF Image API 2.x</h3>
+
+<h4>Location</h4>
+
+<p>This endpoint is available at <span class="filename">/iiif/2</span>.</p>
+
+<h4>Compliance</h4>
+
+<p>Cantaloupe implements version 2.0 of this API, for compatibility with all 2.0 clients. Compliance level is dynamically computed and declared on a per-processor basis. Most processors are "Level 2"-compliant.</p>
+
+<h4>Information Response Notes</h4>
+
+<dl>
+  <dt><code>sizes</code></dt>
+  <dd>Contains an array of width/height pairs according to the formula <i>dimension * 1/2<sup>n</sup> &gt; 64</i>.</dd>
+  <dt><code>tiles</code></dt>
+  <dd>This array contains a list of tile sizes that will be relatively efficient to deliver, along with a list of scale factors at which each size is available.
+    <ul>
+      <li>For images that are natively tiled, the <code>width</code> and <code>height</code> will be the smallest of the native tile dimensions, 512&times;512, or the full image dimensions.</li>
+      <li>For untiled images, they will be the smallest result of the formula: <i>(smallest dimension) * 1/2<sup>n</sup> &gt; 512</i>.</li>
+    </ul>
+  </dd>
+  <dt><code>profile/formats</code></dt>
+  <dd>This list of output formats depends on the processor assigned to the format of the source image.</dd>
+  <dt><code>profile/qualities</code></dt>
+  <dd>Depends on the qualities supported by the processor assigned to the format of the source image.</dd>
+  <dt><code>profile/supports</code></dt>
+  <dd>Depends in on the features supported by the processor assigned to the format of the source image, as well as features built into the image server itself.</dd>
+  <dt><code>service</code></dt>
+  <dd>See the <a href="#Service%20Profile">Service Profile</a> section.</dd>
+</dl>
+
+<h5 id="Service Profile">Service Profile</h5>
+
+<p>Cantaloupe supports an optional <a href="http://iiif.io/api/annex/services/">service profile</a> in information responses. The <a href="delegate-script.html">delegate script</a> merely needs to implement the <code>get_iiif2_service()</code> method. An example implementation of the <a href="http://iiif.io/api/annex/services/#physical-dimensions">Physical Dimensions</a> service follows:</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">module</span> <span class="nn">Cantaloupe</span>
+  <span class="c1">##</span>
+  <span class="c1"># @param identifier [String] Image identifier</span>
+  <span class="c1"># @return [Hash] that will be transformed to JSON and appended to a</span>
+  <span class="c1"># `service` key in information responses</span>
+  <span class="c1">#</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">get_iiif2_service</span><span class="p">(</span><span class="n">identifier</span><span class="p">)</span>
+    <span class="c1"># Obviously, some of this info would be retrieved dynamically from a</span>
+    <span class="c1"># database or what have you. This is just an example.</span>
+    <span class="p">{</span>
+      <span class="s1">'@context'</span> <span class="o">=&gt;</span> <span class="s1">'http://iiif.io/api/image/2/context.json'</span><span class="p">,</span>
+      <span class="s1">'profile'</span> <span class="o">=&gt;</span> <span class="s1">'http://iiif.io/api/annex/services/physdim/1/context.json'</span><span class="p">,</span>
+      <span class="s1">'physicalScale'</span> <span class="o">=&gt;</span> <span class="mi">0</span><span class="o">.</span><span class="mi">85</span><span class="p">,</span>
+      <span class="s1">'physicalUnits'</span> <span class="o">=&gt;</span> <span class="s1">'cm'</span>
+    <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></figure>
+
+<h4>Enabling/Disabling</h4>
+
+<p>This endpoint can be enabled or disabled by setting <code>endpoint.iiif.2.enabled</code> to <code>true</code> or <code>false</code> in the <a href="getting-started.html#Configuration">configuration file</a>.</p>
+
+        </div>
+      </div>
+
+      <footer>
+</footer>
+
+<script src="/cantaloupe/scripts/bootstrap.min.js"></script>
+<script src="/cantaloupe/scripts/base.js"></script>
+
+
+    </div>
+
+  </body>
+
+</html>
