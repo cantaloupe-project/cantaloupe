@@ -45,6 +45,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -78,7 +79,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
     public static final String POST_PROCESSOR_CONFIG_KEY =
             "KakaduProcessor.post_processor";
 
-    private static final short MAX_REDUCTION_FACTOR = 5;
+    private static final short MAX_REDUCTION_FACTOR = 0;
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
@@ -96,35 +97,28 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
     private File sourceFile;
 
     static {
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL);
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR);
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY);
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE);
-
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL);
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR);
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT);
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY);
-
-        SUPPORTED_FEATURES.add(ProcessorFeature.MIRRORING);
-        SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PERCENT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PIXELS);
-        SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_ARBITRARY);
-        SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_BY_90S);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_ABOVE_FULL);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_HEIGHT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_PERCENT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
+        SUPPORTED_IIIF_1_1_QUALITIES.addAll(Arrays.asList(
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
+        SUPPORTED_IIIF_2_0_QUALITIES.addAll(Arrays.asList(
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
+        SUPPORTED_FEATURES.addAll(Arrays.asList(
+                ProcessorFeature.MIRRORING,
+                ProcessorFeature.REGION_BY_PERCENT,
+                ProcessorFeature.REGION_BY_PIXELS,
+                ProcessorFeature.ROTATION_ARBITRARY,
+                ProcessorFeature.ROTATION_BY_90S,
+                ProcessorFeature.SIZE_ABOVE_FULL,
+                ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
+                ProcessorFeature.SIZE_BY_HEIGHT,
+                ProcessorFeature.SIZE_BY_PERCENT,
+                ProcessorFeature.SIZE_BY_WIDTH,
+                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
 
         // Due to a quirk of kdu_expand, this processor requires access to
         // /dev/stdout.
@@ -223,19 +217,24 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
         pb.redirectErrorStream(true);
         logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
         Process process = pb.start();
-
-        // Ideally we could just call
-        // DocumentBuilder.parse(process.getInputStream()), but the XML
-        // output of kdu_jp2info may contain leading whitespace that
-        // causes a SAXParseException. So, read into a byte array in
-        // order to trim it, and then parse that. TODO: use a FilterInputStream
+        InputStream processInputStream = process.getInputStream();
         ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
-        IOUtils.copy(process.getInputStream(), outputBucket);
-        final String outputXml = outputBucket.toString("UTF-8").trim();
 
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        DocumentBuilder db = dbf.newDocumentBuilder();
-        imageInfo = db.parse(new InputSource(new StringReader(outputXml)));
+        try {
+            // Ideally we could just call
+            // DocumentBuilder.parse(process.getInputStream()), but the XML
+            // output of kdu_jp2info may contain leading whitespace that
+            // causes a SAXParseException. So, read into a byte array in
+            // order to trim it, and then parse that. TODO: use a FilterInputStream
+            IOUtils.copy(processInputStream, outputBucket);
+            final String xml = outputBucket.toString("UTF-8").trim();
+
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            imageInfo = db.parse(new InputSource(new StringReader(xml)));
+        } finally {
+            processInputStream.close();
+        }
     }
 
     @Override
@@ -341,31 +340,34 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
                     reductionFactor);
             logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
+            final InputStream processInputStream = process.getInputStream();
+            final InputStream processErrorStream = process.getErrorStream();
+            final OutputStream processOutputStream = process.getOutputStream();
 
-            executorService.submit(
-                    new StreamCopier(process.getErrorStream(), errorBucket));
-
-            final ImageIoImageReader reader = new ImageIoImageReader();
-            reader.setSourceFormat(SourceFormat.BMP);
-            reader.setSource(
-                    new InputStreamStreamSource(process.getInputStream()));
-
-            Configuration config = Application.getConfiguration();
-            switch (config.getString(POST_PROCESSOR_CONFIG_KEY, "java2d").toLowerCase()) {
-                case "jai":
-                    logger.info("Post-processing using JAI ({} = jai)",
-                            POST_PROCESSOR_CONFIG_KEY);
-                    postProcessUsingJai(reader, ops, reductionFactor,
-                            outputStream);
-                    break;
-                default:
-                    logger.info("Post-processing using Java 2D ({} = java2d)",
-                            POST_PROCESSOR_CONFIG_KEY);
-                    postProcessUsingJava2d(reader, ops, reductionFactor,
-                            outputStream);
-                    break;
-            }
             try {
+                executorService.submit(
+                        new StreamCopier(processErrorStream, errorBucket));
+
+                final ImageIoImageReader reader = new ImageIoImageReader();
+                reader.setSourceFormat(SourceFormat.BMP);
+                reader.setSource(new InputStreamStreamSource(processInputStream));
+
+                final Configuration config = Application.getConfiguration();
+                switch (config.getString(POST_PROCESSOR_CONFIG_KEY, "java2d").toLowerCase()) {
+                    case "jai":
+                        logger.info("Post-processing using JAI ({} = jai)",
+                                POST_PROCESSOR_CONFIG_KEY);
+                        postProcessUsingJai(reader, ops, reductionFactor,
+                                outputStream);
+                        break;
+                    default:
+                        logger.info("Post-processing using Java 2D ({} = java2d)",
+                                POST_PROCESSOR_CONFIG_KEY);
+                        postProcessUsingJava2d(reader, ops, reductionFactor,
+                                outputStream);
+                        break;
+                }
+
                 final int code = process.waitFor();
                 if (code != 0) {
                     logger.warn("kdu_expand returned with code {}", code);
@@ -375,9 +377,9 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
                     }
                 }
             } finally {
-                process.getInputStream().close();
-                process.getOutputStream().close();
-                process.getErrorStream().close();
+                processInputStream.close();
+                processOutputStream.close();
+                processErrorStream.close();
                 process.destroy();
             }
         } catch (IOException | InterruptedException e) {
@@ -461,7 +463,6 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
                 // factors of 2, significantly speeding decompression. We can
                 // use it if the scale mode is ASPECT_FIT_* and either the
                 // percent is <=50, or the height/width are <=50% of full size.
-                // The smaller the scale, the bigger the win.
                 final Scale scale = (Scale) op;
                 final Dimension tileSize = getCroppedSize(opList, imageSize);
                 if (scale.getMode() != Scale.Mode.FULL) {
