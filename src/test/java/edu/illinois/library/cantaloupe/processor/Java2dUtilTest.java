@@ -7,7 +7,6 @@ import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.watermark.Position;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
-import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -15,11 +14,98 @@ import org.junit.Test;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.*;
 
 public class Java2dUtilTest {
+
+    @Test
+    public void testApplyWatermark() throws Exception {
+        // ward off NPEs
+        Configuration config = new BaseConfiguration();
+        Application.setConfiguration(config);
+
+        // read the base image into a BufferedImage
+        final File fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
+        final BufferedImage baseImage = ImageIO.read(fixture);
+
+        int pixel = baseImage.getRGB(0, 0);
+        int alpha = (pixel >> 24) & 0xff;
+        int red = (pixel >> 16) & 0xff;
+        int green = (pixel >> 8) & 0xff;
+        int blue = (pixel) & 0xff;
+        assertEquals(255, alpha);
+        assertEquals(106, red);
+        assertEquals(90, green);
+        assertEquals(60, blue);
+
+        // create a Watermark
+        final Watermark watermark = new Watermark();
+        watermark.setImage(TestUtil.getImage("png-rgb-1x1x8.png"));
+        watermark.setInset(0);
+        watermark.setPosition(Position.TOP_LEFT);
+
+        // apply it
+        final BufferedImage watermarkedImage = Java2dUtil.applyWatermark(
+                baseImage, watermark);
+
+        pixel = watermarkedImage.getRGB(0, 0);
+        alpha = (pixel >> 24) & 0xff;
+        red = (pixel >> 16) & 0xff;
+        green = (pixel >> 8) & 0xff;
+        blue = (pixel) & 0xff;
+        assertEquals(255, alpha);
+        assertEquals(0, red);
+        assertEquals(0, green);
+        assertEquals(0, blue);
+    }
+
+    @Test
+    public void testApplyWatermarkWithInset() throws Exception {
+        // ward off NPEs
+        Configuration config = new BaseConfiguration();
+        Application.setConfiguration(config);
+
+        // read the base image into a BufferedImage
+        final File fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
+        final BufferedImage baseImage = ImageIO.read(fixture);
+
+        int pixel = baseImage.getRGB(
+                baseImage.getWidth() - 2, baseImage.getHeight() - 2);
+        int alpha = (pixel >> 24) & 0xff;
+        int red = (pixel >> 16) & 0xff;
+        int green = (pixel >> 8) & 0xff;
+        int blue = (pixel) & 0xff;
+        assertEquals(255, alpha);
+        assertEquals(231, red);
+        assertEquals(222, green);
+        assertEquals(203, blue);
+
+        // create a Watermark
+        final Watermark watermark = new Watermark();
+        watermark.setImage(TestUtil.getImage("png-rgb-1x1x8.png"));
+        final int inset = 2;
+        watermark.setInset(inset);
+        watermark.setPosition(Position.BOTTOM_RIGHT);
+
+        // apply it
+        final BufferedImage watermarkedImage = Java2dUtil.applyWatermark(
+                baseImage, watermark);
+
+        pixel = watermarkedImage.getRGB(
+                baseImage.getWidth() - inset - 1,
+                baseImage.getHeight() - inset - 1);
+        alpha = (pixel >> 24) & 0xff;
+        red = (pixel >> 16) & 0xff;
+        green = (pixel >> 8) & 0xff;
+        blue = (pixel) & 0xff;
+        assertEquals(255, alpha);
+        assertEquals(0, red);
+        assertEquals(0, green);
+        assertEquals(0, blue);
+    }
 
     @Test
     public void testConvertToRgb() throws IOException {

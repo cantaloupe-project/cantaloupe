@@ -67,8 +67,8 @@ public abstract class WatermarkService {
         final Configuration config = Application.getConfiguration();
         try {
             final int configValue = config.
-                    getInt(WATERMARK_INSET_CONFIG_KEY, 0);
-            if (configValue > 0) {
+                    getInt(WATERMARK_INSET_CONFIG_KEY, -1);
+            if (configValue > -1) {
                 return configValue;
             }
         } catch (ConversionException e) {
