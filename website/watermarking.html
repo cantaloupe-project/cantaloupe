@@ -8,9 +8,7 @@ layout: default
 
 <h3>Watermark Requirements</h3>
 
-<p>The watermark image is typically a 24-bit RGBA PNG image. Alpha is supported, but not necessary, and other formats may work as well, but PNG is recommended.
-
-<p>The watermark will be blended into the output image respecting its alpha channel. Opaque pixels will be applied opaque. Reducing the opacity (increasing the transparency) of the applied watermark requires modifying it&mdash;the image server will not multiply alpha.</p>
+<p>The watermark image must be a 24-bit PNG image, either RGB or RGBA. The watermark will be blended into the output image respecting its alpha channel.</p>
 
 <h3>Processor Support</h3>
 
@@ -20,16 +18,14 @@ layout: default
 
 <h4>Performance</h4>
 
-<p>Watermark application should have minimal impact on response times, adding perhaps a few milliseconds at most for a 15,000-pixel watermark.</p>
-
-<p>One thing to note, though, is that normally, requests for source images with no modification are streamed through with no processing. When watermarking is enabled, this will no longer be the case.</p>
+<p>Watermark application should have minimal impact on response times, adding perhaps a few milliseconds for a typical-sized watermark. One thing to note, though, is that normally, requests for source images with no modification are streamed through with no processing. When watermarking is enabled, this will no longer be the case.</p>
 
 <h4>Zooming Image Viewers</h4>
 
-<p>Zooming image viewers display a canvas composed of multiple image tiles. When watermarking is enabled, each tile will have a watermark, which may look more or less strange depending on the size of the watermark and the tile size used by the viewer.</p>
+<p>Zooming image viewers display a canvas composed of multiple image tiles. When watermarking is enabled, each tile will have a watermark, which may look more or less strange depending on the size of the watermark and the tile size used by the viewer. The image server has no control over this.</p>
 
-<p>One way of getting around this is to set the <code>watermark.output_width_threshold</code> and <code>watermark.output_height_threshold</code> configuration options to values that are slightly larger than the tile size used by the zooming image viewer. This will disable watermarking for zooming image viewer tiles, but enable for it for anything larger.</p>
+<p>One way of getting around this is to set the <code>watermark.output_width_threshold</code> and <code>watermark.output_height_threshold</code> configuration options to values that are slightly larger than the tile size used by the zooming image viewer. This will disable watermarking for zooming image viewer tiles, but enable for it for anything larger. Unfortunately, the tile size used by the viewer may differ depending on the source image, as the recommended tile sizes in <a href="endpoints.html">information responses</a> will vary on a per-image basis.</p>
 
 <h4>Caching</h4>
 
-<p>Watermarked images are cached just like any other image. Keep in mind that when changing your watermark settings, cached images with the previous watermark applied will not be affected.</p>
+<p>Watermark parameters (filename, position, inset, etc.) are encoded in cached-image identifiers. When watermark settings change, cached watermarked images will be re-generated automatically. For this reason, it is a good idea to purge the cache after making permanent changes to watermark settings.</p>
