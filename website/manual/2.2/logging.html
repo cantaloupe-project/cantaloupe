@@ -2,13 +2,20 @@
 layout: default
 ---
 
-<h2>Logging</h2>
+<ol class="breadcrumb">
+  <li><a href="">Home</a></li>
+  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
+  <li><a href="{{ site.baseurl }}/manual/2.2/">2.2</a></li>
+  <li class="active">Logging</li>
+</ol>
+
+<h1>Logging</h1>
 
 <p>Cantaloupe maintains two logs&mdash;application and access&mdash;which are independently configurable.</p>
 
-<h3 id="Application Log">Application Log</h3>
+<h2 id="Application Log">Application Log</h2>
 
-<h4>Log Levels</h4>
+<h3>Log Levels</h3>
 
 <p>The <code>log.application.level</code> configuration key specifies the severity threshold beneath which log messages will be discarded. Available values, in order of importance, are: <code>trace</code>, <code>debug</code>, <code>info</code>, <code>warn</code>, and <code>error</code>.</p>
 
@@ -16,7 +23,7 @@ layout: default
 
 <p>To completely disable the application log, use <code>off</code>.</p>
 
-<h4>Appenders</h4>
+<h3>Appenders</h3>
 
 <p>Appenders direct log messages to various destinations, like files and/or the console. (The default configuration file logs only to the console.) There are several available appenders, which can be enabled or disabled in any combination.</p>
 
@@ -40,7 +47,7 @@ layout: default
 
 <p>SyslogAppender appends log messages to the syslog, managed by syslogd, on a local or remote host.</p>
 
-<h3 id="Access Log">Access Log</h3>
+<h2 id="Access Log">Access Log</h2>
 
 <p>Access logs are written in the <a href="http://www.w3.org/TR/WD-logfile.html">W3C Extended Log File Format</a>. To enable or disable the access log, set the value of <code>log.access.ConsoleAppender.enabled</code> to <code>true</code> or <code>false</code>.</p>
 

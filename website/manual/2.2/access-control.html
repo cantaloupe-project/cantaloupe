@@ -2,9 +2,16 @@
 layout: default
 ---
 
-<h2>Access Control</h2>
+<ol class="breadcrumb">
+  <li><a href="">Home</a></li>
+  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
+  <li><a href="{{ site.baseurl }}/manual/2.2/">2.2</a></li>
+  <li class="active">Access Control</li>
+</ol>
 
-<h3 id="Authentication">Authentication</h3>
+<h1>Access Control</h1>
+
+<h2 id="Authentication">Authentication</h2>
 
 <p>Cantaloupe has built-in support for HTTP Basic authentication. To enable it, set the following keys in the configuration file:</p>
 
@@ -20,7 +27,7 @@ auth.basic.secret = mypassword
 
 <hr>
 
-<h3 id="Authorization">Authorization</h3>
+<h2 id="Authorization">Authorization</h2>
 
 <p>A custom <a href="delegate-script.html">delegate script</a> method can be used to implement authorization logic ranging from simple to complex. Cantaloupe will execute this method upon every image request and, depending on its return value, either authorize the request (by returning HTTP 200 OK), or not (by returning HTTP 403 Forbidden).</p>
 
@@ -28,14 +35,14 @@ auth.basic.secret = mypassword
 
 <div class="alert alert-warning">This method will be called upon requests to all image endpoints, but not information endpoints, landing pages, etc.</div>
 
-<h4>Notes</h4>
+<h3>Notes</h3>
 
 <ul>
   <li>The authorization method will be called on every image request and should therefore be written to be efficient.</li>
   <li>Implementations should not assume that the underlying source image actually exists, but they should not try to check for it regardless&mdash;the image server will handle that. (But, the check may occur after the delegate method is invoked.)</li>
 </ul>
 
-<h4>Examples</h4>
+<h3>Examples</h3>
 
 <ul>
   <li><a href="#example-1">Inspect the parameters</a></li>
@@ -48,7 +55,7 @@ auth.basic.secret = mypassword
   <li><a href="#example-8">Restrict a region of an image</a></li>
 </ul>
 
-<h5 id="example-1">Inspect the parameters</h5>
+<h4 id="example-1">Inspect the parameters</h4>
 
 <p>This method will print the parameters to the console.</p>
 
@@ -69,7 +76,7 @@ def self.authorized?(identifier, full_size, operations, resulting_size,
 end
 {% endhighlight %}
 
-<h5 id="example-2">Allow only requests for half-scale images or smaller</h5>
+<h4 id="example-2">Allow only requests for half-scale images or smaller</h4>
 
 {% highlight ruby %}
 def self.authorized?(identifier, full_size, operations, resulting_size,
@@ -85,7 +92,7 @@ def self.authorized?(identifier, full_size, operations, resulting_size,
 end
 {% endhighlight %}
 
-<h5 id="example-3">Allow only requests for identifiers matching a certain pattern</h5>
+<h4 id="example-3">Allow only requests for identifiers matching a certain pattern</h4>
 
 {% highlight ruby %}
 def self.authorized?(identifier, full_size, operations, resulting_size,
@@ -100,7 +107,7 @@ def self.authorized?(identifier, full_size, operations, resulting_size,
 end
 {% endhighlight %}
 
-<h5 id="example-4">Allow only requests for images set as "public" in a MySQL database</h5>
+<h4 id="example-4">Allow only requests for images set as "public" in a MySQL database</h4>
 
 <p>(You will need to install the <a href="https://dev.mysql.com/downloads/connector/j/">MySQL JDBC driver</a> first.)</p>
 
@@ -140,7 +147,7 @@ def self.authorized?(identifier, full_size, operations, resulting_size,
 end
 {% endhighlight %}
 
-<h5 id="example-5">Allow only JPEG output</h5>
+<h4 id="example-5">Allow only JPEG output</h4>
 
 {% highlight ruby %}
 def self.authorized?(identifier, full_size, operations, resulting_size,
@@ -150,7 +157,7 @@ def self.authorized?(identifier, full_size, operations, resulting_size,
 end
 {% endhighlight %}
 
-<h5 id="example-6">Allow only certain user agents</h5>
+<h4 id="example-6">Allow only certain user agents</h4>
 
 <div class="alert alert-warning">This is not foolproof&mdash;if a client knows what User-Agent you are checking for, they can spoof it.</div>
 
@@ -163,7 +170,7 @@ def self.authorized?(identifier, full_size, operations, resulting_size,
 end
 {% endhighlight %}
 
-<h5 id="example-7">Allow only requests from clients that have an authorization cookie</h5>
+<h4 id="example-7">Allow only requests from clients that have an authorization cookie</h4>
 
 <p>If you have an authorization service that sets a cookie, you can check for it. Cookies can't be shared across domains, but this could still work if you can set the cookie on a parent domain.</p>
 
@@ -175,7 +182,7 @@ def self.authorized?(identifier, full_size, operations, resulting_size,
 end
 {% endhighlight %}
 
-<h5 id="example-8">Restrict a region of an image</h5>
+<h4 id="example-8">Restrict a region of an image</h4>
 
 <p>In this example, requests for images containing any part of the bottom right quadrant of the source image will be denied.</p>
 

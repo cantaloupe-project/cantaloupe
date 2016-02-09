@@ -5,24 +5,17 @@
 
   <body>
 
-    <div class="container-fluid">
+    <div class="container">
 
-      <div class="clearfix">
-        {% include header.html %}
-      </div>
+      {% include nav.html %}
 
-      <div class="row">
-        <div class="col-sm-3">
-          {% include toc.html %}
-        </div> <!-- .col-sm-3 -->
 
-        <div class="col-sm-9">
-          {{ content }}
-        </div>
-      </div>
+      {% include header.html %}
+
+
+      {{ content }}
 
       {% include footer.html %}
-
     </div>
 
   </body>

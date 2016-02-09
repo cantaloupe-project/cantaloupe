@@ -2,7 +2,14 @@
 layout: default
 ---
 
-<h2>Processors</h2>
+<ol class="breadcrumb">
+  <li><a href="">Home</a></li>
+  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
+  <li><a href="{{ site.baseurl }}/manual/2.2/">2.2</a></li>
+  <li class="active">Processors</li>
+</ol>
+
+<h1>Processors</h1>
 
 <p>Cantaloupe can use different image processors for different source formats. (Assignments are made in the configuration file.) Different processors have different quality, compatibility, dependency, and performance characteristics. The ability to choose among different processors is intended to make it easy to add support for new image formats; improve support for existing image formats via the substitution of better codecs; and decouple the image server implementation from any one codec.</p>
 
@@ -14,7 +21,7 @@ landing page. A list of output formats supported <em>for a given source format</
 
 <hr>
 
-<h3 id="Supported Features">Supported Features</h3>
+<h2 id="Supported Features">Supported Features</h2>
 
 <table class="table table-bordered">
   <tr>
@@ -191,7 +198,7 @@ landing page. A list of output formats supported <em>for a given source format</
 
 <hr>
 
-<h3 id="Supported Source Formats">Supported Source Formats</h3>
+<h2 id="Supported Source Formats">Supported Source Formats</h2>
 
 <table class="table table-bordered">
   <tr>
@@ -206,7 +213,7 @@ landing page. A list of output formats supported <em>for a given source format</
     <th>WebP</th>
   </tr>
   <tr>
-    <td><a href="#GraphicsMagickProcessor">GraphicsMagickProcessor</a></td>
+    <td><a href="manual/2.2/processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a></td>
     <td class="bg-success">&check;</td>
     <td class="bg-success">&check;</td>
     <td class="bg-success">RGB, 8-bit, baseline, line-interlaced, plane-interlaced</td>
@@ -275,7 +282,7 @@ landing page. A list of output formats supported <em>for a given source format</
 
 <hr>
 
-<h3 id="Compatibility">Resolver Compatibility</h3>
+<h2 id="Compatibility">Resolver Compatibility</h2>
 
 <table class="table table-striped table-bordered">
   <tr>
@@ -338,7 +345,7 @@ landing page. A list of output formats supported <em>for a given source format</
 
 <hr>
 
-<h3 id="Java2dProcessor">Java2dProcessor</h3>
+<h2 id="Java2dProcessor">Java2dProcessor</h2>
 
 <p>Java2dProcessor uses the Java ImageIO framework and Java 2D API to load and process images in a native-Java way. This is a good processor to get started with as it has no external dependencies and works out-of-the-JAR.</p>
 
@@ -350,7 +357,7 @@ landing page. A list of output formats supported <em>for a given source format</
 
 <hr>
 
-<h3 id="GraphicsMagickProcessor">GraphicsMagickProcessor</h3>
+<h2 id="GraphicsMagickProcessor">GraphicsMagickProcessor</h2>
 
 <p>GraphicsMagickProcessor uses <a href="http://im4java.sourceforge.net">im4java</a> to fork out to the <a href="http://www.graphicsmagick.org">GraphicsMagick</a> executable
 (<span class="filename">gm</span>). As such, GraphicsMagick must be installed.</p>
@@ -363,7 +370,7 @@ landing page. A list of output formats supported <em>for a given source format</
 
 <hr>
 
-<h3 id="ImageMagickProcessor">ImageMagickProcessor</h3>
+<h2 id="ImageMagickProcessor">ImageMagickProcessor</h2>
 
 <p>ImageMagickProcessor, like <a href="#GraphicsMagickProcessor">GraphicsMagickProcessor</a>, uses
 <a href="http://im4java.sourceforge.net">im4java</a> to wrap <a href="http://www.imagemagick.org/">ImageMagick</a> commands. As such, ImageMagick must be installed.</p>
@@ -377,7 +384,7 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 
 <hr>
 
-<h3 id="JaiProcessor">JaiProcessor</h3>
+<h2 id="JaiProcessor">JaiProcessor</h2>
 
 <p>Java Advanced Imaging (JAI) is a sophisticated image processing library developed in the 2000s by Sun. It offers several advantages over Java 2D: a pull-based rendering pipeline that can reduce memory usage, and efficient region-of-interest decoding with some formats.</p>
 
@@ -387,7 +394,7 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 
 <hr>
 
-<h3 id="KakaduProcessor">KakaduProcessor</h3>
+<h2 id="KakaduProcessor">KakaduProcessor</h2>
 
 <p>KakaduProcessor uses the <span class="filename">kdu_expand</span> and <span class="filename">kdu_jp2info</span> binaries from the
 <a href="http://www.kakadusoftware.com">Kakadu</a> SDK to efficiently decode JPEG2000 source images. This processor is capable of performing well even with large JP2s. Kakadu is extensively SIMD-accelerated and will make full use of all available CPU cores.</p>
@@ -400,7 +407,7 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 
 <hr>
 
-<h3 id="OpenJpegProcessor">OpenJpegProcessor</h3>
+<h2 id="OpenJpegProcessor">OpenJpegProcessor</h2>
 
 <p>OpenJpegProcessor uses the <span class="filename">opj_decompress</span> and <span class="filename">opj_dump</span> tools from the open-source
 <a href="http://www.openjpeg.org">OpenJPEG</a> project to decode JPEG2000 source images.</p>
@@ -411,13 +418,13 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 
 <hr>
 
-<h3 id="FfmpegProcessor">FfmpegProcessor</h3>
+<h2 id="FfmpegProcessor">FfmpegProcessor</h2>
 
 <p>FfmpegProcessor uses the <a href="http://www.ffmpeg.org">FFmpeg</a> tool to extract still frames from video files. It can be used for thumbnail generation á la YouTube, as well as for deep zooming of high-resolution still frames.</p>
 
 <p>FfmpegProcessor has been tested with FFmpeg version 2.8. Other versions may or may not work.</p>
 
-<h4>Optional Parameters</h4>
+<h3>Optional Parameters</h3>
 
 <p>FFmpegProcessor supports a <code>time</code> URL query parameter (which is nonstandard and Cantaloupe-specific) which can be used to return a frame at a particular second in the source video. The value of this parameter should be in <code>hh:mm:ss</code> format, like:</p>
 

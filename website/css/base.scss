@@ -31,7 +31,9 @@ h6 { font-size: 1em; }
 
 header {
   border-bottom: 1px solid #e0e0e0;
-  padding-bottom: 1em;
+  margin-bottom: 1.2em;
+  padding-top: 0.8em;
+  padding-bottom: 2em;
   a {
     color: black;
   }
@@ -41,25 +43,14 @@ header {
   }
   img {
     float: left;
-    margin: 0em 1.2em 1em 0;
+    margin: 0em 1.2em 0em 0;
+  }
+  h1 {
+    margin:0;
+    padding:0;
   }
   h1 > small {
     font-size:0.5em;
-  }
-}
-
-/* table of contents */
-
-nav#toc {
-  margin-top: 2em;
-  ul {
-    list-style: none;
-    margin-left: 0px;
-    padding-left: 0px;
-    ul {
-      margin-left:1em;
-      padding-left: 0px;
-    }
   }
 }
 
@@ -86,6 +77,6 @@ figcaption {
   text-align: center;
 }
 
-#openseadragon1.fullpage {
+#openseadragon1 {
   background-color:black;
 }

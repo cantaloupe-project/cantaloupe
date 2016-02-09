@@ -2,19 +2,26 @@
 layout: default
 ---
 
-<h2>Endpoints</h2>
+<ol class="breadcrumb">
+  <li><a href="">Home</a></li>
+  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
+  <li><a href="{{ site.baseurl }}/manual/2.2/">2.2</a></li>
+  <li class="active">Endpoints</li>
+</ol>
 
-<h3 id="IIIFImageAPI1">IIIF Image API 1.x</h3>
+<h1>Endpoints</h1>
 
-<h4>Location</h4>
+<h2 id="IIIFImageAPI1">IIIF Image API 1.x</h2>
+
+<h3>Location</h3>
 
 <p>This endpoint is available at <span class="filename">/iiif/1</span>.</p>
 
-<h4>Compliance</h4>
+<h3>Compliance</h3>
 
 <p>Cantaloupe implements version 1.1 of this API, for compatibility with all 1.x clients. Compliance level is dynamically computed and declared on a per-processor basis. Most processors are "Level 2"-compliant.</p>
 
-<h4>Information Response Notes</h4>
+<h3>Information Response Notes</h3>
 
 <dl>
   <dt><code>tile_width</code> and <code>tile_height</code></dt>
@@ -30,23 +37,23 @@ layout: default
   <dd>Depends on the qualities supported by the processor assigned to the format of the source image.</dd>
 </dl>
 
-<h4>Enabling/Disabling</h4>
+<h3>Enabling/Disabling</h3>
 
-<p>This endpoint can be enabled or disabled by setting <code>endpoint.iiif.1.enabled</code> to <code>true</code> or <code>false</code> in the <a href="getting-started.html#Configuration">configuration file</a>.</p>
+<p>This endpoint can be enabled or disabled by setting <code>endpoint.iiif.1.enabled</code> to <code>true</code> or <code>false</code> in the configuration file.</p>
 
 <hr>
 
-<h3 id="IIIFImageAPI2">IIIF Image API 2.x</h3>
+<h2 id="IIIFImageAPI2">IIIF Image API 2.x</h2>
 
-<h4>Location</h4>
+<h3>Location</h3>
 
 <p>This endpoint is available at <span class="filename">/iiif/2</span>.</p>
 
-<h4>Compliance</h4>
+<h3>Compliance</h3>
 
 <p>Cantaloupe implements version 2.0 of this API, for compatibility with all 2.0 clients. Compliance level is dynamically computed and declared on a per-processor basis. Most processors are "Level 2"-compliant.</p>
 
-<h4>Information Response Notes</h4>
+<h3>Information Response Notes</h3>
 
 <dl>
   <dt><code>sizes</code></dt>
@@ -68,7 +75,7 @@ layout: default
   <dd>See the <a href="#Service%20Profile">Service Profile</a> section.</dd>
 </dl>
 
-<h5 id="Service Profile">Service Profile</h5>
+<h4 id="Service Profile">Service Profile</h4>
 
 <p>Cantaloupe supports an optional <a href="http://iiif.io/api/annex/services/">service profile</a> in information responses. The <a href="delegate-script.html">delegate script</a> merely needs to implement the <code>get_iiif2_service()</code> method. An example implementation of the <a href="http://iiif.io/api/annex/services/#physical-dimensions">Physical Dimensions</a> service follows:</p>
 
@@ -92,6 +99,6 @@ module Cantaloupe
 end
 {% endhighlight %}
 
-<h4>Enabling/Disabling</h4>
+<h3>Enabling/Disabling</h3>
 
-<p>This endpoint can be enabled or disabled by setting <code>endpoint.iiif.2.enabled</code> to <code>true</code> or <code>false</code> in the <a href="getting-started.html#Configuration">configuration file</a>.</p>
+<p>This endpoint can be enabled or disabled by setting <code>endpoint.iiif.2.enabled</code> to <code>true</code> or <code>false</code> in the configuration file.</p>

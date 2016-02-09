@@ -2,7 +2,14 @@
 layout: default
 ---
 
-<h2>Resolvers</h2>
+<ol class="breadcrumb">
+  <li><a href="">Home</a></li>
+  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
+  <li><a href="{{ site.baseurl }}/manual/2.2/">2.2</a></li>
+  <li class="active">Resolvers</li>
+</ol>
+
+<h1>Resolvers</h1>
 
 <p>Resolvers locate a source image based on the image identifier in a request URL. In programmer-speak, they take in an identifier and return a source object from which the corresponding image can be read by a <a href="processors.html">processor</a>.</p>
 
@@ -10,11 +17,11 @@ layout: default
 
 <p>The resolution process can be configured to be <a href="#Static%20Resolver">static</a>&mdash;with all requests using the same resolver&mdash;or <a href="#Dynamic%20Resolvers">dynamic</a>, with images being served from different resolvers depending on their identifier.</p>
 
-<h3 id="Static Resolver">Static Resolver</h3>
+<h2 id="Static Resolver">Static Resolver</h2>
 
 <p>When the <code>resolver.static</code> configuration key is set to the name of a resolver, Cantaloupe will use that resolver for all requests. This is simple and should work in most scenarios.</p>
 
-<h3 id="Dynamic Resolvers">Dynamic Resolvers</h3>
+<h2 id="Dynamic Resolvers">Dynamic Resolvers</h2>
 
 <p>When a static resolver is not flexible enough, it is also possible to serve images from different sources simultaneously. For example, you may have some images stored on a filesystem, and others stored on Amazon S3. <em>If you can differentiate their sources based on their identifier in code</em>&mdash;either by analyzing the identifier string, or performing some kind of service request&mdash;you can use the <a href="delegate-script.html">delegate script</a> mechanism to write a simple Ruby method to tell Cantaloupe which resolver to use for a given request.</p>
 
@@ -33,7 +40,7 @@ end
 
 <p>See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script.</p>
 
-<h3 id="FilesystemResolver">FilesystemResolver</h3>
+<h2 id="FilesystemResolver">FilesystemResolver</h2>
 
 <p>FilesystemResolver maps a URL identifier to a filesystem path, for retrieving images on a local or attached filesystem. In addition to being the most compatible resolver, <strong>this is also the most efficient resolver</strong> and may or may not be the only option for serving very large source images.</p>
 
@@ -41,7 +48,7 @@ end
 
 <p>FilesystemResolver supports two distinct lookup strategies, defined by the <code>FilesystemResolver.lookup_strategy</code> configuration option.</p>
 
-<h4>BasicLookupStrategy</h4>
+<h3>BasicLookupStrategy</h3>
 
 <p>BasicLookupStrategy locates images by concatenating a pre-defined path prefix and/or suffix. For example, with the following configuration options set:</p>
 
@@ -58,7 +65,7 @@ FilesystemResolver.BasicLookupStrategy.path_suffix =
 
 <div class="alert alert-danger">Note: it is dangerous to <strong>not</strong> use <code>path_prefix</code>. The shallower the path, the more of the filesystem that will be exposed.</div>
 
-<h4 id="FilesystemResolverScriptLookupStrategy">ScriptLookupStrategy</h4>
+<h3 id="FilesystemResolverScriptLookupStrategy">ScriptLookupStrategy</h3>
 
 <p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple filesystems, or perhaps your identifiers are opaque and you need to perform a database or web service request to locate the corresponding images. With this lookup strategy, you can tell FilesystemResolver to invoke a method in your <a href="delegate-script.html">delegate script</a> and capture the pathname it returns.</p>
 
@@ -90,7 +97,7 @@ end
 
 <hr>
 
-<h3 id="HttpResolver">HttpResolver</h3>
+<h2 id="HttpResolver">HttpResolver</h2>
 
 <p>HttpResolver maps a URL identifier to an HTTP or HTTPS resource, for retrieving images from a web server.</p>
 
@@ -98,7 +105,7 @@ end
 
 <p>HttpResolver supports two distinct lookup strategies, defined by the <code>HttpResolver.lookup_strategy</code> configuration option.</p>
 
-<h4>BasicLookupStrategy</h4>
+<h3>BasicLookupStrategy</h3>
 
 <p>BasicLookupStrategy locates images by concatenating a pre-defined URL prefix and/or suffix. For example, with the following configuration options set:</p>
 
@@ -111,7 +118,7 @@ HttpResolver.url_suffix =
 <p>An identifier of <code>image.jpg</code> in the URL will resolve to
 <span class="filename">http://example.org/images/image.jpg</span>.
 
-<h4>ScriptLookupStrategy</h4>
+<h3>ScriptLookupStrategy</h3>
 
 <p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple URLs, or perhaps your identifiers are opaque and you need to run a database or web service request to locate them.  With this lookup strategy, you can tell FilesystemResolver to invoke a method in your <a href="delegate-script.html">delegate script</a> and capture the URL it returns.</p>
 
@@ -119,7 +126,7 @@ HttpResolver.url_suffix =
 
 <hr>
 
-<h3 id="JdbcResolver">JdbcResolver</h3>
+<h2 id="JdbcResolver">JdbcResolver</h2>
 
 <p>JdbcResolver maps a URL identifier to an RDBMS BLOB field, for retrieving images from a relational database.</p>
 
@@ -141,7 +148,7 @@ jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre
   <li><a href="#JdbcResolverBlobSQL">The SQL command that retrieves the BLOB corresponding to that value</a></li>
 </ol>
 
-<h4 id="JdbcResolverIdentifierFunction">Database Identifier Retrieval Function</h4>
+<h3 id="JdbcResolverIdentifierFunction">Database Identifier Retrieval Function</h3>
 
 <p>This JavaScript function takes in an unencoded identifier and returns the corresponding database value of the identifier. For example, the following will work when the identifiers in the URL map directly to values in the database:</p>
 
@@ -163,7 +170,7 @@ JdbcResolver.function.identifier = function getDatabaseIdentifier(url_identifier
 
 <div class="alert alert-info">Note that in properties files, all lines in multi-line strings except the last need to end with a backslash (\).</div>
 
-<h4 id="JdbcResolverMediaTypeFunction">Media Type Retrieval Function</h4>
+<h3 id="JdbcResolverMediaTypeFunction">Media Type Retrieval Function</h3>
 
 <p>This JavaScript function returns a media (MIME) type corresponding to the value returned by the <code><a href="#JdbcResolverIdentifierFunction">getDatabaseIdentifier()</a></code> function. If the media type is stored in the database, this example will return an SQL statement to retrieve it.</p>
 
@@ -177,7 +184,7 @@ JdbcResolver.function.media_type = function getMediaType(identifier) {\
 
 <p>If the URL identifier will <strong>always</strong> have a known, valid image extension, like <span class="filename">.jpg</span>, <span class="filename">.tif</span>, etc., the entire <code>JdbcResolver.function.media_type</code> option can be commented out, and Cantaloupe will infer the media type from the extension.</p>
 
-<h4 id="JdbcResolverBlobSQL">BLOB Retrieval SQL</h4>
+<h3 id="JdbcResolverBlobSQL">BLOB Retrieval SQL</h3>
 
 <p><code>JdbcResolver.lookup_sql</code> is an SQL statement that selects the BLOB corresponding to the value returned by the <code><a href="#JdbcResolverIdentifierFunction">getDatabaseIdentifier()</a></code> function.</p>
 
@@ -189,7 +196,7 @@ JdbcResolver.lookup_sql = SELECT image_blob_column \
 
 <hr>
 
-<h3 id="AmazonS3Resolver">AmazonS3Resolver</h3>
+<h2 id="AmazonS3Resolver">AmazonS3Resolver</h2>
 
 <p>AmazonS3Resolver maps a URL identifier to an Amazon S3 object, for retrieving images from Amazon S3. It can be configured with the following options:</p>
 
@@ -206,11 +213,11 @@ JdbcResolver.lookup_sql = SELECT image_blob_column \
   <dd>The strategy to use to look up images based on their URL identifier. See below.</dd>
 </dl>
 
-<h4>BasicLookupStrategy</h4>
+<h3>BasicLookupStrategy</h3>
 
 <p>BasicLookupStrategy locates images by passing the URL identifier as-is to S3, with no additional configuration necessary or possible.</p>
 
-<h4>ScriptLookupStrategy</h4>
+<h3>ScriptLookupStrategy</h3>
 
 <p>When your URL identifiers don't match your Amazon S3 object keys, ScriptLookupStrategy is available to tell AmazonS3Resolver to capture the object key returned by a method in your <a href="delegate-script.html">delegate script</a>.</p>
 
