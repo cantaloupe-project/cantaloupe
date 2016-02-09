@@ -15,8 +15,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Normalized list of image transform operations along with an image identifier
- * and desired output format.
+ * <p>Normalized list of {@link Operation image transform operations}
+ * corresponding to an image identified by its {@link Identifier}, along with
+ * an {@link OutputFormat} in which the processed image is to be written.</p>
+ *
+ * <p>Endpoints translate request parameters into instances of this class, in
+ * order to pass them off into {@link
+ * edu.illinois.library.cantaloupe.processor.Processor processors} and
+ * {@link edu.illinois.library.cantaloupe.cache.Cache caches}.</p>
  */
 public class OperationList implements Comparable<OperationList>,
         Iterable<Operation> {
