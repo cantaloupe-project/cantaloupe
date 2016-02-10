@@ -9,13 +9,13 @@ layout: default
   <li class="active">Caches</li>
 </ol>
 
-<h2>Caches</h2>
+<h1>Caches</h1>
 
 <p>Caches cache generated images in order to spare the computational expense of processing the same image request over and over again. Caches are pluggable, to enable different cache stores.</p>
 
 <p>Server-side caching is highly recommended, as it will tend to greatly reduce load on the server and improve response times for the remaining processing that is left to do. There are other ways of caching on the server, but the Cantaloupe cache is custom-tailored for this application and easy enough to set up.</p>
 
-<h3>Enabling</h3>
+<h2>Enabling</h2>
 
 <p>Caching is disabled by default. To enable it, set <code>cache.server</code> to the name of a cache, such as <a href="#FilesystemCache">FilesystemCache</a>.</p>
 
@@ -26,23 +26,6 @@ layout: default
   <dt>Aggressive (<code>cache.server.resolve_first = false</code>)</dt>
   <dd>Cached representations are returned immediately, if available. This is faster, but it can lead to inconsistency between the cache and the underlying source image storage.</dd>
 </dl>
-
-<h3 id="Purging">Purging</h3>
-
-<p>To purge expired images only, start Cantaloupe with the <code>-Dcantaloupe.cache.purge_expired</code> option.</p>
-
-<p>To purge all images, start Cantaloupe with the <code>-Dcantaloupe.cache.purge</code> option.</p>
-
-<p>Either of these can be run in a separate Cantaloupe process while the main instance remains running.</p>
-
-<h3>Notes</h3>
-
-<ul>
-  <li>Currently, requests for full-sized, unaltered source images are not cached, and are instead streamed through with no processing.</li>
-  <li>Cantaloupe does not cache entire IIIF information response representations&mdash;only image dimensions, which are the only expensive part to generate. This means it is possible to change other configuration options that would affect the contents of information responses without having to purge the cache.</li>
-  <li>The cache is shared across API endpoints. Requests for the same image from different endpoints will return the same cached image.</li>
-  <li>To avoid corruption, simultaneous instances of Cantaloupe should not be pointed at the same cache.</li>
-</ul>
 
 <h3 id="FilesystemCache">FilesystemCache</h3>
 
@@ -81,6 +64,8 @@ layout: default
     </ul>
   </li>
 </ul>
+
+<div class="alert alert-danger">To avoid corruption, simultaneous instances of Cantaloupe should not be pointed at this cache.</div>
 
 <h3 id="JdbcCache">JdbcCache</h3>
 
@@ -121,3 +106,27 @@ CREATE TABLE IF NOT EXISTS info (
 <div class="alert alert-info">Note: JdbcCache has been tested with PostgreSQL 9.4 and H2 1.4. Other databases may work, but are untested.</div>
 
 <div class="alert alert-warning">Note: JdbcCache is inefficient in that it buffers generated images in memory before flushing them to the database. (This is currently unavoidable&mdash;the JDBC API couples poorly with the Cantaloupe cache API.)</div>
+
+<h2 id="Cache Maintenance">Cache Maintenance</h2>
+
+<p>Because expired cached items are not deleted until they are requested again, there is likely to be a certain amount of expired content in the cache at any given time. The main drawback to having expired content in the cache is space consumption, and this can be dealt with manually or automatically.</p>
+
+<h3 id="Manual Cache Maintenance">Manual</h3>
+
+<p>To purge expired images only, start Cantaloupe with the <code>-Dcantaloupe.cache.purge_expired</code> option.</p>
+
+<p>To purge all images, start Cantaloupe with the <code>-Dcantaloupe.cache.purge</code> option.</p>
+
+<p>Either of these can be run in a separate Cantaloupe process while the main instance remains running.</p>
+
+<h3 id="Automatic Cache Maintenance">Automatic</h3>
+
+<p>Since version 2.2, a "cache worker" is available that will periodically purge expired items from the cache in a low-priority background thread. (See the <code>cache.server.worker.*</code> configuration options.) This has the same effect as doing it manually, as described in the previous section.</p>
+
+<h2 id="Notes on Caching">Notes on Caching</h2>
+
+<ul>
+  <li>Requests for full-sized, unaltered source images are not cached, and are instead streamed through with no processing.</li>
+  <li>Cantaloupe does not cache entire IIIF information response representations&mdash;only image dimensions, which are the only expensive part to generate. This means it is possible to change other configuration options that would affect the contents of information responses without having to purge the cache.</li>
+  <li>The cache is shared across API endpoints. Requests for the same image from different endpoints will return the same cached image.</li>
+</ul>
