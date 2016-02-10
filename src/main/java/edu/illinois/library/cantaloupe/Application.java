@@ -7,6 +7,7 @@ import ch.qos.logback.core.util.StatusPrinter;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.cache.CacheWorker;
 import edu.illinois.library.cantaloupe.logging.AccessLogService;
 import edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute;
 import org.apache.commons.configuration.Configuration;
@@ -229,6 +230,12 @@ public class Application {
         } else if (System.getProperty(PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT) != null) {
             purgeExpiredFromCacheAtLaunch();
         } else {
+            // If the cache worker is enabled, run it in a low-priority
+            // background thread.
+            if (getConfiguration().getBoolean(CacheWorker.ENABLED_CONFIG_KEY)) {
+                // Run in background with a 15-second delay to reduce startup load.
+                CacheWorker.runInBackground(15);
+            }
             startServer();
         }
     }

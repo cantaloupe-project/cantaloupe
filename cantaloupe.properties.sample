@@ -366,6 +366,13 @@ cache.server.purge_missing = false
 # always true.)
 cache.server.resolve_first = false
 
+# !! Enables the cache worker, which periodically purges expired cache
+# items in a low-priority background thread.
+cache.server.worker.enabled = false
+
+# The cache worker will wait this many seconds between purgings.
+cache.server.worker.interval = 86400
+
 #----------------------------------------
 # FilesystemCache
 #----------------------------------------
