@@ -20,7 +20,7 @@ public class ProcessorFactoryTest {
 
     @Test
     public void testGetAllProcessors() {
-        assertEquals(7, ProcessorFactory.getAllProcessors().size());
+        assertEquals(8, ProcessorFactory.getAllProcessors().size());
     }
 
     /**
