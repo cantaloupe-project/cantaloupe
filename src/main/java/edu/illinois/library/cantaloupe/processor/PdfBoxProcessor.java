@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.ConfigurationException;
+import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -170,7 +171,9 @@ class PdfBoxProcessor extends AbstractProcessor
                                         final OutputStream outputStream)
             throws IOException, ProcessorException {
         for (Operation op : opList) {
-            if (op instanceof Scale) {
+            if (op instanceof Crop) {
+                image = Java2dUtil.cropImage(image, (Crop) op);
+            } else if (op instanceof Scale) {
                 final boolean highQuality = Application.getConfiguration().
                         getString(JAVA2D_SCALE_MODE_CONFIG_KEY, "speed").
                         equals("quality");
