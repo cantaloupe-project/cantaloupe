@@ -33,6 +33,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Processor using the <a href="https://pdfbox.apache.org">Apache PDFBox</a>
+ * library to render source PDFs.
+ */
 class PdfBoxProcessor extends AbstractProcessor
         implements FileProcessor, StreamProcessor {
 
@@ -125,6 +129,9 @@ class PdfBoxProcessor extends AbstractProcessor
     @Override
     public Dimension getSize() throws ProcessorException {
         try {
+            // This is a very inefficient method of getting the size. But,
+            // we can cache the image in an ivar to avoid having to load it
+            // again in process().
             BufferedImage image = readImage();
             return new Dimension(image.getWidth(), image.getHeight());
         } catch (IOException e) {
@@ -204,8 +211,8 @@ class PdfBoxProcessor extends AbstractProcessor
             final float dpi = Application.getConfiguration().
                     getFloat(DPI_CONFIG_KEY, 72);
             InputStream inputStream = null;
+            PDDocument doc = null;
             try {
-                PDDocument doc;
                 if (sourceFile != null) {
                     doc = PDDocument.load(sourceFile);
                 } else {
@@ -215,6 +222,9 @@ class PdfBoxProcessor extends AbstractProcessor
                 final PDFRenderer renderer = new PDFRenderer(doc);
                 sourceImage = renderer.renderImageWithDPI(0, dpi);
             } finally {
+                if (doc != null) {
+                    doc.close();
+                }
                 if (inputStream != null) {
                     inputStream.close();
                 }
