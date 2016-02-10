@@ -54,12 +54,8 @@ class PdfBoxProcessor extends AbstractProcessor
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
             SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
 
+    private BufferedImage fullImage;
     private File sourceFile;
-
-    /** Caches the rasterized PDF, as it will need to be generated in both
-     * process() and getSize(). */
-    private BufferedImage sourceImage;
-
     private StreamSource streamSource;
 
     static {
@@ -129,11 +125,14 @@ class PdfBoxProcessor extends AbstractProcessor
     @Override
     public Dimension getSize() throws ProcessorException {
         try {
-            // This is a very inefficient method of getting the size. But,
-            // we can cache the image in an ivar to avoid having to load it
-            // again in process().
-            BufferedImage image = readImage();
-            return new Dimension(image.getWidth(), image.getHeight());
+            if (fullImage == null) {
+                // This is a very inefficient method of getting the size.
+                // Unfortunately, it's apparently the only choice PDFBox offers.
+                // At least cache it in an ivar to avoid having to load it
+                // multiple times.
+                fullImage = readImage();
+            }
+            return new Dimension(fullImage.getWidth(), fullImage.getHeight());
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
@@ -160,13 +159,26 @@ class PdfBoxProcessor extends AbstractProcessor
     }
 
     @Override
-    public void process(OperationList ops,
+    public void process(OperationList opList,
                         Dimension sourceSize,
                         OutputStream outputStream) throws ProcessorException {
         try {
-            final BufferedImage image = readImage();
-            postProcessUsingJava2d(image, ops, new ReductionFactor(),
-                    outputStream);
+            // If the op list contains a scale operation, see if we can use
+            // a reduction factor in order to use a scale-appropriate
+            // rasterization DPI.
+            Scale scale = new Scale();
+            scale.setMode(Scale.Mode.FULL);
+            for (Operation op : opList) {
+                if (op instanceof Scale) {
+                    scale = (Scale) op;
+                    break;
+                }
+            }
+            float pct = scale.getResultingScale(getSize());
+            final ReductionFactor rf = ReductionFactor.forScale(pct);
+
+            final BufferedImage image = readImage(rf.factor);
+            postProcessUsingJava2d(image, opList, rf, outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
@@ -207,30 +219,51 @@ class PdfBoxProcessor extends AbstractProcessor
     }
 
     private BufferedImage readImage() throws IOException {
-        if (sourceImage == null) {
-            final float dpi = Application.getConfiguration().
-                    getFloat(DPI_CONFIG_KEY, 72);
-            InputStream inputStream = null;
-            PDDocument doc = null;
-            try {
-                if (sourceFile != null) {
-                    doc = PDDocument.load(sourceFile);
-                } else {
-                    inputStream = streamSource.newInputStream();
-                    doc = PDDocument.load(inputStream);
-                }
-                final PDFRenderer renderer = new PDFRenderer(doc);
-                sourceImage = renderer.renderImageWithDPI(0, dpi);
-            } finally {
-                if (doc != null) {
-                    doc.close();
-                }
-                if (inputStream != null) {
-                    inputStream.close();
-                }
+        return readImage(0);
+    }
+
+    /**
+     * @param reductionFactor Scale factor by which to reduce the image (or
+     *                        enlarge it if negative).
+     * @return Rasterized first page of the PDF.
+     * @throws IOException
+     */
+    private BufferedImage readImage(int reductionFactor) throws IOException {
+        float dpi = getDpi(reductionFactor);
+        logger.debug("readImage(): using a DPI of {} ({}x reduction factor)",
+                Math.round(dpi), reductionFactor);
+
+        InputStream inputStream = null;
+        PDDocument doc = null;
+        try {
+            if (sourceFile != null) {
+                doc = PDDocument.load(sourceFile);
+            } else {
+                inputStream = streamSource.newInputStream();
+                doc = PDDocument.load(inputStream);
+            }
+            return new PDFRenderer(doc).renderImageWithDPI(0, dpi);
+        } finally {
+            if (doc != null) {
+                doc.close();
+            }
+            if (inputStream != null) {
+                inputStream.close();
             }
         }
-        return sourceImage;
+    }
+
+    private float getDpi(int reductionFactor) {
+        float dpi = Application.getConfiguration().getFloat(DPI_CONFIG_KEY, 72);
+        // Decrease the DPI if the reduction factor is positive.
+        for (int i = 0; i < reductionFactor; i++) {
+            dpi /= 2f;
+        }
+        // Increase the DPI if the reduction factor is negative.
+        for (int i = 0; i > reductionFactor; i--) {
+            dpi *= 2f;
+        }
+        return dpi;
     }
 
     @Override

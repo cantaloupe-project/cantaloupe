@@ -471,8 +471,8 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 
 <h2 id="PdfBoxProcessor">PdfBoxProcessor</h2>
 
-<p>PdfBoxProcessor uses the <a href="https://pdfbox.apache.org">Apache PDFBox</a> library to read and rasterize PDF files. This is a pure-Java library that is bundled in, and has no external dependencies.</p>
+<p>PdfBoxProcessor uses the <a href="https://pdfbox.apache.org">Apache PDFBox</a> library to read and rasterize PDF files. This is a pure-Java library that is bundled in and has no external dependencies.</p>
 
 <p>PDF is a vector format. PdfBoxProcessor will convert it to a raster (pixel) image and use a Java 2D pipeline to transform it according to the request parameters.</p>
 
-<p>The size of the generated raster image is configurable with the <code>PdfBoxProcessor.dpi</code> configuration option. Smaller values result in better efficiency, whereas larger values result in better detail.</p>
+<p>The size of the "default" raster image (corresponding to a scale of one) is configurable with the <code>PdfBoxProcessor.dpi</code> configuration option. When a request asks for a scale of &le; 50% or &ge; 200%, a fraction or multiple of this will be used, respectively, in order to improve efficiency at small scales, and detail at large scales.</p>
