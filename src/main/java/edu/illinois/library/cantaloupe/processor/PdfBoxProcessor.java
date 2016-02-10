@@ -174,7 +174,7 @@ class PdfBoxProcessor extends AbstractProcessor
                     break;
                 }
             }
-            float pct = scale.getResultingScale(getSize());
+            float pct = scale.getResultingScale(sourceSize);
             final ReductionFactor rf = ReductionFactor.forScale(pct);
 
             final BufferedImage image = readImage(rf.factor);
