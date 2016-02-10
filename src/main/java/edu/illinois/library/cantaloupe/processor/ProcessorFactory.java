@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,15 +25,15 @@ public abstract class ProcessorFactory {
             getLogger(ProcessorFactory.class);
 
     public static Set<Processor> getAllProcessors() { // TODO: return classes
-        Set<Processor> processors = new HashSet<>();
-        processors.add(new FfmpegProcessor());
-        processors.add(new GraphicsMagickProcessor());
-        processors.add(new ImageMagickProcessor());
-        processors.add(new JaiProcessor());
-        processors.add(new Java2dProcessor());
-        processors.add(new KakaduProcessor());
-        processors.add(new OpenJpegProcessor());
-        return processors;
+        return new HashSet<Processor>(Arrays.asList(
+                new FfmpegProcessor(),
+                new GraphicsMagickProcessor(),
+                new ImageMagickProcessor(),
+                new JaiProcessor(),
+                new Java2dProcessor(),
+                new KakaduProcessor(),
+                new OpenJpegProcessor(),
+                new PdfBoxProcessor()));
     }
 
     /**

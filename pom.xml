@@ -121,6 +121,12 @@
       <artifactId>commons-lang3</artifactId>
       <version>3.4</version>
     </dependency>
+    <!-- Provides PDFBox for PdfBoxProcessor -->
+    <dependency>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>pdfbox</artifactId>
+      <version>2.0.0-RC3</version>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

@@ -220,8 +220,8 @@ AmazonS3Resolver.lookup_strategy = BasicLookupStrategy
 
 # Image processors to use for various source formats. Available values are
 # `Java2dProcessor`, `GraphicsMagickProcessor`, `ImageMagickProcessor`,
-# `KakaduProcessor`, `OpenJpegProcessor`, ``JaiProcessor`, and
-# `FfmpegProcessor`.
+# `KakaduProcessor`, `OpenJpegProcessor`, ``JaiProcessor`, `PdfBoxProcessor`,
+# and `FfmpegProcessor`.
 
 # These extension-specific definitions are optional.
 processor.avi = FfmpegProcessor
@@ -230,6 +230,7 @@ processor.avi = FfmpegProcessor
 #processor.jp2 = OpenJpegProcessor
 processor.mov = FfmpegProcessor
 processor.mp4 = FfmpegProcessor
+processor.pdf = PdfBoxProcessor
 processor.webm = FfmpegProcessor
 
 # Fall back to this processor for any formats not assigned above.
@@ -311,6 +312,18 @@ OpenJpegProcessor.post_processor = java2d
 # Available values are `quality` and `speed`. `speed` is ~10-20% faster at
 # the expense of visible aliasing at small scales.
 OpenJpegProcessor.post_processor.java2d.scale_mode = speed
+
+#----------------------------------------
+# PdfBoxProcessor
+#----------------------------------------
+
+# Controls the resolution of the PDF rasterization. Smaller values result
+# in better efficiency but less detail.
+PdfBoxProcessor.dpi = 72
+
+# Available values are `quality` and `speed`. `speed` is ~10-20% faster at
+# the expense of visible aliasing at small scales.
+PdfBoxProcessor.post_processor.java2d.scale_mode = speed
 
 ###########################################################################
 # CLIENT-SIDE CACHING
