@@ -24,7 +24,7 @@ public abstract class ProcessorFactory {
     private static Logger logger = LoggerFactory.
             getLogger(ProcessorFactory.class);
 
-    public static Set<Processor> getAllProcessors() { // TODO: return classes
+    public static Set<Processor> getAllProcessors() {
         return new HashSet<Processor>(Arrays.asList(
                 new FfmpegProcessor(),
                 new GraphicsMagickProcessor(),
