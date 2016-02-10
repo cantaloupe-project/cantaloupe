@@ -18,6 +18,15 @@ public class ReductionFactorTest {
         assertEquals(new ReductionFactor(5), ReductionFactor.forScale(0.03125f, 5));
         // max
         assertEquals(new ReductionFactor(1), ReductionFactor.forScale(0.2f, 1));
+
+        // negative
+        assertEquals(new ReductionFactor(0), ReductionFactor.forScale(1.5f, 5));
+        assertEquals(new ReductionFactor(-1), ReductionFactor.forScale(2f, 5));
+        assertEquals(new ReductionFactor(-1), ReductionFactor.forScale(2.25f, 5));
+        assertEquals(new ReductionFactor(-1), ReductionFactor.forScale(3.25f, 5));
+        assertEquals(new ReductionFactor(-2), ReductionFactor.forScale(4.f, 5));
+        assertEquals(new ReductionFactor(-2), ReductionFactor.forScale(7f, 5));
+        assertEquals(new ReductionFactor(-3), ReductionFactor.forScale(8f, 5));
     }
 
     @Test

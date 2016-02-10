@@ -13,20 +13,53 @@ class ReductionFactor {
     /**
      * Factory method.
      *
-     * @param scalePercent Scale percentage between 0 and 1
-     * @param maxFactor Maximum factor to return.
+     * @param scalePercent Scale percentage greater than 0
+     * @return Instance corresponding to the given scale.
+     */
+    public static ReductionFactor forScale(final double scalePercent) {
+        return ReductionFactor.forScale(scalePercent, 0);
+    }
+
+    /**
+     * Factory method.
+     *
+     * @param scalePercent Scale percentage greater than 0
      * @return Instance corresponding to the given scale.
      */
     public static ReductionFactor forScale(final double scalePercent,
                                            int maxFactor) {
+        return ReductionFactor.forScale(scalePercent, maxFactor, 0);
+    }
+
+    /**
+     * Factory method.
+     *
+     * @param scalePercent Scale percentage greater than 0
+     * @param maxFactor Maximum factor to return.
+     * @return Instance corresponding to the given scale.
+     */
+    public static ReductionFactor forScale(final double scalePercent,
+                                           int maxFactor, int minFactor) {
         if (maxFactor == 0) {
             maxFactor = 9999;
         }
-        short factor = 0;
-        double nextPct = 0.5f;
-        while (scalePercent <= nextPct && factor < maxFactor) {
-            nextPct /= 2.0f;
-            factor++;
+        if (minFactor == 0) {
+            minFactor = -9999;
+        }
+        int factor = 0;
+
+        if (scalePercent < 1) {
+            double nextPct = 0.5f;
+            while (scalePercent <= nextPct && factor < maxFactor) {
+                nextPct /= 2f;
+                factor++;
+            }
+        } else if (scalePercent > 1) {
+            double nextPct = 2f;
+            while (scalePercent >= nextPct && factor > minFactor) {
+                nextPct *= 2f;
+                factor--;
+            }
         }
         return new ReductionFactor(factor);
     }
