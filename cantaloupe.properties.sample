@@ -66,8 +66,8 @@ watermark.enabled = false
 # Absolute path of the watermark image, which must be a .png file.
 watermark.image = /path/to/watermark.png
 
-# Allowed values: `top left`, `top center`, `top right`, `bottom left`,
-# `bottom center`, `bottom right`, `left center`, `right center`, `center`.
+# Allowed values: `top left`, `top center`, `top right`, `left center`,
+# `center`, `right center`, `bottom left`, `bottom center`, `bottom right`.
 watermark.position = bottom right
 
 # Margin between the watermark and the edge of the image, in pixels.

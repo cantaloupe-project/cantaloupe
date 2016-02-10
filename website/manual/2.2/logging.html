@@ -27,23 +27,23 @@ layout: default
 
 <p>Appenders direct log messages to various destinations, like files and/or the console. (The default configuration file logs only to the console.) There are several available appenders, which can be enabled or disabled in any combination.</p>
 
-<h5>ConsoleAppender</h5>
+<h4>ConsoleAppender</h4>
 
 <p>ConsoleAppender logs to the console. Set the <code>log.application.ConsoleAppender.enabled</code> configuration key to <code>true</code> or <code>false</code> to enable or disable.</p>
 
-<h5>FileAppender</h5>
+<h4>FileAppender</h4>
 
 <p>FileAppender logs to a single file. Use the <code>log.application.FileAppender.enabled</code> key to enable or disable, and the <code>log.application.FileAppender.pathname</code> key to set the absolute pathname of the log file.</p>
 
 <div class="alert alert-warning">Note: log files can become very large with this appender.</div>
 
-<h5>RollingFileAppender</h5>
+<h4>RollingFileAppender</h4>
 
 <p>RollingFileAppender logs to a file that rolls over periodically (to avoid creating a single huge file). Use the <code>log.application.RollingFileAppender.enabled</code> key to enable or disable, and the <code>log.application.RollingFileAppender.pathname</code> key to set the absolute pathname of the primary log file.</p>
 
 <p>Currently, the only available rolling policy (<code>log.application.RollingFileAppender.policy</code>) is <code>TimeBasedRollingPolicy</code>, which rolls over the log file based on the value of <code>log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern</code>. <code>log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history</code> defines how many rolled-over log files will be kept.</p>
 
-<h5>SyslogAppender</h5>
+<h4>SyslogAppender</h4>
 
 <p>SyslogAppender appends log messages to the syslog, managed by syslogd, on a local or remote host.</p>
 

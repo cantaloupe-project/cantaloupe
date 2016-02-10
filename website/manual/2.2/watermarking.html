@@ -13,7 +13,7 @@ layout: default
 
 <p>The watermarking feature overlays an image "watermark" on top of an output image. This can be useful for applying branding, attribution, copyright notices, and so on.</p>
 
-<div class="alert alert-warning">Note: watermarks do not work with the PDF output format. (Since PDF is a vector format, they could be easily removed.)</div>
+<p>Position and inset are configurable. Below, all availble positions are pictured with insets of zero:</p>
 
 <table>
   <tr>
@@ -80,7 +80,7 @@ layout: default
 
 <h2>Watermark Requirements</h2>
 
-<p>The watermark image must be a 24-bit PNG image, either RGB or RGBA. The watermark will be blended into the output image respecting its alpha channel.</p>
+<p>The watermark image must be a 24-bit PNG image, either RGB or RGBA. The watermark will be blended pixel-for-pixel into the output image, respecting its alpha channel.</p>
 
 <p><a href="images/watermark-sample.png">Sample watermark (PNG)</a></p>
 
@@ -96,10 +96,10 @@ layout: default
 
 <h3>Zooming Image Viewers</h3>
 
-<p>Zooming image viewers display a canvas composed of multiple image tiles. When watermarking is enabled, each tile will have a watermark, which may look more or less strange depending on the size of the watermark and the tile size used by the viewer. The image server has no control over this.</p>
+<p>Zooming image viewers display a mosaic of image tiles. When watermarking is enabled, each tile will have a watermark, which may look more or less strange depending on the size of the watermark and the tile size used by the viewer. The image server has no control over this.</p>
 
 <p>One way of getting around this is to set the <code>watermark.output_width_threshold</code> and <code>watermark.output_height_threshold</code> configuration options to values that are slightly larger than the tile size used by the zooming image viewer. This will disable watermarking for zooming image viewer tiles, but enable for it for anything larger. Unfortunately, the tile size used by the viewer may differ depending on the source image, as the recommended tile sizes in <a href="endpoints.html">information responses</a> will vary on a per-image basis.</p>
 
 <h3>Caching</h3>
 
-<p>Watermark parameters (filename, position, inset, etc.) are encoded in cached-image identifiers. When watermark settings change, cached watermarked images will be re-generated automatically. For this reason, it is a good idea to purge the cache after making permanent changes to watermark settings.</p>
+<p>Watermark parameters (filename, position, inset, etc.) are encoded in cached-image identifiers. When watermark settings change, cached watermarked images will be re-generated automatically.</p>
