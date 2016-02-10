@@ -32,6 +32,33 @@ import java.util.TreeMap;
  */
 public class LandingResource extends AbstractResource {
 
+    /**
+     * <p>Processors can't be used in the templates directly, so instances of
+     * this class will proxy for them.</p>
+     *
+     * <p>Velocity requires this class to be public.</p>
+     */
+    public static class ProcessorProxy {
+        private Processor processor;
+
+        public ProcessorProxy(Processor proc) {
+            processor = proc;
+        }
+
+        public String getName() {
+            return processor.getClass().getSimpleName();
+        }
+
+        public boolean supports(SourceFormat sourceFormat) {
+            try {
+                processor.setSourceFormat(sourceFormat);
+                return true;
+            } catch (UnsupportedSourceFormatException e) {
+                return false;
+            }
+        }
+    }
+
     @Override
     protected void doInit() throws ResourceException {
         super.doInit();
@@ -129,16 +156,19 @@ public class LandingResource extends AbstractResource {
         vars.put("videoSourceFormats", videoFormats);
 
         // processors
-        class ProcessorComparator implements Comparator<Processor> {
-            public int compare(Processor o1, Processor o2) {
-                return o1.getClass().getSimpleName().
-                        compareTo(o2.getClass().getSimpleName());
+        class ProcessorProxyComparator implements Comparator<ProcessorProxy> {
+            public int compare(ProcessorProxy o1, ProcessorProxy o2) {
+                return o1.getName().compareTo(o2.getName());
             }
         }
-        List<Processor> sortedProcessors =
-                new ArrayList<>(ProcessorFactory.getAllProcessors());
-        Collections.sort(sortedProcessors, new ProcessorComparator());
-        vars.put("processors", sortedProcessors);
+
+        List<ProcessorProxy> sortedProxies = new ArrayList<>();
+        for (Processor proc : ProcessorFactory.getAllProcessors()) {
+            sortedProxies.add(new ProcessorProxy(proc));
+        }
+
+        Collections.sort(sortedProxies, new ProcessorProxyComparator());
+        vars.put("processors", sortedProxies);
 
         return vars;
     }

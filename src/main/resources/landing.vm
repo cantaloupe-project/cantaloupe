@@ -149,9 +149,9 @@
 
                         #foreach ($processor in $processors)
                             <tr>
-                                <td>$processor.getClass().getSimpleName()</td>
+                                <td>$processor.getName()</td>
                                 #foreach ($sourceFormat in $imageSourceFormats)
-                                    #if ($processor.getAvailableOutputFormats($sourceFormat).size() > 0)
+                                    #if ($processor.supports($sourceFormat))
                                         <td class="text-center success">
                                             <span class="text-success">&check;</span>
                                         </td>
@@ -176,9 +176,9 @@
 
                         #foreach ($processor in $processors)
                             <tr>
-                                <td>$processor.getClass().getSimpleName()</td>
+                                <td>$processor.getName()</td>
                                 #foreach ($sourceFormat in $videoSourceFormats)
-                                    #if ($processor.getAvailableOutputFormats($sourceFormat).size() > 0)
+                                    #if ($processor.supports($sourceFormat))
                                         <td class="text-center success">
                                             <span class="text-success">&check;</span>
                                         </td>
