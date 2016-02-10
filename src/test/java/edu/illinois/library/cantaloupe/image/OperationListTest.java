@@ -303,6 +303,15 @@ public class OperationListTest {
         assertFalse(ops.isNoOp(SourceFormat.JPG));
     }
 
+    @Test
+    public void testIsNoOpWithPdfSourceAndPdfOutputAndWatermark() {
+        // same format
+        ops = new OperationList();
+        ops.setIdentifier(new Identifier("identifier.pdf"));
+        ops.setOutputFormat(OutputFormat.PDF);
+        assertTrue(ops.isNoOp(SourceFormat.PDF));
+    }
+
     /* iterator() */
 
     @Test

@@ -158,7 +158,9 @@ public class OperationList implements Comparable<OperationList>,
             return false;
         }
         for (Operation op : this) {
-            if (!op.isNoOp()) {
+            // Ignore watermarks when the output formats is PDF.
+            if (!op.isNoOp() && !(op instanceof Watermark &&
+                    getOutputFormat().equals(OutputFormat.PDF))) {
                 return false;
             }
         }
