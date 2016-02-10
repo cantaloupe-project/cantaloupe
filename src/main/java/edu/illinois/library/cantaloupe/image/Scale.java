@@ -42,6 +42,40 @@ public class Scale implements Operation {
 
     /**
      * @param fullSize
+     * @return Resulting scale when the scale is applied to the given full
+     * size; or null if the scale mode is {@link Mode#NON_ASPECT_FILL}.
+     */
+    public Float getResultingScale(Dimension fullSize) {
+        Float scale = null;
+        if (this.getPercent() != null) {
+            scale = this.getPercent();
+        } else {
+            switch (this.getMode()) {
+                case FULL:
+                    scale = 1f;
+                    break;
+                case ASPECT_FIT_HEIGHT:
+                    scale = (float) (this.getHeight() /
+                            (double) fullSize.height);
+                    break;
+                case ASPECT_FIT_WIDTH:
+                    scale = (float) (this.getWidth() /
+                            (double) fullSize.width);
+                    break;
+                case ASPECT_FIT_INSIDE:
+                    scale = (float) Math.min(
+                            this.getWidth() / (double) fullSize.width,
+                            this.getHeight() / (double) fullSize.height);
+                    break;
+                case NON_ASPECT_FILL:
+                    break;
+            }
+        }
+        return scale;
+    }
+
+    /**
+     * @param fullSize
      * @return Resulting dimensions when the scale is applied to the given full
      * size.
      */

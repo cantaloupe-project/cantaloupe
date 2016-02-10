@@ -26,8 +26,37 @@ public class ScaleTest {
     }
 
     @Test
-    public void testGetEffectiveSize() {
+    public void testGetResultingScale() {
         final Dimension fullSize = new Dimension(300, 200);
+        final float fudge = 0.0000001f;
+
+        scale.setMode(Scale.Mode.FULL);
+        assertEquals(1f, scale.getResultingScale(fullSize), fudge);
+        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        scale.setWidth(200);
+        scale.setHeight(100);
+        assertEquals(0.5f, scale.getResultingScale(fullSize), fudge);
+        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        scale.setWidth(200);
+        scale.setHeight(100);
+        assertEquals(0.6666667f, scale.getResultingScale(fullSize), fudge);
+        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        scale.setWidth(200);
+        scale.setHeight(100);
+        assertEquals(0.5f, scale.getResultingScale(fullSize), fudge);
+        scale.setMode(Scale.Mode.NON_ASPECT_FILL);
+        scale.setWidth(200);
+        scale.setHeight(100);
+        assertNull(scale.getResultingScale(fullSize));
+        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        scale.setPercent(0.5f);
+        assertEquals(0.5f, scale.getResultingScale(fullSize), fudge);
+    }
+
+    @Test
+    public void testGetResultingSize() {
+        final Dimension fullSize = new Dimension(300, 200);
+
         scale.setMode(Scale.Mode.FULL);
         assertEquals(fullSize, scale.getResultingSize(fullSize));
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
