@@ -233,7 +233,7 @@ public class Application {
             // If the cache worker is enabled, run it in a low-priority
             // background thread.
             if (getConfiguration().getBoolean(CacheWorker.ENABLED_CONFIG_KEY)) {
-                // Run in background with a 15-second delay to reduce startup load.
+                // Add a 15-second startup delay to reduce load.
                 CacheWorker.runInBackground(15);
             }
             startServer();

@@ -5,6 +5,8 @@ import org.apache.commons.configuration.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * Purges expired items from the cache.
  */
@@ -18,6 +20,8 @@ public class CacheWorker implements Runnable {
     public static final String INTERVAL_CONFIG_KEY =
             "cache.server.worker.interval";
 
+    private static AtomicBoolean running = new AtomicBoolean(false);
+
     private int startupDelay = 0;
 
     /**
@@ -25,13 +29,16 @@ public class CacheWorker implements Runnable {
      *
      * @param delay Number of seconds to wait before running.
      */
-    public static void runInBackground(int delay) {
-        CacheWorker worker = new CacheWorker();
-        worker.setStartupDelay(delay);
-        Thread workerThread = new Thread(worker);
-        workerThread.setName(worker.getClass().getSimpleName());
-        workerThread.setPriority(Thread.MIN_PRIORITY);
-        workerThread.start();
+    public static synchronized void runInBackground(int delay) {
+        if (!running.get()) {
+            CacheWorker worker = new CacheWorker();
+            worker.setStartupDelay(delay);
+            Thread workerThread = new Thread(worker);
+            workerThread.setName(worker.getClass().getSimpleName());
+            workerThread.setPriority(Thread.MIN_PRIORITY);
+            workerThread.start();
+            running.set(true);
+        }
     }
 
     public int getStartupDelay() {
