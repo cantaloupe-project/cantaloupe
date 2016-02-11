@@ -212,6 +212,8 @@ public class Application {
                     }
                 }
             };
+            configWatcher.setPriority(Thread.MIN_PRIORITY);
+            configWatcher.setName("ConfigurationWatcher");
             configWatcher.start();
         }
 
