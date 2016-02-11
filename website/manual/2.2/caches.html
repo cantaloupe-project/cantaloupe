@@ -69,7 +69,11 @@ layout: default
 
 <h3 id="JdbcCache">JdbcCache</h3>
 
-<p>JdbcCache caches generated images and (parts of) information requests into tables in a relational database (RDBMS). This cache can be configured with the following options:</p>
+<p>JdbcCache caches generated images and (parts of) information requests into tables in a relational database (RDBMS). To use this cache, a JDBC driver for your database must be installed on the classpath.</p>
+
+<p>JdbcCache has been tested with H2 1.4. It is known to <strong>not</strong> work with the official PostgreSQL driver, as of version 9.4.1207. Other databases may work, but are untested.</p>
+
+<p>JdbcCache can be configured with the following options:</p>
 
 <dl>
   <dt><code>JdbcCache.url</code></dt>
@@ -102,10 +106,6 @@ CREATE TABLE IF NOT EXISTS info (
   last_modified DATETIME
 );
 {% endhighlight %}
-
-<div class="alert alert-info">Note: JdbcCache has been tested with PostgreSQL 9.4 and H2 1.4. Other databases may work, but are untested.</div>
-
-<div class="alert alert-warning">Note: JdbcCache is inefficient in that it buffers generated images in memory before flushing them to the database. (This is currently unavoidable&mdash;the JDBC API couples poorly with the Cantaloupe cache API.)</div>
 
 <h2 id="Cache Maintenance">Cache Maintenance</h2>
 

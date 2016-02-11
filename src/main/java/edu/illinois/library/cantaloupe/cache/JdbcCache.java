@@ -9,11 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -25,47 +24,57 @@ import java.time.Instant;
 import java.util.Calendar;
 
 /**
- * Cache using a database table, storing images as BLOBs and image dimensions
- * as integers.
+ * <p>Cache using a database table, storing images as BLOBs and image dimensions
+ * as integers.</p>
+ *
+ * <p>This cache requires that a database schema be created manually -- it will
+ * not do it automatically. See the user manual for more information.</p>
  */
 class JdbcCache implements Cache {
 
     /**
-     * Buffers written image data and flushes it into a database tuple as a
-     * BLOB upon closing.
+     * Wraps a {@link Blob} OutputStream, for writing an image to a BLOB.
+     * The constructor creates a transaction, which is committed on close.
      */
-    private class JdbcImageOutputStream extends OutputStream {
+    private class ImageBlobOutputStream extends OutputStream {
 
-        private ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        private OutputStream blobOutputStream;
         private OperationList ops;
         private Connection connection;
+        private PreparedStatement statement;
 
-        public JdbcImageOutputStream(Connection conn, OperationList ops) {
+        public ImageBlobOutputStream(Connection conn, OperationList ops)
+                throws SQLException {
             this.connection = conn;
             this.ops = ops;
+
+            connection.setAutoCommit(false);
+
+            final Configuration config = Application.getConfiguration();
+            final String sql = String.format(
+                    "INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
+                    config.getString(IMAGE_TABLE_CONFIG_KEY),
+                    IMAGE_TABLE_OPERATIONS_COLUMN, IMAGE_TABLE_IMAGE_COLUMN,
+                    IMAGE_TABLE_LAST_MODIFIED_COLUMN);
+            logger.debug(sql);
+
+            final Blob blob = connection.createBlob();
+            blobOutputStream = blob.setBinaryStream(1);
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, ops.toString());
+            statement.setBlob(2, blob);
+            statement.setTimestamp(3, now());
         }
 
         @Override
         public void close() throws IOException {
             logger.debug("Closing stream for {}", ops);
             try {
-                Configuration config = Application.getConfiguration();
-                String sql = String.format(
-                        "INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
-                        config.getString(IMAGE_TABLE_CONFIG_KEY),
-                        IMAGE_TABLE_OPERATIONS_COLUMN, IMAGE_TABLE_IMAGE_COLUMN,
-                        IMAGE_TABLE_LAST_MODIFIED_COLUMN);
-                PreparedStatement statement = connection.prepareStatement(sql);
-                statement.setString(1, ops.toString());
-                statement.setBinaryStream(2,
-                        new ByteArrayInputStream(outputStream.toByteArray()));
-                statement.setTimestamp(3, now());
-                logger.debug(sql);
                 statement.executeUpdate();
+                connection.commit();
             } catch (SQLException e) {
                 throw new IOException(e.getMessage(), e);
             } finally {
-                outputStream.close();
                 try {
                     connection.close();
                 } catch (SQLException e) {
@@ -75,23 +84,18 @@ class JdbcCache implements Cache {
         }
 
         @Override
-        public void flush() throws IOException {
-            outputStream.flush();
-        }
-
-        @Override
         public void write(int b) throws IOException {
-            outputStream.write(b);
+            blobOutputStream.write(b);
         }
 
         @Override
         public void write(byte[] b) throws IOException {
-            outputStream.write(b);
+            blobOutputStream.write(b);
         }
 
         @Override
         public void write(byte[] b, int off, int len) throws IOException {
-            outputStream.write(b, off, len);
+            blobOutputStream.write(b, off, len);
         }
 
     }
@@ -276,7 +280,7 @@ class JdbcCache implements Cache {
             throws CacheException {
         logger.info("Miss; caching {}", ops);
         try {
-            return new JdbcImageOutputStream(getConnection(), ops);
+            return new ImageBlobOutputStream(getConnection(), ops);
         } catch (SQLException e) {
             throw new CacheException(e.getMessage(), e);
         }
