@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.resource.ParameterList;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Reference;
 import org.restlet.data.Form;
@@ -17,7 +18,7 @@ import java.io.IOException;
  * @see <a href="http://iiif.io/api/request/2.0/#request-request-parameters">IIIF
  *      Image API 2.0</a>
  */
-class Parameters implements Comparable<Parameters> {
+class Parameters implements ParameterList, Comparable<Parameters> {
 
     private static Logger logger = LoggerFactory.getLogger(Parameters.class);
 
@@ -146,6 +147,12 @@ class Parameters implements Comparable<Parameters> {
         this.size = size;
     }
 
+    /**
+     * @return OperationList analog of the parameters. Note that any
+     * additional operations that may need to be performed, such as
+     * watermarking, will not be included.
+     */
+    @Override
     public OperationList toOperationList() {
         OperationList ops = new OperationList();
         ops.setIdentifier(getIdentifier());
