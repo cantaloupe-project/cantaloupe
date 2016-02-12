@@ -17,6 +17,7 @@ import javax.media.jai.OpImage;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.TileCache;
+import javax.media.jai.operator.ColorQuantizerDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TransposeDescriptor;
 import java.awt.Dimension;
@@ -144,6 +145,27 @@ abstract class JaiUtil {
                 Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
         return new RenderingHints(map);
     }
+
+    /*
+     * This doesn't work.
+     *
+     * @param inImage
+     * @return
+     *
+    public static RenderedOp reduceTo24Bit(RenderedOp inImage) {
+        // TODO: this produces an all-white image when used with 48-bit input
+        RenderedOp reducedImage = inImage;
+        final ParameterBlock pb = new ParameterBlock();
+        pb.addSource(inImage);
+        pb.add(ColorQuantizerDescriptor.MEDIANCUT); // quantizationAlgorithm
+        pb.add(256);                                // maxColorNum
+        pb.add(null);                               // upperBound
+        pb.add(null);                               // roi
+        pb.add(1);                                  // xPeriod
+        pb.add(1);                                  // yPeriod
+        reducedImage = JAI.create("ColorQuantizer", pb);
+        return reducedImage;
+    }*/
 
     /**
      * @param inImage Image to filter
