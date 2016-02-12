@@ -364,9 +364,8 @@ public abstract class AbstractResource extends ServerResource {
      * @return
      * @throws Exception
      */
-    protected final Dimension readSize(final Identifier identifier,
-                                       final Processor proc)
-            throws Exception {
+    private Dimension readSize(final Identifier identifier,
+                               final Processor proc) throws Exception {
         final long msec = System.currentTimeMillis();
         Dimension size = proc.getSize();
         logger.info("Read dimensions of {} in {} msec", identifier,
