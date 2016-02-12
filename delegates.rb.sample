@@ -1,9 +1,10 @@
-# Sample Ruby delegate script, containing placeholders for all available
+##
+# Sample Ruby delegate script containing skeletons for all available
 # methods. See the "Delegate Script" section of the user manual for more
 # information.
 #
 # DO NOT EDIT! Instead, copy to a file named `delegates.rb` and edit that.
-
+#
 module Cantaloupe
 
   ##
@@ -16,9 +17,9 @@ module Cantaloupe
   # @param full_size [Hash<String,Integer>] Hash with "width" and "height"
   #                                         keys corresponding to the pixel
   #                                         dimensions of the source image.
-  # @param operations [Array<Hash<String,Object>] Array of operations in order
-  #                   of execution. Only operations that are not no-ops will
-  #                   be included. Every hash contains an "operation" key
+  # @param operations [Array<Hash<String,Object>>] Array of operations in
+  #                   order of execution. Only operations that are not no-ops
+  #                   will be included. Every hash contains an "operation" key
   #                   corresponding to the type of operation. See the Javadoc
   #                   of e.i.l.c.image.Operation implementations for a list of
   #                   possible operations.
@@ -32,7 +33,7 @@ module Cantaloupe
   # @param client_ip [String]
   # @param cookies [Hash<String,String>]
   # @return [Boolean] Whether the request is authorized based on the supplied
-  #                   parameters.
+  #                   arguments.
   #
   def self.authorized?(identifier, full_size, operations, resulting_size,
                        output_format, request_uri, request_headers, client_ip,
@@ -90,7 +91,37 @@ module Cantaloupe
   def self.get_url(identifier)
   end
 
+  ##
+  # Tells the server what watermark, if any, to apply to an image in response
+  # to a particular request. Will be called upon all image requests to any
+  # endpoint if `watermark.enabled` is set to `true` and `watermark.strategy`
+  # is set to `ScriptStrategy` in the configuration file.
+  #
+  # @param identifier [String] Image identifier
+  # @param operations [Array<Hash<String,Object>>] Array of operations in
+  #                   order of execution. Only operations that are not no-ops
+  #                   will be included. Every hash contains an "operation" key
+  #                   corresponding to the type of operation. See the Javadoc
+  #                   of e.i.l.c.image.Operation implementations for a list of
+  #                   possible operations.
+  # @param resulting_size [Hash<String,String>] Hash with "width" and "height"
+  #                       keys corresponding to the pixel dimensions of the
+  #                       resulting image after all operations are applied.
+  # @param output_format [Hash<String,String>] Hash with "media_type" and
+  #                                            "extension" keys.
+  # @param request_uri [String] Full request URI
+  # @param request_headers [Hash<String,String>]
+  # @param client_ip [String]
+  # @param cookies [Hash<String,String>]
+  # @return [Hash<String,String>,Boolean] 3-element hash with `pathname`,
+  #         `position`, and `inset` keys; or false to not apply a watermark.
+  #
+  def self.watermark(identifier, operations, resulting_size, output_format,
+                     request_uri, request_headers, client_ip, cookies)
+    false
+  end
+
 end
 
-# For command-line testing (`ruby delegates.rb`)
+# Uncomment to test on the command line (`ruby delegates.rb`)
 # puts Cantaloupe::get_pathname('image.jpg')

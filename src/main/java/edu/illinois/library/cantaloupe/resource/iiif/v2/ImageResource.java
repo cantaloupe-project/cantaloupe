@@ -25,6 +25,7 @@ import org.restlet.resource.ResourceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Dimension;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Map;
@@ -120,9 +121,13 @@ public class ImageResource extends AbstractResource {
         Processor proc = ProcessorFactory.getProcessor(resolver, identifier,
                 sourceFormat);
 
-        if (!isAuthorized(ops, getSize(ops.getIdentifier(), proc))) {
+        final Dimension fullSize = getSize(ops.getIdentifier(), proc);
+
+        if (!isAuthorized(ops, fullSize)) {
             throw new AccessDeniedException();
         }
+
+        addNonEndpointOperations(ops, fullSize);
 
         // Find out whether the processor supports that source format by
         // asking it whether it offers any output formats for it

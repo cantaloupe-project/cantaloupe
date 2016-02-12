@@ -1,11 +1,7 @@
 package edu.illinois.library.cantaloupe.image;
 
-import edu.illinois.library.cantaloupe.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
-import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.util.ArrayList;
@@ -26,50 +22,6 @@ import java.util.Map;
  */
 public class OperationList implements Comparable<OperationList>,
         Iterable<Operation> {
-
-    /**
-     * Custom iterator that returns a watermark, if enabled, as the last
-     * operation.
-     */
-    public class OperationIterator implements Iterator<Operation> {
-
-        private final OperationList opList;
-        private int position = -1;
-        private Watermark watermark = null;
-
-        public OperationIterator(OperationList opList) {
-            this.opList = opList;
-
-            if (WatermarkService.isEnabled()) {
-                try {
-                    watermark = WatermarkService.newWatermark();
-                } catch (ConfigurationException e) {
-                    logger.error(e.getMessage());
-                }
-            }
-        }
-
-        @Override
-        public boolean hasNext() {
-            int opSize = opList.operations.size();
-            if (watermark != null) {
-                opSize++;
-            }
-            return position + 1 < opSize;
-        }
-
-        @Override
-        public Operation next() {
-            position++;
-            if (position < opList.operations.size()) {
-                return opList.operations.get(position);
-            } else {
-                return watermark;
-            }
-        }
-    }
-
-    private static Logger logger = LoggerFactory.getLogger(OperationList.class);
 
     private Identifier identifier;
     private List<Operation> operations = new ArrayList<>();
@@ -168,8 +120,8 @@ public class OperationList implements Comparable<OperationList>,
     }
 
     @Override
-    public OperationIterator iterator() {
-        return new OperationIterator(this);
+    public Iterator iterator() {
+        return operations.iterator();
     }
 
     public void setIdentifier(Identifier identifier) {

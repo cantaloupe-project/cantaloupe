@@ -2,6 +2,11 @@ package edu.illinois.library.cantaloupe.image.watermark;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.ConfigurationException;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Before;
@@ -9,40 +14,102 @@ import org.junit.Test;
 
 import java.awt.Dimension;
 import java.io.File;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
 public class WatermarkServiceTest {
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         Configuration config = new BaseConfiguration();
         Application.setConfiguration(config);
         // valid config options
+        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
+                TestUtil.getFixture("delegates.rb").getAbsolutePath());
         config.setProperty(WatermarkService.WATERMARK_ENABLED_CONFIG_KEY, true);
+        config.setProperty(WatermarkService.WATERMARK_STRATEGY_CONFIG_KEY, "BasicStrategy");
         config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, "/dev/null");
         config.setProperty(WatermarkService.WATERMARK_INSET_CONFIG_KEY, 10);
         config.setProperty(WatermarkService.WATERMARK_POSITION_CONFIG_KEY, "top left");
     }
 
     @Test
-    public void testNewWatermarkWithValidConfig() throws Exception {
-        Watermark watermark = WatermarkService.newWatermark();
+    public void testNewWatermarkWithBasicStrategy() throws Exception {
+        final OperationList opList = new OperationList();
+        final Dimension fullSize = new Dimension(0, 0);
+        final URL requestUrl = new URL("http://example.org/");
+        final Map<String,String> requestHeaders = new HashMap<>();
+        final String clientIp = "";
+        final Map<String,String> cookies = new HashMap<>();
+
+        Watermark watermark = WatermarkService.newWatermark(opList, fullSize,
+                requestUrl, requestHeaders, clientIp, cookies);
         assertEquals(new File("/dev/null"), watermark.getImage());
         assertEquals(10, watermark.getInset());
         assertEquals(Position.TOP_LEFT, watermark.getPosition());
     }
 
     @Test
-    public void testNewWatermarkWithInvalidConfig() throws Exception {
+    public void testNewWatermarkWithBasicStrategyAndInvalidConfig() throws Exception {
+        final OperationList opList = new OperationList();
+        final Dimension fullSize = new Dimension(0, 0);
+        final URL requestUrl = new URL("http://example.org/");
+        final Map<String,String> requestHeaders = new HashMap<>();
+        final String clientIp = "";
+        final Map<String,String> cookies = new HashMap<>();
+
         Configuration config = Application.getConfiguration();
         config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, null);
         try {
-            WatermarkService.newWatermark();
+            WatermarkService.newWatermark(opList, fullSize, requestUrl,
+                    requestHeaders, clientIp, cookies);
             fail();
         } catch (ConfigurationException e) {
             // pass
         }
+    }
+
+    @Test
+    public void testNewWatermarkWithScriptStrategyReturningWatermark() throws Exception {
+        Application.getConfiguration().setProperty(
+                WatermarkService.WATERMARK_STRATEGY_CONFIG_KEY, "ScriptStrategy");
+
+        final OperationList opList = new OperationList();
+        opList.setIdentifier(new Identifier("cats"));
+        opList.setOutputFormat(OutputFormat.JPG);
+        final Dimension fullSize = new Dimension(100, 100);
+        final URL requestUrl = new URL("http://example.org/");
+        final Map<String,String> requestHeaders = new HashMap<>();
+        final String clientIp = "";
+        final Map<String,String> cookies = new HashMap<>();
+
+        Watermark watermark = WatermarkService.newWatermark(opList, fullSize,
+                requestUrl, requestHeaders, clientIp, cookies);
+        assertEquals(new File("/dev/cats"), watermark.getImage());
+        assertEquals(5, watermark.getInset());
+        assertEquals(Position.BOTTOM_LEFT, watermark.getPosition());
+    }
+
+    @Test
+    public void testNewWatermarkWithScriptStrategyReturningFalse() throws Exception {
+        Application.getConfiguration().setProperty(
+                WatermarkService.WATERMARK_STRATEGY_CONFIG_KEY, "ScriptStrategy");
+
+        final OperationList opList = new OperationList();
+        opList.setIdentifier(new Identifier("dogs"));
+        opList.setOutputFormat(OutputFormat.JPG);
+        final Dimension fullSize = new Dimension(100, 100);
+        final URL requestUrl = new URL("http://example.org/");
+        final Map<String,String> requestHeaders = new HashMap<>();
+        final String clientIp = "";
+        final Map<String,String> cookies = new HashMap<>();
+
+        Watermark watermark = WatermarkService.newWatermark(opList, fullSize,
+                requestUrl, requestHeaders, clientIp, cookies);
+        assertNull(watermark);
     }
 
     @Test

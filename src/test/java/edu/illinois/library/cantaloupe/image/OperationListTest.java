@@ -315,7 +315,7 @@ public class OperationListTest {
     /* iterator() */
 
     @Test
-    public void testIteratorWithWatermarkingDisabled() {
+    public void testIterator() {
         int count = 0;
         Iterator it = ops.iterator();
         while (it.hasNext()) {
@@ -323,26 +323,6 @@ public class OperationListTest {
             count++;
         }
         assertEquals(3, count);
-    }
-
-    @Test
-    public void testIteratorWithWatermarkingEnabled() {
-        Application.getConfiguration().setProperty(
-                WatermarkService.WATERMARK_ENABLED_CONFIG_KEY, true);
-        Application.getConfiguration().setProperty(
-                WatermarkService.WATERMARK_FILE_CONFIG_KEY, "/bla");
-        Application.getConfiguration().setProperty(
-                WatermarkService.WATERMARK_POSITION_CONFIG_KEY, "bottom right");
-        Application.getConfiguration().setProperty(
-                WatermarkService.WATERMARK_INSET_CONFIG_KEY, 10);
-
-        int count = 0;
-        Iterator it = newOperationList().iterator();
-        while (it.hasNext()) {
-            it.next();
-            count++;
-        }
-        assertEquals(4, count);
     }
 
     /* toMap() */

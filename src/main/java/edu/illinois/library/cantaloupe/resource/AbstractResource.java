@@ -1,12 +1,14 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.ConfigurationException;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
@@ -171,6 +173,27 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
+     * @param opList
+     * @param fullSize
+     */
+    public void addNonEndpointOperations(final OperationList opList,
+                                         final Dimension fullSize) {
+        if (WatermarkService.isEnabled()) {
+            try {
+                opList.add(WatermarkService.newWatermark(
+                        opList, fullSize, getReference().toUrl(),
+                        getRequest().getHeaders().getValuesMap(),
+                        getRequest().getClientInfo().getAddress(),
+                        getRequest().getCookies().getValuesMap()));
+            } catch (DelegateScriptDisabledException e) {
+                // no problem
+            } catch (Exception e) {
+                logger.error(e.getMessage());
+            }
+        }
+    }
+
+    /**
      * Some web servers have issues dealing with encoded slashes (%2F) in URLs.
      * This method enables the use of an alternate string to represent a slash
      * via {@link #SLASH_SUBSTITUTE_CONFIG_KEY}.
@@ -293,8 +316,8 @@ public abstract class AbstractResource extends ServerResource {
      * Invokes a delegate script method to determine whether the request is
      * authorized.
      *
-     * @param fullSize
      * @param opList
+     * @param fullSize
      * @return
      * @throws IOException
      * @throws ScriptException

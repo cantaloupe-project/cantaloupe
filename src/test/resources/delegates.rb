@@ -41,4 +41,16 @@ module Cantaloupe
     'http://example.org/bla/' + URI.escape(identifier)
   end
 
+  def self.watermark(identifier, operations, resulting_size, output_format,
+      request_uri, request_headers, client_ip, cookies)
+    if identifier == 'cats'
+      return {
+          'pathname' => '/dev/cats',
+          'inset' => 5,
+          'position' => 'bottom left'
+      }
+    end
+    false
+  end
+
 end

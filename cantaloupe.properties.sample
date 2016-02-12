@@ -57,31 +57,6 @@ max_pixels = 400000000
 print_stack_trace_on_error_pages = true
 
 ###########################################################################
-# WATERMARKING
-###########################################################################
-
-# Whether to enable watermarking.
-watermark.enabled = false
-
-# Absolute path of the watermark image, which must be a .png file.
-watermark.image = /path/to/watermark.png
-
-# Allowed values: `top left`, `top center`, `top right`, `left center`,
-# `center`, `right center`, `bottom left`, `bottom center`, `bottom right`.
-watermark.position = bottom right
-
-# Margin between the watermark and the edge of the image, in pixels.
-watermark.inset = 10
-
-# Output images less than this many pixels wide will not receive a watermark.
-# Comment out or set to 0 to add the watermark regardless.
-watermark.output_width_threshold = 400
-
-# Output images less than this many pixels tall will not receive a watermark.
-# Comment out or set to 0 to add the watermark regardless.
-watermark.output_height_threshold = 300
-
-###########################################################################
 # ENDPOINTS
 ###########################################################################
 
@@ -420,6 +395,37 @@ JdbcCache.info_table = info_cache
 # Time before a cached image becomes stale and needs to be reloaded. Set to
 # blank or 0 for "forever"
 JdbcCache.ttl_seconds = 2592000
+
+###########################################################################
+# WATERMARKING
+###########################################################################
+
+# Whether to enable watermarking.
+watermark.enabled = false
+
+# Configures how watermarking works. `BasicStrategy` will use the
+# `watermark.BasicStrategy.*` keys in this section. `ScriptStrategy` will
+# use the `watermark` delegate script method. See the user manual for more
+# information.
+watermark.strategy = BasicStrategy
+
+# Absolute path of the watermark image. Must be a .png file.
+watermark.BasicStrategy.image = /path/to/watermark.png
+
+# Allowed values: `top left`, `top center`, `top right`, `left center`,
+# `center`, `right center`, `bottom left`, `bottom center`, `bottom right`.
+watermark.BasicStrategy.position = bottom right
+
+# Pixel margin between the watermark and the image edge.
+watermark.BasicStrategy.inset = 10
+
+# Output images less than this many pixels wide will not receive a watermark.
+# Comment out or set to 0 to add the watermark regardless.
+watermark.BasicStrategy.output_width_threshold = 400
+
+# Output images less than this many pixels tall will not receive a watermark.
+# Comment out or set to 0 to add the watermark regardless.
+watermark.BasicStrategy.output_height_threshold = 300
 
 ###########################################################################
 # LOGGING
