@@ -177,7 +177,19 @@ class PdfBoxProcessor extends AbstractProcessor
             float pct = scale.getResultingScale(sourceSize);
             final ReductionFactor rf = ReductionFactor.forScale(pct);
 
-            final BufferedImage image = readImage(rf.factor);
+            // This processor supports a "page" URI query option.
+            Integer page = 1;
+            String pageStr = (String) opList.getOptions().get("page");
+            if (pageStr != null) {
+                try {
+                    page = Integer.parseInt(pageStr);
+                } catch (NumberFormatException e) {
+                    logger.info("Page number is not an integer.");
+                }
+            }
+            page = Math.max(page, 1);
+
+            final BufferedImage image = readImage(page - 1, rf.factor);
             postProcessUsingJava2d(image, opList, rf, outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
@@ -219,16 +231,18 @@ class PdfBoxProcessor extends AbstractProcessor
     }
 
     private BufferedImage readImage() throws IOException {
-        return readImage(0);
+        return readImage(0, 0);
     }
 
     /**
+     * @param pageIndex
      * @param reductionFactor Scale factor by which to reduce the image (or
      *                        enlarge it if negative).
      * @return Rasterized first page of the PDF.
      * @throws IOException
      */
-    private BufferedImage readImage(int reductionFactor) throws IOException {
+    private BufferedImage readImage(int pageIndex,
+                                    int reductionFactor) throws IOException {
         float dpi = getDpi(reductionFactor);
         logger.debug("readImage(): using a DPI of {} ({}x reduction factor)",
                 Math.round(dpi), reductionFactor);
@@ -242,7 +256,15 @@ class PdfBoxProcessor extends AbstractProcessor
                 inputStream = streamSource.newInputStream();
                 doc = PDDocument.load(inputStream);
             }
-            return new PDFRenderer(doc).renderImageWithDPI(0, dpi);
+
+            // If the given page index is out of bounds, the renderer will
+            // throw an exception. In that case, render the first page.
+            PDFRenderer renderer = new PDFRenderer(doc);
+            try {
+                return renderer.renderImageWithDPI(pageIndex, dpi);
+            } catch (IndexOutOfBoundsException e) {
+                return renderer.renderImageWithDPI(0, dpi);
+            }
         } finally {
             if (doc != null) {
                 doc.close();
