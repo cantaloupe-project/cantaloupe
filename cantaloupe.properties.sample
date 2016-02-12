@@ -2,8 +2,9 @@
 # Sample Cantaloupe configuration file
 #
 # Copy this file to `cantaloupe.properties` and edit as desired. Then,
-# launch Cantaloupe with the `-Dcantaloupe.config=cantaloupe.properties`
-# argument.
+# run with the `-Dcantaloupe.config=cantaloupe.properties` argument:
+#
+# java -Dcantaloupe.config=cantaloupe.properties -jar Cantaloupe-x.x.jar
 #
 # Most changes will take effect without restarting. Those that won't are
 # marked with "!!".
@@ -30,14 +31,14 @@ auth.basic.secret = mypassword
 
 # Base URI to use for internal links, such as Link headers and JSON-LD @id
 # values. This should only be used in reverse-proxy scenarios when
-# X-Forwarded-* headers cannot be used instead (see the documentation).
+# X-Forwarded-* headers cannot be used instead (see the user manual).
 base_uri =
 
-# Normally, slashes in a URI path component (like an identifier) must be
-# percent-encoded as "%2F". If your proxy is incapable of passing these
-# through without decoding them, you can define an alternate character or
-# character sequence to substitute for a slash. Supply the non-percent-
-# encoded version here, and use the percent-encoded version in URLs.
+# Normally, slashes in a URI path component must be percent-encoded as
+# "%2F". If your proxy is incapable of passing these through without
+# decoding them, you can define an alternate character or character
+# sequence to substitute for a slash. Supply the non-percent-encoded
+# version here, and use the percent-encoded version in URLs.
 #slash_substitute =
 
 # Maximum number of image pixels to return in a response, to prevent
@@ -47,9 +48,9 @@ base_uri =
 max_pixels = 400000000
 
 # The name of a Ruby script containing various delegate methods. (See the
-# website for more information.) This can be an absolute path, or a
-# filename; if only a filename is specified, it will be searched for in the
-# same folder as this file, and then the current working directory.
+# user manual.) This can be an absolute path, or a filename; if only a
+# filename is specified, it will be searched for in the same folder as this
+# file, and then the current working directory.
 # Comment out or set blank to disable the delegate script mechanism.
 #delegate_script = delegates.rb
 
@@ -204,6 +205,7 @@ processor.avi = FfmpegProcessor
 #processor.jp2 = KakaduProcessor
 #processor.jp2 = OpenJpegProcessor
 processor.mov = FfmpegProcessor
+processor.mpg = FfmpegProcessor
 processor.mp4 = FfmpegProcessor
 processor.pdf = PdfBoxProcessor
 processor.webm = FfmpegProcessor
@@ -365,7 +367,7 @@ FilesystemCache.ttl_seconds = 2592000
 FilesystemCache.dir.depth = 3
 
 # Number of characters in hierarchy directory names. Should be set to
-# 16^n < [max number of directory entries your filesystem can deal with].
+# 16^n < {max number of directory entries your filesystem can deal with}.
 # Purge the cache after changing this.
 FilesystemCache.dir.name_length = 2
 
@@ -380,15 +382,14 @@ JdbcCache.user = postgres
 # !!
 JdbcCache.password =
 
-# !! Maximum number of JDBC connections allowed in the pool. A good starting
-# point is (# of CPU cores * 2) + 1.
+# !! Maximum number of JDBC connections allowed in the pool. A good
+# starting point is (CPU core count * 2) + 1.
 JdbcCache.max_pool_size = 9
 
 # !! Connection timeout in seconds.
 JdbcCache.connection_timeout = 10
 
-# These must be created manually; see the website documentation for the
-# schemas.
+# These must be created manually; see the user manual.
 JdbcCache.image_table = image_cache
 JdbcCache.info_table = info_cache
 

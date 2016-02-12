@@ -145,7 +145,7 @@
       <artifactId>im4java</artifactId>
       <version>1.4.0</version>
     </dependency>
-    <!-- Used by FilesystemResolver to execute lookup scripts -->
+    <!-- Used to execute delegate script methods -->
     <dependency>
       <groupId>org.jruby</groupId>
       <artifactId>jruby</artifactId>
