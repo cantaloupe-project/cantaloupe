@@ -1,18 +1,54 @@
 package edu.illinois.library.cantaloupe.image.watermark;
 
+import org.apache.commons.lang3.StringUtils;
+
 public enum Position {
 
     TOP_LEFT("NW"),
-    TOP_RIGHT("NE"),
-    BOTTOM_LEFT("SW"),
-    BOTTOM_RIGHT("SE"),
     TOP_CENTER("N"),
-    BOTTOM_CENTER("S"),
+    TOP_RIGHT("NE"),
     LEFT_CENTER("W"),
+    CENTER("C"),
     RIGHT_CENTER("E"),
-    CENTER("C");
+    BOTTOM_LEFT("SW"),
+    BOTTOM_CENTER("S"),
+    BOTTOM_RIGHT("SE");
 
     private final String shortName;
+
+    /**
+     * @param positionStr Position string such as "top left," "left top",
+     *                    "center", etc.
+     * @return Position corresponding to the given string, or null if not
+     *         found.
+     */
+    public static Position fromString(final String positionStr) {
+        final String normalizedString = StringUtils.
+                replace(positionStr, " ", "_").trim().toLowerCase();
+        final String[] normalizedParts = StringUtils.
+                split(normalizedString, "_");
+
+        // check for an exact match
+        for (Position pos : Position.values()) {
+            if (normalizedString.equals(pos.name().toLowerCase())) {
+                return pos;
+            }
+        }
+
+        // check for a word match
+        for (Position pos : Position.values()) {
+            for (int i = 0; i < normalizedParts.length; i++) {
+                if (!StringUtils.contains(pos.name().toLowerCase(),
+                        normalizedParts[i])) {
+                    break;
+                }
+                if (i == normalizedParts.length - 1) {
+                    return pos;
+                }
+            }
+        }
+        return null;
+    }
 
     Position(String shortName) {
         this.shortName = shortName;
