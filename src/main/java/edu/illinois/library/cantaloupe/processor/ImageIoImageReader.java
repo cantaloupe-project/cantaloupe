@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
+import javax.imageio.spi.IIORegistry;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
@@ -141,12 +142,26 @@ class ImageIoImageReader {
         } else {
             it = ImageIO.getImageReaders(inputStream);
         }
-        if (it.hasNext()) {
+
+        if (sourceFormat.equals(SourceFormat.TIF)) {
+            while (it.hasNext()) {
+                reader = it.next();
+                // This version contains improvements over the Sun version,
+                // namely support for BigTIFF.
+                if (reader instanceof it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader) {
+                    break;
+                }
+            }
+        } else if (it.hasNext()) {
             reader = it.next();
+        }
+
+        if (reader != null) {
             reader.setInput(inputStream);
+            logger.info("createReader(): using {}", reader.getClass().getName());
         } else {
             throw new IOException("Unable to determine the format of the " +
-                    "source.");
+                    "source image.");
         }
     }
 
