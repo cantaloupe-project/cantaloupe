@@ -330,17 +330,15 @@ cache.client.no_transform = true
 # to disable caching.
 #cache.server = FilesystemCache
 
-# If true, when the resolver reports that the requested source image has
-# gone missing, all cached information relating to it (if any) will be
-# deleted. (This is effectively always false when cache.server.resolve_first
-# is also false.)
+# If true, when a resolver reports that the requested source image has gone
+# missing, all cached information relating to it (if any) will be deleted.
+# (This is effectively always false when cache.server.resolve_first is also
+# false.)
 cache.server.purge_missing = false
 
 # If true, the source image will be confirmed to exist before a cached copy
 # is returned. If false, the cached copy will be returned without any
 # checking. Resolving first is slower but safer.
-# (This has no effect with the IIIF 1.1 endpoint -- it is effectively
-# always true.)
 cache.server.resolve_first = false
 
 # !! Enables the cache worker, which periodically purges expired cache

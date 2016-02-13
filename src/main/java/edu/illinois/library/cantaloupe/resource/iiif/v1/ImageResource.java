@@ -13,12 +13,13 @@ import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatExceptio
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AccessDeniedException;
+import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
-import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Disposition;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
+import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Variant;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
@@ -27,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -67,13 +69,14 @@ public class ImageResource extends AbstractResource {
      * @throws Exception
      */
     @Get
-    public ImageRepresentation doGet() throws Exception {
+    public OutputRepresentation doGet() throws Exception {
         final Map<String,Object> attrs = this.getRequest().getAttributes();
         Identifier identifier =
                 new Identifier(Reference.decode((String) attrs.get("identifier")));
         identifier = decodeSlashes(identifier);
 
         final Resolver resolver = ResolverFactory.getResolver(identifier);
+
         // Determine the format of the source image
         SourceFormat sourceFormat = SourceFormat.UNKNOWN;
         try {
@@ -100,7 +103,8 @@ public class ImageResource extends AbstractResource {
                 proc.getAvailableOutputFormats();
 
         // Extract the quality and format from the URI
-        String[] qualityAndFormat = StringUtils.split((String) attrs.get("quality_format"), ".");
+        String[] qualityAndFormat = StringUtils.
+                split((String) attrs.get("quality_format"), ".");
         // If a format is present, try to use that. Otherwise, guess it based
         // on the Accept header per Image API 1.1 spec section 4.5.
         String outputFormat;
@@ -109,13 +113,6 @@ public class ImageResource extends AbstractResource {
         } else {
             outputFormat = getOutputFormat(availableOutputFormats).getExtension();
         }
-
-        final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
-                proc.getSupportedFeatures(),
-                proc.getSupportedIiif1_1Qualities(),
-                proc.getAvailableOutputFormats());
-        this.addHeader("Link", String.format("<%s>;rel=\"profile\";",
-                complianceLevel.getUri()));
 
         // Assemble the URI parameters into an OperationList objects
         final OperationList ops = new Parameters(
@@ -128,6 +125,32 @@ public class ImageResource extends AbstractResource {
         ops.setIdentifier(identifier);
         ops.getOptions().putAll(
                 this.getReference().getQueryAsForm(true).getValuesMap());
+
+        final Disposition disposition = getRepresentationDisposition(
+                ops.getIdentifier(), ops.getOutputFormat());
+
+        // If we don't need to resolve first, and are using a cache, and the
+        // cache contains an image matching the request, skip all the setup and
+        // just return the cached image.
+        if (!Application.getConfiguration().
+                getBoolean(RESOLVE_FIRST_CONFIG_KEY, true)) {
+            Cache cache = CacheFactory.getInstance();
+            if (cache != null) {
+                InputStream inputStream = cache.getImageInputStream(ops);
+                if (inputStream != null) {
+                    return new CachedImageRepresentation(
+                            new MediaType(ops.getOutputFormat().getMediaType()),
+                            disposition, inputStream);
+                }
+            }
+        }
+
+        final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
+                proc.getSupportedFeatures(),
+                proc.getSupportedIiif1_1Qualities(),
+                proc.getAvailableOutputFormats());
+        this.addHeader("Link", String.format("<%s>;rel=\"profile\";",
+                complianceLevel.getUri()));
 
         final Dimension fullSize = getSize(identifier, proc);
 
@@ -147,8 +170,6 @@ public class ImageResource extends AbstractResource {
             throw new UnsupportedSourceFormatException(msg);
         }
 
-        Disposition disposition = getRepresentationDisposition(
-                ops.getIdentifier(), ops.getOutputFormat());
         return getRepresentation(ops, sourceFormat, disposition, proc);
     }
 
