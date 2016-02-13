@@ -30,7 +30,7 @@ auth.basic.username = myself
 auth.basic.secret = mypassword
 
 # Base URI to use for internal links, such as Link headers and JSON-LD @id
-# values. This should only be used in reverse-proxy scenarios when
+# values, in a reverse-proxy context. This should only be used when
 # X-Forwarded-* headers cannot be used instead (see the user manual).
 base_uri =
 
@@ -41,9 +41,9 @@ base_uri =
 # version here, and use the percent-encoded version in URLs.
 #slash_substitute =
 
-# Maximum number of image pixels to return in a response, to prevent
-# overloading the server. Requests for more pixels than this will receive
-# an HTTP 4xx response. Comment out or set to 0 for no maximum.
+# Maximum number of pixels to return in a response, to prevent overloading
+# the server. Requests for more pixels than this will receive an HTTP 4xx
+# response. Comment out or set to 0 for no maximum.
 # Note: this is ignored when requesting an unmodified source image.
 max_pixels = 400000000
 
@@ -51,10 +51,10 @@ max_pixels = 400000000
 # user manual.) This can be an absolute path, or a filename; if only a
 # filename is specified, it will be searched for in the same folder as this
 # file, and then the current working directory.
-# Comment out or set blank to disable the delegate script mechanism.
+# Comment out or set blank to disable the delegate script.
 #delegate_script = delegates.rb
 
-# Helpful in development
+# Sometimes helpful.
 print_stack_trace_on_error_pages = true
 
 ###########################################################################
@@ -90,7 +90,7 @@ resolver.delegate = false
 # Tells FilesystemResolver how to look up files. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. For
 # ScriptLookupStrategy, a method named `get_pathname(identifier)` must be
-# implemented in the delegate script.
+# implemented in the delegate script -- see the user manual.
 FilesystemResolver.lookup_strategy = BasicLookupStrategy
 
 # Server-side path that will be prefixed to the identifier in the URL.
@@ -136,7 +136,7 @@ JdbcResolver.password = postgres
 
 # !! Maximum number of connections allowed in the connection pool. A good
 # starting point is (number of CPU cores * 2) + 1.
-JdbcResolver.max_pool_size = 10
+JdbcResolver.max_pool_size = 9
 
 # !! Connection timeout in seconds.
 JdbcResolver.connection_timeout = 10
@@ -196,7 +196,7 @@ AmazonS3Resolver.lookup_strategy = BasicLookupStrategy
 
 # Image processors to use for various source formats. Available values are
 # `Java2dProcessor`, `GraphicsMagickProcessor`, `ImageMagickProcessor`,
-# `KakaduProcessor`, `OpenJpegProcessor`, ``JaiProcessor`, `PdfBoxProcessor`,
+# `KakaduProcessor`, `OpenJpegProcessor`, `JaiProcessor`, `PdfBoxProcessor`,
 # and `FfmpegProcessor`.
 
 # These extension-specific definitions are optional.
@@ -294,7 +294,7 @@ OpenJpegProcessor.post_processor.java2d.scale_mode = speed
 # PdfBoxProcessor
 #----------------------------------------
 
-# Sets the resolution of the PDF rasterization at a scale factor of 1.
+# Controls the resolution of the PDF rasterization at a scale factor of 1.
 # Requests for scales less than 0.5 or larger than 2 will automatically
 # use a lower or higher factor of this.
 PdfBoxProcessor.dpi = 72
@@ -326,8 +326,8 @@ cache.client.no_transform = true
 # SERVER-SIDE CACHING
 ###########################################################################
 
-# The only available value is `FilesystemCache`. Comment out or set blank
-# to disable caching.
+# Available values are `FilesystemCache` and `JdbcCache`. Comment out or
+# set blank to disable caching.
 #cache.server = FilesystemCache
 
 # If true, when a resolver reports that the requested source image has gone
@@ -342,7 +342,7 @@ cache.server.purge_missing = false
 cache.server.resolve_first = false
 
 # !! Enables the cache worker, which periodically purges expired cache
-# items in a low-priority background thread.
+# items in the background.
 cache.server.worker.enabled = false
 
 # The cache worker will wait this many seconds between purgings.
@@ -356,11 +356,11 @@ cache.server.worker.interval = 86400
 FilesystemCache.pathname = /var/cache/cantaloupe
 
 # Time before a cached image becomes stale and needs to be reloaded. Set to
-# blank or 0 for "forever"
+# blank or 0 for "never"
 FilesystemCache.ttl_seconds = 2592000
 
-# Levels of folder hierarchy. Deeper depth results in fewer files per
-# directory. Set to 0 to disable subfolders.
+# Levels of folder hierarchy in which to store cached images. Deeper depth
+# results in fewer files per directory. Set to 0 to disable subfolders.
 # Purge the cache after changing this.
 FilesystemCache.dir.depth = 3
 
@@ -392,7 +392,7 @@ JdbcCache.image_table = image_cache
 JdbcCache.info_table = info_cache
 
 # Time before a cached image becomes stale and needs to be reloaded. Set to
-# blank or 0 for "forever"
+# blank or 0 for "never"
 JdbcCache.ttl_seconds = 2592000
 
 ###########################################################################
