@@ -45,8 +45,11 @@ class ImageMagickProcessor extends AbstractProcessor
     private static Logger logger = LoggerFactory.
             getLogger(ImageMagickProcessor.class);
 
-    private static final String PATH_TO_BINARIES_CONFIG_KEY =
+    public static final String BACKGROUND_COLOR_CONFIG_KEY =
+            "ImageMagickProcessor.background_color";
+    public static final String PATH_TO_BINARIES_CONFIG_KEY =
             "ImageMagickProcessor.path_to_binaries";
+
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
@@ -351,8 +354,18 @@ class ImageMagickProcessor extends AbstractProcessor
                         break;
                 }
             } else if (op instanceof Rotate) {
-                Rotate rotate = (Rotate) op;
+                final Rotate rotate = (Rotate) op;
                 if (!rotate.isNoOp()) {
+                    // If the output format supports transparency, make the
+                    // background transparent. Otherwise, use a
+                    // user-configurable background color.
+                    if (ops.getOutputFormat().supportsTransparency()) {
+                        imOp.background("none");
+                    } else {
+                        final String bgColor = Application.getConfiguration().
+                                getString(BACKGROUND_COLOR_CONFIG_KEY, "black");
+                        imOp.background(bgColor);
+                    }
                     imOp.rotate((double) rotate.getDegrees());
                 }
             } else if (op instanceof Filter) {
@@ -364,7 +377,6 @@ class ImageMagickProcessor extends AbstractProcessor
                         imOp.monochrome();
                         break;
                 }
-
             }
         }
     }

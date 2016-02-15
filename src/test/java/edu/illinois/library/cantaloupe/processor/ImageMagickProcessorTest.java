@@ -1,15 +1,24 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.junit.Test;
 
+import javax.imageio.ImageIO;
 import java.awt.Dimension;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -160,6 +169,77 @@ public class ImageMagickProcessorTest extends ProcessorTest {
         } catch (UnsupportedSourceFormatException e) {
             // oh well
         }
+    }
+
+    @Test
+    public void testProcessWithRotationAndCustomBackgroundColorAndNonTransparentOutputFormat() throws Exception {
+        Configuration config = new BaseConfiguration();
+        config.setProperty(ImageMagickProcessor.BACKGROUND_COLOR_CONFIG_KEY, "blue");
+        Application.setConfiguration(config);
+
+        OperationList ops = new OperationList();
+        ops.setIdentifier(new Identifier("bla"));
+        Rotate rotation = new Rotate(15);
+        ops.add(rotation);
+        ops.setOutputFormat(OutputFormat.JPG);
+
+        Dimension fullSize = new Dimension(64, 58);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        instance.setSourceFormat(SourceFormat.JPG);
+        StreamSource streamSource = new TestStreamSource(
+                TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));
+        instance.setStreamSource(streamSource);
+        instance.process(ops, fullSize, outputStream);
+
+        ByteArrayInputStream inputStream =
+                new ByteArrayInputStream(outputStream.toByteArray());
+        final BufferedImage rotatedImage = ImageIO.read(inputStream);
+
+        int pixel = rotatedImage.getRGB(0, 0);
+        int alpha = (pixel >> 24) & 0xff;
+        int red = (pixel >> 16) & 0xff;
+        int green = (pixel >> 8) & 0xff;
+        int blue = (pixel) & 0xff;
+        // "ImageMagick blue"
+        assertEquals(255, alpha);
+        assertEquals(1, red);
+        assertEquals(0, green);
+        assertEquals(254, blue);
+    }
+
+    @Test
+    public void testProcessWithRotationAndCustomBackgroundColorAndTransparentOutputFormat() throws Exception {
+        Configuration config = new BaseConfiguration();
+        config.setProperty(ImageMagickProcessor.BACKGROUND_COLOR_CONFIG_KEY, "blue");
+        Application.setConfiguration(config);
+
+        OperationList ops = new OperationList();
+        ops.setIdentifier(new Identifier("bla"));
+        Rotate rotation = new Rotate(15);
+        ops.add(rotation);
+        ops.setOutputFormat(OutputFormat.PNG);
+
+        Dimension fullSize = new Dimension(64, 58);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        instance.setSourceFormat(SourceFormat.JPG);
+        StreamSource streamSource = new TestStreamSource(
+                TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));
+        instance.setStreamSource(streamSource);
+        instance.process(ops, fullSize, outputStream);
+
+        ByteArrayInputStream inputStream =
+                new ByteArrayInputStream(outputStream.toByteArray());
+        final BufferedImage rotatedImage = ImageIO.read(inputStream);
+
+        int pixel = rotatedImage.getRGB(0, 0);
+        int alpha = (pixel >> 24) & 0xff;
+        int red = (pixel >> 16) & 0xff;
+        int green = (pixel >> 8) & 0xff;
+        int blue = (pixel) & 0xff;
+        assertEquals(0, alpha);
+        assertEquals(0, red);
+        assertEquals(0, green);
+        assertEquals(0, blue);
     }
 
 }

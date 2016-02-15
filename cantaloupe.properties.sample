@@ -227,12 +227,20 @@ processor.fallback = Java2dProcessor
 # Optional; overrides the PATH
 #GraphicsMagickProcessor.path_to_binaries = /usr/local/bin
 
+# Color of the background when an image is rotated. Only affects output
+# formats that do not support transparency.
+GraphicsMagickProcessor.background_color = black
+
 #----------------------------------------
 # ImageMagickProcessor
 #----------------------------------------
 
 # Optional; overrides the PATH
 #ImageMagickProcessor.path_to_binaries = /usr/local/bin
+
+# Color of the background when an image is rotated. Only affects output
+# formats that do not support transparency.
+ImageMagickProcessor.background_color = black
 
 #----------------------------------------
 # JaiProcessor
