@@ -579,7 +579,7 @@ class FilesystemCache implements Cache {
                         }
                     }
                 }
-                logger.info("Purged {} expired images and {} expired infos",
+                logger.info("Purged {} expired image(s) and {} expired dimension(s)",
                         imageCount, infoCount);
             } else {
                 throw new IOException(PATHNAME_CONFIG_KEY + " is not set");
