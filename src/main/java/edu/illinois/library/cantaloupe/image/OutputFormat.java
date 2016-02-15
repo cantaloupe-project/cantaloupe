@@ -5,16 +5,17 @@ import java.util.Map;
 
 public enum OutputFormat {
 
-    GIF("gif", "image/gif"),
-    JP2("jp2", "image/jp2"),
-    JPG("jpg", "image/jpeg"),
-    PDF("pdf", "application/pdf"),
-    PNG("png", "image/png"),
-    TIF("tif", "image/tiff"),
-    WEBP("webp", "image/webp");
+    GIF("gif", "image/gif", true),
+    JP2("jp2", "image/jp2", true),
+    JPG("jpg", "image/jpeg", false),
+    PDF("pdf", "application/pdf", false),
+    PNG("png", "image/png", true),
+    TIF("tif", "image/tiff", true),
+    WEBP("webp", "image/webp", true);
 
     private String extension;
     private String mediaType;
+    private boolean supportsTransparency;
 
     /**
      * @param mediaType
@@ -30,9 +31,12 @@ public enum OutputFormat {
         return null;
     }
 
-    OutputFormat(String extension, String mediaType) {
+    OutputFormat(String extension,
+                 String mediaType,
+                 boolean supportsTransparency) {
         this.extension = extension;
         this.mediaType = mediaType;
+        this.supportsTransparency = supportsTransparency;
     }
 
     public String getExtension() {
@@ -55,6 +59,10 @@ public enum OutputFormat {
                     contains(this.getExtension());
         }
         return this.equals(obj);
+    }
+
+    public boolean supportsTransparency() {
+        return this.supportsTransparency;
     }
 
     /**

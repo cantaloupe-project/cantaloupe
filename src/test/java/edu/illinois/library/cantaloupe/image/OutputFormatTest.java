@@ -85,6 +85,17 @@ public class OutputFormatTest {
     }
 
     @Test
+    public void testSupportsTransparency() {
+        assertTrue(OutputFormat.GIF.supportsTransparency());
+        assertTrue(OutputFormat.JP2.supportsTransparency());
+        assertFalse(OutputFormat.JPG.supportsTransparency());
+        assertFalse(OutputFormat.PDF.supportsTransparency());
+        assertTrue(OutputFormat.PNG.supportsTransparency());
+        assertTrue(OutputFormat.TIF.supportsTransparency());
+        assertTrue(OutputFormat.WEBP.supportsTransparency());
+    }
+
+    @Test
     public void testToMap() {
         Map<String,Object> map = OutputFormat.JPG.toMap();
         assertEquals("jpg", map.get("extension"));
