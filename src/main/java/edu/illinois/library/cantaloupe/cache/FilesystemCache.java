@@ -243,6 +243,16 @@ class FilesystemCache implements Cache {
                 System.currentTimeMillis() - file.lastModified() > ttlMsec;
     }
 
+    /**
+     * Does nothing, as this cache should always be "clean."
+     *
+     * @throws CacheException
+     */
+    @Override
+    public void cleanUp() {
+        logger.info("Cleaning up...");
+    }
+
     @Override
     public Dimension getDimension(Identifier identifier) throws CacheException {
         synchronized (lock2) {

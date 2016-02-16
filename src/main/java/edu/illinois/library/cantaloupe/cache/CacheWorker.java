@@ -70,13 +70,26 @@ public class CacheWorker implements Runnable {
                 if (cache != null) {
                     logger.info("Working...");
                     try {
+                        // Ensure the validity of the interval.
                         if (interval < 0) {
-                            throw new CacheException("Invalid interval (" +
-                                    INTERVAL_CONFIG_KEY + "). Aborting.");
+                            throw new IllegalArgumentException("Invalid " +
+                                    "interval (" + INTERVAL_CONFIG_KEY +
+                                    "). Aborting.");
                         }
-                        cache.purgeExpired();
+                        // Purge expired items.
+                        try {
+                            cache.purgeExpired();
+                        } catch (CacheException e) {
+                            logger.error(e.getMessage());
+                        }
+                        // Clean up.
+                        try {
+                            cache.cleanUp();
+                        } catch (CacheException e) {
+                            logger.error(e.getMessage());
+                        }
                         logger.info("Done working.");
-                    } catch (CacheException e) {
+                    } catch (IllegalArgumentException e) {
                         logger.error(e.getMessage());
                     }
                 } else {

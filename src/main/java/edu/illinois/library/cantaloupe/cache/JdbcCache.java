@@ -210,6 +210,16 @@ class JdbcCache implements Cache {
         return rs.next();
     }
 
+    /**
+     * Does nothing, as this cache should always be "clean."
+     *
+     * @throws CacheException
+     */
+    @Override
+    public void cleanUp() {
+        logger.info("Cleaning up...");
+    }
+
     @Override
     public Dimension getDimension(Identifier identifier) throws CacheException {
         final Timestamp oldestDate = oldestValidDate();

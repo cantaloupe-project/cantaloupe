@@ -19,6 +19,21 @@ import java.io.OutputStream;
 public interface Cache {
 
     /**
+     * <p>Cleans up the cache.</p>
+     *
+     * <p>This method should <strong>not</strong> purge any content. Other
+     * than that, implementations may interpret "clean up" however they
+     * wish.</p>
+     *
+     * <p>The frequency with which this method will be called may vary.
+     * It may never be called. Implementations should try to keep themselves
+     * "clean" without relying on this method.</p>
+     *
+     * @throws CacheException
+     */
+    void cleanUp() throws CacheException;
+
+    /**
      * <p>Reads cached dimension information.</p>
      *
      * <p>If a dimension corresponding to the given identifier exists in the
