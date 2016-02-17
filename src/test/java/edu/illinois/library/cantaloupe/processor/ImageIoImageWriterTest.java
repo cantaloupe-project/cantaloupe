@@ -26,6 +26,9 @@ public class ImageIoImageWriterTest {
         final Set<OutputFormat> outputFormats = new HashSet<>();
         for (OutputFormat outputFormat : OutputFormat.values()) {
             for (String mimeType : writerMimeTypes) {
+                if (mimeType.equals("image/jp2")) {
+                    continue;
+                }
                 if (outputFormat.getMediaType().equals(mimeType.toLowerCase())) {
                     outputFormats.add(outputFormat);
                 }

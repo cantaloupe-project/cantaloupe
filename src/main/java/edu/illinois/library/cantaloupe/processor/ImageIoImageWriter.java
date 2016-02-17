@@ -33,6 +33,10 @@ class ImageIoImageWriter {
         final Set<OutputFormat> outputFormats = new HashSet<>();
         for (OutputFormat outputFormat : OutputFormat.values()) {
             for (String mimeType : writerMimeTypes) {
+                // We don't support JP2.
+                if (mimeType.equals("image/jp2")) {
+                    continue;
+                }
                 if (outputFormat.getMediaType().equals(mimeType.toLowerCase())) {
                     outputFormats.add(outputFormat);
                 }

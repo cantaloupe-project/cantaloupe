@@ -63,6 +63,10 @@ class ImageIoImageReader {
     public static Set<SourceFormat> supportedFormats() {
         final HashSet<SourceFormat> formats = new HashSet<>();
         for (String mediaType : ImageIO.getReaderMIMETypes()) {
+            // We don't support JP2.
+            if (mediaType.equals("image/jp2")) {
+                continue;
+            }
             final SourceFormat sourceFormat =
                     SourceFormat.getSourceFormat(new MediaType(mediaType));
             if (sourceFormat != null && !sourceFormat.equals(SourceFormat.UNKNOWN)) {
