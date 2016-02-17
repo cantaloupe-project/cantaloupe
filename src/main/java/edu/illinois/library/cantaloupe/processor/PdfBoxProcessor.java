@@ -174,8 +174,11 @@ class PdfBoxProcessor extends AbstractProcessor
                     break;
                 }
             }
-            float pct = scale.getResultingScale(sourceSize);
-            final ReductionFactor rf = ReductionFactor.forScale(pct);
+            ReductionFactor rf = new ReductionFactor();
+            Float pct = scale.getResultingScale(sourceSize);
+            if (pct != null) {
+                rf = ReductionFactor.forScale(pct);
+            }
 
             // This processor supports a "page" URI query option.
             Integer page = 1;
