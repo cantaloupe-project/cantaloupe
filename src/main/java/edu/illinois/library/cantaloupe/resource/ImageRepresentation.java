@@ -38,18 +38,16 @@ public class ImageRepresentation extends OutputRepresentation {
     private OperationList ops;
 
     /**
-     * @param mediaType
      * @param fullSize
      * @param ops
      * @param disposition
      * @param processor
      */
-    public ImageRepresentation(final MediaType mediaType,
-                               final Dimension fullSize,
+    public ImageRepresentation(final Dimension fullSize,
                                final Processor processor,
                                final OperationList ops,
                                final Disposition disposition) {
-        super(mediaType);
+        super(new MediaType(ops.getOutputFormat().getMediaType()));
         this.fullSize = fullSize;
         this.processor = processor;
         this.ops = ops;
@@ -70,12 +68,12 @@ public class ImageRepresentation extends OutputRepresentation {
             try (InputStream inputStream =
                          cache.getImageInputStream(this.ops)) {
                 if (inputStream != null) {
-                    // a cached image is available; write it to the
-                    // response output stream.
+                    // A cached image is available; write it to the response
+                    // output stream.
                     IOUtils.copy(inputStream, outputStream);
                 } else {
-                    // create a TeeOutputStream to write to both the
-                    // response output stream and the cache simultaneously.
+                    // Create a TeeOutputStream to write to the response output
+                    // output stream and the cache pseudo-simultaneously.
                     cacheOutputStream = cache.getImageOutputStream(this.ops);
                     OutputStream teeStream = new TeeOutputStream(
                             outputStream, cacheOutputStream);

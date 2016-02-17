@@ -274,10 +274,7 @@ public abstract class AbstractResource extends ServerResource {
             throw new PayloadTooLargeException();
         }
 
-        final MediaType mediaType = new MediaType(
-                ops.getOutputFormat().getMediaType());
-        return new ImageRepresentation(mediaType, fullSize, proc,
-                ops, disposition);
+        return new ImageRepresentation(fullSize, proc, ops, disposition);
     }
 
     /**
