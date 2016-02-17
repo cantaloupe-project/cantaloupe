@@ -326,10 +326,7 @@ public abstract class ProcessorTest {
                         final String fixtureName = fixture.getName();
                         if (fixtureName.startsWith(sourceFormat.name().toLowerCase())) {
                             // Don't test various compressed 16-bit TIFFs because
-                            // TIFFImageReader doesn't support them. Hopefully no
-                            // one is using them anyway as they provide negative
-                            // benefit at 16-bit.
-                            // TODO: this should really be done on a per-processor basis
+                            // TIFFImageReader doesn't support them. TODO: this should really be done on a per-processor basis
                             if (sourceFormat.equals(SourceFormat.TIF) &&
                                     fixtureName.contains("x16-") &&
                                     (fixtureName.contains("-zip") ||
@@ -337,6 +334,10 @@ public abstract class ProcessorTest {
                                 continue;
                             } else if (sourceFormat.equals(SourceFormat.TIF) &&
                                     StringUtils.contains(fixtureName, "-jpeg")) {
+                                continue;
+                            } else if (fixtureName.contains("-1x1")) {
+                                // Don't test 1x1 images as they are
+                                // problematic with cropping & scaling
                                 continue;
                             }
                             doProcessTest(fixture, ops);
