@@ -416,16 +416,20 @@ abstract class JaiUtil {
                 yScale = scale.getPercent() / rf.getScale();
             }
 
-            logger.debug("scaleImage(): width: {}%; height: {}%",
-                    xScale * 100, yScale * 100);
-            final ParameterBlock pb = new ParameterBlock();
-            pb.addSource(inImage);
-            pb.add((float) xScale);
-            pb.add((float) yScale);
-            pb.add(0.0f);
-            pb.add(0.0f);
-            pb.add(interpolation);
-            scaledImage = JAI.create("scale", pb);
+            if (xScale > 0 && yScale > 0) {
+                logger.debug("scaleImage(): width: {}%; height: {}%",
+                        xScale * 100, yScale * 100);
+                final ParameterBlock pb = new ParameterBlock();
+                pb.addSource(inImage);
+                pb.add((float) xScale);
+                pb.add((float) yScale);
+                pb.add(0.0f);
+                pb.add(0.0f);
+                pb.add(interpolation);
+                scaledImage = JAI.create("scale", pb);
+            } else {
+                logger.debug("scaleImage(): cannot scale to 0% width/height.");
+            }
         }
         return scaledImage;
     }
