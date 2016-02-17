@@ -9,11 +9,11 @@ import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Node;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
-import javax.imageio.spi.IIORegistry;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
@@ -147,7 +147,7 @@ class ImageIoImageReader {
             it = ImageIO.getImageReaders(inputStream);
         }
 
-        if (sourceFormat.equals(SourceFormat.TIF)) {
+        if (sourceFormat != null && sourceFormat.equals(SourceFormat.TIF)) {
             while (it.hasNext()) {
                 reader = it.next();
                 // This version contains improvements over the Sun version,
@@ -199,6 +199,12 @@ class ImageIoImageReader {
 
     public void setSourceFormat(SourceFormat sourceFormat) {
         this.sourceFormat = sourceFormat;
+    }
+
+    public Node getMetadata(int imageIndex) throws IOException {
+        String metadataFormat = reader.getImageMetadata(imageIndex).
+                getNativeMetadataFormatName();
+        return reader.getImageMetadata(imageIndex).getAsTree(metadataFormat);
     }
 
     /**
