@@ -7,18 +7,28 @@ import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Node;
 
+import javax.media.jai.Interpolation;
 import javax.media.jai.RenderedOp;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -125,9 +135,39 @@ class JaiProcessor extends AbstractImageIoProcessor
                     if (op instanceof Crop) {
                         renderedOp = JaiUtil.
                                 cropImage(renderedOp, (Crop) op, rf);
-                    } else if (op instanceof Scale) {
-                        renderedOp = JaiUtil.
-                                scaleImage(renderedOp, (Scale) op, rf);
+                    } else if (op instanceof Scale && !op.isNoOp()) {
+                        Interpolation interpolation = Interpolation.
+                                getInstance(Interpolation.INTERP_BILINEAR);
+                        // The JAI scale operation has a bug that causes it to
+                        // fail on right-edge deflate-compressed tiles when
+                        // using any interpolation other than nearest-neighbor,
+                        // with an ArrayIndexOutOfBoundsException in
+                        // PlanarImage.cobbleByte().
+                        // Example: /iiif/2/56324x18006-pyramidal-tiled-deflate.tif/32768,0,23556,18006/737,/0/default.jpg
+                        // So, if we are scaling a TIFF and its metadata says
+                        // it's deflate-compressed, use nearest-neighbor, which
+                        // is horrible, but better than nothing.
+                        if (getSourceFormat().equals(SourceFormat.TIF)) {
+                            try {
+                                Node node = reader.getMetadata(0);
+                                StringWriter writer = new StringWriter();
+                                Transformer t = TransformerFactory.newInstance().newTransformer();
+                                t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+                                t.setOutputProperty(OutputKeys.INDENT, "no");
+                                t.transform(new DOMSource(node),
+                                        new StreamResult(writer));
+                                if (writer.toString().contains("description=\"ZLib\"")) {
+                                    interpolation = Interpolation.
+                                            getInstance(Interpolation.INTERP_NEAREST);
+                                }
+                            } catch (TransformerException e) {
+                                logger.error(e.getMessage());
+                            }
+                        }
+                        logger.debug("Scaling using {}",
+                                interpolation.getClass().getName());
+                        renderedOp = JaiUtil.scaleImage(renderedOp, (Scale) op,
+                                interpolation, rf);
                     } else if (op instanceof Transpose) {
                         renderedOp = JaiUtil.
                                 transposeImage(renderedOp, (Transpose) op);
