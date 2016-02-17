@@ -187,21 +187,10 @@ class ImageIoImageReader {
         }
     }
 
-    public void setSource(File inputFile) throws IOException {
-        dispose();
-        inputStream = new FileImageInputStream(inputFile);
-    }
-
-    public void setSource(StreamSource streamSource) throws IOException {
-        dispose();
-        inputStream = streamSource.newImageInputStream();
-    }
-
-    public void setSourceFormat(SourceFormat sourceFormat) {
-        this.sourceFormat = sourceFormat;
-    }
-
     public Node getMetadata(int imageIndex) throws IOException {
+        if (reader == null) {
+            createReader();
+        }
         String metadataFormat = reader.getImageMetadata(imageIndex).
                 getNativeMetadataFormatName();
         return reader.getImageMetadata(imageIndex).getAsTree(metadataFormat);
@@ -266,6 +255,20 @@ class ImageIoImageReader {
         final int width = reader.getTileWidth(imageIndex);
         final int height = reader.getTileHeight(imageIndex);
         return new Dimension(width, height);
+    }
+
+    public void setSource(File inputFile) throws IOException {
+        dispose();
+        inputStream = new FileImageInputStream(inputFile);
+    }
+
+    public void setSource(StreamSource streamSource) throws IOException {
+        dispose();
+        inputStream = streamSource.newImageInputStream();
+    }
+
+    public void setSourceFormat(SourceFormat sourceFormat) {
+        this.sourceFormat = sourceFormat;
     }
 
     ////////////////////////////////////////////////////////////////////////

@@ -50,6 +50,11 @@ public class ImageIoImageReaderTest {
     }
 
     @Test
+    public void testGetMetadata() throws Exception {
+        assertNotNull(reader.getMetadata(0));
+    }
+
+    @Test
     public void testGetNumResolutions() throws Exception {
         // monoresolution
         assertEquals(1, reader.getNumResolutions());
