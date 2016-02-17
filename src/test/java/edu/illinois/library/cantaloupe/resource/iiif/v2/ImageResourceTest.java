@@ -59,12 +59,12 @@ public class ImageResourceTest extends ResourceTest {
     public void testBasicAuthentication() throws Exception {
         final String username = "user";
         final String secret = "secret";
-        Application.stopServer();
+        Application.getWebServer().stop();
         Configuration config = Application.getConfiguration();
         config.setProperty(WebApplication.BASIC_AUTH_ENABLED_CONFIG_KEY, "true");
         config.setProperty(WebApplication.BASIC_AUTH_USERNAME_CONFIG_KEY, username);
         config.setProperty(WebApplication.BASIC_AUTH_SECRET_CONFIG_KEY, secret);
-        Application.startServer();
+        Application.getWebServer().start();
 
         // no credentials
         ClientResource client = getClientForUriPath(

@@ -224,12 +224,12 @@ public class ApplicationTest {
     public void testStartServerWithHttp() throws Exception {
         try {
             Application.setConfiguration(newConfiguration());
-            Application.startServer();
+            Application.getWebServer().start();
             ClientResource resource = getHttpClientForUriPath("/");
             resource.get();
             assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
         } finally {
-            Application.stopServer();
+            Application.getWebServer().stop();
         }
     }
 
@@ -239,18 +239,18 @@ public class ApplicationTest {
             Configuration config = newConfiguration();
             config.setProperty("https.enabled", true);
             Application.setConfiguration(config);
-            Application.startServer();
+            Application.getWebServer().start();
             ClientResource resource = getHttpsClientForUriPath("/");
             resource.get();
             assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
         } finally {
-            Application.stopServer();
+            Application.getWebServer().stop();
         }
     }
 
     @Test
     public void testStopServerStopsHttp() throws Exception {
-        Application.stopServer();
+        Application.getWebServer().stop();
         // test that the HTTP server is stopped
         ClientResource resource = getHttpClientForUriPath("/");
         resource.setRetryOnError(false);
@@ -264,7 +264,7 @@ public class ApplicationTest {
 
     @Test
     public void testStopServerStopsHttps() throws Exception {
-        Application.stopServer();
+        Application.getWebServer().stop();
         ClientResource resource = getHttpsClientForUriPath("/");
         resource.setRetryOnError(false);
         try {

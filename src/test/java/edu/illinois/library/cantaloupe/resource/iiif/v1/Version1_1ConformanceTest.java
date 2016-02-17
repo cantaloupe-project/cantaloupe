@@ -84,12 +84,12 @@ public class Version1_1ConformanceTest {
     @Before
     public void setUp() throws Exception {
         Application.setConfiguration(newConfiguration());
-        Application.startServer();
+        Application.getWebServer().start();
     }
 
     @After
     public void tearDown() throws Exception {
-        Application.stopServer();
+        Application.getWebServer().stop();
     }
 
     /**
