@@ -370,7 +370,12 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
             } else if (op instanceof Scale) {
                 final Scale scale = (Scale) op;
                 if (!scale.isNoOp()) {
-                    if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+                    if (scale.getPercent() != null) {
+                        int width = Math.round(fullSize.width * scale.getPercent());
+                        int height = Math.round(fullSize.height * scale.getPercent());
+                        filters.add(String.format("[%s] scale=%d:%d [scale]",
+                                filterId, width, height));
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                         filters.add(String.format("[%s] scale=%d:-1 [scale]",
                                 filterId, scale.getWidth()));
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
@@ -383,11 +388,6 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
                     } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
                         filters.add(String.format("[%s] scale=%d:%d [scale]",
                                 filterId, scale.getWidth(), scale.getHeight()));
-                    } else if (scale.getPercent() != 0) {
-                        int width = Math.round(fullSize.width * scale.getPercent());
-                        int height = Math.round(fullSize.height * scale.getPercent());
-                        filters.add(String.format("[%s] scale=%d:%d [scale]",
-                                filterId, width, height));
                     }
                     filterId = "scale";
                 }
