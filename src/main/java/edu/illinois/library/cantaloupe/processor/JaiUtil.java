@@ -367,7 +367,23 @@ abstract class JaiUtil {
      * @return Scaled image, or the input image if the given scale is a no-op.
      */
     public static RenderedOp scaleImage(RenderedOp inImage, Scale scale) {
-        return scaleImage(inImage, scale, new ReductionFactor(0));
+        return scaleImage(inImage, scale,
+                Interpolation.getInstance(Interpolation.INTERP_BILINEAR),
+                new ReductionFactor(0));
+    }
+
+    /**
+     * @param inImage Image to scale
+     * @param scale Scale operation
+     * @param rf Reduction factor that has already been applied to
+     *                        <code>inImage</code>
+     * @return Scaled image, or the input image if the given scale is a no-op.
+     */
+    public static RenderedOp scaleImage(RenderedOp inImage, Scale scale,
+                                        ReductionFactor rf) {
+        return scaleImage(inImage, scale,
+                Interpolation.getInstance(Interpolation.INTERP_BILINEAR),
+                rf);
     }
 
     /**
@@ -378,11 +394,13 @@ abstract class JaiUtil {
      *
      * @param inImage Image to scale
      * @param scale Requested size ignoring any reduction factor
+     * @param interpolation Interpolation
      * @param rf Reduction factor that has already been applied to
      *                        <code>inImage</code>
      * @return Scaled image, or the input image if the given scale is a no-op.
      */
     public static RenderedOp scaleImage(RenderedOp inImage, Scale scale,
+                                        Interpolation interpolation,
                                         ReductionFactor rf) {
         RenderedOp scaledImage = inImage;
         if (!scale.isNoOp()) {
@@ -406,20 +424,7 @@ abstract class JaiUtil {
             pb.add((float) yScale);
             pb.add(0.0f);
             pb.add(0.0f);
-            // JAI bug: The Interpolation.INTERP_BI* interpolations may result
-            // in an ArrayIndexOutOfBoundsException in PlanarImage.cobbleByte()
-            // during writing, for some images that border the right edge.
-            // Example: /iiif/2/56324x18006-pyramidal-tiled-deflate.tif/32768,0,23556,18006/737,/0/default.jpg
-            // The quality of nearest-neighbor is terrible, but better than
-            // nothing.
-            // * This also happens when using the "SubsampleAverage" operator
-            //   instead.
-            // * Incremental downscaling by halves doesn't solve the problem,
-            //   nor improve output quality.
-            // * Also happens with JAI-EXT.
-            // TODO: improve downscale quality somehow
-            // TODO: add a JaiProcessor.scale_mode option offering this or INTERP_BILINEAR?
-            pb.add(Interpolation.getInstance(Interpolation.INTERP_NEAREST));
+            pb.add(interpolation);
             scaledImage = JAI.create("scale", pb);
         }
         return scaledImage;
