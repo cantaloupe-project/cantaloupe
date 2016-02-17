@@ -89,10 +89,6 @@ public class Application {
         return null;
     }
 
-    public static WebServer getWebServer() {
-        return webServer;
-    }
-
     /**
      * @return The application version from manifest.mf, or a string like
      * "Non-Release" if not running from a jar.
@@ -117,6 +113,10 @@ public class Application {
             }
         }
         return versionStr;
+    }
+
+    public static WebServer getWebServer() {
+        return webServer;
     }
 
     private static void purgeCacheAtLaunch() throws CacheException {
@@ -231,7 +231,7 @@ public class Application {
         } else {
             // If the cache worker is enabled, run it in a low-priority
             // background thread.
-            if (getConfiguration().getBoolean(CacheWorker.ENABLED_CONFIG_KEY)) {
+            if (getConfiguration().getBoolean(CacheWorker.ENABLED_CONFIG_KEY, false)) {
                 // Add a 15-second startup delay to reduce load.
                 CacheWorker.runInBackground(15);
             }
