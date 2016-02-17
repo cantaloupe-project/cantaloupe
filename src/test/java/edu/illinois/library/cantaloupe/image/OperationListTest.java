@@ -95,6 +95,14 @@ public class OperationListTest {
         assertEquals(0, ops2.compareTo(this.ops));
     }
 
+    /* contains() */
+
+    @Test
+    public void testContains() {
+        assertTrue(ops.contains(Scale.class));
+        assertFalse(ops.contains(Filter.class));
+    }
+
     /* equals(Object) */
 
     @Test

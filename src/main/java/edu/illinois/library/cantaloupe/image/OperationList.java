@@ -47,6 +47,19 @@ public class OperationList implements Comparable<OperationList>,
         return (last == 0) ? this.toString().compareTo(ops.toString()) : last;
     }
 
+    /**
+     * @param clazz
+     * @return Whether the instance contains an operation of the given class.
+     */
+    public boolean contains(Class clazz) {
+        for (Operation op : this) {
+            if (op.getClass().equals(clazz)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof OperationList) {
