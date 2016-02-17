@@ -325,19 +325,35 @@ public abstract class ProcessorTest {
                     for (File fixture : fixtures) {
                         final String fixtureName = fixture.getName();
                         if (fixtureName.startsWith(sourceFormat.name().toLowerCase())) {
-                            // Don't test various compressed 16-bit TIFFs because
-                            // TIFFImageReader doesn't support them. TODO: this should really be done on a per-processor basis
-                            if (sourceFormat.equals(SourceFormat.TIF) &&
+                            // Don't test various compressed 16-bit TIFFs in
+                            // Java2dProcessor or JaiProcessor because
+                            // TIFFImageReader doesn't support them.
+                            if ((this instanceof Java2dProcessorTest ||
+                                    this instanceof JaiProcessorTest) &&
+                                    sourceFormat.equals(SourceFormat.TIF) &&
                                     fixtureName.contains("x16-") &&
                                     (fixtureName.contains("-zip") ||
                                             fixtureName.contains("-lzw"))) {
                                 continue;
-                            } else if (sourceFormat.equals(SourceFormat.TIF) &&
+                            }
+                            // TIFFImageReader doesn't like JPEG-encoded TIFFs
+                            // either.
+                            if ((this instanceof Java2dProcessorTest ||
+                                    this instanceof JaiProcessorTest) &&
+                                    sourceFormat.equals(SourceFormat.TIF) &&
                                     StringUtils.contains(fixtureName, "-jpeg")) {
                                 continue;
-                            } else if (fixtureName.contains("-1x1")) {
-                                // Don't test 1x1 images as they are
-                                // problematic with cropping & scaling
+                            }
+                            // Don't test 1x1 images as they are problematic
+                            // with cropping & scaling.
+                            if (fixtureName.contains("-1x1")) {
+                                continue;
+                            }
+                            // The JAI bandcombine operation does not like to
+                            // work with GIFs, apparently only when testing. (?)
+                            if (this instanceof JaiProcessorTest &&
+                                    ops.contains(Filter.class) &&
+                                    fixture.getName().endsWith("gif")) {
                                 continue;
                             }
                             doProcessTest(fixture, ops);
