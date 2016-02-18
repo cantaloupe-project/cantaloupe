@@ -405,29 +405,27 @@ class FilesystemCache implements Cache {
     }
 
     @Override
-    public InputStream getImageInputStream(OperationList ops) {
-        try {
-            final File cacheFile = getImageFile(ops);
-            if (cacheFile != null && cacheFile.exists()) {
-                if (!isExpired(cacheFile)) {
-                    try {
-                        logger.info("Hit for image: {}", ops);
-                        return new FileInputStream(cacheFile);
-                    } catch (FileNotFoundException e) {
-                        logger.error(e.getMessage(), e);
-                    }
-                } else {
-                    logger.info("Deleting stale cache file: {}",
-                            cacheFile.getName());
-                    if (!cacheFile.delete()) {
-                        logger.error("Unable to delete {}", cacheFile);
-                    }
+    public InputStream getImageInputStream(OperationList ops)
+            throws CacheException {
+        InputStream inputStream = null;
+        final File cacheFile = getImageFile(ops);
+        if (cacheFile != null && cacheFile.exists()) {
+            if (!isExpired(cacheFile)) {
+                try {
+                    logger.info("Hit for image: {}", ops);
+                    inputStream = new FileInputStream(cacheFile);
+                } catch (FileNotFoundException e) {
+                    logger.error(e.getMessage(), e);
+                }
+            } else {
+                logger.info("Deleting stale cache file: {}",
+                        cacheFile.getName());
+                if (!cacheFile.delete()) {
+                    logger.error("Unable to delete {}", cacheFile);
                 }
             }
-        } catch (CacheException e) {
-            logger.error(e.getMessage(), e);
         }
-        return null;
+        return inputStream;
     }
 
     @Override

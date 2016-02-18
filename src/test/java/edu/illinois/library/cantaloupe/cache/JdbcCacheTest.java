@@ -339,7 +339,7 @@ public class JdbcCacheTest {
     }
 
     @Test
-    public void testGetImageInputStreamWithZeroTtl() {
+    public void testGetImageInputStreamWithZeroTtl() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
         assertNotNull(instance.getImageInputStream(ops));

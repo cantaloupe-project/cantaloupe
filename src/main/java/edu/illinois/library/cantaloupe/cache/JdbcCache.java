@@ -252,34 +252,32 @@ class JdbcCache implements Cache {
     }
 
     @Override
-    public InputStream getImageInputStream(OperationList ops) {
+    public InputStream getImageInputStream(OperationList ops)
+            throws CacheException {
         InputStream inputStream = null;
-        try {
-            final String tableName = getImageTableName();
-            final Timestamp oldestDate = oldestValidDate();
-            try (Connection conn = getConnection()) {
-                String sql = String.format(
-                        "SELECT %s, %s FROM %s WHERE %s = ?",
-                        IMAGE_TABLE_IMAGE_COLUMN,
-                        IMAGE_TABLE_LAST_MODIFIED_COLUMN, tableName,
-                        IMAGE_TABLE_OPERATIONS_COLUMN);
-                PreparedStatement statement = conn.prepareStatement(sql);
-                statement.setString(1, ops.toString());
-                logger.debug(sql);
-                ResultSet resultSet = statement.executeQuery();
-                if (resultSet.next()) {
-                    if (resultSet.getTimestamp(2).after(oldestDate)) {
-                        logger.info("Hit for image: {}", ops);
-                        inputStream = resultSet.getBinaryStream(1);
-                    } else {
-                        logger.info("Miss for image: {}", ops);
-                        purgeImage(ops, conn);
-                    }
+
+        final String tableName = getImageTableName();
+        final Timestamp oldestDate = oldestValidDate();
+        try (Connection conn = getConnection()) {
+            String sql = String.format(
+                    "SELECT %s, %s FROM %s WHERE %s = ?",
+                    IMAGE_TABLE_IMAGE_COLUMN,
+                    IMAGE_TABLE_LAST_MODIFIED_COLUMN, tableName,
+                    IMAGE_TABLE_OPERATIONS_COLUMN);
+            PreparedStatement statement = conn.prepareStatement(sql);
+            statement.setString(1, ops.toString());
+            logger.debug(sql);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                if (resultSet.getTimestamp(2).after(oldestDate)) {
+                    logger.info("Hit for image: {}", ops);
+                    inputStream = resultSet.getBinaryStream(1);
+                } else {
+                    logger.info("Miss for image: {}", ops);
+                    purgeImage(ops, conn);
                 }
-            } catch (CacheException | SQLException e) {
-                logger.error(e.getMessage(), e);
             }
-        } catch (CacheException e) {
+        } catch (SQLException e) {
             logger.error(e.getMessage(), e);
         }
         return inputStream;

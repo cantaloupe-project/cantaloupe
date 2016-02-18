@@ -59,8 +59,9 @@ public interface Cache {
      * @return Input stream corresponding to the given operation list, or null
      *         if a non-expired image corresponding to the given operation
      *         list does not exist in the cache.
+     * @throws CacheException
      */
-    InputStream getImageInputStream(OperationList opList);
+    InputStream getImageInputStream(OperationList opList) throws CacheException;
 
     /**
      * @param opList Operation list for which to retrieve an output stream for
