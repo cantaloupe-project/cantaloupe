@@ -20,6 +20,7 @@ import org.junit.Test;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
@@ -59,6 +60,51 @@ public class FilesystemCacheTest {
         FileUtils.deleteDirectory(fixturePath);
     }
 
+    @Test
+    public void testCleanUp() throws Exception {
+        OperationList ops = TestUtil.newOperationList();
+
+        // create new image and info files
+        File imageFile = instance.getImageFile(ops);
+        imageFile.getParentFile().mkdirs();
+        imageFile.createNewFile();
+        File infoFile = instance.getInfoFile(ops.getIdentifier());
+        infoFile.getParentFile().mkdirs();
+        infoFile.createNewFile();
+
+        // and temp files
+        File imageTempFile = instance.getImageTempFile(ops);
+        imageTempFile.createNewFile();
+        File infoTempFile = instance.getInfoTempFile(ops.getIdentifier());
+        infoTempFile.createNewFile();
+
+        instance.cleanUp();
+
+        // the temp files aren't expired yet, so expect them to be present
+        Iterator<File> it = FileUtils.iterateFiles(fixturePath, null, true);
+        int count = 0;
+        while (it.hasNext()) {
+            it.next();
+            count++;
+        }
+        assertEquals(4, count);
+
+        // expire them and check again
+        for (File file : new File[] { imageTempFile, infoTempFile }) {
+            file.setLastModified(System.currentTimeMillis() - 1000 * 60 * 300);
+        }
+
+        instance.cleanUp();
+
+        it = FileUtils.iterateFiles(fixturePath, null, true);
+        count = 0;
+        while (it.hasNext()) {
+            it.next();
+            count++;
+        }
+        assertEquals(2, count);
+    }
+
     /* purge() */
 
     @Test
@@ -87,36 +133,14 @@ public class FilesystemCacheTest {
         infoFile.createNewFile();
 
         instance.purge();
-        assertEquals(0, fixturePath.listFiles().length);
-    }
 
-    @Test
-    public void testPurgeFailureThrowsException() throws Exception {
-        OperationList ops = TestUtil.newOperationList();
-        // create unwritable cache files
-        File imageFile = instance.getImageFile(ops);
-        imageFile.getParentFile().mkdirs();
-        imageFile.createNewFile();
-        imageFile.getParentFile().setWritable(false);
-        File infoFile = instance.getInfoFile(ops.getIdentifier());
-        infoFile.getParentFile().mkdirs();
-        infoFile.createNewFile();
-        infoFile.getParentFile().setWritable(false);
-        try {
-            try {
-                instance.purge();
-                fail("Expected exception");
-            } catch (CacheException e) {
-                assertTrue(e.getMessage().startsWith("Unable to delete"));
-            }
-            imageFile.getParentFile().setWritable(true);
-            infoFile.getParentFile().setWritable(true);
-            instance.purge();
-            assertEquals(0, fixturePath.listFiles().length);
-        } finally {
-            imageFile.getParentFile().setWritable(true);
-            infoFile.getParentFile().setWritable(true);
+        Iterator<File> it = FileUtils.iterateFiles(fixturePath, null, true);
+        int count = 0;
+        while (it.hasNext()) {
+            it.next();
+            count++;
         }
+        assertEquals(0, count);
     }
 
     /* purge(Identifier) */
@@ -175,39 +199,6 @@ public class FilesystemCacheTest {
         assertEquals(0, FileUtils.listFiles(infoPath, null, true).size());
     }
 
-    @Test
-    public void testPurgeWithOperationListFailureThrowsException()
-            throws Exception {
-        OperationList ops = TestUtil.newOperationList();
-
-        File imageFile = instance.getImageFile(ops);
-        imageFile.getParentFile().mkdirs();
-        imageFile.createNewFile();
-        imageFile.getParentFile().setWritable(false);
-
-        File infoFile = instance.getInfoFile(ops.getIdentifier());
-        infoFile.getParentFile().mkdirs();
-        infoFile.createNewFile();
-        infoFile.getParentFile().setWritable(false);
-
-        try {
-            try {
-                instance.purge(ops);
-                fail("Expected exception");
-            } catch (CacheException e) {
-                assertTrue(e.getMessage().startsWith("Unable to delete"));
-            }
-            imageFile.getParentFile().setWritable(true);
-            infoFile.getParentFile().setWritable(true);
-            instance.purge(ops);
-            assertEquals(0, FileUtils.listFiles(imagePath, null, true).size());
-            assertEquals(0, FileUtils.listFiles(infoPath, null, true).size());
-        } finally {
-            imageFile.getParentFile().setWritable(true);
-            infoFile.getParentFile().setWritable(true);
-        }
-    }
-
     /* purgeExpired() */
 
     @Test
@@ -240,42 +231,6 @@ public class FilesystemCacheTest {
         instance.purgeExpired();
         assertEquals(1, FileUtils.listFiles(imagePath, null, true).size());
         assertEquals(1, FileUtils.listFiles(infoPath, null, true).size());
-    }
-
-    @Test
-    public void testPurgeExpiredFailureThrowsException() throws Exception {
-        Application.getConfiguration().setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
-
-        OperationList ops = TestUtil.newOperationList();
-        // create an unwritable image cache file
-        File imageFile = instance.getImageFile(ops);
-        imageFile.getParentFile().mkdirs();
-        imageFile.createNewFile();
-        imageFile.getParentFile().setWritable(false);
-
-        File infoFile = instance.getInfoFile(ops.getIdentifier());
-        infoFile.getParentFile().mkdirs();
-        infoFile.createNewFile();
-        infoFile.getParentFile().setWritable(false);
-
-        Thread.sleep(1500);
-
-        try {
-            try {
-                instance.purgeExpired();
-                fail("Expected exception");
-            } catch (CacheException e) {
-                assertTrue(e.getMessage().startsWith("Unable to delete"));
-            }
-            imageFile.getParentFile().setWritable(true);
-            infoFile.getParentFile().setWritable(true);
-            instance.purgeExpired();
-            assertEquals(0, FileUtils.listFiles(imagePath, null, true).size());
-            assertEquals(0, FileUtils.listFiles(infoPath, null, true).size());
-        } finally {
-            imageFile.getParentFile().setWritable(true);
-            infoFile.getParentFile().setWritable(true);
-        }
     }
 
     /* getDimension(Identifier) */
