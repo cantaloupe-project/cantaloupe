@@ -76,9 +76,9 @@ public interface Cache {
     /**
      * Deletes the entire cache contents.
      *
-     * @throws CacheException If the cache is misconfigured or there is some
-     * other error.
-     * @throws CacheException
+     * @throws CacheException Upon fatal error. Implementations should do the
+     *         best they can to complete the operation and swallow and log
+     *         non-fatal errors.
      */
     void purge() throws CacheException;
 
@@ -87,7 +87,9 @@ public interface Cache {
      * identifier.
      *
      * @param identifier
-     * @throws CacheException
+     * @throws CacheException Upon fatal error. Implementations should do the
+     *         best they can to complete the operation and swallow and log
+     *         non-fatal errors.
      */
     void purge(Identifier identifier) throws CacheException;
 
@@ -95,14 +97,18 @@ public interface Cache {
      * Deletes the cached image corresponding to the given operation list.
      *
      * @param opList
-     * @throws CacheException
+     * @throws CacheException Upon fatal error. Implementations should do the
+     *         best they can to complete the operation and swallow and log
+     *         non-fatal errors.
      */
     void purge(OperationList opList) throws CacheException;
 
     /**
      * Deletes expired images and dimensions from the cache.
      *
-     * @throws CacheException
+     * @throws CacheException Upon fatal error. Implementations should do the
+     *         best they can to complete the operation and swallow and log
+     *         non-fatal errors.
      */
     void purgeExpired() throws CacheException;
 
