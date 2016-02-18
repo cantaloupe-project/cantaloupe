@@ -29,7 +29,8 @@ public class ImageInfoFactoryTest {
         processor = ProcessorFactory.getProcessor(Format.JPG);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
-        info = ImageInfoFactory.newImageInfo(imageUri, processor);
+        info = ImageInfoFactory.newImageInfo(imageUri, processor,
+                processor.getSize());
     }
 
     @Test
@@ -71,7 +72,8 @@ public class ImageInfoFactoryTest {
         processor.setSourceFormat(Format.TIF);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif"));
-        info = ImageInfoFactory.newImageInfo(imageUri, processor);
+        info = ImageInfoFactory.newImageInfo(imageUri, processor,
+                processor.getSize());
 
         assertEquals(64, (long) info.tileWidth);
     }
@@ -86,7 +88,8 @@ public class ImageInfoFactoryTest {
         processor.setSourceFormat(Format.TIF);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif"));
-        info = ImageInfoFactory.newImageInfo(imageUri, processor);
+        info = ImageInfoFactory.newImageInfo(imageUri, processor,
+                processor.getSize());
 
         assertEquals(64, (long) info.tileWidth);
         assertEquals(56, (long) info.tileHeight);

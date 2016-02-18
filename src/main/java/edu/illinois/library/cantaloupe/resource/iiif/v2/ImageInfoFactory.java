@@ -50,10 +50,9 @@ abstract class ImageInfoFactory {
 
     public static ImageInfo newImageInfo(final Identifier identifier,
                                          final String imageUri,
-                                         final Processor processor)
+                                         final Processor processor,
+                                         final Dimension fullSize)
             throws ProcessorException {
-        final Dimension fullSize = processor.getSize();
-
         // Create an ImageInfo instance, which will eventually be serialized
         // to JSON.
         final ImageInfo imageInfo = new ImageInfo();

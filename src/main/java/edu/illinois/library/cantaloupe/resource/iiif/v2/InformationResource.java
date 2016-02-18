@@ -78,7 +78,8 @@ public class InformationResource extends AbstractResource {
 
         // Get an ImageInfo instance corresponding to the source image
         ImageInfo imageInfo = ImageInfoFactory.newImageInfo(
-                identifier, getImageUri(identifier), proc);
+                identifier, getImageUri(identifier), proc,
+                getSize(identifier, proc));
         StringRepresentation rep = new StringRepresentation(imageInfo.toJson());
 
         this.addHeader("Link", "<http://iiif.io/api/image/2/context.json>; " +

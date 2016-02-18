@@ -76,7 +76,7 @@ public class InformationResource extends AbstractResource {
 
         // Get an ImageInfo instance corresponding to the source image
         ImageInfo imageInfo = ImageInfoFactory.newImageInfo(
-                getImageUri(identifier), proc);
+                getImageUri(identifier), proc, getSize(identifier, proc));
         StringRepresentation rep = new StringRepresentation(imageInfo.toJson());
 
         this.addHeader("Link", String.format("<%s>;rel=\"profile\";",

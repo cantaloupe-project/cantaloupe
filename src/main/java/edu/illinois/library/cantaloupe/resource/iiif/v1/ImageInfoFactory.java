@@ -17,10 +17,9 @@ abstract class ImageInfoFactory {
     private static final int MIN_TILE_SIZE = 512;
 
     public static ImageInfo newImageInfo(final String imageUri,
-                                         final Processor processor)
+                                         final Processor processor,
+                                         final Dimension fullSize)
             throws ProcessorException {
-        final Dimension fullSize = processor.getSize();
-
         final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
                 processor.getSupportedFeatures(),
                 processor.getSupportedIiif1_1Qualities(),
