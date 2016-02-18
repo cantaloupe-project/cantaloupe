@@ -314,23 +314,23 @@ public class FilesystemCacheTest {
         assertNull(instance.getDimension(identifier));
     }
 
-    /* getIdentifierBasedSubdirectory(String) */
+    /* getHashedStringBasedSubdirectory(String) */
 
     @Test
     public void testGetIdentifierBasedSubdirectory() throws Exception {
         assertEquals(
                 String.format("/08%s32%sc1", File.separator, File.separator),
-                instance.getIdentifierBasedSubdirectory("cats"));
+                instance.getHashedStringBasedSubdirectory("cats"));
 
         Configuration config = Application.getConfiguration();
         config.setProperty(FilesystemCache.DIRECTORY_DEPTH_CONFIG_KEY, 2);
         config.setProperty(FilesystemCache.DIRECTORY_NAME_LENGTH_CONFIG_KEY, 3);
         assertEquals(
                 String.format("/083%s2c1", File.separator, File.separator),
-                instance.getIdentifierBasedSubdirectory("cats"));
+                instance.getHashedStringBasedSubdirectory("cats"));
 
         config.setProperty(FilesystemCache.DIRECTORY_DEPTH_CONFIG_KEY, 0);
-        assertEquals("", instance.getIdentifierBasedSubdirectory("cats"));
+        assertEquals("", instance.getHashedStringBasedSubdirectory("cats"));
     }
 
     /* getImageFile(OperationList) */
@@ -362,7 +362,7 @@ public class FilesystemCacheTest {
         final String expected = String.format("%s%simage%s%s%s_%s_%s_%s_%s.%s",
                 pathname,
                 File.separator,
-                instance.getIdentifierBasedSubdirectory(identifier.toString()),
+                instance.getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator,
                 FilesystemCache.filenameSafe(identifier.toString()),
                 FilesystemCache.filenameSafe(crop.toString()),
@@ -396,7 +396,7 @@ public class FilesystemCacheTest {
         final String expected = String.format("%s%simage%s%s%s.%s",
                 pathname,
                 File.separator,
-                instance.getIdentifierBasedSubdirectory(ops.getIdentifier().toString()),
+                instance.getHashedStringBasedSubdirectory(ops.getIdentifier().toString()),
                 File.separator,
                 FilesystemCache.filenameSafe(identifier.toString()),
                 format);
@@ -487,7 +487,7 @@ public class FilesystemCacheTest {
         final String expected = String.format("%s%sinfo%s%s%s.json",
                 pathname,
                 File.separator,
-                instance.getIdentifierBasedSubdirectory(identifier.toString()),
+                instance.getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator,
                 FilesystemCache.filenameSafe(identifier.toString()));
         assertEquals(new File(expected), instance.getInfoFile(identifier));

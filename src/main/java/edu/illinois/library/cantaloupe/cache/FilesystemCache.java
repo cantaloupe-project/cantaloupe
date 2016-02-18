@@ -216,11 +216,7 @@ class FilesystemCache implements Cache {
      * @throws CacheException
      */
     private static String getRootImagePathname() throws CacheException {
-        final String pathname = getRootPathname();
-        if (pathname != null) {
-            return pathname + File.separator + IMAGE_FOLDER;
-        }
-        return null;
+        return getRootPathname() + File.separator + IMAGE_FOLDER;
     }
 
     /**
@@ -229,11 +225,7 @@ class FilesystemCache implements Cache {
      * @throws CacheException
      */
     private static String getRootInfoPathname() throws CacheException {
-        final String pathname = getRootPathname();
-        if (pathname != null) {
-            return pathname + File.separator + INFO_FOLDER;
-        }
-        return null;
+        return getRootPathname() + File.separator + INFO_FOLDER;
     }
 
     private static boolean isExpired(File file) {
@@ -298,21 +290,15 @@ class FilesystemCache implements Cache {
      * @return File corresponding to the given parameters.
      */
     public File getInfoFile(final Identifier identifier) throws CacheException {
-        final String cachePathname = getRootInfoPathname();
-        if (cachePathname != null) {
-            final String cacheRoot =
-                    StringUtils.stripEnd(cachePathname, File.separator);
-            final String subfolderPath = StringUtils.stripEnd(
-                    getIdentifierBasedSubdirectory(identifier.toString()),
-                    File.separator);
-            final String identifierFilename =
-                    filenameSafe(identifier.toString());
-            final String pathname = cacheRoot + subfolderPath +
-                            File.separator + identifierFilename +
-                            INFO_EXTENSION;
-            return new File(pathname);
-        }
-        return null;
+        final String cacheRoot =
+                StringUtils.stripEnd(getRootInfoPathname(), File.separator);
+        final String subfolderPath = StringUtils.stripEnd(
+                getHashedStringBasedSubdirectory(identifier.toString()),
+                File.separator);
+        final String identifierFilename = filenameSafe(identifier.toString());
+        final String pathname = cacheRoot + subfolderPath + File.separator +
+                identifierFilename + INFO_EXTENSION;
+        return new File(pathname);
     }
 
     /**
@@ -320,7 +306,7 @@ class FilesystemCache implements Cache {
      * @return Directory path composed of fragments of a hash of the given
      * string.
      */
-    public String getIdentifierBasedSubdirectory(final String uniqueString) {
+    public String getHashedStringBasedSubdirectory(final String uniqueString) {
         final StringBuilder path = new StringBuilder();
         try {
             // Use a fast algo. Collisions don't matter.
@@ -348,33 +334,28 @@ class FilesystemCache implements Cache {
      * Returns a File corresponding to the given operation list.
      *
      * @param ops Operation list identifying the file.
-     * @return File corresponding to the given operation list, or null if
-     * {@link #PATHNAME_CONFIG_KEY} is not set.
+     * @return File corresponding to the given operation list.
      */
     public File getImageFile(OperationList ops) throws CacheException {
-        final String cachePathname = getRootImagePathname();
-        if (cachePathname != null) {
-            final List<String> parts = new ArrayList<>();
-            final String cacheRoot =
-                    StringUtils.stripEnd(cachePathname, File.separator);
-            final String subfolderPath = StringUtils.stripEnd(
-                    getIdentifierBasedSubdirectory(ops.getIdentifier().toString()),
-                    File.separator);
-            final String identifierFilename =
-                    filenameSafe(ops.getIdentifier().toString());
-            parts.add(cacheRoot + subfolderPath +
-                    File.separator + identifierFilename);
-            for (Operation op : ops) {
-                if (!op.isNoOp()) {
-                    parts.add(filenameSafe(op.toString()));
-                }
+        final List<String> parts = new ArrayList<>();
+        final String cacheRoot =
+                StringUtils.stripEnd(getRootImagePathname(), File.separator);
+        final String subfolderPath = StringUtils.stripEnd(
+                getHashedStringBasedSubdirectory(ops.getIdentifier().toString()),
+                File.separator);
+        final String identifierFilename =
+                filenameSafe(ops.getIdentifier().toString());
+        parts.add(cacheRoot + subfolderPath + File.separator +
+                identifierFilename);
+        for (Operation op : ops) {
+            if (!op.isNoOp()) {
+                parts.add(filenameSafe(op.toString()));
             }
-            final String baseName = StringUtils.join(parts, "_");
-
-            return new File(baseName + "." +
-                    ops.getOutputFormat().getPreferredExtension());
         }
-        return null;
+        final String baseName = StringUtils.join(parts, "_");
+
+        return new File(baseName + "." +
+                ops.getOutputFormat().getPreferredExtension());
     }
 
     /**
@@ -398,7 +379,7 @@ class FilesystemCache implements Cache {
         }
 
         final File cacheFolder = new File(getRootImagePathname() +
-                getIdentifierBasedSubdirectory(identifier.toString()));
+                getHashedStringBasedSubdirectory(identifier.toString()));
         final File[] files =
                 cacheFolder.listFiles(new IdentifierFilter(identifier));
         return new ArrayList<>(Arrays.asList(files));
@@ -520,18 +501,17 @@ class FilesystemCache implements Cache {
             }
         }
         imagesBeingPurged.add(opList);
-        logger.info("Purging {}", opList);
+        logger.info("Purging {}...", opList);
         try {
-            final File imageFile = getImageFile(opList);
-            if (imageFile != null && imageFile.exists()) {
-                if (!imageFile.delete()) {
-                    throw new IOException("Unable to delete " + imageFile);
-                }
-            }
-            final File infoFile = getInfoFile(opList.getIdentifier());
-            if (infoFile != null && infoFile.exists()) {
-                if (!infoFile.delete()) {
-                    throw new IOException("Unable to delete " + imageFile);
+            final File[] filesToDelete = {
+                    getImageFile(opList),
+                    getImageTempFile(opList),
+                    getInfoFile(opList.getIdentifier()) };
+            for (File file : filesToDelete) {
+                if (file != null && file.exists()) {
+                    if (!file.delete()) {
+                        throw new IOException("Unable to delete " + file);
+                    }
                 }
             }
         } catch (IOException e) {
@@ -553,45 +533,43 @@ class FilesystemCache implements Cache {
                 }
             }
         }
+        logger.info("Purging expired items...");
         try {
             purgingInProgress.set(true);
             final String imagePathname = getRootImagePathname();
             final String infoPathname = getRootInfoPathname();
-            if (imagePathname != null && infoPathname != null) {
-                long imageCount = 0;
-                final File imageDir = new File(imagePathname);
-                Iterator<File> it = FileUtils.iterateFiles(imageDir, null, true);
-                while (it.hasNext()) {
-                    File file = it.next();
-                    if (isExpired(file)) {
-                        if (file.delete()) {
-                            imageCount++;
-                        } else {
-                            throw new IOException("Unable to delete " +
-                                    file.getAbsolutePath());
-                        }
-                    }
-                }
 
-                long infoCount = 0;
-                final File infoDir = new File(infoPathname);
-                it = FileUtils.iterateFiles(infoDir, null, true);
-                while (it.hasNext()) {
-                    File file = it.next();
-                    if (isExpired(file)) {
-                        if (file.delete()) {
-                            infoCount++;
-                        } else {
-                            throw new IOException("Unable to delete " +
-                                    file.getAbsolutePath());
-                        }
+            long imageCount = 0;
+            final File imageDir = new File(imagePathname);
+            Iterator<File> it = FileUtils.iterateFiles(imageDir, null, true);
+            while (it.hasNext()) {
+                File file = it.next();
+                if (isExpired(file)) {
+                    if (file.delete()) {
+                        imageCount++;
+                    } else {
+                        throw new IOException("Unable to delete " +
+                                file.getAbsolutePath());
                     }
                 }
-                logger.info("Purged {} expired image(s) and {} expired dimension(s)",
-                        imageCount, infoCount);
-            } else {
-                throw new IOException(PATHNAME_CONFIG_KEY + " is not set");
             }
+
+            long infoCount = 0;
+            final File infoDir = new File(infoPathname);
+            it = FileUtils.iterateFiles(infoDir, null, true);
+            while (it.hasNext()) {
+                File file = it.next();
+                if (isExpired(file)) {
+                    if (file.delete()) {
+                        infoCount++;
+                    } else {
+                        throw new IOException("Unable to delete " +
+                                file.getAbsolutePath());
+                    }
+                }
+            }
+            logger.info("Purged {} expired image(s) and {} expired dimension(s)",
+                    imageCount, infoCount);
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);
         } finally {
@@ -615,25 +593,22 @@ class FilesystemCache implements Cache {
         try {
             infosBeingWritten.add(identifier);
             final File cacheFile = getInfoFile(identifier);
-            if (cacheFile != null) {
-                logger.info("Caching dimension: {}", identifier);
-                if (!cacheFile.getParentFile().exists() &&
-                        !cacheFile.getParentFile().mkdirs()) {
-                    throw new IOException("Unable to create directory: " +
-                            cacheFile.getParentFile());
-                }
-                ImageInfo info = new ImageInfo();
-                info.width = dimension.width;
-                info.height = dimension.height;
-                try {
-                    infoMapper.writeValue(cacheFile, info);
-                } catch (IOException e) {
-                    cacheFile.delete();
-                    throw new IOException("Unable to create " +
-                            cacheFile.getAbsolutePath(), e);
-                }
-            } else {
-                throw new IOException(PATHNAME_CONFIG_KEY + " is not set");
+
+            logger.info("Caching dimension: {}", identifier);
+            if (!cacheFile.getParentFile().exists() &&
+                    !cacheFile.getParentFile().mkdirs()) {
+                throw new IOException("Unable to create directory: " +
+                        cacheFile.getParentFile());
+            }
+            final ImageInfo info = new ImageInfo();
+            info.width = dimension.width;
+            info.height = dimension.height;
+            try {
+                infoMapper.writeValue(cacheFile, info);
+            } catch (IOException e) {
+                cacheFile.delete();
+                throw new IOException("Unable to create " +
+                        cacheFile.getAbsolutePath(), e);
             }
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);
