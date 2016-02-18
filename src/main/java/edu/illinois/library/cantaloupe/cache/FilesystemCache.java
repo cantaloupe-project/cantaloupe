@@ -486,12 +486,17 @@ class FilesystemCache implements Cache {
         }
     }
 
+    /**
+     * <p>Deletes all files associated with the given operation list.</p>
+     *
+     * <p>If purging is in progress in another thread, this method will wait
+     * for it to finish before proceeding.</p>
+     *
+     * @throws CacheException
+     */
     @Override
     public void purge(OperationList opList) throws CacheException {
         synchronized (lock1) {
-            // imagesBeingWritten may also contain this opList (meaning it is
-            // currently being written in another thread), but the delete
-            // we're going to do won't interrupt that.
             while (purgingInProgress.get() || imagesBeingPurged.contains(opList)) {
                 try {
                     lock1.wait();
@@ -502,23 +507,20 @@ class FilesystemCache implements Cache {
         }
         imagesBeingPurged.add(opList);
         logger.info("Purging {}...", opList);
-        try {
-            final File[] filesToDelete = {
-                    getImageFile(opList),
-                    getImageTempFile(opList),
-                    getInfoFile(opList.getIdentifier()) };
-            for (File file : filesToDelete) {
-                if (file != null && file.exists()) {
-                    if (!file.delete()) {
-                        throw new IOException("Unable to delete " + file);
-                    }
+
+        final File[] filesToDelete = { getImageFile(opList),
+                getImageTempFile(opList),
+                getInfoFile(opList.getIdentifier()) };
+        for (File file : filesToDelete) {
+            if (file != null && file.exists()) {
+                try {
+                    FileUtils.forceDelete(file);
+                } catch (IOException e) {
+                    logger.warn("Unable to delete {}", file);
                 }
             }
-        } catch (IOException e) {
-            throw new CacheException(e.getMessage(), e);
-        } finally {
-            imagesBeingPurged.remove(opList);
         }
+        imagesBeingPurged.remove(opList);
     }
 
     @Override
