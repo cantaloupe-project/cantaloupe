@@ -2,11 +2,10 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Filter;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Scale;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Transpose;
@@ -57,7 +56,7 @@ class ImageMagickProcessor extends AbstractProcessor
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
             SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
     // Lazy-initialized by getFormats()
-    private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
+    private static HashMap<Format, Set<Format>> supportedFormats;
 
     private StreamSource streamSource;
 
@@ -106,10 +105,10 @@ class ImageMagickProcessor extends AbstractProcessor
      * @return Map of available output formats for all known source formats,
      * based on information reported by <code>identify -list format</code>.
      */
-    private static HashMap<SourceFormat, Set<OutputFormat>> getFormats() {
+    private static HashMap<Format, Set<Format>> getFormats() {
         if (supportedFormats == null) {
-            final Set<SourceFormat> sourceFormats = new HashSet<>();
-            final Set<OutputFormat> outputFormats = new HashSet<>();
+            final Set<Format> formats = new HashSet<>();
+            final Set<Format> outputFormats = new HashSet<>();
 
             // Retrieve the output of the `identify -list format` command,
             // which contains a list of all supported formats.
@@ -133,36 +132,36 @@ class ImageMagickProcessor extends AbstractProcessor
                     while ((s = stdInput.readLine()) != null) {
                         s = s.trim();
                         if (s.startsWith("JP2")) {
-                            sourceFormats.add(SourceFormat.JP2);
+                            formats.add(Format.JP2);
                             if (s.contains(" rw")) {
-                                outputFormats.add(OutputFormat.JP2);
+                                outputFormats.add(Format.JP2);
                             }
                         }
                         if (s.startsWith("JPEG")) {
-                            sourceFormats.add(SourceFormat.JPG);
+                            formats.add(Format.JPG);
                             if (s.contains(" rw")) {
-                                outputFormats.add(OutputFormat.JPG);
+                                outputFormats.add(Format.JPG);
                             }
                         }
                         if (s.startsWith("PNG")) {
-                            sourceFormats.add(SourceFormat.PNG);
+                            formats.add(Format.PNG);
                             if (s.contains(" rw")) {
-                                outputFormats.add(OutputFormat.PNG);
+                                outputFormats.add(Format.PNG);
                             }
                         }
                         if (s.startsWith("PDF") && s.contains(" rw")) {
-                            outputFormats.add(OutputFormat.PDF);
+                            outputFormats.add(Format.PDF);
                         }
                         if (s.startsWith("TIFF")) {
-                            sourceFormats.add(SourceFormat.TIF);
+                            formats.add(Format.TIF);
                             if (s.contains(" rw")) {
-                                outputFormats.add(OutputFormat.TIF);
+                                outputFormats.add(Format.TIF);
                             }
                         }
                         if (s.startsWith("WEBP")) {
-                            sourceFormats.add(SourceFormat.WEBP);
+                            formats.add(Format.WEBP);
                             if (s.contains(" rw")) {
-                                outputFormats.add(OutputFormat.WEBP);
+                                outputFormats.add(Format.WEBP);
                             }
                         }
                     }
@@ -177,16 +176,16 @@ class ImageMagickProcessor extends AbstractProcessor
             }
 
             supportedFormats = new HashMap<>();
-            for (SourceFormat sourceFormat : sourceFormats) {
-                supportedFormats.put(sourceFormat, outputFormats);
+            for (Format format : formats) {
+                supportedFormats.put(format, outputFormats);
             }
         }
         return supportedFormats;
     }
 
     @Override
-    public Set<OutputFormat> getAvailableOutputFormats() {
-        Set<OutputFormat> formats = getFormats().get(sourceFormat);
+    public Set<Format> getAvailableOutputFormats() {
+        Set<Format> formats = getFormats().get(format);
         if (formats == null) {
             formats = new HashSet<>();
         }
@@ -196,13 +195,13 @@ class ImageMagickProcessor extends AbstractProcessor
     @Override
     public Dimension getSize() throws ProcessorException {
         if (getAvailableOutputFormats().size() < 1) {
-            throw new UnsupportedSourceFormatException(sourceFormat);
+            throw new UnsupportedSourceFormatException(format);
         }
         InputStream inputStream = null;
         try {
             inputStream = streamSource.newInputStream();
             Info sourceInfo = new Info(
-                    sourceFormat.getPreferredExtension() + ":-", inputStream,
+                    format.getPreferredExtension() + ":-", inputStream,
                     true);
             return new Dimension(sourceInfo.getImageWidth(),
                     sourceInfo.getImageHeight());
@@ -276,10 +275,10 @@ class ImageMagickProcessor extends AbstractProcessor
 
         try {
             IMOperation op = new IMOperation();
-            op.addImage(sourceFormat.getPreferredExtension() + ":-"); // read from stdin
+            op.addImage(format.getPreferredExtension() + ":-"); // read from stdin
             assembleOperation(op, ops, fullSize);
 
-            op.addImage(ops.getOutputFormat().getExtension() + ":-"); // write to stdout
+            op.addImage(ops.getOutputFormat().getPreferredExtension() + ":-"); // write to stdout
 
             ConvertCmd convert = new ConvertCmd();
 

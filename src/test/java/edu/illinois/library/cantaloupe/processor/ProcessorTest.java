@@ -3,12 +3,11 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -40,12 +39,12 @@ public abstract class ProcessorTest {
         Application.setConfiguration(new BaseConfiguration());
     }
 
-    protected SourceFormat getAnySupportedSourceFormat(Processor processor)
+    protected Format getAnySupportedSourceFormat(Processor processor)
             throws Exception {
-        for (SourceFormat sourceFormat : SourceFormat.values()) {
+        for (Format format : Format.values()) {
             try {
-                processor.setSourceFormat(sourceFormat);
-                return sourceFormat;
+                processor.setSourceFormat(format);
+                return format;
             } catch (UnsupportedSourceFormatException e) {
                 // continue
             }
@@ -63,21 +62,21 @@ public abstract class ProcessorTest {
             StreamSource streamSource = new TestStreamSource(
                     TestUtil.getFixture(IMAGE));
             proc.setStreamSource(streamSource);
-            proc.setSourceFormat(SourceFormat.JPG);
+            proc.setSourceFormat(Format.JPG);
             assertEquals(expectedSize, proc.getSize());
         }
         if (getProcessor() instanceof FileProcessor) {
             FileProcessor proc = (FileProcessor) getProcessor();
             try {
                 proc.setSourceFile(TestUtil.getFixture(IMAGE));
-                proc.setSourceFormat(SourceFormat.JPG);
+                proc.setSourceFormat(Format.JPG);
                 assertEquals(expectedSize, proc.getSize());
             } catch (UnsupportedSourceFormatException e) {
                 // no problem
             }
             try {
                 proc.setSourceFile(TestUtil.getImage("mpg"));
-                proc.setSourceFormat(SourceFormat.MPG);
+                proc.setSourceFormat(Format.MPG);
                 expectedSize = new Dimension(640, 360);
                 assertEquals(expectedSize, proc.getSize());
             } catch (UnsupportedSourceFormatException e) {
@@ -105,7 +104,7 @@ public abstract class ProcessorTest {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotate(0));
-        ops.setOutputFormat(OutputFormat.JPG);
+        ops.setOutputFormat(Format.JPG);
         doProcessTest(ops);
     }
 
@@ -124,15 +123,15 @@ public abstract class ProcessorTest {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotate(15));
-        ops.setOutputFormat(OutputFormat.JPG);
+        ops.setOutputFormat(Format.JPG);
 
         final Processor proc = getProcessor();
-        for (SourceFormat sourceFormat : SourceFormat.values()) {
+        for (Format format : Format.values()) {
             try {
-                proc.setSourceFormat(sourceFormat);
+                proc.setSourceFormat(format);
                 if (getProcessor().getAvailableOutputFormats().size() == 0) {
                     final Collection<File> fixtures = TestUtil.
-                            getImageFixtures(sourceFormat);
+                            getImageFixtures(format);
                     final File fixture = (File) fixtures.toArray()[0];
                     if (proc instanceof StreamProcessor) {
                         StreamSource source = new TestStreamSource(fixture);
@@ -140,7 +139,7 @@ public abstract class ProcessorTest {
                     }
                     if (proc instanceof FileProcessor) {
                         File file = TestUtil.getImage(
-                                sourceFormat.getPreferredExtension());
+                                format.getPreferredExtension());
                         ((FileProcessor) proc).setSourceFile(file);
                     }
                     try {
@@ -148,7 +147,7 @@ public abstract class ProcessorTest {
                         fail("Expected exception");
                     } catch (ProcessorException e) {
                         assertEquals("Unsupported source format: " +
-                                        sourceFormat.getPreferredExtension(),
+                                        format.getPreferredExtension(),
                                 e.getMessage());
                     }
                 }
@@ -255,8 +254,8 @@ public abstract class ProcessorTest {
     public void testProcessWithSupportedOutputFormats() throws Exception {
         Processor proc = getProcessor();
         proc.setSourceFormat(getAnySupportedSourceFormat(proc));
-        Set<OutputFormat> outputFormats = proc.getAvailableOutputFormats();
-        for (OutputFormat outputFormat : outputFormats) {
+        Set<Format> outputFormats = proc.getAvailableOutputFormats();
+        for (Format outputFormat : outputFormats) {
             OperationList ops = TestUtil.newOperationList();
             ops.setOutputFormat(outputFormat);
             doProcessTest(ops);
@@ -318,19 +317,19 @@ public abstract class ProcessorTest {
         final Collection<File> fixtures = FileUtils.
                 listFiles(TestUtil.getFixture("images"), null, false);
         final Processor proc = getProcessor();
-        for (SourceFormat sourceFormat : SourceFormat.values()) {
+        for (Format format : Format.values()) {
             try {
-                proc.setSourceFormat(sourceFormat);
+                proc.setSourceFormat(format);
                 if (getProcessor().getAvailableOutputFormats().size() > 0) {
                     for (File fixture : fixtures) {
                         final String fixtureName = fixture.getName();
-                        if (fixtureName.startsWith(sourceFormat.name().toLowerCase())) {
+                        if (fixtureName.startsWith(format.name().toLowerCase())) {
                             // Don't test various compressed 16-bit TIFFs in
                             // Java2dProcessor or JaiProcessor because
                             // TIFFImageReader doesn't support them.
                             if ((this instanceof Java2dProcessorTest ||
                                     this instanceof JaiProcessorTest) &&
-                                    sourceFormat.equals(SourceFormat.TIF) &&
+                                    format.equals(Format.TIF) &&
                                     fixtureName.contains("x16-") &&
                                     (fixtureName.contains("-zip") ||
                                             fixtureName.contains("-lzw"))) {
@@ -340,7 +339,7 @@ public abstract class ProcessorTest {
                             // either.
                             if ((this instanceof Java2dProcessorTest ||
                                     this instanceof JaiProcessorTest) &&
-                                    sourceFormat.equals(SourceFormat.TIF) &&
+                                    format.equals(Format.TIF) &&
                                     StringUtils.contains(fixtureName, "-jpeg")) {
                                 continue;
                             }

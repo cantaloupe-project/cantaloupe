@@ -6,10 +6,9 @@ import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
@@ -84,9 +83,9 @@ class PdfBoxProcessor extends AbstractProcessor
     }
 
     @Override
-    public Set<OutputFormat> getAvailableOutputFormats() {
-        Set<OutputFormat> outputFormats = new HashSet<>();
-        if (sourceFormat == SourceFormat.PDF) {
+    public Set<Format> getAvailableOutputFormats() {
+        final Set<Format> outputFormats = new HashSet<>();
+        if (format == Format.PDF) {
             outputFormats.addAll(ImageIoImageWriter.supportedFormats());
         }
         return outputFormats;

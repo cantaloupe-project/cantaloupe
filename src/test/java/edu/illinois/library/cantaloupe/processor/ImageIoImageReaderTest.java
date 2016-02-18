@@ -3,12 +3,11 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Scale;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.restlet.data.MediaType;
 
 import javax.imageio.ImageIO;
 import java.awt.Dimension;
@@ -35,15 +34,14 @@ public class ImageIoImageReaderTest {
 
     @Test
     public void testSupportedFormats() {
-        final HashSet<SourceFormat> formats = new HashSet<>();
+        final HashSet<Format> formats = new HashSet<>();
         for (String mediaType : ImageIO.getReaderMIMETypes()) {
             if (mediaType.equals("image/jp2")) {
                 continue;
             }
-            final SourceFormat sourceFormat =
-                    SourceFormat.getSourceFormat(new MediaType(mediaType));
-            if (sourceFormat != null && !sourceFormat.equals(SourceFormat.UNKNOWN)) {
-                formats.add(sourceFormat);
+            final Format format = Format.getFormat(mediaType);
+            if (format != null && !format.equals(Format.UNKNOWN)) {
+                formats.add(format);
             }
         }
         assertEquals(formats, ImageIoImageReader.supportedFormats());

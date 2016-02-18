@@ -372,7 +372,7 @@ class FilesystemCache implements Cache {
             final String baseName = StringUtils.join(parts, "_");
 
             return new File(baseName + "." +
-                    ops.getOutputFormat().getExtension());
+                    ops.getOutputFormat().getPreferredExtension());
         }
         return null;
     }

@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +33,7 @@ public class ProcessorFactoryTest {
     public void testGetProcessorWithSupportedAssignedFormat() throws Exception {
         Application.getConfiguration().
                 setProperty("processor.jpg", "Java2dProcessor");
-        assertTrue(ProcessorFactory.getProcessor(SourceFormat.JPG) instanceof Java2dProcessor);
+        assertTrue(ProcessorFactory.getProcessor(Format.JPG) instanceof Java2dProcessor);
     }
 
     /**
@@ -53,7 +53,7 @@ public class ProcessorFactoryTest {
         Application.getConfiguration().
                 setProperty("processor.fallback", "GraphicsMagickProcessor");
         try {
-            ProcessorFactory.getProcessor(SourceFormat.WEBP);
+            ProcessorFactory.getProcessor(Format.WEBP);
             fail("Expected exception");
         } catch (UnsupportedSourceFormatException e) {
             assertEquals(e.getMessage(),
@@ -71,7 +71,7 @@ public class ProcessorFactoryTest {
     public void testGetProcessorWithFormatSupportedByFallback() throws Exception {
         Application.getConfiguration().
                 setProperty("processor.fallback", "Java2dProcessor");
-        assertTrue(ProcessorFactory.getProcessor(SourceFormat.JPG) instanceof Java2dProcessor);
+        assertTrue(ProcessorFactory.getProcessor(Format.JPG) instanceof Java2dProcessor);
     }
 
     /**
@@ -86,7 +86,7 @@ public class ProcessorFactoryTest {
         Application.getConfiguration().
                 setProperty("processor.fallback", "Java2dProcessor");
         try {
-            ProcessorFactory.getProcessor(SourceFormat.WEBP);
+            ProcessorFactory.getProcessor(Format.WEBP);
             fail("Expected exception");
         } catch (UnsupportedSourceFormatException e) {
             assertEquals("Java2dProcessor does not support the webp source format",
@@ -103,7 +103,7 @@ public class ProcessorFactoryTest {
     @Test
     public void testGetProcessorWithFormatUnsupportedByFallbackAndNoFallback() throws Exception {
         try {
-            ProcessorFactory.getProcessor(SourceFormat.WEBP);
+            ProcessorFactory.getProcessor(Format.WEBP);
             fail("Expected exception");
         } catch (ClassNotFoundException e) {
             assertEquals(e.getMessage(), "A fallback processor is not defined.");
@@ -121,7 +121,7 @@ public class ProcessorFactoryTest {
         Application.getConfiguration().
                 setProperty("processor.jpg", "AmazingFakeProcessor");
         try {
-            ProcessorFactory.getProcessor(SourceFormat.JPG);
+            ProcessorFactory.getProcessor(Format.JPG);
             fail("Expected exception");
         } catch (ClassNotFoundException e) {
             assertEquals(e.getMessage(),
@@ -140,7 +140,7 @@ public class ProcessorFactoryTest {
         Application.getConfiguration().
                 setProperty("processor.fallback", "AmazingFakeProcessor");
         try {
-            ProcessorFactory.getProcessor(SourceFormat.JPG);
+            ProcessorFactory.getProcessor(Format.JPG);
             fail("Expected exception");
         } catch (ClassNotFoundException e) {
             assertEquals(e.getMessage(),

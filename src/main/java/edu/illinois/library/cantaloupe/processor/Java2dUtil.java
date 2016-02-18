@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.watermark.Position;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
@@ -276,7 +276,7 @@ abstract class Java2dUtil {
             throws IOException {
         final ImageIoImageReader reader = new ImageIoImageReader();
         reader.setSource(watermark.getImage());
-        reader.setSourceFormat(SourceFormat.PNG);
+        reader.setFormat(Format.PNG);
         return reader.read();
     }
 

@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +23,7 @@ abstract class AbstractImageIoProcessor extends AbstractProcessor {
     private static Logger logger = LoggerFactory.
             getLogger(AbstractImageIoProcessor.class);
 
-    private static final HashMap<SourceFormat,Set<OutputFormat>> FORMATS =
+    private static final HashMap<Format,Set<Format>> FORMATS =
             availableOutputFormats();
 
     protected ImageIoImageReader reader;
@@ -35,17 +34,16 @@ abstract class AbstractImageIoProcessor extends AbstractProcessor {
      * @return Map of available output formats for all known source formats,
      * based on information reported by ImageIO.
      */
-    private static HashMap<SourceFormat, Set<OutputFormat>>
-    availableOutputFormats() {
-        final HashMap<SourceFormat,Set<OutputFormat>> map = new HashMap<>();
-        for (SourceFormat sourceFormat : ImageIoImageReader.supportedFormats()) {
-            map.put(sourceFormat, ImageIoImageWriter.supportedFormats());
+    private static HashMap<Format, Set<Format>> availableOutputFormats() {
+        final HashMap<Format,Set<Format>> map = new HashMap<>();
+        for (Format format : ImageIoImageReader.supportedFormats()) {
+            map.put(format, ImageIoImageWriter.supportedFormats());
         }
         return map;
     }
 
-    public Set<OutputFormat> getAvailableOutputFormats() {
-        Set<OutputFormat> formats = FORMATS.get(sourceFormat);
+    public Set<Format> getAvailableOutputFormats() {
+        Set<Format> formats = FORMATS.get(format);
         if (formats == null) {
             formats = new HashSet<>();
         }
@@ -94,21 +92,21 @@ abstract class AbstractImageIoProcessor extends AbstractProcessor {
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
-        reader.setSourceFormat(sourceFormat);
+        reader.setFormat(format);
     }
 
     @Override
-    public void setSourceFormat(SourceFormat sourceFormat)
+    public void setSourceFormat(Format format)
             throws UnsupportedSourceFormatException{
-        this.sourceFormat = sourceFormat;
+        this.format = format;
         if (reader == null) {
             reader = new ImageIoImageReader();
         }
-        reader.setSourceFormat(sourceFormat);
+        reader.setFormat(format);
         if (getAvailableOutputFormats().size() < 1) {
             throw new UnsupportedSourceFormatException(
                     getClass().getSimpleName() + " does not support the " +
-                            sourceFormat + " source format");
+                            format + " source format");
         }
     }
 
@@ -124,7 +122,7 @@ abstract class AbstractImageIoProcessor extends AbstractProcessor {
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
-        reader.setSourceFormat(sourceFormat);
+        reader.setFormat(format);
     }
 
     private void disposeReader() {

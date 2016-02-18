@@ -2,9 +2,9 @@ package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -68,7 +68,7 @@ public class JdbcCacheTest {
         Scale scale = new Scale();
         scale.setPercent(0.9f);
         Rotate rotate = new Rotate();
-        OutputFormat format = OutputFormat.JPG;
+        Format format = Format.JPG;
         ops = new OperationList();
         ops.setIdentifier(identifier);
         ops.add(crop);
@@ -90,7 +90,7 @@ public class JdbcCacheTest {
         scale.setWidth(40);
         scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
         rotate = new Rotate(15);
-        format = OutputFormat.PNG;
+        format = Format.PNG;
         ops = new OperationList();
         ops.setIdentifier(identifier);
         ops.add(crop);

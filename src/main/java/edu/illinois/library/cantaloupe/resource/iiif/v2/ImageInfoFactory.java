@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.resource.iiif.Feature;
@@ -117,8 +117,8 @@ abstract class ImageInfoFactory {
         // formats
         Map<String, Set<String>> profileMap = new HashMap<>();
         Set<String> formatStrings = new HashSet<>();
-        for (OutputFormat format : processor.getAvailableOutputFormats()) {
-            formatStrings.add(format.getExtension());
+        for (Format format : processor.getAvailableOutputFormats()) {
+            formatStrings.add(format.getPreferredExtension());
         }
         profileMap.put("formats", formatStrings);
         imageInfo.profile.add(profileMap);

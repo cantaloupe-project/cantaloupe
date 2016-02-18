@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resolver;
 
-import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -19,7 +19,7 @@ public interface Resolver {
     /**
      * @param identifier
      * @return The expected source format of the image corresponding with the
-     * given identifier, or {@link SourceFormat#UNKNOWN} if unknown;
+     * given identifier, or {@link Format#UNKNOWN} if unknown;
      * never null.
      * @throws FileNotFoundException if an image corresponding to the given
      * identifier does not exist
@@ -27,7 +27,7 @@ public interface Resolver {
      * identifier is not readable
      * @throws IOException if there is some other issue accessing the image
      */
-    SourceFormat getSourceFormat(Identifier identifier) throws IOException;
+    Format getSourceFormat(Identifier identifier) throws IOException;
 
     /**
      * <dl>

@@ -1,13 +1,11 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.ConfigurationException;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
@@ -20,7 +18,6 @@ import org.restlet.Request;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.Disposition;
 import org.restlet.data.Header;
-import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.resource.ResourceException;
@@ -130,7 +127,7 @@ public abstract class AbstractResource extends ServerResource {
      * output format.
      */
     public static Disposition getRepresentationDisposition(
-            Identifier identifier, OutputFormat outputFormat) {
+            Identifier identifier, Format outputFormat) {
         Disposition disposition = new Disposition();
         switch (Application.getConfiguration().
                 getString(CONTENT_DISPOSITION_CONFIG_KEY, "none")) {
@@ -142,7 +139,7 @@ public abstract class AbstractResource extends ServerResource {
                 disposition.setFilename(
                         identifier.toString().replaceAll(
                                 ImageRepresentation.FILENAME_CHARACTERS, "_") +
-                                "." + outputFormat.getExtension());
+                                "." + outputFormat.getPreferredExtension());
                 break;
         }
         return disposition;
@@ -259,12 +256,12 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     protected ImageRepresentation getRepresentation(OperationList ops,
-                                                    SourceFormat sourceFormat,
+                                                    Format format,
                                                     Disposition disposition,
                                                     Processor proc)
             throws IOException, ProcessorException {
         // Max allowed size is ignored when the processing is a no-op.
-        final long maxAllowedSize = (ops.isNoOp(sourceFormat)) ?
+        final long maxAllowedSize = (ops.isNoOp(format)) ?
                 0 : Application.getConfiguration().getLong(MAX_PIXELS_CONFIG_KEY, 0);
 
         final Dimension fullSize = proc.getSize();

@@ -2,9 +2,9 @@ package edu.illinois.library.cantaloupe.image.watermark;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.ConfigurationException;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
@@ -79,7 +79,7 @@ public class WatermarkServiceTest {
 
         final OperationList opList = new OperationList();
         opList.setIdentifier(new Identifier("cats"));
-        opList.setOutputFormat(OutputFormat.JPG);
+        opList.setOutputFormat(Format.JPG);
         final Dimension fullSize = new Dimension(100, 100);
         final URL requestUrl = new URL("http://example.org/");
         final Map<String,String> requestHeaders = new HashMap<>();
@@ -100,7 +100,7 @@ public class WatermarkServiceTest {
 
         final OperationList opList = new OperationList();
         opList.setIdentifier(new Identifier("dogs"));
-        opList.setOutputFormat(OutputFormat.JPG);
+        opList.setOutputFormat(Format.JPG);
         final Dimension fullSize = new Dimension(100, 100);
         final URL requestUrl = new URL("http://example.org/");
         final Map<String,String> requestHeaders = new HashMap<>();

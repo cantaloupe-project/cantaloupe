@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -349,7 +349,7 @@ public class FilesystemCacheTest {
         scale.setPercent(0.905f);
         Rotate rotate = new Rotate(10);
         Filter filter = Filter.BITONAL;
-        OutputFormat format = OutputFormat.TIF;
+        Format format = Format.TIF;
 
         OperationList ops = new OperationList();
         ops.setIdentifier(identifier);
@@ -384,7 +384,7 @@ public class FilesystemCacheTest {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
         Rotate rotate = new Rotate(0);
-        OutputFormat format = OutputFormat.TIF;
+        Format format = Format.TIF;
 
         final OperationList ops = new OperationList();
         ops.setIdentifier(identifier);

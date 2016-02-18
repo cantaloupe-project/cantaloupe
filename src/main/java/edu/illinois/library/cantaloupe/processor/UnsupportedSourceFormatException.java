@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 
 public class UnsupportedSourceFormatException extends ProcessorException {
 
@@ -12,7 +12,7 @@ public class UnsupportedSourceFormatException extends ProcessorException {
         super(message);
     }
 
-    public UnsupportedSourceFormatException(SourceFormat format) {
+    public UnsupportedSourceFormatException(Format format) {
         super("Unsupported source format: " + format);
     }
 

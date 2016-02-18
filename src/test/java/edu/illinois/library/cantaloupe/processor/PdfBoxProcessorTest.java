@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
@@ -23,7 +23,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     @Before
     public void setUp() throws Exception {
         instance = new PdfBoxProcessor();
-        instance.setSourceFormat(SourceFormat.PDF);
+        instance.setSourceFormat(Format.PDF);
     }
 
     protected Processor getProcessor() {

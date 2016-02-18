@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
@@ -49,9 +49,9 @@ public class LandingResource extends AbstractResource {
             return processor.getClass().getSimpleName();
         }
 
-        public boolean supports(SourceFormat sourceFormat) {
+        public boolean supports(Format format) {
             try {
-                processor.setSourceFormat(sourceFormat);
+                processor.setSourceFormat(format);
                 return true;
             } catch (UnsupportedSourceFormatException e) {
                 return false;
@@ -116,40 +116,40 @@ public class LandingResource extends AbstractResource {
         vars.put("maxHeap", runtime.maxMemory() / mb);
 
         // source format assignments
-        Map<SourceFormat,String> assignments = new TreeMap<>();
-        for (SourceFormat sourceFormat : SourceFormat.values()) {
+        Map<Format,String> assignments = new TreeMap<>();
+        for (Format format : Format.values()) {
             try {
-                assignments.put(sourceFormat,
-                        ProcessorFactory.getProcessor(sourceFormat).getClass().getSimpleName());
+                assignments.put(format,
+                        ProcessorFactory.getProcessor(format).getClass().getSimpleName());
             } catch (UnsupportedSourceFormatException e) {
                 // noop
             }
         }
         vars.put("processorAssignments", assignments);
 
-        class SourceFormatComparator implements Comparator<SourceFormat> {
-            public int compare(SourceFormat o1, SourceFormat o2) {
+        class SourceFormatComparator implements Comparator<Format> {
+            public int compare(Format o1, Format o2) {
                 return o1.getName().compareTo(o2.getName());
             }
         }
 
         // image source formats
-        List<SourceFormat> imageFormats = new ArrayList<>();
-        for (SourceFormat sourceFormat : SourceFormat.values()) {
-            if (sourceFormat.getType() != null &&
-                    sourceFormat.getType().equals(SourceFormat.Type.IMAGE)) {
-                imageFormats.add(sourceFormat);
+        List<Format> imageFormats = new ArrayList<>();
+        for (Format format : Format.values()) {
+            if (format.getType() != null &&
+                    format.getType().equals(Format.Type.IMAGE)) {
+                imageFormats.add(format);
             }
         }
         Collections.sort(imageFormats, new SourceFormatComparator());
         vars.put("imageSourceFormats", imageFormats);
 
         // video source formats
-        List<SourceFormat> videoFormats = new ArrayList<>();
-        for (SourceFormat sourceFormat : SourceFormat.values()) {
-            if (sourceFormat.getType() != null &&
-                    sourceFormat.getType().equals(SourceFormat.Type.VIDEO)) {
-                videoFormats.add(sourceFormat);
+        List<Format> videoFormats = new ArrayList<>();
+        for (Format format : Format.values()) {
+            if (format.getType() != null &&
+                    format.getType().equals(Format.Type.VIDEO)) {
+                videoFormats.add(format);
             }
         }
         Collections.sort(videoFormats, new SourceFormatComparator());

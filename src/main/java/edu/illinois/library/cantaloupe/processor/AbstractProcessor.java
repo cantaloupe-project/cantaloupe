@@ -1,27 +1,26 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 
 import java.util.Set;
 
 abstract class AbstractProcessor {
 
-    protected SourceFormat sourceFormat;
+    protected Format format;
 
-    abstract public Set<OutputFormat> getAvailableOutputFormats();
+    abstract public Set<Format> getAvailableOutputFormats();
 
-    public SourceFormat getSourceFormat() {
-        return this.sourceFormat;
+    public Format getSourceFormat() {
+        return this.format;
     }
 
-    public void setSourceFormat(SourceFormat sourceFormat)
+    public void setSourceFormat(Format format)
             throws UnsupportedSourceFormatException{
-        this.sourceFormat = sourceFormat;
+        this.format = format;
         if (getAvailableOutputFormats().size() < 1) {
             throw new UnsupportedSourceFormatException(
                     getClass().getSimpleName() + " does not support the " +
-                            sourceFormat + " source format");
+                            format + " source format");
         }
     }
 

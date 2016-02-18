@@ -2,12 +2,12 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Filter;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Crop;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
@@ -147,7 +147,7 @@ class JaiProcessor extends AbstractImageIoProcessor
                         // So, if we are scaling a TIFF and its metadata says
                         // it's deflate-compressed, use nearest-neighbor, which
                         // is horrible, but better than nothing.
-                        if (getSourceFormat().equals(SourceFormat.TIF)) {
+                        if (getSourceFormat().equals(Format.TIF)) {
                             try {
                                 Node node = reader.getMetadata(0);
                                 StringWriter writer = new StringWriter();

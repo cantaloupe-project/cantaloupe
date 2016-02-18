@@ -1,11 +1,10 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -33,15 +32,15 @@ import static org.junit.Assert.*;
  */
 public class GraphicsMagickProcessorTest extends ProcessorTest {
 
-    private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
+    private static HashMap<Format, Set<Format>> supportedFormats;
 
     GraphicsMagickProcessor instance = new GraphicsMagickProcessor();
 
-    private static HashMap<SourceFormat, Set<OutputFormat>>
+    private static HashMap<Format, Set<Format>>
     getAvailableOutputFormats() throws IOException {
         if (supportedFormats == null) {
-            final Set<SourceFormat> sourceFormats = new HashSet<>();
-            final Set<OutputFormat> outputFormats = new HashSet<>();
+            final Set<Format> formats = new HashSet<>();
+            final Set<Format> outputFormats = new HashSet<>();
 
             // retrieve the output of the `gm version` command, which contains a
             // list of all optional formats
@@ -61,42 +60,42 @@ public class GraphicsMagickProcessorTest extends ProcessorTest {
                 }
                 if (read) {
                     if (s.startsWith("JPEG-2000  ") && s.endsWith(" yes")) {
-                        sourceFormats.add(SourceFormat.JP2);
-                        outputFormats.add(OutputFormat.JP2);
+                        formats.add(Format.JP2);
+                        outputFormats.add(Format.JP2);
                     }
                     if (s.startsWith("JPEG  ") && s.endsWith(" yes")) {
-                        sourceFormats.add(SourceFormat.JPG);
-                        outputFormats.add(OutputFormat.JPG);
+                        formats.add(Format.JPG);
+                        outputFormats.add(Format.JPG);
                     }
                     if (s.startsWith("PNG  ") && s.endsWith(" yes")) {
-                        sourceFormats.add(SourceFormat.PNG);
-                        outputFormats.add(OutputFormat.PNG);
+                        formats.add(Format.PNG);
+                        outputFormats.add(Format.PNG);
                     }
                     if (s.startsWith("Ghostscript") && s.endsWith(" yes")) {
-                        outputFormats.add(OutputFormat.PDF);
+                        outputFormats.add(Format.PDF);
                     }
                     if (s.startsWith("TIFF  ") && s.endsWith(" yes")) {
-                        sourceFormats.add(SourceFormat.TIF);
-                        outputFormats.add(OutputFormat.TIF);
+                        formats.add(Format.TIF);
+                        outputFormats.add(Format.TIF);
                     }
                     if (s.startsWith("WebP  ") && s.endsWith(" yes")) {
-                        sourceFormats.add(SourceFormat.WEBP);
-                        outputFormats.add(OutputFormat.WEBP);
+                        formats.add(Format.WEBP);
+                        outputFormats.add(Format.WEBP);
                     }
                 }
             }
 
             // add formats that are definitely available
             // (http://www.graphicsmagick.org/formats.html)
-            sourceFormats.add(SourceFormat.BMP);
-            sourceFormats.add(SourceFormat.GIF);
+            formats.add(Format.BMP);
+            formats.add(Format.GIF);
 
             supportedFormats = new HashMap<>();
-            for (SourceFormat sourceFormat : SourceFormat.values()) {
-                supportedFormats.put(sourceFormat, new HashSet<OutputFormat>());
+            for (Format format : Format.values()) {
+                supportedFormats.put(format, new HashSet<Format>());
             }
-            for (SourceFormat sourceFormat : sourceFormats) {
-                supportedFormats.put(sourceFormat, outputFormats);
+            for (Format format : formats) {
+                supportedFormats.put(format, outputFormats);
             }
         }
         return supportedFormats;
@@ -108,11 +107,11 @@ public class GraphicsMagickProcessorTest extends ProcessorTest {
 
     @Test
     public void testGetAvailableOutputFormats() throws Exception {
-        for (SourceFormat sourceFormat : SourceFormat.values()) {
+        for (Format format : Format.values()) {
             try {
-                instance.setSourceFormat(sourceFormat);
-                Set<OutputFormat> expectedFormats = getAvailableOutputFormats().
-                        get(sourceFormat);
+                instance.setSourceFormat(format);
+                Set<Format> expectedFormats = getAvailableOutputFormats().
+                        get(format);
                 assertEquals(expectedFormats, instance.getAvailableOutputFormats());
             } catch (UnsupportedSourceFormatException e) {
                 // continue
@@ -142,7 +141,7 @@ public class GraphicsMagickProcessorTest extends ProcessorTest {
     public void testGetTileSizes() throws Exception {
         // untiled image
         instance.setStreamSource(new TestStreamSource(TestUtil.getImage("jpg")));
-        instance.setSourceFormat(SourceFormat.JPG);
+        instance.setSourceFormat(Format.JPG);
         Dimension expectedSize = new Dimension(64, 56);
         List<Dimension> tileSizes = instance.getTileSizes();
         assertEquals(1, tileSizes.size());
@@ -152,7 +151,7 @@ public class GraphicsMagickProcessorTest extends ProcessorTest {
             // tiled image (this processor doesn't recognize tiles)
             instance.setStreamSource(new TestStreamSource(
                     TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif")));
-            instance.setSourceFormat(SourceFormat.TIF);
+            instance.setSourceFormat(Format.TIF);
             tileSizes = instance.getTileSizes();
             assertEquals(expectedSize, tileSizes.get(0));
         } catch (UnsupportedSourceFormatException e) {
@@ -170,11 +169,11 @@ public class GraphicsMagickProcessorTest extends ProcessorTest {
         ops.setIdentifier(new Identifier("bla"));
         Rotate rotation = new Rotate(15);
         ops.add(rotation);
-        ops.setOutputFormat(OutputFormat.JPG);
+        ops.setOutputFormat(Format.JPG);
 
         Dimension fullSize = new Dimension(64, 58);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        instance.setSourceFormat(SourceFormat.JPG);
+        instance.setSourceFormat(Format.JPG);
         StreamSource streamSource = new TestStreamSource(
                 TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));
         instance.setStreamSource(streamSource);
@@ -206,11 +205,11 @@ public class GraphicsMagickProcessorTest extends ProcessorTest {
         ops.setIdentifier(new Identifier("bla"));
         Rotate rotation = new Rotate(15);
         ops.add(rotation);
-        ops.setOutputFormat(OutputFormat.PNG);
+        ops.setOutputFormat(Format.PNG);
 
         Dimension fullSize = new Dimension(64, 58);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        instance.setSourceFormat(SourceFormat.JPG);
+        instance.setSourceFormat(Format.JPG);
         StreamSource streamSource = new TestStreamSource(
                 TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));
         instance.setStreamSource(streamSource);

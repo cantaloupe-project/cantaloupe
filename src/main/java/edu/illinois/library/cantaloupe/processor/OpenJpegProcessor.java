@@ -3,12 +3,11 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Filter;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
@@ -150,9 +149,9 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
     }
 
     @Override
-    public Set<OutputFormat> getAvailableOutputFormats() {
-        Set<OutputFormat> outputFormats = new HashSet<>();
-        if (sourceFormat == SourceFormat.JP2) {
+    public Set<Format> getAvailableOutputFormats() {
+        final Set<Format> outputFormats = new HashSet<>();
+        if (format == Format.JP2) {
             outputFormats.addAll(ImageIoImageWriter.supportedFormats());
         }
         return outputFormats;
@@ -323,7 +322,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                         processErrorStream, errorBucket));
 
                 final ImageIoImageReader reader = new ImageIoImageReader();
-                reader.setSourceFormat(SourceFormat.BMP);
+                reader.setFormat(Format.BMP);
                 reader.setSource(
                         new InputStreamStreamSource(processInputStream));
 

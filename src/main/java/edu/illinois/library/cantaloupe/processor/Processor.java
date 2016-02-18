@@ -1,8 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
 import java.awt.Dimension;
@@ -25,7 +24,7 @@ public interface Processor {
      * @return Output formats available for the set source format, or an
      * empty set if none.
      */
-    Set<OutputFormat> getAvailableOutputFormats();
+    Set<Format> getAvailableOutputFormats();
 
     /**
      * @return Pixel dimensions of the source image.
@@ -36,7 +35,7 @@ public interface Processor {
     /**
      * @return The source format of the image to be processed.
      */
-    SourceFormat getSourceFormat();
+    Format getSourceFormat();
 
     /**
      * @return All features supported by the processor for the set source
@@ -92,11 +91,11 @@ public interface Processor {
                  OutputStream outputStream) throws ProcessorException;
 
     /**
-     * @param sourceFormat Format of the source image. Will never be
-     *                     {@link SourceFormat#UNKNOWN}.
+     * @param format Format of the source image. Will never be
+     *                     {@link Format#UNKNOWN}.
      * @throws UnsupportedSourceFormatException
      */
-    void setSourceFormat(SourceFormat sourceFormat)
+    void setSourceFormat(Format format)
             throws UnsupportedSourceFormatException;
 
 }

@@ -31,7 +31,7 @@ public class OperationListTest {
         scale.setMode(Scale.Mode.FULL);
         ops.add(scale);
         ops.add(new Rotate(0));
-        ops.setOutputFormat(OutputFormat.JPG);
+        ops.setOutputFormat(Format.JPG);
         return ops;
     }
 
@@ -91,7 +91,7 @@ public class OperationListTest {
         scale.setMode(Scale.Mode.FULL);
         ops2.add(scale);
         ops2.add(new Rotate(0));
-        ops2.setOutputFormat(OutputFormat.JPG);
+        ops2.setOutputFormat(Format.JPG);
         assertEquals(0, ops2.compareTo(this.ops));
     }
 
@@ -159,7 +159,7 @@ public class OperationListTest {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
         Rotate rotate = new Rotate(0);
-        OutputFormat format = OutputFormat.JPG;
+        Format format = Format.JPG;
         ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier"));
         ops.add(crop);
@@ -180,7 +180,7 @@ public class OperationListTest {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotate(0));
-        ops.setOutputFormat(OutputFormat.JPG);
+        ops.setOutputFormat(Format.JPG);
         assertFalse(ops.isNoOp()); // false because the identifier has no discernible source format
     }
 
@@ -195,7 +195,7 @@ public class OperationListTest {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotate(0));
-        ops.setOutputFormat(OutputFormat.GIF);
+        ops.setOutputFormat(Format.GIF);
         assertTrue(ops.isNoOp());
     }
 
@@ -214,7 +214,7 @@ public class OperationListTest {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotate(0));
-        ops.setOutputFormat(OutputFormat.GIF);
+        ops.setOutputFormat(Format.GIF);
         assertFalse(ops.isNoOp());
     }
 
@@ -229,7 +229,7 @@ public class OperationListTest {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotate(0));
-        ops.setOutputFormat(OutputFormat.GIF);
+        ops.setOutputFormat(Format.GIF);
         assertTrue(ops.isNoOp());
     }
 
@@ -245,7 +245,7 @@ public class OperationListTest {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotate(0));
-        ops.setOutputFormat(OutputFormat.GIF);
+        ops.setOutputFormat(Format.GIF);
         assertFalse(ops.isNoOp());
     }
 
@@ -260,7 +260,7 @@ public class OperationListTest {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotate(2));
-        ops.setOutputFormat(OutputFormat.GIF);
+        ops.setOutputFormat(Format.GIF);
         assertFalse(ops.isNoOp());
     }
 
@@ -275,7 +275,7 @@ public class OperationListTest {
         ops.add(crop);
         ops.add(scale);;
         ops.add(new Rotate());
-        ops.setOutputFormat(OutputFormat.GIF);
+        ops.setOutputFormat(Format.GIF);
         assertTrue(ops.isNoOp());
     }
 
@@ -290,25 +290,25 @@ public class OperationListTest {
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotate(0));
-        ops.setOutputFormat(OutputFormat.GIF);
+        ops.setOutputFormat(Format.GIF);
         assertTrue(ops.isNoOp());
     }
 
-    /* isNoOp(SourceFormat) */
+    /* isNoOp(Format) */
 
     @Test
     public void testIsNoOpWithSourceFormat() {
         // same format
         ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier.gif"));
-        ops.setOutputFormat(OutputFormat.GIF);
-        assertTrue(ops.isNoOp(SourceFormat.GIF));
+        ops.setOutputFormat(Format.GIF);
+        assertTrue(ops.isNoOp(Format.GIF));
 
         // different formats
         ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier.jpg"));
-        ops.setOutputFormat(OutputFormat.GIF);
-        assertFalse(ops.isNoOp(SourceFormat.JPG));
+        ops.setOutputFormat(Format.GIF);
+        assertFalse(ops.isNoOp(Format.JPG));
     }
 
     @Test
@@ -316,8 +316,8 @@ public class OperationListTest {
         // same format
         ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier.pdf"));
-        ops.setOutputFormat(OutputFormat.PDF);
-        assertTrue(ops.isNoOp(SourceFormat.PDF));
+        ops.setOutputFormat(Format.PDF);
+        assertTrue(ops.isNoOp(Format.PDF));
     }
 
     /* iterator() */
@@ -351,7 +351,7 @@ public class OperationListTest {
         scale.setMode(Scale.Mode.FULL);
         ops.add(scale);
         ops.add(new Rotate(0));
-        ops.setOutputFormat(OutputFormat.JPG);
+        ops.setOutputFormat(Format.JPG);
         // transpose
         ops.add(Transpose.HORIZONTAL);
 
@@ -380,7 +380,7 @@ public class OperationListTest {
         ops.add(scale);
         ops.add(new Rotate(15));
         ops.add(Filter.BITONAL);
-        ops.setOutputFormat(OutputFormat.JPG);
+        ops.setOutputFormat(Format.JPG);
         ops.getOptions().put("animal", "cat");
 
         List<String> parts = new ArrayList<>();
@@ -395,7 +395,7 @@ public class OperationListTest {
             parts.add(key + ":" + ops.getOptions().get(key));
         }
         String expected = StringUtils.join(parts, "_") + "." +
-                ops.getOutputFormat().getExtension();
+                ops.getOutputFormat().getPreferredExtension();
         assertEquals(expected, ops.toString());
     }
 

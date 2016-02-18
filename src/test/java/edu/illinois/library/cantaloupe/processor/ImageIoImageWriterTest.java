@@ -1,10 +1,10 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.imageio.ImageIO;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,19 +21,8 @@ public class ImageIoImageWriterTest {
 
     @Test
     public void testSupportedFormats() {
-        // assemble a set of all ImageIO output formats
-        final String[] writerMimeTypes = ImageIO.getWriterMIMETypes();
-        final Set<OutputFormat> outputFormats = new HashSet<>();
-        for (OutputFormat outputFormat : OutputFormat.values()) {
-            for (String mimeType : writerMimeTypes) {
-                if (mimeType.equals("image/jp2")) {
-                    continue;
-                }
-                if (outputFormat.getMediaType().equals(mimeType.toLowerCase())) {
-                    outputFormats.add(outputFormat);
-                }
-            }
-        }
+        Set<Format> outputFormats = new HashSet<>(Arrays.asList(
+                Format.BMP, Format.GIF, Format.JPG, Format.PNG, Format.TIF));
         assertEquals(outputFormats, ImageIoImageWriter.supportedFormats());
     }
 

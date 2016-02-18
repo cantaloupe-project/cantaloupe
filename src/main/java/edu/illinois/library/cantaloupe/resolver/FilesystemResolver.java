@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import eu.medsea.mimeutil.MimeUtil;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.StringUtils;
-import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -141,15 +140,15 @@ class FilesystemResolver extends AbstractResolver
     }
 
     @Override
-    public SourceFormat getSourceFormat(Identifier identifier)
+    public Format getSourceFormat(Identifier identifier)
             throws IOException {
         File file = new File(getPathname(identifier, File.separator));
         checkAccess(file, identifier);
-        SourceFormat sourceFormat = ResolverUtil.inferSourceFormat(identifier);
-        if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
-            sourceFormat = detectSourceFormat(identifier);
+        Format format = ResolverUtil.inferSourceFormat(identifier);
+        if (format.equals(Format.UNKNOWN)) {
+            format = detectSourceFormat(identifier);
         }
-        return sourceFormat;
+        return format;
     }
 
     private void checkAccess(File file, Identifier identifier)
@@ -167,21 +166,20 @@ class FilesystemResolver extends AbstractResolver
      * Detects the source format of a file by reading its header.
      *
      * @param identifier
-     * @return Inferred source format, or {@link SourceFormat#UNKNOWN} if
+     * @return Inferred source format, or {@link Format#UNKNOWN} if
      * unknown.
      * @throws IOException
      */
-    private SourceFormat detectSourceFormat(Identifier identifier)
+    private Format detectSourceFormat(Identifier identifier)
             throws IOException {
-        SourceFormat sourceFormat = SourceFormat.UNKNOWN;
+        Format format = Format.UNKNOWN;
         String pathname = getPathname(identifier, File.separator);
         Collection<?> detectedTypes = MimeUtil.getMimeTypes(pathname);
         if (detectedTypes.size() > 0) {
             String detectedType = detectedTypes.toArray()[0].toString();
-            sourceFormat = SourceFormat.
-                    getSourceFormat(new MediaType(detectedType));
+            format = Format.getFormat(detectedType);
         }
-        return sourceFormat;
+        return format;
     }
 
     /**

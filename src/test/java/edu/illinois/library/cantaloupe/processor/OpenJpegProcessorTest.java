@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
@@ -24,7 +24,7 @@ public class OpenJpegProcessorTest extends ProcessorTest {
                 OpenJpegProcessor.PATH_TO_BINARIES_CONFIG_KEY, "/usr/local/bin");
 
         instance = new OpenJpegProcessor();
-        instance.setSourceFormat(SourceFormat.JP2);
+        instance.setSourceFormat(Format.JP2);
     }
 
     protected Processor getProcessor() {

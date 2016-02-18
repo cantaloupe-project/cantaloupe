@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.resource.iiif.ImageInfoUtil;
@@ -59,8 +59,8 @@ abstract class ImageInfoFactory {
         }
 
         // formats
-        for (OutputFormat format : processor.getAvailableOutputFormats()) {
-            imageInfo.formats.add(format.getExtension());
+        for (Format format : processor.getAvailableOutputFormats()) {
+            imageInfo.formats.add(format.getPreferredExtension());
         }
 
         // qualities

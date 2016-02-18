@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -16,7 +16,7 @@ public class ComplianceLevelTest {
         Set<ServiceFeature> serviceFeatures = new HashSet<>();
         Set<ProcessorFeature> processorFeatures = new HashSet<>();
         Set<Quality> qualities = new HashSet<>();
-        Set<OutputFormat> outputFormats = new HashSet<>();
+        Set<Format> outputFormats = new HashSet<>();
         assertEquals(ComplianceLevel.LEVEL_0,
                 ComplianceLevel.getLevel(serviceFeatures, processorFeatures,
                         qualities, outputFormats));
@@ -28,7 +28,7 @@ public class ComplianceLevelTest {
         processorFeatures.add(ProcessorFeature.SIZE_BY_HEIGHT);
         processorFeatures.add(ProcessorFeature.SIZE_BY_PERCENT);
         qualities.add(Quality.DEFAULT);
-        outputFormats.add(OutputFormat.JPG);
+        outputFormats.add(Format.JPG);
         serviceFeatures.add(ServiceFeature.BASE_URI_REDIRECT);
         serviceFeatures.add(ServiceFeature.CORS);
         serviceFeatures.add(ServiceFeature.JSON_LD_MEDIA_TYPE);
@@ -44,7 +44,7 @@ public class ComplianceLevelTest {
         qualities.add(Quality.BITONAL);
         qualities.add(Quality.COLOR);
         qualities.add(Quality.GRAY);
-        outputFormats.add(OutputFormat.PNG);
+        outputFormats.add(Format.PNG);
         assertEquals(ComplianceLevel.LEVEL_2,
                 ComplianceLevel.getLevel(serviceFeatures, processorFeatures,
                         qualities, outputFormats));

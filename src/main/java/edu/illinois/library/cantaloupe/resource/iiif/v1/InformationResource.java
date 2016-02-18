@@ -8,8 +8,8 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
@@ -53,10 +53,10 @@ public class InformationResource extends AbstractResource {
         identifier = decodeSlashes(identifier);
         // Get the resolver
         Resolver resolver = ResolverFactory.getResolver(identifier);
-        SourceFormat sourceFormat = SourceFormat.UNKNOWN;
+        Format format = Format.UNKNOWN;
         try {
             // Determine the format of the source image
-            sourceFormat = resolver.getSourceFormat(identifier);
+            format = resolver.getSourceFormat(identifier);
         } catch (FileNotFoundException e) {
             if (Application.getConfiguration().
                     getBoolean(PURGE_MISSING_CONFIG_KEY, false)) {
@@ -72,7 +72,7 @@ public class InformationResource extends AbstractResource {
         // Obtain an instance of the processor assigned to that format in
         // the config file
         Processor proc = ProcessorFactory.getProcessor(resolver, identifier,
-                sourceFormat);
+                format);
 
         // Get an ImageInfo instance corresponding to the source image
         ImageInfo imageInfo = ImageInfoFactory.newImageInfo(

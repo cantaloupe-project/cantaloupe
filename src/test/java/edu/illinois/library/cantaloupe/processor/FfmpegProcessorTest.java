@@ -1,8 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
@@ -32,23 +31,23 @@ public class FfmpegProcessorTest extends ProcessorTest {
     @Before
     public void setUp() throws Exception {
         instance = new FfmpegProcessor();
-        final SourceFormat sourceFormat = SourceFormat.MPG;
+        final Format format = Format.MPG;
         final File fixture = TestUtil.
-                getFixture("images/" + sourceFormat.getPreferredExtension());
+                getFixture("images/" + format.getPreferredExtension());
         instance.setSourceFile(fixture);
-        instance.setSourceFormat(sourceFormat);
+        instance.setSourceFormat(format);
     }
 
     @Test
     public void testGetAvailableOutputFormats() throws Exception {
-        for (SourceFormat sourceFormat : SourceFormat.values()) {
+        for (Format format : Format.values()) {
             try {
-                Set<OutputFormat> expectedFormats = new HashSet<>();
-                if (sourceFormat.getType() != null &&
-                        sourceFormat.getType().equals(SourceFormat.Type.VIDEO)) {
-                    expectedFormats.add(OutputFormat.JPG);
+                Set<Format> expectedFormats = new HashSet<>();
+                if (format.getType() != null &&
+                        format.getType().equals(Format.Type.VIDEO)) {
+                    expectedFormats.add(Format.JPG);
                 }
-                instance.setSourceFormat(sourceFormat);
+                instance.setSourceFormat(format);
                 assertEquals(expectedFormats, instance.getAvailableOutputFormats());
             } catch (UnsupportedSourceFormatException e) {
                 // continue

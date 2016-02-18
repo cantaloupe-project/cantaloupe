@@ -1,11 +1,10 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -34,7 +33,7 @@ import static org.junit.Assert.*;
  */
 public class ImageMagickProcessorTest extends ProcessorTest {
 
-    private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
+    private static HashMap<Format, Set<Format>> supportedFormats;
 
     ImageMagickProcessor instance = new ImageMagickProcessor();
 
@@ -42,11 +41,11 @@ public class ImageMagickProcessorTest extends ProcessorTest {
      * @return Map of available output formats for all known source formats,
      * based on information reported by <code>identify -list format</code>.
      */
-    private static HashMap<SourceFormat, Set<OutputFormat>> getFormats()
+    private static HashMap<Format, Set<Format>> getFormats()
             throws IOException {
         if (supportedFormats == null) {
-            final Set<SourceFormat> sourceFormats = new HashSet<>();
-            final Set<OutputFormat> outputFormats = new HashSet<>();
+            final Set<Format> formats = new HashSet<>();
+            final Set<Format> outputFormats = new HashSet<>();
 
             String cmdPath = "identify";
             // retrieve the output of the `identify -list format` command,
@@ -68,47 +67,47 @@ public class ImageMagickProcessorTest extends ProcessorTest {
             while ((s = stdInput.readLine()) != null) {
                 s = s.trim();
                 if (s.startsWith("JP2")) {
-                    sourceFormats.add(SourceFormat.JP2);
+                    formats.add(Format.JP2);
                     if (s.contains(" rw")) {
-                        outputFormats.add(OutputFormat.JP2);
+                        outputFormats.add(Format.JP2);
                     }
                 }
                 if (s.startsWith("JPEG")) {
-                    sourceFormats.add(SourceFormat.JPG);
+                    formats.add(Format.JPG);
                     if (s.contains(" rw")) {
-                        outputFormats.add(OutputFormat.JPG);
+                        outputFormats.add(Format.JPG);
                     }
                 }
                 if (s.startsWith("PNG")) {
-                    sourceFormats.add(SourceFormat.PNG);
+                    formats.add(Format.PNG);
                     if (s.contains(" rw")) {
-                        outputFormats.add(OutputFormat.PNG);
+                        outputFormats.add(Format.PNG);
                     }
                 }
                 if (s.startsWith("PDF") && s.contains(" rw")) {
-                    outputFormats.add(OutputFormat.PDF);
+                    outputFormats.add(Format.PDF);
                 }
                 if (s.startsWith("TIFF")) {
-                    sourceFormats.add(SourceFormat.TIF);
+                    formats.add(Format.TIF);
                     if (s.contains(" rw")) {
-                        outputFormats.add(OutputFormat.TIF);
+                        outputFormats.add(Format.TIF);
                     }
                 }
                 if (s.startsWith("WEBP")) {
-                    sourceFormats.add(SourceFormat.WEBP);
+                    formats.add(Format.WEBP);
                     if (s.contains(" rw")) {
-                        outputFormats.add(OutputFormat.WEBP);
+                        outputFormats.add(Format.WEBP);
                     }
                 }
 
             }
 
             supportedFormats = new HashMap<>();
-            for (SourceFormat sourceFormat : SourceFormat.values()) {
-                supportedFormats.put(sourceFormat, new HashSet<OutputFormat>());
+            for (Format format : Format.values()) {
+                supportedFormats.put(format, new HashSet<Format>());
             }
-            for (SourceFormat sourceFormat : sourceFormats) {
-                supportedFormats.put(sourceFormat, outputFormats);
+            for (Format format : formats) {
+                supportedFormats.put(format, outputFormats);
             }
         }
         return supportedFormats;
@@ -120,10 +119,10 @@ public class ImageMagickProcessorTest extends ProcessorTest {
 
     @Test
     public void testGetAvailableOutputFormats() throws Exception {
-        for (SourceFormat sourceFormat : SourceFormat.values()) {
+        for (Format format : Format.values()) {
             try {
-                instance.setSourceFormat(sourceFormat);
-                Set<OutputFormat> expectedFormats = getFormats().get(sourceFormat);
+                instance.setSourceFormat(format);
+                Set<Format> expectedFormats = getFormats().get(format);
                 assertEquals(expectedFormats, instance.getAvailableOutputFormats());
             } catch (UnsupportedSourceFormatException e) {
                 // continue
@@ -153,7 +152,7 @@ public class ImageMagickProcessorTest extends ProcessorTest {
     public void testGetTileSizes() throws Exception {
         // untiled image
         instance.setStreamSource(new TestStreamSource(TestUtil.getImage("jpg")));
-        instance.setSourceFormat(SourceFormat.JPG);
+        instance.setSourceFormat(Format.JPG);
         Dimension expectedSize = new Dimension(64, 56);
         List<Dimension> tileSizes = instance.getTileSizes();
         assertEquals(1, tileSizes.size());
@@ -163,7 +162,7 @@ public class ImageMagickProcessorTest extends ProcessorTest {
             // tiled image (this processor doesn't recognize tiles)
             instance.setStreamSource(new TestStreamSource(
                     TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif")));
-            instance.setSourceFormat(SourceFormat.TIF);
+            instance.setSourceFormat(Format.TIF);
             tileSizes = instance.getTileSizes();
             assertEquals(expectedSize, tileSizes.get(0));
         } catch (UnsupportedSourceFormatException e) {
@@ -181,11 +180,11 @@ public class ImageMagickProcessorTest extends ProcessorTest {
         ops.setIdentifier(new Identifier("bla"));
         Rotate rotation = new Rotate(15);
         ops.add(rotation);
-        ops.setOutputFormat(OutputFormat.JPG);
+        ops.setOutputFormat(Format.JPG);
 
         Dimension fullSize = new Dimension(64, 58);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        instance.setSourceFormat(SourceFormat.JPG);
+        instance.setSourceFormat(Format.JPG);
         StreamSource streamSource = new TestStreamSource(
                 TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));
         instance.setStreamSource(streamSource);
@@ -217,11 +216,11 @@ public class ImageMagickProcessorTest extends ProcessorTest {
         ops.setIdentifier(new Identifier("bla"));
         Rotate rotation = new Rotate(15);
         ops.add(rotation);
-        ops.setOutputFormat(OutputFormat.PNG);
+        ops.setOutputFormat(Format.PNG);
 
         Dimension fullSize = new Dimension(64, 58);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        instance.setSourceFormat(SourceFormat.JPG);
+        instance.setSourceFormat(Format.JPG);
         StreamSource streamSource = new TestStreamSource(
                 TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));
         instance.setStreamSource(streamSource);

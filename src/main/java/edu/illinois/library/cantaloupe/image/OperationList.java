@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * <p>Normalized list of {@link Operation image transform operations}
  * corresponding to an image identified by its {@link Identifier}, along with
- * an {@link OutputFormat} in which the processed image is to be written.</p>
+ * a {@link Format} in which the processed image is to be written.</p>
  *
  * <p>Endpoints translate request parameters into instances of this class, in
  * order to pass them off into {@link
@@ -26,7 +26,7 @@ public class OperationList implements Comparable<OperationList>,
     private Identifier identifier;
     private List<Operation> operations = new ArrayList<>();
     private Map<String,Object> options = new HashMap<>();
-    private OutputFormat outputFormat;
+    private Format outputFormat;
 
     /**
      * @param op Operation to add. Null values will be discarded.
@@ -80,7 +80,7 @@ public class OperationList implements Comparable<OperationList>,
         return options;
     }
 
-    public OutputFormat getOutputFormat() {
+    public Format getOutputFormat() {
         return outputFormat;
     }
 
@@ -100,32 +100,32 @@ public class OperationList implements Comparable<OperationList>,
     /**
      * Determines whether the operations are effectively calling for the
      * unmodified source image, guessing the source format based on the
-     * identifier. {@link #isNoOp(SourceFormat)} should be used instead, if
+     * identifier. {@link #isNoOp(Format)} should be used instead, if
      * possible.
      *
      * @return Whether the operations are effectively calling for the
      * unmodified source image.
      */
     public boolean isNoOp() {
-        return isNoOp(SourceFormat.getSourceFormat(this.getIdentifier()));
+        return isNoOp(Format.getFormat(this.getIdentifier()));
     }
 
     /**
      * Determines whether the operations are effectively calling for the
      * unmodified source image, based on the given source format.
      *
-     * @param sourceFormat
+     * @param format
      * @return Whether the operations are effectively calling for the
      * unmodified source image.
      */
-    public boolean isNoOp(SourceFormat sourceFormat) {
-        if (!this.getOutputFormat().isEqual(sourceFormat)) {
+    public boolean isNoOp(Format format) {
+        if (!this.getOutputFormat().equals(format)) {
             return false;
         }
         for (Operation op : this) {
             // Ignore watermarks when the output formats is PDF.
             if (!op.isNoOp() && !(op instanceof Watermark &&
-                    getOutputFormat().equals(OutputFormat.PDF))) {
+                    getOutputFormat().equals(Format.PDF))) {
                 return false;
             }
         }
@@ -141,7 +141,7 @@ public class OperationList implements Comparable<OperationList>,
         this.identifier = identifier;
     }
 
-    public void setOutputFormat(OutputFormat outputFormat) {
+    public void setOutputFormat(Format outputFormat) {
         this.outputFormat = outputFormat;
     }
 
@@ -161,7 +161,7 @@ public class OperationList implements Comparable<OperationList>,
      *       "key" => "value"
      *       ...
      *   "output_format" =&gt;
-     *     result of {@link OutputFormat#toMap}</pre>
+     *     result of {@link Format#toMap}</pre>
      *
      * @param fullSize Full size of the source image on which the instance is
      *                 being applied.
@@ -206,7 +206,7 @@ public class OperationList implements Comparable<OperationList>,
             parts.add(key + ":" + this.getOptions().get(key));
         }
         return StringUtils.join(parts, "_") + "." +
-                getOutputFormat().getExtension();
+                getOutputFormat().getPreferredExtension();
     }
 
 }

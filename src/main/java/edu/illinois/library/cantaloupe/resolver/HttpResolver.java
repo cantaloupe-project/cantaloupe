@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.apache.commons.configuration.Configuration;
 import org.restlet.Client;
 import org.restlet.data.ChallengeScheme;
-import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.data.Status;
@@ -122,10 +121,10 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public SourceFormat getSourceFormat(final Identifier identifier)
+    public Format getSourceFormat(final Identifier identifier)
             throws IOException {
-        SourceFormat format = ResolverUtil.inferSourceFormat(identifier);
-        if (format == SourceFormat.UNKNOWN) {
+        Format format = ResolverUtil.inferSourceFormat(identifier);
+        if (format == Format.UNKNOWN) {
             format = getSourceFormatFromContentTypeHeader(identifier);
         }
         getStreamSource(identifier).newInputStream(); // throws IOException if not found etc.
@@ -156,12 +155,12 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
      * response to determine the source format.
      *
      * @param identifier
-     * @return A source format, or {@link SourceFormat#UNKNOWN} if unknown.
+     * @return A source format, or {@link Format#UNKNOWN} if unknown.
      * @throws IOException
      */
-    private SourceFormat getSourceFormatFromContentTypeHeader(Identifier identifier)
+    private Format getSourceFormatFromContentTypeHeader(Identifier identifier)
             throws IOException {
-        SourceFormat sourceFormat = SourceFormat.UNKNOWN;
+        Format format = Format.UNKNOWN;
         String contentType = "";
         Reference url = getUrl(identifier);
         ClientResource resource = newClientResource(url);
@@ -171,8 +170,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
             contentType = resource.getResponse().getHeaders().
                     getFirstValue("Content-Type", true);
             if (contentType != null) {
-                sourceFormat = SourceFormat.
-                        getSourceFormat(new MediaType(contentType));
+                format = Format.getFormat(contentType);
             }
         } catch (ResourceException e) {
             // nothing we can do but log it
@@ -186,7 +184,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         } finally {
             resource.release();
         }
-        return sourceFormat;
+        return format;
     }
 
     private Reference getUrlWithBasicStrategy(final Identifier identifier) {

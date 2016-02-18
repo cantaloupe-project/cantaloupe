@@ -3,10 +3,9 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
@@ -51,7 +50,7 @@ public class ImageResource extends AbstractResource {
     /**
      * Format to assume when no extension is present in the URI.
      */
-    private static final OutputFormat DEFAULT_FORMAT = OutputFormat.JPG;
+    private static final Format DEFAULT_FORMAT = Format.JPG;
 
     @Override
     protected void doInit() throws ResourceException {
@@ -78,9 +77,9 @@ public class ImageResource extends AbstractResource {
         final Resolver resolver = ResolverFactory.getResolver(identifier);
 
         // Determine the format of the source image
-        SourceFormat sourceFormat = SourceFormat.UNKNOWN;
+        Format format = Format.UNKNOWN;
         try {
-            sourceFormat = resolver.getSourceFormat(identifier);
+            format = resolver.getSourceFormat(identifier);
         } catch (FileNotFoundException e) {
             if (Application.getConfiguration().
                     getBoolean(PURGE_MISSING_CONFIG_KEY, false)) {
@@ -97,9 +96,9 @@ public class ImageResource extends AbstractResource {
         // the config file. This will throw a variety of exceptions if there
         // are any issues.
         final Processor proc = ProcessorFactory.getProcessor(
-                resolver, identifier, sourceFormat);
+                resolver, identifier, format);
 
-        final Set<OutputFormat> availableOutputFormats =
+        final Set<Format> availableOutputFormats =
                 proc.getAvailableOutputFormats();
 
         // Extract the quality and format from the URI
@@ -111,7 +110,8 @@ public class ImageResource extends AbstractResource {
         if (qualityAndFormat.length > 1) {
             outputFormat = qualityAndFormat[qualityAndFormat.length - 1];
         } else {
-            outputFormat = getOutputFormat(availableOutputFormats).getExtension();
+            outputFormat = getOutputFormat(availableOutputFormats).
+                    getPreferredExtension();
         }
 
         // Assemble the URI parameters into an OperationList objects
@@ -139,7 +139,7 @@ public class ImageResource extends AbstractResource {
                 InputStream inputStream = cache.getImageInputStream(ops);
                 if (inputStream != null) {
                     return new CachedImageRepresentation(
-                            new MediaType(ops.getOutputFormat().getMediaType()),
+                            ops.getOutputFormat().getPreferredMediaType(),
                             disposition, inputStream);
                 }
             }
@@ -165,12 +165,12 @@ public class ImageResource extends AbstractResource {
         if (!availableOutputFormats.contains(ops.getOutputFormat())) {
             String msg = String.format("%s does not support the \"%s\" output format",
                     proc.getClass().getSimpleName(),
-                    ops.getOutputFormat().getExtension());
+                    ops.getOutputFormat().getPreferredExtension());
             logger.warn(msg + ": " + this.getReference());
             throw new UnsupportedSourceFormatException(msg);
         }
 
-        return getRepresentation(ops, sourceFormat, disposition, proc);
+        return getRepresentation(ops, format, disposition, proc);
     }
 
     /**
@@ -178,11 +178,12 @@ public class ImageResource extends AbstractResource {
      * @return The best output format based on the URI extension, Accept
      * header, or default, as outlined by the Image API 1.1 spec.
      */
-    private OutputFormat getOutputFormat(Set<OutputFormat> limitToFormats) {
+    private Format getOutputFormat(Set<Format> limitToFormats) {
         // check the URI for a format in the extension
-        OutputFormat format = null;
-        for (OutputFormat f : OutputFormat.values()) {
-            if (f.getExtension().equals(this.getReference().getExtensions())) {
+        Format format = null;
+        for (Format f : Format.values()) {
+            if (f.getPreferredExtension().
+                    equals(this.getReference().getExtensions())) {
                 format = f;
                 break;
             }
@@ -201,16 +202,15 @@ public class ImageResource extends AbstractResource {
      * @return Best OutputFormat for the client preferences as specified in the
      * Accept header.
      */
-    private OutputFormat getPreferredOutputFormat(Set<OutputFormat> limitToFormats) {
+    private Format getPreferredOutputFormat(Set<Format> limitToFormats) {
         List<Variant> variants = new ArrayList<>();
-        for (OutputFormat format : limitToFormats) {
-            variants.add(new Variant(new MediaType(format.getMediaType())));
+        for (Format format : limitToFormats) {
+            variants.add(new Variant(format.getPreferredMediaType()));
         }
         Variant preferred = getPreferredVariant(variants);
         if (preferred != null) {
             String mediaTypeStr = preferred.getMediaType().toString();
-            OutputFormat format = OutputFormat.getOutputFormat(mediaTypeStr);
-            return format;
+            return Format.getFormat(mediaTypeStr);
         }
         return null;
     }

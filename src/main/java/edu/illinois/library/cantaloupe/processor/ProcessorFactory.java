@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.resolver.FileResolver;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
@@ -40,23 +40,23 @@ public abstract class ProcessorFactory {
      * Retrieves the best-match processor for the given source format. Its
      * source will not be set.
      *
-     * @param sourceFormat
+     * @param format
      * @return An instance suitable for handling the given source format, based
      *         on configuration settings. The source is already set.
      * @throws UnsupportedSourceFormatException
      * @throws ReflectiveOperationException
      * @throws IOException
      */
-    public static Processor getProcessor(final SourceFormat sourceFormat)
+    public static Processor getProcessor(final Format format)
             throws UnsupportedSourceFormatException,
             ReflectiveOperationException,
             IOException {
         Processor processor = null;
         try {
-            processor = getProcessor(null, null, sourceFormat);
+            processor = getProcessor(null, null, format);
         } catch (IncompatibleResolverException e) {
             // this will never happen
-            logger.error("BUG ALERT in getProcessor(Identifier, SourceFormat)", e);
+            logger.error("BUG ALERT in getProcessor(Identifier, Format)", e);
         }
         return processor;
     }
@@ -64,9 +64,9 @@ public abstract class ProcessorFactory {
     /**
      * @param resolver Resolver from which the processor will be reading
      * @param identifier
-     * @param sourceFormat The source format for which to return an instance,
+     * @param format The source format for which to return an instance,
      *                     based on configuration settings. If unsure, use
-     *                     <code>SourceFormat.UNKNOWN</code>.
+     *                     <code>Format.UNKNOWN</code>.
      * @return An instance suitable for handling the given source format, based
      *         on configuration settings. The source is already set.
      * @throws IncompatibleResolverException
@@ -81,12 +81,12 @@ public abstract class ProcessorFactory {
      */
     public static Processor getProcessor(final Resolver resolver,
                                          final Identifier identifier,
-                                         final SourceFormat sourceFormat)
+                                         final Format format)
             throws IncompatibleResolverException,
             UnsupportedSourceFormatException,
             ReflectiveOperationException,
             IOException {
-        String processorName = getAssignedProcessorName(sourceFormat);
+        String processorName = getAssignedProcessorName(format);
         if (processorName == null) {
             processorName = getFallbackProcessorName();
             if (processorName == null) {
@@ -102,7 +102,7 @@ public abstract class ProcessorFactory {
             throw new IncompatibleResolverException(resolver, processor);
         }
 
-        processor.setSourceFormat(sourceFormat);
+        processor.setSourceFormat(format);
 
         if (identifier != null) {
             // Set the processor's source
@@ -118,10 +118,10 @@ public abstract class ProcessorFactory {
         return processor;
     }
 
-    private static String getAssignedProcessorName(SourceFormat sourceFormat) {
+    private static String getAssignedProcessorName(Format format) {
         Configuration config = Application.getConfiguration();
         return config.getString("processor." +
-                sourceFormat.getPreferredExtension());
+                format.getPreferredExtension());
     }
 
     private static String getFallbackProcessorName() {

@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
@@ -109,7 +109,7 @@ public class AmazonS3ResolverTest {
 
     @Test
     public void testGetSourceFormatWithBasicLookupStrategy() throws IOException {
-        assertEquals(SourceFormat.JPG, instance.getSourceFormat(IMAGE));
+        assertEquals(Format.JPG, instance.getSourceFormat(IMAGE));
         try {
             instance.getSourceFormat(new Identifier("image.bogus"));
             fail("Expected exception");
@@ -132,7 +132,7 @@ public class AmazonS3ResolverTest {
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         // present image
-        assertEquals(SourceFormat.JPG, instance.getSourceFormat(IMAGE));
+        assertEquals(Format.JPG, instance.getSourceFormat(IMAGE));
         // present image without extension TODO: write this
 
         // missing image with extension

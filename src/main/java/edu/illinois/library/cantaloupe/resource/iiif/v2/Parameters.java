@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.resource.ParameterList;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Reference;
@@ -22,7 +22,7 @@ class Parameters implements ParameterList, Comparable<Parameters> {
 
     private static Logger logger = LoggerFactory.getLogger(Parameters.class);
 
-    private OutputFormat outputFormat;
+    private Format outputFormat;
     private Identifier identifier;
     private Quality quality;
     private Form query = new Form();
@@ -47,7 +47,7 @@ class Parameters implements ParameterList, Comparable<Parameters> {
             String[] subparts = StringUtils.split(parts[4], ".");
             if (subparts.length == 2) {
                 params.setQuality(Quality.valueOf(subparts[0].toUpperCase()));
-                params.setOutputFormat(OutputFormat.valueOf(subparts[1].toUpperCase()));
+                params.setOutputFormat(Format.valueOf(subparts[1].toUpperCase()));
             } else {
                 throw new IllegalArgumentException("Invalid parameters format");
             }
@@ -73,7 +73,7 @@ class Parameters implements ParameterList, Comparable<Parameters> {
     public Parameters(String identifier, String region, String size,
                       String rotation, String quality, String format) {
         this.identifier = new Identifier(Reference.decode(identifier));
-        this.outputFormat = OutputFormat.valueOf(format.toUpperCase());
+        this.outputFormat = Format.valueOf(format.toUpperCase());
         this.quality = Quality.valueOf(quality.toUpperCase());
         this.region = Region.fromUri(region);
         this.rotation = Rotation.fromUri(rotation);
@@ -90,7 +90,7 @@ class Parameters implements ParameterList, Comparable<Parameters> {
         return identifier;
     }
 
-    public OutputFormat getOutputFormat() {
+    public Format getOutputFormat() {
         return outputFormat;
     }
 
@@ -123,7 +123,7 @@ class Parameters implements ParameterList, Comparable<Parameters> {
         this.identifier = identifier;
     }
 
-    public void setOutputFormat(OutputFormat outputFormat) {
+    public void setOutputFormat(Format outputFormat) {
         this.outputFormat = outputFormat;
     }
 

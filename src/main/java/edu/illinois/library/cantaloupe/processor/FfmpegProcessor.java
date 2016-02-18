@@ -3,9 +3,9 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.watermark.Position;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
@@ -141,10 +141,10 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
     }
 
     @Override
-    public Set<OutputFormat> getAvailableOutputFormats() {
-        Set<OutputFormat> outputFormats = new HashSet<>();
-        if (sourceFormat.isVideo()) {
-            outputFormats.add(OutputFormat.JPG);
+    public Set<Format> getAvailableOutputFormats() {
+        final Set<Format> outputFormats = new HashSet<>();
+        if (format.isVideo()) {
+            outputFormats.add(Format.JPG);
         }
         return outputFormats;
     }

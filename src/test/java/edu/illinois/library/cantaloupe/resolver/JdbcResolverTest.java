@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
@@ -90,26 +90,26 @@ public class JdbcResolverTest {
     @Test
     public void testGetSourceFormat() throws IOException {
         // JdbcResolver.function.media_type returns SQL
-        assertEquals(SourceFormat.JPG,
+        assertEquals(Format.JPG,
                 instance.getSourceFormat(new Identifier("jpg.jpg")));
-        assertEquals(SourceFormat.UNKNOWN,
+        assertEquals(Format.UNKNOWN,
                 instance.getSourceFormat(new Identifier("bogus")));
 
         // JdbcResolver.function.media_type returns a media type
         Application.getConfiguration().setProperty(
                 "JdbcResolver.function.media_type",
                 "function getMediaType(identifier) { return (identifier == 'bogus') ? null : 'image/jpeg'; }");
-        assertEquals(SourceFormat.JPG,
+        assertEquals(Format.JPG,
                 instance.getSourceFormat(new Identifier("jpg.jpg")));
-        assertEquals(SourceFormat.UNKNOWN,
+        assertEquals(Format.UNKNOWN,
                 instance.getSourceFormat(new Identifier("bogus")));
 
         // JdbcResolver.function.media_type is undefined
         Application.getConfiguration().setProperty(
                 "JdbcResolver.function.media_type", null);
-        assertEquals(SourceFormat.JPG,
+        assertEquals(Format.JPG,
                 instance.getSourceFormat(new Identifier("jpg.jpg")));
-        assertEquals(SourceFormat.UNKNOWN,
+        assertEquals(Format.UNKNOWN,
                 instance.getSourceFormat(new Identifier("bogus")));
     }
 

@@ -7,8 +7,7 @@ import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
@@ -61,7 +60,7 @@ class GraphicsMagickProcessor extends AbstractProcessor
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
             SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
     // Lazy-initialized by getFormats()
-    private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
+    private static HashMap<Format, Set<Format>> supportedFormats;
 
     private StreamSource streamSource;
 
@@ -110,10 +109,10 @@ class GraphicsMagickProcessor extends AbstractProcessor
      * @return Map of available output formats for all known source formats,
      * based on information reported by <code>gm version</code>.
      */
-    private static HashMap<SourceFormat, Set<OutputFormat>> getFormats() {
+    private static HashMap<Format, Set<Format>> getFormats() {
         if (supportedFormats == null) {
-            final Set<SourceFormat> sourceFormats = new HashSet<>();
-            final Set<OutputFormat> outputFormats = new HashSet<>();
+            final Set<Format> formats = new HashSet<>();
+            final Set<Format> outputFormats = new HashSet<>();
 
             // Get the output of the `gm version` command, which contains
             // a list of all optional formats.
@@ -143,22 +142,22 @@ class GraphicsMagickProcessor extends AbstractProcessor
                         if (read) {
                             s = s.trim();
                             if (s.startsWith("JPEG-2000 ") && s.endsWith(" yes")) {
-                                sourceFormats.add(SourceFormat.JP2);
-                                outputFormats.add(OutputFormat.JP2);
+                                formats.add(Format.JP2);
+                                outputFormats.add(Format.JP2);
                             } else if (s.startsWith("JPEG ") && s.endsWith(" yes")) {
-                                sourceFormats.add(SourceFormat.JPG);
-                                outputFormats.add(OutputFormat.JPG);
+                                formats.add(Format.JPG);
+                                outputFormats.add(Format.JPG);
                             } else if (s.startsWith("PNG ") && s.endsWith(" yes")) {
-                                sourceFormats.add(SourceFormat.PNG);
-                                outputFormats.add(OutputFormat.PNG);
+                                formats.add(Format.PNG);
+                                outputFormats.add(Format.PNG);
                             } else if (s.startsWith("Ghostscript") && s.endsWith(" yes")) {
-                                outputFormats.add(OutputFormat.PDF);
+                                outputFormats.add(Format.PDF);
                             } else if (s.startsWith("TIFF ") && s.endsWith(" yes")) {
-                                sourceFormats.add(SourceFormat.TIF);
-                                outputFormats.add(OutputFormat.TIF);
+                                formats.add(Format.TIF);
+                                outputFormats.add(Format.TIF);
                             } else if (s.startsWith("WebP ") && s.endsWith(" yes")) {
-                                sourceFormats.add(SourceFormat.WEBP);
-                                outputFormats.add(OutputFormat.WEBP);
+                                formats.add(Format.WEBP);
+                                outputFormats.add(Format.WEBP);
                             }
                         }
                     }
@@ -167,8 +166,8 @@ class GraphicsMagickProcessor extends AbstractProcessor
                     // add formats that are not listed in the output of
                     // "gm version" but are definitely available
                     // (http://www.graphicsmagick.org/formats.html)
-                    sourceFormats.add(SourceFormat.BMP);
-                    sourceFormats.add(SourceFormat.GIF);
+                    formats.add(Format.BMP);
+                    formats.add(Format.GIF);
                     // GIF output is buggy
                     //outputFormats.add(OutputFormat.GIF);
                 } catch (InterruptedException e) {
@@ -181,16 +180,16 @@ class GraphicsMagickProcessor extends AbstractProcessor
             }
 
             supportedFormats = new HashMap<>();
-            for (SourceFormat sourceFormat : sourceFormats) {
-                supportedFormats.put(sourceFormat, outputFormats);
+            for (Format format : formats) {
+                supportedFormats.put(format, outputFormats);
             }
         }
         return supportedFormats;
     }
 
     @Override
-    public Set<OutputFormat> getAvailableOutputFormats() {
-        Set<OutputFormat> formats = getFormats().get(sourceFormat);
+    public Set<Format> getAvailableOutputFormats() {
+        Set<Format> formats = getFormats().get(format);
         if (formats == null) {
             formats = new HashSet<>();
         }
@@ -200,13 +199,13 @@ class GraphicsMagickProcessor extends AbstractProcessor
     @Override
     public Dimension getSize() throws ProcessorException {
         if (getAvailableOutputFormats().size() < 1) {
-            throw new UnsupportedSourceFormatException(sourceFormat);
+            throw new UnsupportedSourceFormatException(format);
         }
         InputStream inputStream = null;
         try {
             inputStream = streamSource.newInputStream();
             Info sourceInfo = new Info(
-                    sourceFormat.getPreferredExtension() + ":-",
+                    format.getPreferredExtension() + ":-",
                     inputStream, true);
             return new Dimension(sourceInfo.getImageWidth(),
                     sourceInfo.getImageHeight());
@@ -280,10 +279,10 @@ class GraphicsMagickProcessor extends AbstractProcessor
 
         try {
             IMOperation op = new IMOperation();
-            op.addImage(sourceFormat.getPreferredExtension() + ":-");
+            op.addImage(format.getPreferredExtension() + ":-");
             assembleOperation(op, ops, fullSize);
 
-            op.addImage(ops.getOutputFormat().getExtension() + ":-"); // write to stdout
+            op.addImage(ops.getOutputFormat().getPreferredExtension() + ":-"); // write to stdout
 
             // true = use GraphicsMagick instead of ImageMagick
             ConvertCmd convert = new ConvertCmd(true);

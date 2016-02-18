@@ -1,12 +1,11 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Scale;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
-import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
@@ -22,6 +21,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -53,27 +53,16 @@ class ImageIoImageReader {
     /** Assigned by createReader() if inputStream is not null. */
     private ImageReader reader;
 
-    /** Set in setSourceFormat() */
-    private SourceFormat sourceFormat;
+    /** Set in setFormat() */
+    private Format format;
 
     /**
      * @return Map of available output formats for all known source formats,
      * based on information reported by ImageIO.
      */
-    public static Set<SourceFormat> supportedFormats() {
-        final HashSet<SourceFormat> formats = new HashSet<>();
-        for (String mediaType : ImageIO.getReaderMIMETypes()) {
-            // We don't support JP2.
-            if (mediaType.equals("image/jp2")) {
-                continue;
-            }
-            final SourceFormat sourceFormat =
-                    SourceFormat.getSourceFormat(new MediaType(mediaType));
-            if (sourceFormat != null && !sourceFormat.equals(SourceFormat.UNKNOWN)) {
-                formats.add(sourceFormat);
-            }
-        }
-        return formats;
+    public static Set<Format> supportedFormats() {
+        return new HashSet<>(Arrays.asList(Format.BMP, Format.GIF, Format.JPG,
+                Format.PNG, Format.TIF));
     }
 
     /**
@@ -86,7 +75,7 @@ class ImageIoImageReader {
      * <p>Initializes an instance. The image's magic number will be read to
      * infer its type.</p>
      *
-     * <p>{@link #ImageIoImageReader(File, SourceFormat)} is more efficient and
+     * <p>{@link #ImageIoImageReader(File, Format)} is more efficient and
      * preferred.</p>
      *
      * @param inputFile Image file to read.
@@ -102,17 +91,17 @@ class ImageIoImageReader {
      * @param inputFile Image file to read.
      * @throws IOException
      */
-    public ImageIoImageReader(File inputFile, SourceFormat sourceFormat)
+    public ImageIoImageReader(File inputFile, Format format)
             throws IOException {
         setSource(inputFile);
-        setSourceFormat(sourceFormat);
+        setFormat(format);
     }
 
     /**
      * <p>Initializes an instance. The image's magic number will be read to
      * infer its type.</p>
      *
-     * <p>{@link #ImageIoImageReader(StreamSource, SourceFormat)} is more
+     * <p>{@link #ImageIoImageReader(StreamSource, Format)} is more
      * efficient and preferred.</p>
      *
      * @param streamSource Source of streams to read.
@@ -129,9 +118,9 @@ class ImageIoImageReader {
      * @throws IOException
      */
     public ImageIoImageReader(StreamSource streamSource,
-                              SourceFormat sourceFormat) throws IOException {
+                              Format format) throws IOException {
         setSource(streamSource);
-        setSourceFormat(sourceFormat);
+        setFormat(format);
     }
 
     private void createReader() throws IOException { // TODO: consider disallowing use without source format set
@@ -140,14 +129,14 @@ class ImageIoImageReader {
         }
 
         Iterator<ImageReader> it;
-        if (sourceFormat != null) {
+        if (format != null) {
             it = ImageIO.getImageReadersByMIMEType(
-                    sourceFormat.getPreferredMediaType().toString());
+                    format.getPreferredMediaType().toString());
         } else {
             it = ImageIO.getImageReaders(inputStream);
         }
 
-        if (sourceFormat != null && sourceFormat.equals(SourceFormat.TIF)) {
+        if (format != null && format.equals(Format.TIF)) {
             while (it.hasNext()) {
                 reader = it.next();
                 // This version contains improvements over the Sun version,
@@ -267,8 +256,8 @@ class ImageIoImageReader {
         inputStream = streamSource.newImageInputStream();
     }
 
-    public void setSourceFormat(SourceFormat sourceFormat) {
-        this.sourceFormat = sourceFormat;
+    public void setFormat(Format format) {
+        this.format = format;
     }
 
     ////////////////////////////////////////////////////////////////////////

@@ -47,7 +47,7 @@ public class ImageRepresentation extends OutputRepresentation {
                                final Processor processor,
                                final OperationList ops,
                                final Disposition disposition) {
-        super(new MediaType(ops.getOutputFormat().getMediaType()));
+        super(ops.getOutputFormat().getPreferredMediaType());
         this.fullSize = fullSize;
         this.processor = processor;
         this.ops = ops;

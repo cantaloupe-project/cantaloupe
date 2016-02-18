@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
@@ -24,13 +23,13 @@ public class Java2dProcessorTest extends ProcessorTest {
 
     @Test
     public void testGetAvailableOutputFormats() throws Exception {
-        final HashMap<SourceFormat,Set<OutputFormat>> formats = new HashMap<>();
-        for (SourceFormat sourceFormat : ImageIoImageReader.supportedFormats()) {
-            formats.put(sourceFormat, ImageIoImageWriter.supportedFormats());
+        final HashMap<Format,Set<Format>> formats = new HashMap<>();
+        for (Format format : ImageIoImageReader.supportedFormats()) {
+            formats.put(format, ImageIoImageWriter.supportedFormats());
         }
 
-        instance.setSourceFormat(SourceFormat.JPG);
-        Set<OutputFormat> expectedFormats = formats.get(SourceFormat.JPG);
+        instance.setSourceFormat(Format.JPG);
+        Set<Format> expectedFormats = formats.get(Format.JPG);
         assertEquals(expectedFormats, instance.getAvailableOutputFormats());
     }
 
@@ -56,7 +55,7 @@ public class Java2dProcessorTest extends ProcessorTest {
     public void testGetTileSizes() throws Exception {
         // untiled image
         instance.setStreamSource(new TestStreamSource(TestUtil.getImage("jpg")));
-        instance.setSourceFormat(SourceFormat.JPG);
+        instance.setSourceFormat(Format.JPG);
         Dimension expectedSize = new Dimension(64, 56);
         List<Dimension> tileSizes = instance.getTileSizes();
         assertEquals(1, tileSizes.size());
@@ -65,7 +64,7 @@ public class Java2dProcessorTest extends ProcessorTest {
         // tiled image (this processor doesn't recognize tiles)
         instance.setStreamSource(new TestStreamSource(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif")));
-        instance.setSourceFormat(SourceFormat.TIF);
+        instance.setSourceFormat(Format.TIF);
         expectedSize = new Dimension(16, 16);
         tileSizes = instance.getTileSizes();
         assertEquals(expectedSize, tileSizes.get(0));

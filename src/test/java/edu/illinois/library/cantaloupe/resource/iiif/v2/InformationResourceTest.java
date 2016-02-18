@@ -5,9 +5,9 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -128,7 +128,7 @@ public class InformationResourceTest extends ResourceTest {
         try {
             OperationList ops = TestUtil.newOperationList();
             ops.setIdentifier(new Identifier(IMAGE));
-            ops.setOutputFormat(OutputFormat.JPG);
+            ops.setOutputFormat(Format.JPG);
 
             assertEquals(0, FileUtils.listFiles(cacheFolder, null, true).size());
 

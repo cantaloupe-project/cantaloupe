@@ -3,11 +3,10 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.junit.After;
@@ -603,26 +602,26 @@ public class Version2_0ConformanceTest {
      */
     @Test
     public void testFormats() throws Exception {
-        testFormat(OutputFormat.JPG);
-        testFormat(OutputFormat.TIF);
-        testFormat(OutputFormat.PNG);
-        testFormat(OutputFormat.GIF);
-        testFormat(OutputFormat.JP2);
-        testFormat(OutputFormat.PDF);
-        testFormat(OutputFormat.WEBP);
+        testFormat(Format.JPG);
+        testFormat(Format.TIF);
+        testFormat(Format.PNG);
+        testFormat(Format.GIF);
+        testFormat(Format.JP2);
+        testFormat(Format.PDF);
+        testFormat(Format.WEBP);
     }
 
-    private void testFormat(OutputFormat format) throws Exception {
+    private void testFormat(Format format) throws Exception {
         ClientResource client = getClientForUriPath("/" + IMAGE +
-                "/full/full/0/default." + format.getExtension());
+                "/full/full/0/default." + format.getPreferredExtension());
 
         // does the current processor support this output format?
-        SourceFormat sourceFormat = SourceFormat.getSourceFormat(IMAGE);
+        Format sourceFormat = Format.getFormat(IMAGE);
         Processor processor = ProcessorFactory.getProcessor(sourceFormat);
         if (processor.getAvailableOutputFormats().contains(format)) {
             client.get();
             assertEquals(Status.SUCCESS_OK, client.getStatus());
-            assertEquals(format.getMediaType(),
+            assertEquals(format.getPreferredMediaType().toString(),
                     client.getResponse().getHeaders().getFirst("Content-Type").getValue());
         } else {
             try {

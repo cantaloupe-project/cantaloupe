@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.resolver;
 import static org.junit.Assert.*;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -146,39 +146,39 @@ public class FilesystemResolverTest {
 
     @Test
     public void testGetSourceFormatByDetection() throws IOException {
-        assertEquals(SourceFormat.BMP,
+        assertEquals(Format.BMP,
                 instance.getSourceFormat(new Identifier("bmp")));
-        assertEquals(SourceFormat.GIF,
+        assertEquals(Format.GIF,
                 instance.getSourceFormat(new Identifier("gif")));
-        assertEquals(SourceFormat.JP2,
+        assertEquals(Format.JP2,
                 instance.getSourceFormat(new Identifier("jp2")));
-        assertEquals(SourceFormat.JPG,
+        assertEquals(Format.JPG,
                 instance.getSourceFormat(new Identifier("jpg")));
-        assertEquals(SourceFormat.PDF,
+        assertEquals(Format.PDF,
                 instance.getSourceFormat(new Identifier("pdf")));
-        assertEquals(SourceFormat.PNG,
+        assertEquals(Format.PNG,
                 instance.getSourceFormat(new Identifier("png")));
-        assertEquals(SourceFormat.TIF,
+        assertEquals(Format.TIF,
                 instance.getSourceFormat(new Identifier("tif")));
-        assertEquals(SourceFormat.UNKNOWN,
+        assertEquals(Format.UNKNOWN,
                 instance.getSourceFormat(new Identifier("txt")));
     }
 
     @Test
     public void testGetSourceFormatByInference() throws IOException {
-        assertEquals(SourceFormat.BMP,
+        assertEquals(Format.BMP,
                 instance.getSourceFormat(new Identifier("bmp-rgb-64x56x8.bmp")));
-        assertEquals(SourceFormat.GIF,
+        assertEquals(Format.GIF,
                 instance.getSourceFormat(new Identifier("gif-rgb-64x56x8.gif")));
-        assertEquals(SourceFormat.JP2,
+        assertEquals(Format.JP2,
                 instance.getSourceFormat(new Identifier("jp2-rgb-64x56x8-monotiled-lossy.jp2")));
-        assertEquals(SourceFormat.JPG,
+        assertEquals(Format.JPG,
                 instance.getSourceFormat(new Identifier("jpg-rgb-64x56x8-baseline.jpg")));
-        assertEquals(SourceFormat.PDF,
+        assertEquals(Format.PDF,
                 instance.getSourceFormat(new Identifier("pdf.pdf")));
-        assertEquals(SourceFormat.PNG,
+        assertEquals(Format.PNG,
                 instance.getSourceFormat(new Identifier("png-rgb-64x56x8.png")));
-        assertEquals(SourceFormat.TIF,
+        assertEquals(Format.TIF,
                 instance.getSourceFormat(new Identifier("tif-rgb-monores-64x56x8-striped-jpeg.tif")));
     }
 

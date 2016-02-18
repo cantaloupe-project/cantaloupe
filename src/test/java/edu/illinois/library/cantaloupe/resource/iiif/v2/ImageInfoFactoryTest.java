@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
@@ -32,7 +32,7 @@ public class ImageInfoFactoryTest {
 
         identifier = new Identifier("bla");
         imageUri = "http://example.org/bla";
-        processor = ProcessorFactory.getProcessor(SourceFormat.JPG);
+        processor = ProcessorFactory.getProcessor(Format.JPG);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
         info = ImageInfoFactory.newImageInfo(identifier, imageUri, processor);
@@ -89,7 +89,7 @@ public class ImageInfoFactoryTest {
 
     @Test
     public void testNewImageInfoTilesWithTiledImage() throws Exception {
-        processor.setSourceFormat(SourceFormat.TIF);
+        processor.setSourceFormat(Format.TIF);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif"));
         info = ImageInfoFactory.newImageInfo(identifier, imageUri, processor);
