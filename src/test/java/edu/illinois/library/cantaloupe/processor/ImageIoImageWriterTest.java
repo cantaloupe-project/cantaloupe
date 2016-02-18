@@ -22,7 +22,7 @@ public class ImageIoImageWriterTest {
     @Test
     public void testSupportedFormats() {
         Set<Format> outputFormats = new HashSet<>(Arrays.asList(
-                Format.BMP, Format.GIF, Format.JPG, Format.PNG, Format.TIF));
+                Format.GIF, Format.JPG, Format.PNG, Format.TIF));
         assertEquals(outputFormats, ImageIoImageWriter.supportedFormats());
     }
 
