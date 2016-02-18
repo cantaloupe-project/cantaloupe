@@ -34,6 +34,8 @@ public class Application {
 
     private static Logger logger = LoggerFactory.getLogger(Application.class);
 
+    public static final String CLEAN_CACHE_VM_ARGUMENT =
+            "cantaloupe.cache.clean";
     public static final String CONFIG_FILE_VM_ARGUMENT = "cantaloupe.config";
     public static final String PURGE_CACHE_VM_ARGUMENT =
             "cantaloupe.cache.purge";
@@ -117,26 +119,6 @@ public class Application {
 
     public static WebServer getWebServer() {
         return webServer;
-    }
-
-    private static void purgeCacheAtLaunch() throws CacheException {
-        Cache cache = CacheFactory.getInstance();
-        if (cache != null) {
-            cache.purge();
-        } else {
-            System.out.println("Cache is not specified or is improperly configured.");
-            System.exit(-1);
-        }
-    }
-
-    private static void purgeExpiredFromCacheAtLaunch() throws CacheException {
-        Cache cache = CacheFactory.getInstance();
-        if (cache != null) {
-            cache.purgeExpired();
-        } else {
-            System.out.println("Cache is not specified or is improperly configured.");
-            System.exit(-1);
-        }
     }
 
     private static void initializeLogging() {
@@ -224,10 +206,30 @@ public class Application {
                 runtime.maxMemory() / mb);
         logger.info("\uD83C\uDF48 Starting Cantaloupe {}", getVersion());
 
-        if (System.getProperty(PURGE_CACHE_VM_ARGUMENT) != null) {
-            purgeCacheAtLaunch();
+        if (System.getProperty(CLEAN_CACHE_VM_ARGUMENT) != null) {
+            Cache cache = CacheFactory.getInstance();
+            if (cache != null) {
+                cache.cleanUp();
+            } else {
+                System.out.println("Cache is not specified or is improperly configured.");
+                System.exit(-1);
+            }
+        } else if (System.getProperty(PURGE_CACHE_VM_ARGUMENT) != null) {
+            Cache cache = CacheFactory.getInstance();
+            if (cache != null) {
+                cache.purge();
+            } else {
+                System.out.println("Cache is not specified or is improperly configured.");
+                System.exit(-1);
+            }
         } else if (System.getProperty(PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT) != null) {
-            purgeExpiredFromCacheAtLaunch();
+            Cache cache = CacheFactory.getInstance();
+            if (cache != null) {
+                cache.purgeExpired();
+            } else {
+                System.out.println("Cache is not specified or is improperly configured.");
+                System.exit(-1);
+            }
         } else {
             // If the cache worker is enabled, run it in a low-priority
             // background thread.

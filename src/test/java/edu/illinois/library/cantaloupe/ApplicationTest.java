@@ -127,6 +127,11 @@ public class ApplicationTest {
         assertSame(newConfig, Application.getConfiguration());
     }
 
+    @Test
+    public void testMainWithCleanCacheArg() throws Exception {
+        // TODO: write this
+    }
+
     @Rule
     public final ExpectedSystemExit exit = ExpectedSystemExit.none();
 
@@ -186,8 +191,8 @@ public class ApplicationTest {
         Application.main(new String[] {});
 
         // assert that they've been purged
-        assertFalse(imageDir.exists());
-        assertFalse(infoDir.exists());
+        assertEquals(0, imageDir.listFiles().length);
+        assertEquals(0, infoDir.listFiles().length);
     }
 
     @Test
