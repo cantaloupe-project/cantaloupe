@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.processor;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,8 +30,8 @@ public final class ImageInfo {
     public static class Image {
         public int width = 0;
         public int height = 0;
-        public int tileWidth = 0;
-        public int tileHeight = 0;
+        public Integer tileWidth;
+        public Integer tileHeight;
 
         @Override
         public boolean equals(Object obj) {
@@ -53,7 +52,10 @@ public final class ImageInfo {
 
         @JsonIgnore
         public Dimension getTileSize() {
-            return new Dimension(tileWidth, tileHeight);
+            if (tileWidth != null && tileHeight != null) {
+                return new Dimension(tileWidth, tileHeight);
+            }
+            return null;
         }
 
         public void setSize(Dimension size) {
@@ -159,6 +161,24 @@ public final class ImageInfo {
         image.tileWidth = tileWidth;
         image.tileHeight = tileHeight;
         images.add(image);
+    }
+
+    /**
+     * @param width Main image width
+     * @param height Main image height
+     * @param tileWidth Main image tile width
+     * @param tileHeight Main image tile height
+     * @param sourceFormat
+     */
+    public ImageInfo(int width, int height, int tileWidth, int tileHeight,
+                     Format sourceFormat) {
+        Image image = new Image();
+        image.width = width;
+        image.height = height;
+        image.tileWidth = tileWidth;
+        image.tileHeight = tileHeight;
+        images.add(image);
+        setSourceFormat(sourceFormat);
     }
 
     @Override

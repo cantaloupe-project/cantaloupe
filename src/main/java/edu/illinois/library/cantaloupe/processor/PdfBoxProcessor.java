@@ -129,6 +129,7 @@ class PdfBoxProcessor extends AbstractProcessor
                 fullImage = readImage();
             }
             return new ImageInfo(fullImage.getWidth(), fullImage.getHeight(),
+                    fullImage.getWidth(), fullImage.getHeight(),
                     getSourceFormat());
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);

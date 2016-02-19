@@ -184,7 +184,8 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
             expr = xpath.compile("//stream[@index=\"0\"]/@height");
             int height = (int) Math.round((double) expr.evaluate(doc, XPathConstants.NUMBER));
 
-            return new ImageInfo(width, height, getSourceFormat());
+            return new ImageInfo(width, height, width, height,
+                    getSourceFormat());
         } catch (SAXException e) {
             throw new ProcessorException("Failed to parse XML. Command: " +
                     StringUtils.join(command, " "), e);

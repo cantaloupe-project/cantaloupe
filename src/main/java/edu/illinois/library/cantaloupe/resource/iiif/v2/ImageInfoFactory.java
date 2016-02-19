@@ -97,10 +97,8 @@ abstract class ImageInfoFactory {
         // Otherwise, use the smallest multiple of the tile size above that
         // of image resolution 0.
         if (cacheInfo.getImages().size() == 1 &&
-                (cacheInfo.getImages().get(0).tileWidth == fullSize.width ||
-                        cacheInfo.getImages().get(0).tileWidth == 0) &&
-                (cacheInfo.getImages().get(0).tileHeight == fullSize.height ||
-                        cacheInfo.getImages().get(0).tileHeight == 0)) {
+                cacheInfo.getImages().get(0).tileWidth == fullSize.width &&
+                cacheInfo.getImages().get(0).tileHeight == fullSize.height) {
             uniqueTileSizes.add(
                     ImageInfoUtil.smallestTileSize(fullSize, minTileSize));
         } else {

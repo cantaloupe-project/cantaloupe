@@ -207,6 +207,7 @@ class GraphicsMagickProcessor extends AbstractProcessor
                     format.getPreferredExtension() + ":-",
                     inputStream, true);
             return new ImageInfo(sourceInfo.getImageWidth(),
+                    sourceInfo.getImageHeight(), sourceInfo.getImageWidth(),
                     sourceInfo.getImageHeight(), getSourceFormat());
         } catch (IM4JavaException | IOException e) {
             throw new ProcessorException(e.getMessage(), e);
