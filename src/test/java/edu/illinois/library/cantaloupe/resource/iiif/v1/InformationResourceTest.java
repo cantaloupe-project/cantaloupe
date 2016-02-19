@@ -139,7 +139,7 @@ public class InformationResourceTest extends ResourceTest {
             assertEquals(2, FileUtils.listFiles(cacheFolder, null, true).size());
             Cache cache = CacheFactory.getInstance();
             assertNotNull(cache.getImageInputStream(ops));
-            assertNotNull(cache.getDimension(ops.getIdentifier()));
+            assertNotNull(cache.getImageInfo(ops.getIdentifier()));
 
             // move the source image out of the way
             if (tempImage.exists()) {
@@ -156,10 +156,10 @@ public class InformationResourceTest extends ResourceTest {
 
             if (purgeMissing) {
                 assertNull(cache.getImageInputStream(ops));
-                assertNull(cache.getDimension(ops.getIdentifier()));
+                assertNull(cache.getImageInfo(ops.getIdentifier()));
             } else {
                 assertNotNull(cache.getImageInputStream(ops));
-                assertNotNull(cache.getDimension(ops.getIdentifier()));
+                assertNotNull(cache.getImageInfo(ops.getIdentifier()));
             }
         } finally {
             FileUtils.deleteDirectory(cacheFolder);

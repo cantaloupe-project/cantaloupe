@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.cache.ImageInfo;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -291,13 +292,14 @@ public abstract class AbstractResource extends ServerResource {
         Cache cache = CacheFactory.getInstance();
         if (cache != null) {
             long msec = System.currentTimeMillis();
-            size = cache.getDimension(identifier);
-            if (size != null) {
+            final ImageInfo info = cache.getImageInfo(identifier);
+            if (info != null) {
+                size = info.getSize();
                 logger.info("Retrieved dimensions of {} from cache in {} msec",
                         identifier, System.currentTimeMillis() - msec);
             } else {
                 size = readSize(identifier, proc);
-                cache.putDimension(identifier, size);
+                cache.putImageInfo(identifier, new ImageInfo(size));
             }
         }
         if (size == null) {

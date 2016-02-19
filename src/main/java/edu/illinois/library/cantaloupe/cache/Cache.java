@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.cache;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 
-import java.awt.Dimension;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -11,7 +10,7 @@ import java.io.OutputStream;
  * <p>Interface to be implemented by all caches. A cache stores and retrieves
  * unique images corresponding to
  * {@link edu.illinois.library.cantaloupe.image.OperationList} objects, as
- * well as {@link java.awt.Dimension} objects corresponding to
+ * well as {@link ImageInfo} objects corresponding to
  * {@link edu.illinois.library.cantaloupe.image.Identifier} objects.</p>
  *
  * <p>Implementations must be thread-safe.</p>
@@ -23,28 +22,28 @@ public interface Cache {
      *
      * <p>This method should <strong>not</strong> purge any content. Other
      * than that, implementations may interpret "clean up" however they
-     * wish.</p>
+     * wish--ideally, they will not need to do anything at all.</p>
      *
      * <p>The frequency with which this method will be called may vary.
      * It may never be called. Implementations should try to keep themselves
-     * "clean" without relying on this method.</p>
+     * clean without relying on this method.</p>
      *
      * @throws CacheException
      */
     void cleanUp() throws CacheException;
 
     /**
-     * <p>Reads cached dimension information.</p>
+     * <p>Reads cached image information.</p>
      *
-     * <p>If a dimension corresponding to the given identifier exists in the
-     * cache but is expired, implementations should delete it.</p>
+     * <p>If image information corresponding to the given identifier exists in
+     * the cache but is expired, implementations should delete it.</p>
      *
-     * @param identifier Image identifier for which to retrieve a dimension.
-     * @return Dimension corresponding to the given identifier, or null if no
-     * non-expired dimension exists in the cache.
+     * @param identifier Image identifier for which to retrieve information.
+     * @return ImageInfo corresponding to the given identifier, or null if no
+     * non-expired info exists in the cache.
      * @throws CacheException
      */
-    Dimension getDimension(Identifier identifier) throws CacheException;
+    ImageInfo getImageInfo(Identifier identifier) throws CacheException;
 
     /**
      * <p>Returns an input stream corresponding to the given OperationList,
@@ -113,16 +112,15 @@ public interface Cache {
     void purgeExpired() throws CacheException;
 
     /**
-     * Adds an image's dimension information to the cache. If the writing of
-     * the dimension is interrupted, implementations should clean it up, if
-     * necessary.
+     * Adds image information to the cache. If the writing of the dimension is
+     * interrupted, implementations should clean it up, if necessary.
      *
      * @param identifier Identifier of the image corresponding to the given
      *                   size.
-     * @param size Dimension containing width and height in pixels.
+     * @param imageInfo ImageInfo containing image information.
      * @throws CacheException
      */
-    void putDimension(Identifier identifier, Dimension size)
+    void putImageInfo(Identifier identifier, ImageInfo imageInfo)
             throws CacheException;
 
 }

@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -13,7 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Dimension;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -45,7 +42,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Cache using a filesystem folder, storing images and dimensions separately
+ * Cache using a filesystem folder, storing images and infos separately
  * as files in subfolders.
  */
 class FilesystemCache implements Cache {
@@ -202,20 +199,6 @@ class FilesystemCache implements Cache {
 
     }
 
-    /**
-     * Class whose instances are intended to be serialized to JSON for storing
-     * image dimension information in plain text files.
-     *
-     * @see <a href="https://github.com/FasterXML/jackson-databind">jackson-databind
-     * docs</a>
-     */
-    @JsonPropertyOrder({ "width", "height" })
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    static class ImageInfo {
-        public int height;
-        public int width;
-    }
-
     private static final Logger logger = LoggerFactory.
             getLogger(FilesystemCache.class);
 
@@ -365,7 +348,7 @@ class FilesystemCache implements Cache {
     }
 
     @Override
-    public Dimension getDimension(Identifier identifier) throws CacheException {
+    public ImageInfo getImageInfo(Identifier identifier) throws CacheException {
         synchronized (lock2) {
             while (infosBeingWritten.contains(identifier)) {
                 try {
@@ -381,11 +364,8 @@ class FilesystemCache implements Cache {
             final File cacheFile = getInfoFile(identifier);
             if (cacheFile != null && cacheFile.exists()) {
                 if (!isExpired(cacheFile)) {
-                    logger.info("Hit for info: {}", cacheFile.getName());
-
-                    ImageInfo info = infoMapper.readValue(cacheFile,
-                            ImageInfo.class);
-                    return new Dimension(info.width, info.height);
+                    logger.info("Hit for image info: {}", cacheFile.getName());
+                    return ImageInfo.fromJson(cacheFile);
                 } else {
                     logger.info("Deleting stale cache file: {}",
                             cacheFile.getName());
@@ -754,12 +734,12 @@ class FilesystemCache implements Cache {
             }
         }
         purgingInProgress.set(false);
-        logger.info("Purged {} expired image(s) and {} expired dimension(s)",
+        logger.info("Purged {} expired image(s) and {} expired infos(s)",
                 imageCount, infoCount);
     }
 
     @Override
-    public void putDimension(Identifier identifier, Dimension dimension)
+    public void putImageInfo(Identifier identifier, ImageInfo imageInfo)
             throws CacheException {
         synchronized (lock3) {
             while (infosBeingWritten.contains(identifier) ||
@@ -775,17 +755,15 @@ class FilesystemCache implements Cache {
             infosBeingWritten.add(identifier);
             final File tempFile = getInfoTempFile(identifier);
 
-            logger.info("Caching dimension: {}", identifier);
+            logger.info("Caching image info: {}", identifier);
             if (!tempFile.getParentFile().exists() &&
                     !tempFile.getParentFile().mkdirs()) {
                 throw new IOException("Unable to create directory: " +
                         tempFile.getParentFile());
             }
-            final ImageInfo info = new ImageInfo();
-            info.width = dimension.width;
-            info.height = dimension.height;
+
             try {
-                infoMapper.writeValue(tempFile, info);
+                infoMapper.writeValue(tempFile, imageInfo);
             } catch (IOException e) {
                 tempFile.delete();
                 throw new IOException("Unable to create " +

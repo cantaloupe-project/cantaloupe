@@ -15,7 +15,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.Dimension;
 import java.io.FileInputStream;
 import java.io.OutputStream;
 import java.sql.Connection;
@@ -103,9 +102,9 @@ public class JdbcCacheTest {
         bc.close();
 
         // persist some corresponding dimensions
-        instance.putDimension(new Identifier("cats"), new Dimension(50, 40));
-        instance.putDimension(new Identifier("dogs"), new Dimension(500, 300));
-        instance.putDimension(new Identifier("bunnies"), new Dimension(350, 240));
+        instance.putImageInfo(new Identifier("cats"), new ImageInfo(50, 40));
+        instance.putImageInfo(new Identifier("dogs"), new ImageInfo(500, 300));
+        instance.putImageInfo(new Identifier("bunnies"), new ImageInfo(350, 240));
 
         try (Connection connection = JdbcCache.getConnection()) {
             // assert that the data has been seeded
@@ -155,13 +154,11 @@ public class JdbcCacheTest {
         sql = String.format(
                 "CREATE TABLE IF NOT EXISTS %s (" +
                         "%s VARCHAR(4096) NOT NULL, " +
-                        "%s INTEGER, " +
-                        "%s INTEGER, " +
+                        "%s VARCHAR(8192) NOT NULL, " +
                         "%s DATETIME);",
                 JdbcCache.getInfoTableName(),
                 JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN,
-                JdbcCache.INFO_TABLE_WIDTH_COLUMN,
-                JdbcCache.INFO_TABLE_HEIGHT_COLUMN,
+                JdbcCache.INFO_TABLE_INFO_COLUMN,
                 JdbcCache.INFO_TABLE_LAST_MODIFIED_COLUMN);
         statement = connection.prepareStatement(sql);
         statement.execute();
@@ -270,7 +267,7 @@ public class JdbcCacheTest {
         OutputStream bc = instance.getImageOutputStream(ops);
         IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), bc);
         bc.close();
-        instance.putDimension(new Identifier("bees"), new Dimension(50, 40));
+        instance.putImageInfo(new Identifier("bees"), new ImageInfo(50, 40));
 
         instance.purgeExpired();
 
@@ -299,14 +296,13 @@ public class JdbcCacheTest {
     public void testGetDimensionWithZeroTtl() throws CacheException {
         // existing image
         try {
-            Dimension actual = instance.getDimension(new Identifier("cats"));
-            Dimension expected = new Dimension(50, 40);
-            assertEquals(actual, expected);
+            ImageInfo actual = instance.getImageInfo(new Identifier("cats"));
+            assertEquals(actual, new ImageInfo(50, 40));
         } catch (CacheException e) {
             fail();
         }
         // nonexistent image
-        assertNull(instance.getDimension(new Identifier("bogus")));
+        assertNull(instance.getImageInfo(new Identifier("bogus")));
     }
 
     @Test
@@ -322,20 +318,19 @@ public class JdbcCacheTest {
 
         IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)),
                 instance.getImageOutputStream(ops));
-        instance.putDimension(new Identifier("bees"), new Dimension(50, 40));
+        instance.putImageInfo(new Identifier("bees"), new ImageInfo(50, 40));
 
         // existing, non-expired image
         try {
-            Dimension actual = instance.getDimension(new Identifier("bees"));
-            Dimension expected = new Dimension(50, 40);
-            assertEquals(actual, expected);
+            ImageInfo actual = instance.getImageInfo(new Identifier("bees"));
+            assertEquals(actual, new ImageInfo(50, 40));
         } catch (CacheException e) {
             fail();
         }
         // existing, expired image
-        assertNull(instance.getDimension(new Identifier("cats")));
+        assertNull(instance.getImageInfo(new Identifier("cats")));
         // nonexistent image
-        assertNull(instance.getDimension(new Identifier("bogus")));
+        assertNull(instance.getImageInfo(new Identifier("bogus")));
     }
 
     @Test
@@ -359,7 +354,7 @@ public class JdbcCacheTest {
         OutputStream bc = instance.getImageOutputStream(ops);
         IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), bc);
         bc.close();
-        instance.putDimension(new Identifier("bees"), new Dimension(50, 40));
+        instance.putImageInfo(new Identifier("bees"), new ImageInfo(50, 40));
 
         // existing, non-expired image
         assertNotNull(instance.getImageInputStream(ops));
@@ -396,9 +391,9 @@ public class JdbcCacheTest {
     @Test
     public void testPutDimension() throws CacheException {
         Identifier identifier = new Identifier("birds");
-        Dimension dimension = new Dimension(52, 52);
-        instance.putDimension(identifier, dimension);
-        assertEquals(dimension, instance.getDimension(identifier));
+        ImageInfo info = new ImageInfo(52, 52);
+        instance.putImageInfo(identifier, info);
+        assertEquals(info, instance.getImageInfo(identifier));
     }
 
 }

@@ -17,7 +17,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
@@ -233,25 +232,23 @@ public class FilesystemCacheTest {
         assertEquals(1, FileUtils.listFiles(infoPath, null, true).size());
     }
 
-    /* getDimension(Identifier) */
+    /* getImageInfo(Identifier) */
 
     @Test
-    public void testGetDimensionWithZeroTtl() throws Exception {
+    public void testGetImageInfoWithZeroTtl() throws Exception {
         Identifier identifier = new Identifier("test");
         File file = instance.getInfoFile(identifier);
         file.getParentFile().mkdirs();
         file.createNewFile();
 
         ObjectMapper mapper = new ObjectMapper();
-        FilesystemCache.ImageInfo info = new FilesystemCache.ImageInfo();
-        info.width = 50;
-        info.height = 50;
+        ImageInfo info = new ImageInfo(50, 50);
         mapper.writeValue(file, info);
-        assertEquals(new Dimension(50, 50), instance.getDimension(identifier));
+        assertEquals(info, instance.getImageInfo(identifier));
     }
 
     @Test
-    public void testGetDimensionWithNonZeroTtl() throws Exception {
+    public void testGetImageInfoWithNonZeroTtl() throws Exception {
         Application.getConfiguration().setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
 
         Identifier identifier = new Identifier("test");
@@ -260,13 +257,11 @@ public class FilesystemCacheTest {
         file.createNewFile();
 
         ObjectMapper mapper = new ObjectMapper();
-        FilesystemCache.ImageInfo info = new FilesystemCache.ImageInfo();
-        info.width = 50;
-        info.height = 50;
+        ImageInfo info = new ImageInfo(50, 50);
         mapper.writeValue(file, info);
 
         Thread.sleep(1100);
-        assertNull(instance.getDimension(identifier));
+        assertNull(instance.getImageInfo(identifier));
     }
 
     /* getHashedStringBasedSubdirectory(String) */
@@ -448,14 +443,14 @@ public class FilesystemCacheTest {
         assertEquals(new File(expected), instance.getInfoFile(identifier));
     }
 
-    /* putDimension(Identifier, Dimension) */
+    /* putImageInfo(Identifier, Dimension) */
 
     @Test
     public void testPutDimension() throws CacheException {
         Identifier identifier = new Identifier("cats");
-        Dimension dimension = new Dimension(52, 52);
-        instance.putDimension(identifier, dimension);
-        assertEquals(dimension, instance.getDimension(identifier));
+        ImageInfo info = new ImageInfo(52, 42);
+        instance.putImageInfo(identifier, info);
+        assertEquals(info, instance.getImageInfo(identifier));
     }
 
     @Test
@@ -466,7 +461,8 @@ public class FilesystemCacheTest {
         cacheFile.getParentFile().setWritable(false);
         try {
             try {
-                instance.putDimension(identifier, new Dimension(52, 52));
+                ImageInfo info = new ImageInfo(52, 52);
+                instance.putImageInfo(identifier, info);
                 fail("Expected exception");
             } catch (CacheException e) {
                 assertTrue(e.getMessage().startsWith("Unable to create"));
