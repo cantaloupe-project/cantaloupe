@@ -7,7 +7,6 @@ import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.resource.iiif.ImageInfoUtil;
 
 import java.awt.Dimension;
-import java.util.List;
 
 abstract class ImageInfoFactory {
 
@@ -19,8 +18,9 @@ abstract class ImageInfoFactory {
 
     public static ImageInfo newImageInfo(final String imageUri,
                                          final Processor processor,
-                                         final Dimension fullSize)
+                                         final edu.illinois.library.cantaloupe.cache.ImageInfo cacheInfo)
             throws ProcessorException {
+        final Dimension fullSize = cacheInfo.getSize();
         final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
                 processor.getSupportedFeatures(),
                 processor.getSupportedIiif1_1Qualities(),
@@ -30,22 +30,25 @@ abstract class ImageInfoFactory {
                 getInt(MIN_TILE_SIZE_CONFIG_KEY, 1024);
 
         // Find a tile width and height. If the image is not tiled,
-        // calculate a tile size close to MIN_TILE_SIZE pixels. Otherwise,
-        // use the smallest multiple of the tile size above MIN_TILE_SIZE
-        // of image resolution 0.
+        // calculate a tile size close to MIN_TILE_SIZE_CONFIG_KEY pixels.
+        // Otherwise, use the smallest multiple of the tile size above
+        // MIN_TILE_SIZE_CONFIG_KEY of image resolution 0.
         Dimension tileSize =
                 ImageInfoUtil.smallestTileSize(fullSize, minTileSize);
 
-        final List<Dimension> tileSizes = processor.getTileSizes();
-        if (tileSizes.size() > 0 &&
-                (tileSizes.get(0).width != fullSize.width ||
-                        tileSizes.get(0).height != fullSize.height)) {
-            tileSize = ImageInfoUtil.
-                    smallestTileSize(fullSize, tileSizes.get(0), minTileSize);
+        if (cacheInfo.images.size() > 0) {
+            edu.illinois.library.cantaloupe.cache.ImageInfo.Image firstImage =
+                    cacheInfo.images.get(0);
+            if ((firstImage.tileWidth != fullSize.width && firstImage.tileWidth != 0) ||
+                    (firstImage.tileHeight != fullSize.height && firstImage.tileHeight != 0)) {
+                tileSize = ImageInfoUtil.
+                        smallestTileSize(fullSize, firstImage.getTileSize(),
+                                minTileSize);
+            }
         }
 
         // Create an ImageInfo instance, which will eventually be serialized
-        // to JSON.
+        // to JSON and sent as the response body.
         final ImageInfo imageInfo = new ImageInfo();
         imageInfo.id = imageUri;
         imageInfo.width = fullSize.width;

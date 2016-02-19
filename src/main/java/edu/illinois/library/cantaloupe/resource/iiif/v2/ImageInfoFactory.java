@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -54,10 +53,11 @@ abstract class ImageInfoFactory {
     public static ImageInfo newImageInfo(final Identifier identifier,
                                          final String imageUri,
                                          final Processor processor,
-                                         final Dimension fullSize)
+                                         final edu.illinois.library.cantaloupe.cache.ImageInfo cacheInfo)
             throws ProcessorException {
+        final Dimension fullSize = cacheInfo.getSize();
         // Create an ImageInfo instance, which will eventually be serialized
-        // to JSON.
+        // to JSON and sent as the response body.
         final ImageInfo imageInfo = new ImageInfo();
         imageInfo.id = imageUri;
         imageInfo.width = fullSize.width;
@@ -87,7 +87,6 @@ abstract class ImageInfoFactory {
         // tiles -- this is not a canonical listing of tiles that are
         // actually encoded in the image, but rather a hint to the client as
         // to what can be delivered efficiently.
-        final List<Dimension> tileSizes = processor.getTileSizes();
         final Set<Dimension> uniqueTileSizes = new HashSet<>();
 
         final int minTileSize = Application.getConfiguration().
@@ -97,16 +96,18 @@ abstract class ImageInfoFactory {
         // calculate a tile size close to MIN_TILE_SIZE_CONFIG_KEY pixels.
         // Otherwise, use the smallest multiple of the tile size above that
         // of image resolution 0.
-        if (tileSizes.size() == 1 &&
-                tileSizes.get(0).width == fullSize.width &&
-                tileSizes.get(0).height == fullSize.height) {
+        if (cacheInfo.images.size() == 1 &&
+                (cacheInfo.images.get(0).tileWidth == fullSize.width ||
+                        cacheInfo.images.get(0).tileWidth == 0) &&
+                (cacheInfo.images.get(0).tileHeight == fullSize.height ||
+                        cacheInfo.images.get(0).tileHeight == 0)) {
             uniqueTileSizes.add(
                     ImageInfoUtil.smallestTileSize(fullSize, minTileSize));
         } else {
-            for (Dimension tileSize : tileSizes) {
+            for (edu.illinois.library.cantaloupe.cache.ImageInfo.Image image : cacheInfo.images) {
                 uniqueTileSizes.add(
-                        ImageInfoUtil.smallestTileSize(fullSize, tileSize,
-                                minTileSize));
+                        ImageInfoUtil.smallestTileSize(fullSize,
+                                image.getTileSize(), minTileSize));
             }
         }
         for (Dimension uniqueTileSize : uniqueTileSizes) {

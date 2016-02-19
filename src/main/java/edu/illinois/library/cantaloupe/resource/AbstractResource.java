@@ -363,7 +363,20 @@ public abstract class AbstractResource extends ServerResource {
     private ImageInfo readInfo(final Identifier identifier,
                                final Processor proc) throws ProcessorException {
         final long msec = System.currentTimeMillis();
-        final ImageInfo info = new ImageInfo(proc.getSize());
+        final ImageInfo info = new ImageInfo();
+        final Dimension fullSize = proc.getSize();
+
+        for (Dimension tileSize : proc.getTileSizes()) {
+            final ImageInfo.Image image = new ImageInfo.Image();
+            image.width = fullSize.width;
+            image.height = fullSize.height;
+            image.tileWidth = tileSize.width;
+            image.tileHeight = tileSize.height;
+            image.mediaType = proc.getSourceFormat().getPreferredMediaType().
+                    toString();
+            info.images.add(image);
+        }
+
         logger.info("Read info of {} in {} msec", identifier,
                 System.currentTimeMillis() - msec);
         return info;
