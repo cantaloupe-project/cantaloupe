@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.Cache;
+import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.ImageInfo;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -276,36 +277,35 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * Gets the size of the image corresponding to the given identifier, first
-     * by checking the cache and then, if necessary, by reading it from the
-     * image and caching the result.
+     * Gets the image info corresponding to the given identifier, first by
+     * checking the cache and then, if necessary, by reading it from the image
+     * and caching the result.
      *
      * @param identifier
      * @param proc
      * @return
      * @throws Exception
      */
-    protected final Dimension getSize(final Identifier identifier,
-                                      final Processor proc)
-            throws Exception {
-        Dimension size = null;
+    protected final ImageInfo getOrReadInfo(final Identifier identifier,
+                                            final Processor proc)
+            throws ProcessorException, CacheException {
+        ImageInfo info = null;
         Cache cache = CacheFactory.getInstance();
         if (cache != null) {
             long msec = System.currentTimeMillis();
-            final ImageInfo info = cache.getImageInfo(identifier);
+            info = cache.getImageInfo(identifier);
             if (info != null) {
-                size = info.getSize();
                 logger.info("Retrieved dimensions of {} from cache in {} msec",
                         identifier, System.currentTimeMillis() - msec);
             } else {
-                size = readSize(identifier, proc);
-                cache.putImageInfo(identifier, new ImageInfo(size));
+                info = readInfo(identifier, proc);
+                cache.putImageInfo(identifier, info);
             }
         }
-        if (size == null) {
-            size = readSize(identifier, proc);
+        if (info == null) {
+            info = readInfo(identifier, proc);
         }
-        return size;
+        return info;
     }
 
     /**
@@ -353,20 +353,20 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * Reads the size of the source image.
+     * Reads the information of the source image.
      *
      * @param identifier
      * @param proc
      * @return
-     * @throws Exception
+     * @throws ProcessorException
      */
-    private Dimension readSize(final Identifier identifier,
-                               final Processor proc) throws Exception {
+    private ImageInfo readInfo(final Identifier identifier,
+                               final Processor proc) throws ProcessorException {
         final long msec = System.currentTimeMillis();
-        Dimension size = proc.getSize();
-        logger.info("Read dimensions of {} in {} msec", identifier,
+        final ImageInfo info = new ImageInfo(proc.getSize());
+        logger.info("Read info of {} in {} msec", identifier,
                 System.currentTimeMillis() - msec);
-        return size;
+        return info;
     }
 
 }

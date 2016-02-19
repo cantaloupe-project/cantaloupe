@@ -17,7 +17,6 @@ import edu.illinois.library.cantaloupe.resource.AccessDeniedException;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import org.restlet.data.Disposition;
-import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
@@ -120,7 +119,7 @@ public class ImageResource extends AbstractResource {
         Processor proc = ProcessorFactory.getProcessor(resolver, identifier,
                 format);
 
-        final Dimension fullSize = getSize(ops.getIdentifier(), proc);
+        final Dimension fullSize = getOrReadInfo(ops.getIdentifier(), proc).getSize();
 
         if (!isAuthorized(ops, fullSize)) {
             throw new AccessDeniedException();

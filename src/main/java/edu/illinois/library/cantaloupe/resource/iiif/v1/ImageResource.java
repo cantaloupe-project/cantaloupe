@@ -16,7 +16,6 @@ import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Disposition;
-import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Variant;
@@ -152,7 +151,7 @@ public class ImageResource extends AbstractResource {
         this.addHeader("Link", String.format("<%s>;rel=\"profile\";",
                 complianceLevel.getUri()));
 
-        final Dimension fullSize = getSize(identifier, proc);
+        final Dimension fullSize = getOrReadInfo(identifier, proc).getSize();
 
         if (!isAuthorized(ops, fullSize)) {
             throw new AccessDeniedException();
