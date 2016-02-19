@@ -37,10 +37,17 @@ public final class ImageInfo {
         public boolean equals(Object obj) {
             if (obj instanceof Image) {
                 Image other = (Image) obj;
-                return (other.width == this.width &&
-                        other.height == this.height &&
-                        other.tileWidth == this.tileWidth &&
-                        other.tileHeight == this.tileHeight);
+                if (other.width == this.width && other.height == this.height) {
+                    if (this.tileWidth != null && other.tileWidth != null &&
+                            this.tileWidth == other.tileWidth &&
+                            this.tileHeight != null && other.tileHeight != null &&
+                            this.tileHeight == other.tileHeight) {
+                        return true;
+                    } else if (this.tileWidth == null && other.tileWidth == null &&
+                            this.tileHeight == null && other.tileHeight == null) {
+                        return true;
+                    }
+                }
             }
             return super.equals(obj);
         }
@@ -185,7 +192,7 @@ public final class ImageInfo {
     public boolean equals(Object obj) {
         if (obj instanceof ImageInfo) {
             ImageInfo other = (ImageInfo) obj;
-            return other.images.equals(this.images) &&
+            return other.getImages().equals(getImages()) &&
                     other.getSourceFormat().equals(getSourceFormat());
         }
         return super.equals(obj);
@@ -226,7 +233,11 @@ public final class ImageInfo {
 
     @JsonIgnore
     public void setSourceFormat(Format sourceFormat) {
-        mediaType = sourceFormat.getPreferredMediaType().toString();
+        if (sourceFormat == null) {
+            mediaType = null;
+        } else {
+            mediaType = sourceFormat.getPreferredMediaType().toString();
+        }
     }
 
     /**
