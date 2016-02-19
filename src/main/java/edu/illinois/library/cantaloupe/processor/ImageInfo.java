@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import edu.illinois.library.cantaloupe.image.Format;
 
 import java.awt.Dimension;
 import java.io.File;
@@ -21,19 +22,16 @@ import java.util.List;
  * @see <a href="https://github.com/FasterXML/jackson-databind">jackson-databind
  * docs</a>
  */
-@JsonPropertyOrder({ "width", "height", "tiles" })
+@JsonPropertyOrder({ "media_type", "images" })
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public final class ImageInfo { // TODO: move to e.i.l.c.processor
+public final class ImageInfo {
 
-    @JsonPropertyOrder({ "media_type", "width", "height", "tile_width",
+    @JsonPropertyOrder({ "width", "height", "tile_width",
             "tile_height", "compression" })
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Image {
         public int width = 0;
         public int height = 0;
-
-        @JsonProperty("media_type")
-        public String mediaType;
 
         @JsonProperty("tile_width")
         public int tileWidth = 0;
@@ -62,12 +60,26 @@ public final class ImageInfo { // TODO: move to e.i.l.c.processor
         public Dimension getTileSize() {
             return new Dimension(tileWidth, tileHeight);
         }
+
+        public void setSize(Dimension size) {
+            width = size.width;
+            height = size.height;
+        }
+
+        public void setTileSize(Dimension tileSize) {
+            tileWidth = tileSize.width;
+            tileHeight = tileSize.height;
+        }
+
     }
 
     /**
      * Ordered list of subimages. The main image is at index 0.
      */
-    public List<Image> images = new ArrayList<>();
+    private List<Image> images = new ArrayList<>();
+
+    @JsonProperty("media_type")
+    private String mediaType;
 
     public static ImageInfo fromJson(File jsonFile) throws IOException {
         return new ObjectMapper().readValue(jsonFile, ImageInfo.class);
@@ -93,6 +105,18 @@ public final class ImageInfo { // TODO: move to e.i.l.c.processor
     }
 
     /**
+     * @param size Main image size
+     * @param sourceFormat
+     */
+    public ImageInfo(Dimension size, Format sourceFormat) {
+        Image image = new Image();
+        image.width = size.width;
+        image.height = size.height;
+        images.add(image);
+        setSourceFormat(sourceFormat);
+    }
+
+    /**
      * @param width Main image width
      * @param height Main image height
      */
@@ -101,6 +125,19 @@ public final class ImageInfo { // TODO: move to e.i.l.c.processor
         image.width = width;
         image.height = height;
         images.add(image);
+    }
+
+    /**
+     * @param width Main image width
+     * @param height Main image height
+     * @param sourceFormat
+     */
+    public ImageInfo(int width, int height, Format sourceFormat) {
+        Image image = new Image();
+        image.width = width;
+        image.height = height;
+        images.add(image);
+        setSourceFormat(sourceFormat);
     }
 
     /**
@@ -135,9 +172,14 @@ public final class ImageInfo { // TODO: move to e.i.l.c.processor
     public boolean equals(Object obj) {
         if (obj instanceof ImageInfo) {
             ImageInfo other = (ImageInfo) obj;
-            return other.images.equals(this.images);
+            return other.images.equals(this.images) &&
+                    other.getSourceFormat().equals(getSourceFormat());
         }
         return super.equals(obj);
+    }
+
+    public List<Image> getImages() {
+        return images;
     }
 
     /**
@@ -158,6 +200,23 @@ public final class ImageInfo { // TODO: move to e.i.l.c.processor
     }
 
     /**
+     * @return Source format of the image, or {@link Format#UNKNOWN} if
+     *         unknown.
+     */
+    @JsonIgnore
+    public Format getSourceFormat() {
+        if (mediaType != null) {
+            return Format.getFormat(mediaType);
+        }
+        return Format.UNKNOWN;
+    }
+
+    @JsonIgnore
+    public void setSourceFormat(Format sourceFormat) {
+        mediaType = sourceFormat.getPreferredMediaType().toString();
+    }
+
+    /**
      * @return JSON representation of the instance.
      * @throws JsonProcessingException
      */
@@ -167,6 +226,15 @@ public final class ImageInfo { // TODO: move to e.i.l.c.processor
                 without(SerializationFeature.WRITE_NULL_MAP_VALUES).
                 without(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS).
                 writeValueAsString(this);
+    }
+
+    @Override
+    public String toString() {
+        try {
+            return toJson();
+        } catch (JsonProcessingException e) {
+            return super.toString();
+        }
     }
 
 }

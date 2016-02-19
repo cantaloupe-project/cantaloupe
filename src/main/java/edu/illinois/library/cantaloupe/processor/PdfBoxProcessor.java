@@ -25,11 +25,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -122,16 +119,17 @@ class PdfBoxProcessor extends AbstractProcessor
     }
 
     @Override
-    public Dimension getSize() throws ProcessorException {
+    public ImageInfo getImageInfo() throws ProcessorException {
         try {
             if (fullImage == null) {
                 // This is a very inefficient method of getting the size.
-                // Unfortunately, it's apparently the only choice PDFBox offers.
+                // Unfortunately, it's the only choice PDFBox offers.
                 // At least cache it in an ivar to avoid having to load it
                 // multiple times.
                 fullImage = readImage();
             }
-            return new Dimension(fullImage.getWidth(), fullImage.getHeight());
+            return new ImageInfo(fullImage.getWidth(), fullImage.getHeight(),
+                    getSourceFormat());
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
@@ -145,16 +143,6 @@ class PdfBoxProcessor extends AbstractProcessor
     @Override
     public StreamSource getStreamSource() {
         return streamSource;
-    }
-
-    /**
-     * @return One-element list of the full image dimensions, as this processor
-     * doesn't recognize tiles.
-     * @throws ProcessorException
-     */
-    @Override
-    public List<Dimension> getTileSizes() throws ProcessorException {
-        return new ArrayList<>(Collections.singletonList(getSize()));
     }
 
     @Override

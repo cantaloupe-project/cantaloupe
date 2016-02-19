@@ -34,7 +34,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
@@ -164,32 +163,40 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
      * @throws ProcessorException
      */
     @Override
-    public Dimension getSize() throws ProcessorException {
+    public ImageInfo getImageInfo() throws ProcessorException {
         try {
             if (imageInfo == null) {
                 readImageInfo();
             }
+            final ImageInfo.Image image = new ImageInfo.Image();
 
-            int width = 0, height = 0;
             final Scanner scan = new Scanner(imageInfo);
             while (scan.hasNextLine()) {
-                String line = scan.nextLine();
-                if (line.trim().startsWith("x1=")) {
-                    String[] parts = StringUtils.split(line.trim(), ",");
+                String line = scan.nextLine().trim();
+                if (line.startsWith("x1=")) {
+                    String[] parts = StringUtils.split(line, ",");
                     for (int i = 0; i < 2; i++) {
                         String[] kv = StringUtils.split(parts[i], "=");
                         if (kv.length == 2) {
                             if (i == 0) {
-                                width = Integer.parseInt(kv[1].trim());
+                                image.width = Integer.parseInt(kv[1].trim());
                             } else {
-                                height = Integer.parseInt(kv[1].trim());
+                                image.height = Integer.parseInt(kv[1].trim());
                             }
                         }
                     }
-                    return new Dimension(width, height);
+                } else if (line.startsWith("tdx=")) {
+                    String[] parts = StringUtils.split(line, ",");
+                    if (parts.length == 2) {
+                        image.tileWidth = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
+                        image.tileHeight = Integer.parseInt(parts[1].replaceAll("[^0-9]", ""));
+                    }
                 }
             }
-            throw new ProcessorException("Failsed to parse size");
+            final ImageInfo info = new ImageInfo();
+            info.setSourceFormat(getSourceFormat());
+            info.getImages().add(image);
+            return info;
         } catch (IOException e) {
             throw new ProcessorException("Failed to parse size", e);
         }
@@ -248,32 +255,6 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
             qualities.addAll(SUPPORTED_IIIF_2_0_QUALITIES);
         }
         return qualities;
-    }
-
-    @Override
-    public List<Dimension> getTileSizes() throws ProcessorException {
-        try {
-            if (imageInfo == null) {
-                readImageInfo();
-            }
-            // read the tile dimensions
-            final Scanner scan = new Scanner(imageInfo);
-            while (scan.hasNextLine()) {
-                String line = scan.nextLine();
-                if (line.trim().startsWith("tdx=")) {
-                    String[] parts = StringUtils.split(line, ",");
-                    if (parts.length == 2) {
-                        Dimension size = new Dimension(
-                                Integer.parseInt(parts[0].replaceAll("[^0-9]", "")),
-                                Integer.parseInt(parts[1].replaceAll("[^0-9]", "")));
-                        return new ArrayList<>(Collections.singletonList(size));
-                    }
-                }
-            }
-            throw new ProcessorException("Failed to parse tile sizes");
-        } catch (Exception e) {
-            throw new ProcessorException(e.getMessage(), e);
-        }
     }
 
     @Override

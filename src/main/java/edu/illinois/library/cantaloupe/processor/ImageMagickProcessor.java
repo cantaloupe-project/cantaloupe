@@ -29,7 +29,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -193,7 +192,7 @@ class ImageMagickProcessor extends AbstractProcessor
     }
 
     @Override
-    public Dimension getSize() throws ProcessorException {
+    public ImageInfo getImageInfo() throws ProcessorException {
         if (getAvailableOutputFormats().size() < 1) {
             throw new UnsupportedSourceFormatException(format);
         }
@@ -203,8 +202,8 @@ class ImageMagickProcessor extends AbstractProcessor
             Info sourceInfo = new Info(
                     format.getPreferredExtension() + ":-", inputStream,
                     true);
-            return new Dimension(sourceInfo.getImageWidth(),
-                    sourceInfo.getImageHeight());
+            return new ImageInfo(sourceInfo.getImageWidth(),
+                    sourceInfo.getImageHeight(), getSourceFormat());
         } catch (IM4JavaException | IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         } finally {
@@ -252,16 +251,6 @@ class ImageMagickProcessor extends AbstractProcessor
             qualities.addAll(SUPPORTED_IIIF_2_0_QUALITIES);
         }
         return qualities;
-    }
-
-    /**
-     * @return One-element list of the full image dimensions, as this processor
-     * doesn't recognize tiles.
-     * @throws ProcessorException
-     */
-    @Override
-    public List<Dimension> getTileSizes() throws ProcessorException {
-        return new ArrayList<>(Collections.singletonList(getSize()));
     }
 
     @Override

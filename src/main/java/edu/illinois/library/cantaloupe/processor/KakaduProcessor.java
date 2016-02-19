@@ -93,7 +93,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
     private static Path stdoutSymlink;
 
     /** will cache the output of kdu_jp2info */
-    private Document imageInfo;
+    private Document infoDocument;
     private File sourceFile;
 
     static {
@@ -181,17 +181,44 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
      * @throws ProcessorException
      */
     @Override
-    public Dimension getSize() throws ProcessorException {
+    public ImageInfo getImageInfo() throws ProcessorException {
         try {
-            if (imageInfo == null) {
-                readImageInfo();
+            if (infoDocument == null) {
+                readImageInfoDocument();
             }
+            // Run an XPath query to find the width and height
             XPath xpath = XPathFactory.newInstance().newXPath();
             XPathExpression expr = xpath.compile("//codestream/width");
-            int width = (int) Math.round((double) expr.evaluate(imageInfo, XPathConstants.NUMBER));
+            final int width = (int) Math.round((double) expr.evaluate(
+                    infoDocument, XPathConstants.NUMBER));
             expr = xpath.compile("//codestream/height");
-            int height = (int) Math.round((double) expr.evaluate(imageInfo, XPathConstants.NUMBER));
-            return new Dimension(width, height);
+            final int height = (int) Math.round((double) expr.evaluate(
+                    infoDocument, XPathConstants.NUMBER));
+
+            final ImageInfo info = new ImageInfo(width, height,
+                    getSourceFormat());
+
+            // Run another XPath query to find tile sizes
+            expr = xpath.compile("//codestream/SIZ");
+            String result = (String) expr.evaluate(infoDocument,
+                    XPathConstants.STRING);
+            // Read the tile dimensions out of the Stiles={n,n} line
+            final Scanner scan = new Scanner(result);
+            while (scan.hasNextLine()) {
+                String line = scan.nextLine().trim();
+                if (line.startsWith("Stiles=")) {
+                    String[] parts = StringUtils.split(line, ",");
+                    if (parts.length == 2) {
+                        final int tileWidth = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
+                        final int tileHeight = Integer.parseInt(parts[1].replaceAll("[^0-9]", ""));
+                        if (tileWidth != width && tileHeight != height) {
+                            info.getImages().get(0).tileWidth = tileWidth;
+                            info.getImages().get(0).tileHeight = tileHeight;
+                        }
+                    }
+                }
+            }
+            return info;
         } catch (Exception e) {
             throw new ProcessorException(e.getMessage(), e);
         }
@@ -205,7 +232,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
      * @throws IOException
      * @throws ParserConfigurationException
      */
-    private void readImageInfo()
+    private void readImageInfoDocument()
             throws SAXException, IOException,ParserConfigurationException {
         final List<String> command = new ArrayList<>();
         command.add(getPath("kdu_jp2info"));
@@ -231,7 +258,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
 
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             DocumentBuilder db = dbf.newDocumentBuilder();
-            imageInfo = db.parse(new InputSource(new StringReader(xml)));
+            infoDocument = db.parse(new InputSource(new StringReader(xml)));
         } finally {
             processInputStream.close();
         }
@@ -271,36 +298,6 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
             qualities.addAll(SUPPORTED_IIIF_2_0_QUALITIES);
         }
         return qualities;
-    }
-
-    @Override
-    public List<Dimension> getTileSizes() throws ProcessorException {
-        try {
-            if (imageInfo == null) {
-                readImageInfo();
-            }
-            XPath xpath = XPathFactory.newInstance().newXPath();
-            XPathExpression expr = xpath.compile("//codestream/SIZ");
-            String result = (String) expr.evaluate(imageInfo, XPathConstants.STRING);
-
-            // read the tile dimensions out of the Stiles={n,n} line
-            final Scanner scan = new Scanner(result);
-            while (scan.hasNextLine()) {
-                String line = scan.nextLine();
-                if (line.trim().startsWith("Stiles=")) {
-                    String[] parts = StringUtils.split(line, ",");
-                    if (parts.length == 2) {
-                        Dimension size = new Dimension(
-                                Integer.parseInt(parts[0].replaceAll("[^0-9]", "")),
-                                Integer.parseInt(parts[1].replaceAll("[^0-9]", "")));
-                        return new ArrayList<>(Collections.singletonList(size));
-                    }
-                }
-            }
-            throw new ProcessorException("Failed to parse tile sizes");
-        } catch (Exception e) {
-            throw new ProcessorException(e.getMessage(), e);
-        }
     }
 
     @Override
@@ -603,7 +600,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
     }
 
     private void reset() {
-        imageInfo = null;
+        infoDocument = null;
     }
 
 }

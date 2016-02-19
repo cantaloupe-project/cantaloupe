@@ -266,7 +266,7 @@ public abstract class AbstractResource extends ServerResource {
         final long maxAllowedSize = (ops.isNoOp(format)) ?
                 0 : Application.getConfiguration().getLong(MAX_PIXELS_CONFIG_KEY, 0);
 
-        final Dimension fullSize = proc.getSize();
+        final Dimension fullSize = proc.getImageInfo().getSize();
         final Dimension effectiveSize = ops.getResultingSize(fullSize);
         if (maxAllowedSize > 0 &&
                 effectiveSize.width * effectiveSize.height > maxAllowedSize) {
@@ -363,20 +363,7 @@ public abstract class AbstractResource extends ServerResource {
     private ImageInfo readInfo(final Identifier identifier,
                                final Processor proc) throws ProcessorException {
         final long msec = System.currentTimeMillis();
-        final ImageInfo info = new ImageInfo();
-        final Dimension fullSize = proc.getSize();
-
-        for (Dimension tileSize : proc.getTileSizes()) {
-            final ImageInfo.Image image = new ImageInfo.Image();
-            image.width = fullSize.width;
-            image.height = fullSize.height;
-            image.tileWidth = tileSize.width;
-            image.tileHeight = tileSize.height;
-            image.mediaType = proc.getSourceFormat().getPreferredMediaType().
-                    toString();
-            info.images.add(image);
-        }
-
+        final ImageInfo info = proc.getImageInfo();
         logger.info("Read info of {} in {} msec", identifier,
                 System.currentTimeMillis() - msec);
         return info;

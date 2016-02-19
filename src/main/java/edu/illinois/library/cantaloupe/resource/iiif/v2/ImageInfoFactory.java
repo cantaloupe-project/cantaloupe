@@ -96,15 +96,15 @@ abstract class ImageInfoFactory {
         // calculate a tile size close to MIN_TILE_SIZE_CONFIG_KEY pixels.
         // Otherwise, use the smallest multiple of the tile size above that
         // of image resolution 0.
-        if (cacheInfo.images.size() == 1 &&
-                (cacheInfo.images.get(0).tileWidth == fullSize.width ||
-                        cacheInfo.images.get(0).tileWidth == 0) &&
-                (cacheInfo.images.get(0).tileHeight == fullSize.height ||
-                        cacheInfo.images.get(0).tileHeight == 0)) {
+        if (cacheInfo.getImages().size() == 1 &&
+                (cacheInfo.getImages().get(0).tileWidth == fullSize.width ||
+                        cacheInfo.getImages().get(0).tileWidth == 0) &&
+                (cacheInfo.getImages().get(0).tileHeight == fullSize.height ||
+                        cacheInfo.getImages().get(0).tileHeight == 0)) {
             uniqueTileSizes.add(
                     ImageInfoUtil.smallestTileSize(fullSize, minTileSize));
         } else {
-            for (edu.illinois.library.cantaloupe.processor.ImageInfo.Image image : cacheInfo.images) {
+            for (edu.illinois.library.cantaloupe.processor.ImageInfo.Image image : cacheInfo.getImages()) {
                 uniqueTileSizes.add(
                         ImageInfoUtil.smallestTileSize(fullSize,
                                 image.getTileSize(), minTileSize));

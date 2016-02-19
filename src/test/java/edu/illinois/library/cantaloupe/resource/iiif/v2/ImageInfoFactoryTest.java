@@ -19,7 +19,6 @@ import static org.junit.Assert.*;
 
 public class ImageInfoFactoryTest {
 
-    private edu.illinois.library.cantaloupe.processor.ImageInfo cacheInfo;
     private Identifier identifier;
     private String imageUri;
     private ImageInfo info;
@@ -36,9 +35,8 @@ public class ImageInfoFactoryTest {
         processor = ProcessorFactory.getProcessor(Format.JPG);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
-        cacheInfo = new edu.illinois.library.cantaloupe.processor.ImageInfo(processor.getSize());
         info = ImageInfoFactory.newImageInfo(identifier, imageUri, processor,
-                cacheInfo);
+                processor.getImageInfo());
     }
 
     @Test
@@ -96,7 +94,7 @@ public class ImageInfoFactoryTest {
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif"));
         info = ImageInfoFactory.newImageInfo(identifier, imageUri, processor,
-                new edu.illinois.library.cantaloupe.processor.ImageInfo(processor.getSize()));
+                processor.getImageInfo());
 
         assertEquals(1, info.tiles.size());
         assertEquals(64, (long) info.tiles.get(0).width);

@@ -1,14 +1,14 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 
-import java.awt.Dimension;
+import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -33,6 +33,44 @@ public class Java2dProcessorTest extends ProcessorTest {
         assertEquals(expectedFormats, instance.getAvailableOutputFormats());
     }
 
+    /**
+     * Tile-aware override.
+     *
+     * @throws Exception
+     */
+    @Test
+    @Override
+    public void testGetImageInfo() throws Exception {
+        ImageInfo expectedInfo = new ImageInfo(64, 56, Format.TIF);
+        expectedInfo.getImages().get(0).tileWidth = 16;
+        expectedInfo.getImages().get(0).tileHeight = 16;
+
+        final File fixture = TestUtil.
+                getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif");
+
+        // test as a StreamProcessor
+        StreamProcessor sproc = (StreamProcessor) getProcessor();
+        StreamSource streamSource = new TestStreamSource(fixture);
+        sproc.setStreamSource(streamSource);
+        sproc.setSourceFormat(Format.TIF);
+        assertEquals(expectedInfo, sproc.getImageInfo());
+
+        // test as a FileProcessor
+        FileProcessor fproc = (FileProcessor) getProcessor();
+        fproc.setSourceFile(fixture);
+        fproc.setSourceFormat(Format.TIF);
+        assertEquals(expectedInfo, fproc.getImageInfo());
+
+        try {
+            fproc.setSourceFile(TestUtil.getImage("mpg"));
+            fproc.setSourceFormat(Format.MPG);
+            expectedInfo = new ImageInfo(640, 360, Format.MPG);
+            assertEquals(expectedInfo, fproc.getImageInfo());
+        } catch (UnsupportedSourceFormatException e) {
+            // pass
+        }
+    }
+
     @Test
     public void testGetSupportedFeatures() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
@@ -49,25 +87,6 @@ public class Java2dProcessorTest extends ProcessorTest {
         expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH);
         expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
         assertEquals(expectedFeatures, instance.getSupportedFeatures());
-    }
-
-    @Test
-    public void testGetTileSizes() throws Exception {
-        // untiled image
-        instance.setStreamSource(new TestStreamSource(TestUtil.getImage("jpg")));
-        instance.setSourceFormat(Format.JPG);
-        Dimension expectedSize = new Dimension(64, 56);
-        List<Dimension> tileSizes = instance.getTileSizes();
-        assertEquals(1, tileSizes.size());
-        assertEquals(expectedSize, tileSizes.get(0));
-
-        // tiled image (this processor doesn't recognize tiles)
-        instance.setStreamSource(new TestStreamSource(
-                TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif")));
-        instance.setSourceFormat(Format.TIF);
-        expectedSize = new Dimension(16, 16);
-        tileSizes = instance.getTileSizes();
-        assertEquals(expectedSize, tileSizes.get(0));
     }
 
 }

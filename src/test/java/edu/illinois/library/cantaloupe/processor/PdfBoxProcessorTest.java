@@ -11,7 +11,6 @@ import java.awt.Dimension;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -32,10 +31,11 @@ public class PdfBoxProcessorTest extends ProcessorTest {
 
     @Test
     @Override
-    public void testGetSize() throws Exception {
-        Dimension expectedSize = new Dimension(100, 88);
+    public void testGetImageInfo() throws Exception {
+        ImageInfo expectedInfo = new ImageInfo(100, 88, Format.PDF);
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
-        assertEquals(expectedSize, instance.getSize());
+        instance.setSourceFormat(Format.PDF);
+        assertEquals(expectedInfo, instance.getImageInfo());
     }
 
     @Test
@@ -58,7 +58,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     @Test
     public void testProcessWithPageOption() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
-        final Dimension size = instance.getSize();
+        final Dimension size = instance.getImageInfo().getSize();
 
         // page option missing
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -78,7 +78,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     @Test
     public void testProcessWithIllegalPageOptionReturnsFirstPage() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
-        final Dimension size = instance.getSize();
+        final Dimension size = instance.getImageInfo().getSize();
 
         // page 1
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -99,16 +99,6 @@ public class PdfBoxProcessorTest extends ProcessorTest {
         instance.process(ops, size, outputStream);
         final byte[] pageCats = outputStream.toByteArray();
         assertTrue(Arrays.equals(page1, pageCats));
-    }
-
-    @Test
-    public void testGetTileSizes() throws Exception {
-        // untiled image
-        instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
-        Dimension expectedSize = new Dimension(100, 88);
-        List<Dimension> tileSizes = instance.getTileSizes();
-        assertEquals(1, tileSizes.size());
-        assertEquals(expectedSize, tileSizes.get(0));
     }
 
 }

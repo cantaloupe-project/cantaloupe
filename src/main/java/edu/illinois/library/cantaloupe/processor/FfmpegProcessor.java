@@ -34,7 +34,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -150,13 +149,13 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
     }
 
     /**
-     * Gets the size of the given video by parsing the output of ffprobe.
+     * Gets information about the video by parsing the output of ffprobe.
      *
      * @return
      * @throws ProcessorException
      */
     @Override
-    public Dimension getSize() throws ProcessorException {
+    public ImageInfo getImageInfo() throws ProcessorException {
         final List<String> command = new ArrayList<>();
         // ffprobe -v quiet -print_format xml -show_streams <file>
         command.add(getPath("ffprobe"));
@@ -170,6 +169,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
         try {
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.redirectErrorStream(true);
+
             logger.info("Executing {}", StringUtils.join(pb.command(), " "));
             Process process = pb.start();
 
@@ -183,7 +183,8 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
             int width = (int) Math.round((double) expr.evaluate(doc, XPathConstants.NUMBER));
             expr = xpath.compile("//stream[@index=\"0\"]/@height");
             int height = (int) Math.round((double) expr.evaluate(doc, XPathConstants.NUMBER));
-            return new Dimension(width, height);
+
+            return new ImageInfo(width, height, getSourceFormat());
         } catch (SAXException e) {
             throw new ProcessorException("Failed to parse XML. Command: " +
                     StringUtils.join(command, " "), e);
@@ -234,16 +235,6 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
             qualities.addAll(SUPPORTED_IIIF_2_0_QUALITIES);
         }
         return qualities;
-    }
-
-    /**
-     * @return One-element list of the full image dimensions, as this processor
-     * doesn't support tiled sources.
-     * @throws ProcessorException
-     */
-    @Override
-    public List<Dimension> getTileSizes() throws ProcessorException {
-        return new ArrayList<>(Collections.singletonList(getSize()));
     }
 
     @Override

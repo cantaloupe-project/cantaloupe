@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
  */
 public abstract class ProcessorTest {
 
-    private static final String IMAGE = "images/jpg-rgb-64x56x8-baseline.jpg";
+    protected static final String IMAGE = "images/jpg-rgb-64x56x8-baseline.jpg";
 
     static {
         Application.setConfiguration(new BaseConfiguration());
@@ -54,38 +54,35 @@ public abstract class ProcessorTest {
 
     protected abstract Processor getProcessor();
 
+    /**
+     * This implementation is tile-unaware. Tile-aware processors will need to
+     * override it.
+     *
+     * @throws Exception
+     */
     @Test
-    public void testGetSize() throws Exception {
-        Dimension expectedSize = new Dimension(64, 56);
+    public void testGetImageInfo() throws Exception {
+        ImageInfo expectedInfo = new ImageInfo(64, 56, Format.JPG);
+
         if (getProcessor() instanceof StreamProcessor) {
             StreamProcessor proc = (StreamProcessor) getProcessor();
             StreamSource streamSource = new TestStreamSource(
                     TestUtil.getFixture(IMAGE));
             proc.setStreamSource(streamSource);
             proc.setSourceFormat(Format.JPG);
-            assertEquals(expectedSize, proc.getSize());
+            assertEquals(expectedInfo, proc.getImageInfo());
         }
         if (getProcessor() instanceof FileProcessor) {
             FileProcessor proc = (FileProcessor) getProcessor();
             try {
                 proc.setSourceFile(TestUtil.getFixture(IMAGE));
                 proc.setSourceFormat(Format.JPG);
-                assertEquals(expectedSize, proc.getSize());
-            } catch (UnsupportedSourceFormatException e) {
-                // no problem
-            }
-            try {
-                proc.setSourceFile(TestUtil.getImage("mpg"));
-                proc.setSourceFormat(Format.MPG);
-                expectedSize = new Dimension(640, 360);
-                assertEquals(expectedSize, proc.getSize());
+                assertEquals(expectedInfo, proc.getImageInfo());
             } catch (UnsupportedSourceFormatException e) {
                 // no problem
             }
         }
     }
-
-    public abstract void testGetTileSizes() throws Exception;
 
     @Test
     public void testProcessWithSupportedSourceFormatsAndNoOperations()
@@ -143,7 +140,8 @@ public abstract class ProcessorTest {
                         ((FileProcessor) proc).setSourceFile(file);
                     }
                     try {
-                        proc.process(ops, proc.getSize(), new NullOutputStream());
+                        proc.process(ops, proc.getImageInfo().getSize(),
+                                new NullOutputStream());
                         fail("Expected exception");
                     } catch (ProcessorException e) {
                         assertEquals("Unsupported source format: " +
@@ -377,7 +375,7 @@ public abstract class ProcessorTest {
         if (proc instanceof FileProcessor) {
             ((FileProcessor) proc).setSourceFile(fixture);
         }
-        Dimension size = proc.getSize();
+        Dimension size = proc.getImageInfo().getSize();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         proc.process(opList, size, outputStream);
         // TODO: verify that this is a valid image

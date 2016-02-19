@@ -12,7 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
+
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -55,35 +55,36 @@ public class FfmpegProcessorTest extends ProcessorTest {
         }
     }
 
+    @Override
+    @Test
+    public void testGetImageInfo() throws Exception {
+        instance.setSourceFile(TestUtil.getImage("mpg"));
+        instance.setSourceFormat(Format.MPG);
+        ImageInfo expectedInfo = new ImageInfo(640, 360, Format.MPG);
+        assertEquals(expectedInfo, instance.getImageInfo());
+    }
+
     @Test
     public void testGetSupportedFeatures() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
-        Set<ProcessorFeature> expectedFeatures = new HashSet<>();
-        expectedFeatures.add(ProcessorFeature.MIRRORING);
-        expectedFeatures.add(ProcessorFeature.REGION_BY_PERCENT);
-        expectedFeatures.add(ProcessorFeature.REGION_BY_PIXELS);
-        //expectedFeatures.add(ProcessorFeature.ROTATION_ARBITRARY);
-        expectedFeatures.add(ProcessorFeature.ROTATION_BY_90S);
-        expectedFeatures.add(ProcessorFeature.SIZE_ABOVE_FULL);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_HEIGHT);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_PERCENT);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
+        Set<ProcessorFeature> expectedFeatures = new HashSet<>(Arrays.asList(
+                ProcessorFeature.MIRRORING,
+                ProcessorFeature.REGION_BY_PERCENT,
+                ProcessorFeature.REGION_BY_PIXELS,
+                //ProcessorFeature.ROTATION_ARBITRARY,
+                ProcessorFeature.ROTATION_BY_90S,
+                ProcessorFeature.SIZE_ABOVE_FULL,
+                ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
+                ProcessorFeature.SIZE_BY_HEIGHT,
+                ProcessorFeature.SIZE_BY_PERCENT,
+                ProcessorFeature.SIZE_BY_WIDTH,
+                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
         assertEquals(expectedFeatures, instance.getSupportedFeatures());
     }
 
     @Test
-    public void testGetTileSizes() throws Exception {
-        List<Dimension> sizes = instance.getTileSizes();
-        assertEquals(1, sizes.size());
-        assertEquals(640, sizes.get(0).width);
-        assertEquals(360, sizes.get(0).height);
-    }
-
-    @Test
     public void testProcessWithFrameOption() throws Exception {
-        final Dimension size = instance.getSize();
+        final Dimension size = instance.getImageInfo().getSize();
 
         // time option missing
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

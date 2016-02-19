@@ -36,9 +36,9 @@ abstract class ImageInfoFactory {
         Dimension tileSize =
                 ImageInfoUtil.smallestTileSize(fullSize, minTileSize);
 
-        if (cacheInfo.images.size() > 0) {
+        if (cacheInfo.getImages().size() > 0) {
             edu.illinois.library.cantaloupe.processor.ImageInfo.Image firstImage =
-                    cacheInfo.images.get(0);
+                    cacheInfo.getImages().get(0);
             if ((firstImage.tileWidth != fullSize.width && firstImage.tileWidth != 0) ||
                     (firstImage.tileHeight != fullSize.height && firstImage.tileHeight != 0)) {
                 tileSize = ImageInfoUtil.

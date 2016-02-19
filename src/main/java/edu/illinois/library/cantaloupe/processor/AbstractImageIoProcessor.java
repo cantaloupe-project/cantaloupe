@@ -5,13 +5,10 @@ import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -50,9 +47,19 @@ abstract class AbstractImageIoProcessor extends AbstractProcessor {
         return formats;
     }
 
-    public Dimension getSize() throws ProcessorException {
+    public ImageInfo getImageInfo() throws ProcessorException {
         try {
-            return reader.getSize();
+            final ImageInfo info = new ImageInfo();
+            info.setSourceFormat(getSourceFormat());
+
+            for (int i = 0, numResolutions = reader.getNumResolutions();
+                 i < numResolutions; i++) {
+                ImageInfo.Image image = new ImageInfo.Image();
+                image.setSize(reader.getSize(i));
+                image.setTileSize(reader.getTileSize(i));
+                info.getImages().add(image);
+            }
+            return info;
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
@@ -64,20 +71,6 @@ abstract class AbstractImageIoProcessor extends AbstractProcessor {
 
     public StreamSource getStreamSource() {
         return this.streamSource;
-    }
-
-    public List<Dimension> getTileSizes() throws ProcessorException {
-        try {
-            final List<Dimension> sizes = new ArrayList<>();
-
-            for (int i = 0, numResolutions = reader.getNumResolutions();
-                 i < numResolutions; i++) {
-                sizes.add(reader.getTileSize(i));
-            }
-            return sizes;
-        } catch (IOException e) {
-            throw new ProcessorException(e.getMessage(), e);
-        }
     }
 
     public void setSourceFile(File sourceFile) {
