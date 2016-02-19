@@ -114,7 +114,8 @@ public class ImageRepresentation extends OutputRepresentation {
             // If the operations are effectively a no-op, the source image can
             // be streamed right through.
             if (ops.isNoOp(processor.getSourceFormat())) {
-                if (processor instanceof FileProcessor) {
+                if (processor instanceof FileProcessor &&
+                        ((FileProcessor) processor).getSourceFile() != null) {
                     final File sourceFile = ((FileProcessor) processor).getSourceFile();
                     final InputStream inputStream = new FileInputStream(sourceFile);
                     IOUtils.copy(inputStream, outputStream);
