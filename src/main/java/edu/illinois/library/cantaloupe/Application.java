@@ -5,7 +5,6 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 import edu.illinois.library.cantaloupe.cache.Cache;
-import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.CacheWorker;
 import edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute;
@@ -210,6 +209,7 @@ public class Application {
             Cache cache = CacheFactory.getInstance();
             if (cache != null) {
                 cache.cleanUp();
+                System.exit(0);
             } else {
                 System.out.println("Cache is not specified or is improperly configured.");
                 System.exit(-1);
@@ -218,6 +218,7 @@ public class Application {
             Cache cache = CacheFactory.getInstance();
             if (cache != null) {
                 cache.purge();
+                System.exit(0);
             } else {
                 System.out.println("Cache is not specified or is improperly configured.");
                 System.exit(-1);
@@ -226,6 +227,7 @@ public class Application {
             Cache cache = CacheFactory.getInstance();
             if (cache != null) {
                 cache.purgeExpired();
+                System.exit(0);
             } else {
                 System.out.println("Cache is not specified or is improperly configured.");
                 System.exit(-1);
@@ -234,8 +236,8 @@ public class Application {
             // If the cache worker is enabled, run it in a low-priority
             // background thread.
             if (getConfiguration().getBoolean(CacheWorker.ENABLED_CONFIG_KEY, false)) {
-                // Add a 15-second startup delay to reduce load.
-                CacheWorker.runInBackground(15);
+                // Wait 10 seconds to reduce startup load.
+                CacheWorker.runInBackground(10);
             }
             webServer.start();
         }
