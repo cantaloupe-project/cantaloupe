@@ -84,18 +84,18 @@ public class FfmpegProcessorTest extends ProcessorTest {
 
     @Test
     public void testProcessWithFrameOption() throws Exception {
-        final Dimension size = instance.getImageInfo().getSize();
+        final ImageInfo imageInfo = instance.getImageInfo();
 
         // time option missing
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         OperationList ops = TestUtil.newOperationList();
-        instance.process(ops, size, outputStream);
+        instance.process(ops, imageInfo, outputStream);
         final byte[] zeroSecondFrame = outputStream.toByteArray();
 
         // time option present
         ops.getOptions().put("time", "00:00:05");
         outputStream = new ByteArrayOutputStream();
-        instance.process(ops, size, outputStream);
+        instance.process(ops, imageInfo, outputStream);
         final byte[] fiveSecondFrame = outputStream.toByteArray();
 
         assertFalse(Arrays.equals(zeroSecondFrame, fiveSecondFrame));

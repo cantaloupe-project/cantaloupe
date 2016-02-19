@@ -58,18 +58,18 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     @Test
     public void testProcessWithPageOption() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
-        final Dimension size = instance.getImageInfo().getSize();
+        final ImageInfo imageInfo = instance.getImageInfo();
 
         // page option missing
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         OperationList ops = TestUtil.newOperationList();
-        instance.process(ops, size, outputStream);
+        instance.process(ops, imageInfo, outputStream);
         final byte[] page1 = outputStream.toByteArray();
 
         // page option present
         ops.getOptions().put("page", "2");
         outputStream = new ByteArrayOutputStream();
-        instance.process(ops, size, outputStream);
+        instance.process(ops, imageInfo, outputStream);
         final byte[] page2 = outputStream.toByteArray();
 
         assertFalse(Arrays.equals(page1, page2));
@@ -78,17 +78,17 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     @Test
     public void testProcessWithIllegalPageOptionReturnsFirstPage() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
-        final Dimension size = instance.getImageInfo().getSize();
+        final ImageInfo imageInfo = instance.getImageInfo();
 
         // page 1
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         OperationList ops = TestUtil.newOperationList();
-        instance.process(ops, size, outputStream);
+        instance.process(ops, imageInfo, outputStream);
         final byte[] page1 = outputStream.toByteArray();
         // page "35"
         ops.getOptions().put("page", "35");
         outputStream = new ByteArrayOutputStream();
-        instance.process(ops, size, outputStream);
+        instance.process(ops, imageInfo, outputStream);
         final byte[] page35 = outputStream.toByteArray();
 
         assertTrue(Arrays.equals(page1, page35));
@@ -96,7 +96,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
         // page "cats"
         ops.getOptions().put("page", "cats");
         outputStream = new ByteArrayOutputStream();
-        instance.process(ops, size, outputStream);
+        instance.process(ops, imageInfo, outputStream);
         final byte[] pageCats = outputStream.toByteArray();
         assertTrue(Arrays.equals(page1, pageCats));
     }

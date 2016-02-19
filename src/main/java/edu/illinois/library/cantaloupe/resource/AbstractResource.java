@@ -261,19 +261,19 @@ public abstract class AbstractResource extends ServerResource {
                                                     Format format,
                                                     Disposition disposition,
                                                     Processor proc)
-            throws IOException, ProcessorException {
+            throws IOException, ProcessorException, CacheException {
         // Max allowed size is ignored when the processing is a no-op.
         final long maxAllowedSize = (ops.isNoOp(format)) ?
                 0 : Application.getConfiguration().getLong(MAX_PIXELS_CONFIG_KEY, 0);
 
-        final Dimension fullSize = proc.getImageInfo().getSize();
-        final Dimension effectiveSize = ops.getResultingSize(fullSize);
+        final ImageInfo imageInfo = getOrReadInfo(ops.getIdentifier(), proc);
+        final Dimension effectiveSize = ops.getResultingSize(imageInfo.getSize());
         if (maxAllowedSize > 0 &&
                 effectiveSize.width * effectiveSize.height > maxAllowedSize) {
             throw new PayloadTooLargeException();
         }
 
-        return new ImageRepresentation(fullSize, proc, ops, disposition);
+        return new ImageRepresentation(imageInfo, proc, ops, disposition);
     }
 
     /**

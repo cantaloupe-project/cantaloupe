@@ -302,7 +302,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
 
     @Override
     public void process(final OperationList ops,
-                        final Dimension fullSize,
+                        final ImageInfo imageInfo,
                         final OutputStream outputStream)
             throws ProcessorException {
         if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {
@@ -333,8 +333,8 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
             final ReductionFactor reductionFactor = new ReductionFactor();
-            final ProcessBuilder pb = getProcessBuilder(ops, fullSize,
-                    reductionFactor);
+            final ProcessBuilder pb = getProcessBuilder(
+                    ops, imageInfo.getSize(), reductionFactor);
             logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
             final InputStream processInputStream = process.getInputStream();

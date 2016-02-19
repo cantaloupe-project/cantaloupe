@@ -239,7 +239,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
 
     @Override
     public void process(final OperationList ops,
-                        final Dimension fullSize,
+                        final ImageInfo imageInfo,
                         final OutputStream outputStream)
             throws ProcessorException {
         if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {
@@ -268,7 +268,8 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
 
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
-            final ProcessBuilder pb = getProcessBuilder(ops, fullSize);
+            final ProcessBuilder pb = getProcessBuilder(ops,
+                    imageInfo.getSize());
             logger.info("Executing {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 

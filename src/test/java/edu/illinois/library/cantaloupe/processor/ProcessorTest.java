@@ -140,7 +140,7 @@ public abstract class ProcessorTest {
                         ((FileProcessor) proc).setSourceFile(file);
                     }
                     try {
-                        proc.process(ops, proc.getImageInfo().getSize(),
+                        proc.process(ops, proc.getImageInfo(),
                                 new NullOutputStream());
                         fail("Expected exception");
                     } catch (ProcessorException e) {
@@ -375,9 +375,8 @@ public abstract class ProcessorTest {
         if (proc instanceof FileProcessor) {
             ((FileProcessor) proc).setSourceFile(fixture);
         }
-        Dimension size = proc.getImageInfo().getSize();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        proc.process(opList, size, outputStream);
+        proc.process(opList, proc.getImageInfo(), outputStream);
         // TODO: verify that this is a valid image
         assertTrue(outputStream.toByteArray().length > 100);
     }

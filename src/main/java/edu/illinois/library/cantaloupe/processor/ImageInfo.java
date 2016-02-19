@@ -22,21 +22,16 @@ import java.util.List;
  * @see <a href="https://github.com/FasterXML/jackson-databind">jackson-databind
  * docs</a>
  */
-@JsonPropertyOrder({ "media_type", "images" })
+@JsonPropertyOrder({ "mediaType", "images" })
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public final class ImageInfo {
 
-    @JsonPropertyOrder({ "width", "height", "tile_width",
-            "tile_height", "compression" })
+    @JsonPropertyOrder({ "width", "height", "tileWidth", "tileHeight" })
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Image {
         public int width = 0;
         public int height = 0;
-
-        @JsonProperty("tile_width")
         public int tileWidth = 0;
-
-        @JsonProperty("tile_height")
         public int tileHeight = 0;
 
         @Override
@@ -77,8 +72,6 @@ public final class ImageInfo {
      * Ordered list of subimages. The main image is at index 0.
      */
     private List<Image> images = new ArrayList<>();
-
-    @JsonProperty("media_type")
     private String mediaType;
 
     public static ImageInfo fromJson(File jsonFile) throws IOException {

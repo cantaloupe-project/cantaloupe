@@ -114,7 +114,7 @@ class JaiProcessor extends AbstractImageIoProcessor
 
     @Override
     public void process(final OperationList ops,
-                        final Dimension fullSize,
+                        final ImageInfo imageInfo,
                         final OutputStream outputStream)
             throws ProcessorException {
         if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {

@@ -147,7 +147,7 @@ class PdfBoxProcessor extends AbstractProcessor
 
     @Override
     public void process(OperationList opList,
-                        Dimension sourceSize,
+                        ImageInfo imageInfo,
                         OutputStream outputStream) throws ProcessorException {
         try {
             // If the op list contains a scale operation, see if we can use
@@ -162,7 +162,7 @@ class PdfBoxProcessor extends AbstractProcessor
                 }
             }
             ReductionFactor rf = new ReductionFactor();
-            Float pct = scale.getResultingScale(sourceSize);
+            Float pct = scale.getResultingScale(imageInfo.getSize());
             if (pct != null) {
                 rf = ReductionFactor.forScale(pct);
             }

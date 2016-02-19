@@ -148,13 +148,13 @@ public class GraphicsMagickProcessorTest extends ProcessorTest {
         ops.add(rotation);
         ops.setOutputFormat(Format.JPG);
 
-        Dimension fullSize = new Dimension(64, 58);
+        ImageInfo imageInfo = new ImageInfo(64, 58);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         instance.setSourceFormat(Format.JPG);
         StreamSource streamSource = new TestStreamSource(
                 TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));
         instance.setStreamSource(streamSource);
-        instance.process(ops, fullSize, outputStream);
+        instance.process(ops, imageInfo, outputStream);
 
         ByteArrayInputStream inputStream =
                 new ByteArrayInputStream(outputStream.toByteArray());
@@ -184,13 +184,13 @@ public class GraphicsMagickProcessorTest extends ProcessorTest {
         ops.add(rotation);
         ops.setOutputFormat(Format.PNG);
 
-        Dimension fullSize = new Dimension(64, 58);
+        ImageInfo imageInfo = new ImageInfo(64, 58);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         instance.setSourceFormat(Format.JPG);
         StreamSource streamSource = new TestStreamSource(
                 TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));
         instance.setStreamSource(streamSource);
-        instance.process(ops, fullSize, outputStream);
+        instance.process(ops, imageInfo, outputStream);
 
         ByteArrayInputStream inputStream =
                 new ByteArrayInputStream(outputStream.toByteArray());

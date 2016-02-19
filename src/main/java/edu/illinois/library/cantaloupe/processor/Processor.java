@@ -71,13 +71,13 @@ public interface Processor {
      * for efficiency's sake.</p>
      *
      * @param ops OperationList of the image to process.
-     * @param sourceSize Size of the source image.
+     * @param sourceInfo Information about the source image.
      * @param outputStream Stream to write the image to.
      *                     Implementations should not close it.
      * @throws UnsupportedOutputFormatException
      * @throws ProcessorException
      */
-    void process(OperationList ops, Dimension sourceSize,
+    void process(OperationList ops, ImageInfo sourceInfo,
                  OutputStream outputStream) throws ProcessorException;
 
     /**

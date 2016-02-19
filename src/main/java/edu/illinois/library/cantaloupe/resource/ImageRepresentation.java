@@ -5,18 +5,17 @@ import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
+import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.restlet.data.Disposition;
-import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Dimension;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -33,22 +32,22 @@ public class ImageRepresentation extends OutputRepresentation {
 
     public static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
 
-    private Dimension fullSize;
+    private ImageInfo imageInfo;
     private Processor processor;
     private OperationList ops;
 
     /**
-     * @param fullSize
+     * @param imageInfo
      * @param ops
      * @param disposition
      * @param processor
      */
-    public ImageRepresentation(final Dimension fullSize,
+    public ImageRepresentation(final ImageInfo imageInfo,
                                final Processor processor,
                                final OperationList ops,
                                final Disposition disposition) {
         super(ops.getOutputFormat().getPreferredMediaType());
-        this.fullSize = fullSize;
+        this.imageInfo = imageInfo;
         this.processor = processor;
         this.ops = ops;
         this.setDisposition(disposition);
@@ -127,7 +126,7 @@ public class ImageRepresentation extends OutputRepresentation {
                 logger.info("Streamed with no processing in {} msec: {}",
                         System.currentTimeMillis() - msec, ops);
             } else {
-                processor.process(this.ops, this.fullSize, outputStream);
+                processor.process(ops, imageInfo, outputStream);
 
                 logger.info("{} processed in {} msec: {}",
                         processor.getClass().getSimpleName(),

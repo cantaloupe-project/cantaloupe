@@ -259,7 +259,7 @@ class GraphicsMagickProcessor extends AbstractProcessor
 
     @Override
     public void process(final OperationList ops,
-                        final Dimension fullSize,
+                        final ImageInfo imageInfo,
                         final OutputStream outputStream)
             throws ProcessorException {
         if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {
@@ -269,7 +269,7 @@ class GraphicsMagickProcessor extends AbstractProcessor
         try {
             IMOperation op = new IMOperation();
             op.addImage(format.getPreferredExtension() + ":-");
-            assembleOperation(op, ops, fullSize);
+            assembleOperation(op, ops, imageInfo.getSize());
 
             op.addImage(ops.getOutputFormat().getPreferredExtension() + ":-"); // write to stdout
 
