@@ -75,6 +75,12 @@
       <version>1.4.190</version>
       <scope>test</scope>
     </dependency>
+    <!-- Provides an Azure Storage client for AzureStorageResolver -->
+    <dependency>
+      <groupId>com.microsoft.azure</groupId>
+      <artifactId>azure-storage</artifactId>
+      <version>4.0.0</version>
+    </dependency>
     <!-- Provides a JDBC connection pool for JdbcResolver and JdbcCache -->
     <dependency>
       <groupId>com.zaxxer</groupId>

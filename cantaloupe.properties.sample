@@ -79,7 +79,8 @@ endpoint.iiif.min_tile_size = 1024
 
 # Specifies one resolver to translate the identifier in the URL to an image
 # source for all requests. Available values are `FilesystemResolver`,
-# `HttpResolver`, `JdbcResolver`, and `AmazonS3Resolver`.
+# `HttpResolver`, `JdbcResolver`, `AmazonS3Resolver`, and
+# `AzureStorageResolver`.
 resolver.static = FilesystemResolver
 
 # If true, `resolver.static` will be overridden, and the
@@ -193,6 +194,26 @@ AmazonS3Resolver.bucket.name =
 # ScriptLookupStrategy, a method named `get_s3_object_key(identifier)` must
 # be implemented in the delegate script.
 AmazonS3Resolver.lookup_strategy = BasicLookupStrategy
+
+#----------------------------------------
+# AzureStorageResolver
+#----------------------------------------
+
+# !! Name of your Azure account.
+AzureStorageResolver.account_name =
+
+# !! Key of your Azure account.
+AzureStorageResolver.account_key =
+
+# !! Name of the container containing images to be served.
+AzureStorageResolver.container_name =
+
+# Tells AzureStorageResolver how to look up objects. Allowed values are
+# `BasicLookupStrategy` and `ScriptLookupStrategy`. For
+# ScriptLookupStrategy, a method named
+# `get_azure_storage_object_key(identifier)` must be implemented in the
+# delegate script.
+AzureStorageResolver.lookup_strategy = BasicLookupStrategy
 
 ###########################################################################
 # PROCESSORS

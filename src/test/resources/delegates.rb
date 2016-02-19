@@ -33,6 +33,10 @@ module Cantaloupe
     end
   end
 
+  def self.get_azure_storage_blob_key(identifier)
+    identifier
+  end
+
   def self.get_s3_object_key(identifier)
     identifier
   end
