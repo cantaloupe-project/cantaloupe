@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
@@ -10,11 +11,11 @@ import java.util.List;
 
 abstract class ImageInfoFactory {
 
+    public static final String MIN_TILE_SIZE_CONFIG_KEY =
+            "endpoint.iiif.min_tile_size";
+
     /** Will be used to calculate a maximum scale factor. */
     private static final int MIN_SIZE = 64;
-
-    /** Minimum size that will be used in info.json "tiles" keys. */
-    private static final int MIN_TILE_SIZE = 512;
 
     public static ImageInfo newImageInfo(final String imageUri,
                                          final Processor processor,
@@ -25,19 +26,22 @@ abstract class ImageInfoFactory {
                 processor.getSupportedIiif1_1Qualities(),
                 processor.getAvailableOutputFormats());
 
+        final int minTileSize = Application.getConfiguration().
+                getInt(MIN_TILE_SIZE_CONFIG_KEY, 1024);
+
         // Find a tile width and height. If the image is not tiled,
         // calculate a tile size close to MIN_TILE_SIZE pixels. Otherwise,
         // use the smallest multiple of the tile size above MIN_TILE_SIZE
         // of image resolution 0.
         Dimension tileSize =
-                ImageInfoUtil.smallestTileSize(fullSize, MIN_TILE_SIZE);
+                ImageInfoUtil.smallestTileSize(fullSize, minTileSize);
 
         final List<Dimension> tileSizes = processor.getTileSizes();
         if (tileSizes.size() > 0 &&
                 (tileSizes.get(0).width != fullSize.width ||
                         tileSizes.get(0).height != fullSize.height)) {
             tileSize = ImageInfoUtil.
-                    smallestTileSize(fullSize, tileSizes.get(0), MIN_TILE_SIZE);
+                    smallestTileSize(fullSize, tileSizes.get(0), minTileSize);
         }
 
         // Create an ImageInfo instance, which will eventually be serialized

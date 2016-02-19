@@ -69,6 +69,10 @@ endpoint.iiif.2.enabled = true
 # values are `inline`, `attachment`, and `none`.
 endpoint.iiif.content_disposition = inline
 
+# Minimum size that will be used in info.json "tiles" keys. See the user
+# manual for details of how these are calculated.
+endpoint.iiif.min_tile_size = 1024
+
 ###########################################################################
 # RESOLVERS
 ###########################################################################

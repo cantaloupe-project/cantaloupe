@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import javax.script.ScriptException;
 import java.awt.Dimension;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,11 +27,11 @@ abstract class ImageInfoFactory {
     private static Logger logger = LoggerFactory.
             getLogger(ImageInfoFactory.class);
 
+    public static final String MIN_TILE_SIZE_CONFIG_KEY =
+            "endpoint.iiif.min_tile_size";
+
     /** Minimum size that will be used in info.json "sizes" keys. */
     private static final int MIN_SIZE = 64;
-
-    /** Minimum size that will be used in info.json "tiles" keys. */
-    private static final int MIN_TILE_SIZE = 512;
 
     /** Delegate script method that returns the JSON object (actually Ruby
      * hash) corresponding to the "service" key. */
@@ -40,12 +42,13 @@ abstract class ImageInfoFactory {
             new HashSet<>();
 
     static {
-        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.SIZE_BY_WHITELISTED);
-        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.BASE_URI_REDIRECT);
-        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.CANONICAL_LINK_HEADER);
-        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.CORS);
-        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.JSON_LD_MEDIA_TYPE);
-        SUPPORTED_SERVICE_FEATURES.add(ServiceFeature.PROFILE_LINK_HEADER);
+        SUPPORTED_SERVICE_FEATURES.addAll(Arrays.asList(
+                ServiceFeature.SIZE_BY_WHITELISTED,
+                ServiceFeature.BASE_URI_REDIRECT,
+                ServiceFeature.CANONICAL_LINK_HEADER,
+                ServiceFeature.CORS,
+                ServiceFeature.JSON_LD_MEDIA_TYPE,
+                ServiceFeature.PROFILE_LINK_HEADER));
     }
 
     public static ImageInfo newImageInfo(final Identifier identifier,
@@ -87,19 +90,23 @@ abstract class ImageInfoFactory {
         final List<Dimension> tileSizes = processor.getTileSizes();
         final Set<Dimension> uniqueTileSizes = new HashSet<>();
 
+        final int minTileSize = Application.getConfiguration().
+                getInt(MIN_TILE_SIZE_CONFIG_KEY, 1024);
+
         // Find a tile width and height. If the image is not tiled,
-        // calculate a tile size close to MIN_TILE_SIZE pixels. Otherwise,
-        // use the smallest multiple of the tile size above MIN_TILE_SIZE
+        // calculate a tile size close to MIN_TILE_SIZE_CONFIG_KEY pixels.
+        // Otherwise, use the smallest multiple of the tile size above that
         // of image resolution 0.
         if (tileSizes.size() == 1 &&
                 tileSizes.get(0).width == fullSize.width &&
                 tileSizes.get(0).height == fullSize.height) {
             uniqueTileSizes.add(
-                    ImageInfoUtil.smallestTileSize(fullSize, MIN_TILE_SIZE));
+                    ImageInfoUtil.smallestTileSize(fullSize, minTileSize));
         } else {
             for (Dimension tileSize : tileSizes) {
                 uniqueTileSizes.add(
-                        ImageInfoUtil.smallestTileSize(fullSize, tileSize, MIN_TILE_SIZE));
+                        ImageInfoUtil.smallestTileSize(fullSize, tileSize,
+                                minTileSize));
             }
         }
         for (Dimension uniqueTileSize : uniqueTileSizes) {
