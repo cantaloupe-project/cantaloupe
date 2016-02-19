@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.processor.ImageInfo;
 
 import java.io.InputStream;
 import java.io.OutputStream;

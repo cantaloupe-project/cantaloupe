@@ -53,7 +53,7 @@ abstract class ImageInfoFactory {
     public static ImageInfo newImageInfo(final Identifier identifier,
                                          final String imageUri,
                                          final Processor processor,
-                                         final edu.illinois.library.cantaloupe.cache.ImageInfo cacheInfo)
+                                         final edu.illinois.library.cantaloupe.processor.ImageInfo cacheInfo)
             throws ProcessorException {
         final Dimension fullSize = cacheInfo.getSize();
         // Create an ImageInfo instance, which will eventually be serialized
@@ -104,7 +104,7 @@ abstract class ImageInfoFactory {
             uniqueTileSizes.add(
                     ImageInfoUtil.smallestTileSize(fullSize, minTileSize));
         } else {
-            for (edu.illinois.library.cantaloupe.cache.ImageInfo.Image image : cacheInfo.images) {
+            for (edu.illinois.library.cantaloupe.processor.ImageInfo.Image image : cacheInfo.images) {
                 uniqueTileSizes.add(
                         ImageInfoUtil.smallestTileSize(fullSize,
                                 image.getTileSize(), minTileSize));

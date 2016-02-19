@@ -15,7 +15,7 @@ import static org.junit.Assert.*;
 
 public class ImageInfoFactoryTest {
 
-    private edu.illinois.library.cantaloupe.cache.ImageInfo cacheInfo;
+    private edu.illinois.library.cantaloupe.processor.ImageInfo cacheInfo;
     private String imageUri;
     private ImageInfo info;
     private Processor processor;
@@ -31,7 +31,7 @@ public class ImageInfoFactoryTest {
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
 
-        cacheInfo = new edu.illinois.library.cantaloupe.cache.ImageInfo(processor.getSize());
+        cacheInfo = new edu.illinois.library.cantaloupe.processor.ImageInfo(processor.getSize());
 
         info = ImageInfoFactory.newImageInfo(imageUri, processor, cacheInfo);
     }
@@ -76,7 +76,7 @@ public class ImageInfoFactoryTest {
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif"));
         info = ImageInfoFactory.newImageInfo(imageUri, processor,
-                new edu.illinois.library.cantaloupe.cache.ImageInfo(processor.getSize()));
+                new edu.illinois.library.cantaloupe.processor.ImageInfo(processor.getSize()));
 
         assertEquals(64, (long) info.tileWidth);
     }
@@ -92,7 +92,7 @@ public class ImageInfoFactoryTest {
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif"));
         info = ImageInfoFactory.newImageInfo(imageUri, processor,
-                new edu.illinois.library.cantaloupe.cache.ImageInfo(processor.getSize()));
+                new edu.illinois.library.cantaloupe.processor.ImageInfo(processor.getSize()));
 
         assertEquals(64, (long) info.tileWidth);
         assertEquals(56, (long) info.tileHeight);

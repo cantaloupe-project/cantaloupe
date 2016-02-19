@@ -18,7 +18,7 @@ abstract class ImageInfoFactory {
 
     public static ImageInfo newImageInfo(final String imageUri,
                                          final Processor processor,
-                                         final edu.illinois.library.cantaloupe.cache.ImageInfo cacheInfo)
+                                         final edu.illinois.library.cantaloupe.processor.ImageInfo cacheInfo)
             throws ProcessorException {
         final Dimension fullSize = cacheInfo.getSize();
         final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
@@ -37,7 +37,7 @@ abstract class ImageInfoFactory {
                 ImageInfoUtil.smallestTileSize(fullSize, minTileSize);
 
         if (cacheInfo.images.size() > 0) {
-            edu.illinois.library.cantaloupe.cache.ImageInfo.Image firstImage =
+            edu.illinois.library.cantaloupe.processor.ImageInfo.Image firstImage =
                     cacheInfo.images.get(0);
             if ((firstImage.tileWidth != fullSize.width && firstImage.tileWidth != 0) ||
                     (firstImage.tileHeight != fullSize.height && firstImage.tileHeight != 0)) {

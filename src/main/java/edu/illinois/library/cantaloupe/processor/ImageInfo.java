@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.cache;
+package edu.illinois.library.cantaloupe.processor;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Contains cacheable information about an image, such as image dimensions,
+ * Contains JSON-serializable information about an image, such as dimensions,
  * number of subimages, and tile sizes.
  *
  * @see <a href="https://github.com/FasterXML/jackson-databind">jackson-databind
