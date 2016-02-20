@@ -38,10 +38,10 @@ public class FilesystemCacheTest {
         infoPath = new File(fixturePath.getAbsolutePath() + "/info");
 
         if (!imagePath.mkdirs()) {
-            throw new IOException("Failed to create temp image folder");
+            throw new IOException("Failed to create folder: " + imagePath);
         }
         if (!infoPath.mkdirs()) {
-            throw new IOException("Failed to create temp info folder");
+            throw new IOException("Failed to create folder: " + infoPath);
         }
 
         final BaseConfiguration config = new BaseConfiguration();

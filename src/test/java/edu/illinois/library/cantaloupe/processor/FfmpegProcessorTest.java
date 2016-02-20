@@ -60,8 +60,9 @@ public class FfmpegProcessorTest extends ProcessorTest {
     public void testGetImageInfo() throws Exception {
         instance.setSourceFile(TestUtil.getImage("mpg"));
         instance.setSourceFormat(Format.MPG);
-        ImageInfo expectedInfo = new ImageInfo(640, 360, Format.MPG);
-        assertEquals(expectedInfo, instance.getImageInfo());
+        ImageInfo expectedInfo = new ImageInfo(640, 360, 640, 360, Format.MPG);
+        assertEquals(expectedInfo.toString(),
+                instance.getImageInfo().toString());
     }
 
     @Test

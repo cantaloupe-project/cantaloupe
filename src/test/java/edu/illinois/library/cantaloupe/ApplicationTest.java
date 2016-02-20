@@ -44,6 +44,10 @@ public class ApplicationTest {
     private static Client httpClient = new Client(new Context(), Protocol.HTTP);
     private static Client httpsClient = new Client(new Context(), Protocol.HTTPS);
 
+    // http://stackoverflow.com/questions/6141252/dealing-with-system-exit0-in-junit-tests
+    @Rule
+    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
+
     private static BaseConfiguration newConfiguration() {
         BaseConfiguration config = new BaseConfiguration();
         try {
@@ -68,8 +72,9 @@ public class ApplicationTest {
     @Before
     public void setUp() {
         Application.setConfiguration(newConfiguration());
-        System.getProperties().remove(Application.PURGE_CACHE_VM_ARGUMENT);
-        System.getProperties().remove(Application.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT);
+        System.clearProperty(Application.CLEAN_CACHE_VM_ARGUMENT);
+        System.clearProperty(Application.PURGE_CACHE_VM_ARGUMENT);
+        System.clearProperty(Application.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT);
 
     }
 
@@ -129,16 +134,29 @@ public class ApplicationTest {
 
     @Test
     public void testMainWithCleanCacheArg() throws Exception {
+        exit.expectSystemExitWithStatus(0);
+
+        File cacheDir = getCacheDir();
+        File imageDir = new File(cacheDir.getAbsolutePath() + File.separator +
+                "image");
+        File infoDir = new File(cacheDir.getAbsolutePath() + File.separator +
+                "info");
+        imageDir.mkdirs();
+        infoDir.mkdirs();
+
+        Configuration config = newConfiguration();
+        config.setProperty("cache.server", "FilesystemCache");
+        config.setProperty("FilesystemCache.pathname",
+                getCacheDir().getAbsolutePath());
+        config.setProperty("FilesystemCache.ttl_seconds", "1");
+        Application.setConfiguration(config);
+
         // TODO: write this
+
+        System.setProperty(Application.CLEAN_CACHE_VM_ARGUMENT, "");
+        Application.main(new String[] {});
     }
 
-    @Rule
-    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
-
-    /**
-     * @see http://stackoverflow.com/questions/6141252/dealing-with-system-exit0-in-junit-tests
-     * @throws Exception
-     */
     @Test
     public void testMainWithInvalidConfigExits() throws Exception {
         exit.expectSystemExitWithStatus(-1);
@@ -157,6 +175,8 @@ public class ApplicationTest {
 
     @Test
     public void testMainWithPurgeCacheArg() throws Exception {
+        exit.expectSystemExitWithStatus(0);
+
         final File cacheDir = getCacheDir();
         final File imageDir = new File(cacheDir.getAbsolutePath() + "/image");
         final File infoDir = new File(cacheDir.getAbsolutePath() + "/info");
@@ -197,6 +217,8 @@ public class ApplicationTest {
 
     @Test
     public void testMainWithPurgeExpiredCacheArg() throws Exception {
+        exit.expectSystemExitWithStatus(0);
+
         File cacheDir = getCacheDir();
         File imageDir = new File(cacheDir.getAbsolutePath() + File.separator +
                 "image");

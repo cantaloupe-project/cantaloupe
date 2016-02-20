@@ -62,7 +62,7 @@ public abstract class ProcessorTest {
      */
     @Test
     public void testGetImageInfo() throws Exception {
-        ImageInfo expectedInfo = new ImageInfo(64, 56, Format.JPG);
+        ImageInfo expectedInfo = new ImageInfo(64, 56, 64, 56, Format.JPG);
 
         if (getProcessor() instanceof StreamProcessor) {
             StreamProcessor proc = (StreamProcessor) getProcessor();
@@ -77,7 +77,8 @@ public abstract class ProcessorTest {
             try {
                 proc.setSourceFile(TestUtil.getFixture(IMAGE));
                 proc.setSourceFormat(Format.JPG);
-                assertEquals(expectedInfo, proc.getImageInfo());
+                assertEquals(expectedInfo.toString(),
+                        proc.getImageInfo().toString());
             } catch (UnsupportedSourceFormatException e) {
                 // no problem
             }

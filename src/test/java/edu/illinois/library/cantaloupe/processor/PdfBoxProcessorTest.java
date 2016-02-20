@@ -32,7 +32,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     @Test
     @Override
     public void testGetImageInfo() throws Exception {
-        ImageInfo expectedInfo = new ImageInfo(100, 88, Format.PDF);
+        ImageInfo expectedInfo = new ImageInfo(100, 88, 100, 88, Format.PDF);
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
         instance.setSourceFormat(Format.PDF);
         assertEquals(expectedInfo, instance.getImageInfo());
