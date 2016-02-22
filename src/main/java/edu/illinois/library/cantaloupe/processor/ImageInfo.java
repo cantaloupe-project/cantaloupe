@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,6 +86,10 @@ public final class ImageInfo {
 
     public static ImageInfo fromJson(File jsonFile) throws IOException {
         return new ObjectMapper().readValue(jsonFile, ImageInfo.class);
+    }
+
+    public static ImageInfo fromJson(InputStream jsonStream) throws IOException {
+        return new ObjectMapper().readValue(jsonStream, ImageInfo.class);
     }
 
     public static ImageInfo fromJson(String json) throws IOException {

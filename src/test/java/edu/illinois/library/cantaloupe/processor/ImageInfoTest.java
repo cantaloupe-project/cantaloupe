@@ -6,6 +6,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.awt.Dimension;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 import static org.junit.Assert.*;
 
@@ -21,6 +23,15 @@ public class ImageInfoTest {
     @Test
     public void testFromJsonWithFile() throws Exception {
         // TODO: write this
+    }
+
+    @Test
+    public void testFromJsonWithInputStream() throws Exception {
+        String json = instance.toJson();
+        InputStream inputStream = new ByteArrayInputStream(json.getBytes());
+
+        ImageInfo info = ImageInfo.fromJson(inputStream);
+        assertEquals(info.toString(), instance.toString());
     }
 
     @Test
