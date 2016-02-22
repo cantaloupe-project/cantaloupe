@@ -267,7 +267,7 @@ class PdfBoxProcessor extends AbstractProcessor
     }
 
     private float getDpi(int reductionFactor) {
-        float dpi = Application.getConfiguration().getFloat(DPI_CONFIG_KEY, 72);
+        float dpi = Application.getConfiguration().getFloat(DPI_CONFIG_KEY, 150);
         // Decrease the DPI if the reduction factor is positive.
         for (int i = 0; i < reductionFactor; i++) {
             dpi /= 2f;
