@@ -211,14 +211,12 @@ class JdbcCache implements Cache {
     }
 
     /**
-     * Does nothing, as this cache should always be "clean."
+     * Does nothing, as this cache is always clean.
      *
      * @throws CacheException
      */
     @Override
-    public void cleanUp() {
-        logger.info("Cleaning up...");
-    }
+    public void cleanUp() {}
 
     @Override
     public ImageInfo getImageInfo(Identifier identifier) throws CacheException {
@@ -284,6 +282,8 @@ class JdbcCache implements Cache {
     @Override
     public OutputStream getImageOutputStream(OperationList ops)
             throws CacheException {
+        // TODO: return a dummy stream when a write corresponding to an
+        // identical op list is in progress in another thread
         logger.info("Miss; caching {}", ops);
         try {
             return new ImageBlobOutputStream(getConnection(), ops);
@@ -482,6 +482,12 @@ class JdbcCache implements Cache {
             throws CacheException {
         logger.info("Caching image info: {}", identifier);
         try (Connection conn = getConnection()) {
+            conn.setAutoCommit(false);
+
+            // Delete any existing info corresponding to the given identifier.
+            purgeInfo(identifier, conn);
+
+            // Add a new info corresponding to the given identifier.
             String sql = String.format(
                     "INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
                     getInfoTableName(), INFO_TABLE_IDENTIFIER_COLUMN,
@@ -492,6 +498,8 @@ class JdbcCache implements Cache {
             statement.setTimestamp(3, now());
             logger.debug(sql);
             statement.executeUpdate();
+
+            conn.commit();
         } catch (SQLException | JsonProcessingException e) {
             throw new CacheException(e.getMessage(), e);
         }
