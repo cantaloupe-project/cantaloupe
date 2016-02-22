@@ -113,8 +113,13 @@ public interface Cache {
     void purgeExpired() throws CacheException;
 
     /**
-     * Adds image information to the cache. If the writing of the dimension is
-     * interrupted, implementations should clean it up, if necessary.
+     * <p>Adds image information to the cache.</p>
+     *
+     * <p>If the information corresponding to the given identifier already
+     * exists, it should be overwritten.</p>
+     *
+     * <p>If writing is interrupted, implementations should perform cleanup,
+     * if necessary.</p>
      *
      * @param identifier Identifier of the image corresponding to the given
      *                   size.
