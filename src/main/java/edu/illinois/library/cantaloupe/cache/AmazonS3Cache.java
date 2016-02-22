@@ -135,12 +135,9 @@ class AmazonS3Cache implements Cache {
             "AmazonS3Cache.ttl_seconds";
 
     /** Lazy-initialized by {@link #getClientInstance} */
-    private AmazonS3 client;
+    private static AmazonS3 client;
 
-    /** Lock object for synchronization */
-    private final Object lock1 = new Object();
-
-    public AmazonS3 getClientInstance() {
+    public static synchronized AmazonS3 getClientInstance() {
         if (client == null) {
             class ConfigFileCredentials implements AWSCredentials {
                 @Override
@@ -155,19 +152,17 @@ class AmazonS3Cache implements Cache {
                     return config.getString(SECRET_KEY_CONFIG_KEY);
                 }
             }
-            synchronized (lock1) {
-                AWSCredentials credentials = new ConfigFileCredentials();
-                client = new AmazonS3Client(credentials);
+            AWSCredentials credentials = new ConfigFileCredentials();
+            client = new AmazonS3Client(credentials);
 
-                Configuration config = Application.getConfiguration();
-                final String regionName = config.
-                        getString(BUCKET_REGION_CONFIG_KEY);
-                if (regionName != null && regionName.length() > 0) {
-                    Regions regions = Regions.fromName(regionName);
-                    Region region = Region.getRegion(regions);
-                    logger.info("Using region: {}", region);
-                    client.setRegion(region);
-                }
+            Configuration config = Application.getConfiguration();
+            final String regionName = config.
+                    getString(BUCKET_REGION_CONFIG_KEY);
+            if (regionName != null && regionName.length() > 0) {
+                Regions regions = Regions.fromName(regionName);
+                Region region = Region.getRegion(regions);
+                logger.info("Using region: {}", region);
+                client.setRegion(region);
             }
         }
         return client;
@@ -175,11 +170,9 @@ class AmazonS3Cache implements Cache {
 
     /**
      * Does nothing, as this cache is always clean.
-     *
-     * @throws CacheException
      */
     @Override
-    public void cleanUp() throws CacheException {}
+    public void cleanUp() {}
 
     public String getBucketName() {
         return Application.getConfiguration().getString(BUCKET_NAME_CONFIG_KEY);

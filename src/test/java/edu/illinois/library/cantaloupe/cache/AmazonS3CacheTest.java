@@ -60,7 +60,8 @@ public class AmazonS3CacheTest {
     }
 
     private void assertObjectCount(int count) {
-        S3Objects objects = S3Objects.inBucket(instance.getClientInstance(),
+        S3Objects objects = S3Objects.inBucket(
+                AmazonS3Cache.getClientInstance(),
                 instance.getBucketName());
         int i = 0;
         for (S3ObjectSummary summary : objects) {
@@ -252,7 +253,7 @@ public class AmazonS3CacheTest {
         // add an ImageInfo
         instance.putImageInfo(identifier, imageInfo);
 
-        Thread.sleep(1500);
+        Thread.sleep(2000);
 
         // add another image
         File fixture = TestUtil.getImage("gif-rgb-64x56x8.gif");
