@@ -97,7 +97,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
             }
 
             final String regionName = config.getString(BUCKET_REGION_CONFIG_KEY);
-            if (regionName != null) {
+            if (regionName != null && regionName.length() > 0) {
                 Regions regions = Regions.fromName(regionName);
                 Region region = Region.getRegion(regions);
                 logger.info("Using region: {}", region);
