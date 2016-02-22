@@ -93,7 +93,7 @@ public abstract class AbstractResource extends ServerResource {
             final String hostStr = headers.getFirstValue("X-Forwarded-Host",
                     true, null);
             final String portStr = headers.getFirstValue("X-Forwarded-Port",
-                    true, null);
+                    true, "80");
             final String pathStr = headers.getFirstValue("X-Forwarded-Path",
                     true, null);
             if (hostStr != null) {
