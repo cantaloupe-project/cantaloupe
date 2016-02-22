@@ -29,6 +29,20 @@ public class OperationList implements Comparable<OperationList>,
     private Format outputFormat;
 
     /**
+     * No-op constructor.
+     */
+    public OperationList() {}
+
+    public OperationList(Identifier identifier) {
+        setIdentifier(identifier);
+    }
+
+    public OperationList(Identifier identifier, Format outputFormat) {
+        setIdentifier(identifier);
+        setOutputFormat(outputFormat);
+    }
+
+    /**
      * @param op Operation to add. Null values will be discarded.
      */
     public void add(Operation op) {
