@@ -12,7 +12,7 @@ import javax.net.ssl.KeyManagerFactory;
 
 public class WebServer {
 
-    private static Component component;
+    private Component component;
 
     public void start() throws Exception {
         stop();
