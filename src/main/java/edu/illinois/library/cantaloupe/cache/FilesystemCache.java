@@ -151,10 +151,11 @@ class FilesystemCache implements Cache {
                         tempFile, destinationFile.getName());
                 // tempFile may not actually exist, but let's avoid calling
                 // File.exists() in the interest of performance.
-                FileUtils.moveFile(tempFile, destinationFile);
+                if (tempFile.exists()) {
+                    FileUtils.moveFile(tempFile, destinationFile);
+                }
             } catch (IOException e) {
-                logger.debug("Failed to move {} to {}; this is probably not an issue.",
-                        tempFile, destinationFile);
+                logger.info(e.getMessage(), e);
             } finally {
                 logger.debug("Closing stream for {}", opsList);
                 imagesBeingWritten.remove(opsList);
@@ -809,7 +810,13 @@ class FilesystemCache implements Cache {
         }
         try {
             infosBeingWritten.add(identifier);
+
+            final File destFile = getInfoFile(identifier);
             final File tempFile = getInfoTempFile(identifier);
+
+            if (destFile.exists()) {
+                FileUtils.forceDelete(destFile);
+            }
 
             logger.info("Caching image info: {}", identifier);
             if (!tempFile.getParentFile().exists() &&
@@ -820,15 +827,14 @@ class FilesystemCache implements Cache {
 
             try {
                 FileUtils.writeStringToFile(tempFile, imageInfo.toJson());
+
+                logger.debug("Moving {} to {}", tempFile, destFile.getName());
+                FileUtils.moveFile(tempFile, destFile);
             } catch (IOException e) {
                 tempFile.delete();
                 throw new IOException("Unable to create " +
                         tempFile.getAbsolutePath(), e);
             }
-
-            final File destFile = getInfoFile(identifier);
-            logger.debug("Moving {} to {}", tempFile, destFile.getName());
-            FileUtils.moveFile(tempFile, destFile);
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);
         } finally {
