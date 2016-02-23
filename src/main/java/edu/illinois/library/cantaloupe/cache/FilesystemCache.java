@@ -57,7 +57,8 @@ class FilesystemCache implements Cache {
         private static final Logger logger = LoggerFactory.
                 getLogger(CacheCleaner.class);
 
-        // Any file more than 10 minutes old is fair game for deletion.
+        // Any file last modified more than 10 minutes ago is fair game for
+        // deletion.
         private static final long MIN_AGE_MSEC = 1000 * 60 * 10;
 
         private final PathMatcher matcher;
@@ -218,9 +219,6 @@ class FilesystemCache implements Cache {
     private static final String INFO_FOLDER = "info";
     private static final String INFO_EXTENSION = ".json";
     private static final String TEMP_EXTENSION = ".tmp";
-
-    /** Serializes ImageInfo instances to JSON. */
-    private static final ObjectMapper infoMapper = new ObjectMapper();
 
     /** Set of Operations for which image files are currently being purged by
      * purge(OperationList) from any thread. */
@@ -764,7 +762,7 @@ class FilesystemCache implements Cache {
             }
 
             try {
-                infoMapper.writeValue(tempFile, imageInfo);
+                FileUtils.writeStringToFile(tempFile, imageInfo.toJson());
             } catch (IOException e) {
                 tempFile.delete();
                 throw new IOException("Unable to create " +
