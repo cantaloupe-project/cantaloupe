@@ -97,7 +97,7 @@ public abstract class AbstractResource extends ServerResource {
             final String pathStr = headers.getFirstValue("X-Forwarded-Path",
                     true, null);
             if (hostStr != null) {
-                logger.info("Assembling base URI from X-Forwarded-* headers. " +
+                logger.debug("Assembling base URI from X-Forwarded headers. " +
                                 "Proto: {}; Host: {}; Port: {}; Path: {}",
                         protocolStr, hostStr, portStr, pathStr);
 
@@ -182,7 +182,7 @@ public abstract class AbstractResource extends ServerResource {
                 opList.add(WatermarkService.newWatermark(
                         opList, fullSize, getReference().toUrl(),
                         getRequest().getHeaders().getValuesMap(),
-                        getRequest().getClientInfo().getAddress(),
+                        getCanonicalClientIpAddress(),
                         getRequest().getCookies().getValuesMap()));
             } catch (DelegateScriptDisabledException e) {
                 // no problem
@@ -255,6 +255,19 @@ public abstract class AbstractResource extends ServerResource {
                     e.getMessage());
         }
         return directives;
+    }
+
+    /**
+     * @return The client IP address, respecting the X-Forwarded-For header,
+     * if present.
+     */
+    protected String getCanonicalClientIpAddress() {
+        final List<String> forwardedIps = getRequest().getClientInfo().
+                getForwardedAddresses();
+        if (forwardedIps.size() > 0) {
+            return forwardedIps.get(forwardedIps.size() - 1);
+        }
+        return getRequest().getClientInfo().getAddress();
     }
 
     protected ImageRepresentation getRepresentation(OperationList ops,
@@ -339,7 +352,7 @@ public abstract class AbstractResource extends ServerResource {
         args[4] = opList.toMap(fullSize).get("output_format"); // output_format
         args[5] = getReference().toString();                   // request_uri
         args[6] = getRequest().getHeaders().getValuesMap();    // request_headers
-        args[7] = getRequest().getClientInfo().getAddress();   // client_ip
+        args[7] = getCanonicalClientIpAddress();               // client_ip
         args[8] = getRequest().getCookies().getValuesMap();    // cookies
 
         try {
