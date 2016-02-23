@@ -230,6 +230,11 @@ class FilesystemCache implements Cache {
     private final Set<OperationList> imagesBeingWritten =
             new ConcurrentSkipListSet<>();
 
+    /** Set of identifiers for which info files are currently being purged by
+     * purge(Identifier) from any thread. */
+    private final Set<Identifier> infosBeingPurged =
+            new ConcurrentSkipListSet<>();
+
     /** Set of identifiers for which info files are currently being read in
      * any thread. */
     private final Set<Identifier> infosBeingRead =
@@ -249,6 +254,7 @@ class FilesystemCache implements Cache {
     private final Object lock3 = new Object();
     private final Object lock4 = new Object();
     private final Object lock5 = new Object();
+    private final Object lock6 = new Object();
 
     /**
      * Returns a reversible, filename-safe version of the input string.
@@ -620,23 +626,39 @@ class FilesystemCache implements Cache {
      */
     @Override
     public void purge(Identifier identifier) throws CacheException {
-        // TODO: improve concurrency
-        for (File imageFile : getImageFiles(identifier)) {
-            try {
-                logger.info("Deleting {}", imageFile);
-                FileUtils.forceDelete(imageFile);
-            } catch (IOException e) {
-                logger.warn(e.getMessage());
+        synchronized (lock6) {
+            while (purgingInProgress.get() ||
+                    infosBeingPurged.contains(identifier)) {
+                try {
+                    lock6.wait();
+                } catch (InterruptedException e) {
+                    break;
+                }
             }
         }
-        final File infoFile = getInfoFile(identifier);
-        if (infoFile.exists()) {
-            try {
-                logger.info("Deleting {}", infoFile);
-                FileUtils.forceDelete(infoFile);
-            } catch (IOException e) {
-                logger.warn(e.getMessage());
+        try {
+            infosBeingPurged.add(identifier);
+            logger.info("Purging {}...", identifier);
+
+            for (File imageFile : getImageFiles(identifier)) {
+                try {
+                    logger.info("Deleting {}", imageFile);
+                    FileUtils.forceDelete(imageFile);
+                } catch (IOException e) {
+                    logger.warn(e.getMessage());
+                }
             }
+            final File infoFile = getInfoFile(identifier);
+            if (infoFile.exists()) {
+                try {
+                    logger.info("Deleting {}", infoFile);
+                    FileUtils.forceDelete(infoFile);
+                } catch (IOException e) {
+                    logger.warn(e.getMessage());
+                }
+            }
+        } finally {
+            infosBeingPurged.remove(identifier);
         }
     }
 
