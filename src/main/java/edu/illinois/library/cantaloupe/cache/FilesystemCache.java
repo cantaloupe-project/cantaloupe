@@ -589,26 +589,28 @@ class FilesystemCache implements Cache {
                 }
             }
         }
+        try {
+            purgingInProgress.set(true);
 
-        purgingInProgress.set(true);
-
-        String[] pathnamesToPurge = { getRootImagePathname(),
-                getRootInfoPathname() };
-        for (String pathname : pathnamesToPurge) {
-            try {
-                logger.info("Purging image dir: {}", pathname);
-                FileUtils.cleanDirectory(new File(pathname));
-            } catch (IOException e) {
-                logger.warn(e.getMessage());
+            String[] pathnamesToPurge = {getRootImagePathname(),
+                    getRootInfoPathname()};
+            for (String pathname : pathnamesToPurge) {
+                try {
+                    logger.info("Purging image dir: {}", pathname);
+                    FileUtils.cleanDirectory(new File(pathname));
+                } catch (IOException e) {
+                    logger.warn(e.getMessage());
+                }
+                try {
+                    logger.info("Purging info dir: {}", pathname);
+                    FileUtils.cleanDirectory(new File(pathname));
+                } catch (IOException e) {
+                    logger.warn(e.getMessage());
+                }
             }
-            try {
-                logger.info("Purging info dir: {}", pathname);
-                FileUtils.cleanDirectory(new File(pathname));
-            } catch (IOException e) {
-                logger.warn(e.getMessage());
-            }
+        } finally {
+            purgingInProgress.set(false);
         }
-        purgingInProgress.set(false);
     }
 
     /**
@@ -657,24 +659,27 @@ class FilesystemCache implements Cache {
                 }
             }
         }
-        imagesBeingPurged.add(opList);
-        logger.info("Purging {}...", opList);
+        try {
+            imagesBeingPurged.add(opList);
+            logger.info("Purging {}...", opList);
 
-        final File[] filesToDelete = {
-                getImageFile(opList),
-                getImageTempFile(opList),
-                getInfoFile(opList.getIdentifier()),
-                getInfoTempFile(opList.getIdentifier()) };
-        for (File file : filesToDelete) {
-            if (file != null && file.exists()) {
-                try {
-                    FileUtils.forceDelete(file);
-                } catch (IOException e) {
-                    logger.warn("Unable to delete {}", file);
+            final File[] filesToDelete = {
+                    getImageFile(opList),
+                    getImageTempFile(opList),
+                    getInfoFile(opList.getIdentifier()),
+                    getInfoTempFile(opList.getIdentifier())};
+            for (File file : filesToDelete) {
+                if (file != null && file.exists()) {
+                    try {
+                        FileUtils.forceDelete(file);
+                    } catch (IOException e) {
+                        logger.warn("Unable to delete {}", file);
+                    }
                 }
             }
+        } finally {
+            imagesBeingPurged.remove(opList);
         }
-        imagesBeingPurged.remove(opList);
     }
 
     /**
@@ -699,42 +704,45 @@ class FilesystemCache implements Cache {
         }
         logger.info("Purging expired items...");
 
-        purgingInProgress.set(true);
-        final String imagePathname = getRootImagePathname();
-        final String infoPathname = getRootInfoPathname();
+        try {
+            purgingInProgress.set(true);
+            final String imagePathname = getRootImagePathname();
+            final String infoPathname = getRootInfoPathname();
 
-        long imageCount = 0;
-        final File imageDir = new File(imagePathname);
-        Iterator<File> it = FileUtils.iterateFiles(imageDir, null, true);
-        while (it.hasNext()) {
-            File file = it.next();
-            if (isExpired(file)) {
-                try {
-                    FileUtils.forceDelete(file);
-                    imageCount++;
-                } catch (IOException e) {
-                    logger.warn(e.getMessage());
+            long imageCount = 0;
+            final File imageDir = new File(imagePathname);
+            Iterator<File> it = FileUtils.iterateFiles(imageDir, null, true);
+            while (it.hasNext()) {
+                File file = it.next();
+                if (isExpired(file)) {
+                    try {
+                        FileUtils.forceDelete(file);
+                        imageCount++;
+                    } catch (IOException e) {
+                        logger.warn(e.getMessage());
+                    }
                 }
             }
-        }
 
-        long infoCount = 0;
-        final File infoDir = new File(infoPathname);
-        it = FileUtils.iterateFiles(infoDir, null, true);
-        while (it.hasNext()) {
-            File file = it.next();
-            if (isExpired(file)) {
-                try {
-                    FileUtils.forceDelete(file);
-                    infoCount++;
-                } catch (IOException e) {
-                    logger.warn(e.getMessage());
+            long infoCount = 0;
+            final File infoDir = new File(infoPathname);
+            it = FileUtils.iterateFiles(infoDir, null, true);
+            while (it.hasNext()) {
+                File file = it.next();
+                if (isExpired(file)) {
+                    try {
+                        FileUtils.forceDelete(file);
+                        infoCount++;
+                    } catch (IOException e) {
+                        logger.warn(e.getMessage());
+                    }
                 }
             }
+            logger.info("Purged {} expired image(s) and {} expired infos(s)",
+                    imageCount, infoCount);
+        } finally {
+            purgingInProgress.set(false);
         }
-        purgingInProgress.set(false);
-        logger.info("Purged {} expired image(s) and {} expired infos(s)",
-                imageCount, infoCount);
     }
 
     @Override
