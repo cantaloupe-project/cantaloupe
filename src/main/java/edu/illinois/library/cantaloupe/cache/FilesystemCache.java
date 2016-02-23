@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operation;
@@ -246,7 +245,10 @@ class FilesystemCache implements Cache {
             new ConcurrentSkipListSet<>();
 
     private final AtomicBoolean cleaningInProgress = new AtomicBoolean(false);
-    private final AtomicBoolean purgingInProgress = new AtomicBoolean(false);
+
+    /** Toggled by purge() and purgeExpired(). */
+    private final AtomicBoolean globalPurgeInProgress =
+            new AtomicBoolean(false);
 
     /** Lock objects for synchronization */
     private final Object lock1 = new Object();
@@ -579,15 +581,20 @@ class FilesystemCache implements Cache {
      * within it (including temp files), and then does the same in the info
      * directory.</p>
      *
-     * <p>If purging is in progress in another thread, this method will wait
-     * for it to finish before proceeding.</p>
+     * <p>Will do nothing and return immediately if a global purge is in
+     * progress in another thread.</p>
      *
      * @throws CacheException
      */
     @Override
     public void purge() throws CacheException {
+        if (globalPurgeInProgress.get()) {
+            logger.info("purge() called with a purge already in progress. " +
+                    "Aborting.");
+            return;
+        }
         synchronized (lock4) {
-            while (purgingInProgress.get() || !imagesBeingPurged.isEmpty()) {
+            while (!imagesBeingPurged.isEmpty()) {
                 try {
                     lock4.wait();
                 } catch (InterruptedException e) {
@@ -596,7 +603,7 @@ class FilesystemCache implements Cache {
             }
         }
         try {
-            purgingInProgress.set(true);
+            globalPurgeInProgress.set(true);
 
             String[] pathnamesToPurge = {getRootImagePathname(),
                     getRootInfoPathname()};
@@ -615,20 +622,27 @@ class FilesystemCache implements Cache {
                 }
             }
         } finally {
-            purgingInProgress.set(false);
+            globalPurgeInProgress.set(false);
         }
     }
 
     /**
      * <p>Deletes all files associated with the given identifier.</p>
      *
+     * <p>Will do nothing and return immediately if a global purge is in
+     * progress in another thread.</p>
+     *
      * @throws CacheException
      */
     @Override
     public void purge(Identifier identifier) throws CacheException {
+        if (globalPurgeInProgress.get()) {
+            logger.info("purge(Identifier) called with a global purge in " +
+                    "progress. Aborting.");
+            return;
+        }
         synchronized (lock6) {
-            while (purgingInProgress.get() ||
-                    infosBeingPurged.contains(identifier)) {
+            while (infosBeingPurged.contains(identifier)) {
                 try {
                     lock6.wait();
                 } catch (InterruptedException e) {
@@ -668,12 +682,20 @@ class FilesystemCache implements Cache {
      * <p>If purging is in progress in another thread, this method will wait
      * for it to finish before proceeding.</p>
      *
+     * <p>Will do nothing and return immediately if a global purge is in
+     * progress in another thread.</p>
+     *
      * @throws CacheException
      */
     @Override
     public void purge(OperationList opList) throws CacheException {
+        if (globalPurgeInProgress.get()) {
+            logger.info("purge(OperationList) called with a global purge in " +
+                    "progress. Aborting.");
+            return;
+        }
         synchronized (lock1) {
-            while (purgingInProgress.get() || imagesBeingPurged.contains(opList)) {
+            while (imagesBeingPurged.contains(opList)) {
                 try {
                     lock1.wait();
                 } catch (InterruptedException e) {
@@ -708,15 +730,20 @@ class FilesystemCache implements Cache {
      * <p>Crawls the image directory, deleting all expired files within it
      * (temporary or not), and then does the same in the info directory.</p>
      *
-     * <p>If purging is in progress in another thread, this method will wait
-     * for it to finish before proceeding.</p>
+     * <p>Will do nothing and return immediately if a global purge is in
+     * progress in another thread.</p>
      *
      * @throws CacheException
      */
     @Override
     public void purgeExpired() throws CacheException {
+        if (globalPurgeInProgress.get()) {
+            logger.info("purgeExpired() called with a purge in progress. " +
+                    "Aborting.");
+            return;
+        }
         synchronized (lock4) {
-            while (purgingInProgress.get() || !imagesBeingPurged.isEmpty()) {
+            while (!imagesBeingPurged.isEmpty()) {
                 try {
                     lock4.wait();
                 } catch (InterruptedException e) {
@@ -727,7 +754,7 @@ class FilesystemCache implements Cache {
         logger.info("Purging expired items...");
 
         try {
-            purgingInProgress.set(true);
+            globalPurgeInProgress.set(true);
             final String imagePathname = getRootImagePathname();
             final String infoPathname = getRootInfoPathname();
 
@@ -763,7 +790,7 @@ class FilesystemCache implements Cache {
             logger.info("Purged {} expired image(s) and {} expired infos(s)",
                     imageCount, infoCount);
         } finally {
-            purgingInProgress.set(false);
+            globalPurgeInProgress.set(false);
         }
     }
 
