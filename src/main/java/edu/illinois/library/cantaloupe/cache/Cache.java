@@ -46,6 +46,24 @@ public interface Cache {
     ImageInfo getImageInfo(Identifier identifier) throws CacheException;
 
     /**
+     * <p>Returns an input stream for a source image corresponding to the given
+     * identifier, or null if a non-expired image corresponding to the given
+     * identifier does not exist in the cache..</p>
+     *
+     * <p>If an image corresponding to the given identifier exists in the
+     * cache but is expired, implementations should delete it before returning
+     * null.</p>
+     *
+     * @param identifier Identifier of an image to read from the cache.
+     * @return Input stream corresponding to the given identifier, or null
+     *         if a non-expired image corresponding to the given identifier
+     *         does not exist in the cache.
+     * @throws CacheException
+     */
+    InputStream getImageInputStream(Identifier identifier)
+            throws CacheException;
+
+    /**
      * <p>Returns an input stream corresponding to the given OperationList,
      * or null if a non-expired image corresponding to the given operation
      * list does not exist in the cache..</p>
@@ -61,6 +79,15 @@ public interface Cache {
      * @throws CacheException
      */
     InputStream getImageInputStream(OperationList opList) throws CacheException;
+
+    /**
+     * @param identifier Identifier of an image to write to the cache.
+     * @return Output stream to which an image corresponding to the given
+     *         identifier can be written.
+     * @throws CacheException
+     */
+    OutputStream getImageOutputStream(Identifier identifier)
+            throws CacheException;
 
     /**
      * @param opList Operation list for which to retrieve an output stream for
@@ -101,15 +128,15 @@ public interface Cache {
     void purgeExpired() throws CacheException;
 
     /**
-     * Deletes all cached content corresponding to the image with the given
-     * identifier.
+     * Deletes all cached content (source image, derivative image(s), and
+     * info) corresponding to the image with the given identifier.
      *
      * @param identifier
      * @throws CacheException Upon fatal error. Implementations should do the
      *         best they can to complete the operation and swallow and log
      *         non-fatal errors.
      */
-    void purgeImageInfo(Identifier identifier) throws CacheException;
+    void purgeImage(Identifier identifier) throws CacheException;
 
     /**
      * <p>Adds image information to the cache.</p>

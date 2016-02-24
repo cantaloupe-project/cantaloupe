@@ -108,7 +108,7 @@ public class ImageResource extends AbstractResource {
                 // if the image was not found, purge it from the cache
                 final Cache cache = CacheFactory.getInstance();
                 if (cache != null) {
-                    cache.purgeImageInfo(ops.getIdentifier());
+                    cache.purgeImage(ops.getIdentifier());
                 }
             }
             throw e;
