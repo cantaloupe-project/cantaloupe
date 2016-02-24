@@ -325,7 +325,7 @@ class JdbcCache implements Cache {
     }
 
     @Override
-    public void purge(Identifier identifier) throws CacheException {
+    public void purgeImageInfo(Identifier identifier) throws CacheException {
         try (Connection connection = getConnection()) {
             connection.setAutoCommit(false);
             final int numDeletedImages = purgeImages(identifier, connection);

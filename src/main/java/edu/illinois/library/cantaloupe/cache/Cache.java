@@ -9,10 +9,8 @@ import java.io.OutputStream;
 
 /**
  * <p>Interface to be implemented by all caches. A cache stores and retrieves
- * unique images corresponding to
- * {@link edu.illinois.library.cantaloupe.image.OperationList} objects, as
- * well as {@link ImageInfo} objects corresponding to
- * {@link edu.illinois.library.cantaloupe.image.Identifier} objects.</p>
+ * unique images corresponding to {@link OperationList} objects, as well as
+ * {@link ImageInfo} objects corresponding to {@link Identifier} objects.</p>
  *
  * <p>Implementations must be thread-safe.</p>
  */
@@ -21,13 +19,14 @@ public interface Cache {
     /**
      * <p>Cleans up the cache.</p>
      *
-     * <p>This method should <strong>not</strong> purge any content. Other
-     * than that, implementations may interpret "clean up" however they
-     * wish--ideally, they will not need to do anything at all.</p>
+     * <p>This method should <strong>not</strong> duplicate the behavior of
+     * any of the purging-related methods. Other than that, implementations
+     * may interpret "clean up" however they wish--ideally, they will not need
+     * to do anything at all.</p>
      *
-     * <p>The frequency with which this method will be called may vary.
-     * It may never be called. Implementations should try to keep themselves
-     * clean without relying on this method.</p>
+     * <p>The frequency with which this method will be called may vary. It may
+     * never be called. Implementations should try to keep themselves clean
+     * without relying on this method.</p>
      *
      * @throws CacheException
      */
@@ -51,8 +50,8 @@ public interface Cache {
      * or null if a non-expired image corresponding to the given operation
      * list does not exist in the cache..</p>
      *
-     * <p>If an image corresponding to the given parameters exists in the
-     * cache but is expired, implementations should delete it.</p>
+     * <p>If an image corresponding to the given list exists in the cache but
+     * is expired, implementations should delete it before returning null.</p>
      *
      * @param opList Operation list for which to retrieve an input stream for
      *               reading from the cache.
@@ -83,17 +82,6 @@ public interface Cache {
     void purge() throws CacheException;
 
     /**
-     * Deletes all cached content corresponding to the image with the given
-     * identifier.
-     *
-     * @param identifier
-     * @throws CacheException Upon fatal error. Implementations should do the
-     *         best they can to complete the operation and swallow and log
-     *         non-fatal errors.
-     */
-    void purge(Identifier identifier) throws CacheException;
-
-    /**
      * Deletes the cached image corresponding to the given operation list.
      *
      * @param opList
@@ -111,6 +99,17 @@ public interface Cache {
      *         non-fatal errors.
      */
     void purgeExpired() throws CacheException;
+
+    /**
+     * Deletes all cached content corresponding to the image with the given
+     * identifier.
+     *
+     * @param identifier
+     * @throws CacheException Upon fatal error. Implementations should do the
+     *         best they can to complete the operation and swallow and log
+     *         non-fatal errors.
+     */
+    void purgeImageInfo(Identifier identifier) throws CacheException;
 
     /**
      * <p>Adds image information to the cache.</p>

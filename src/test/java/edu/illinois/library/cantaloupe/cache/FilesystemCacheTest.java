@@ -143,7 +143,7 @@ public class FilesystemCacheTest {
         assertEquals(0, count);
     }
 
-    /* purge(Identifier) */
+    /* purgeImageInfo(Identifier) */
 
     @Test
     public void testPurgeWithIdentifier() throws Exception {
@@ -172,10 +172,10 @@ public class FilesystemCacheTest {
 
         assertEquals(2, FileUtils.listFiles(imagePath, null, true).size());
         assertEquals(2, FileUtils.listFiles(infoPath, null, true).size());
-        instance.purge(id1);
+        instance.purgeImageInfo(id1);
         assertEquals(1, FileUtils.listFiles(imagePath, null, true).size());
         assertEquals(1, FileUtils.listFiles(infoPath, null, true).size());
-        instance.purge(id2);
+        instance.purgeImageInfo(id2);
         assertEquals(0, FileUtils.listFiles(imagePath, null, true).size());
         assertEquals(0, FileUtils.listFiles(infoPath, null, true).size());
     }

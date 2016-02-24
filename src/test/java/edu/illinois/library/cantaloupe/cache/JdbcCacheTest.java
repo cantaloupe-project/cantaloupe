@@ -193,14 +193,14 @@ public class JdbcCacheTest {
         }
     }
 
-    /* purge(Identifier) */
+    /* purgeImageInfo(Identifier) */
 
     @Test
     public void testPurgeWithIdentifier() throws Exception {
         Configuration config = Application.getConfiguration();
 
         Identifier id1 = new Identifier("cats");
-        instance.purge(id1);
+        instance.purgeImageInfo(id1);
 
         try (Connection connection = JdbcCache.getConnection()) {
             // assert that the images and infos were purged

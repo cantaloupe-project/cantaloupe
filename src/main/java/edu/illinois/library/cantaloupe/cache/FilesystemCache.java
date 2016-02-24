@@ -231,7 +231,7 @@ class FilesystemCache implements Cache {
             new ConcurrentSkipListSet<>();
 
     /** Set of identifiers for which info files are currently being purged by
-     * purge(Identifier) from any thread. */
+     * purgeImageInfo(Identifier) from any thread. */
     private final Set<Identifier> infosBeingPurged =
             new ConcurrentSkipListSet<>();
 
@@ -636,9 +636,9 @@ class FilesystemCache implements Cache {
      * @throws CacheException
      */
     @Override
-    public void purge(Identifier identifier) throws CacheException {
+    public void purgeImageInfo(Identifier identifier) throws CacheException {
         if (globalPurgeInProgress.get()) {
-            logger.info("purge(Identifier) called with a global purge in " +
+            logger.info("purgeImageInfo() called with a global purge in " +
                     "progress. Aborting.");
             return;
         }
