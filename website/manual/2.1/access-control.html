@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="High-performance dynamic image server in Java
+">
+
+  <title>
+    Cantaloupe
+    
+      :: Access Control
+    
+  </title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/cantaloupe/css/syntax.css">
+  <link rel="stylesheet" href="/cantaloupe/css/base.css">
+
+  <script src="/cantaloupe/scripts/jquery.min.js"></script>
+</head>
+
+
+  <body>
+
+    <div class="container">
+      <nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container-fluid">
+
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/cantaloupe/">
+        <img alt="Cantaloupe" src="/cantaloupe/images/cantaloupe.png" width="40">
+      </a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li><a href="/cantaloupe/get-started.html">Get Started</a></li>
+        <li><a href="/cantaloupe/manual/">User Manual</a></li>
+        <li><a href="/cantaloupe/support.html">Support</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="https://github.com/medusa-project/cantaloupe/releases.atom" title="Subscribe to Releases"><img width="22" height="22" src="/cantaloupe/images/feed.svg"></a></li>
+      </ul>
+    </div>
+
+  </div>
+</nav>
+
+
+      <div class="row">
+  <div class="col-md-3 hidden-xs hidden-sm">
+    <ul class="toc">
+  <li><a href="changes.html">What's New in <span class="version">2.1</span></a></li>
+  <li><a href="upgrading.html">Upgrading</a></li>
+  <li>
+    <a href="endpoints.html">Endpoints</a>
+    <ul>
+      <li><a href="endpoints.html#IIIFImageAPI1">IIIF Image API 1.x</a></li>
+      <li><a href="endpoints.html#IIIFImageAPI2">IIIF Image API 2.x</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="deployment.html">Deployment</a>
+    <ul>
+      <li><a href="deployment.html#Hardware">Hardware</a></li>
+      <li><a href="deployment.html#Limiting">Limiting</a></li>
+      <li><a href="deployment.html#Reverse-Proxying">Reverse-Proxying</a></li>
+      <li><a href="deployment.html#SSL%2FTLS">SSL/TLS</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="resolvers.html">Resolvers</a>
+    <ul>
+      <li><a href="resolvers.html#Static%20Resolver">Static Resolver</a></li>
+      <li><a href="resolvers.html#Dynamic%20Resolvers">Dynamic Resolvers</a></li>
+      <li><a href="resolvers.html#FilesystemResolver">Filesystem</a></li>
+      <li><a href="resolvers.html#HttpResolver">HTTP</a></li>
+      <li><a href="resolvers.html#JdbcResolver">JDBC</a></li>
+      <li><a href="resolvers.html#AmazonS3Resolver">Amazon S3</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="processors.html">Processors</a>
+    <ul>
+      <li><a href="processors.html#Source%20Format%20Support">Format Support</a></li>
+      <li><a href="processors.html#Compatibility">Resolver Compatibility</a></li>
+      <li><a href="processors.html#Java2dProcessor">Java 2D</a></li>
+      <li><a href="processors.html#GraphicsMagickProcessor">GraphicsMagick</a></li>
+      <li><a href="processors.html#ImageMagickProcessor">ImageMagick</a></li>
+      <li><a href="processors.html#JaiProcessor">JAI</a></li>
+      <li><a href="processors.html#KakaduProcessor">Kakadu</a></li>
+      <li><a href="processors.html#OpenJpegProcessor">OpenJPEG</a></li>
+      <li><a href="processors.html#FfmpegProcessor">FFmpeg</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="caches.html">Caches (Server-Side)</a>
+    <ul>
+      <li><a href="caches.html#Purging">Purging</a></li>
+      <li><a href="caches.html#FilesystemCache">Filesystem</a></li>
+      <li><a href="caches.html#JdbcCache">JDBC</a></li>
+    </ul>
+  </li>
+  <li><a href="client-caching.html">Caching (Client-Side)</a></li>
+  <li>
+    <a href="access-control.html">Access Control</a>
+    <ul>
+      <li><a href="access-control.html#Authentication">Authentication</a></li>
+      <li><a href="access-control.html#Authorization">Authorization</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="logging.html">Logging</a>
+    <ul>
+      <li><a href="logging.html#Application%20Log">Application Log</a></li>
+      <li><a href="logging.html#Access%20Log">Access Log</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="source-formats.html">Source Formats</a>
+    <ul>
+      <li><a href="source-formats.html#JPEG">JPEG</a></li>
+      <li><a href="source-formats.html#JPEG2000">JPEG2000</a></li>
+      <li><a href="source-formats.html#TIFF">TIFF</a></li>
+    </ul>
+  </li>
+  <li><a href="delegate-script.html">Delegate Script</a></li>
+  <li>
+    <a href="developers.html">For Developers</a>
+    <ul>
+      <li><a href="/cantaloupe/javadoc/2.1/">Javadoc</a></li>
+      <li><a href="developers.html#Contributing">Contributing</a></li>
+    </ul>
+  </li>
+</ul>
+
+  </div>
+
+  <div class="col-sm-12 col-md-9">
+    <div class="alert alert-warning">
+  This manual is for a previous version. <a href="/cantaloupe/manual/">See all versions</a>
+</div>
+
+    <ol class="breadcrumb">
+  <li><a href="/cantaloupe/">Home</a></li>
+  <li><a href="/cantaloupe/manual/">User Manual</a></li>
+  <li><a href="/cantaloupe/manual/2.1/">2.1</a></li>
+  <li class="active">Access Control</li>
+</ol>
+
+<h1>Access Control</h1>
+
+<ul>
+  <li><a href="#Authentication">Authentication</a></li>
+  <li><a href="#Authorization">Authorization</a></li>
+</ul>
+
+<h2 id="Authentication">Authentication</h2>
+
+<p>Cantaloupe has built-in support for HTTP Basic authentication. To enable it, set the following keys in the configuration file:</p>
+
+<figure class="highlight"><pre><code class="language-properties" data-lang="properties"><span class="py">auth.basic.enabled</span> <span class="p">=</span> <span class="s">true</span>
+<span class="py">auth.basic.username</span> <span class="p">=</span> <span class="s">myusername</span>
+<span class="py">auth.basic.secret</span> <span class="p">=</span> <span class="s">mypassword</span></code></pre></figure>
+
+<p>When enabled, the entire website and all endpoints will be restricted.</p>
+
+<p>A <a href="deployment.html#Reverse-Proxying">reverse-proxying</a> configuration can be used to provide additional authentication options.</p>
+
+<hr>
+
+<h2 id="Authorization">Authorization</h2>
+
+<p>A custom <a href="delegate-script.html">delegate script</a> method can be used to implement authorization logic ranging from simple to complex. Cantaloupe will execute this method upon every image request and, depending on its return value, either authorize the request (by returning HTTP 200 OK), or not (by returning HTTP 403 Forbidden).</p>
+
+<p>The delegate method in question is called <code>authorized?</code>. A skeleton with documented parameters and return values is present in the <span class="filename">delegates.rb.sample</span> file. By default, it just returns <code>true</code>, authorizing all requests.</p>
+
+<div class="alert alert-warning">This method will be called upon requests to all image endpoints, but not information endpoints, landing pages, etc.</div>
+
+<h3>Notes</h3>
+
+<ul>
+  <li>The authorization method will be called on every image request and should therefore be written to be efficient.</li>
+  <li>Implementations should not assume that the underlying source image actually exists, but they should not try to check for it regardless&mdash;the image server will handle that. (But, the check may occur after the delegate method is invoked.)</li>
+</ul>
+
+<h3>Examples</h3>
+
+<ul>
+  <li><a href="#example-1">Inspect the parameters</a></li>
+  <li><a href="#example-2">Allow only requests for half-scale images or smaller</a></li>
+  <li><a href="#example-3">Allow only requests for identifiers matching a certain pattern</a></li>
+  <li><a href="#example-4">Allow only requests for images set as "public" in a MySQL database</a></li>
+  <li><a href="#example-5">Allow only JPEG output</a></li>
+  <li><a href="#example-6">Allow only certain user agents</a></li>
+  <li><a href="#example-7">Allow only requests from clients that have an authorization cookie</a></li>
+  <li><a href="#example-8">Restrict a region of an image</a></li>
+</ul>
+
+<h4 id="example-1">Inspect the parameters</h4>
+
+<p>This method will print the parameters to the console.</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">authorized?</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">full_size</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">resulting_size</span><span class="p">,</span>
+                     <span class="n">output_format</span><span class="p">,</span> <span class="n">request_uri</span><span class="p">,</span> <span class="n">request_headers</span><span class="p">,</span> <span class="n">client_ip</span><span class="p">,</span>
+                     <span class="n">cookies</span><span class="p">)</span>
+  <span class="nb">puts</span> <span class="s2">"identifier: </span><span class="si">#{</span><span class="n">identifier</span><span class="si">}</span><span class="s2">"</span>
+  <span class="nb">puts</span> <span class="s2">"full_size: </span><span class="si">#{</span><span class="n">full_size</span><span class="si">}</span><span class="s2">"</span>
+  <span class="nb">puts</span> <span class="s2">"operations: </span><span class="si">#{</span><span class="n">operations</span><span class="si">}</span><span class="s2">"</span>
+  <span class="nb">puts</span> <span class="s2">"resulting_size: </span><span class="si">#{</span><span class="n">resulting_size</span><span class="si">}</span><span class="s2">"</span>
+  <span class="nb">puts</span> <span class="s2">"output_format: </span><span class="si">#{</span><span class="n">output_format</span><span class="si">}</span><span class="s2">"</span>
+  <span class="nb">puts</span> <span class="s2">"request_uri: </span><span class="si">#{</span><span class="n">request_uri</span><span class="si">}</span><span class="s2">"</span>
+  <span class="nb">puts</span> <span class="s2">"request_headers: </span><span class="si">#{</span><span class="n">request_headers</span><span class="si">}</span><span class="s2">"</span>
+  <span class="nb">puts</span> <span class="s2">"client_ip: </span><span class="si">#{</span><span class="n">client_ip</span><span class="si">}</span><span class="s2">"</span>
+  <span class="nb">puts</span> <span class="s2">"cookies: </span><span class="si">#{</span><span class="n">cookies</span><span class="si">}</span><span class="s2">"</span>
+  <span class="kp">true</span>
+<span class="k">end</span></code></pre></figure>
+
+<h4 id="example-2">Allow only requests for half-scale images or smaller</h4>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">authorized?</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">full_size</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">resulting_size</span><span class="p">,</span>
+                     <span class="n">output_format</span><span class="p">,</span> <span class="n">request_uri</span><span class="p">,</span> <span class="n">request_headers</span><span class="p">,</span> <span class="n">client_ip</span><span class="p">,</span>
+                     <span class="n">cookies</span><span class="p">)</span>
+  <span class="n">scale</span> <span class="o">=</span> <span class="n">operations</span><span class="p">.</span><span class="nf">select</span><span class="p">{</span> <span class="o">|</span><span class="n">op</span><span class="o">|</span> <span class="n">op</span><span class="p">[</span><span class="s1">'type'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'scale'</span> <span class="p">}.</span><span class="nf">first</span>
+  <span class="k">if</span> <span class="n">scale</span>
+    <span class="n">max_scale</span> <span class="o">=</span> <span class="mi">0</span><span class="o">.</span><span class="mi">5</span>
+    <span class="k">return</span> <span class="n">scale</span><span class="p">[</span><span class="s1">'width'</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">full_size</span><span class="p">[</span><span class="s1">'width'</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_scale</span> <span class="n">and</span>
+        <span class="n">scale</span><span class="p">[</span><span class="s1">'height'</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">full_size</span><span class="p">[</span><span class="s1">'height'</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_scale</span>
+  <span class="k">end</span>
+  <span class="kp">false</span>
+<span class="k">end</span></code></pre></figure>
+
+<h4 id="example-3">Allow only requests for identifiers matching a certain pattern</h4>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">authorized?</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">full_size</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">resulting_size</span><span class="p">,</span>
+                     <span class="n">output_format</span><span class="p">,</span> <span class="n">request_uri</span><span class="p">,</span> <span class="n">request_headers</span><span class="p">,</span> <span class="n">client_ip</span><span class="p">,</span>
+                     <span class="n">cookies</span><span class="p">)</span>
+  <span class="c1"># Allow only identifiers that don't include "_restricted"</span>
+  <span class="k">return</span> <span class="o">!</span><span class="n">identifier</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="s1">'_restricted'</span><span class="p">)</span>
+  <span class="c1"># Allow only identifiers that start with "_public"</span>
+  <span class="k">return</span> <span class="n">identifier</span><span class="p">.</span><span class="nf">start_with?</span><span class="p">(</span><span class="s1">'public_'</span><span class="p">)</span>
+  <span class="c1"># Allow only identifiers matching a regex</span>
+  <span class="k">return</span> <span class="n">identifier</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="sr">/^image[5-9][0-9]/</span><span class="p">)</span>
+<span class="k">end</span></code></pre></figure>
+
+<h4 id="example-4">Allow only requests for images set as "public" in a MySQL database</h4>
+
+<p>(You will need to install the <a href="https://dev.mysql.com/downloads/connector/j/">MySQL JDBC driver</a> first.)</p>
+
+<div class="alert alert-danger">Note: The parameters passed to <code>authorized?</code> are not guaranteed to be safe. <code>identifier</code>, for example, will be exactly as supplied in the URL. Always prefer prepared statements over string concatenation in order to reduce susceptibility to SQL injection attacks.</div>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">authorized?</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">full_size</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">resulting_size</span><span class="p">,</span>
+                     <span class="n">output_format</span><span class="p">,</span> <span class="n">request_uri</span><span class="p">,</span> <span class="n">request_headers</span><span class="p">,</span> <span class="n">client_ip</span><span class="p">,</span>
+                     <span class="n">cookies</span><span class="p">)</span>
+  <span class="nb">require</span> <span class="s2">"rubygems"</span>
+  <span class="nb">require</span> <span class="s2">"jdbc/mysql"</span>
+  <span class="nb">require</span> <span class="s2">"java"</span>
+
+  <span class="n">authorized</span> <span class="o">=</span> <span class="kp">false</span>
+
+  <span class="no">Java</span><span class="o">::</span><span class="n">com</span><span class="p">.</span><span class="nf">mysql</span><span class="p">.</span><span class="nf">jdbc</span><span class="o">.</span><span class="no">Driver</span>
+  <span class="n">url</span> <span class="o">=</span> <span class="s2">"jdbc:mysql://HOST/DATABASE"</span>
+  <span class="n">conn</span> <span class="o">=</span> <span class="n">java</span><span class="p">.</span><span class="nf">sql</span><span class="o">.</span><span class="no">DriverManager</span><span class="p">.</span><span class="nf">get_connection</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s2">"USERNAME"</span><span class="p">,</span> <span class="s2">"PASSWORD"</span><span class="p">)</span>
+  <span class="n">stmt</span> <span class="o">=</span> <span class="n">conn</span><span class="p">.</span><span class="nf">create_statement</span>
+
+  <span class="k">begin</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="sx">%q{SELECT is_public
+        FROM image
+        WHERE identifier = ?
+        LIMIT 1}</span>
+    <span class="n">stmt</span> <span class="o">=</span> <span class="n">conn</span><span class="p">.</span><span class="nf">prepare_statement</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="n">stmt</span><span class="p">.</span><span class="nf">setString</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">identifier</span><span class="p">);</span>
+    <span class="n">result_set</span> <span class="o">=</span> <span class="n">stmt</span><span class="p">.</span><span class="nf">execute_query</span>
+    <span class="k">while</span> <span class="n">result_set</span><span class="p">.</span><span class="nf">next</span> <span class="k">do</span>
+      <span class="n">authorized</span> <span class="o">=</span> <span class="n">result_set</span><span class="p">.</span><span class="nf">getBoolean</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">ensure</span>
+    <span class="n">stmt</span><span class="p">.</span><span class="nf">close</span>
+    <span class="n">conn</span><span class="p">.</span><span class="nf">close</span>
+  <span class="k">end</span>
+  <span class="n">authorized</span>
+<span class="k">end</span></code></pre></figure>
+
+<h4 id="example-5">Allow only JPEG output</h4>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">authorized?</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">full_size</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">resulting_size</span><span class="p">,</span>
+                     <span class="n">output_format</span><span class="p">,</span> <span class="n">request_uri</span><span class="p">,</span> <span class="n">request_headers</span><span class="p">,</span> <span class="n">client_ip</span><span class="p">,</span>
+                     <span class="n">cookies</span><span class="p">)</span>
+  <span class="n">output_format</span><span class="p">[</span><span class="s1">'media_type'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'image/jpeg'</span>
+<span class="k">end</span></code></pre></figure>
+
+<h4 id="example-6">Allow only certain user agents</h4>
+
+<div class="alert alert-warning">This is not foolproof&mdash;if a client knows what User-Agent you are checking for, they can spoof it.</div>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">authorized?</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">full_size</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">resulting_size</span><span class="p">,</span>
+                     <span class="n">output_format</span><span class="p">,</span> <span class="n">request_uri</span><span class="p">,</span> <span class="n">request_headers</span><span class="p">,</span> <span class="n">client_ip</span><span class="p">,</span>
+                     <span class="n">cookies</span><span class="p">)</span>
+  <span class="n">agent</span> <span class="o">=</span> <span class="n">request_headers</span><span class="p">.</span><span class="nf">select</span><span class="p">{</span> <span class="o">|</span><span class="n">h</span><span class="p">,</span> <span class="n">v</span><span class="o">|</span> <span class="n">h</span><span class="p">.</span><span class="nf">downcase</span> <span class="o">==</span> <span class="s1">'user-agent'</span> <span class="p">}.</span><span class="nf">first</span>
+  <span class="n">agent</span> <span class="o">==</span> <span class="s1">'MyAllowedUserAgent/1.0'</span>
+<span class="k">end</span></code></pre></figure>
+
+<h4 id="example-7">Allow only requests from clients that have an authorization cookie</h4>
+
+<p>If you have an authorization service that sets a cookie, you can check for it. Cookies can't be shared across domains, but this could still work if you can set the cookie on a parent domain.</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">authorized?</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">full_size</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">resulting_size</span><span class="p">,</span>
+                     <span class="n">output_format</span><span class="p">,</span> <span class="n">request_uri</span><span class="p">,</span> <span class="n">request_headers</span><span class="p">,</span> <span class="n">client_ip</span><span class="p">,</span>
+                     <span class="n">cookies</span><span class="p">)</span>
+  <span class="n">cookies</span><span class="p">.</span><span class="nf">select</span><span class="p">{</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span> <span class="n">c</span><span class="p">[</span><span class="s1">'authcookie'</span><span class="p">]</span> <span class="p">}.</span><span class="nf">any?</span>
+<span class="k">end</span></code></pre></figure>
+
+<h4 id="example-8">Restrict a region of an image</h4>
+
+<p>In this example, requests for images containing any part of the bottom right quadrant of the source image will be denied.</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">authorized?</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">full_size</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">resulting_size</span><span class="p">,</span>
+                     <span class="n">output_format</span><span class="p">,</span> <span class="n">request_uri</span><span class="p">,</span> <span class="n">request_headers</span><span class="p">,</span> <span class="n">client_ip</span><span class="p">,</span>
+                     <span class="n">cookies</span><span class="p">)</span>
+  <span class="n">crop</span> <span class="o">=</span> <span class="n">operations</span><span class="p">.</span><span class="nf">select</span><span class="p">{</span> <span class="o">|</span><span class="n">op</span><span class="o">|</span> <span class="n">op</span><span class="p">[</span><span class="s1">'type'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'crop'</span> <span class="p">}.</span><span class="nf">first</span>
+  <span class="k">if</span> <span class="n">crop</span>
+    <span class="n">max_x</span> <span class="o">=</span> <span class="n">full_size</span><span class="p">[</span><span class="s1">'width'</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">max_y</span> <span class="o">=</span> <span class="n">full_size</span><span class="p">[</span><span class="s1">'height'</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="k">return</span> <span class="o">!</span><span class="p">(</span><span class="n">crop</span><span class="p">[</span><span class="s1">'x'</span><span class="p">]</span> <span class="o">+</span> <span class="n">crop</span><span class="p">[</span><span class="s1">'width'</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">max_x</span> <span class="n">and</span>
+        <span class="n">crop</span><span class="p">[</span><span class="s1">'y'</span><span class="p">]</span> <span class="o">+</span> <span class="n">crop</span><span class="p">[</span><span class="s1">'height'</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">max_y</span><span class="p">)</span>
+  <span class="k">end</span>
+  <span class="kp">false</span>
+<span class="k">end</span></code></pre></figure>
+
+  </div>
+</div>
+
+
+      <footer>
+</footer>
+
+<script src="/cantaloupe/scripts/bootstrap.min.js"></script>
+<script src="/cantaloupe/scripts/base.js"></script>
+
+    </div>
+
+  </body>
+
+</html>
