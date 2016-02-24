@@ -388,21 +388,6 @@ class ImageIoImageReader {
         final ImageReadParam param = reader.getDefaultReadParam();
         BufferedImage bestImage = null;
         if (scale.isNoOp()) {
-            // ImageReader loves to read TIFFs into BufferedImages of type
-            // TYPE_CUSTOM, which need to be redrawn into a new image of type
-            // TYPE_INT_RGB at huge expense. The goal here is to directly get
-            // a BufferedImage of TYPE_INT_RGB instead. An explanation of this
-            // strategy, which may not even work anyway:
-            // https://lists.apple.com/archives/java-dev/2005/Apr/msg00456.html
-            bestImage = new BufferedImage(fullSize.width,
-                    fullSize.height, BufferedImage.TYPE_INT_RGB);
-            param.setDestination(bestImage);
-            // An alternative would apparently be to use setDestinationType()
-            // and then allow ImageReader.read() to create the BufferedImage
-            // itself. But, that results in, "Destination type from
-            // ImageReadParam does not match!" during writing.
-            // param.setDestinationType(ImageTypeSpecifier.
-            //        createFromBufferedImageType(BufferedImage.TYPE_INT_RGB));
             bestImage = tileAwareRead(0, regionRect, scale, rf, hints);
             logger.debug("readSmallestUsableSubimage(): using a {}x{} source " +
                     "image (0x reduction factor)",
