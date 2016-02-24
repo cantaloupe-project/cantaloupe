@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="High-performance dynamic image server in Java
+">
+
+  <title>
+    Cantaloupe
+    
+      :: For Developers
+    
+  </title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/cantaloupe/css/syntax.css">
+  <link rel="stylesheet" href="/cantaloupe/css/base.css">
+
+  <script src="/cantaloupe/scripts/jquery.min.js"></script>
+</head>
+
+
+  <body>
+
+    <div class="container">
+      <nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container-fluid">
+
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/cantaloupe/">
+        <img alt="Cantaloupe" src="/cantaloupe/images/cantaloupe.png" width="40">
+      </a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li><a href="/cantaloupe/get-started.html">Get Started</a></li>
+        <li><a href="/cantaloupe/manual/">User Manual</a></li>
+        <li><a href="/cantaloupe/support.html">Support</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="https://github.com/medusa-project/cantaloupe/releases.atom" title="Subscribe to Releases"><img width="22" height="22" src="/cantaloupe/images/feed.svg"></a></li>
+      </ul>
+    </div>
+
+  </div>
+</nav>
+
+
+      <div class="row">
+  <div class="col-md-3 hidden-xs hidden-sm">
+    <ul class="toc">
+  <li><a href="changes.html">What's New in <span class="version">2.2</span></a></li>
+  <li><a href="upgrading.html">Upgrading</a></li>
+  <li>
+    <a href="endpoints.html">Endpoints</a>
+    <ul>
+      <li><a href="endpoints.html#IIIFImageAPI1">IIIF Image API 1.x</a></li>
+      <li><a href="endpoints.html#IIIFImageAPI2">IIIF Image API 2.x</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="images.html">Images</a>
+    <ul>
+      <li><a href="images.html#Size%20Considerations">Size Considerations</a></li>
+      <li><a href="images.html#Source%20Formats">Source Formats</a>
+        <ul>
+          <li><a href="images.html#JPEG">JPEG</a></li>
+          <li><a href="images.html#JPEG2000">JPEG2000</a></li>
+          <li><a href="images.html#TIFF">TIFF</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <a href="resolvers.html">Resolvers</a>
+    <ul>
+      <li><a href="resolvers.html#Selection">Selection</a>
+        <ul>
+          <li><a href="resolvers.html#Static%20Resolver">Static</a></li>
+          <li><a href="resolvers.html#Dynamic%20Resolvers">Dynamic</a></li>
+        </ul>
+      <li><a href="resolvers.html#Implementations">Implementations</a>
+        <ul>
+          <li><a href="resolvers.html#FilesystemResolver">FilesystemResolver</a></li>
+          <li><a href="resolvers.html#HttpResolver">HttpResolver</a></li>
+          <li><a href="resolvers.html#JdbcResolver">JdbcResolver</a></li>
+          <li><a href="resolvers.html#AmazonS3Resolver">AmazonS3Resolver</a></li>
+          <li><a href="resolvers.html#AzureStorageResolver">AzureStorageResolver</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <a href="processors.html">Processors</a>
+    <ul>
+      <li><a href="processors.html#Operating%20System%20Compatibility">Operating System Compatibility</a></li>
+      <li><a href="processors.html#Compatibility">Resolver Compatibility</a></li>
+      <li><a href="processors.html#Supported%20Features">Supported Features</a></li>
+      <li><a href="processors.html#Supported%20Source%20Formats">Supported Source Formats</a></li>
+      <li><a href="processors.html#Implementations">Implementations</a>
+        <ul>
+          <li><a href="processors.html#Java2dProcessor">Java 2D</a></li>
+          <li><a href="processors.html#JaiProcessor">JAI</a></li>
+          <li><a href="processors.html#GraphicsMagickProcessor">GraphicsMagick</a></li>
+          <li><a href="processors.html#ImageMagickProcessor">ImageMagick</a></li>
+          <li><a href="processors.html#KakaduProcessor">Kakadu</a></li>
+          <li><a href="processors.html#OpenJpegProcessor">OpenJPEG</a></li>
+          <li><a href="processors.html#FfmpegProcessor">FFmpeg</a></li>
+          <li><a href="processors.html#PdfBoxProcessor">PDFBox</a></li>
+        </ul>
+    </ul>
+  </li>
+  <li>
+    <a href="caches.html">Caches (Server-Side)</a>
+    <ul>
+      <li><a href="caches.html#Modes%20of%20Operation">Modes of Operation</a></li>
+      <li><a href="caches.html#Maintenance">Maintenance</a></li>
+      <li><a href="caches.html#Notes">Notes</li>
+      <li><a href="caches.html#Implementations">Implementations</a>
+        <ul>
+          <li><a href="caches.html#FilesystemCache">FilesystemCache</a></li>
+          <li><a href="caches.html#JdbcCache">JdbcCache</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><a href="client-caching.html">Caching (Client-Side)</a></li>
+  <li>
+    <a href="access-control.html">Access Control</a>
+    <ul>
+      <li><a href="access-control.html#Authentication">Authentication</a></li>
+      <li><a href="access-control.html#Authorization">Authorization</a></li>
+    </ul>
+  </li>
+  <li><a href="watermarking.html">Watermarking</a>
+    <ul>
+      <li><a href="watermarking.html#Modes%20of%20Operation">Modes of Operation</a>
+        <ul>
+            <li><a href="watermarking.html#BasicStrategy">BasicStrategy</a></li>
+            <li><a href="watermarking.html#ScriptStrategy">ScriptStrategy</a></li>
+        </ul>
+      </li>
+      <li><a href="watermarking.html#Requirements">Requirements</a></li>
+      <li><a href="watermarking.html#Positioning">Positioning</a></li>
+      <li><a href="watermarking.html#Processor%20Support">Processor Support</a></li>
+      <li><a href="watermarking.html#Implications">Implications</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="logging.html">Logging</a>
+    <ul>
+      <li><a href="logging.html#Application%20Log">Application Log</a></li>
+      <li><a href="logging.html#Access%20Log">Access Log</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="deployment.html">Deployment</a>
+    <ul>
+      <li><a href="deployment.html#Hardware">Hardware</a></li>
+      <li><a href="deployment.html#Limiting">Limiting</a></li>
+      <li><a href="deployment.html#Reverse-Proxying">Reverse-Proxying</a>
+        <ul>
+          <li><a href="deployment.html#Reverse-ProxyingApache">Apache</a></li>
+          <li><a href="deployment.html#Reverse-ProxyingNginx">nginx</a></li>
+        </ul>
+      </li>
+      <li><a href="deployment.html#SSL/TLS">SSL/TLS</a></li>
+    </ul>
+  </li>
+  <li><a href="delegate-script.html">Delegate Script</a>
+    <ul>
+      <li><a href="delegate-script.html#Rules">Rules</a></li>
+      <li><a href="delegate-script.html#Example">Example</a></li>
+      <li><a href="delegate-script.html#Testing%20Script%20Methods">Testing Script Methods</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="developers.html">For Developers</a>
+    <ul>
+      <li><a href="/cantaloupe/javadoc/2.2/">Javadoc</a></li>
+      <li><a href="developers.html#Contributing">Contributing</a></li>
+    </ul>
+  </li>
+</ul>
+
+  </div>
+  <div class="col-sm-12 col-md-9">
+    <ol class="breadcrumb">
+  <li><a href="/cantaloupe/">Home</a></li>
+  <li><a href="/cantaloupe/manual/">User Manual</a></li>
+  <li><a href="/cantaloupe/manual/2.2/">2.2</a></li>
+  <li class="active">For Developers</li>
+</ol>
+
+<h1>For Developers</h1>
+
+<ul>
+  <li><a href="#Javadoc">Javadoc</a></li>
+  <li><a href="#Contributing">Contributing</a></li>
+  <li><a href="#Administrative%20Info">Administrative Info</a>
+    <ul>
+      <li><a href="#Website">Website</a></li>
+      <li><a href="#Versioning">Versioning</a></li>
+      <li><a href="#Releasing">Releasing</a></li>
+    </ul>
+  </li>
+</ul>
+
+<p>Cantaloupe is a standard Maven project that should open right up in any Java IDE. Simply use the same configuration file and VM options (e.g. <code>-Dcantaloupe.config=...</code>) as you would when running from a JAR.</p>
+
+<hr>
+
+<h2 id="Javadoc">Javadoc</h2>
+
+<a href="/cantaloupe/javadoc/2.2/">Javadoc</a>
+
+<hr>
+
+<h2 id="Contributing">Contributing</h2>
+
+<p>This project uses the <a href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow/">Gitflow</a> branching model. All changes should take place in feature branches ("feature/xxxx") that branch off from the main branch, "develop," from which they can be integrated into a particular release by the release manager.</p>
+
+<p>The general process for contributing code changes is:</p>
+
+<ol>
+  <li><a href="https://github.com/medusa-project/cantaloupe/fork">Create a fork</a></li>
+  <li>Create a feature branch (<code>git checkout -b feature/my-new-feature</code>)</li>
+  <li>Commit your changes (<code>`git commit -am 'Add some feature'</code>)</li>
+  <li>Push to the branch (<code>git push origin feature/my-new-feature</code>)</li>
+  <li>Create a pull request</li>
+</ol>
+
+<hr>
+
+<h2 id="Administrative Info">Administrative Info</h2>
+
+<p>(This section is for release managers only.)</p>
+
+<h3 id="Versioning">Versioning</h3>
+
+<p>Cantaloupe roughly uses semantic versioning. Major releases (n) involve major reengineering that breaks backwards compatibility in a significant way. Minor releases (n.n) either do not break compatibility, or only in a minor way. Patch releases (n.n.n) are for bugfixes only.</p>
+
+<h3 id="Releasing">Releasing</h3>
+
+<p>Currently, the release process is mostly manual, consisting of the following steps:</p>
+
+<ol>
+  <li>Finalize the code to be released, addressing any relevant milestone issues, TODOs, etc.</li>
+  <li>Ensure that the tests are current, comprehensive, and passing</li>
+  <li>Finalize the documentation, including the website, user manual, change log, and Javadoc</li>
+  <li>Merge into "release/x.x"</li>
+  <li>Update the version in <span class="filename">pom.xml</span> and commit this change</li>
+  <li>Merge into "master"</li>
+  <li>Create the release .zip archive with <code>mvn package</code></li>
+  <li>Check that the .zip archive is as expected</li>
+  <li>Tag the release: <code>git tag -a {version} -m 'Tag {version}'</code></li>
+  <li>Push the code: <code>git push origin master; git push origin release/x.x; git push --tags</code></li>
+  <li>Add the .zip archive and change log info to the release tag on GitHub</li>
+  <li>Deploy the updated website.</li>
+</ol>
+
+  </div>
+</div>
+
+
+      <footer>
+</footer>
+
+<script src="/cantaloupe/scripts/bootstrap.min.js"></script>
+<script src="/cantaloupe/scripts/base.js"></script>
+
+    </div>
+
+  </body>
+
+</html>

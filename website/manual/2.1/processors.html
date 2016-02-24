@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="High-performance dynamic image server in Java
+">
+
+  <title>
+    Cantaloupe
+    
+      :: Processors
+    
+  </title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/cantaloupe/css/syntax.css">
+  <link rel="stylesheet" href="/cantaloupe/css/base.css">
+
+  <script src="/cantaloupe/scripts/jquery.min.js"></script>
+</head>
+
+
+  <body>
+
+    <div class="container">
+      <nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container-fluid">
+
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/cantaloupe/">
+        <img alt="Cantaloupe" src="/cantaloupe/images/cantaloupe.png" width="40">
+      </a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li><a href="/cantaloupe/get-started.html">Get Started</a></li>
+        <li><a href="/cantaloupe/manual/">User Manual</a></li>
+        <li><a href="/cantaloupe/support.html">Support</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="https://github.com/medusa-project/cantaloupe/releases.atom" title="Subscribe to Releases"><img width="22" height="22" src="/cantaloupe/images/feed.svg"></a></li>
+      </ul>
+    </div>
+
+  </div>
+</nav>
+
+
+      <div class="row">
+  <div class="col-md-3 hidden-xs hidden-sm">
+    <ul class="toc">
+  <li><a href="changes.html">What's New in <span class="version">2.1</span></a></li>
+  <li><a href="upgrading.html">Upgrading</a></li>
+  <li>
+    <a href="endpoints.html">Endpoints</a>
+    <ul>
+      <li><a href="endpoints.html#IIIFImageAPI1">IIIF Image API 1.x</a></li>
+      <li><a href="endpoints.html#IIIFImageAPI2">IIIF Image API 2.x</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="deployment.html">Deployment</a>
+    <ul>
+      <li><a href="deployment.html#Hardware">Hardware</a></li>
+      <li><a href="deployment.html#Limiting">Limiting</a></li>
+      <li><a href="deployment.html#Reverse-Proxying">Reverse-Proxying</a></li>
+      <li><a href="deployment.html#SSL%2FTLS">SSL/TLS</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="resolvers.html">Resolvers</a>
+    <ul>
+      <li><a href="resolvers.html#Static%20Resolver">Static Resolver</a></li>
+      <li><a href="resolvers.html#Dynamic%20Resolvers">Dynamic Resolvers</a></li>
+      <li><a href="resolvers.html#FilesystemResolver">Filesystem</a></li>
+      <li><a href="resolvers.html#HttpResolver">HTTP</a></li>
+      <li><a href="resolvers.html#JdbcResolver">JDBC</a></li>
+      <li><a href="resolvers.html#AmazonS3Resolver">Amazon S3</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="processors.html">Processors</a>
+    <ul>
+      <li><a href="processors.html#Source%20Format%20Support">Format Support</a></li>
+      <li><a href="processors.html#Compatibility">Resolver Compatibility</a></li>
+      <li><a href="processors.html#Java2dProcessor">Java 2D</a></li>
+      <li><a href="processors.html#GraphicsMagickProcessor">GraphicsMagick</a></li>
+      <li><a href="processors.html#ImageMagickProcessor">ImageMagick</a></li>
+      <li><a href="processors.html#JaiProcessor">JAI</a></li>
+      <li><a href="processors.html#KakaduProcessor">Kakadu</a></li>
+      <li><a href="processors.html#OpenJpegProcessor">OpenJPEG</a></li>
+      <li><a href="processors.html#FfmpegProcessor">FFmpeg</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="caches.html">Caches (Server-Side)</a>
+    <ul>
+      <li><a href="caches.html#Purging">Purging</a></li>
+      <li><a href="caches.html#FilesystemCache">Filesystem</a></li>
+      <li><a href="caches.html#JdbcCache">JDBC</a></li>
+    </ul>
+  </li>
+  <li><a href="client-caching.html">Caching (Client-Side)</a></li>
+  <li>
+    <a href="access-control.html">Access Control</a>
+    <ul>
+      <li><a href="access-control.html#Authentication">Authentication</a></li>
+      <li><a href="access-control.html#Authorization">Authorization</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="logging.html">Logging</a>
+    <ul>
+      <li><a href="logging.html#Application%20Log">Application Log</a></li>
+      <li><a href="logging.html#Access%20Log">Access Log</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="source-formats.html">Source Formats</a>
+    <ul>
+      <li><a href="source-formats.html#JPEG">JPEG</a></li>
+      <li><a href="source-formats.html#JPEG2000">JPEG2000</a></li>
+      <li><a href="source-formats.html#TIFF">TIFF</a></li>
+    </ul>
+  </li>
+  <li><a href="delegate-script.html">Delegate Script</a></li>
+  <li>
+    <a href="developers.html">For Developers</a>
+    <ul>
+      <li><a href="/cantaloupe/javadoc/2.1/">Javadoc</a></li>
+      <li><a href="developers.html#Contributing">Contributing</a></li>
+    </ul>
+  </li>
+</ul>
+
+  </div>
+
+  <div class="col-sm-12 col-md-9">
+    <div class="alert alert-warning">
+  This manual is for a previous version. <a href="/cantaloupe/manual/">See all versions</a>
+</div>
+
+    <ol class="breadcrumb">
+  <li><a href="/cantaloupe/">Home</a></li>
+  <li><a href="/cantaloupe/manual/">User Manual</a></li>
+  <li><a href="/cantaloupe/manual/2.1/">2.1</a></li>
+  <li class="active">Processors</li>
+</ol>
+
+<h1>Processors</h1>
+
+<ul>
+  <li><a href="#Source%20Format%20Support">Source Format Support</a></li>
+  <li><a href="#Compatibility">Processor/Resolver Compatibility</a></li>
+  <li><a href="#Java2dProcessor">Java2dProcessor</a></li>
+  <li><a href="#GraphicsMagickProcessor">GraphicsMagickProcessor</a></li>
+  <li><a href="#ImageMagickProcessor">ImageMagickProcessor</a></li>
+  <li><a href="#JaiProcessor">JaiProcessor</a></li>
+  <li><a href="#KakaduProcessor">KakaduProcessor</a></li>
+  <li><a href="#OpenJpegProcessor">OpenJpegProcessor</a></li>
+  <li><a href="#FfmpegProcessor">FfmpegProcessor</a></li>
+</ul>
+
+<p>Cantaloupe can use different image processors for different source formats. (Assignments are made in the configuration file.) Different processors have different quality, compatibility, dependency, and performance characteristics. The ability to choose among different processors is intended to make it easy to add support for new image formats; improve support for existing image formats via the substitution of better codecs; and decouple the image server implementation from any one codec.</p>
+
+<p>In terms of format support, a distinction is made between the concepts of source format and output format. Available output formats may differ on a per-platform or per-instance basis depending on the source format.</p>
+
+<p>Supported source formats depend on the processor, and possibly installed
+libraries/delegates, etc., as well. Lists of these are displayed on the
+landing page. A list of output formats supported <em>for a given source format</em> is contained within the response to an information request (such as <span class="filename">/iiif/2/{identifier}/info.json</span>).</p>
+
+<hr>
+
+<h2 id="Source Format Support">Source Format Support</h2>
+
+<table class="table table-bordered">
+  <tr>
+    <th></th>
+    <th>BMP</th>
+    <th>GIF</th>
+    <th>JPEG</th>
+    <th>JPEG2000</th>
+    <th>PDF</th>
+    <th>PNG</th>
+    <th>TIFF</th>
+    <th>WebP</th>
+  </tr>
+  <tr>
+    <td><a href="#GraphicsMagickProcessor">GraphicsMagickProcessor</a></td>
+    <td class="bg-success">Yes</td>
+    <td class="bg-success">Yes</td>
+    <td class="bg-success">RGB, 8-bit, baseline, line-interlaced, plane-interlaced</td>
+    <td class="bg-warning">Uses JasPer (requires plugin). No level-reduction or region decoding.</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-success">RGB, RGBA, 8-bit</td>
+    <td class="bg-warning">RGB, RGBA; 8-bit, 16-bit; uncompressed, PackBits, LZW (8-bit only), ZIP, JPEG</td>
+    <td class="bg-warning">Requires plugin</td>
+  </tr>
+  <tr>
+    <td><a href="#ImageMagickProcessor">ImageMagickProcessor</a></td>
+    <td class="bg-success">Yes</td>
+    <td class="bg-success">Yes</td>
+    <td class="bg-success">RGB, 8-bit, baseline, line-interlaced, plane-interlaced</td>
+    <td class="bg-warning">Uses OpenJPEG (requires delegate). No level-reduction or region decoding.</td>
+    <td class="bg-warning">Requires delegate</td>
+    <td class="bg-success">RGB, RGBA, 8-bit</td>
+    <td class="bg-warning">RGB, RGBA; 8-bit, 16-bit; uncompressed, PackBits, LZW (8-bit only), ZIP, JPEG</td>
+    <td class="bg-warning">Requires delegate</td>
+  </tr>
+  <tr>
+    <td><a href="#JaiProcessor">JaiProcessor</a></td>
+    <td class="bg-success">Yes</td>
+    <td class="bg-success">Yes</td>
+    <td class="bg-success">RGB, 8-bit, baseline, line-interlaced, plane-interlaced</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-success">RGB, RGBA, 8-bit</td>
+    <td class="bg-success">RGB, RGBA; 8-bit, 16-bit; uncompressed, PackBits, LZW (8-bit only), ZIP (8-bit only), JPEG (8-bit only); striped, tiled, and multi-resolution reading</td>
+    <td class="bg-danger">No</td>
+  </tr>
+  <tr>
+    <td><a href="#Java2dProcessor">Java2dProcessor</a></td>
+    <td class="bg-success">Yes</td>
+    <td class="bg-success">Yes</td>
+    <td class="bg-success">RGB, 8-bit, baseline, line-interlaced, plane-interlaced</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-success">RGB, RGBA, 8-bit</td>
+    <td class="bg-success">RGB, RGBA; 8-bit, 16-bit; uncompressed, PackBits, LZW (8-bit only), ZIP (8-bit only), JPEG (8-bit only); striped, tiled, and multi-resolution reading</td>
+    <td class="bg-danger">No</td>
+  </tr>
+  <tr>
+    <td><a href="#KakaduProcessor">KakaduProcessor</a></td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-success">Yes</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+  </tr>
+  <tr>
+    <td><a href="#OpenJpegProcessor">OpenJpegProcessor</a></td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-success">Yes</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+    <td class="bg-danger">No</td>
+  </tr>
+</table>
+
+<hr>
+
+<h2 id="Compatibility">Processor/Resolver Compatibility</h2>
+
+<table class="table table-striped table-bordered">
+  <tr>
+    <th></th>
+    <th><a href="resolvers.html#AmazonS3Resolver">Amazon S3</a></th>
+    <th><a href="resolvers.html#FilesystemResolver">Filesystem</a></th>
+    <th><a href="resolvers.html#HttpResolver">HTTP</a></th>
+    <th><a href="resolvers.html#JdbcResolver">JDBC</a></th>
+  </tr>
+  <tr>
+    <td><a href="processors.html#FfmpegProcessor">FfmpegProcessor</a></td>
+    <td class="bg-danger"></td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a></td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a></td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#JaiProcessor">JaiProcessor</a></td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#Java2dProcessor">Java2dProcessor</a></td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#KakaduProcessor">KakaduProcessor</a></td>
+    <td class="bg-danger"></td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a></td>
+    <td class="bg-danger"></td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+  </tr>
+</table>
+
+<hr>
+
+<h2 id="Java2dProcessor">Java2dProcessor</h2>
+
+<p>Java2dProcessor uses the Java ImageIO framework and Java 2D API to load and process images in a native-Java way. This is a good processor to get started with as it has no external dependencies and works out-of-the-JAR.</p>
+
+<p>ImageIO, as its name implies, is simply an I/O interface that does not care about image formats, and therefore the list of formats supported by this processor varies depending on the codec JARs available in the classpath. Cantaloupe includes support for some common ones.</p>
+
+<p>Java2dProcessor has been written to exploit the ImageIO image readers as efficiently as possible. Special attention has been paid to its handling of tiled images, such as tile-encoded TIFFs, for which it reads only the necessary tiles for a given request. It is also capable of reading the sub-images contained within multi-resolution (pyramidal) TIFF images.</p>
+
+<p>Because Java2dProcessor does all its work in Java, it places a burden on the JVM heap. Although it tries to be efficient at reading images, it does have to create derivative images at every processing step (scaling, rotating, etc.), which have to be temporarily buffered in RAM. (See the section on <a href="deployment.html#HardwareMemory">memory considerations</a>.)</p>
+
+<hr>
+
+<h2 id="GraphicsMagickProcessor">GraphicsMagickProcessor</h2>
+
+<p>GraphicsMagickProcessor uses <a href="http://im4java.sourceforge.net">im4java</a> to fork out to the <a href="http://www.graphicsmagick.org">GraphicsMagick</a> executable
+(<span class="filename">gm</span>). As such, GraphicsMagick must be installed.</p>
+
+<p>GraphicsMagick produces high-quality output and supports all of the IIIF transforms and most IIIF output formats (assuming the necessary libraries are installed; see <a href="http://www.graphicsmagick.org/formats.html">Supported Formats</a>).</p>
+
+<p>GraphicsMagickProcessor is typically faster than <a href="#ImageMagickProcessor">ImageMagickProcessor</a>. However, like ImageMagickProcessor, it fares poorly with large images.</p>
+
+<div class="alert alert-info">It is recommended to find or compile a "Q8" version of GraphicsMagick, as its memory use will be halved.</div>
+
+<hr>
+
+<h2 id="ImageMagickProcessor">ImageMagickProcessor</h2>
+
+<p>ImageMagickProcessor, like <a href="#GraphicsMagickProcessor">GraphicsMagickProcessor</a>, uses
+<a href="http://im4java.sourceforge.net">im4java</a> to wrap <a href="http://www.imagemagick.org/">ImageMagick</a> commands. As such, ImageMagick must be installed.</p>
+
+<p>ImageMagick produces high-quality output and supports all of the IIIF
+transforms and all IIIF output formats, assuming the necessary delegates are installed. It also supports a wide array of source formats.</p>
+
+<div class="alert alert-warning">ImageMagick is not known for being particularly fast or efficient. Because it runs in an external process, it is not constrained by the JVM's memory limits, so using it with large images can cause memory consumption to spiral out of control and effectively hang the server.</div>
+
+<div class="alert alert-info">It is recommended to find or compile a "Q8" version of ImageMagick, as its memory use will be halved.</div>
+
+<hr>
+
+<h2 id="JaiProcessor">JaiProcessor</h2>
+
+<p>Java Advanced Imaging (JAI) is a sophisticated image processing library developed in the 2000s by Sun. It offers several advantages over Java 2D: a pull-based rendering pipeline that can reduce memory usage, and efficient region-of-interest decoding with some formats.</p>
+
+<p>As JaiProcessor and Java2dProcessor use the same ImageIO readers and writers, they can read and write the same formats.</p>
+
+<p>Years ago, Sun published <a href="http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-java-client-419417.html">platform-native accelerator JARs</a> called <a href="http://www.oracle.com/technetwork/java/install-1-1-2-135866.html">mediaLib</a> for Windows, Linux, and Solaris, which improved JAI's performance. It is unknown whether these still work on modern platforms.</p>
+
+<hr>
+
+<h2 id="KakaduProcessor">KakaduProcessor</h2>
+
+<p>KakaduProcessor uses the <span class="filename">kdu_expand</span> and <span class="filename">kdu_jp2info</span> binaries from the
+<a href="http://www.kakadusoftware.com">Kakadu</a> SDK to efficiently decode JPEG2000 source images. This processor is capable of performing well even with large JP2s. Kakadu is extensively SIMD-accelerated and will make full use of all available CPU cores.</p>
+
+<p>Although it does support some other operations, <span class="filename">kdu_expand</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. All other operations (differential scaling, rotation, etc.) are performed using either the Java 2D or JAI APIs (configurable).</p>
+
+<div class="alert alert-warning">Note: KakaduProcessor does not work in Windows, as it requires access to <span class="filename">/dev/stdout</span>.</div>
+
+<div class="alert alert-info">Note: Kakadu is not free and the SDK is not included with Cantaloupe.</div>
+
+<hr>
+
+<h2 id="OpenJpegProcessor">OpenJpegProcessor</h2>
+
+<p>OpenJpegProcessor uses the <span class="filename">opj_decompress</span> and <span class="filename">opj_dump</span> tools from the open-source
+<a href="http://www.openjpeg.org">OpenJPEG</a> project to decode JPEG2000 source images.</p>
+
+<p>Although it does support some other operations, <span class="filename">opj_decompress</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. The rest of the IIIF operations (differential scaling, rotation, etc.) are performed using either the Java 2D or JAI APIs (configurable).</p>
+
+<div class="alert alert-warning">Note: OpenJpegProcessor does not work in Windows, as it requires access to <span class="filename">/dev/stdout</span>.</div>
+
+<hr>
+
+<h2 id="FfmpegProcessor">FfmpegProcessor</h2>
+
+<p>FfmpegProcessor uses the <a href="http://www.ffmpeg.org">FFmpeg</a> tool to extract still frames from video files. It can be used for thumbnail generation á la YouTube, as well as for deep zooming of high-resolution still frames.</p>
+
+<p>FfmpegProcessor has been tested with FFmpeg version 2.8. Other versions may or may not work.</p>
+
+<h3>Optional Parameters</h3>
+
+<p>FFmpegProcessor supports a <code>time</code> URL query parameter (which is nonstandard and Cantaloupe-specific) which can be used to return a frame at a particular second in the source video. The value of this parameter should be in <code>hh:mm:ss</code> format, like:</p>
+
+<pre>http://example.org/iiif/2/video.mp4/full/full/0/default.jpg?time=00:02:15</pre>
+
+<p>If the <code>time</code> parameter is missing, the first frame will be returned.</p>
+
+  </div>
+</div>
+
+
+      <footer>
+</footer>
+
+<script src="/cantaloupe/scripts/bootstrap.min.js"></script>
+<script src="/cantaloupe/scripts/base.js"></script>
+
+    </div>
+
+  </body>
+
+</html>

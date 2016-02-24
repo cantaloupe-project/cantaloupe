@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="High-performance dynamic image server in Java
+">
+
+  <title>
+    Cantaloupe
+    
+      :: Home
+    
+  </title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/cantaloupe/css/syntax.css">
+  <link rel="stylesheet" href="/cantaloupe/css/base.css">
+
+  <script src="/cantaloupe/scripts/jquery.min.js"></script>
+</head>
+
+
+  <body>
+
+    <div class="container">
+      <nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container-fluid">
+
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/cantaloupe/">
+        <img alt="Cantaloupe" src="/cantaloupe/images/cantaloupe.png" width="40">
+      </a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li><a href="/cantaloupe/get-started.html">Get Started</a></li>
+        <li><a href="/cantaloupe/manual/">User Manual</a></li>
+        <li><a href="/cantaloupe/support.html">Support</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="https://github.com/medusa-project/cantaloupe/releases.atom" title="Subscribe to Releases"><img width="22" height="22" src="/cantaloupe/images/feed.svg"></a></li>
+      </ul>
+    </div>
+
+  </div>
+</nav>
+
+
+      <header>
+  <img src="/cantaloupe/images/cantaloupe.png" width="154" height="81">
+  <h1>
+    Cantaloupe
+    <br>
+    <small>High-performance dynamic image server in Java</small>
+  </h1>
+</header>
+
+<p>Cantaloupe is an open-source image server enabling on-demand generation of derivatives of high-resolution source images. With available operations including cropping, scaling, and rotation, it can support deep-zooming image viewers, as well as on-the-fly thumbnail generation. Compliance with the <a href="http://iiif.io/">IIIF Image API</a> enables it to work with <a href="http://iiif.io/apps-demos/">a growing number of client applications</a>.</p>
+
+<p><!--Developed at the <a href="http://www.library.illinois.edu/">University of Illinois at Urbana-Champaign Library</a>, Cantaloupe augments an emerging digital image repository containing thousands of high-resolution scanned images. -->Project goals include performance, scalability, and extensibility, without sacrificing ease-of-use.</p>
+
+<hr>
+
+<figure style="margin-top: 2em">
+  <div id="openseadragon1" style="width: 96%; height: 420px; margin: 0 auto"></div>
+  <figcaption>
+    Andromeda Galaxy in <a href="https://openseadragon.github.io">OpenSeadragon</a>, powered by Cantaloupe
+    <br>
+    Multi-Resolution Tiled BigTIFF | 6.2 GB | 69536&times;22230 (1.5 gigapixel)
+    <br>
+    <a href="http://www.spacetelescope.org/images/heic1502a/">ESA/Hubble</a>
+  </figcaption>
+</figure>
+
+<hr>
+
+<h2>Benefits</h2>
+
+<div class="row">
+  <div class="col-sm-6">
+    <h3>Easy</h3>
+    <ul>
+      <li>Get started in minutes with no web containers or XML files to deal with. A <strong>fast web server</strong> is built right in.</li>
+      <li><strong>Self-contained</strong> for easy prototyping, deployment, and upgrading.</li>
+    </ul>
+
+    <h3>Flexible</h3>
+    <ul>
+      <li>Drive deep-zooming image viewers, or create thumbnails for images, PDFs, and videos on-the-fly.</li>
+      <li>Use <strong>opaque image identifiers</strong> that do not reveal an underlying resource location for secure and stable URIs.</li>
+      <li>Serve images from multiple sources via the same application instance.</li>
+    </ul>
+
+    <h3>Secure</h3>
+    <ul>
+      <li><strong>Dynamic, selective watermarking</strong> with fine-grained controls.</li>
+      <li>Built-in support for HTTPS and HTTP Basic authentication.</li>
+      <li>Supports <strong>fine-grained authorization policies</strong> for integration into diverse infrastructures.</li>
+    </ul>
+  </div>
+
+  <div class="col-sm-6">
+    <h3>Standards-Compliant</h3>
+    <ul>
+      <li>Fully compliant with all versions of the IIIF Image API, with separate endpoints for versions 1 and 2.</li>
+    </ul>
+
+    <h3>Modular</h3>
+    <ul>
+      <li><strong>Pluggable resolvers</strong> for retrieving images from a variety of sources&mdash;including filesystems, databases, remote web servers, and cloud storage&mdash;with optional scriptable "hooks" to enable dynamic resolver selection and image lookup.</li>
+      <li><strong>Pluggable processors</strong> to support a variety of source image formats&mdash;as well as still-frame extraction from videos in a variety of formats.</li>
+      <li><strong>Pluggable caches</strong> with customizable strategies and available automatic maintenance.</li>
+    </ul>
+
+    <h3>Fast</h3>
+    <ul>
+      <li><strong>Optimized JPEG2000 and TIFF readers</strong> capable of excellent performance with massive images.</li>
+      <li>Available filesystem and database caches to speed up response times and reduce server load.</li>
+    </ul>
+  </div>
+</div>
+
+<script src="/cantaloupe/scripts/openseadragon.min.js"></script>
+<script type="text/javascript">
+    var viewer = OpenSeadragon({
+        id: "openseadragon1",
+        prefixUrl: "images/openseadragon/",
+        showNavigator: true,
+        tileSources: "https://iiif.library.illinois.edu/dls/iiif/2/andromeda-pyramidal-tiled.tif"
+    });
+</script>
+
+
+      <footer>
+</footer>
+
+<script src="/cantaloupe/scripts/bootstrap.min.js"></script>
+<script src="/cantaloupe/scripts/base.js"></script>
+
+    </div>
+
+  </body>
+
+</html>

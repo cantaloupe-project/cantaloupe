@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="High-performance dynamic image server in Java
+">
+
+  <title>
+    Cantaloupe
+    
+      :: Watermarking
+    
+  </title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/cantaloupe/css/syntax.css">
+  <link rel="stylesheet" href="/cantaloupe/css/base.css">
+
+  <script src="/cantaloupe/scripts/jquery.min.js"></script>
+</head>
+
+
+  <body>
+
+    <div class="container">
+      <nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container-fluid">
+
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/cantaloupe/">
+        <img alt="Cantaloupe" src="/cantaloupe/images/cantaloupe.png" width="40">
+      </a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li><a href="/cantaloupe/get-started.html">Get Started</a></li>
+        <li><a href="/cantaloupe/manual/">User Manual</a></li>
+        <li><a href="/cantaloupe/support.html">Support</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="https://github.com/medusa-project/cantaloupe/releases.atom" title="Subscribe to Releases"><img width="22" height="22" src="/cantaloupe/images/feed.svg"></a></li>
+      </ul>
+    </div>
+
+  </div>
+</nav>
+
+
+      <div class="row">
+  <div class="col-md-3 hidden-xs hidden-sm">
+    <ul class="toc">
+  <li><a href="changes.html">What's New in <span class="version">2.2</span></a></li>
+  <li><a href="upgrading.html">Upgrading</a></li>
+  <li>
+    <a href="endpoints.html">Endpoints</a>
+    <ul>
+      <li><a href="endpoints.html#IIIFImageAPI1">IIIF Image API 1.x</a></li>
+      <li><a href="endpoints.html#IIIFImageAPI2">IIIF Image API 2.x</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="images.html">Images</a>
+    <ul>
+      <li><a href="images.html#Size%20Considerations">Size Considerations</a></li>
+      <li><a href="images.html#Source%20Formats">Source Formats</a>
+        <ul>
+          <li><a href="images.html#JPEG">JPEG</a></li>
+          <li><a href="images.html#JPEG2000">JPEG2000</a></li>
+          <li><a href="images.html#TIFF">TIFF</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <a href="resolvers.html">Resolvers</a>
+    <ul>
+      <li><a href="resolvers.html#Selection">Selection</a>
+        <ul>
+          <li><a href="resolvers.html#Static%20Resolver">Static</a></li>
+          <li><a href="resolvers.html#Dynamic%20Resolvers">Dynamic</a></li>
+        </ul>
+      <li><a href="resolvers.html#Implementations">Implementations</a>
+        <ul>
+          <li><a href="resolvers.html#FilesystemResolver">FilesystemResolver</a></li>
+          <li><a href="resolvers.html#HttpResolver">HttpResolver</a></li>
+          <li><a href="resolvers.html#JdbcResolver">JdbcResolver</a></li>
+          <li><a href="resolvers.html#AmazonS3Resolver">AmazonS3Resolver</a></li>
+          <li><a href="resolvers.html#AzureStorageResolver">AzureStorageResolver</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <a href="processors.html">Processors</a>
+    <ul>
+      <li><a href="processors.html#Operating%20System%20Compatibility">Operating System Compatibility</a></li>
+      <li><a href="processors.html#Compatibility">Resolver Compatibility</a></li>
+      <li><a href="processors.html#Supported%20Features">Supported Features</a></li>
+      <li><a href="processors.html#Supported%20Source%20Formats">Supported Source Formats</a></li>
+      <li><a href="processors.html#Implementations">Implementations</a>
+        <ul>
+          <li><a href="processors.html#Java2dProcessor">Java 2D</a></li>
+          <li><a href="processors.html#JaiProcessor">JAI</a></li>
+          <li><a href="processors.html#GraphicsMagickProcessor">GraphicsMagick</a></li>
+          <li><a href="processors.html#ImageMagickProcessor">ImageMagick</a></li>
+          <li><a href="processors.html#KakaduProcessor">Kakadu</a></li>
+          <li><a href="processors.html#OpenJpegProcessor">OpenJPEG</a></li>
+          <li><a href="processors.html#FfmpegProcessor">FFmpeg</a></li>
+          <li><a href="processors.html#PdfBoxProcessor">PDFBox</a></li>
+        </ul>
+    </ul>
+  </li>
+  <li>
+    <a href="caches.html">Caches (Server-Side)</a>
+    <ul>
+      <li><a href="caches.html#Modes%20of%20Operation">Modes of Operation</a></li>
+      <li><a href="caches.html#Maintenance">Maintenance</a></li>
+      <li><a href="caches.html#Notes">Notes</li>
+      <li><a href="caches.html#Implementations">Implementations</a>
+        <ul>
+          <li><a href="caches.html#FilesystemCache">FilesystemCache</a></li>
+          <li><a href="caches.html#JdbcCache">JdbcCache</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><a href="client-caching.html">Caching (Client-Side)</a></li>
+  <li>
+    <a href="access-control.html">Access Control</a>
+    <ul>
+      <li><a href="access-control.html#Authentication">Authentication</a></li>
+      <li><a href="access-control.html#Authorization">Authorization</a></li>
+    </ul>
+  </li>
+  <li><a href="watermarking.html">Watermarking</a>
+    <ul>
+      <li><a href="watermarking.html#Modes%20of%20Operation">Modes of Operation</a>
+        <ul>
+            <li><a href="watermarking.html#BasicStrategy">BasicStrategy</a></li>
+            <li><a href="watermarking.html#ScriptStrategy">ScriptStrategy</a></li>
+        </ul>
+      </li>
+      <li><a href="watermarking.html#Requirements">Requirements</a></li>
+      <li><a href="watermarking.html#Positioning">Positioning</a></li>
+      <li><a href="watermarking.html#Processor%20Support">Processor Support</a></li>
+      <li><a href="watermarking.html#Implications">Implications</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="logging.html">Logging</a>
+    <ul>
+      <li><a href="logging.html#Application%20Log">Application Log</a></li>
+      <li><a href="logging.html#Access%20Log">Access Log</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="deployment.html">Deployment</a>
+    <ul>
+      <li><a href="deployment.html#Hardware">Hardware</a></li>
+      <li><a href="deployment.html#Limiting">Limiting</a></li>
+      <li><a href="deployment.html#Reverse-Proxying">Reverse-Proxying</a>
+        <ul>
+          <li><a href="deployment.html#Reverse-ProxyingApache">Apache</a></li>
+          <li><a href="deployment.html#Reverse-ProxyingNginx">nginx</a></li>
+        </ul>
+      </li>
+      <li><a href="deployment.html#SSL/TLS">SSL/TLS</a></li>
+    </ul>
+  </li>
+  <li><a href="delegate-script.html">Delegate Script</a>
+    <ul>
+      <li><a href="delegate-script.html#Rules">Rules</a></li>
+      <li><a href="delegate-script.html#Example">Example</a></li>
+      <li><a href="delegate-script.html#Testing%20Script%20Methods">Testing Script Methods</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="developers.html">For Developers</a>
+    <ul>
+      <li><a href="/cantaloupe/javadoc/2.2/">Javadoc</a></li>
+      <li><a href="developers.html#Contributing">Contributing</a></li>
+    </ul>
+  </li>
+</ul>
+
+  </div>
+  <div class="col-sm-12 col-md-9">
+    <ol class="breadcrumb">
+  <li><a href="/cantaloupe/">Home</a></li>
+  <li><a href="/cantaloupe/manual/">User Manual</a></li>
+  <li><a href="/cantaloupe/manual/2.2/">2.2</a></li>
+  <li class="active">Watermarking</li>
+</ol>
+
+<h1>Watermarking</h1>
+
+<ul>
+  <li><a href="#Modes%20of%20Operation">Modes of Operation</a>
+    <ul>
+        <li><a href="#BasicStrategy">BasicStrategy</a></li>
+        <li><a href="#ScriptStrategy">ScriptStrategy</a></li>
+    </ul>
+  </li>
+  <li><a href="#Requirements">Requirements</a></li>
+  <li><a href="#Positioning">Positioning</a></li>
+  <li><a href="#Processor%20Support">Processor Support</a></li>
+  <li><a href="#Implications">Implications</a>
+    <ul>
+      <li><a href="#Performance">Performance</a></li>
+      <li><a href="#Zooming%20Image%20Viewers">Zooming Image Viewers</a></li>
+      <li><a href="#Caching">Caching</a></li>
+    </ul>
+  </li>
+</ul>
+
+<p>The watermarking feature overlays an image "watermark" on top of an output image. This can be useful for applying branding, attribution, copyright notices, and so on.</p>
+
+<h2 id="Modes of Operation">Modes of Operation</h2>
+
+<p>The watermarking system offers two "strategies," or modes of operation: a basic strategy, where watermark properties are hard-coded in the configuration file and applied to all requests; and a <a href="#ScriptStrategy">script strategy</a>, where the decision of whether or not to apply a watermark depends on the return value of a delegate script method. The <code>watermark.strategy</code> configuration key is used to set the strategy.</p>
+
+<h3 id="BasicStrategy">BasicStrategy</h3>
+
+<p>With BasicStrategy, the <code>watermark.BasicStrategy.*</code> keys in the configuration file are used to set a watermark image, position, inset, and minimum size cutoff. This strategy is easy to configure and works well when you intend for the same watermark to be applied to all images.</p>
+
+<h3 id="ScriptStrategy">ScriptStrategy</h3>
+
+<p>Perhaps you only want to apply a watermark to some of your images, and to others, you want to apply a different watermark, or no watermark. Perhaps you want to control watermarking based on the client's IP address, or user agent, or whether it possesses a certain cookie. Or, perhaps you only want to apply watermarks to JPEG output images, and not GIFs. Or, perhaps you don't want to apply a watermark to images that have been rotated. All of this is possible by writing just a few lines of code.</p>
+
+<p>With the <code>Cantaloupe::watermark</code> delegate script method, you can tell the image server whether or not to apply a watermark in response to a particular request, in what position to apply it, and what image to apply. An example of how this can be accomplished appears below:</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="c1">##</span>
+<span class="c1"># See the argument &amp; return value documentation in delegates.rb.sample.</span>
+<span class="c1">#</span>
+<span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">watermark</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">resulting_size</span><span class="p">,</span> <span class="n">output_format</span><span class="p">,</span>
+                   <span class="n">request_uri</span><span class="p">,</span> <span class="n">request_headers</span><span class="p">,</span> <span class="n">client_ip</span><span class="p">,</span> <span class="n">cookies</span><span class="p">)</span>
+  <span class="c1"># If the resulting image is less than this many pixels on a side, don't</span>
+  <span class="c1"># apply the watermark.</span>
+  <span class="n">min_size_cutoff</span> <span class="o">=</span> <span class="mi">300</span>
+  <span class="k">return</span> <span class="kp">false</span> <span class="k">if</span> <span class="n">resulting_size</span><span class="p">[</span><span class="s1">'width'</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">min_size_cutoff</span> <span class="n">or</span>
+      <span class="n">resulting_size</span><span class="p">[</span><span class="s1">'height'</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">min_size_cutoff</span>
+
+  <span class="c1"># Don't render a watermark to clients on localhost.</span>
+  <span class="k">return</span> <span class="kp">false</span> <span class="k">if</span> <span class="sx">%w(127.0.0.1 ::1/128)</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="n">client_ip</span><span class="p">)</span>
+
+  <span class="c1"># Don't render a watermark on GIF images.</span>
+  <span class="k">return</span> <span class="kp">false</span> <span class="k">if</span> <span class="n">output_format</span><span class="p">[</span><span class="s1">'media_type'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'image/gif'</span>
+
+  <span class="c1"># Don't render a watermark on images of cantaloupes.</span>
+  <span class="k">return</span> <span class="kp">false</span> <span class="k">if</span> <span class="n">identifier</span><span class="p">.</span><span class="nf">downcase</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="s1">'cantaloupe'</span><span class="p">)</span>
+
+  <span class="c1"># Render a different watermark for iOS clients.</span>
+  <span class="k">if</span> <span class="n">request_headers</span><span class="p">.</span>
+      <span class="nf">select</span><span class="p">{</span> <span class="o">|</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="o">|</span> <span class="n">k</span><span class="p">.</span><span class="nf">downcase</span> <span class="o">==</span> <span class="s1">'user-agent'</span> <span class="n">and</span> <span class="n">v</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="s1">'iOS'</span><span class="p">)</span> <span class="p">}.</span><span class="nf">any?</span>
+    <span class="k">return</span> <span class="p">{</span>
+      <span class="s1">'pathname'</span> <span class="o">=&gt;</span> <span class="s1">'/path/to/ios-watermark.png'</span><span class="p">,</span>
+      <span class="s1">'position'</span> <span class="o">=&gt;</span> <span class="s1">'bottom right'</span><span class="p">,</span>
+      <span class="s1">'inset'</span> <span class="o">=&gt;</span> <span class="mi">0</span>
+    <span class="p">}</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Render the default watermark for all other clients.</span>
+  <span class="p">{</span>
+    <span class="s1">'pathname'</span> <span class="o">=&gt;</span> <span class="s1">'/path/to/default-watermark.png'</span><span class="p">,</span>
+    <span class="s1">'position'</span> <span class="o">=&gt;</span> <span class="s1">'bottom right'</span><span class="p">,</span>
+    <span class="s1">'inset'</span> <span class="o">=&gt;</span> <span class="mi">10</span>
+  <span class="p">}</span>
+<span class="k">end</span></code></pre></figure>
+
+<h2 id="Requirements">Requirements</h2>
+
+<p>The watermark must be a 24-bit PNG image, either RGB or RGBA. It will be blended pixel-for-pixel into the output image, respecting its alpha channel.</p>
+
+<p><a href="images/watermark-sample.png">Sample watermark (PNG)</a></p>
+
+<h2 id="Positioning">Positioning</h2>
+
+<p>Position and inset are configurable. Below, all availble positions are pictured with insets of zero:</p>
+
+<table>
+  <tr>
+    <td>
+      <figure>
+        <img width="232" src="images/watermark-520-top-left.jpg">
+        <figcaption>top left</figcaption>
+      </figure>
+    </td>
+    <td>
+      <figure>
+        <img width="232" src="images/watermark-520-top-center.jpg">
+        <figcaption>top center</figcaption>
+      </figure>
+    </td>
+    <td>
+      <figure>
+        <img width="232" src="images/watermark-520-top-right.jpg">
+        <figcaption>top right</figcaption>
+      </figure>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <figure>
+        <img width="232" src="images/watermark-520-left-center.jpg">
+        <figcaption>left center</figcaption>
+      </figure>
+    </td>
+    <td>
+      <figure>
+        <img width="232" src="images/watermark-520-center.jpg">
+        <figcaption>center</figcaption>
+      </figure>
+    </td>
+    <td>
+      <figure>
+        <img width="232" src="images/watermark-520-right-center.jpg">
+        <figcaption>right center</figcaption>
+      </figure>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <figure>
+        <img width="232" src="images/watermark-520-bottom-left.jpg">
+        <figcaption>bottom left</figcaption>
+      </figure>
+    </td>
+    <td>
+      <figure>
+        <img width="232" src="images/watermark-520-bottom-center.jpg">
+        <figcaption>bottom center</figcaption>
+      </figure>
+    </td>
+    <td>
+      <figure>
+        <img width="232" src="images/watermark-520-bottom-right.jpg">
+        <figcaption>bottom right</figcaption>
+      </figure>
+    </td>
+  </tr>
+</table>
+
+<h2 id="Processor Support">Processor Support</h2>
+
+<p>Not all processors support watermarking; see the <a href="processors.html#Supported%20Features">table of processor-supported features</a>.</p>
+
+<h2 id="Implications">Implications</h2>
+
+<h3 id="#Performance">Performance</h3>
+
+<p>Watermark application should have minimal impact on response times, adding perhaps a few milliseconds for a typical-sized watermark. One thing to note, though, is that normally, requests for source images with no modification are streamed through with no processing. When watermarking is enabled, this will no longer be the case.</p>
+
+<h3 id="Zooming Image Viewers">Zooming Image Viewers</h3>
+
+<p>Zooming image viewers display a mosaic of cropped image tiles. When watermarking is enabled, each tile will have a watermark, which may look more or less strange depending on the size of the watermark and the tile size used by the viewer. The image server has no control over this.</p>
+
+<p>One way of getting around this is to set the <code>watermark.output_width_threshold</code> and <code>watermark.output_height_threshold</code> configuration options to values that are slightly larger than the tile size used by the zooming image viewer. This will disable watermarking for zooming image viewer tiles, but enable for it for anything larger. Unfortunately, the tile size used by the viewer may differ depending on the source image, as the recommended tile sizes in <a href="endpoints.html">information responses</a> will vary on a per-image basis.</p>
+
+<h3 id="Caching">Caching</h3>
+
+<p>Watermark parameters (filename, position, inset, etc.) are encoded in cached-image identifiers. When watermark settings change, cached watermarked images will be re-generated automatically, and images with different watermark settings (when using <a href="#ScriptStrategy">ScriptStrategy</a>) will be cached separately.</p>
+
+  </div>
+</div>
+
+
+      <footer>
+</footer>
+
+<script src="/cantaloupe/scripts/bootstrap.min.js"></script>
+<script src="/cantaloupe/scripts/base.js"></script>
+
+    </div>
+
+  </body>
+
+</html>

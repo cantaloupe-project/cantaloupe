@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="High-performance dynamic image server in Java
+">
+
+  <title>
+    Cantaloupe
+    
+      :: Client-Side Caching
+    
+  </title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/cantaloupe/css/syntax.css">
+  <link rel="stylesheet" href="/cantaloupe/css/base.css">
+
+  <script src="/cantaloupe/scripts/jquery.min.js"></script>
+</head>
+
+
+  <body>
+
+    <div class="container">
+      <nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container-fluid">
+
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/cantaloupe/">
+        <img alt="Cantaloupe" src="/cantaloupe/images/cantaloupe.png" width="40">
+      </a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li><a href="/cantaloupe/get-started.html">Get Started</a></li>
+        <li><a href="/cantaloupe/manual/">User Manual</a></li>
+        <li><a href="/cantaloupe/support.html">Support</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="https://github.com/medusa-project/cantaloupe/releases.atom" title="Subscribe to Releases"><img width="22" height="22" src="/cantaloupe/images/feed.svg"></a></li>
+      </ul>
+    </div>
+
+  </div>
+</nav>
+
+
+      <div class="row">
+  <div class="col-md-3 hidden-xs hidden-sm">
+    <ul class="toc">
+  <li><a href="changes.html">What's New in <span class="version">2.1</span></a></li>
+  <li><a href="upgrading.html">Upgrading</a></li>
+  <li>
+    <a href="endpoints.html">Endpoints</a>
+    <ul>
+      <li><a href="endpoints.html#IIIFImageAPI1">IIIF Image API 1.x</a></li>
+      <li><a href="endpoints.html#IIIFImageAPI2">IIIF Image API 2.x</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="deployment.html">Deployment</a>
+    <ul>
+      <li><a href="deployment.html#Hardware">Hardware</a></li>
+      <li><a href="deployment.html#Limiting">Limiting</a></li>
+      <li><a href="deployment.html#Reverse-Proxying">Reverse-Proxying</a></li>
+      <li><a href="deployment.html#SSL%2FTLS">SSL/TLS</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="resolvers.html">Resolvers</a>
+    <ul>
+      <li><a href="resolvers.html#Static%20Resolver">Static Resolver</a></li>
+      <li><a href="resolvers.html#Dynamic%20Resolvers">Dynamic Resolvers</a></li>
+      <li><a href="resolvers.html#FilesystemResolver">Filesystem</a></li>
+      <li><a href="resolvers.html#HttpResolver">HTTP</a></li>
+      <li><a href="resolvers.html#JdbcResolver">JDBC</a></li>
+      <li><a href="resolvers.html#AmazonS3Resolver">Amazon S3</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="processors.html">Processors</a>
+    <ul>
+      <li><a href="processors.html#Source%20Format%20Support">Format Support</a></li>
+      <li><a href="processors.html#Compatibility">Resolver Compatibility</a></li>
+      <li><a href="processors.html#Java2dProcessor">Java 2D</a></li>
+      <li><a href="processors.html#GraphicsMagickProcessor">GraphicsMagick</a></li>
+      <li><a href="processors.html#ImageMagickProcessor">ImageMagick</a></li>
+      <li><a href="processors.html#JaiProcessor">JAI</a></li>
+      <li><a href="processors.html#KakaduProcessor">Kakadu</a></li>
+      <li><a href="processors.html#OpenJpegProcessor">OpenJPEG</a></li>
+      <li><a href="processors.html#FfmpegProcessor">FFmpeg</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="caches.html">Caches (Server-Side)</a>
+    <ul>
+      <li><a href="caches.html#Purging">Purging</a></li>
+      <li><a href="caches.html#FilesystemCache">Filesystem</a></li>
+      <li><a href="caches.html#JdbcCache">JDBC</a></li>
+    </ul>
+  </li>
+  <li><a href="client-caching.html">Caching (Client-Side)</a></li>
+  <li>
+    <a href="access-control.html">Access Control</a>
+    <ul>
+      <li><a href="access-control.html#Authentication">Authentication</a></li>
+      <li><a href="access-control.html#Authorization">Authorization</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="logging.html">Logging</a>
+    <ul>
+      <li><a href="logging.html#Application%20Log">Application Log</a></li>
+      <li><a href="logging.html#Access%20Log">Access Log</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="source-formats.html">Source Formats</a>
+    <ul>
+      <li><a href="source-formats.html#JPEG">JPEG</a></li>
+      <li><a href="source-formats.html#JPEG2000">JPEG2000</a></li>
+      <li><a href="source-formats.html#TIFF">TIFF</a></li>
+    </ul>
+  </li>
+  <li><a href="delegate-script.html">Delegate Script</a></li>
+  <li>
+    <a href="developers.html">For Developers</a>
+    <ul>
+      <li><a href="/cantaloupe/javadoc/2.1/">Javadoc</a></li>
+      <li><a href="developers.html#Contributing">Contributing</a></li>
+    </ul>
+  </li>
+</ul>
+
+  </div>
+
+  <div class="col-sm-12 col-md-9">
+    <div class="alert alert-warning">
+  This manual is for a previous version. <a href="/cantaloupe/manual/">See all versions</a>
+</div>
+
+    <ol class="breadcrumb">
+  <li><a href="/cantaloupe/">Home</a></li>
+  <li><a href="/cantaloupe/manual/">User Manual</a></li>
+  <li><a href="/cantaloupe/manual/2.1/">2.1</a></li>
+  <li class="active">Client-Side Caching</li>
+</ol>
+
+<h1>Client-Side Caching</h1>
+
+<p>The HTTP/1.1 Cache-Control response header is configurable via the
+<code>cache.client.*</code> keys in the configuration file. To enable or disable it, use the <code>cache.client.enabled</code> key:</p>
+
+<figure class="highlight"><pre><code class="language-properties" data-lang="properties"><span class="py">cache.client.enabled</span> <span class="p">=</span> <span class="s">true</span></code></pre></figure>
+
+<p>The default settings look something like this:</p>
+
+<figure class="highlight"><pre><code class="language-properties" data-lang="properties"><span class="py">cache.client.max_age</span> <span class="p">=</span> <span class="s">2592000</span>
+<span class="py">cache.client.shared_max_age</span> <span class="p">=</span>
+<span class="py">cache.client.public</span> <span class="p">=</span> <span class="s">true</span>
+<span class="py">cache.client.private</span> <span class="p">=</span> <span class="s">false</span>
+<span class="py">cache.client.no_cache</span> <span class="p">=</span> <span class="s">false</span>
+<span class="py">cache.client.no_store</span> <span class="p">=</span> <span class="s">false</span>
+<span class="py">cache.client.must_revalidate</span> <span class="p">=</span> <span class="s">false</span>
+<span class="py">cache.client.proxy_revalidate</span> <span class="p">=</span> <span class="s">false</span>
+<span class="py">cache.client.no_transform</span> <span class="p">=</span> <span class="s">true</span></code></pre></figure>
+
+<p>These are reasonable defaults that tell clients they can keep cached images for one month (2592000 seconds).</p>
+
+<div class="alert alert-warning">Note: the Cache-Control header must have a particular structure, so not just any combination of the above will work. See <a href="http://condor.depaul.edu/dmumaugh/readings/handouts/SE435/HTTP/node24.html">this brief overview</a>, for example.</div>
+
+  </div>
+</div>
+
+
+      <footer>
+</footer>
+
+<script src="/cantaloupe/scripts/bootstrap.min.js"></script>
+<script src="/cantaloupe/scripts/base.js"></script>
+
+    </div>
+
+  </body>
+
+</html>
