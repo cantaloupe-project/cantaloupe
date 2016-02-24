@@ -1,31 +1,30 @@
 ---
-layout: manual_2.1
+layout: manual_2.3
 title: Delegate Script
 ---
 
 <ol class="breadcrumb">
   <li><a href="{{ site.baseurl }}/">Home</a></li>
   <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
-  <li><a href="{{ site.baseurl }}/manual/2.1/">2.1</a></li>
+  <li><a href="{{ site.baseurl }}/manual/2.3/">2.3</a></li>
   <li class="active">Delegate Script</li>
 </ol>
 
 <h1>Delegate Script</h1>
 
 <ul>
-  <li><a href="#Enabling">Enabling</a></li>
   <li><a href="#Rules">Rules</a></li>
   <li><a href="#Example">Example</a></li>
   <li><a href="#Testing%20Script%20Methods">Testing Script Methods</a></li>
 </ul>
 
-<p>The delegate script mechanism enables the use of custom Ruby methods as "hooks" to provide dynamic information back to the image server. A truly customized image server can be created with minimal lines of code.</p>
+<p>The delegate script mechanism enables the use of custom Ruby methods as "hooks" to provide dynamic information back to the image server. A truly customized image server can be created with minimal code.</p>
 
-<p>Delegate methods are implemented in Ruby, and run inside a JRuby interpreter bundled into Cantaloupe. There is no need to install an external Ruby environment and no need to know Java; just type some code into a file, and go.</p>
-
-<h2 id="Enabling">Enabling</h2>
+<p>Delegate methods are implemented in Ruby, and are invoked inside a JRuby interpreter bundled into Cantaloupe. There is no need to install an external Ruby environment and no need to know Java; just type some code into a file, and go.</p>
 
 <p>The delegate script mechanism is disabled by default. To enable it, copy the sample delegate script, <span class="filename">delegates.rb.sample</span>, included in the distribution, to <span class="filename">delegates.rb</span>, and reference it from the <code>delegate_script</code> configuration option.</p>
+
+<hr>
 
 <h2 id="Rules">Rules</h2>
 
@@ -36,6 +35,8 @@ title: Delegate Script
 <p>The delegate script will be reloaded on each request, so it can be edited without restarting. But, code that has been loaded into the JRuby runtime cannot be unloaded. For example, when a method is changed, it will overwrite the old version; but a constant that has already been defined cannot be redefined.</p>
 
 <div class="alert alert-danger">Note: typically, neither method arguments nor return values are sanitized or validated. <strong>Be very careful to write defensive, injection-aware code.</strong></div>
+
+<hr>
 
 <h2 id="Example">Example</h2>
 
@@ -70,16 +71,16 @@ module Cantaloupe
 end
 {% endhighlight %}
 
+<hr>
+
 <h2 id="Testing Script Methods">Testing Script Methods</h2>
 
-<p>Using the example above, <code>get_pathname()</code> could be tested by adding a line to the end of the script:
+<p>Using the example above, <code>get_pathname()</code> could be tested by adding the following line to the end of the script:
 
 {% highlight ruby %}
 puts Cantaloupe::get_pathname('identifier-to-test')
 {% endhighlight %}
 
-And running it on the command line with a command like <code>ruby delegates.rb</code>.</p>
+And running it on the command line with a command like: <code>ruby delegates.rb</code>.</p>
 
-<p>The delegate script is standard Ruby code that will work in any Ruby interpreter. The only thing to be aware of is that gems with platform-native extensions will not work in JRuby. For that reason, it would be best to install a standalone <a href="http://jruby.org">JRuby interpreter</a> and test with that.</p>
-
-<p>You may also want to look into something like <a href="http://rvm.io/">RVM</a>, which can make it easier to switch between different versions of the Ruby interpreter.</p>
+<p>The delegate script is standard Ruby code that will work in any Ruby interpreter. The only thing to be aware of is that gems with platform-native extensions will not work in JRuby. For that reason, it would be best to install a standalone <a href="http://jruby.org">JRuby interpreter</a> and test with that. (Something like <a href="http://rvm.io/">RVM</a> can make it easier to switch between different versions of the Ruby interpreter.)</p>

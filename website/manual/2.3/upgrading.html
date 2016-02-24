@@ -1,18 +1,44 @@
 ---
-layout: manual_2.1
+layout: manual_2.3
 title: Upgrading
 ---
 
 <ol class="breadcrumb">
   <li><a href="{{ site.baseurl }}/">Home</a></li>
   <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
-  <li><a href="{{ site.baseurl }}/manual/2.1/">2.1</a></li>
+  <li><a href="{{ site.baseurl }}/manual/2.3/">2.3</a></li>
   <li class="active">Upgrading</li>
 </ol>
 
 <h1>Upgrading</h1>
 
 <p>(If you are skipping versions, it will be necessary to work through this list upwards from the version you are currently on.)</p>
+
+<h2>From 2.2 to 2.3</h2>
+
+<h2>From 2.1.1 to 2.2</h2>
+
+<ul>
+  <li>Add the following keys from the sample configuration:
+    <ul>
+      <li><code>endpoint.iiif.min_tile_size</code></li>
+      <li><code>AzureStorageResolver.*</code></li>
+      <li><code>GraphicsMagickProcessor.background_color</code></li>
+      <li><code>ImageMagickProcessor.background_color</code></li>
+      <li><code>processor.pdf</code></li>
+      <li><code>PdfBoxProcessor.*</code></li>
+      <li><code>cache.server.worker.*</code></li>
+      <li><code>watermark.*</code></li>
+    </ul>
+  </li>
+  <li>If you are using FilesystemCache, purge your info cache by deleting the <span class="filename">{FilesystemCache.pathname}/info</span> directory.</li>
+  <li>If you are using JdbcCache, modify your table schema and purge your info cache:
+    <pre>ALTER TABLE {JdbcCache.info_table} DROP COLUMN width;
+ALTER TABLE {JdbcCache.info_table} DROP COLUMN height;
+ALTER TABLE {JdbcCache.info_table} ADD info VARCHAR(8192) NOT NULL;
+DELETE FROM {JdbcCache.info_table};</pre>
+  </li>
+</ul>
 
 <h2>From 2.1 to 2.1.1</h2>
 

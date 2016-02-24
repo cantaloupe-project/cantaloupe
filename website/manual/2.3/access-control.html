@@ -1,12 +1,12 @@
 ---
-layout: manual_2.1
+layout: manual_2.3
 title: Access Control
 ---
 
 <ol class="breadcrumb">
   <li><a href="{{ site.baseurl }}/">Home</a></li>
   <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
-  <li><a href="{{ site.baseurl }}/manual/2.1/">2.1</a></li>
+  <li><a href="{{ site.baseurl }}/manual/2.3/">2.3</a></li>
   <li class="active">Access Control</li>
 </ol>
 
@@ -14,7 +14,12 @@ title: Access Control
 
 <ul>
   <li><a href="#Authentication">Authentication</a></li>
-  <li><a href="#Authorization">Authorization</a></li>
+  <li><a href="#Authorization">Authorization</a>
+    <ul>
+      <li><a href="#Authorization%20Notes">Notes</a></li>
+      <li><a href="#Authorization%20Examples">Examples</a></li>
+    </ul>
+  </li>
 </ul>
 
 <h2 id="Authentication">Authentication</h2>
@@ -35,20 +40,20 @@ auth.basic.secret = mypassword
 
 <h2 id="Authorization">Authorization</h2>
 
-<p>A custom <a href="delegate-script.html">delegate script</a> method can be used to implement authorization logic ranging from simple to complex. Cantaloupe will execute this method upon every image request and, depending on its return value, either authorize the request (by returning HTTP 200 OK), or not (by returning HTTP 403 Forbidden).</p>
+<p>A custom <a href="delegate-script.html">delegate script</a> method can be used to implement authorization logic ranging from simple to complex. The image server will execute this method upon every image request and, depending on its return value, either authorize the request (by returning HTTP 200 OK), or not (by returning HTTP 403 Forbidden).</p>
 
 <p>The delegate method in question is called <code>authorized?</code>. A skeleton with documented parameters and return values is present in the <span class="filename">delegates.rb.sample</span> file. By default, it just returns <code>true</code>, authorizing all requests.</p>
 
 <div class="alert alert-warning">This method will be called upon requests to all image endpoints, but not information endpoints, landing pages, etc.</div>
 
-<h3>Notes</h3>
+<h3 id="Authorization Notes">Notes</h3>
 
 <ul>
   <li>The authorization method will be called on every image request and should therefore be written to be efficient.</li>
   <li>Implementations should not assume that the underlying source image actually exists, but they should not try to check for it regardless&mdash;the image server will handle that. (But, the check may occur after the delegate method is invoked.)</li>
 </ul>
 
-<h3>Examples</h3>
+<h3 id="Authorization Examples">Examples</h3>
 
 <ul>
   <li><a href="#example-1">Inspect the parameters</a></li>
