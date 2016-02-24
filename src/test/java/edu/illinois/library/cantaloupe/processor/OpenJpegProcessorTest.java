@@ -1,14 +1,11 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
-import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.Dimension;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,11 +13,15 @@ import static org.junit.Assert.*;
 
 public class OpenJpegProcessorTest extends ProcessorTest {
 
-    OpenJpegProcessor instance = new OpenJpegProcessor();
+    OpenJpegProcessor instance;
 
-    public void setUp() {
+    @Before
+    public void setUp() throws Exception {
         Application.getConfiguration().setProperty(
                 OpenJpegProcessor.PATH_TO_BINARIES_CONFIG_KEY, "/usr/local/bin");
+
+        instance = new OpenJpegProcessor();
+        instance.setSourceFormat(Format.JP2);
     }
 
     protected Processor getProcessor() {
@@ -28,33 +29,7 @@ public class OpenJpegProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void testGetAvailableOutputFormatsForUnsupportedSourceFormat() {
-        Set<OutputFormat> expectedFormats = new HashSet<>();
-        assertEquals(expectedFormats,
-                instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
-    }
-
-    @Test
-    @Override
-    public void testGetSize() throws Exception {
-        Dimension expectedSize = new Dimension(100, 88);
-        if (getProcessor() instanceof StreamProcessor) {
-            StreamProcessor proc = (StreamProcessor) getProcessor();
-            Dimension actualSize = proc.getSize(
-                    new TestStreamSource(TestUtil.getImage("jp2")),
-                    SourceFormat.JP2);
-            assertEquals(expectedSize, actualSize);
-        }
-        if (getProcessor() instanceof FileProcessor) {
-            FileProcessor proc = (FileProcessor) getProcessor();
-            Dimension actualSize = proc.getSize(TestUtil.getImage("jp2"),
-                    SourceFormat.JP2);
-            assertEquals(expectedSize, actualSize);
-        }
-    }
-
-    @Test
-    public void testGetSupportedFeatures() {
+    public void testGetSupportedFeatures() throws Exception {
         Set<ProcessorFeature> expectedFeatures = new HashSet<>();
         expectedFeatures.add(ProcessorFeature.MIRRORING);
         expectedFeatures.add(ProcessorFeature.REGION_BY_PERCENT);
@@ -67,12 +42,7 @@ public class OpenJpegProcessorTest extends ProcessorTest {
         expectedFeatures.add(ProcessorFeature.SIZE_BY_PERCENT);
         expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH);
         expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
-        assertEquals(expectedFeatures,
-                instance.getSupportedFeatures(SourceFormat.JP2));
-
-        expectedFeatures = new HashSet<>();
-        assertEquals(expectedFeatures,
-                instance.getSupportedFeatures(SourceFormat.UNKNOWN));
+        assertEquals(expectedFeatures, instance.getSupportedFeatures());
     }
 
 }

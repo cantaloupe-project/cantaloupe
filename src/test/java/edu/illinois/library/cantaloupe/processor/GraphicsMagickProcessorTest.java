@@ -1,11 +1,23 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.image.Rotate;
+import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
+import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.junit.Test;
 
+import javax.imageio.ImageIO;
+import java.awt.Dimension;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
@@ -19,15 +31,15 @@ import static org.junit.Assert.*;
  */
 public class GraphicsMagickProcessorTest extends ProcessorTest {
 
-    private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
+    private static HashMap<Format, Set<Format>> supportedFormats;
 
     GraphicsMagickProcessor instance = new GraphicsMagickProcessor();
 
-    private static HashMap<SourceFormat, Set<OutputFormat>>
+    private static HashMap<Format, Set<Format>>
     getAvailableOutputFormats() throws IOException {
         if (supportedFormats == null) {
-            final Set<SourceFormat> sourceFormats = new HashSet<>();
-            final Set<OutputFormat> outputFormats = new HashSet<>();
+            final Set<Format> formats = new HashSet<>();
+            final Set<Format> outputFormats = new HashSet<>();
 
             // retrieve the output of the `gm version` command, which contains a
             // list of all optional formats
@@ -47,42 +59,42 @@ public class GraphicsMagickProcessorTest extends ProcessorTest {
                 }
                 if (read) {
                     if (s.startsWith("JPEG-2000  ") && s.endsWith(" yes")) {
-                        sourceFormats.add(SourceFormat.JP2);
-                        outputFormats.add(OutputFormat.JP2);
+                        formats.add(Format.JP2);
+                        outputFormats.add(Format.JP2);
                     }
                     if (s.startsWith("JPEG  ") && s.endsWith(" yes")) {
-                        sourceFormats.add(SourceFormat.JPG);
-                        outputFormats.add(OutputFormat.JPG);
+                        formats.add(Format.JPG);
+                        outputFormats.add(Format.JPG);
                     }
                     if (s.startsWith("PNG  ") && s.endsWith(" yes")) {
-                        sourceFormats.add(SourceFormat.PNG);
-                        outputFormats.add(OutputFormat.PNG);
+                        formats.add(Format.PNG);
+                        outputFormats.add(Format.PNG);
                     }
                     if (s.startsWith("Ghostscript") && s.endsWith(" yes")) {
-                        outputFormats.add(OutputFormat.PDF);
+                        outputFormats.add(Format.PDF);
                     }
                     if (s.startsWith("TIFF  ") && s.endsWith(" yes")) {
-                        sourceFormats.add(SourceFormat.TIF);
-                        outputFormats.add(OutputFormat.TIF);
+                        formats.add(Format.TIF);
+                        outputFormats.add(Format.TIF);
                     }
                     if (s.startsWith("WebP  ") && s.endsWith(" yes")) {
-                        sourceFormats.add(SourceFormat.WEBP);
-                        outputFormats.add(OutputFormat.WEBP);
+                        formats.add(Format.WEBP);
+                        outputFormats.add(Format.WEBP);
                     }
                 }
             }
 
             // add formats that are definitely available
             // (http://www.graphicsmagick.org/formats.html)
-            sourceFormats.add(SourceFormat.BMP);
-            sourceFormats.add(SourceFormat.GIF);
+            formats.add(Format.BMP);
+            formats.add(Format.GIF);
 
             supportedFormats = new HashMap<>();
-            for (SourceFormat sourceFormat : SourceFormat.values()) {
-                supportedFormats.put(sourceFormat, new HashSet<OutputFormat>());
+            for (Format format : Format.values()) {
+                supportedFormats.put(format, new HashSet<Format>());
             }
-            for (SourceFormat sourceFormat : sourceFormats) {
-                supportedFormats.put(sourceFormat, outputFormats);
+            for (Format format : formats) {
+                supportedFormats.put(format, outputFormats);
             }
         }
         return supportedFormats;
@@ -93,24 +105,22 @@ public class GraphicsMagickProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void testGetAvailableOutputFormats() throws IOException {
-        for (SourceFormat sourceFormat : SourceFormat.values()) {
-            Set<OutputFormat> expectedFormats = getAvailableOutputFormats().
-                    get(sourceFormat);
-            assertEquals(expectedFormats,
-                    instance.getAvailableOutputFormats(sourceFormat));
+    public void testGetAvailableOutputFormats() throws Exception {
+        for (Format format : Format.values()) {
+            try {
+                instance.setSourceFormat(format);
+                Set<Format> expectedFormats = getAvailableOutputFormats().
+                        get(format);
+                assertEquals(expectedFormats, instance.getAvailableOutputFormats());
+            } catch (UnsupportedSourceFormatException e) {
+                // continue
+            }
         }
     }
 
     @Test
-    public void testGetAvailableOutputFormatsForUnsupportedSourceFormat() {
-        Set<OutputFormat> expectedFormats = new HashSet<>();
-        assertEquals(expectedFormats,
-                instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
-    }
-
-    @Test
-    public void testGetSupportedFeatures() {
+    public void testGetSupportedFeatures() throws Exception {
+        instance.setSourceFormat(getAnySupportedSourceFormat(instance));
         Set<ProcessorFeature> expectedFeatures = new HashSet<>();
         expectedFeatures.add(ProcessorFeature.MIRRORING);
         expectedFeatures.add(ProcessorFeature.REGION_BY_PERCENT);
@@ -123,12 +133,78 @@ public class GraphicsMagickProcessorTest extends ProcessorTest {
         expectedFeatures.add(ProcessorFeature.SIZE_BY_PERCENT);
         expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH);
         expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
-        assertEquals(expectedFeatures,
-                instance.getSupportedFeatures(getAnySupportedSourceFormat(instance)));
+        assertEquals(expectedFeatures, instance.getSupportedFeatures());
+    }
 
-        expectedFeatures = new HashSet<>();
-        assertEquals(expectedFeatures,
-                instance.getSupportedFeatures(SourceFormat.UNKNOWN));
+    @Test
+    public void testProcessWithRotationAndCustomBackgroundColorAndNonTransparentOutputFormat() throws Exception {
+        Configuration config = new BaseConfiguration();
+        config.setProperty(GraphicsMagickProcessor.BACKGROUND_COLOR_CONFIG_KEY, "blue");
+        Application.setConfiguration(config);
+
+        OperationList ops = new OperationList();
+        ops.setIdentifier(new Identifier("bla"));
+        Rotate rotation = new Rotate(15);
+        ops.add(rotation);
+        ops.setOutputFormat(Format.JPG);
+
+        ImageInfo imageInfo = new ImageInfo(64, 58);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        instance.setSourceFormat(Format.JPG);
+        StreamSource streamSource = new TestStreamSource(
+                TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));
+        instance.setStreamSource(streamSource);
+        instance.process(ops, imageInfo, outputStream);
+
+        ByteArrayInputStream inputStream =
+                new ByteArrayInputStream(outputStream.toByteArray());
+        final BufferedImage rotatedImage = ImageIO.read(inputStream);
+
+        int pixel = rotatedImage.getRGB(0, 0);
+        int alpha = (pixel >> 24) & 0xff;
+        int red = (pixel >> 16) & 0xff;
+        int green = (pixel >> 8) & 0xff;
+        int blue = (pixel) & 0xff;
+        // "GraphicsMagick blue"
+        assertEquals(255, alpha);
+        assertEquals(0, red);
+        assertEquals(4, green);
+        assertEquals(242, blue);
+    }
+
+    @Test
+    public void testProcessWithRotationAndCustomBackgroundColorAndTransparentOutputFormat() throws Exception {
+        Configuration config = new BaseConfiguration();
+        config.setProperty(ImageMagickProcessor.BACKGROUND_COLOR_CONFIG_KEY, "blue");
+        Application.setConfiguration(config);
+
+        OperationList ops = new OperationList();
+        ops.setIdentifier(new Identifier("bla"));
+        Rotate rotation = new Rotate(15);
+        ops.add(rotation);
+        ops.setOutputFormat(Format.PNG);
+
+        ImageInfo imageInfo = new ImageInfo(64, 58);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        instance.setSourceFormat(Format.JPG);
+        StreamSource streamSource = new TestStreamSource(
+                TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));
+        instance.setStreamSource(streamSource);
+        instance.process(ops, imageInfo, outputStream);
+
+        ByteArrayInputStream inputStream =
+                new ByteArrayInputStream(outputStream.toByteArray());
+        final BufferedImage rotatedImage = ImageIO.read(inputStream);
+
+        int pixel = rotatedImage.getRGB(0, 0);
+        int alpha = (pixel >> 24) & 0xff;
+        int red = (pixel >> 16) & 0xff;
+        int green = (pixel >> 8) & 0xff;
+        int blue = (pixel) & 0xff;
+        assertEquals(0, alpha);
+        assertEquals(0, red);
+        assertEquals(0, green);
+        assertEquals(0, blue);
     }
 
 }

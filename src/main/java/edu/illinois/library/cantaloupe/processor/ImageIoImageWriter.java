@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import org.apache.commons.configuration.Configuration;
 
 import javax.imageio.IIOImage;
@@ -11,11 +11,12 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.JAI;
 import javax.media.jai.OpImage;
-import javax.media.jai.RenderedOp;
+import javax.media.jai.PlanarImage;
 import java.awt.image.BufferedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -28,17 +29,9 @@ class ImageIoImageWriter {
     /**
      * @return Set of supported output formats.
      */
-    public static Set<OutputFormat> supportedFormats() {
-        final String[] writerMimeTypes = ImageIO.getWriterMIMETypes();
-        final Set<OutputFormat> outputFormats = new HashSet<>();
-        for (OutputFormat outputFormat : OutputFormat.values()) {
-            for (String mimeType : writerMimeTypes) {
-                if (outputFormat.getMediaType().equals(mimeType.toLowerCase())) {
-                    outputFormats.add(outputFormat);
-                }
-            }
-        }
-        return outputFormats;
+    public static Set<Format> supportedFormats() {
+        return new HashSet<>(Arrays.asList(Format.GIF, Format.JPG,
+                Format.PNG, Format.TIF));
     }
 
     /**
@@ -50,8 +43,8 @@ class ImageIoImageWriter {
      * @throws IOException
      */
     public void write(BufferedImage image,
-                      OutputFormat outputFormat,
-                      OutputStream outputStream) throws IOException {
+                      final Format outputFormat,
+                      final OutputStream outputStream) throws IOException {
         switch (outputFormat) {
             case JPG:
                 // JPEG doesn't support alpha, so convert to RGB or else the
@@ -105,8 +98,7 @@ class ImageIoImageWriter {
                 }
                 break;
             default:
-                // TODO: jp2 doesn't seem to work
-                ImageIO.write(image, outputFormat.getExtension(),
+                ImageIO.write(image, outputFormat.getPreferredExtension(),
                         ImageIO.createImageOutputStream(outputStream));
                 break;
         }
@@ -121,8 +113,8 @@ class ImageIoImageWriter {
      * @throws IOException
      */
     @SuppressWarnings({ "deprecation" })
-    public void write(RenderedOp image,
-                      OutputFormat outputFormat,
+    public void write(PlanarImage image,
+                      Format outputFormat,
                       OutputStream outputStream) throws IOException {
         final Configuration config = Application.getConfiguration();
         switch (outputFormat) {
@@ -205,7 +197,7 @@ class ImageIoImageWriter {
                 }
                 break;
             case PNG:
-                ImageIO.write(image, outputFormat.getExtension(),
+                ImageIO.write(image, outputFormat.getPreferredExtension(),
                         ImageIO.createImageOutputStream(outputStream));
                 break;
             case TIF:

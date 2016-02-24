@@ -1,19 +1,111 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.image.watermark.Position;
+import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.*;
 
 public class Java2dUtilTest {
+
+    @Test
+    public void testApplyWatermark() throws Exception {
+        // ward off NPEs
+        Configuration config = new BaseConfiguration();
+        Application.setConfiguration(config);
+
+        // read the base image into a BufferedImage
+        final File fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
+        final BufferedImage baseImage = ImageIO.read(fixture);
+
+        int pixel = baseImage.getRGB(0, 0);
+        int alpha = (pixel >> 24) & 0xff;
+        int red = (pixel >> 16) & 0xff;
+        int green = (pixel >> 8) & 0xff;
+        int blue = (pixel) & 0xff;
+        assertEquals(255, alpha);
+        assertEquals(106, red);
+        assertEquals(90, green);
+        assertEquals(60, blue);
+
+        // create a Watermark
+        final Watermark watermark = new Watermark();
+        watermark.setImage(TestUtil.getImage("png-rgb-1x1x8.png"));
+        watermark.setInset(0);
+        watermark.setPosition(Position.TOP_LEFT);
+
+        // apply it
+        final BufferedImage watermarkedImage = Java2dUtil.applyWatermark(
+                baseImage, watermark);
+
+        pixel = watermarkedImage.getRGB(0, 0);
+        alpha = (pixel >> 24) & 0xff;
+        red = (pixel >> 16) & 0xff;
+        green = (pixel >> 8) & 0xff;
+        blue = (pixel) & 0xff;
+        assertEquals(255, alpha);
+        assertEquals(0, red);
+        assertEquals(0, green);
+        assertEquals(0, blue);
+    }
+
+    @Test
+    public void testApplyWatermarkWithInset() throws Exception {
+        // ward off NPEs
+        Configuration config = new BaseConfiguration();
+        Application.setConfiguration(config);
+
+        // read the base image into a BufferedImage
+        final File fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
+        final BufferedImage baseImage = ImageIO.read(fixture);
+
+        int pixel = baseImage.getRGB(
+                baseImage.getWidth() - 2, baseImage.getHeight() - 2);
+        int alpha = (pixel >> 24) & 0xff;
+        int red = (pixel >> 16) & 0xff;
+        int green = (pixel >> 8) & 0xff;
+        int blue = (pixel) & 0xff;
+        assertEquals(255, alpha);
+        assertEquals(231, red);
+        assertEquals(222, green);
+        assertEquals(203, blue);
+
+        // create a Watermark
+        final Watermark watermark = new Watermark();
+        watermark.setImage(TestUtil.getImage("png-rgb-1x1x8.png"));
+        final int inset = 2;
+        watermark.setInset(inset);
+        watermark.setPosition(Position.BOTTOM_RIGHT);
+
+        // apply it
+        final BufferedImage watermarkedImage = Java2dUtil.applyWatermark(
+                baseImage, watermark);
+
+        pixel = watermarkedImage.getRGB(
+                baseImage.getWidth() - inset - 1,
+                baseImage.getHeight() - inset - 1);
+        alpha = (pixel >> 24) & 0xff;
+        red = (pixel >> 16) & 0xff;
+        green = (pixel >> 8) & 0xff;
+        blue = (pixel) & 0xff;
+        assertEquals(255, alpha);
+        assertEquals(0, red);
+        assertEquals(0, green);
+        assertEquals(0, blue);
+    }
 
     @Test
     public void testConvertToRgb() throws IOException {
@@ -24,7 +116,7 @@ public class Java2dUtilTest {
 
         // test with image of TYPE_CUSTOM
         custom = ImageIO.read(TestUtil.
-                getFixture("images/tif-rgb-64x56x8-striped-uncompressed.tif"));
+                getFixture("images/tif-rgb-monores-64x56x8-striped-uncompressed.tif"));
         BufferedImage output = Java2dUtil.convertCustomToRgb(custom);
         assertEquals(BufferedImage.TYPE_INT_RGB, output.getType());
     }
@@ -99,6 +191,18 @@ public class Java2dUtilTest {
     }
 
     @Test
+    public void testGetWatermarkImage() throws Exception {
+        Configuration config = new BaseConfiguration();
+        Application.setConfiguration(config);
+
+        Watermark watermark = new Watermark();
+        watermark.setImage(TestUtil.getImage("jpg"));
+        watermark.setPosition(Position.BOTTOM_RIGHT);
+
+        assertNotNull(Java2dUtil.getWatermarkImage(watermark));
+    }
+
+    @Test
     public void testRemoveAlpha() {
         // TODO: write this
     }
@@ -126,27 +230,27 @@ public class Java2dUtilTest {
     }
 
     @Test
-    public void testScaleImageWithAffineTransform() {
+    public void testScaleImage() {
         BufferedImage inImage = new BufferedImage(100, 100,
                 BufferedImage.TYPE_INT_RGB);
 
         // Scale.Mode.FULL
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
-        BufferedImage outImage = Java2dUtil.scaleImageWithAffineTransform(inImage, scale);
+        BufferedImage outImage = Java2dUtil.scaleImage(inImage, scale);
         assertSame(inImage, outImage);
 
         // Scale.Mode.ASPECT_FIT_WIDTH
         scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
         scale.setWidth(50);
-        outImage = Java2dUtil.scaleImageWithAffineTransform(inImage, scale);
+        outImage = Java2dUtil.scaleImage(inImage, scale);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // Scale.Mode.ASPECT_FIT_HEIGHT
         scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
         scale.setHeight(50);
-        outImage = Java2dUtil.scaleImageWithAffineTransform(inImage, scale);
+        outImage = Java2dUtil.scaleImage(inImage, scale);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
@@ -154,48 +258,21 @@ public class Java2dUtilTest {
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setWidth(50);
         scale.setHeight(50);
-        outImage = Java2dUtil.scaleImageWithAffineTransform(inImage, scale);
+        outImage = Java2dUtil.scaleImage(inImage, scale);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
+
+        // scale-by percent
+        scale = new Scale();
+        scale.setPercent(0.25f);
+        outImage = Java2dUtil.scaleImage(inImage, scale);
+        assertEquals(25, outImage.getWidth());
+        assertEquals(25, outImage.getHeight());
     }
 
     @Test
-    public void testScaleImageWithG2d() {
+    public void testScaleImageWithReductionFactor() {
         BufferedImage inImage = new BufferedImage(100, 100,
-                BufferedImage.TYPE_INT_RGB);
-
-        // Scale.Mode.FULL
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
-        BufferedImage outImage = Java2dUtil.scaleImageWithG2d(inImage, scale);
-        assertSame(inImage, outImage);
-
-        // Scale.Mode.ASPECT_FIT_WIDTH
-        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
-        scale.setWidth(50);
-        outImage = Java2dUtil.scaleImageWithG2d(inImage, scale);
-        assertEquals(50, outImage.getWidth());
-        assertEquals(50, outImage.getHeight());
-
-        // Scale.Mode.ASPECT_FIT_HEIGHT
-        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
-        scale.setHeight(50);
-        outImage = Java2dUtil.scaleImageWithG2d(inImage, scale);
-        assertEquals(50, outImage.getWidth());
-        assertEquals(50, outImage.getHeight());
-
-        // Scale.Mode.ASPECT_FIT_INSIDE
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        scale.setWidth(50);
-        scale.setHeight(50);
-        outImage = Java2dUtil.scaleImageWithG2d(inImage, scale);
-        assertEquals(50, outImage.getWidth());
-        assertEquals(50, outImage.getHeight());
-    }
-
-    @Test
-    public void testScaleImageWithG2dWithReductionFactor() {
-        BufferedImage inImage = new BufferedImage(50, 50,
                 BufferedImage.TYPE_INT_RGB);
 
         // Scale.Mode.ASPECT_FIT_WIDTH
@@ -203,7 +280,7 @@ public class Java2dUtilTest {
         scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
         scale.setWidth(50);
         ReductionFactor rf = new ReductionFactor(1);
-        BufferedImage outImage = Java2dUtil.scaleImageWithG2d(inImage, scale,
+        BufferedImage outImage = Java2dUtil.scaleImage(inImage, scale,
                 rf, true);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
@@ -213,7 +290,7 @@ public class Java2dUtilTest {
         scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
         scale.setHeight(50);
         rf = new ReductionFactor(1);
-        outImage = Java2dUtil.scaleImageWithG2d(inImage, scale, rf, false);
+        outImage = Java2dUtil.scaleImage(inImage, scale, rf, false);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
@@ -223,9 +300,17 @@ public class Java2dUtilTest {
         scale.setWidth(50);
         scale.setHeight(50);
         rf = new ReductionFactor(1);
-        outImage = Java2dUtil.scaleImageWithG2d(inImage, scale, rf, true);
+        outImage = Java2dUtil.scaleImage(inImage, scale, rf, true);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
+
+        // scale-by-percent
+        scale = new Scale();
+        scale.setPercent(0.25f);
+        rf = new ReductionFactor(2);
+        outImage = Java2dUtil.scaleImage(inImage, scale, rf, true);
+        assertEquals(100, outImage.getWidth());
+        assertEquals(100, outImage.getHeight());
     }
 
     @Test

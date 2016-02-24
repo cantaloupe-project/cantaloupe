@@ -5,9 +5,8 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 import edu.illinois.library.cantaloupe.cache.Cache;
-import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
-import edu.illinois.library.cantaloupe.logging.AccessLogService;
+import edu.illinois.library.cantaloupe.cache.CacheWorker;
 import edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -15,15 +14,9 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
-import org.restlet.Component;
-import org.restlet.Server;
-import org.restlet.data.Parameter;
-import org.restlet.data.Protocol;
-import org.restlet.util.Series;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.KeyManagerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,14 +33,16 @@ public class Application {
 
     private static Logger logger = LoggerFactory.getLogger(Application.class);
 
+    public static final String CLEAN_CACHE_VM_ARGUMENT =
+            "cantaloupe.cache.clean";
     public static final String CONFIG_FILE_VM_ARGUMENT = "cantaloupe.config";
     public static final String PURGE_CACHE_VM_ARGUMENT =
             "cantaloupe.cache.purge";
     public static final String PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT =
             "cantaloupe.cache.purge_expired";
 
-    private static Component component;
     private static Configuration config;
+    private static WebServer webServer = new WebServer();
 
     static {
         // Suppress a Dock icon in OS X
@@ -121,24 +116,8 @@ public class Application {
         return versionStr;
     }
 
-    private static void purgeCacheAtLaunch() throws CacheException {
-        Cache cache = CacheFactory.getInstance();
-        if (cache != null) {
-            cache.purge();
-        } else {
-            System.out.println("Cache is not specified or is improperly configured.");
-            System.exit(-1);
-        }
-    }
-
-    private static void purgeExpiredFromCacheAtLaunch() throws CacheException {
-        Cache cache = CacheFactory.getInstance();
-        if (cache != null) {
-            cache.purgeExpired();
-        } else {
-            System.out.println("Cache is not specified or is improperly configured.");
-            System.exit(-1);
-        }
+    public static WebServer getWebServer() {
+        return webServer;
     }
 
     private static void initializeLogging() {
@@ -211,6 +190,8 @@ public class Application {
                     }
                 }
             };
+            configWatcher.setPriority(Thread.MIN_PRIORITY);
+            configWatcher.setName("ConfigWatcher");
             configWatcher.start();
         }
 
@@ -224,12 +205,41 @@ public class Application {
                 runtime.maxMemory() / mb);
         logger.info("\uD83C\uDF48 Starting Cantaloupe {}", getVersion());
 
-        if (System.getProperty(PURGE_CACHE_VM_ARGUMENT) != null) {
-            purgeCacheAtLaunch();
+        if (System.getProperty(CLEAN_CACHE_VM_ARGUMENT) != null) {
+            Cache cache = CacheFactory.getInstance();
+            if (cache != null) {
+                cache.cleanUp();
+                System.exit(0);
+            } else {
+                System.out.println("Cache is not specified or is improperly configured.");
+                System.exit(-1);
+            }
+        } else if (System.getProperty(PURGE_CACHE_VM_ARGUMENT) != null) {
+            Cache cache = CacheFactory.getInstance();
+            if (cache != null) {
+                cache.purge();
+                System.exit(0);
+            } else {
+                System.out.println("Cache is not specified or is improperly configured.");
+                System.exit(-1);
+            }
         } else if (System.getProperty(PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT) != null) {
-            purgeExpiredFromCacheAtLaunch();
+            Cache cache = CacheFactory.getInstance();
+            if (cache != null) {
+                cache.purgeExpired();
+                System.exit(0);
+            } else {
+                System.out.println("Cache is not specified or is improperly configured.");
+                System.exit(-1);
+            }
         } else {
-            startServer();
+            // If the cache worker is enabled, run it in a low-priority
+            // background thread.
+            if (getConfiguration().getBoolean(CacheWorker.ENABLED_CONFIG_KEY, false)) {
+                // Wait 10 seconds to reduce startup load.
+                CacheWorker.runInBackground(10);
+            }
+            webServer.start();
         }
     }
 
@@ -260,46 +270,6 @@ public class Application {
      */
     public static synchronized void setConfiguration(Configuration c) {
         config = c;
-    }
-
-    public static synchronized void startServer() throws Exception {
-        stopServer();
-        final Configuration config = getConfiguration();
-        component = new Component();
-        // set up HTTP server
-        if (config.getBoolean("http.enabled", true)) {
-            final int port = config.getInteger("http.port", 8182);
-            component.getServers().add(Protocol.HTTP, port);
-        }
-        // set up HTTPS server
-        if (getConfiguration().getBoolean("https.enabled", false)) {
-            final int port = config.getInteger("https.port", 8183);
-            Server server = component.getServers().add(Protocol.HTTPS, port);
-            Series<Parameter> parameters = server.getContext().getParameters();
-            parameters.add("sslContextFactory",
-                    "org.restlet.engine.ssl.DefaultSslContextFactory");
-            parameters.add("keyStorePath",
-                    config.getString("https.key_store_path"));
-            parameters.add("keyStorePassword",
-                    config.getString("https.key_store_password"));
-            parameters.add("keyPassword",
-                    config.getString("https.key_password"));
-            parameters.add("keyStoreType",
-                    config.getString("https.key_store_type"));
-            parameters.add("keyManagerAlgorithm",
-                    KeyManagerFactory.getDefaultAlgorithm());
-        }
-        component.getClients().add(Protocol.CLAP);
-        component.getDefaultHost().attach("", new WebApplication());
-        component.setLogService(new AccessLogService());
-        component.start();
-    }
-
-    public static synchronized void stopServer() throws Exception {
-        if (component != null) {
-            component.stop();
-            component = null;
-        }
     }
 
     /**

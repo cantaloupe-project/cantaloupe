@@ -1,19 +1,19 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.zaxxer.hikari.HikariDataSource;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import org.apache.commons.configuration.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Dimension;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -25,46 +25,57 @@ import java.time.Instant;
 import java.util.Calendar;
 
 /**
- * Cache using a database table, storing images as BLOBs and image dimensions
- * as integers.
+ * <p>Cache using a database table, storing images as BLOBs and image infos
+ * as JSON strings.</p>
+ *
+ * <p>This cache requires that a database schema be created manually--it will
+ * not do it automatically. See the user manual for more information.</p>
  */
 class JdbcCache implements Cache {
 
     /**
-     * Buffers written image data and flushes it into a database tuple as a
-     * BLOB upon closing.
+     * Wraps a {@link Blob} OutputStream, for writing an image to a BLOB.
+     * The constructor creates a transaction, which is committed on close.
      */
-    private class JdbcImageOutputStream extends OutputStream {
+    private class ImageBlobOutputStream extends OutputStream {
 
-        private ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        private OutputStream blobOutputStream;
         private OperationList ops;
         private Connection connection;
+        private PreparedStatement statement;
 
-        public JdbcImageOutputStream(Connection conn, OperationList ops) {
+        public ImageBlobOutputStream(Connection conn, OperationList ops)
+                throws SQLException {
             this.connection = conn;
             this.ops = ops;
+
+            connection.setAutoCommit(false);
+
+            final Configuration config = Application.getConfiguration();
+            final String sql = String.format(
+                    "INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
+                    config.getString(IMAGE_TABLE_CONFIG_KEY),
+                    IMAGE_TABLE_OPERATIONS_COLUMN, IMAGE_TABLE_IMAGE_COLUMN,
+                    IMAGE_TABLE_LAST_MODIFIED_COLUMN);
+            logger.debug(sql);
+
+            final Blob blob = connection.createBlob();
+            blobOutputStream = blob.setBinaryStream(1);
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, ops.toString());
+            statement.setBlob(2, blob);
+            statement.setTimestamp(3, now());
         }
 
         @Override
         public void close() throws IOException {
+            logger.debug("Closing stream for {}", ops);
             try {
-                Configuration config = Application.getConfiguration();
-                String sql = String.format(
-                        "INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
-                        config.getString(IMAGE_TABLE_CONFIG_KEY),
-                        IMAGE_TABLE_OPERATIONS_COLUMN, IMAGE_TABLE_IMAGE_COLUMN,
-                        IMAGE_TABLE_LAST_MODIFIED_COLUMN);
-                PreparedStatement statement = connection.prepareStatement(sql);
-                statement.setString(1, ops.toString());
-                statement.setBinaryStream(2,
-                        new ByteArrayInputStream(outputStream.toByteArray()));
-                statement.setTimestamp(3, now());
-                logger.debug(sql);
                 statement.executeUpdate();
+                connection.commit();
             } catch (SQLException e) {
                 throw new IOException(e.getMessage(), e);
             } finally {
-                outputStream.close();
                 try {
                     connection.close();
                 } catch (SQLException e) {
@@ -74,23 +85,18 @@ class JdbcCache implements Cache {
         }
 
         @Override
-        public void flush() throws IOException {
-            outputStream.flush();
-        }
-
-        @Override
         public void write(int b) throws IOException {
-            outputStream.write(b);
+            blobOutputStream.write(b);
         }
 
         @Override
         public void write(byte[] b) throws IOException {
-            outputStream.write(b);
+            blobOutputStream.write(b);
         }
 
         @Override
         public void write(byte[] b, int off, int len) throws IOException {
-            outputStream.write(b, off, len);
+            blobOutputStream.write(b, off, len);
         }
 
     }
@@ -101,10 +107,9 @@ class JdbcCache implements Cache {
     public static final String IMAGE_TABLE_IMAGE_COLUMN = "image";
     public static final String IMAGE_TABLE_LAST_MODIFIED_COLUMN = "last_modified";
     public static final String IMAGE_TABLE_OPERATIONS_COLUMN = "operations";
-    public static final String INFO_TABLE_HEIGHT_COLUMN = "height";
     public static final String INFO_TABLE_IDENTIFIER_COLUMN = "identifier";
+    public static final String INFO_TABLE_INFO_COLUMN = "info";
     public static final String INFO_TABLE_LAST_MODIFIED_COLUMN = "last_modified";
-    public static final String INFO_TABLE_WIDTH_COLUMN = "width";
 
     public static final String CONNECTION_TIMEOUT_CONFIG_KEY =
             "JdbcCache.connection_timeout";
@@ -205,66 +210,70 @@ class JdbcCache implements Cache {
         return rs.next();
     }
 
+    /**
+     * Does nothing, as this cache is always clean.
+     *
+     * @throws CacheException
+     */
     @Override
-    public Dimension getDimension(Identifier identifier) throws CacheException {
+    public void cleanUp() {}
+
+    @Override
+    public ImageInfo getImageInfo(Identifier identifier) throws CacheException {
         final Timestamp oldestDate = oldestValidDate();
         final String tableName = getInfoTableName();
         try (Connection connection = getConnection()) {
             final String sql = String.format(
-                    "SELECT %s, %s, %s FROM %s WHERE %s = ?",
-                    INFO_TABLE_WIDTH_COLUMN, INFO_TABLE_HEIGHT_COLUMN,
-                    INFO_TABLE_LAST_MODIFIED_COLUMN, tableName,
-                    INFO_TABLE_IDENTIFIER_COLUMN);
+                    "SELECT %s, %s FROM %s WHERE %s = ?",
+                    INFO_TABLE_INFO_COLUMN, INFO_TABLE_LAST_MODIFIED_COLUMN,
+                    tableName, INFO_TABLE_IDENTIFIER_COLUMN);
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, identifier.toString());
             logger.debug(sql);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                if (resultSet.getTimestamp(3).after(oldestDate)) {
-                    logger.info("Hit for dimension: {}", identifier);
-                    return new Dimension(
-                            resultSet.getInt(INFO_TABLE_WIDTH_COLUMN),
-                            resultSet.getInt(INFO_TABLE_HEIGHT_COLUMN));
+                if (resultSet.getTimestamp(2).after(oldestDate)) {
+                    logger.info("Hit for image info: {}", identifier);
+                    String json = resultSet.getString(INFO_TABLE_INFO_COLUMN);
+                    return ImageInfo.fromJson(json);
                 } else {
-                    logger.info("Miss for dimension: {}", identifier);
+                    logger.info("Miss for image info: {}", identifier);
                     purgeInfo(identifier, connection);
                 }
             }
-        } catch (CacheException | SQLException e) {
+        } catch (CacheException | IOException | SQLException e) {
             throw new CacheException(e.getMessage(), e);
         }
         return null;
     }
 
     @Override
-    public InputStream getImageInputStream(OperationList ops) {
+    public InputStream getImageInputStream(OperationList ops)
+            throws CacheException {
         InputStream inputStream = null;
-        try {
-            final String tableName = getImageTableName();
-            final Timestamp oldestDate = oldestValidDate();
-            try (Connection conn = getConnection()) {
-                String sql = String.format(
-                        "SELECT %s, %s FROM %s WHERE %s = ?",
-                        IMAGE_TABLE_IMAGE_COLUMN,
-                        IMAGE_TABLE_LAST_MODIFIED_COLUMN, tableName,
-                        IMAGE_TABLE_OPERATIONS_COLUMN);
-                PreparedStatement statement = conn.prepareStatement(sql);
-                statement.setString(1, ops.toString());
-                logger.debug(sql);
-                ResultSet resultSet = statement.executeQuery();
-                if (resultSet.next()) {
-                    if (resultSet.getTimestamp(2).after(oldestDate)) {
-                        logger.info("Hit for image: {}", ops);
-                        inputStream = resultSet.getBinaryStream(1);
-                    } else {
-                        logger.info("Miss for image: {}", ops);
-                        purgeImage(ops, conn);
-                    }
+
+        final String tableName = getImageTableName();
+        final Timestamp oldestDate = oldestValidDate();
+        try (Connection conn = getConnection()) {
+            String sql = String.format(
+                    "SELECT %s, %s FROM %s WHERE %s = ?",
+                    IMAGE_TABLE_IMAGE_COLUMN,
+                    IMAGE_TABLE_LAST_MODIFIED_COLUMN, tableName,
+                    IMAGE_TABLE_OPERATIONS_COLUMN);
+            PreparedStatement statement = conn.prepareStatement(sql);
+            statement.setString(1, ops.toString());
+            logger.debug(sql);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                if (resultSet.getTimestamp(2).after(oldestDate)) {
+                    logger.info("Hit for image: {}", ops);
+                    inputStream = resultSet.getBinaryStream(1);
+                } else {
+                    logger.info("Miss for image: {}", ops);
+                    purgeImage(ops, conn);
                 }
-            } catch (CacheException | SQLException e) {
-                logger.error(e.getMessage(), e);
             }
-        } catch (CacheException e) {
+        } catch (SQLException e) {
             logger.error(e.getMessage(), e);
         }
         return inputStream;
@@ -273,9 +282,11 @@ class JdbcCache implements Cache {
     @Override
     public OutputStream getImageOutputStream(OperationList ops)
             throws CacheException {
+        // TODO: return a dummy stream when a write corresponding to an
+        // identical op list is in progress in another thread
         logger.info("Miss; caching {}", ops);
         try {
-            return new JdbcImageOutputStream(getConnection(), ops);
+            return new ImageBlobOutputStream(getConnection(), ops);
         } catch (SQLException e) {
             throw new CacheException(e.getMessage(), e);
         }
@@ -306,7 +317,7 @@ class JdbcCache implements Cache {
             final int numDeletedImages = purgeImages(connection);
             final int numDeletedInfos = purgeInfos(connection);
             connection.commit();
-            logger.info("Deleted {} cached image(s) and {} cached dimension(s)",
+            logger.info("Deleted {} cached image(s) and {} cached info(s)",
                     numDeletedImages, numDeletedInfos);
         } catch (SQLException e) {
             throw new CacheException(e.getMessage(), e);
@@ -318,10 +329,10 @@ class JdbcCache implements Cache {
         try (Connection connection = getConnection()) {
             connection.setAutoCommit(false);
             final int numDeletedImages = purgeImages(identifier, connection);
-            final int numDeletedDimensions = purgeInfo(identifier, connection);
+            final int numDeletedInfos = purgeInfo(identifier, connection);
             connection.commit();
-            logger.info("Deleted {} cached image(s) and {} cached dimension(s)",
-                    numDeletedImages, numDeletedDimensions);
+            logger.info("Deleted {} cached image(s) and {} cached info(s)",
+                    numDeletedImages, numDeletedInfos);
         } catch (SQLException e) {
             throw new CacheException(e.getMessage(), e);
         }
@@ -332,11 +343,11 @@ class JdbcCache implements Cache {
         try (Connection connection = getConnection()) {
             connection.setAutoCommit(false);
             final int numDeletedImages = purgeImage(ops, connection);
-            final int numDeletedDimensions = purgeInfo(ops.getIdentifier(),
+            final int numDeletedInfos = purgeInfo(ops.getIdentifier(),
                     connection);
             connection.commit();
-            logger.info("Deleted {} cached image(s) and {} cached dimension(s)",
-                    numDeletedImages, numDeletedDimensions);
+            logger.info("Deleted {} cached image(s) and {} cached info(s)",
+                    numDeletedImages, numDeletedInfos);
         } catch (SQLException e) {
             throw new CacheException(e.getMessage(), e);
         }
@@ -349,7 +360,7 @@ class JdbcCache implements Cache {
             final int numDeletedImages = purgeExpiredImages(connection);
             final int numDeletedInfos = purgeExpiredInfos(connection);
             connection.commit();
-            logger.info("Deleted {} cached image(s) and {} cached dimension(s)",
+            logger.info("Deleted {} cached image(s) and {} cached info(s)",
                     numDeletedImages, numDeletedInfos);
         } catch (SQLException e) {
             throw new CacheException(e.getMessage(), e);
@@ -467,23 +478,29 @@ class JdbcCache implements Cache {
     }
 
     @Override
-    public void putDimension(Identifier identifier, Dimension dimension)
+    public void putImageInfo(Identifier identifier, ImageInfo imageInfo)
             throws CacheException {
+        logger.info("Caching image info: {}", identifier);
         try (Connection conn = getConnection()) {
+            conn.setAutoCommit(false);
+
+            // Delete any existing info corresponding to the given identifier.
+            purgeInfo(identifier, conn);
+
+            // Add a new info corresponding to the given identifier.
             String sql = String.format(
-                    "INSERT INTO %s (%s, %s, %s, %s) VALUES (?, ?, ?, ?)",
+                    "INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
                     getInfoTableName(), INFO_TABLE_IDENTIFIER_COLUMN,
-                    INFO_TABLE_WIDTH_COLUMN, INFO_TABLE_HEIGHT_COLUMN,
-                    INFO_TABLE_LAST_MODIFIED_COLUMN);
+                    INFO_TABLE_INFO_COLUMN, INFO_TABLE_LAST_MODIFIED_COLUMN);
             PreparedStatement statement = conn.prepareStatement(sql);
             statement.setString(1, identifier.toString());
-            statement.setInt(2, dimension.width);
-            statement.setInt(3, dimension.height);
-            statement.setTimestamp(4, now());
+            statement.setString(2, imageInfo.toJson());
+            statement.setTimestamp(3, now());
             logger.debug(sql);
             statement.executeUpdate();
-            logger.info("Cached dimension: {}", identifier);
-        } catch (SQLException e) {
+
+            conn.commit();
+        } catch (SQLException | JsonProcessingException e) {
             throw new CacheException(e.getMessage(), e);
         }
     }

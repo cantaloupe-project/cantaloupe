@@ -1,8 +1,9 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.resource.ParameterList;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Reference;
 
@@ -12,9 +13,9 @@ import org.restlet.data.Reference;
  * @see <a href="http://iiif.io/api/image/1.1/#parameters">IIIF Image API
  * 1.1</a>
  */
-class Parameters implements Comparable<Parameters> {
+class Parameters implements ParameterList, Comparable<Parameters> {
 
-    private OutputFormat outputFormat;
+    private Format outputFormat;
     private Identifier identifier;
     private Quality quality;
     private Region region;
@@ -38,7 +39,7 @@ class Parameters implements Comparable<Parameters> {
             String[] subparts = StringUtils.split(parts[4], ".");
             if (subparts.length == 2) {
                 params.setQuality(Quality.valueOf(subparts[0].toUpperCase()));
-                params.setOutputFormat(OutputFormat.valueOf(subparts[1].toUpperCase()));
+                params.setOutputFormat(Format.valueOf(subparts[1].toUpperCase()));
             } else {
                 throw new IllegalArgumentException("Invalid parameters format");
             }
@@ -68,7 +69,7 @@ class Parameters implements Comparable<Parameters> {
         this.setSize(Size.fromUri(size));
         this.setRotation(Rotation.fromUri(rotation));
         this.setQuality(Quality.valueOf(quality.toUpperCase()));
-        this.setOutputFormat(OutputFormat.valueOf(format.toUpperCase()));
+        this.setOutputFormat(Format.valueOf(format.toUpperCase()));
     }
 
     @Override
@@ -81,7 +82,7 @@ class Parameters implements Comparable<Parameters> {
         return identifier;
     }
 
-    public OutputFormat getOutputFormat() {
+    public Format getOutputFormat() {
         return outputFormat;
     }
 
@@ -105,7 +106,7 @@ class Parameters implements Comparable<Parameters> {
         this.identifier = identifier;
     }
 
-    public void setOutputFormat(OutputFormat outputFormat) {
+    public void setOutputFormat(Format outputFormat) {
         this.outputFormat = outputFormat;
     }
 
@@ -125,6 +126,12 @@ class Parameters implements Comparable<Parameters> {
         this.size = size;
     }
 
+    /**
+     * @return OperationList analog of the parameters. Note that any
+     * additional operations that may need to be performed, such as
+     * watermarking, will not be included.
+     */
+    @Override
     public OperationList toOperationList() {
         OperationList ops = new OperationList();
         ops.setIdentifier(getIdentifier());

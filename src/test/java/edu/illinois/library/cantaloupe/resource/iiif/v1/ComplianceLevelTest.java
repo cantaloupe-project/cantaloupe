@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -15,7 +15,7 @@ public class ComplianceLevelTest {
     public void testGetLevel() {
         Set<ProcessorFeature> processorFeatures = new HashSet<>();
         Set<Quality> qualities = new HashSet<>();
-        Set<OutputFormat> outputFormats = new HashSet<>();
+        Set<Format> outputFormats = new HashSet<>();
         assertEquals(ComplianceLevel.LEVEL_0,
                 ComplianceLevel.getLevel(processorFeatures, qualities,
                         outputFormats));
@@ -27,7 +27,7 @@ public class ComplianceLevelTest {
         processorFeatures.add(ProcessorFeature.SIZE_BY_PERCENT);
         processorFeatures.add(ProcessorFeature.ROTATION_BY_90S);
         qualities.add(Quality.NATIVE);
-        outputFormats.add(OutputFormat.JPG);
+        outputFormats.add(Format.JPG);
         assertEquals(ComplianceLevel.LEVEL_1,
                 ComplianceLevel.getLevel(processorFeatures, qualities,
                         outputFormats));
@@ -39,7 +39,7 @@ public class ComplianceLevelTest {
         qualities.add(Quality.BITONAL);
         qualities.add(Quality.COLOR);
         qualities.add(Quality.GRAY);
-        outputFormats.add(OutputFormat.PNG);
+        outputFormats.add(Format.PNG);
         assertEquals(ComplianceLevel.LEVEL_2,
                 ComplianceLevel.getLevel(processorFeatures, qualities,
                         outputFormats));

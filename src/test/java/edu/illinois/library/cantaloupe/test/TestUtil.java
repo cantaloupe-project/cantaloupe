@@ -2,8 +2,7 @@ package edu.illinois.library.cantaloupe.test;
 
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -20,7 +19,7 @@ public abstract class TestUtil {
         return directory.getCanonicalFile();
     }
 
-    public static Collection<File> getImageFixtures(SourceFormat format)
+    public static Collection<File> getImageFixtures(Format format)
             throws IOException {
         return FileUtils.listFiles(getFixture("images"), null, false);
     }
@@ -57,7 +56,7 @@ public abstract class TestUtil {
     public static OperationList newOperationList() {
         OperationList ops = new OperationList();
         ops.setIdentifier(new Identifier("dummy"));
-        ops.setOutputFormat(OutputFormat.JPG);
+        ops.setOutputFormat(Format.JPG);
         return ops;
     }
 

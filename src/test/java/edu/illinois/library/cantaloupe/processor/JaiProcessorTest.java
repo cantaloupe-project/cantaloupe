@@ -1,10 +1,14 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
+import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,29 +20,70 @@ public class JaiProcessorTest extends ProcessorTest {
         System.setProperty("com.sun.media.jai.disableMediaLib", "true");
     }
 
-    JaiProcessor instance = new JaiProcessor();
+    JaiProcessor instance;
+
+    @Before
+    public void setUp() {
+        instance = new JaiProcessor();
+    }
 
     protected Processor getProcessor() {
         return instance;
     }
 
     @Test
-    public void testGetFormats() {
-        Set<OutputFormat> expectedFormats = JaiProcessor.
-                getFormats().get(SourceFormat.JPG);
-        assertEquals(expectedFormats,
-                instance.getAvailableOutputFormats(SourceFormat.JPG));
+    public void testAvailableOutputFormats() throws Exception {
+        final HashMap<Format,Set<Format>> formats = new HashMap<>();
+        for (Format format : ImageIoImageReader.supportedFormats()) {
+            formats.put(format, ImageIoImageWriter.supportedFormats());
+        }
+
+        instance.setSourceFormat(Format.JPG);
+        Set<Format> expectedFormats = formats.get(Format.JPG);
+        assertEquals(expectedFormats, instance.getAvailableOutputFormats());
+    }
+
+    /**
+     * Tile-aware override.
+     *
+     * @throws Exception
+     */
+    @Test
+    @Override
+    public void testGetImageInfo() throws Exception {
+        ImageInfo expectedInfo = new ImageInfo(64, 56, Format.TIF);
+        expectedInfo.getImages().get(0).tileWidth = 16;
+        expectedInfo.getImages().get(0).tileHeight = 16;
+
+        final File fixture = TestUtil.
+                getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif");
+
+        // test as a StreamProcessor
+        StreamProcessor sproc = (StreamProcessor) getProcessor();
+        StreamSource streamSource = new TestStreamSource(fixture);
+        sproc.setStreamSource(streamSource);
+        sproc.setSourceFormat(Format.TIF);
+        assertEquals(expectedInfo, sproc.getImageInfo());
+
+        // test as a FileProcessor
+        FileProcessor fproc = (FileProcessor) getProcessor();
+        fproc.setSourceFile(fixture);
+        fproc.setSourceFormat(Format.TIF);
+        assertEquals(expectedInfo, fproc.getImageInfo());
+
+        try {
+            fproc.setSourceFile(TestUtil.getImage("mpg"));
+            fproc.setSourceFormat(Format.MPG);
+            expectedInfo = new ImageInfo(640, 360, Format.MPG);
+            assertEquals(expectedInfo, fproc.getImageInfo());
+        } catch (UnsupportedSourceFormatException e) {
+            // pass
+        }
     }
 
     @Test
-    public void testGetAvailableOutputFormatsForUnsupportedSourceFormat() {
-        Set<OutputFormat> expectedFormats = new HashSet<>();
-        assertEquals(expectedFormats,
-                instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
-    }
-
-    @Test
-    public void testGetSupportedFeatures() {
+    public void testGetSupportedFeatures() throws Exception {
+        instance.setSourceFormat(getAnySupportedSourceFormat(instance));
         Set<ProcessorFeature> expectedFeatures = new HashSet<>();
         expectedFeatures.add(ProcessorFeature.MIRRORING);
         expectedFeatures.add(ProcessorFeature.REGION_BY_PERCENT);
@@ -51,12 +96,7 @@ public class JaiProcessorTest extends ProcessorTest {
         expectedFeatures.add(ProcessorFeature.SIZE_BY_PERCENT);
         expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH);
         expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
-        assertEquals(expectedFeatures,
-                instance.getSupportedFeatures(getAnySupportedSourceFormat(instance)));
-
-        expectedFeatures = new HashSet<>();
-        assertEquals(expectedFeatures,
-                instance.getSupportedFeatures(SourceFormat.UNKNOWN));
+        assertEquals(expectedFeatures, instance.getSupportedFeatures());
     }
 
 }

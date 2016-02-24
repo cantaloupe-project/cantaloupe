@@ -1,15 +1,17 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Filter;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.image.watermark.Watermark;
+import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.IOUtils;
@@ -17,25 +19,24 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
 import javax.media.jai.RenderedOp;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -49,7 +50,7 @@ import java.util.concurrent.Executors;
  * generates BMP output which is streamed directly to the ImageIO or JAI
  * reader, which are really fast with BMP for some reason.
  */
-class OpenJpegProcessor implements FileProcessor {
+class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
 
     private static Logger logger = LoggerFactory.
             getLogger(OpenJpegProcessor.class);
@@ -61,7 +62,7 @@ class OpenJpegProcessor implements FileProcessor {
     public static final String POST_PROCESSOR_CONFIG_KEY =
             "OpenJpegProcessor.post_processor";
 
-    private static final short MAX_REDUCTION_FACTOR = 5;
+    private static final short MAX_REDUCTION_FACTOR = 0;
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
@@ -74,36 +75,33 @@ class OpenJpegProcessor implements FileProcessor {
 
     private static Path stdoutSymlink;
 
+    // will cache opj_dump output
+    private String imageInfo;
+    private File sourceFile;
+
     static {
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL);
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR);
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY);
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE);
-
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL);
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR);
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT);
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY);
-
-        SUPPORTED_FEATURES.add(ProcessorFeature.MIRRORING);
-        SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PERCENT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PIXELS);
-        SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_ARBITRARY);
-        SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_BY_90S);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_ABOVE_FULL);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_HEIGHT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_PERCENT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
+        SUPPORTED_IIIF_1_1_QUALITIES.addAll(Arrays.asList(
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
+        SUPPORTED_IIIF_2_0_QUALITIES.addAll(Arrays.asList(
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
+        SUPPORTED_FEATURES.addAll(Arrays.asList(
+                ProcessorFeature.MIRRORING,
+                ProcessorFeature.REGION_BY_PERCENT,
+                ProcessorFeature.REGION_BY_PIXELS,
+                ProcessorFeature.ROTATION_ARBITRARY,
+                ProcessorFeature.ROTATION_BY_90S,
+                ProcessorFeature.SIZE_ABOVE_FULL,
+                ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
+                ProcessorFeature.SIZE_BY_HEIGHT,
+                ProcessorFeature.SIZE_BY_PERCENT,
+                ProcessorFeature.SIZE_BY_WIDTH,
+                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
 
         // Due to a quirk of opj_decompress, this processor requires access to
         // /dev/stdout.
@@ -150,9 +148,9 @@ class OpenJpegProcessor implements FileProcessor {
     }
 
     @Override
-    public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
-        Set<OutputFormat> outputFormats = new HashSet<>();
-        if (sourceFormat == SourceFormat.JP2) {
+    public Set<Format> getAvailableOutputFormats() {
+        final Set<Format> outputFormats = new HashSet<>();
+        if (format == Format.JP2) {
             outputFormats.addAll(ImageIoImageWriter.supportedFormats());
         }
         return outputFormats;
@@ -161,59 +159,77 @@ class OpenJpegProcessor implements FileProcessor {
     /**
      * Gets the size of the given image by parsing the output of opj_dump.
      *
-     * @param inputFile Source image
-     * @param sourceFormat Format of the source image
      * @return
      * @throws ProcessorException
      */
     @Override
-    public Dimension getSize(File inputFile, SourceFormat sourceFormat)
-            throws ProcessorException {
-        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
-            throw new UnsupportedSourceFormatException(sourceFormat);
-        }
-        final List<String> command = new ArrayList<>();
-        command.add(getPath("opj_dump"));
-        command.add("-i");
-        command.add(inputFile.getAbsolutePath());
+    public ImageInfo getImageInfo() throws ProcessorException {
         try {
-            ProcessBuilder pb = new ProcessBuilder(command);
-            pb.redirectErrorStream(true);
-            logger.debug("Invoking {}", StringUtils.join(pb.command(), " "));
-            Process process = pb.start();
+            if (imageInfo == null) {
+                readImageInfo();
+            }
+            final ImageInfo.Image image = new ImageInfo.Image();
 
-            BufferedReader stdInput = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()));
-            String s;
-            int width = 0, height = 0;
-            while ((s = stdInput.readLine()) != null) {
-                if (s.trim().startsWith("x1=")) {
-                    String[] parts = StringUtils.split(s.trim(), ",");
+            final Scanner scan = new Scanner(imageInfo);
+            while (scan.hasNextLine()) {
+                String line = scan.nextLine().trim();
+                if (line.startsWith("x1=")) {
+                    String[] parts = StringUtils.split(line, ",");
                     for (int i = 0; i < 2; i++) {
                         String[] kv = StringUtils.split(parts[i], "=");
                         if (kv.length == 2) {
                             if (i == 0) {
-                                width = Integer.parseInt(kv[1].trim());
+                                image.width = Integer.parseInt(kv[1].trim());
                             } else {
-                                height = Integer.parseInt(kv[1].trim());
+                                image.height = Integer.parseInt(kv[1].trim());
                             }
                         }
                     }
-                    return new Dimension(width, height);
+                } else if (line.startsWith("tdx=")) {
+                    String[] parts = StringUtils.split(line, ",");
+                    if (parts.length == 2) {
+                        image.tileWidth = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
+                        image.tileHeight = Integer.parseInt(parts[1].replaceAll("[^0-9]", ""));
+                    }
                 }
             }
-            throw new ProcessorException("Failsed to parse output. Command: " +
-                            StringUtils.join(command, " "));
+            final ImageInfo info = new ImageInfo();
+            info.setSourceFormat(getSourceFormat());
+            info.getImages().add(image);
+            return info;
         } catch (IOException e) {
-            throw new ProcessorException("Failed to parse output. Command: " +
-                    StringUtils.join(command, " "), e);
+            throw new ProcessorException("Failed to parse size", e);
+        }
+    }
+
+    private void readImageInfo() throws IOException {
+        final List<String> command = new ArrayList<>();
+        command.add(getPath("opj_dump"));
+        command.add("-i");
+        command.add(sourceFile.getAbsolutePath());
+
+        ProcessBuilder pb = new ProcessBuilder(command);
+        pb.redirectErrorStream(true);
+        logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
+        Process process = pb.start();
+
+        InputStream processInputStream = process.getInputStream();
+        try {
+            imageInfo = IOUtils.toString(processInputStream, "UTF-8");
+        } finally {
+            processInputStream.close();
         }
     }
 
     @Override
-    public Set<ProcessorFeature> getSupportedFeatures(SourceFormat sourceFormat) {
+    public File getSourceFile() {
+        return this.sourceFile;
+    }
+
+    @Override
+    public Set<ProcessorFeature> getSupportedFeatures() {
         Set<ProcessorFeature> features = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             features.addAll(SUPPORTED_FEATURES);
         }
         return features;
@@ -221,10 +237,10 @@ class OpenJpegProcessor implements FileProcessor {
 
     @Override
     public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-    getSupportedIiif1_1Qualities(final SourceFormat sourceFormat) {
+    getSupportedIiif1_1Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
                 qualities = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             qualities.addAll(SUPPORTED_IIIF_1_1_QUALITIES);
         }
         return qualities;
@@ -232,10 +248,10 @@ class OpenJpegProcessor implements FileProcessor {
 
     @Override
     public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-    getSupportedIiif2_0Qualities(final SourceFormat sourceFormat) {
+    getSupportedIiif2_0Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
                 qualities = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             qualities.addAll(SUPPORTED_IIIF_2_0_QUALITIES);
         }
         return qualities;
@@ -243,16 +259,10 @@ class OpenJpegProcessor implements FileProcessor {
 
     @Override
     public void process(final OperationList ops,
-                        final SourceFormat sourceFormat,
-                        final Dimension fullSize,
-                        final File inputFile,
+                        final ImageInfo imageInfo,
                         final OutputStream outputStream)
             throws ProcessorException {
-        final Set<OutputFormat> availableOutputFormats =
-                getAvailableOutputFormats(sourceFormat);
-        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
-            throw new UnsupportedSourceFormatException(sourceFormat);
-        } else if (!availableOutputFormats.contains(ops.getOutputFormat())) {
+        if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
 
@@ -280,30 +290,39 @@ class OpenJpegProcessor implements FileProcessor {
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
             final ReductionFactor reductionFactor = new ReductionFactor();
-            final ProcessBuilder pb = getProcessBuilder(inputFile, ops,
-                    fullSize, reductionFactor);
-            logger.debug("Invoking {}", StringUtils.join(pb.command(), " "));
+            final ProcessBuilder pb = getProcessBuilder(
+                    ops, imageInfo.getSize(), reductionFactor);
+            logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
+            final InputStream processInputStream = process.getInputStream();
+            final InputStream processErrorStream = process.getErrorStream();
+            final OutputStream processOutputStream = process.getOutputStream();
 
-            executorService.submit(new StreamCopier(
-                    process.getErrorStream(), errorBucket));
-
-            Configuration config = Application.getConfiguration();
-            switch (config.getString(POST_PROCESSOR_CONFIG_KEY, "java2d").toLowerCase()) {
-                case "jai":
-                    logger.debug("Post-processing using JAI");
-                    postProcessUsingJai(
-                            process.getInputStream(), ops,
-                            reductionFactor, outputStream);
-                    break;
-                default:
-                    logger.debug("Post-processing using Java2D");
-                    postProcessUsingJava2d(
-                            process.getInputStream(), ops,
-                            reductionFactor, outputStream);
-                    break;
-            }
             try {
+                executorService.submit(new StreamCopier(
+                        processErrorStream, errorBucket));
+
+                final ImageIoImageReader reader = new ImageIoImageReader();
+                reader.setFormat(Format.BMP);
+                reader.setSource(
+                        new InputStreamStreamSource(processInputStream));
+
+                Configuration config = Application.getConfiguration();
+                switch (config.getString(POST_PROCESSOR_CONFIG_KEY, "java2d").toLowerCase()) {
+                    case "jai":
+                        logger.info("Post-processing using JAI ({} = jai)",
+                                POST_PROCESSOR_CONFIG_KEY);
+                        postProcessUsingJai(reader, ops, reductionFactor,
+                                outputStream);
+                        break;
+                    default:
+                        logger.info("Post-processing using Java 2D ({} = java2d)",
+                                POST_PROCESSOR_CONFIG_KEY);
+                        postProcessUsingJava2d(reader, ops, reductionFactor,
+                                outputStream);
+                        break;
+                }
+
                 final int code = process.waitFor();
                 if (code != 0) {
                     logger.warn("opj_decompress returned with code {}", code);
@@ -313,9 +332,9 @@ class OpenJpegProcessor implements FileProcessor {
                     }
                 }
             } finally {
-                process.getInputStream().close();
-                process.getOutputStream().close();
-                process.getErrorStream().close();
+                processInputStream.close();
+                processOutputStream.close();
+                processErrorStream.close();
                 process.destroy();
             }
         } catch (IOException | InterruptedException e) {
@@ -328,24 +347,28 @@ class OpenJpegProcessor implements FileProcessor {
         }
     }
 
+    @Override
+    public void setSourceFile(File sourceFile) {
+        reset();
+        this.sourceFile = sourceFile;
+    }
+
     /**
      * Gets a ProcessBuilder corresponding to the given parameters.
      *
-     * @param inputFile
      * @param opList
      * @param imageSize The full size of the source image
      * @param reduction {@link ReductionFactor#factor} property modified by
-     * reference
+     *                  reference
      * @return Command string
      */
-    private ProcessBuilder getProcessBuilder(final File inputFile,
-                                             final OperationList opList,
+    private ProcessBuilder getProcessBuilder(final OperationList opList,
                                              final Dimension imageSize,
                                              final ReductionFactor reduction) {
         final List<String> command = new ArrayList<>();
         command.add(getPath("opj_decompress"));
         command.add("-i");
-        command.add(inputFile.getAbsolutePath());
+        command.add(sourceFile.getAbsolutePath());
 
         for (Operation op : opList) {
             if (op instanceof Crop) {
@@ -368,26 +391,26 @@ class OpenJpegProcessor implements FileProcessor {
                 final Scale scale = (Scale) op;
                 final Dimension tileSize = getCroppedSize(opList, imageSize);
                 if (scale.getMode() != Scale.Mode.FULL) {
-                    if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+                    if (scale.getPercent() != null) {
+                        reduction.factor = ReductionFactor.forScale(
+                                scale.getPercent(), MAX_REDUCTION_FACTOR).factor;
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                         double hvScale = (double) scale.getWidth() /
                                 (double) tileSize.width;
-                        reduction.factor = ProcessorUtil.getReductionFactor(
+                        reduction.factor = ReductionFactor.forScale(
                                 hvScale, MAX_REDUCTION_FACTOR).factor;
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                         double hvScale = (double) scale.getHeight() /
                                 (double) tileSize.height;
-                        reduction.factor = ProcessorUtil.getReductionFactor(
+                        reduction.factor = ReductionFactor.forScale(
                                 hvScale, MAX_REDUCTION_FACTOR).factor;
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
                         double hScale = (double) scale.getWidth() /
                                 (double) tileSize.width;
                         double vScale = (double) scale.getHeight() /
                                 (double) tileSize.height;
-                        reduction.factor = ProcessorUtil.getReductionFactor(
+                        reduction.factor = ReductionFactor.forScale(
                                 Math.min(hScale, vScale), MAX_REDUCTION_FACTOR).factor;
-                    } else if (scale.getPercent() != null) {
-                        reduction.factor = ProcessorUtil.getReductionFactor(
-                                scale.getPercent(), MAX_REDUCTION_FACTOR).factor;
                     } else {
                         reduction.factor = 0;
                     }
@@ -424,13 +447,13 @@ class OpenJpegProcessor implements FileProcessor {
         return tileSize;
     }
 
-    private void postProcessUsingJai(final InputStream inputStream,
+    private void postProcessUsingJai(final ImageIoImageReader reader,
                                      final OperationList opList,
                                      final ReductionFactor reductionFactor,
                                      final OutputStream outputStream)
             throws IOException, ProcessorException {
-        RenderedImage renderedImage = new ImageIoImageReader().
-                readRendered(inputStream, SourceFormat.BMP);
+        BufferedImage image = null;
+        RenderedImage renderedImage = reader.readRendered();
         RenderedOp renderedOp = JaiUtil.reformatImage(
                 RenderedOp.wrapRenderedImage(renderedImage),
                 new Dimension(512, 512));
@@ -445,39 +468,65 @@ class OpenJpegProcessor implements FileProcessor {
                 renderedOp = JaiUtil.rotateImage(renderedOp, (Rotate) op);
             } else if (op instanceof Filter) {
                 renderedOp = JaiUtil.filterImage(renderedOp, (Filter) op);
+            } else if (op instanceof Watermark) {
+                // Let's cheat and apply the watermark using Java 2D.
+                // There seems to be minimal performance penalty in doing
+                // this, and doing it in JAI is harder.
+                image = renderedOp.getAsBufferedImage();
+                try {
+                    image = Java2dUtil.applyWatermark(image, (Watermark) op);
+                } catch (ConfigurationException e) {
+                    logger.error(e.getMessage());
+                }
             }
         }
-        ImageIO.write(renderedOp, opList.getOutputFormat().getExtension(),
-                ImageIO.createImageOutputStream(outputStream));
+
+        ImageIoImageWriter writer = new ImageIoImageWriter();
+
+        if (image != null) {
+            writer.write(image, opList.getOutputFormat(), outputStream);
+            image.flush();
+        } else {
+            writer.write(renderedOp, opList.getOutputFormat(),
+                    outputStream);
+        }
     }
 
-    private void postProcessUsingJava2d(final InputStream inputStream,
+    private void postProcessUsingJava2d(final ImageIoImageReader reader,
                                         final OperationList opList,
                                         final ReductionFactor reductionFactor,
                                         final OutputStream outputStream)
             throws IOException, ProcessorException {
-        BufferedImage image = new ImageIoImageReader().read(inputStream);
+        BufferedImage image = reader.read();
         for (Operation op : opList) {
             if (op instanceof Scale) {
                 final boolean highQuality = Application.getConfiguration().
                         getString(JAVA2D_SCALE_MODE_CONFIG_KEY, "speed").
                         equals("quality");
-                image = Java2dUtil.scaleImageWithG2d(image,
+                image = Java2dUtil.scaleImage(image,
                         (Scale) op, reductionFactor, highQuality);
             } else if (op instanceof Transpose) {
-                image = Java2dUtil.transposeImage(image,
-                        (Transpose) op);
+                image = Java2dUtil.transposeImage(image, (Transpose) op);
             } else if (op instanceof Rotate) {
-                image = Java2dUtil.rotateImage(image,
-                        (Rotate) op);
+                image = Java2dUtil.rotateImage(image, (Rotate) op);
             } else if (op instanceof Filter) {
-                image = Java2dUtil.filterImage(image,
-                        (Filter) op);
+                image = Java2dUtil.filterImage(image, (Filter) op);
+            } else if (op instanceof Watermark) {
+                try {
+                    image = Java2dUtil.applyWatermark(image, (Watermark) op);
+                } catch (ConfigurationException e) {
+                    logger.error(e.getMessage());
+                }
             }
         }
+
         new ImageIoImageWriter().write(image, opList.getOutputFormat(),
                 outputStream);
         image.flush();
+    }
+
+    private void reset() {
+        imageInfo = null;
     }
 
 }

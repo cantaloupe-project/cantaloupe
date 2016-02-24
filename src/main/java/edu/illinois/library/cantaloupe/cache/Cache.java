@@ -2,8 +2,8 @@ package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.processor.ImageInfo;
 
-import java.awt.Dimension;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -11,7 +11,7 @@ import java.io.OutputStream;
  * <p>Interface to be implemented by all caches. A cache stores and retrieves
  * unique images corresponding to
  * {@link edu.illinois.library.cantaloupe.image.OperationList} objects, as
- * well as {@link java.awt.Dimension} objects corresponding to
+ * well as {@link ImageInfo} objects corresponding to
  * {@link edu.illinois.library.cantaloupe.image.Identifier} objects.</p>
  *
  * <p>Implementations must be thread-safe.</p>
@@ -19,17 +19,32 @@ import java.io.OutputStream;
 public interface Cache {
 
     /**
-     * <p>Reads cached dimension information.</p>
+     * <p>Cleans up the cache.</p>
      *
-     * <p>If a dimension corresponding to the given identifier exists in the
-     * cache but is expired, implementations should delete it.</p>
+     * <p>This method should <strong>not</strong> purge any content. Other
+     * than that, implementations may interpret "clean up" however they
+     * wish--ideally, they will not need to do anything at all.</p>
      *
-     * @param identifier Image identifier for which to retrieve a dimension.
-     * @return Dimension corresponding to the given identifier, or null if no
-     * non-expired dimension exists in the cache.
+     * <p>The frequency with which this method will be called may vary.
+     * It may never be called. Implementations should try to keep themselves
+     * clean without relying on this method.</p>
+     *
      * @throws CacheException
      */
-    Dimension getDimension(Identifier identifier) throws CacheException;
+    void cleanUp() throws CacheException;
+
+    /**
+     * <p>Reads cached image information.</p>
+     *
+     * <p>If image information corresponding to the given identifier exists in
+     * the cache but is expired, implementations should delete it.</p>
+     *
+     * @param identifier Image identifier for which to retrieve information.
+     * @return ImageInfo corresponding to the given identifier, or null if no
+     * non-expired info exists in the cache.
+     * @throws CacheException
+     */
+    ImageInfo getImageInfo(Identifier identifier) throws CacheException;
 
     /**
      * <p>Returns an input stream corresponding to the given OperationList,
@@ -44,8 +59,9 @@ public interface Cache {
      * @return Input stream corresponding to the given operation list, or null
      *         if a non-expired image corresponding to the given operation
      *         list does not exist in the cache.
+     * @throws CacheException
      */
-    InputStream getImageInputStream(OperationList opList);
+    InputStream getImageInputStream(OperationList opList) throws CacheException;
 
     /**
      * @param opList Operation list for which to retrieve an output stream for
@@ -60,9 +76,9 @@ public interface Cache {
     /**
      * Deletes the entire cache contents.
      *
-     * @throws CacheException If the cache is misconfigured or there is some
-     * other error.
-     * @throws CacheException
+     * @throws CacheException Upon fatal error. Implementations should do the
+     *         best they can to complete the operation and swallow and log
+     *         non-fatal errors.
      */
     void purge() throws CacheException;
 
@@ -71,7 +87,9 @@ public interface Cache {
      * identifier.
      *
      * @param identifier
-     * @throws CacheException
+     * @throws CacheException Upon fatal error. Implementations should do the
+     *         best they can to complete the operation and swallow and log
+     *         non-fatal errors.
      */
     void purge(Identifier identifier) throws CacheException;
 
@@ -79,28 +97,36 @@ public interface Cache {
      * Deletes the cached image corresponding to the given operation list.
      *
      * @param opList
-     * @throws CacheException
+     * @throws CacheException Upon fatal error. Implementations should do the
+     *         best they can to complete the operation and swallow and log
+     *         non-fatal errors.
      */
     void purge(OperationList opList) throws CacheException;
 
     /**
      * Deletes expired images and dimensions from the cache.
      *
-     * @throws CacheException
+     * @throws CacheException Upon fatal error. Implementations should do the
+     *         best they can to complete the operation and swallow and log
+     *         non-fatal errors.
      */
     void purgeExpired() throws CacheException;
 
     /**
-     * Adds an image's dimension information to the cache. If the writing of
-     * the dimension is interrupted, implementations should clean it up, if
-     * necessary.
+     * <p>Adds image information to the cache.</p>
+     *
+     * <p>If the information corresponding to the given identifier already
+     * exists, it should be overwritten.</p>
+     *
+     * <p>If writing is interrupted, implementations should perform cleanup,
+     * if necessary.</p>
      *
      * @param identifier Identifier of the image corresponding to the given
      *                   size.
-     * @param size Dimension containing width and height in pixels.
+     * @param imageInfo ImageInfo containing image information.
      * @throws CacheException
      */
-    void putDimension(Identifier identifier, Dimension size)
+    void putImageInfo(Identifier identifier, ImageInfo imageInfo)
             throws CacheException;
 
 }

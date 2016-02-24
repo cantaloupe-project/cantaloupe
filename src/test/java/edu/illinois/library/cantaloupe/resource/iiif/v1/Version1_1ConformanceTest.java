@@ -2,11 +2,10 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.lang3.StringUtils;
@@ -84,12 +83,12 @@ public class Version1_1ConformanceTest {
     @Before
     public void setUp() throws Exception {
         Application.setConfiguration(newConfiguration());
-        Application.startServer();
+        Application.getWebServer().start();
     }
 
     @After
     public void tearDown() throws Exception {
-        Application.stopServer();
+        Application.getWebServer().stop();
     }
 
     /**
@@ -580,25 +579,25 @@ public class Version1_1ConformanceTest {
      */
     @Test
     public void testFormats() throws Exception {
-        testFormat(OutputFormat.JPG);
-        testFormat(OutputFormat.TIF);
-        testFormat(OutputFormat.PNG);
-        testFormat(OutputFormat.GIF);
-        testFormat(OutputFormat.JP2);
-        testFormat(OutputFormat.PDF);
+        testFormat(Format.JPG);
+        testFormat(Format.TIF);
+        testFormat(Format.PNG);
+        testFormat(Format.GIF);
+        testFormat(Format.JP2);
+        testFormat(Format.PDF);
     }
 
-    private void testFormat(OutputFormat format) throws Exception {
+    private void testFormat(Format format) throws Exception {
         ClientResource client = getClientForUriPath("/" + IMAGE +
-                "/full/full/0/native." + format.getExtension());
+                "/full/full/0/native." + format.getPreferredExtension());
 
         // does the current processor support this output format?
-        SourceFormat sourceFormat = SourceFormat.getSourceFormat(IMAGE);
+        Format sourceFormat = Format.getFormat(IMAGE);
         Processor processor = ProcessorFactory.getProcessor(sourceFormat);
-        if (processor.getAvailableOutputFormats(sourceFormat).contains(format)) {
+        if (processor.getAvailableOutputFormats().contains(format)) {
             client.get();
             assertEquals(Status.SUCCESS_OK, client.getStatus());
-            assertEquals(format.getMediaType(),
+            assertEquals(format.getPreferredMediaType().toString(),
                     client.getResponse().getHeaders().getFirst("Content-Type").getValue());
         } else {
             try {

@@ -4,9 +4,9 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
@@ -17,13 +17,13 @@ import edu.illinois.library.cantaloupe.resource.AccessDeniedException;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import org.restlet.data.Disposition;
-import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Dimension;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Map;
@@ -72,7 +72,8 @@ public class ImageResource extends AbstractResource {
                 (String) attrs.get("quality"),
                 (String) attrs.get("format"));
         final OperationList ops = params.toOperationList();
-        ops.setIdentifier(decodeSlashes(ops.getIdentifier()));
+        final Identifier identifier = decodeSlashes(ops.getIdentifier());
+        ops.setIdentifier(identifier);
         ops.getOptions().putAll(
                 this.getReference().getQueryAsForm(true).getValuesMap());
 
@@ -90,7 +91,7 @@ public class ImageResource extends AbstractResource {
                 if (inputStream != null) {
                     this.addLinkHeader(params);
                     return new CachedImageRepresentation(
-                            new MediaType(params.getOutputFormat().getMediaType()),
+                            params.getOutputFormat().getPreferredMediaType(),
                             disposition, inputStream);
                 }
             }
@@ -98,9 +99,9 @@ public class ImageResource extends AbstractResource {
 
         Resolver resolver = ResolverFactory.getResolver(ops.getIdentifier());
         // Determine the format of the source image
-        SourceFormat sourceFormat = SourceFormat.UNKNOWN;
+        Format format = Format.UNKNOWN;
         try {
-            sourceFormat = resolver.getSourceFormat(ops.getIdentifier());
+            format = resolver.getSourceFormat(ops.getIdentifier());
         } catch (FileNotFoundException e) {
             if (Application.getConfiguration().
                     getBoolean(PURGE_MISSING_CONFIG_KEY, false)) {
@@ -115,33 +116,31 @@ public class ImageResource extends AbstractResource {
 
         // Obtain an instance of the processor assigned to that format in
         // the config file
-        Processor proc = ProcessorFactory.getProcessor(sourceFormat, resolver);
+        Processor proc = ProcessorFactory.getProcessor(resolver, identifier,
+                format);
 
-        if (sourceFormat.equals(SourceFormat.UNKNOWN)) {
-            throw new UnsupportedSourceFormatException();
-        }
+        final Dimension fullSize = getOrReadInfo(ops.getIdentifier(), proc).getSize();
 
-        if (!isAuthorized(ops,
-                getSize(ops.getIdentifier(), proc, resolver, sourceFormat))) {
+        if (!isAuthorized(ops, fullSize)) {
             throw new AccessDeniedException();
         }
 
+        addNonEndpointOperations(ops, fullSize);
+
         // Find out whether the processor supports that source format by
         // asking it whether it offers any output formats for it
-        Set<OutputFormat> availableOutputFormats =
-                proc.getAvailableOutputFormats(sourceFormat);
+        Set<Format> availableOutputFormats = proc.getAvailableOutputFormats();
         if (!availableOutputFormats.contains(ops.getOutputFormat())) {
             String msg = String.format("%s does not support the \"%s\" output format",
                     proc.getClass().getSimpleName(),
-                    ops.getOutputFormat().getExtension());
+                    ops.getOutputFormat().getPreferredExtension());
             logger.warn(msg + ": " + this.getReference());
             throw new UnsupportedSourceFormatException(msg);
         }
 
         this.addLinkHeader(params);
 
-        return getRepresentation(ops, sourceFormat, disposition, resolver,
-                proc);
+        return getRepresentation(ops, format, disposition, proc);
     }
 
     private void addLinkHeader(Parameters params) {

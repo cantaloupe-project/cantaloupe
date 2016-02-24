@@ -2,19 +2,15 @@ package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.Cache;
+import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.processor.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.processor.FileProcessor;
+import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
-import edu.illinois.library.cantaloupe.processor.StreamProcessor;
-import edu.illinois.library.cantaloupe.resolver.StreamResolver;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
-import edu.illinois.library.cantaloupe.resolver.FileResolver;
-import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
@@ -24,7 +20,6 @@ import org.restlet.Request;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.Disposition;
 import org.restlet.data.Header;
-import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.resource.ResourceException;
@@ -35,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
 import java.awt.Dimension;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -99,11 +93,11 @@ public abstract class AbstractResource extends ServerResource {
             final String hostStr = headers.getFirstValue("X-Forwarded-Host",
                     true, null);
             final String portStr = headers.getFirstValue("X-Forwarded-Port",
-                    true, null);
+                    true, "80");
             final String pathStr = headers.getFirstValue("X-Forwarded-Path",
                     true, null);
             if (hostStr != null) {
-                logger.debug("Assembling base URI from X-Forwarded-* headers. " +
+                logger.debug("Assembling base URI from X-Forwarded headers. " +
                                 "Proto: {}; Host: {}; Port: {}; Path: {}",
                         protocolStr, hostStr, portStr, pathStr);
 
@@ -135,7 +129,7 @@ public abstract class AbstractResource extends ServerResource {
      * output format.
      */
     public static Disposition getRepresentationDisposition(
-            Identifier identifier, OutputFormat outputFormat) {
+            Identifier identifier, Format outputFormat) {
         Disposition disposition = new Disposition();
         switch (Application.getConfiguration().
                 getString(CONTENT_DISPOSITION_CONFIG_KEY, "none")) {
@@ -147,7 +141,7 @@ public abstract class AbstractResource extends ServerResource {
                 disposition.setFilename(
                         identifier.toString().replaceAll(
                                 ImageRepresentation.FILENAME_CHARACTERS, "_") +
-                                "." + outputFormat.getExtension());
+                                "." + outputFormat.getPreferredExtension());
                 break;
         }
         return disposition;
@@ -175,6 +169,27 @@ public abstract class AbstractResource extends ServerResource {
                     put("org.restlet.http.headers", responseHeaders);
         }
         responseHeaders.add(new Header(key, value));
+    }
+
+    /**
+     * @param opList
+     * @param fullSize
+     */
+    public void addNonEndpointOperations(final OperationList opList,
+                                         final Dimension fullSize) {
+        if (WatermarkService.isEnabled()) {
+            try {
+                opList.add(WatermarkService.newWatermark(
+                        opList, fullSize, getReference().toUrl(),
+                        getRequest().getHeaders().getValuesMap(),
+                        getCanonicalClientIpAddress(),
+                        getRequest().getCookies().getValuesMap()));
+            } catch (DelegateScriptDisabledException e) {
+                // no problem
+            } catch (Exception e) {
+                logger.error(e.getMessage());
+            }
+        }
     }
 
     /**
@@ -242,97 +257,76 @@ public abstract class AbstractResource extends ServerResource {
         return directives;
     }
 
+    /**
+     * @return The client IP address, respecting the X-Forwarded-For header,
+     * if present.
+     */
+    protected String getCanonicalClientIpAddress() {
+        final List<String> forwardedIps = getRequest().getClientInfo().
+                getForwardedAddresses();
+        if (forwardedIps.size() > 0) {
+            return forwardedIps.get(forwardedIps.size() - 1);
+        }
+        return getRequest().getClientInfo().getAddress();
+    }
+
     protected ImageRepresentation getRepresentation(OperationList ops,
-                                                    SourceFormat sourceFormat,
+                                                    Format format,
                                                     Disposition disposition,
-                                                    Resolver resolver,
                                                     Processor proc)
-            throws IOException, ProcessorException {
-        final MediaType mediaType = new MediaType(
-                ops.getOutputFormat().getMediaType());
+            throws IOException, ProcessorException, CacheException {
         // Max allowed size is ignored when the processing is a no-op.
-        final long maxAllowedSize = (ops.isNoOp(sourceFormat)) ?
+        final long maxAllowedSize = (ops.isNoOp(format)) ?
                 0 : Application.getConfiguration().getLong(MAX_PIXELS_CONFIG_KEY, 0);
 
-        if (resolver instanceof FileResolver &&
-                proc instanceof FileProcessor) {
-            logger.debug("Using {} as a FileProcessor",
-                    proc.getClass().getSimpleName());
-            final FileProcessor fproc = (FileProcessor) proc;
-            final File inputFile = ((FileResolver) resolver).
-                    getFile(ops.getIdentifier());
-            final Dimension fullSize = fproc.getSize(inputFile, sourceFormat);
-            final Dimension effectiveSize = ops.getResultingSize(fullSize);
-            if (maxAllowedSize > 0 &&
-                    effectiveSize.width * effectiveSize.height > maxAllowedSize) {
-                throw new PayloadTooLargeException();
-            }
-            return new ImageRepresentation(mediaType, sourceFormat, fullSize,
-                    ops, disposition, inputFile);
-        } else if (resolver instanceof StreamResolver) {
-            logger.debug("Using {} as a StreamProcessor",
-                    proc.getClass().getSimpleName());
-            final StreamResolver chRes = (StreamResolver) resolver;
-            if (proc instanceof StreamProcessor) {
-                final StreamProcessor sproc = (StreamProcessor) proc;
-                final StreamSource streamSource = chRes.
-                        getStreamSource(ops.getIdentifier());
-                final Dimension fullSize = sproc.getSize(streamSource,
-                        sourceFormat);
-                final Dimension effectiveSize = ops.getResultingSize(fullSize);
-                if (maxAllowedSize > 0 &&
-                        effectiveSize.width * effectiveSize.height > maxAllowedSize) {
-                    throw new PayloadTooLargeException();
-                }
-                return new ImageRepresentation(mediaType, sourceFormat,
-                        fullSize, ops, disposition, streamSource);
-            }
+        final ImageInfo imageInfo = getOrReadInfo(ops.getIdentifier(), proc);
+        final Dimension effectiveSize = ops.getResultingSize(imageInfo.getSize());
+        if (maxAllowedSize > 0 &&
+                effectiveSize.width * effectiveSize.height > maxAllowedSize) {
+            throw new PayloadTooLargeException();
         }
-        return null; // should never hit
+
+        return new ImageRepresentation(imageInfo, proc, ops, disposition);
     }
 
     /**
-     * Gets the size of the image corresponding to the given identifier, first
-     * by checking the cache and then, if necessary, by reading it from the
-     * image and caching the result.
+     * Gets the image info corresponding to the given identifier, first by
+     * checking the cache and then, if necessary, by reading it from the image
+     * and caching the result.
      *
      * @param identifier
      * @param proc
-     * @param resolver
-     * @param sourceFormat
      * @return
      * @throws Exception
      */
-    protected final Dimension getSize(final Identifier identifier,
-                                      final Processor proc,
-                                      final Resolver resolver,
-                                      final SourceFormat sourceFormat)
-            throws Exception {
-        Dimension size = null;
+    protected final ImageInfo getOrReadInfo(final Identifier identifier,
+                                            final Processor proc)
+            throws ProcessorException, CacheException {
+        ImageInfo info = null;
         Cache cache = CacheFactory.getInstance();
         if (cache != null) {
             long msec = System.currentTimeMillis();
-            size = cache.getDimension(identifier);
-            if (size != null) {
-                logger.debug("Retrieved dimensions of {} from cache in {} msec",
+            info = cache.getImageInfo(identifier);
+            if (info != null) {
+                logger.info("Retrieved dimensions of {} from cache in {} msec",
                         identifier, System.currentTimeMillis() - msec);
             } else {
-                size = readSize(identifier, resolver, proc, sourceFormat);
-                cache.putDimension(identifier, size);
+                info = readInfo(identifier, proc);
+                cache.putImageInfo(identifier, info);
             }
         }
-        if (size == null) {
-            size = readSize(identifier, resolver, proc, sourceFormat);
+        if (info == null) {
+            info = readInfo(identifier, proc);
         }
-        return size;
+        return info;
     }
 
     /**
      * Invokes a delegate script method to determine whether the request is
      * authorized.
      *
-     * @param fullSize
      * @param opList
+     * @param fullSize
      * @return
      * @throws IOException
      * @throws ScriptException
@@ -358,7 +352,7 @@ public abstract class AbstractResource extends ServerResource {
         args[4] = opList.toMap(fullSize).get("output_format"); // output_format
         args[5] = getReference().toString();                   // request_uri
         args[6] = getRequest().getHeaders().getValuesMap();    // request_headers
-        args[7] = getRequest().getClientInfo().getAddress();   // client_ip
+        args[7] = getCanonicalClientIpAddress();               // client_ip
         args[8] = getRequest().getCookies().getValuesMap();    // cookies
 
         try {
@@ -366,50 +360,26 @@ public abstract class AbstractResource extends ServerResource {
             final String method = "authorized?";
             return (boolean) engine.invoke(method, args);
         } catch (DelegateScriptDisabledException e) {
-            logger.debug("isAuthorized(): delegate script disabled; allowing.");
+            logger.info("isAuthorized(): delegate script disabled; allowing.");
             return true;
         }
     }
 
     /**
-     * Reads the size of the source image.
+     * Reads the information of the source image.
      *
      * @param identifier
-     * @param resolver
      * @param proc
-     * @param sourceFormat
      * @return
-     * @throws Exception
+     * @throws ProcessorException
      */
-    protected final Dimension readSize(final Identifier identifier,
-                                       final Resolver resolver,
-                                       final Processor proc,
-                                       final SourceFormat sourceFormat)
-            throws Exception {
+    private ImageInfo readInfo(final Identifier identifier,
+                               final Processor proc) throws ProcessorException {
         final long msec = System.currentTimeMillis();
-        Dimension size = null;
-        if (resolver instanceof FileResolver) {
-            if (proc instanceof FileProcessor) {
-                size = ((FileProcessor) proc).getSize(
-                        ((FileResolver) resolver).getFile(identifier),
-                        sourceFormat);
-            } else if (proc instanceof StreamProcessor) {
-                size = ((StreamProcessor) proc).getSize(
-                        ((StreamResolver) resolver).getStreamSource(identifier),
-                        sourceFormat);
-            }
-        } else if (resolver instanceof StreamResolver) {
-            if (!(proc instanceof StreamProcessor)) {
-                // StreamResolvers and FileProcessors are incompatible
-            } else {
-                size = ((StreamProcessor) proc).getSize(
-                        ((StreamResolver) resolver).getStreamSource(identifier),
-                        sourceFormat);
-            }
-        }
-        logger.debug("Read dimensions of {} in {} msec", identifier,
+        final ImageInfo info = proc.getImageInfo();
+        logger.info("Read info of {} in {} msec", identifier,
                 System.currentTimeMillis() - msec);
-        return size;
+        return info;
     }
 
 }

@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.image;
 
+import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import org.apache.commons.lang3.StringUtils;
 
 import java.awt.Dimension;
@@ -10,8 +11,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Normalized list of image transform operations along with an image identifier
- * and desired output format.
+ * <p>Normalized list of {@link Operation image transform operations}
+ * corresponding to an image identified by its {@link Identifier}, along with
+ * a {@link Format} in which the processed image is to be written.</p>
+ *
+ * <p>Endpoints translate request parameters into instances of this class, in
+ * order to pass them off into {@link
+ * edu.illinois.library.cantaloupe.processor.Processor processors} and
+ * {@link edu.illinois.library.cantaloupe.cache.Cache caches}.</p>
  */
 public class OperationList implements Comparable<OperationList>,
         Iterable<Operation> {
@@ -19,7 +26,21 @@ public class OperationList implements Comparable<OperationList>,
     private Identifier identifier;
     private List<Operation> operations = new ArrayList<>();
     private Map<String,Object> options = new HashMap<>();
-    private OutputFormat outputFormat;
+    private Format outputFormat;
+
+    /**
+     * No-op constructor.
+     */
+    public OperationList() {}
+
+    public OperationList(Identifier identifier) {
+        setIdentifier(identifier);
+    }
+
+    public OperationList(Identifier identifier, Format outputFormat) {
+        setIdentifier(identifier);
+        setOutputFormat(outputFormat);
+    }
 
     /**
      * @param op Operation to add. Null values will be discarded.
@@ -38,6 +59,19 @@ public class OperationList implements Comparable<OperationList>,
     public int compareTo(OperationList ops) {
         int last = this.toString().compareTo(ops.toString());
         return (last == 0) ? this.toString().compareTo(ops.toString()) : last;
+    }
+
+    /**
+     * @param clazz
+     * @return Whether the instance contains an operation of the given class.
+     */
+    public boolean contains(Class clazz) {
+        for (Operation op : this) {
+            if (op.getClass().equals(clazz)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -60,7 +94,7 @@ public class OperationList implements Comparable<OperationList>,
         return options;
     }
 
-    public OutputFormat getOutputFormat() {
+    public Format getOutputFormat() {
         return outputFormat;
     }
 
@@ -80,30 +114,32 @@ public class OperationList implements Comparable<OperationList>,
     /**
      * Determines whether the operations are effectively calling for the
      * unmodified source image, guessing the source format based on the
-     * identifier. {@link #isNoOp(SourceFormat)} should be used instead, if
+     * identifier. {@link #isNoOp(Format)} should be used instead, if
      * possible.
      *
      * @return Whether the operations are effectively calling for the
      * unmodified source image.
      */
     public boolean isNoOp() {
-        return isNoOp(SourceFormat.getSourceFormat(this.getIdentifier()));
+        return isNoOp(Format.getFormat(this.getIdentifier()));
     }
 
     /**
      * Determines whether the operations are effectively calling for the
      * unmodified source image, based on the given source format.
      *
-     * @param sourceFormat
+     * @param format
      * @return Whether the operations are effectively calling for the
      * unmodified source image.
      */
-    public boolean isNoOp(SourceFormat sourceFormat) {
-        if (!this.getOutputFormat().isEqual(sourceFormat)) {
+    public boolean isNoOp(Format format) {
+        if (!this.getOutputFormat().equals(format)) {
             return false;
         }
         for (Operation op : this) {
-            if (!op.isNoOp()) {
+            // Ignore watermarks when the output formats is PDF.
+            if (!op.isNoOp() && !(op instanceof Watermark &&
+                    getOutputFormat().equals(Format.PDF))) {
                 return false;
             }
         }
@@ -111,7 +147,7 @@ public class OperationList implements Comparable<OperationList>,
     }
 
     @Override
-    public Iterator<Operation> iterator() {
+    public Iterator iterator() {
         return operations.iterator();
     }
 
@@ -119,7 +155,7 @@ public class OperationList implements Comparable<OperationList>,
         this.identifier = identifier;
     }
 
-    public void setOutputFormat(OutputFormat outputFormat) {
+    public void setOutputFormat(Format outputFormat) {
         this.outputFormat = outputFormat;
     }
 
@@ -139,7 +175,7 @@ public class OperationList implements Comparable<OperationList>,
      *       "key" => "value"
      *       ...
      *   "output_format" =&gt;
-     *     result of {@link OutputFormat#toMap}</pre>
+     *     result of {@link Format#toMap}</pre>
      *
      * @param fullSize Full size of the source image on which the instance is
      *                 being applied.
@@ -184,7 +220,7 @@ public class OperationList implements Comparable<OperationList>,
             parts.add(key + ":" + this.getOptions().get(key));
         }
         return StringUtils.join(parts, "_") + "." +
-                getOutputFormat().getExtension();
+                getOutputFormat().getPreferredExtension();
     }
 
 }

@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.resolver;
 import static org.junit.Assert.*;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.WebServer;
@@ -90,7 +90,7 @@ public class HttpResolverTest {
 
     @Test
     public void testGetSourceFormat() throws IOException {
-        assertEquals(SourceFormat.JPG, instance.getSourceFormat(IDENTIFIER));
+        assertEquals(Format.JPG, instance.getSourceFormat(IDENTIFIER));
         try {
             instance.getSourceFormat(new Identifier("image.bogus"));
             fail("Expected exception");

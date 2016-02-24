@@ -4,6 +4,12 @@ import java.awt.Dimension;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * <p>Encapsulates an absolute or relative scale operation.</p>
+ *
+ * <p>Absolute instances will have a non-null width and/or height. Relative
+ * instances will have a non-null percent and a null width and height.</p>
+ */
 public class Scale implements Operation {
 
     public enum Mode {
@@ -12,10 +18,13 @@ public class Scale implements Operation {
     }
 
     private Integer height;
-    private Mode scaleMode;
+    private Mode scaleMode = Mode.ASPECT_FIT_INSIDE;
     private Float percent;
     private Integer width;
 
+    /**
+     * @return Absolute pixel height. May be null.
+     */
     public Integer getHeight() {
         return height;
     }
@@ -25,10 +34,44 @@ public class Scale implements Operation {
     }
 
     /**
-     * @return Float from 0 to 1
+     * @return Float from 0 to 1. May be null.
      */
     public Float getPercent() {
         return percent;
+    }
+
+    /**
+     * @param fullSize
+     * @return Resulting scale when the scale is applied to the given full
+     * size; or null if the scale mode is {@link Mode#NON_ASPECT_FILL}.
+     */
+    public Float getResultingScale(Dimension fullSize) {
+        Float scale = null;
+        if (this.getPercent() != null) {
+            scale = this.getPercent();
+        } else {
+            switch (this.getMode()) {
+                case FULL:
+                    scale = 1f;
+                    break;
+                case ASPECT_FIT_HEIGHT:
+                    scale = (float) (this.getHeight() /
+                            (double) fullSize.height);
+                    break;
+                case ASPECT_FIT_WIDTH:
+                    scale = (float) (this.getWidth() /
+                            (double) fullSize.width);
+                    break;
+                case ASPECT_FIT_INSIDE:
+                    scale = (float) Math.min(
+                            this.getWidth() / (double) fullSize.width,
+                            this.getHeight() / (double) fullSize.height);
+                    break;
+                case NON_ASPECT_FILL:
+                    break;
+            }
+        }
+        return scale;
     }
 
     /**
@@ -83,6 +126,9 @@ public class Scale implements Operation {
         return size;
     }
 
+    /**
+     * @return Absolute pixel width. May be null.
+     */
     public Integer getWidth() {
         return width;
     }
@@ -102,7 +148,7 @@ public class Scale implements Operation {
     }
 
     /**
-     * @param percent Float above 0
+     * @param percent Float greater than 0
      * @throws IllegalArgumentException
      */
     public void setPercent(Float percent) throws IllegalArgumentException {

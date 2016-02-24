@@ -2,17 +2,16 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Filter;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Scale;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.lang3.StringUtils;
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
 import org.im4java.core.IMOperation;
@@ -28,20 +27,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
  * Processor using the ImageMagick `convert` and `identify` command-line tools.
  */
-class ImageMagickProcessor implements StreamProcessor {
+class ImageMagickProcessor extends AbstractProcessor
+        implements StreamProcessor {
 
     private static Logger logger = LoggerFactory.
             getLogger(ImageMagickProcessor.class);
 
-    private static final String BINARIES_PATH_CONFIG_KEY =
+    public static final String BACKGROUND_COLOR_CONFIG_KEY =
+            "ImageMagickProcessor.background_color";
+    public static final String PATH_TO_BINARIES_CONFIG_KEY =
             "ImageMagickProcessor.path_to_binaries";
+
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
@@ -49,116 +55,136 @@ class ImageMagickProcessor implements StreamProcessor {
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
             SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
     // Lazy-initialized by getFormats()
-    private static HashMap<SourceFormat, Set<OutputFormat>> supportedFormats;
+    private static HashMap<Format, Set<Format>> supportedFormats;
+
+    private StreamSource streamSource;
 
     static {
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL);
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR);
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY);
-        SUPPORTED_IIIF_1_1_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE);
+        SUPPORTED_IIIF_1_1_QUALITIES.addAll(Arrays.asList(
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
+        SUPPORTED_IIIF_2_0_QUALITIES.addAll(Arrays.asList(
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
+        SUPPORTED_FEATURES.addAll(Arrays.asList(
+                ProcessorFeature.MIRRORING,
+                ProcessorFeature.REGION_BY_PERCENT,
+                ProcessorFeature.REGION_BY_PIXELS,
+                ProcessorFeature.ROTATION_ARBITRARY,
+                ProcessorFeature.ROTATION_BY_90S,
+                ProcessorFeature.SIZE_ABOVE_FULL,
+                ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
+                ProcessorFeature.SIZE_BY_HEIGHT,
+                ProcessorFeature.SIZE_BY_PERCENT,
+                ProcessorFeature.SIZE_BY_WIDTH,
+                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
+    }
 
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL);
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR);
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT);
-        SUPPORTED_IIIF_2_0_QUALITIES.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY);
-
-        SUPPORTED_FEATURES.add(ProcessorFeature.MIRRORING);
-        SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PERCENT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.REGION_BY_PIXELS);
-        SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_ARBITRARY);
-        SUPPORTED_FEATURES.add(ProcessorFeature.ROTATION_BY_90S);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_ABOVE_FULL);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_HEIGHT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_PERCENT);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH);
-        SUPPORTED_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
+    /**
+     * @param binaryName Name of an executable
+     * @return
+     */
+    private static String getPath(String binaryName) {
+        String path = Application.getConfiguration().
+                getString(PATH_TO_BINARIES_CONFIG_KEY);
+        if (path != null) {
+            path = StringUtils.stripEnd(path, File.separator) + File.separator +
+                    binaryName;
+        } else {
+            path = binaryName;
+        }
+        return path;
     }
 
     /**
      * @return Map of available output formats for all known source formats,
      * based on information reported by <code>identify -list format</code>.
      */
-    private static HashMap<SourceFormat, Set<OutputFormat>> getFormats() {
+    private static HashMap<Format, Set<Format>> getFormats() {
         if (supportedFormats == null) {
-            final Set<SourceFormat> sourceFormats = new HashSet<>();
-            final Set<OutputFormat> outputFormats = new HashSet<>();
-            String cmdPath = "identify";
+            final Set<Format> formats = new HashSet<>();
+            final Set<Format> outputFormats = new HashSet<>();
+
+            // Retrieve the output of the `identify -list format` command,
+            // which contains a list of all supported formats.
+            final ProcessBuilder pb = new ProcessBuilder();
+            final List<String> command = new ArrayList<>();
+            command.add(getPath("identify"));
+            command.add("-list");
+            command.add("format");
+            pb.command(command);
+            final String commandString = StringUtils.join(pb.command(), " ");
+
             try {
-                // retrieve the output of the `identify -list format` command,
-                // which contains a list of all supported formats
-                Configuration config = Application.getConfiguration();
-                String pathPrefix = config.getString(BINARIES_PATH_CONFIG_KEY);
-                if (pathPrefix != null) {
-                    cmdPath = pathPrefix + File.separator + cmdPath;
-                }
-                String[] commands = {cmdPath, "-list", "format"};
-                Runtime runtime = Runtime.getRuntime();
-                Process proc = runtime.exec(commands);
-                BufferedReader stdInput = new BufferedReader(
-                        new InputStreamReader(proc.getInputStream()));
-                String s;
+                logger.info("Executing {}", commandString);
+                final Process process = pb.start();
+                final InputStream processInputStream = process.getInputStream();
 
-                while ((s = stdInput.readLine()) != null) {
-                    s = s.trim();
-                    if (s.startsWith("JP2")) {
-                        sourceFormats.add(SourceFormat.JP2);
-                        if (s.contains(" rw")) {
-                            outputFormats.add(OutputFormat.JP2);
+                try {
+                    BufferedReader stdInput = new BufferedReader(
+                            new InputStreamReader(processInputStream));
+                    String s;
+                    while ((s = stdInput.readLine()) != null) {
+                        s = s.trim();
+                        if (s.startsWith("JP2")) {
+                            formats.add(Format.JP2);
+                            if (s.contains(" rw")) {
+                                outputFormats.add(Format.JP2);
+                            }
+                        }
+                        if (s.startsWith("JPEG")) {
+                            formats.add(Format.JPG);
+                            if (s.contains(" rw")) {
+                                outputFormats.add(Format.JPG);
+                            }
+                        }
+                        if (s.startsWith("PNG")) {
+                            formats.add(Format.PNG);
+                            if (s.contains(" rw")) {
+                                outputFormats.add(Format.PNG);
+                            }
+                        }
+                        if (s.startsWith("PDF") && s.contains(" rw")) {
+                            outputFormats.add(Format.PDF);
+                        }
+                        if (s.startsWith("TIFF")) {
+                            formats.add(Format.TIF);
+                            if (s.contains(" rw")) {
+                                outputFormats.add(Format.TIF);
+                            }
+                        }
+                        if (s.startsWith("WEBP")) {
+                            formats.add(Format.WEBP);
+                            if (s.contains(" rw")) {
+                                outputFormats.add(Format.WEBP);
+                            }
                         }
                     }
-                    if (s.startsWith("JPEG")) {
-                        sourceFormats.add(SourceFormat.JPG);
-                        if (s.contains(" rw")) {
-                            outputFormats.add(OutputFormat.JPG);
-                        }
-                    }
-                    if (s.startsWith("PNG")) {
-                        sourceFormats.add(SourceFormat.PNG);
-                        if (s.contains(" rw")) {
-                            outputFormats.add(OutputFormat.PNG);
-                        }
-                    }
-                    if (s.startsWith("PDF") && s.contains(" rw")) {
-                        outputFormats.add(OutputFormat.PDF);
-                    }
-                    if (s.startsWith("TIFF")) {
-                        sourceFormats.add(SourceFormat.TIF);
-                        if (s.contains(" rw")) {
-                            outputFormats.add(OutputFormat.TIF);
-                        }
-                    }
-                    if (s.startsWith("WEBP")) {
-                        sourceFormats.add(SourceFormat.WEBP);
-                        if (s.contains(" rw")) {
-                            outputFormats.add(OutputFormat.WEBP);
-                        }
-                    }
-
+                    process.waitFor();
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage());
+                } finally {
+                    processInputStream.close();
                 }
             } catch (IOException e) {
-                logger.error("Failed to execute {}", cmdPath);
+                logger.error(e.getMessage());
             }
 
             supportedFormats = new HashMap<>();
-            for (SourceFormat sourceFormat : sourceFormats) {
-                supportedFormats.put(sourceFormat, outputFormats);
+            for (Format format : formats) {
+                supportedFormats.put(format, outputFormats);
             }
         }
         return supportedFormats;
     }
 
     @Override
-    public Set<OutputFormat> getAvailableOutputFormats(SourceFormat sourceFormat) {
-        Set<OutputFormat> formats = getFormats().get(sourceFormat);
+    public Set<Format> getAvailableOutputFormats() {
+        Set<Format> formats = getFormats().get(format);
         if (formats == null) {
             formats = new HashSet<>();
         }
@@ -166,20 +192,19 @@ class ImageMagickProcessor implements StreamProcessor {
     }
 
     @Override
-    public Dimension getSize(final StreamSource streamSource,
-                             final SourceFormat sourceFormat)
-            throws ProcessorException {
-        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
-            throw new UnsupportedSourceFormatException(sourceFormat);
+    public ImageInfo getImageInfo() throws ProcessorException {
+        if (getAvailableOutputFormats().size() < 1) {
+            throw new UnsupportedSourceFormatException(format);
         }
         InputStream inputStream = null;
         try {
             inputStream = streamSource.newInputStream();
             Info sourceInfo = new Info(
-                    sourceFormat.getPreferredExtension() + ":-", inputStream,
+                    format.getPreferredExtension() + ":-", inputStream,
                     true);
-            return new Dimension(sourceInfo.getImageWidth(),
-                    sourceInfo.getImageHeight());
+            return new ImageInfo(sourceInfo.getImageWidth(),
+                    sourceInfo.getImageHeight(), sourceInfo.getImageWidth(),
+                    sourceInfo.getImageHeight(), getSourceFormat());
         } catch (IM4JavaException | IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         } finally {
@@ -194,10 +219,14 @@ class ImageMagickProcessor implements StreamProcessor {
     }
 
     @Override
-    public Set<ProcessorFeature> getSupportedFeatures(
-            final SourceFormat sourceFormat) {
+    public StreamSource getStreamSource() {
+        return this.streamSource;
+    }
+
+    @Override
+    public Set<ProcessorFeature> getSupportedFeatures() {
         Set<ProcessorFeature> features = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             features.addAll(SUPPORTED_FEATURES);
         }
         return features;
@@ -205,10 +234,10 @@ class ImageMagickProcessor implements StreamProcessor {
 
     @Override
     public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-    getSupportedIiif1_1Qualities(final SourceFormat sourceFormat) {
+    getSupportedIiif1_1Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
                 qualities = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             qualities.addAll(SUPPORTED_IIIF_1_1_QUALITIES);
         }
         return qualities;
@@ -216,10 +245,10 @@ class ImageMagickProcessor implements StreamProcessor {
 
     @Override
     public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-    getSupportedIiif2_0Qualities(final SourceFormat sourceFormat) {
+    getSupportedIiif2_0Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
                 qualities = new HashSet<>();
-        if (getAvailableOutputFormats(sourceFormat).size() > 0) {
+        if (getAvailableOutputFormats().size() > 0) {
             qualities.addAll(SUPPORTED_IIIF_2_0_QUALITIES);
         }
         return qualities;
@@ -227,43 +256,44 @@ class ImageMagickProcessor implements StreamProcessor {
 
     @Override
     public void process(final OperationList ops,
-                        final SourceFormat sourceFormat,
-                        final Dimension fullSize,
-                        final StreamSource streamSource,
+                        final ImageInfo imageInfo,
                         final OutputStream outputStream)
             throws ProcessorException {
-        final Set<OutputFormat> availableOutputFormats =
-                getAvailableOutputFormats(sourceFormat);
-        if (getAvailableOutputFormats(sourceFormat).size() < 1) {
-            throw new UnsupportedSourceFormatException(sourceFormat);
-        } else if (!availableOutputFormats.contains(ops.getOutputFormat())) {
+        if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
 
         try {
             IMOperation op = new IMOperation();
-            op.addImage(sourceFormat.getPreferredExtension() + ":-"); // read from stdin
-            assembleOperation(op, ops, fullSize);
+            op.addImage(format.getPreferredExtension() + ":-"); // read from stdin
+            assembleOperation(op, ops, imageInfo.getSize());
 
-            // format transformation
-            op.addImage(ops.getOutputFormat().getExtension() + ":-"); // write to stdout
-
-            Pipe pipeIn = new Pipe(streamSource.newInputStream(), null);
-            Pipe pipeOut = new Pipe(null, outputStream);
+            op.addImage(ops.getOutputFormat().getPreferredExtension() + ":-"); // write to stdout
 
             ConvertCmd convert = new ConvertCmd();
 
             String binaryPath = Application.getConfiguration().
-                    getString(BINARIES_PATH_CONFIG_KEY, "");
+                    getString(PATH_TO_BINARIES_CONFIG_KEY, "");
             if (binaryPath.length() > 0) {
                 convert.setSearchPath(binaryPath);
             }
-            convert.setInputProvider(pipeIn);
-            convert.setOutputConsumer(pipeOut);
-            convert.run(op);
-        } catch (IOException|IM4JavaException|InterruptedException e) {
+
+            InputStream inputStream = streamSource.newInputStream();
+            try {
+                convert.setInputProvider(new Pipe(inputStream, null));
+                convert.setOutputConsumer(new Pipe(null, outputStream));
+                convert.run(op);
+            } finally {
+                inputStream.close();
+            }
+        } catch (IOException | IM4JavaException | InterruptedException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void setStreamSource(StreamSource streamSource) {
+        this.streamSource = streamSource;
     }
 
     private void assembleOperation(IMOperation imOp, OperationList ops,
@@ -290,7 +320,10 @@ class ImageMagickProcessor implements StreamProcessor {
             } else if (op instanceof Scale) {
                 Scale scale = (Scale) op;
                 if (!scale.isNoOp()) {
-                    if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+                    if (scale.getPercent() != null) {
+                        imOp.resize(Math.round(scale.getPercent() * 100),
+                                Math.round(scale.getPercent() * 100), "%");
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
                         imOp.resize(scale.getWidth());
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
                         imOp.resize(null, scale.getHeight());
@@ -298,9 +331,6 @@ class ImageMagickProcessor implements StreamProcessor {
                         imOp.resize(scale.getWidth(), scale.getHeight(), "!");
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
                         imOp.resize(scale.getWidth(), scale.getHeight());
-                    } else if (scale.getPercent() != null) {
-                        imOp.resize(Math.round(scale.getPercent() * 100),
-                                Math.round(scale.getPercent() * 100), "%");
                     }
                 }
             } else if (op instanceof Transpose) {
@@ -313,8 +343,18 @@ class ImageMagickProcessor implements StreamProcessor {
                         break;
                 }
             } else if (op instanceof Rotate) {
-                Rotate rotate = (Rotate) op;
+                final Rotate rotate = (Rotate) op;
                 if (!rotate.isNoOp()) {
+                    // If the output format supports transparency, make the
+                    // background transparent. Otherwise, use a
+                    // user-configurable background color.
+                    if (ops.getOutputFormat().supportsTransparency()) {
+                        imOp.background("none");
+                    } else {
+                        final String bgColor = Application.getConfiguration().
+                                getString(BACKGROUND_COLOR_CONFIG_KEY, "black");
+                        imOp.background(bgColor);
+                    }
                     imOp.rotate((double) rotate.getDegrees());
                 }
             } else if (op instanceof Filter) {
@@ -326,7 +366,6 @@ class ImageMagickProcessor implements StreamProcessor {
                         imOp.monochrome();
                         break;
                 }
-
             }
         }
     }

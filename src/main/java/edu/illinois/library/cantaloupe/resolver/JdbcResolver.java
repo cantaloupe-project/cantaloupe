@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import com.zaxxer.hikari.HikariDataSource;
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import org.apache.commons.configuration.Configuration;
 import org.restlet.data.MediaType;
@@ -132,13 +132,13 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public SourceFormat getSourceFormat(Identifier identifier)
+    public Format getSourceFormat(Identifier identifier)
             throws IOException {
         try {
             // JdbcResolver.function.media_type may contain a JavaScript
             // function or null.
             String functionResult = executeGetMediaType(identifier);
-            MediaType mediaType = null;
+            String mediaType = null;
             if (functionResult != null) {
                 // the function result may be a media type, or an SQL
                 // statement to look it up.
@@ -151,17 +151,17 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
                         statement.setString(1, executeGetDatabaseIdentifier(identifier));
                         ResultSet resultSet = statement.executeQuery();
                         if (resultSet.next()) {
-                            mediaType = new MediaType(resultSet.getString(1));
+                            mediaType = resultSet.getString(1);
                         }
                     }
                 } else {
-                    mediaType = new MediaType(functionResult);
+                    mediaType = functionResult;
                 }
             } else {
-                mediaType = SourceFormat.getSourceFormat(identifier).
-                        getPreferredMediaType();
+                mediaType = Format.getFormat(identifier).
+                        getPreferredMediaType().toString();
             }
-            return SourceFormat.getSourceFormat(mediaType);
+            return Format.getFormat(mediaType);
         } catch (ScriptException | SQLException e) {
             throw new IOException(e.getMessage(), e);
         }

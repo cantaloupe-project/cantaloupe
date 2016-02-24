@@ -1,19 +1,16 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Dimension;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -23,10 +20,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -36,46 +42,125 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Cache using a filesystem folder, storing images and dimensions separately
+ * Cache using a filesystem folder, storing images and infos separately
  * as files in subfolders.
  */
 class FilesystemCache implements Cache {
 
     /**
+     * Used by {@link Files#walkFileTree} to delete all temp files within a
+     * directory tree.
+     */
+    private static class CacheCleaner extends SimpleFileVisitor<Path> {
+
+        private static final Logger logger = LoggerFactory.
+                getLogger(CacheCleaner.class);
+
+        // Any file last modified more than 10 minutes ago is fair game for
+        // deletion.
+        private static final long MIN_AGE_MSEC = 1000 * 60 * 10;
+
+        private final PathMatcher matcher;
+        private int numDeleted = 0;
+
+        public CacheCleaner() {
+            matcher = FileSystems.getDefault()
+                    .getPathMatcher("glob:*" + TEMP_EXTENSION);
+        }
+
+        private void done() {
+            logger.info("Cleaned {} temp files.", numDeleted);
+        }
+
+        private void test(Path path) {
+            final Path name = path.getFileName();
+            final File file = path.toFile();
+            // Since we have not overridden preVisitDirectory(), "file" will
+            // always be a file.
+            if (name != null && matcher.matches(name)) {
+                // Try to avoid matching temp files that may still be open for
+                // writing by assuming that files last modified long enough ago
+                // are closed.
+                if (System.currentTimeMillis() - file.lastModified() > MIN_AGE_MSEC) {
+                    try {
+                        FileUtils.forceDelete(file);
+                        numDeleted++;
+                    } catch (IOException e) {
+                        logger.error(e.getMessage());
+                    }
+                }
+            }
+        }
+
+        @Override
+        public FileVisitResult visitFile(Path file,
+                                         BasicFileAttributes attrs) {
+            test(file);
+            return java.nio.file.FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult visitFileFailed(Path file, IOException e) {
+            logger.warn(e.getMessage());
+            return java.nio.file.FileVisitResult.CONTINUE;
+        }
+    }
+
+    /**
      * Returned by
      * {@link FilesystemCache#getImageOutputStream(OperationList)} when an
-     * image for a given operation list can be cached.
+     * image for a given operation list can be cached. Points to a temp file
+     * that will be moved into place when closed.
      */
     private static class ConcurrentFileOutputStream extends FileOutputStream {
 
         private static final Logger logger = LoggerFactory.
                 getLogger(ConcurrentFileOutputStream.class);
 
+        private File destinationFile;
         private Set<OperationList> imagesBeingWritten;
         private OperationList opsList;
+        private File tempFile;
 
         /**
-         * @param file
+         * @param tempFile Pathname of the temp file to write to.
+         * @param destinationFile Pathname to move tempFile to when it is done
+         *                        being written.
          * @param imagesBeingWritten Set of OperationLists for all images
          *                           currently being written.
          * @param opsList
          * @throws FileNotFoundException
          */
-        public ConcurrentFileOutputStream(File file,
+        public ConcurrentFileOutputStream(File tempFile,
+                                          File destinationFile,
                                           Set<OperationList> imagesBeingWritten,
                                           OperationList opsList)
                 throws FileNotFoundException {
-            super(file);
+            super(tempFile);
             imagesBeingWritten.add(opsList);
+            this.tempFile = tempFile;
+            this.destinationFile = destinationFile;
             this.imagesBeingWritten = imagesBeingWritten;
             this.opsList = opsList;
         }
 
         @Override
         public void close() throws IOException {
-            logger.debug("Closing stream for {}", opsList);
-            imagesBeingWritten.remove(opsList);
-            super.close();
+            try {
+                logger.debug("Moving {} to {}",
+                        tempFile, destinationFile.getName());
+                // tempFile may not actually exist, but let's avoid calling
+                // File.exists() in the interest of performance.
+                if (tempFile.exists()) {
+                    FileUtils.moveFile(tempFile, destinationFile);
+                }
+            } catch (IOException e) {
+                logger.info(e.getMessage(), e);
+            } finally {
+                logger.debug("Closing stream for {}", opsList);
+                imagesBeingWritten.remove(opsList);
+                super.close();
+            }
         }
 
     }
@@ -116,20 +201,6 @@ class FilesystemCache implements Cache {
 
     }
 
-    /**
-     * Class whose instances are intended to be serialized to JSON for storing
-     * image dimension information in plain text files.
-     *
-     * @see <a href="https://github.com/FasterXML/jackson-databind">jackson-databind
-     * docs</a>
-     */
-    @JsonPropertyOrder({ "width", "height" })
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    static class ImageInfo {
-        public int height;
-        public int width;
-    }
-
     private static final Logger logger = LoggerFactory.
             getLogger(FilesystemCache.class);
 
@@ -147,32 +218,46 @@ class FilesystemCache implements Cache {
     private static final String IMAGE_FOLDER = "image";
     private static final String INFO_FOLDER = "info";
     private static final String INFO_EXTENSION = ".json";
-
-    // serializes ImageInfo instances to JSON
-    private static final ObjectMapper infoMapper = new ObjectMapper();
+    private static final String TEMP_EXTENSION = ".tmp";
 
     /** Set of Operations for which image files are currently being purged by
-     * purge(OperationList). */
+     * purge(OperationList) from any thread. */
     private final Set<OperationList> imagesBeingPurged =
             new ConcurrentSkipListSet<>();
+
     /** Set of operation lists for which image files are currently being
-     * written. */
+     * written from any thread. */
     private final Set<OperationList> imagesBeingWritten =
             new ConcurrentSkipListSet<>();
-    /** Set of identifiers for which info files are currently being read. */
+
+    /** Set of identifiers for which info files are currently being purged by
+     * purge(Identifier) from any thread. */
+    private final Set<Identifier> infosBeingPurged =
+            new ConcurrentSkipListSet<>();
+
+    /** Set of identifiers for which info files are currently being read in
+     * any thread. */
     private final Set<Identifier> infosBeingRead =
             new ConcurrentSkipListSet<>();
-    /** Set of identifiers for which info files are currently being written. */
+
+    /** Set of identifiers for which info files are currently being written
+     * from any thread. */
     private final Set<Identifier> infosBeingWritten =
             new ConcurrentSkipListSet<>();
 
-    private final AtomicBoolean purgingInProgress = new AtomicBoolean(false);
+    private final AtomicBoolean cleaningInProgress = new AtomicBoolean(false);
+
+    /** Toggled by purge() and purgeExpired(). */
+    private final AtomicBoolean globalPurgeInProgress =
+            new AtomicBoolean(false);
 
     /** Lock objects for synchronization */
     private final Object lock1 = new Object();
     private final Object lock2 = new Object();
     private final Object lock3 = new Object();
     private final Object lock4 = new Object();
+    private final Object lock5 = new Object();
+    private final Object lock6 = new Object();
 
     /**
      * Returns a reversible, filename-safe version of the input string.
@@ -216,11 +301,7 @@ class FilesystemCache implements Cache {
      * @throws CacheException
      */
     private static String getRootImagePathname() throws CacheException {
-        final String pathname = getRootPathname();
-        if (pathname != null) {
-            return pathname + File.separator + IMAGE_FOLDER;
-        }
-        return null;
+        return getRootPathname() + File.separator + IMAGE_FOLDER;
     }
 
     /**
@@ -229,22 +310,53 @@ class FilesystemCache implements Cache {
      * @throws CacheException
      */
     private static String getRootInfoPathname() throws CacheException {
-        final String pathname = getRootPathname();
-        if (pathname != null) {
-            return pathname + File.separator + INFO_FOLDER;
-        }
-        return null;
+        return getRootPathname() + File.separator + INFO_FOLDER;
     }
 
     private static boolean isExpired(File file) {
         final long ttlMsec = 1000 * Application.getConfiguration().
                 getLong(TTL_CONFIG_KEY, 0);
-        return (ttlMsec > 0) && file.isFile() &&
+        return ttlMsec > 0 && file.isFile() &&
                 System.currentTimeMillis() - file.lastModified() > ttlMsec;
     }
 
+    /**
+     * Cleans up temp files.
+     *
+     * @throws CacheException
+     */
     @Override
-    public Dimension getDimension(Identifier identifier) throws CacheException {
+    public void cleanUp() throws CacheException {
+        synchronized (lock5) {
+            while (cleaningInProgress.get()) {
+                try {
+                    lock5.wait();
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        }
+        try {
+            cleaningInProgress.set(true);
+
+            final String[] pathnamesToClean = { getRootImagePathname(),
+                    getRootInfoPathname() };
+
+            for (String pathname : pathnamesToClean) {
+                logger.info("Cleaning directory: {}", pathname);
+                CacheCleaner cleaner = new CacheCleaner();
+                Files.walkFileTree(Paths.get(pathname), cleaner);
+                cleaner.done();
+            }
+        } catch (IOException e) {
+            throw new CacheException(e.getMessage(), e);
+        } finally {
+            cleaningInProgress.set(false);
+        }
+    }
+
+    @Override
+    public ImageInfo getImageInfo(Identifier identifier) throws CacheException {
         synchronized (lock2) {
             while (infosBeingWritten.contains(identifier)) {
                 try {
@@ -260,21 +372,18 @@ class FilesystemCache implements Cache {
             final File cacheFile = getInfoFile(identifier);
             if (cacheFile != null && cacheFile.exists()) {
                 if (!isExpired(cacheFile)) {
-                    logger.info("Hit for info: {}", cacheFile.getName());
-
-                    ImageInfo info = infoMapper.readValue(cacheFile,
-                            ImageInfo.class);
-                    return new Dimension(info.width, info.height);
+                    logger.info("Hit for image info: {}", cacheFile.getName());
+                    return ImageInfo.fromJson(cacheFile);
                 } else {
                     logger.info("Deleting stale cache file: {}",
                             cacheFile.getName());
                     if (!cacheFile.delete()) {
-                        logger.error("Unable to delete {}", cacheFile);
+                        logger.warn("Unable to delete {}", cacheFile);
                     }
                 }
             }
         } catch (FileNotFoundException e) {
-            logger.debug(e.getMessage(), e);
+            logger.info(e.getMessage(), e);
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);
         } finally {
@@ -284,33 +393,11 @@ class FilesystemCache implements Cache {
     }
 
     /**
-     * @param identifier
-     * @return File corresponding to the given parameters.
-     */
-    public File getInfoFile(final Identifier identifier) throws CacheException {
-        final String cachePathname = getRootInfoPathname();
-        if (cachePathname != null) {
-            final String cacheRoot =
-                    StringUtils.stripEnd(cachePathname, File.separator);
-            final String subfolderPath = StringUtils.stripEnd(
-                    getIdentifierBasedSubdirectory(identifier.toString()),
-                    File.separator);
-            final String identifierFilename =
-                    filenameSafe(identifier.toString());
-            final String pathname = cacheRoot + subfolderPath +
-                            File.separator + identifierFilename +
-                            INFO_EXTENSION;
-            return new File(pathname);
-        }
-        return null;
-    }
-
-    /**
      * @param uniqueString String from which to derive the path.
      * @return Directory path composed of fragments of a hash of the given
      * string.
      */
-    public String getIdentifierBasedSubdirectory(final String uniqueString) {
+    public String getHashedStringBasedSubdirectory(final String uniqueString) {
         final StringBuilder path = new StringBuilder();
         try {
             // Use a fast algo. Collisions don't matter.
@@ -338,33 +425,28 @@ class FilesystemCache implements Cache {
      * Returns a File corresponding to the given operation list.
      *
      * @param ops Operation list identifying the file.
-     * @return File corresponding to the given operation list, or null if
-     * {@link #PATHNAME_CONFIG_KEY} is not set.
+     * @return File corresponding to the given operation list.
      */
     public File getImageFile(OperationList ops) throws CacheException {
-        final String cachePathname = getRootImagePathname();
-        if (cachePathname != null) {
-            final List<String> parts = new ArrayList<>();
-            final String cacheRoot =
-                    StringUtils.stripEnd(cachePathname, File.separator);
-            final String subfolderPath = StringUtils.stripEnd(
-                    getIdentifierBasedSubdirectory(ops.getIdentifier().toString()),
-                    File.separator);
-            final String identifierFilename =
-                    filenameSafe(ops.getIdentifier().toString());
-            parts.add(cacheRoot + subfolderPath +
-                    File.separator + identifierFilename);
-            for (Operation op : ops) {
-                if (!op.isNoOp()) {
-                    parts.add(filenameSafe(op.toString()));
-                }
+        final List<String> parts = new ArrayList<>();
+        final String cacheRoot =
+                StringUtils.stripEnd(getRootImagePathname(), File.separator);
+        final String subfolderPath = StringUtils.stripEnd(
+                getHashedStringBasedSubdirectory(ops.getIdentifier().toString()),
+                File.separator);
+        final String identifierFilename =
+                filenameSafe(ops.getIdentifier().toString());
+        parts.add(cacheRoot + subfolderPath + File.separator +
+                identifierFilename);
+        for (Operation op : ops) {
+            if (!op.isNoOp()) {
+                parts.add(filenameSafe(op.toString()));
             }
-            final String baseName = StringUtils.join(parts, "_");
-
-            return new File(baseName + "." +
-                    ops.getOutputFormat().getExtension());
         }
-        return null;
+        final String baseName = StringUtils.join(parts, "_");
+
+        return new File(baseName + "." +
+                ops.getOutputFormat().getPreferredExtension());
     }
 
     /**
@@ -373,7 +455,7 @@ class FilesystemCache implements Cache {
      * identifier.
      * @throws CacheException
      */
-    public List<File> getImageFiles(Identifier identifier)
+    public Collection<File> getImageFiles(Identifier identifier)
             throws CacheException {
         class IdentifierFilter implements FilenameFilter {
             private Identifier identifier;
@@ -383,73 +465,137 @@ class FilesystemCache implements Cache {
             }
 
             public boolean accept(File dir, String name) {
+                // TODO: when the identifier is "cats", "catsup" will also match
                 return name.startsWith(filenameSafe(identifier.toString()));
             }
         }
 
         final File cacheFolder = new File(getRootImagePathname() +
-                getIdentifierBasedSubdirectory(identifier.toString()));
+                getHashedStringBasedSubdirectory(identifier.toString()));
         final File[] files =
                 cacheFolder.listFiles(new IdentifierFilter(identifier));
         return new ArrayList<>(Arrays.asList(files));
     }
 
     @Override
-    public InputStream getImageInputStream(OperationList ops) {
-        try {
-            final File cacheFile = getImageFile(ops);
-            if (cacheFile != null && cacheFile.exists()) {
-                if (!isExpired(cacheFile)) {
-                    try {
-                        logger.info("Hit for image: {}", ops);
-                        return new FileInputStream(cacheFile);
-                    } catch (FileNotFoundException e) {
-                        logger.error(e.getMessage(), e);
-                    }
-                } else {
-                    logger.info("Deleting stale cache file: {}",
-                            cacheFile.getName());
-                    if (!cacheFile.delete()) {
-                        logger.error("Unable to delete {}", cacheFile);
-                    }
+    public InputStream getImageInputStream(OperationList ops)
+            throws CacheException {
+        InputStream inputStream = null;
+        final File cacheFile = getImageFile(ops);
+        if (cacheFile != null && cacheFile.exists()) {
+            if (!isExpired(cacheFile)) {
+                try {
+                    logger.info("Hit for image: {}", ops);
+                    inputStream = new FileInputStream(cacheFile);
+                } catch (FileNotFoundException e) {
+                    logger.error(e.getMessage(), e);
+                }
+            } else {
+                logger.info("Deleting stale cache file: {}",
+                        cacheFile.getName());
+                if (!cacheFile.delete()) {
+                    logger.warn("Unable to delete {}", cacheFile);
                 }
             }
-        } catch (CacheException e) {
-            logger.error(e.getMessage(), e);
         }
-        return null;
+        return inputStream;
     }
 
     @Override
     public OutputStream getImageOutputStream(OperationList ops)
             throws CacheException {
+        // If the image is already being written in another thread, it will
+        // exist in the imagesBeingWritten set. If so, return a dummy output
+        // stream to avoid interfering.
         if (imagesBeingWritten.contains(ops)) {
             logger.info("Miss, but cache file for {} is being written in " +
                     "another thread, so not caching", ops);
             return new ConcurrentNullOutputStream(imagesBeingWritten, ops);
         }
-        imagesBeingWritten.add(ops); // will be removed by ConcurrentNullOutputStream.close()
+
+        imagesBeingWritten.add(ops);
+
+        // If the image is being written simultaneously in another process,
+        // there will be a temp file on the filesystem. If so, return a dummy
+        // output stream to avoid interfering.
+        final File tempFile = getImageTempFile(ops);
+        if (tempFile.exists()) {
+            logger.info("Miss, but a temp file for {} already exists, " +
+                    "so not caching", ops);
+            return new ConcurrentNullOutputStream(imagesBeingWritten, ops);
+        }
+
         logger.info("Miss; caching {}", ops);
-        final File cacheFile = getImageFile(ops);
+
         try {
-            if (!cacheFile.getParentFile().exists()) {
-                if (!cacheFile.getParentFile().mkdirs() ||
-                        !cacheFile.createNewFile()) {
-                    throw new CacheException("Unable to create " + cacheFile);
+            if (!tempFile.getParentFile().exists()) {
+                if (!tempFile.getParentFile().mkdirs() ||
+                        !tempFile.createNewFile()) {
+                    throw new CacheException("Unable to create " + tempFile);
                 }
             }
+            final File destFile = getImageFile(ops);
             return new ConcurrentFileOutputStream(
-                    cacheFile, imagesBeingWritten, ops);
+                    tempFile, destFile, imagesBeingWritten, ops);
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);
         }
     }
 
+    /**
+     * Returns a temp file corresponding to the given operation list.
+     *
+     * @param ops Operation list identifying the file.
+     * @return File corresponding to the given operation list.
+     */
+    public File getImageTempFile(OperationList ops) throws CacheException {
+        File tempFile = new File(getImageFile(ops).getAbsolutePath() +
+                TEMP_EXTENSION);
+        tempFile.deleteOnExit();
+        return tempFile;
+    }
+
+    /**
+     * @param identifier
+     * @return File corresponding to the given parameters.
+     */
+    public File getInfoFile(final Identifier identifier) throws CacheException {
+        final String cacheRoot =
+                StringUtils.stripEnd(getRootInfoPathname(), File.separator);
+        final String subfolderPath = StringUtils.stripEnd(
+                getHashedStringBasedSubdirectory(identifier.toString()),
+                File.separator);
+        final String identifierFilename = filenameSafe(identifier.toString());
+        final String pathname = cacheRoot + subfolderPath + File.separator +
+                identifierFilename + INFO_EXTENSION;
+        return new File(pathname);
+    }
+
+    public File getInfoTempFile(final Identifier identifier)
+            throws CacheException {
+        return new File(getInfoFile(identifier).getAbsolutePath() +
+                TEMP_EXTENSION);
+    }
+
+    /**
+     * <p>Crawls the image directory, deleting all files (but not folders)
+     * within it (including temp files), and then does the same in the info
+     * directory.</p>
+     *
+     * <p>Will do nothing and return immediately if a global purge is in
+     * progress in another thread.</p>
+     *
+     * @throws CacheException
+     */
     @Override
     public void purge() throws CacheException {
+        if (globalPurgeInProgress.get()) {
+            logger.info("purge() called with a purge already in progress. " +
+                    "Aborting.");
+            return;
+        }
         synchronized (lock4) {
-            while (purgingInProgress.get() || !imagesBeingPurged.isEmpty() ||
-                    !imagesBeingWritten.isEmpty()) {
+            while (!imagesBeingPurged.isEmpty()) {
                 try {
                     lock4.wait();
                 } catch (InterruptedException e) {
@@ -458,52 +604,99 @@ class FilesystemCache implements Cache {
             }
         }
         try {
-            purgingInProgress.set(true);
-            final String imagePathname = getRootImagePathname();
-            final String infoPathname = getRootInfoPathname();
-            if (imagePathname != null && infoPathname != null) {
-                logger.info("Purging image dir: {}", imagePathname);
-                final File imageDir = new File(imagePathname);
-                FileUtils.deleteDirectory(imageDir);
+            globalPurgeInProgress.set(true);
 
-                logger.info("Purging info dir: {}", infoPathname);
-                final File infoDir = new File(infoPathname);
-                FileUtils.deleteDirectory(infoDir);
-            } else {
-                throw new IOException(PATHNAME_CONFIG_KEY + " is not set");
+            String[] pathnamesToPurge = {getRootImagePathname(),
+                    getRootInfoPathname()};
+            for (String pathname : pathnamesToPurge) {
+                try {
+                    logger.info("Purging image dir: {}", pathname);
+                    FileUtils.cleanDirectory(new File(pathname));
+                } catch (IOException e) {
+                    logger.warn(e.getMessage());
+                }
+                try {
+                    logger.info("Purging info dir: {}", pathname);
+                    FileUtils.cleanDirectory(new File(pathname));
+                } catch (IOException e) {
+                    logger.warn(e.getMessage());
+                }
             }
-        } catch (IOException e) {
-            throw new CacheException(e.getMessage(), e);
         } finally {
-            purgingInProgress.set(false);
+            globalPurgeInProgress.set(false);
         }
     }
 
+    /**
+     * <p>Deletes all files associated with the given identifier.</p>
+     *
+     * <p>Will do nothing and return immediately if a global purge is in
+     * progress in another thread.</p>
+     *
+     * @throws CacheException
+     */
     @Override
     public void purge(Identifier identifier) throws CacheException {
-        // TODO: improve concurrency
-        for (File imageFile : getImageFiles(identifier)) {
-            logger.info("Deleting {}", imageFile);
-            if (!imageFile.delete()) {
-                throw new CacheException("Failed to delete " + imageFile);
+        if (globalPurgeInProgress.get()) {
+            logger.info("purge(Identifier) called with a global purge in " +
+                    "progress. Aborting.");
+            return;
+        }
+        synchronized (lock6) {
+            while (infosBeingPurged.contains(identifier)) {
+                try {
+                    lock6.wait();
+                } catch (InterruptedException e) {
+                    break;
+                }
             }
         }
-        final File infoFile = getInfoFile(identifier);
-        if (infoFile.exists()) {
-            logger.info("Deleting {}", infoFile);
-            if (!infoFile.delete()) {
-                throw new CacheException("Failed to delete " + infoFile);
+        try {
+            infosBeingPurged.add(identifier);
+            logger.info("Purging {}...", identifier);
+
+            for (File imageFile : getImageFiles(identifier)) {
+                try {
+                    logger.info("Deleting {}", imageFile);
+                    FileUtils.forceDelete(imageFile);
+                } catch (IOException e) {
+                    logger.warn(e.getMessage());
+                }
             }
+            final File infoFile = getInfoFile(identifier);
+            if (infoFile.exists()) {
+                try {
+                    logger.info("Deleting {}", infoFile);
+                    FileUtils.forceDelete(infoFile);
+                } catch (IOException e) {
+                    logger.warn(e.getMessage());
+                }
+            }
+        } finally {
+            infosBeingPurged.remove(identifier);
         }
     }
 
+    /**
+     * <p>Deletes all files associated with the given operation list.</p>
+     *
+     * <p>If purging is in progress in another thread, this method will wait
+     * for it to finish before proceeding.</p>
+     *
+     * <p>Will do nothing and return immediately if a global purge is in
+     * progress in another thread.</p>
+     *
+     * @throws CacheException
+     */
     @Override
     public void purge(OperationList opList) throws CacheException {
+        if (globalPurgeInProgress.get()) {
+            logger.info("purge(OperationList) called with a global purge in " +
+                    "progress. Aborting.");
+            return;
+        }
         synchronized (lock1) {
-            // imagesBeingWritten may also contain this opList (meaning it is
-            // currently being written in another thread), but the delete
-            // we're going to do won't interrupt that.
-            while (purgingInProgress.get() || imagesBeingPurged.contains(opList)) {
+            while (imagesBeingPurged.contains(opList)) {
                 try {
                     lock1.wait();
                 } catch (InterruptedException e) {
@@ -511,33 +704,47 @@ class FilesystemCache implements Cache {
                 }
             }
         }
-        imagesBeingPurged.add(opList);
-        logger.info("Purging {}", opList);
         try {
-            final File imageFile = getImageFile(opList);
-            if (imageFile != null && imageFile.exists()) {
-                if (!imageFile.delete()) {
-                    throw new IOException("Unable to delete " + imageFile);
+            imagesBeingPurged.add(opList);
+            logger.info("Purging {}...", opList);
+
+            final File[] filesToDelete = {
+                    getImageFile(opList),
+                    getImageTempFile(opList),
+                    getInfoFile(opList.getIdentifier()),
+                    getInfoTempFile(opList.getIdentifier())};
+            for (File file : filesToDelete) {
+                if (file != null && file.exists()) {
+                    try {
+                        FileUtils.forceDelete(file);
+                    } catch (IOException e) {
+                        logger.warn("Unable to delete {}", file);
+                    }
                 }
             }
-            final File infoFile = getInfoFile(opList.getIdentifier());
-            if (infoFile != null && infoFile.exists()) {
-                if (!infoFile.delete()) {
-                    throw new IOException("Unable to delete " + imageFile);
-                }
-            }
-        } catch (IOException e) {
-            throw new CacheException(e.getMessage(), e);
         } finally {
             imagesBeingPurged.remove(opList);
         }
     }
 
+    /**
+     * <p>Crawls the image directory, deleting all expired files within it
+     * (temporary or not), and then does the same in the info directory.</p>
+     *
+     * <p>Will do nothing and return immediately if a global purge is in
+     * progress in another thread.</p>
+     *
+     * @throws CacheException
+     */
     @Override
     public void purgeExpired() throws CacheException {
+        if (globalPurgeInProgress.get()) {
+            logger.info("purgeExpired() called with a purge in progress. " +
+                    "Aborting.");
+            return;
+        }
         synchronized (lock4) {
-            while (purgingInProgress.get() || !imagesBeingPurged.isEmpty() ||
-                    !imagesBeingWritten.isEmpty()) {
+            while (!imagesBeingPurged.isEmpty()) {
                 try {
                     lock4.wait();
                 } catch (InterruptedException e) {
@@ -545,54 +752,51 @@ class FilesystemCache implements Cache {
                 }
             }
         }
+        logger.info("Purging expired items...");
+
         try {
-            purgingInProgress.set(true);
+            globalPurgeInProgress.set(true);
             final String imagePathname = getRootImagePathname();
             final String infoPathname = getRootInfoPathname();
-            if (imagePathname != null && infoPathname != null) {
-                long imageCount = 0;
-                final File imageDir = new File(imagePathname);
-                Iterator<File> it = FileUtils.iterateFiles(imageDir, null, true);
-                while (it.hasNext()) {
-                    File file = it.next();
-                    if (isExpired(file)) {
-                        if (file.delete()) {
-                            imageCount++;
-                        } else {
-                            throw new IOException("Unable to delete " +
-                                    file.getAbsolutePath());
-                        }
-                    }
-                }
 
-                long infoCount = 0;
-                final File infoDir = new File(infoPathname);
-                it = FileUtils.iterateFiles(infoDir, null, true);
-                while (it.hasNext()) {
-                    File file = it.next();
-                    if (isExpired(file)) {
-                        if (file.delete()) {
-                            infoCount++;
-                        } else {
-                            throw new IOException("Unable to delete " +
-                                    file.getAbsolutePath());
-                        }
+            long imageCount = 0;
+            final File imageDir = new File(imagePathname);
+            Iterator<File> it = FileUtils.iterateFiles(imageDir, null, true);
+            while (it.hasNext()) {
+                File file = it.next();
+                if (isExpired(file)) {
+                    try {
+                        FileUtils.forceDelete(file);
+                        imageCount++;
+                    } catch (IOException e) {
+                        logger.warn(e.getMessage());
                     }
                 }
-                logger.info("Purged {} expired images and {} expired infos",
-                        imageCount, infoCount);
-            } else {
-                throw new IOException(PATHNAME_CONFIG_KEY + " is not set");
             }
-        } catch (IOException e) {
-            throw new CacheException(e.getMessage(), e);
+
+            long infoCount = 0;
+            final File infoDir = new File(infoPathname);
+            it = FileUtils.iterateFiles(infoDir, null, true);
+            while (it.hasNext()) {
+                File file = it.next();
+                if (isExpired(file)) {
+                    try {
+                        FileUtils.forceDelete(file);
+                        infoCount++;
+                    } catch (IOException e) {
+                        logger.warn(e.getMessage());
+                    }
+                }
+            }
+            logger.info("Purged {} expired image(s) and {} expired infos(s)",
+                    imageCount, infoCount);
         } finally {
-            purgingInProgress.set(false);
+            globalPurgeInProgress.set(false);
         }
     }
 
     @Override
-    public void putDimension(Identifier identifier, Dimension dimension)
+    public void putImageInfo(Identifier identifier, ImageInfo imageInfo)
             throws CacheException {
         synchronized (lock3) {
             while (infosBeingWritten.contains(identifier) ||
@@ -606,26 +810,30 @@ class FilesystemCache implements Cache {
         }
         try {
             infosBeingWritten.add(identifier);
-            final File cacheFile = getInfoFile(identifier);
-            if (cacheFile != null) {
-                logger.info("Caching info: {}", identifier);
-                if (!cacheFile.getParentFile().exists() &&
-                        !cacheFile.getParentFile().mkdirs()) {
-                    throw new IOException("Unable to create directory: " +
-                            cacheFile.getParentFile());
-                }
-                ImageInfo info = new ImageInfo();
-                info.width = dimension.width;
-                info.height = dimension.height;
-                try {
-                    infoMapper.writeValue(cacheFile, info);
-                } catch (IOException e) {
-                    cacheFile.delete();
-                    throw new IOException("Unable to create " +
-                            cacheFile.getAbsolutePath(), e);
-                }
-            } else {
-                throw new IOException(PATHNAME_CONFIG_KEY + " is not set");
+
+            final File destFile = getInfoFile(identifier);
+            final File tempFile = getInfoTempFile(identifier);
+
+            if (destFile.exists()) {
+                FileUtils.forceDelete(destFile);
+            }
+
+            logger.info("Caching image info: {}", identifier);
+            if (!tempFile.getParentFile().exists() &&
+                    !tempFile.getParentFile().mkdirs()) {
+                throw new IOException("Unable to create directory: " +
+                        tempFile.getParentFile());
+            }
+
+            try {
+                FileUtils.writeStringToFile(tempFile, imageInfo.toJson());
+
+                logger.debug("Moving {} to {}", tempFile, destFile.getName());
+                FileUtils.moveFile(tempFile, destFile);
+            } catch (IOException e) {
+                tempFile.delete();
+                throw new IOException("Unable to create " +
+                        tempFile.getAbsolutePath(), e);
             }
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);

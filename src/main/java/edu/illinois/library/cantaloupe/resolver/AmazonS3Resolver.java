@@ -11,12 +11,11 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.apache.commons.configuration.Configuration;
-import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,7 +97,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
             }
 
             final String regionName = config.getString(BUCKET_REGION_CONFIG_KEY);
-            if (regionName != null) {
+            if (regionName != null && regionName.length() > 0) {
                 Regions regions = Regions.fromName(regionName);
                 Region region = Region.getRegion(regions);
                 logger.info("Using region: {}", region);
@@ -119,10 +118,10 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
         Configuration config = Application.getConfiguration();
         final String bucketName = config.getString(BUCKET_NAME_CONFIG_KEY);
-        logger.debug("Using bucket: {}", bucketName);
+        logger.info("Using bucket: {}", bucketName);
         final String objectKey = getObjectKey(identifier);
         try {
-            logger.debug("Requesting {}", objectKey);
+            logger.info("Requesting {}", objectKey);
             return s3.getObject(new GetObjectRequest(bucketName, objectKey));
         } catch (AmazonS3Exception e) {
             if (e.getErrorCode().equals("NoSuchKey")) {
@@ -173,17 +172,16 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public SourceFormat getSourceFormat(Identifier identifier) throws IOException {
+    public Format getSourceFormat(Identifier identifier) throws IOException {
         S3Object object = getObject(identifier);
         String contentType = object.getObjectMetadata().getContentType();
         if (contentType != null) {
-            MediaType mediaType = new MediaType(contentType);
-            SourceFormat sourceFormat = SourceFormat.getSourceFormat(mediaType);
-            if (sourceFormat != null && !sourceFormat.equals(SourceFormat.UNKNOWN)) {
-                return sourceFormat;
+            Format format = Format.getFormat(contentType);
+            if (format != null && !format.equals(Format.UNKNOWN)) {
+                return format;
             }
         }
-        return SourceFormat.getSourceFormat(identifier);
+        return Format.getFormat(identifier);
     }
 
 }

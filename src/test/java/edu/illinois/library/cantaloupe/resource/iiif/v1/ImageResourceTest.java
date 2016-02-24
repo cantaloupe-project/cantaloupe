@@ -4,9 +4,9 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
 import edu.illinois.library.cantaloupe.resource.*;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -56,12 +56,12 @@ public class ImageResourceTest extends ResourceTest {
     public void testBasicAuthentication() throws Exception {
         final String username = "user";
         final String secret = "secret";
-        Application.stopServer();
+        Application.getWebServer().stop();
         Configuration config = Application.getConfiguration();
         config.setProperty(WebApplication.BASIC_AUTH_ENABLED_CONFIG_KEY, "true");
         config.setProperty(WebApplication.BASIC_AUTH_USERNAME_CONFIG_KEY, username);
         config.setProperty(WebApplication.BASIC_AUTH_SECRET_CONFIG_KEY, secret);
-        Application.startServer();
+        Application.getWebServer().start();
 
         // no credentials
         ClientResource client = getClientForUriPath(
@@ -270,7 +270,7 @@ public class ImageResourceTest extends ResourceTest {
         try {
             OperationList ops = TestUtil.newOperationList();
             ops.setIdentifier(new Identifier(IMAGE));
-            ops.setOutputFormat(OutputFormat.JPG);
+            ops.setOutputFormat(Format.JPG);
 
             assertEquals(0, FileUtils.listFiles(cacheFolder, null, true).size());
 
@@ -282,7 +282,7 @@ public class ImageResourceTest extends ResourceTest {
             assertEquals(2, FileUtils.listFiles(cacheFolder, null, true).size());
             Cache cache = CacheFactory.getInstance();
             assertNotNull(cache.getImageInputStream(ops));
-            assertNotNull(cache.getDimension(ops.getIdentifier()));
+            assertNotNull(cache.getImageInfo(ops.getIdentifier()));
 
             // move the source image out of the way
             if (tempImage.exists()) {
@@ -301,10 +301,10 @@ public class ImageResourceTest extends ResourceTest {
 
             if (purgeMissing) {
                 assertNull(cache.getImageInputStream(ops));
-                assertNull(cache.getDimension(ops.getIdentifier()));
+                assertNull(cache.getImageInfo(ops.getIdentifier()));
             } else {
                 assertNotNull(cache.getImageInputStream(ops));
-                assertNotNull(cache.getDimension(ops.getIdentifier()));
+                assertNotNull(cache.getImageInfo(ops.getIdentifier()));
             }
         } finally {
             FileUtils.deleteDirectory(cacheFolder);

@@ -1,13 +1,12 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.image.SourceFormat;
-import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.Dimension;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -15,11 +14,15 @@ import static org.junit.Assert.*;
 
 public class KakaduProcessorTest extends ProcessorTest {
 
-    KakaduProcessor instance = new KakaduProcessor();
+    KakaduProcessor instance;
 
-    public void setUp() {
+    @Before
+    public void setUp() throws Exception {
         Application.getConfiguration().setProperty(
                 KakaduProcessor.PATH_TO_BINARIES_CONFIG_KEY, "/usr/local/bin");
+
+        instance = new KakaduProcessor();
+        instance.setSourceFormat(Format.JP2);
     }
 
     protected Processor getProcessor() {
@@ -27,33 +30,27 @@ public class KakaduProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void testGetAvailableOutputFormatsForUnsupportedSourceFormat() {
-        Set<OutputFormat> expectedFormats = new HashSet<>();
-        assertEquals(expectedFormats,
-                instance.getAvailableOutputFormats(SourceFormat.UNKNOWN));
-    }
-
-    @Test
     @Override
-    public void testGetSize() throws Exception {
-        Dimension expectedSize = new Dimension(100, 88);
-        if (getProcessor() instanceof StreamProcessor) {
-            StreamProcessor proc = (StreamProcessor) getProcessor();
-            Dimension actualSize = proc.getSize(
-                    new TestStreamSource(TestUtil.getImage("jp2")),
-                    SourceFormat.JP2);
-            assertEquals(expectedSize, actualSize);
-        }
-        if (getProcessor() instanceof FileProcessor) {
-            FileProcessor proc = (FileProcessor) getProcessor();
-            Dimension actualSize = proc.getSize(TestUtil.getImage("jp2"),
-                    SourceFormat.JP2);
-            assertEquals(expectedSize, actualSize);
-        }
+    public void testGetImageInfo() throws Exception {
+        ImageInfo expectedInfo = new ImageInfo(100, 88, 100, 88, Format.JP2);
+        instance.setSourceFile(TestUtil.getImage("jp2"));
+        assertEquals(expectedInfo, instance.getImageInfo());
+
+        // untiled image
+        instance.setSourceFile(TestUtil.getImage("jp2-rgb-64x56x8-monotiled-lossy.jp2"));
+        expectedInfo = new ImageInfo(64, 56, 64, 56, Format.JP2);
+        assertEquals(expectedInfo, instance.getImageInfo());
+
+        // tiled image
+        instance.setSourceFile(TestUtil.getImage("jp2-rgb-64x56x8-multitiled-lossy.jp2"));
+        expectedInfo = new ImageInfo(64, 56, Format.JP2);
+        expectedInfo.getImages().get(0).tileWidth = 32;
+        expectedInfo.getImages().get(0).tileHeight = 28;
+        assertEquals(expectedInfo, instance.getImageInfo());
     }
 
     @Test
-    public void testGetSupportedFeatures() {
+    public void testGetSupportedFeatures() throws Exception {
         Set<ProcessorFeature> expectedFeatures = new HashSet<>();
         expectedFeatures.add(ProcessorFeature.MIRRORING);
         expectedFeatures.add(ProcessorFeature.REGION_BY_PERCENT);
@@ -66,12 +63,7 @@ public class KakaduProcessorTest extends ProcessorTest {
         expectedFeatures.add(ProcessorFeature.SIZE_BY_PERCENT);
         expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH);
         expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
-        assertEquals(expectedFeatures,
-                instance.getSupportedFeatures(SourceFormat.JP2));
-
-        expectedFeatures = new HashSet<>();
-        assertEquals(expectedFeatures,
-                instance.getSupportedFeatures(SourceFormat.UNKNOWN));
+        assertEquals(expectedFeatures, instance.getSupportedFeatures());
     }
 
 }

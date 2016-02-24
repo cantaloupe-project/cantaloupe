@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
@@ -25,7 +26,6 @@ import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 import org.restlet.util.Series;
 
-import java.awt.Dimension;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -43,6 +43,10 @@ public class ApplicationTest {
 
     private static Client httpClient = new Client(new Context(), Protocol.HTTP);
     private static Client httpsClient = new Client(new Context(), Protocol.HTTPS);
+
+    // http://stackoverflow.com/questions/6141252/dealing-with-system-exit0-in-junit-tests
+    @Rule
+    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
 
     private static BaseConfiguration newConfiguration() {
         BaseConfiguration config = new BaseConfiguration();
@@ -68,8 +72,9 @@ public class ApplicationTest {
     @Before
     public void setUp() {
         Application.setConfiguration(newConfiguration());
-        System.getProperties().remove(Application.PURGE_CACHE_VM_ARGUMENT);
-        System.getProperties().remove(Application.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT);
+        System.clearProperty(Application.CLEAN_CACHE_VM_ARGUMENT);
+        System.clearProperty(Application.PURGE_CACHE_VM_ARGUMENT);
+        System.clearProperty(Application.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT);
 
     }
 
@@ -127,13 +132,31 @@ public class ApplicationTest {
         assertSame(newConfig, Application.getConfiguration());
     }
 
-    @Rule
-    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
+    @Test
+    public void testMainWithCleanCacheArg() throws Exception {
+        exit.expectSystemExitWithStatus(0);
 
-    /**
-     * @see http://stackoverflow.com/questions/6141252/dealing-with-system-exit0-in-junit-tests
-     * @throws Exception
-     */
+        File cacheDir = getCacheDir();
+        File imageDir = new File(cacheDir.getAbsolutePath() + File.separator +
+                "image");
+        File infoDir = new File(cacheDir.getAbsolutePath() + File.separator +
+                "info");
+        imageDir.mkdirs();
+        infoDir.mkdirs();
+
+        Configuration config = newConfiguration();
+        config.setProperty("cache.server", "FilesystemCache");
+        config.setProperty("FilesystemCache.pathname",
+                getCacheDir().getAbsolutePath());
+        config.setProperty("FilesystemCache.ttl_seconds", "1");
+        Application.setConfiguration(config);
+
+        // TODO: write this
+
+        System.setProperty(Application.CLEAN_CACHE_VM_ARGUMENT, "");
+        Application.main(new String[] {});
+    }
+
     @Test
     public void testMainWithInvalidConfigExits() throws Exception {
         exit.expectSystemExitWithStatus(-1);
@@ -152,6 +175,8 @@ public class ApplicationTest {
 
     @Test
     public void testMainWithPurgeCacheArg() throws Exception {
+        exit.expectSystemExitWithStatus(0);
+
         final File cacheDir = getCacheDir();
         final File imageDir = new File(cacheDir.getAbsolutePath() + "/image");
         final File infoDir = new File(cacheDir.getAbsolutePath() + "/info");
@@ -166,7 +191,7 @@ public class ApplicationTest {
 
         // cache a dimension
         Cache cache = CacheFactory.getInstance();
-        cache.putDimension(new Identifier("cats"), new Dimension(500, 500));
+        cache.putImageInfo(new Identifier("cats"), new ImageInfo(500, 500));
 
         // cache an image
         OperationList ops = TestUtil.newOperationList();
@@ -186,12 +211,14 @@ public class ApplicationTest {
         Application.main(new String[] {});
 
         // assert that they've been purged
-        assertFalse(imageDir.exists());
-        assertFalse(infoDir.exists());
+        assertEquals(0, imageDir.listFiles().length);
+        assertEquals(0, infoDir.listFiles().length);
     }
 
     @Test
     public void testMainWithPurgeExpiredCacheArg() throws Exception {
+        exit.expectSystemExitWithStatus(0);
+
         File cacheDir = getCacheDir();
         File imageDir = new File(cacheDir.getAbsolutePath() + File.separator +
                 "image");
@@ -224,12 +251,12 @@ public class ApplicationTest {
     public void testStartServerWithHttp() throws Exception {
         try {
             Application.setConfiguration(newConfiguration());
-            Application.startServer();
+            Application.getWebServer().start();
             ClientResource resource = getHttpClientForUriPath("/");
             resource.get();
             assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
         } finally {
-            Application.stopServer();
+            Application.getWebServer().stop();
         }
     }
 
@@ -239,18 +266,18 @@ public class ApplicationTest {
             Configuration config = newConfiguration();
             config.setProperty("https.enabled", true);
             Application.setConfiguration(config);
-            Application.startServer();
+            Application.getWebServer().start();
             ClientResource resource = getHttpsClientForUriPath("/");
             resource.get();
             assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
         } finally {
-            Application.stopServer();
+            Application.getWebServer().stop();
         }
     }
 
     @Test
     public void testStopServerStopsHttp() throws Exception {
-        Application.stopServer();
+        Application.getWebServer().stop();
         // test that the HTTP server is stopped
         ClientResource resource = getHttpClientForUriPath("/");
         resource.setRetryOnError(false);
@@ -264,7 +291,7 @@ public class ApplicationTest {
 
     @Test
     public void testStopServerStopsHttps() throws Exception {
-        Application.stopServer();
+        Application.getWebServer().stop();
         ClientResource resource = getHttpsClientForUriPath("/");
         resource.setRetryOnError(false);
         try {

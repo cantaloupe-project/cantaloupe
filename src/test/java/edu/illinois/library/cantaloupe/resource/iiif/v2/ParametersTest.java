@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import edu.illinois.library.cantaloupe.image.OutputFormat;
+import edu.illinois.library.cantaloupe.image.Format;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -26,7 +26,7 @@ public class ParametersTest {
         assertEquals(90f, params.getSize().getPercent(), FUDGE);
         assertEquals(15f, params.getRotation().getDegrees(), FUDGE);
         assertEquals(Quality.BITONAL, params.getQuality());
-        assertEquals(OutputFormat.JPG, params.getOutputFormat());
+        assertEquals(Format.JPG, params.getOutputFormat());
 
         try {
             Parameters.fromUri("bla/20,20,50,50/15/bitonal.jpg");
