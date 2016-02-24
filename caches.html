@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Extensible multi-protocol image server in Java
+">
+
+  <title>Cantaloupe</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/cantaloupe/css/syntax.css">
+  <link rel="stylesheet" href="/cantaloupe/css/base.css">
+
+  <script src="/cantaloupe/scripts/jquery.min.js"></script>
+</head>
+
+
+  <body>
+
+    <div class="container-fluid">
+
+      <div class="clearfix">
+        <header>
+  <a href="/cantaloupe/">
+    <img src="images/cantaloupe.jpg" width="154" height="81">
+  </a>
+  <h1>
+    <a href="/cantaloupe/">Cantaloupe</a>
+    <br>
+    <small>Extensible multi-protocol dynamic image server in Java</small>
+  </h1>
+</header>
+
+      </div>
+
+      <div class="row">
+        <div class="col-sm-3">
+          <nav id="toc">
+  <ul>
+    <li><a href="/cantaloupe/">Home</a>
+      <ul>
+        <li><a href="/cantaloupe/#About">About</a></li>
+        <li><a href="/cantaloupe/#Features">Features</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="getting-started.html">Getting Started</a>
+      <ul>
+        <li><a href="getting-started.html#Requirements">Requirements</a></li>
+        <li><a href="getting-started.html#Download">Download</a></li>
+        <li><a href="getting-started.html#Configuration">Configuration</a></li>
+        <li><a href="getting-started.html#Running">Running</a></li>
+        <li><a href="getting-started.html#Upgrading">Upgrading</a></li>
+        <li><a href="getting-started.html#GettingHelp">Getting Help</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="deployment.html">Deployment</a>
+      <ul>
+        <li><a href="deployment.html#Hardware">Hardware</a></li>
+        <li><a href="deployment.html#Caching">Caching</a></li>
+        <li><a href="deployment.html#Limiting">Limiting</a></li>
+        <li><a href="deployment.html#Reverse-Proxying">Reverse-Proxying</a></li>
+        <li><a href="deployment.html#SSL%2FTLS">SSL/TLS</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="endpoints.html">Endpoints</a>
+      <ul>
+        <li><a href="endpoints.html#IIIFImageAPI1">IIIF Image API 1.x</a></li>
+        <li><a href="endpoints.html#IIIFImageAPI2">IIIF Image API 2.x</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="resolvers.html">Resolvers</a>
+      <ul>
+        <li><a href="resolvers.html#Static%20Resolution">Static Resolver</a></li>
+        <li><a href="resolvers.html#Dynamic%20Resolution">Dynamic Resolvers</a></li>
+        <li><a href="resolvers.html#FilesystemResolver">Filesystem</a></li>
+        <li><a href="resolvers.html#HttpResolver">HTTP</a></li>
+        <li><a href="resolvers.html#JdbcResolver">JDBC</a></li>
+        <li><a href="resolvers.html#AmazonS3Resolver">Amazon S3</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="processors.html">Processors</a>
+      <ul>
+        <li><a href="processors.html#Source%20Format%20Support">Format Support</a></li>
+        <li><a href="processors.html#Compatibility">Resolver Compatibility</a></li>
+        <li><a href="processors.html#Java2dProcessor">Java 2D</a></li>
+        <li><a href="processors.html#GraphicsMagickProcessor">GraphicsMagick</a></li>
+        <li><a href="processors.html#ImageMagickProcessor">ImageMagick</a></li>
+        <li><a href="processors.html#JaiProcessor">JAI</a></li>
+        <li><a href="processors.html#KakaduProcessor">Kakadu</a></li>
+        <li><a href="processors.html#OpenJpegProcessor">OpenJPEG</a></li>
+        <li><a href="processors.html#FfmpegProcessor">FFmpeg</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="caches.html">Caches (Server-Side)</a>
+      <ul>
+        <li><a href="caches.html#Purging">Purging</a></li>
+        <li><a href="caches.html#FilesystemCache">Filesystem</a></li>
+        <li><a href="caches.html#JdbcCache">JDBC</a></li>
+      </ul>
+    </li>
+    <li><a href="client-caching.html">Caching (Client-Side)</a></li>
+    <li>
+      <a href="access-control.html">Access Control</a>
+      <ul>
+        <li><a href="access-control.html#Authentication">Authentication</a></li>
+        <li><a href="access-control.html#Authorization">Authorization</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="logging.html">Logging</a>
+      <ul>
+        <li><a href="logging.html#Application%20Log">Application Log</a></li>
+        <li><a href="logging.html#Access%20Log">Access Log</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="source-formats.html">Source Formats</a>
+      <ul>
+        <li><a href="source-formats.html#JPEG">JPEG</a></li>
+        <li><a href="source-formats.html#JPEG2000">JPEG2000</a></li>
+        <li><a href="source-formats.html#TIFF">TIFF</a></li>
+      </ul>
+    </li>
+    <li><a href="delegate-script.html">Delegate Script</a></li>
+    <li>
+      <a href="developers.html">For Developers</a>
+      <ul>
+        <li><a href="/cantaloupe/javadoc/">Javadoc</a></li>
+        <li><a href="developers.html#Contributing">Contributing</a></li>
+      </ul>
+    </li>
+    <li><a href="changes.html">Change Log</a>
+  </ul>
+</nav>
+
+        </div> <!-- .col-sm-3 -->
+
+        <div class="col-sm-9">
+          <h2>Caches</h2>
+
+<p>Caches cache generated images in order to spare the computational expense of processing the same image request over and over again. Caches are pluggable, to enable different cache stores.</p>
+
+<p>Server-side caching is highly recommended, as it will tend to greatly reduce load on the server and improve response times for the remaining processing that is left to do. There are other ways of caching on the server, but the Cantaloupe cache is custom-tailored for this application and easy enough to set up.</p>
+
+<h3>Enabling</h3>
+
+<p>Caching is disabled by default. To enable it, set <code>cache.server</code> to the name of a cache, such as <a href="#FilesystemCache">FilesystemCache</a>.</p>
+
+<p>The cache can be configured to operate in one of two ways:</p>
+<dl>
+  <dt>Conservative (<code>cache.server.resolve_first = true</code>)</dt>
+  <dd>Source images are looked up and verified to exist before cached representations are returned. This precludes returning a cached representation when the underlying resource no longer exists, but also impairs response times by a variable amount, depending on the resolver.</dd>
+  <dt>Aggressive (<code>cache.server.resolve_first = false</code>)</dt>
+  <dd>Cached representations are returned immediately, if available. This is faster, but it can lead to inconsistency between the cache and the underlying source image storage.</dd>
+</dl>
+
+<h3 id="Purging">Purging</h3>
+
+<p>To purge expired images only, start Cantaloupe with the <code>-Dcantaloupe.cache.purge_expired</code> option.</p>
+
+<p>To purge all images, start Cantaloupe with the <code>-Dcantaloupe.cache.purge</code> option.</p>
+
+<p>Either of these can be run in a separate Cantaloupe process while the main instance remains running.</p>
+
+<h3>Notes</h3>
+
+<ul>
+  <li>Currently, requests for full-sized, unaltered source images are not cached, and are instead streamed through with no processing.</li>
+  <li>Cantaloupe does not cache entire IIIF information response representations&mdash;only image dimensions, which are the only expensive part to generate. This means it is possible to change other configuration options that would affect the contents of information responses without having to purge the cache.</li>
+  <li>The cache is shared across API endpoints. Requests for the same image from different endpoints will return the same cached image.</li>
+  <li>To avoid corruption, simultaneous instances of Cantaloupe should not be pointed at the same cache.</li>
+</ul>
+
+<h3 id="FilesystemCache">FilesystemCache</h3>
+
+<p>FilesystemCache caches generated images and (parts of) information responses in a filesystem hierarchy. The location of the root directory is configurable, as is the "time-to-live" of the cache files, with the following options:</p>
+
+<dl>
+  <dt><code>FilesystemCache.pathname</code></dt>
+  <dd>Absolute path of the folder in which cached images and dimensions will be stored.</dd>
+  <dt><code>FilesystemCache.ttl_seconds</code></dt>
+  <dd>Time-to-live of the cached content, in seconds.</dd>
+</dl>
+
+<p>Some filesystems have per-directory file count limits, or thresholds beyond which performance starts to degrade. To work around this, cache files are stored in subdirectory trees consisting of leading fragments of MD5 identifier checksums. Ultimately, the cache structure looks like:</p>
+
+<ul>
+  <li><code>FilesystemCache.pathname</code>/
+    <ul>
+      <li><span class="filename">image/</span>
+        <ul>
+          <li>Intermediate subdirectories based on identifier MD5 checksum, configurable by <code>FilesystemCache.dir.depth</code> and <code>FilesystemCache.dir.name_length</code>
+            <ul>
+              <li><span class="filename">{operation list string representation}.{output format extension}</span></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li><span class="filename">info/</span>
+        <ul>
+          <li>Intermediate subdirectories based on identifier MD5 checksum, configurable by <code>FilesystemCache.dir.depth</code> and <code>FilesystemCache.dir.name_length</code>
+            <ul>
+              <li><span class="filename">{identifier}.json</span></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="JdbcCache">JdbcCache</h3>
+
+<p>JdbcCache caches generated images and (parts of) information requests into tables in a relational database (RDBMS). This cache can be configured with the following options:</p>
+
+<dl>
+  <dt><code>JdbcCache.url</code></dt>
+  <dd>JDBC connection URL; for example, <code>jdbc:postgresql://localhost:5432/mydatabase</code>.</dd>
+  <dt><code>JdbcCache.user</code></dt>
+  <dd>User to connect to the database as.</dd>
+  <dt><code>JdbcCache.password</code></dt>
+  <dd>Password to use when connecting to the database. Can be left blank if not needed.</dd>
+  <dt><code>JdbcCache.image_table</code></dt>
+  <dd>The table in which to cache images. This will be created automatically.</dd>
+  <dt><code>JdbcCache.info_table</code></dt>
+  <dd>The table in which to cache information responses. This will be created automatically.</dd>
+  <dt><code>JdbcCache.ttl_seconds</code></dt>
+  <dd>Time-to-live of the cached images and information responses, in seconds.</dd>
+</dl>
+
+<p>JdbcCache will not create its schema automatically&mdash;this must be done manually using the following commands, which may have to be altered slightly for your particular database:</p>
+
+<figure class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">IF</span> <span class="k">NOT</span> <span class="k">EXISTS</span> <span class="n">image</span> <span class="p">(</span>
+   <span class="n">operations</span> <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">4096</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+   <span class="n">image</span> <span class="n">BLOB</span><span class="p">,</span>
+   <span class="n">last_modified</span> <span class="n">DATETIME</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">IF</span> <span class="k">NOT</span> <span class="k">EXISTS</span> <span class="n">info</span> <span class="p">(</span>
+  <span class="n">identifier</span> <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">4096</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="n">width</span> <span class="n">DECIMAL</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span>
+  <span class="n">height</span> <span class="n">DECIMAL</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span>
+  <span class="n">last_modified</span> <span class="n">DATETIME</span>
+<span class="p">);</span></code></pre></figure>
+
+<div class="alert alert-info">Note: JdbcCache has been tested with PostgreSQL 9.4 and H2 1.4. Other databases may work, but are untested.</div>
+
+<div class="alert alert-warning">Note: JdbcCache is inefficient in that it buffers generated images in memory before flushing them to the database. (This is currently unavoidable&mdash;the JDBC API couples poorly with the Cantaloupe cache API.)</div>
+
+        </div>
+      </div>
+
+      <footer>
+</footer>
+
+<script src="/cantaloupe/scripts/bootstrap.min.js"></script>
+<script src="/cantaloupe/scripts/base.js"></script>
+
+
+    </div>
+
+  </body>
+
+</html>
