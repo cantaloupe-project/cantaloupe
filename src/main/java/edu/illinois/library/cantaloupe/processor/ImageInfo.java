@@ -63,7 +63,7 @@ public final class ImageInfo {
             if (tileWidth != null && tileHeight != null) {
                 return new Dimension(tileWidth, tileHeight);
             }
-            return null;
+            return new Dimension(width, height);
         }
 
         public void setSize(Dimension size) {
