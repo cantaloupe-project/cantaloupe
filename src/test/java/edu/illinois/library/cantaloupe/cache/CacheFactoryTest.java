@@ -13,19 +13,19 @@ public class CacheFactoryTest {
         BaseConfiguration config = new BaseConfiguration();
         Application.setConfiguration(config);
 
-        final String key = CacheFactory.CACHE_CONFIG_KEY;
+        final String key = CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY;
 
         config.setProperty(key, "FilesystemCache");
-        assertTrue(CacheFactory.getInstance() instanceof FilesystemCache);
+        assertTrue(CacheFactory.getDerivativeCache() instanceof FilesystemCache);
 
         config.setProperty(key, "");
-        assertNull(CacheFactory.getInstance());
+        assertNull(CacheFactory.getDerivativeCache());
 
         config.setProperty(key, null);
-        assertNull(CacheFactory.getInstance());
+        assertNull(CacheFactory.getDerivativeCache());
 
         config.setProperty(key, "bogus");
-        assertNull(CacheFactory.getInstance());
+        assertNull(CacheFactory.getDerivativeCache());
     }
 
 }

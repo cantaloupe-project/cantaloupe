@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -138,7 +139,7 @@ public class InformationResourceTest extends ResourceTest {
 
             // assert that it has been cached
             assertEquals(2, FileUtils.listFiles(cacheFolder, null, true).size());
-            Cache cache = CacheFactory.getInstance();
+            DerivativeCache cache = CacheFactory.getDerivativeCache();
             assertNotNull(cache.getImageInputStream(ops));
             assertNotNull(cache.getImageInfo(ops.getIdentifier()));
 

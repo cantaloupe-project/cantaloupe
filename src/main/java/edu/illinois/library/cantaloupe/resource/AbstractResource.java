@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -303,7 +304,7 @@ public abstract class AbstractResource extends ServerResource {
                                             final Processor proc)
             throws ProcessorException, CacheException {
         ImageInfo info = null;
-        Cache cache = CacheFactory.getInstance();
+        DerivativeCache cache = CacheFactory.getDerivativeCache();
         if (cache != null) {
             long msec = System.currentTimeMillis();
             info = cache.getImageInfo(identifier);

@@ -240,6 +240,38 @@ public class FilesystemCacheTest {
         // TODO: write this
     }
 
+    /* getImageFile(Identifier) */
+
+    @Test
+    public void testGetImageFileWithIdentifierWithZeroTtl()
+            throws Exception {
+        Identifier identifier = new Identifier("cats");
+        assertNull(instance.getImageFile(identifier));
+
+        File imageFile = instance.getSourceImageFile(identifier);
+        imageFile.getParentFile().mkdirs();
+        imageFile.createNewFile();
+        assertNotNull(instance.getImageFile(identifier));
+    }
+
+    @Test
+    public void testGetImageFileWithIdentifierWithNonzeroTtl()
+            throws Exception {
+        Application.getConfiguration().
+                setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
+
+        Identifier identifier = new Identifier("cats");
+        File cacheFile = instance.getSourceImageFile(identifier);
+        cacheFile.getParentFile().mkdirs();
+        cacheFile.createNewFile();
+        assertNotNull(instance.getImageFile(identifier));
+
+        Thread.sleep(1100);
+
+        assertNull(instance.getImageFile(identifier));
+        assertFalse(cacheFile.exists());
+    }
+
     /* getImageInfo(Identifier) */
 
     @Test
@@ -270,38 +302,6 @@ public class FilesystemCacheTest {
 
         Thread.sleep(1100);
         assertNull(instance.getImageInfo(identifier));
-    }
-
-    /* getImageInputStream(Identifier) */
-
-    @Test
-    public void testGetImageInputStreamWithIdentifierWithZeroTtl()
-            throws Exception {
-        Identifier identifier = new Identifier("cats");
-        assertNull(instance.getImageInputStream(identifier));
-
-        File imageFile = instance.getSourceImageFile(identifier);
-        imageFile.getParentFile().mkdirs();
-        imageFile.createNewFile();
-        assertNotNull(instance.getImageInputStream(identifier));
-    }
-
-    @Test
-    public void testGetImageInputStreamWithIdentifierWithNonzeroTtl()
-            throws Exception {
-        Application.getConfiguration().
-                setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
-
-        Identifier identifier = new Identifier("cats");
-        File cacheFile = instance.getSourceImageFile(identifier);
-        cacheFile.getParentFile().mkdirs();
-        cacheFile.createNewFile();
-        assertNotNull(instance.getImageInputStream(identifier));
-
-        Thread.sleep(1100);
-
-        assertNull(instance.getImageInputStream(identifier));
-        assertFalse(cacheFile.exists());
     }
 
     /* getImageInputStream(OperationList) */

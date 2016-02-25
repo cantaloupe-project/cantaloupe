@@ -206,32 +206,56 @@ public class Application {
         logger.info("\uD83C\uDF48 Starting Cantaloupe {}", getVersion());
 
         if (System.getProperty(CLEAN_CACHE_VM_ARGUMENT) != null) {
-            Cache cache = CacheFactory.getInstance();
+            Cache cache = CacheFactory.getSourceCache();
             if (cache != null) {
+                System.out.println("Cleaning the source cache...");
                 cache.cleanUp();
-                System.exit(0);
             } else {
-                System.out.println("Cache is not specified or is improperly configured.");
-                System.exit(-1);
+                System.out.println("Source cache is disabled.");
             }
+            cache = CacheFactory.getDerivativeCache();
+            if (cache != null) {
+                System.out.println("Cleaning the derivative cache...");
+                cache.cleanUp();
+            } else {
+                System.out.println("Derivative cache is disabled.");
+            }
+            System.out.println("Done.");
+            System.exit(0);
         } else if (System.getProperty(PURGE_CACHE_VM_ARGUMENT) != null) {
-            Cache cache = CacheFactory.getInstance();
+            Cache cache = CacheFactory.getSourceCache();
             if (cache != null) {
+                System.out.println("Purging the source cache...");
                 cache.purge();
-                System.exit(0);
             } else {
-                System.out.println("Cache is not specified or is improperly configured.");
-                System.exit(-1);
+                System.out.println("Source cache is disabled.");
             }
-        } else if (System.getProperty(PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT) != null) {
-            Cache cache = CacheFactory.getInstance();
+            cache = CacheFactory.getDerivativeCache();
             if (cache != null) {
-                cache.purgeExpired();
-                System.exit(0);
+                System.out.println("Purging the derivative cache...");
+                cache.purge();
             } else {
-                System.out.println("Cache is not specified or is improperly configured.");
-                System.exit(-1);
+                System.out.println("Derivative cache is disabled.");
             }
+            System.out.println("Done.");
+            System.exit(0);
+        } else if (System.getProperty(PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT) != null) {
+            Cache cache = CacheFactory.getSourceCache();
+            if (cache != null) {
+                System.out.println("Purging expired items from the source cache...");
+                cache.purgeExpired();
+            } else {
+                System.out.println("Source cache is disabled.");
+            }
+            cache = CacheFactory.getDerivativeCache();
+            if (cache != null) {
+                System.out.println("Purging expired items from the derivative cache...");
+                cache.purgeExpired();
+            } else {
+                System.out.println("Derivative cache is disabled.");
+            }
+            System.out.println("Done.");
+            System.exit(0);
         } else {
             // If the cache worker is enabled, run it in a low-priority
             // background thread.

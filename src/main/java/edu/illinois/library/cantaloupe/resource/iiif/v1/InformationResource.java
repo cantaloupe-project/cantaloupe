@@ -61,7 +61,7 @@ public class InformationResource extends AbstractResource {
             if (Application.getConfiguration().
                     getBoolean(PURGE_MISSING_CONFIG_KEY, false)) {
                 // if the image was not found, purge it from the cache
-                final Cache cache = CacheFactory.getInstance();
+                final Cache cache = CacheFactory.getDerivativeCache();
                 if (cache != null) {
                     cache.purgeImage(identifier);
                 }

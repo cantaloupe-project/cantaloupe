@@ -43,10 +43,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Cache using a filesystem folder, storing images and infos separately
- * as files in subfolders.
+ * Cache using a filesystem folder, storing source images, derivative images,
+ * and infos in separate subdirectories.
  */
-class FilesystemCache implements Cache {
+class FilesystemCache implements SourceCache, DerivativeCache {
 
     /**
      * Used by {@link Files#walkFileTree} to delete all temp files within a
@@ -165,30 +165,15 @@ class FilesystemCache implements Cache {
     }
 
     /**
-     * No-op dummy stream returned by
-     * {@link FilesystemCache#getImageOutputStream} when an identical output
-     * stream has been returned in another thread but has not yet been closed.
-     * Enables that thread to keep writing without other threads interfering.
+     * No-op dummy stream returned by various FilesystemCache methods when an
+     * identical output stream has been returned in another thread but has not
+     * yet been closed. Enables that thread to keep writing without
+     * interference and without requiring clients to check for null.
      */
-    private static class ConcurrentNullOutputStream extends OutputStream {
-
-        private Set imagesBeingWritten;
-        private Object toRemove;
-
-        /**
-         * @param imagesBeingWritten Set of OperationLists for all images
-         *                           currently being written.
-         * @param toRemove Object to remove from the set when done.
-         */
-        public ConcurrentNullOutputStream(Set imagesBeingWritten,
-                                          Object toRemove) {
-            this.imagesBeingWritten = imagesBeingWritten;
-            this.toRemove = toRemove;
-        }
+    private static class NullOutputStream extends OutputStream {
 
         @Override
         public void close() throws IOException {
-            imagesBeingWritten.remove(toRemove);
             super.close();
         }
 
@@ -482,6 +467,25 @@ class FilesystemCache implements Cache {
     }
 
     @Override
+    public File getImageFile(Identifier identifier) throws CacheException {
+        File file = null;
+        final File cacheFile = getSourceImageFile(identifier);
+        if (cacheFile != null && cacheFile.exists()) {
+            if (!isExpired(cacheFile)) {
+                logger.info("Hit for image: {}", identifier);
+                file = cacheFile;
+            } else {
+                logger.info("Deleting stale cache file: {}",
+                        cacheFile.getName());
+                if (!cacheFile.delete()) {
+                    logger.warn("Unable to delete {}", cacheFile);
+                }
+            }
+        }
+        return file;
+    }
+
+    @Override
     public ImageInfo getImageInfo(Identifier identifier) throws CacheException {
         synchronized (lock2) {
             while (infosBeingWritten.contains(identifier)) {
@@ -519,30 +523,6 @@ class FilesystemCache implements Cache {
     }
 
     @Override
-    public InputStream getImageInputStream(Identifier identifier)
-            throws CacheException {
-        InputStream inputStream = null;
-        final File cacheFile = getSourceImageFile(identifier);
-        if (cacheFile != null && cacheFile.exists()) {
-            if (!isExpired(cacheFile)) {
-                try {
-                    logger.info("Hit for image: {}", identifier);
-                    inputStream = new FileInputStream(cacheFile);
-                } catch (FileNotFoundException e) {
-                    logger.error(e.getMessage(), e);
-                }
-            } else {
-                logger.info("Deleting stale cache file: {}",
-                        cacheFile.getName());
-                if (!cacheFile.delete()) {
-                    logger.warn("Unable to delete {}", cacheFile);
-                }
-            }
-        }
-        return inputStream;
-    }
-
-    @Override
     public InputStream getImageInputStream(OperationList ops)
             throws CacheException {
         InputStream inputStream = null;
@@ -575,8 +555,7 @@ class FilesystemCache implements Cache {
         if (sourceImagesBeingWritten.contains(identifier)) {
             logger.info("Miss, but cache file for {} is being written in " +
                     "another thread, so not caching", identifier);
-            return new ConcurrentNullOutputStream(sourceImagesBeingWritten,
-                    identifier);
+            return new NullOutputStream();
         }
 
         sourceImagesBeingWritten.add(identifier);
@@ -588,8 +567,7 @@ class FilesystemCache implements Cache {
         if (tempFile.exists()) {
             logger.info("Miss, but a temp file for {} already exists, " +
                     "so not caching", identifier);
-            return new ConcurrentNullOutputStream(sourceImagesBeingWritten,
-                    identifier);
+            return new NullOutputStream();
         }
 
         logger.info("Miss; caching {}", identifier);
@@ -618,8 +596,7 @@ class FilesystemCache implements Cache {
         if (derivativeImagesBeingWritten.contains(ops)) {
             logger.info("Miss, but cache file for {} is being written in " +
                     "another thread, so not caching", ops);
-            return new ConcurrentNullOutputStream(
-                    derivativeImagesBeingWritten, ops);
+            return new NullOutputStream();
         }
 
         derivativeImagesBeingWritten.add(ops);
@@ -631,8 +608,7 @@ class FilesystemCache implements Cache {
         if (tempFile.exists()) {
             logger.info("Miss, but a temp file for {} already exists, " +
                     "so not caching", ops);
-            return new ConcurrentNullOutputStream(
-                    derivativeImagesBeingWritten, ops);
+            return new NullOutputStream();
         }
 
         logger.info("Miss; caching {}", ops);

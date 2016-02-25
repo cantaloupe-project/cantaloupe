@@ -4,9 +4,6 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-
 /**
  * <p>Interface to be implemented by all caches. A cache stores and retrieves
  * unique images corresponding to {@link OperationList} objects, as well as
@@ -31,73 +28,6 @@ public interface Cache {
      * @throws CacheException
      */
     void cleanUp() throws CacheException;
-
-    /**
-     * <p>Reads cached image information.</p>
-     *
-     * <p>If image information corresponding to the given identifier exists in
-     * the cache but is expired, implementations should delete it.</p>
-     *
-     * @param identifier Image identifier for which to retrieve information.
-     * @return ImageInfo corresponding to the given identifier, or null if no
-     * non-expired info exists in the cache.
-     * @throws CacheException
-     */
-    ImageInfo getImageInfo(Identifier identifier) throws CacheException;
-
-    /**
-     * <p>Returns an input stream for a source image corresponding to the given
-     * identifier, or null if a non-expired image corresponding to the given
-     * identifier does not exist in the cache..</p>
-     *
-     * <p>If an image corresponding to the given identifier exists in the
-     * cache but is expired, implementations should delete it before returning
-     * null.</p>
-     *
-     * @param identifier Identifier of an image to read from the cache.
-     * @return Input stream corresponding to the given identifier, or null
-     *         if a non-expired image corresponding to the given identifier
-     *         does not exist in the cache.
-     * @throws CacheException
-     */
-    InputStream getImageInputStream(Identifier identifier)
-            throws CacheException;
-
-    /**
-     * <p>Returns an input stream corresponding to the given OperationList,
-     * or null if a non-expired image corresponding to the given operation
-     * list does not exist in the cache..</p>
-     *
-     * <p>If an image corresponding to the given list exists in the cache but
-     * is expired, implementations should delete it before returning null.</p>
-     *
-     * @param opList Operation list for which to retrieve an input stream for
-     *               reading from the cache.
-     * @return Input stream corresponding to the given operation list, or null
-     *         if a non-expired image corresponding to the given operation
-     *         list does not exist in the cache.
-     * @throws CacheException
-     */
-    InputStream getImageInputStream(OperationList opList) throws CacheException;
-
-    /**
-     * @param identifier Identifier of an image to write to the cache.
-     * @return Output stream to which an image corresponding to the given
-     *         identifier can be written.
-     * @throws CacheException
-     */
-    OutputStream getImageOutputStream(Identifier identifier)
-            throws CacheException;
-
-    /**
-     * @param opList Operation list for which to retrieve an output stream for
-     *               writing to the cache.
-     * @return Output stream to which an image corresponding to the given
-     *         operation list can be written.
-     * @throws CacheException
-     */
-    OutputStream getImageOutputStream(OperationList opList)
-            throws CacheException;
 
     /**
      * Deletes the entire cache contents.
@@ -137,22 +67,5 @@ public interface Cache {
      *         non-fatal errors.
      */
     void purgeImage(Identifier identifier) throws CacheException;
-
-    /**
-     * <p>Adds image information to the cache.</p>
-     *
-     * <p>If the information corresponding to the given identifier already
-     * exists, it should be overwritten.</p>
-     *
-     * <p>If writing is interrupted, implementations should perform cleanup,
-     * if necessary.</p>
-     *
-     * @param identifier Identifier of the image corresponding to the given
-     *                   size.
-     * @param imageInfo ImageInfo containing image information.
-     * @throws CacheException
-     */
-    void putImageInfo(Identifier identifier, ImageInfo imageInfo)
-            throws CacheException;
 
 }

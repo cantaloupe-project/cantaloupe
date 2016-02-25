@@ -139,9 +139,7 @@ title: Caches
   <dd>User to connect to the database as.</dd>
   <dt><code>JdbcCache.password</code></dt>
   <dd>Password to use when connecting to the database. Can be left blank if not needed.</dd>
-  <dt><code>JdbcCache.source_image_table</code></dt>
-  <dd>Table in which to cache source images.</dd>
-  <dt><code>JdbcCache.derivative_image_table</code></dt>
+  <dt><code>JdbcCache.image_table</code></dt>
   <dd>Table in which to cache derivative (post-processed) images.</dd>
   <dt><code>JdbcCache.info_table</code></dt>
   <dd>Table in which to cache information responses.</dd>
@@ -152,12 +150,6 @@ title: Caches
 <p>JdbcCache will not create its schema automatically&mdash;this must be done manually using the following commands, which may have to be altered slightly for your particular database:</p>
 
 {% highlight sql %}
-CREATE TABLE IF NOT EXISTS {JdbcCache.source_image_table} (
-    identifier VARCHAR(4096) NOT NULL,
-    image BLOB,
-    last_accessed DATETIME
-);
-
 CREATE TABLE IF NOT EXISTS {JdbcCache.derivative_image_table} (
    operations VARCHAR(4096) NOT NULL,
    image BLOB,

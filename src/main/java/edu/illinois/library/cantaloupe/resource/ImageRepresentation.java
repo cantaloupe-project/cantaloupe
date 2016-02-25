@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
@@ -61,7 +62,7 @@ public class ImageRepresentation extends OutputRepresentation {
      */
     @Override
     public void write(OutputStream outputStream) throws IOException {
-        final Cache cache = CacheFactory.getInstance();
+        final DerivativeCache cache = CacheFactory.getDerivativeCache();
         if (cache != null) {
             OutputStream cacheOutputStream = null;
             try (InputStream inputStream =

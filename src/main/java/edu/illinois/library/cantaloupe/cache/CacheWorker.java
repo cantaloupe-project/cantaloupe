@@ -63,11 +63,12 @@ public class CacheWorker implements Runnable {
         }
 
         while (true) {
-            // If caching is disabled, this will be null.
-            final Cache cache = CacheFactory.getInstance();
+            // Disabled caches will be null.
+            final Cache sourceCache = CacheFactory.getSourceCache();
+            final Cache derivativeCache = CacheFactory.getDerivativeCache();
             try {
                 final int interval = config.getInt(INTERVAL_CONFIG_KEY, -1);
-                if (cache != null) {
+                if (derivativeCache != null) {
                     logger.info("Working...");
                     try {
                         // Ensure the validity of the interval.
@@ -76,15 +77,27 @@ public class CacheWorker implements Runnable {
                                     "interval (" + INTERVAL_CONFIG_KEY +
                                     "). Aborting.");
                         }
-                        // Purge expired items.
+                        // Purge expired items from the source cache.
                         try {
-                            cache.purgeExpired();
+                            sourceCache.purgeExpired();
                         } catch (CacheException e) {
                             logger.error(e.getMessage());
                         }
-                        // Clean up.
+                        // Clean up the source cache.
                         try {
-                            cache.cleanUp();
+                            sourceCache.cleanUp();
+                        } catch (CacheException e) {
+                            logger.error(e.getMessage());
+                        }
+                        // Purge expired items from the derivative cache.
+                        try {
+                            derivativeCache.purgeExpired();
+                        } catch (CacheException e) {
+                            logger.error(e.getMessage());
+                        }
+                        // Clean up the derivative cache.
+                        try {
+                            derivativeCache.cleanUp();
                         } catch (CacheException e) {
                             logger.error(e.getMessage());
                         }

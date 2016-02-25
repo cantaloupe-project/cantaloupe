@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -190,7 +191,7 @@ public class ApplicationTest {
         Application.setConfiguration(config);
 
         // cache a dimension
-        Cache cache = CacheFactory.getInstance();
+        DerivativeCache cache = CacheFactory.getDerivativeCache();
         cache.putImageInfo(new Identifier("cats"), new ImageInfo(500, 500));
 
         // cache an image

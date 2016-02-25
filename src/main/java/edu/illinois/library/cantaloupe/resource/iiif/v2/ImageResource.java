@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -85,7 +86,7 @@ public class ImageResource extends AbstractResource {
         // just return the cached image.
         if (!Application.getConfiguration().
                 getBoolean(RESOLVE_FIRST_CONFIG_KEY, true)) {
-            Cache cache = CacheFactory.getInstance();
+            DerivativeCache cache = CacheFactory.getDerivativeCache();
             if (cache != null) {
                 InputStream inputStream = cache.getImageInputStream(ops);
                 if (inputStream != null) {
@@ -106,7 +107,7 @@ public class ImageResource extends AbstractResource {
             if (Application.getConfiguration().
                     getBoolean(PURGE_MISSING_CONFIG_KEY, false)) {
                 // if the image was not found, purge it from the cache
-                final Cache cache = CacheFactory.getInstance();
+                final Cache cache = CacheFactory.getDerivativeCache();
                 if (cache != null) {
                     cache.purgeImage(ops.getIdentifier());
                 }

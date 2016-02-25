@@ -31,12 +31,6 @@ import java.util.Calendar;
  * <p>This cache requires that a database schema be created manually--it will
  * not do it automatically. The current schema is:</p>
  *
- * <pre>CREATE TABLE IF NOT EXISTS {JdbcCache.source_image_table} (
- *     identifier VARCHAR(4096) NOT NULL,
- *     image BLOB,
- *     last_accessed DATETIME
- * );
- *
  * CREATE TABLE IF NOT EXISTS {JdbcCache.derivative_image_table} (
  *     operations VARCHAR(4096) NOT NULL,
  *     image BLOB,
@@ -49,7 +43,7 @@ import java.util.Calendar;
  *     last_accessed DATETIME
  * );</pre>
  */
-class JdbcCache implements Cache {
+class JdbcCache implements DerivativeCache {
 
     /**
      * Wraps a {@link Blob} OutputStream, for writing an image to a BLOB.
@@ -58,41 +52,9 @@ class JdbcCache implements Cache {
     private class ImageBlobOutputStream extends OutputStream {
 
         private OutputStream blobOutputStream;
-        private Identifier identifier;
         private OperationList ops;
         private Connection connection;
         private PreparedStatement statement;
-
-        /**
-         * Constructor for writing source images.
-         *
-         * @param conn
-         * @param identifier Source image identifier
-         * @throws SQLException
-         */
-        public ImageBlobOutputStream(Connection conn, Identifier identifier)
-                throws SQLException {
-            this.connection = conn;
-            this.identifier = identifier;
-
-            connection.setAutoCommit(false);
-
-            final Configuration config = Application.getConfiguration();
-            final String sql = String.format(
-                    "INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
-                    config.getString(SOURCE_IMAGE_TABLE_CONFIG_KEY),
-                    SOURCE_IMAGE_TABLE_IDENTIFIER_COLUMN,
-                    SOURCE_IMAGE_TABLE_IMAGE_COLUMN,
-                    SOURCE_IMAGE_TABLE_LAST_ACCESSED_COLUMN);
-            logger.debug(sql);
-
-            final Blob blob = connection.createBlob();
-            blobOutputStream = blob.setBinaryStream(1);
-            statement = connection.prepareStatement(sql);
-            statement.setString(1, identifier.toString());
-            statement.setBlob(2, blob);
-            statement.setTimestamp(3, now());
-        }
 
         /**
          * Constructor for writing derivative images.
@@ -127,11 +89,7 @@ class JdbcCache implements Cache {
 
         @Override
         public void close() throws IOException {
-            if (identifier != null) {
-                logger.debug("Closing stream for {}", identifier);
-            } else {
-                logger.debug("Closing stream for {}", ops);
-            }
+            logger.debug("Closing stream for {}", ops);
             try {
                 statement.executeUpdate();
                 connection.commit();
@@ -177,13 +135,6 @@ class JdbcCache implements Cache {
     public static final String INFO_TABLE_INFO_COLUMN = "info";
     public static final String INFO_TABLE_LAST_ACCESSED_COLUMN = "last_accessed";
 
-    public static final String SOURCE_IMAGE_TABLE_IDENTIFIER_COLUMN =
-            "identifier";
-    public static final String SOURCE_IMAGE_TABLE_IMAGE_COLUMN =
-            "image";
-    public static final String SOURCE_IMAGE_TABLE_LAST_ACCESSED_COLUMN =
-            "last_accessed";
-
     public static final String CONNECTION_TIMEOUT_CONFIG_KEY =
             "JdbcCache.connection_timeout";
     public static final String DERIVATIVE_IMAGE_TABLE_CONFIG_KEY =
@@ -193,8 +144,6 @@ class JdbcCache implements Cache {
     public static final String INFO_TABLE_CONFIG_KEY = "JdbcCache.info_table";
     public static final String MAX_POOL_SIZE_CONFIG_KEY =
             "JdbcCache.max_pool_size";
-    public static final String SOURCE_IMAGE_TABLE_CONFIG_KEY =
-            "JdbcCache.source_image_table";
     public static final String TTL_CONFIG_KEY = "JdbcCache.ttl_seconds";
     public static final String USER_CONFIG_KEY = "JdbcCache.user";
 
@@ -209,8 +158,8 @@ class JdbcCache implements Cache {
             logger.info("Connection URL: {}",
                     config.getString(JDBC_URL_CONFIG_KEY));
 
-            final String[] tableNames = { getSourceImageTableName(),
-                    getDerivativeImageTableName(), getInfoTableName() };
+            final String[] tableNames = { getDerivativeImageTableName(),
+                    getInfoTableName() };
             for (String tableName : tableNames) {
                 if (!tableExists(connection, tableName)) {
                     logger.error("Missing table: {}", tableName);
@@ -276,20 +225,6 @@ class JdbcCache implements Cache {
     }
 
     /**
-     * @return Name of the source image table.
-     * @throws CacheException If the image table name is not set.
-     */
-    public static String getSourceImageTableName() throws CacheException {
-        final String name = Application.getConfiguration().
-                getString(SOURCE_IMAGE_TABLE_CONFIG_KEY);
-        if (name == null) {
-            throw new CacheException(SOURCE_IMAGE_TABLE_CONFIG_KEY +
-                    " is not set");
-        }
-        return name;
-    }
-
-    /**
      * @param connection Will not be closed.
      * @throws SQLException
      */
@@ -350,30 +285,6 @@ class JdbcCache implements Cache {
     }
 
     /**
-     * Updates the last-accessed time for the source image corresponding to
-     * the given identifier.
-     *
-     * @param identifier
-     * @param connection
-     *
-     * @throws CacheException
-     * @throws SQLException
-     */
-    private void accessSourceImage(Identifier identifier, Connection connection)
-            throws CacheException, SQLException {
-        final String sql = String.format(
-                "UPDATE %s SET %s = ? WHERE %s = ?",
-                getSourceImageTableName(),
-                SOURCE_IMAGE_TABLE_LAST_ACCESSED_COLUMN,
-                SOURCE_IMAGE_TABLE_IDENTIFIER_COLUMN);
-        logger.debug(sql);
-        PreparedStatement statement = connection.prepareStatement(sql);
-        statement.setTimestamp(1, now());
-        statement.setString(2, identifier.toString());
-        statement.executeUpdate();
-    }
-
-    /**
      * Does nothing, as this cache is always clean.
      */
     @Override
@@ -410,38 +321,6 @@ class JdbcCache implements Cache {
     }
 
     @Override
-    public InputStream getImageInputStream(Identifier identifier)
-            throws CacheException {
-        InputStream inputStream = null;
-
-        try (Connection conn = getConnection()) {
-            String sql = String.format(
-                    "SELECT %s FROM %s WHERE %s = ? AND %s >= ?",
-                    SOURCE_IMAGE_TABLE_IMAGE_COLUMN,
-                    getSourceImageTableName(),
-                    SOURCE_IMAGE_TABLE_IDENTIFIER_COLUMN,
-                    SOURCE_IMAGE_TABLE_LAST_ACCESSED_COLUMN);
-            PreparedStatement statement = conn.prepareStatement(sql);
-            statement.setString(1, identifier.toString());
-            statement.setTimestamp(2, oldestValidDate());
-            logger.debug(sql);
-
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                logger.info("Hit for image: {}", identifier);
-                inputStream = resultSet.getBinaryStream(1);
-                accessSourceImage(identifier, conn);
-            } else {
-                logger.info("Miss for image: {}", identifier);
-                purgeSourceImage(identifier, conn);
-            }
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-        }
-        return inputStream;
-    }
-
-    @Override
     public InputStream getImageInputStream(OperationList opList)
             throws CacheException {
         InputStream inputStream = null;
@@ -471,19 +350,6 @@ class JdbcCache implements Cache {
             logger.error(e.getMessage(), e);
         }
         return inputStream;
-    }
-
-    @Override
-    public OutputStream getImageOutputStream(Identifier identifier)
-            throws CacheException {
-        // TODO: return a no-op stream when a write corresponding to the same
-        // identifier is in progress in another thread
-        logger.info("Miss; caching {}", identifier);
-        try {
-            return new ImageBlobOutputStream(getConnection(), identifier);
-        } catch (SQLException e) {
-            throw new CacheException(e.getMessage(), e);
-        }
     }
 
     @Override
@@ -521,15 +387,12 @@ class JdbcCache implements Cache {
     public void purge() throws CacheException {
         try (Connection connection = getConnection()) {
             connection.setAutoCommit(false);
-            final int numDeletedSourceImages = purgeSourceImages(connection);
             final int numDeletedDerivativeImages =
                     purgeDerivativeImages(connection);
             final int numDeletedInfos = purgeImageInfos(connection);
             connection.commit();
-            logger.info("Purged {} source images, {} derivative images, and " +
-                    "{} infos",
-                    numDeletedSourceImages, numDeletedDerivativeImages,
-                    numDeletedInfos);
+            logger.info("Purged {} derivative images and {} infos",
+                    numDeletedDerivativeImages, numDeletedInfos);
         } catch (SQLException e) {
             throw new CacheException(e.getMessage(), e);
         }
@@ -551,16 +414,12 @@ class JdbcCache implements Cache {
     public void purgeExpired() throws CacheException {
         try (Connection connection = getConnection()) {
             connection.setAutoCommit(false);
-            final int numDeletedSourceImages =
-                    purgeExpiredSourceImages(connection);
             final int numDeletedDerivativeImages =
                     purgeExpiredDerivativeImages(connection);
             final int numDeletedInfos = purgeExpiredInfos(connection);
             connection.commit();
-            logger.info("Purged {} source images, {} derivative images, and " +
-                    "{} info(s)",
-                    numDeletedSourceImages, numDeletedDerivativeImages,
-                    numDeletedInfos);
+            logger.info("Purged {} derivative images and {} info(s)",
+                    numDeletedDerivativeImages, numDeletedInfos);
         } catch (SQLException e) {
             throw new CacheException(e.getMessage(), e);
         }
@@ -593,23 +452,6 @@ class JdbcCache implements Cache {
             throws SQLException, CacheException {
         final String sql = String.format("DELETE FROM %s WHERE %s < ?",
                 getInfoTableName(), INFO_TABLE_LAST_ACCESSED_COLUMN);
-        final PreparedStatement statement = conn.prepareStatement(sql);
-        statement.setTimestamp(1, oldestValidDate());
-        logger.debug(sql);
-        return statement.executeUpdate();
-    }
-
-    /**
-     * @param conn Will not be closed.
-     * @return
-     * @throws SQLException
-     * @throws CacheException
-     */
-    private int purgeExpiredSourceImages(Connection conn)
-            throws SQLException, CacheException {
-        final String sql = String.format("DELETE FROM %s WHERE %s < ?",
-                getSourceImageTableName(),
-                SOURCE_IMAGE_TABLE_LAST_ACCESSED_COLUMN);
         final PreparedStatement statement = conn.prepareStatement(sql);
         statement.setTimestamp(1, oldestValidDate());
         logger.debug(sql);
@@ -707,38 +549,6 @@ class JdbcCache implements Cache {
     private int purgeImageInfos(Connection conn)
             throws SQLException, CacheException {
         final String sql = "DELETE FROM " + getInfoTableName();
-        final PreparedStatement statement = conn.prepareStatement(sql);
-        logger.debug(sql);
-        return statement.executeUpdate();
-    }
-
-    /**
-     * @param identifier Identifier of the source image to purge.
-     * @param conn Will not be closed.
-     * @return Number of purged images
-     * @throws SQLException
-     * @throws CacheException
-     */
-    private int purgeSourceImage(Identifier identifier, Connection conn)
-            throws SQLException, CacheException {
-        String sql = String.format("DELETE FROM %s WHERE %s = ?",
-                getSourceImageTableName(),
-                SOURCE_IMAGE_TABLE_IDENTIFIER_COLUMN);
-        PreparedStatement statement = conn.prepareStatement(sql);
-        statement.setString(1, identifier.toString());
-        logger.debug(sql);
-        return statement.executeUpdate();
-    }
-
-    /**
-     * @param conn Will not be closed.
-     * @return Number of purged images
-     * @throws SQLException
-     * @throws CacheException
-     */
-    private int purgeSourceImages(Connection conn)
-            throws SQLException, CacheException {
-        final String sql = "DELETE FROM " + getSourceImageTableName();
         final PreparedStatement statement = conn.prepareStatement(sql);
         logger.debug(sql);
         return statement.executeUpdate();
