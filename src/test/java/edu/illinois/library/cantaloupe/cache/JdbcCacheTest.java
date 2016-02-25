@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -67,7 +68,7 @@ public class JdbcCacheTest {
                 JdbcCache.getSourceImageTableName(),
                 JdbcCache.SOURCE_IMAGE_TABLE_IDENTIFIER_COLUMN,
                 JdbcCache.SOURCE_IMAGE_TABLE_IMAGE_COLUMN,
-                JdbcCache.SOURCE_IMAGE_TABLE_LAST_MODIFIED_COLUMN);
+                JdbcCache.SOURCE_IMAGE_TABLE_LAST_ACCESSED_COLUMN);
         PreparedStatement statement = connection.prepareStatement(sql);
         statement.execute();
 
@@ -79,7 +80,7 @@ public class JdbcCacheTest {
                 JdbcCache.getDerivativeImageTableName(),
                 JdbcCache.DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
                 JdbcCache.DERIVATIVE_IMAGE_TABLE_IMAGE_COLUMN,
-                JdbcCache.DERIVATIVE_IMAGE_TABLE_LAST_MODIFIED_COLUMN);
+                JdbcCache.DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN);
         statement = connection.prepareStatement(sql);
         statement.execute();
 
@@ -92,7 +93,7 @@ public class JdbcCacheTest {
                 JdbcCache.getInfoTableName(),
                 JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN,
                 JdbcCache.INFO_TABLE_INFO_COLUMN,
-                JdbcCache.INFO_TABLE_LAST_MODIFIED_COLUMN);
+                JdbcCache.INFO_TABLE_LAST_ACCESSED_COLUMN);
         statement = connection.prepareStatement(sql);
         statement.execute();
     }
@@ -162,7 +163,7 @@ public class JdbcCacheTest {
         IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
         os.close();
 
-        // persist some infos corresponding to the derivatives
+        // persist some infos corresponding to the above images
         instance.putImageInfo(new Identifier("cats"), new ImageInfo(50, 40));
         instance.putImageInfo(new Identifier("dogs"), new ImageInfo(500, 300));
         instance.putImageInfo(new Identifier("bunnies"), new ImageInfo(350, 240));
@@ -245,6 +246,40 @@ public class JdbcCacheTest {
         assertNull(instance.getImageInfo(new Identifier("bogus")));
     }
 
+    @Test
+    public void testGetImageInfoUpdatesLastAccessedTime() throws Exception {
+        final Configuration config = Application.getConfiguration();
+
+        final Identifier identifier = new Identifier("cats");
+
+        try (Connection connection = JdbcCache.getConnection()) {
+            // get the initial last-accessed time
+            String sql = String.format("SELECT %s FROM %s WHERE %s = ?;",
+                    JdbcCache.INFO_TABLE_LAST_ACCESSED_COLUMN,
+                    config.getString(JdbcCache.INFO_TABLE_CONFIG_KEY),
+                    JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN);
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, identifier.toString());
+            ResultSet resultSet = statement.executeQuery();
+            resultSet.next();
+            Timestamp time1 = resultSet.getTimestamp(1);
+
+            // run the clock
+            Thread.sleep(10);
+
+            // update the last-accessed time
+            instance.getImageInfo(identifier);
+
+            // get the new last-accessed time
+            resultSet = statement.executeQuery();
+            resultSet.next();
+            Timestamp time2 = resultSet.getTimestamp(1);
+
+            // compare them
+            assertTrue(time2.after(time1));
+        }
+    }
+
     /* getImageInputStream(Identifier) */
 
     @Test
@@ -278,6 +313,41 @@ public class JdbcCacheTest {
         // nonexistent image
         identifier = new Identifier("bogus");
         assertNull(instance.getImageInputStream(identifier));
+    }
+
+    @Test
+    public void testGetImageInputStreamWithIdentifierUpdatesLastAccessedTime()
+            throws Exception {
+        final Configuration config = Application.getConfiguration();
+
+        final Identifier identifier = new Identifier("cats");
+
+        try (Connection connection = JdbcCache.getConnection()) {
+            // get the initial last-accessed time
+            String sql = String.format("SELECT %s FROM %s WHERE %s = ?;",
+                    JdbcCache.SOURCE_IMAGE_TABLE_LAST_ACCESSED_COLUMN,
+                    config.getString(JdbcCache.SOURCE_IMAGE_TABLE_CONFIG_KEY),
+                    JdbcCache.SOURCE_IMAGE_TABLE_IDENTIFIER_COLUMN);
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, identifier.toString());
+            ResultSet resultSet = statement.executeQuery();
+            resultSet.next();
+            Timestamp time1 = resultSet.getTimestamp(1);
+
+            // run the clock
+            Thread.sleep(10);
+
+            // update the last-accessed time
+            instance.getImageInputStream(identifier);
+
+            // get the new last-accessed time
+            resultSet = statement.executeQuery();
+            resultSet.next();
+            Timestamp time2 = resultSet.getTimestamp(1);
+
+            // compare them
+            assertTrue(time2.after(time1));
+        }
     }
 
     /* getImageInputStream(OperationList) */
@@ -318,6 +388,42 @@ public class JdbcCacheTest {
         ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("bogus"));
         assertNull(instance.getImageInputStream(ops));
+    }
+
+    @Test
+    public void testGetImageInputStreamWithOpListUpdatesLastAccessedTime()
+            throws Exception {
+        final Configuration config = Application.getConfiguration();
+
+        final OperationList opList = TestUtil.newOperationList();
+        opList.setIdentifier(new Identifier("cats"));
+
+        try (Connection connection = JdbcCache.getConnection()) {
+            // get the initial last-accessed time
+            String sql = String.format("SELECT %s FROM %s WHERE %s = ?;",
+                    JdbcCache.DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN,
+                    config.getString(JdbcCache.DERIVATIVE_IMAGE_TABLE_CONFIG_KEY),
+                    JdbcCache.DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN);
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, opList.toString());
+            ResultSet resultSet = statement.executeQuery();
+            resultSet.next();
+            Timestamp time1 = resultSet.getTimestamp(1);
+
+            // run the clock
+            Thread.sleep(10);
+
+            // update the last-accessed time
+            instance.getImageInputStream(opList);
+
+            // get the new last-accessed time
+            resultSet = statement.executeQuery();
+            resultSet.next();
+            Timestamp time2 = resultSet.getTimestamp(1);
+
+            // compare them
+            assertTrue(time2.after(time1));
+        }
     }
 
     /* getImageOutputStream(Identifier) */
@@ -530,6 +636,28 @@ public class JdbcCacheTest {
         ImageInfo info = new ImageInfo(52, 52);
         instance.putImageInfo(identifier, info);
         assertEquals(info, instance.getImageInfo(identifier));
+    }
+
+    @Test
+    public void testPutImageInfoSetsLastAccessedTime() throws Exception {
+        final Configuration config = Application.getConfiguration();
+
+        Identifier identifier = new Identifier("birds");
+        ImageInfo info = new ImageInfo(52, 52);
+        instance.putImageInfo(identifier, info);
+
+        try (Connection connection = JdbcCache.getConnection()) {
+            // get the initial last-accessed time
+            String sql = String.format("SELECT %s FROM %s WHERE %s = ?;",
+                    JdbcCache.INFO_TABLE_LAST_ACCESSED_COLUMN,
+                    config.getString(JdbcCache.INFO_TABLE_CONFIG_KEY),
+                    JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN);
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, identifier.toString());
+            ResultSet resultSet = statement.executeQuery();
+            resultSet.next();
+            assertNotNull(resultSet.getTimestamp(1));
+        }
     }
 
 }

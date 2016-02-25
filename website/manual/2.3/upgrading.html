@@ -31,8 +31,10 @@ title: Upgrading
     <pre>CREATE TABLE IF NOT EXISTS {JdbcCache.source_image_table} (
     identifier VARCHAR(4096) NOT NULL,
     image BLOB,
-    last_modified DATETIME
-);</pre>
+    last_accessed DATETIME
+);
+ALTER TABLE {JdbcCache.info_table} CHANGE COLUMN last_modified last_accessed;
+ALTER TABLE {JdbcCache.derivative_image_table} CHANGE COLUMN last_modified last_accessed;</pre>
   </li>
 </ul>
 

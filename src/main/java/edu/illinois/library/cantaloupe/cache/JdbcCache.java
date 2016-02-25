@@ -34,19 +34,19 @@ import java.util.Calendar;
  * <pre>CREATE TABLE IF NOT EXISTS {JdbcCache.source_image_table} (
  *     identifier VARCHAR(4096) NOT NULL,
  *     image BLOB,
- *     last_modified DATETIME
+ *     last_accessed DATETIME
  * );
  *
  * CREATE TABLE IF NOT EXISTS {JdbcCache.derivative_image_table} (
  *     operations VARCHAR(4096) NOT NULL,
  *     image BLOB,
- *     last_modified DATETIME
+ *     last_accessed DATETIME
  * );
  *
  * CREATE TABLE IF NOT EXISTS {JdbcCache.info_table} (
  *     identifier VARCHAR(4096) NOT NULL,
  *     info VARCHAR(8192) NOT NULL,
- *     last_modified DATETIME
+ *     last_accessed DATETIME
  * );</pre>
  */
 class JdbcCache implements Cache {
@@ -83,7 +83,7 @@ class JdbcCache implements Cache {
                     config.getString(SOURCE_IMAGE_TABLE_CONFIG_KEY),
                     SOURCE_IMAGE_TABLE_IDENTIFIER_COLUMN,
                     SOURCE_IMAGE_TABLE_IMAGE_COLUMN,
-                    SOURCE_IMAGE_TABLE_LAST_MODIFIED_COLUMN);
+                    SOURCE_IMAGE_TABLE_LAST_ACCESSED_COLUMN);
             logger.debug(sql);
 
             final Blob blob = connection.createBlob();
@@ -114,7 +114,7 @@ class JdbcCache implements Cache {
                     config.getString(DERIVATIVE_IMAGE_TABLE_CONFIG_KEY),
                     DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
                     DERIVATIVE_IMAGE_TABLE_IMAGE_COLUMN,
-                    DERIVATIVE_IMAGE_TABLE_LAST_MODIFIED_COLUMN);
+                    DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN);
             logger.debug(sql);
 
             final Blob blob = connection.createBlob();
@@ -168,21 +168,21 @@ class JdbcCache implements Cache {
 
     public static final String DERIVATIVE_IMAGE_TABLE_IMAGE_COLUMN =
             "image";
-    public static final String DERIVATIVE_IMAGE_TABLE_LAST_MODIFIED_COLUMN =
-            "last_modified";
+    public static final String DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN =
+            "last_accessed";
     public static final String DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN =
             "operations";
 
     public static final String INFO_TABLE_IDENTIFIER_COLUMN = "identifier";
     public static final String INFO_TABLE_INFO_COLUMN = "info";
-    public static final String INFO_TABLE_LAST_MODIFIED_COLUMN = "last_modified";
+    public static final String INFO_TABLE_LAST_ACCESSED_COLUMN = "last_accessed";
 
     public static final String SOURCE_IMAGE_TABLE_IDENTIFIER_COLUMN =
             "identifier";
     public static final String SOURCE_IMAGE_TABLE_IMAGE_COLUMN =
             "image";
-    public static final String SOURCE_IMAGE_TABLE_LAST_MODIFIED_COLUMN =
-            "last_modified";
+    public static final String SOURCE_IMAGE_TABLE_LAST_ACCESSED_COLUMN =
+            "last_accessed";
 
     public static final String CONNECTION_TIMEOUT_CONFIG_KEY =
             "JdbcCache.connection_timeout";
@@ -301,6 +301,79 @@ class JdbcCache implements Cache {
     }
 
     /**
+     * Updates the last-accessed time for the derivative image corresponding to
+     * the given operation list.
+     *
+     * @param opList
+     * @param connection
+     *
+     * @throws CacheException
+     * @throws SQLException
+     */
+    private void accessDerivativeImage(OperationList opList,
+                                       Connection connection)
+            throws CacheException, SQLException {
+        final String sql = String.format(
+                "UPDATE %s SET %s = ? WHERE %s = ?",
+                getDerivativeImageTableName(),
+                DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN,
+                DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN);
+        logger.debug(sql);
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setTimestamp(1, now());
+        statement.setString(2, opList.toString());
+        statement.executeUpdate();
+    }
+
+    /**
+     * Updates the last-accessed time for the info corresponding to the given
+     * identifier.
+     *
+     * @param identifier
+     * @param connection
+     *
+     * @throws CacheException
+     * @throws SQLException
+     */
+    private void accessImageInfo(Identifier identifier, Connection connection)
+            throws CacheException, SQLException {
+        final String sql = String.format(
+                "UPDATE %s SET %s = ? WHERE %s = ?",
+                getInfoTableName(),
+                INFO_TABLE_LAST_ACCESSED_COLUMN,
+                INFO_TABLE_IDENTIFIER_COLUMN);
+        logger.debug(sql);
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setTimestamp(1, now());
+        statement.setString(2, identifier.toString());
+        statement.executeUpdate();
+    }
+
+    /**
+     * Updates the last-accessed time for the source image corresponding to
+     * the given identifier.
+     *
+     * @param identifier
+     * @param connection
+     *
+     * @throws CacheException
+     * @throws SQLException
+     */
+    private void accessSourceImage(Identifier identifier, Connection connection)
+            throws CacheException, SQLException {
+        final String sql = String.format(
+                "UPDATE %s SET %s = ? WHERE %s = ?",
+                getSourceImageTableName(),
+                SOURCE_IMAGE_TABLE_LAST_ACCESSED_COLUMN,
+                SOURCE_IMAGE_TABLE_IDENTIFIER_COLUMN);
+        logger.debug(sql);
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setTimestamp(1, now());
+        statement.setString(2, identifier.toString());
+        statement.executeUpdate();
+    }
+
+    /**
      * Does nothing, as this cache is always clean.
      */
     @Override
@@ -308,26 +381,27 @@ class JdbcCache implements Cache {
 
     @Override
     public ImageInfo getImageInfo(Identifier identifier) throws CacheException {
-        final Timestamp oldestDate = oldestValidDate();
-        final String tableName = getInfoTableName();
         try (Connection connection = getConnection()) {
             final String sql = String.format(
-                    "SELECT %s, %s FROM %s WHERE %s = ?",
-                    INFO_TABLE_INFO_COLUMN, INFO_TABLE_LAST_MODIFIED_COLUMN,
-                    tableName, INFO_TABLE_IDENTIFIER_COLUMN);
+                    "SELECT %s FROM %s WHERE %s = ? AND %s >= ?",
+                    INFO_TABLE_INFO_COLUMN,
+                    getInfoTableName(),
+                    INFO_TABLE_IDENTIFIER_COLUMN,
+                    INFO_TABLE_LAST_ACCESSED_COLUMN);
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, identifier.toString());
+            statement.setTimestamp(2, oldestValidDate());
             logger.debug(sql);
+
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                if (resultSet.getTimestamp(2).after(oldestDate)) {
-                    logger.info("Hit for image info: {}", identifier);
-                    String json = resultSet.getString(INFO_TABLE_INFO_COLUMN);
-                    return ImageInfo.fromJson(json);
-                } else {
-                    logger.info("Miss for image info: {}", identifier);
-                    purgeImageInfo(identifier, connection);
-                }
+                accessImageInfo(identifier, connection);
+                logger.info("Hit for image info: {}", identifier);
+                String json = resultSet.getString(1);
+                return ImageInfo.fromJson(json);
+            } else {
+                logger.info("Miss for image info: {}", identifier);
+                purgeImageInfo(identifier, connection);
             }
         } catch (CacheException | IOException | SQLException e) {
             throw new CacheException(e.getMessage(), e);
@@ -340,27 +414,26 @@ class JdbcCache implements Cache {
             throws CacheException {
         InputStream inputStream = null;
 
-        final String tableName = getSourceImageTableName();
-        final Timestamp oldestDate = oldestValidDate();
         try (Connection conn = getConnection()) {
             String sql = String.format(
-                    "SELECT %s, %s FROM %s WHERE %s = ?",
+                    "SELECT %s FROM %s WHERE %s = ? AND %s >= ?",
                     SOURCE_IMAGE_TABLE_IMAGE_COLUMN,
-                    SOURCE_IMAGE_TABLE_LAST_MODIFIED_COLUMN,
-                    tableName,
-                    SOURCE_IMAGE_TABLE_IDENTIFIER_COLUMN);
+                    getSourceImageTableName(),
+                    SOURCE_IMAGE_TABLE_IDENTIFIER_COLUMN,
+                    SOURCE_IMAGE_TABLE_LAST_ACCESSED_COLUMN);
             PreparedStatement statement = conn.prepareStatement(sql);
             statement.setString(1, identifier.toString());
+            statement.setTimestamp(2, oldestValidDate());
             logger.debug(sql);
+
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                if (resultSet.getTimestamp(2).after(oldestDate)) {
-                    logger.info("Hit for image: {}", identifier);
-                    inputStream = resultSet.getBinaryStream(1);
-                } else {
-                    logger.info("Miss for image: {}", identifier);
-                    purgeSourceImage(identifier, conn);
-                }
+                logger.info("Hit for image: {}", identifier);
+                inputStream = resultSet.getBinaryStream(1);
+                accessSourceImage(identifier, conn);
+            } else {
+                logger.info("Miss for image: {}", identifier);
+                purgeSourceImage(identifier, conn);
             }
         } catch (SQLException e) {
             logger.error(e.getMessage(), e);
@@ -369,31 +442,30 @@ class JdbcCache implements Cache {
     }
 
     @Override
-    public InputStream getImageInputStream(OperationList ops)
+    public InputStream getImageInputStream(OperationList opList)
             throws CacheException {
         InputStream inputStream = null;
 
-        final String tableName = getDerivativeImageTableName();
-        final Timestamp oldestDate = oldestValidDate();
         try (Connection conn = getConnection()) {
             String sql = String.format(
-                    "SELECT %s, %s FROM %s WHERE %s = ?",
+                    "SELECT %s FROM %s WHERE %s = ? AND %s >= ?",
                     DERIVATIVE_IMAGE_TABLE_IMAGE_COLUMN,
-                    DERIVATIVE_IMAGE_TABLE_LAST_MODIFIED_COLUMN,
-                    tableName,
-                    DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN);
+                    getDerivativeImageTableName(),
+                    DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
+                    DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN);
             PreparedStatement statement = conn.prepareStatement(sql);
-            statement.setString(1, ops.toString());
+            statement.setString(1, opList.toString());
+            statement.setTimestamp(2, oldestValidDate());
             logger.debug(sql);
+
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                if (resultSet.getTimestamp(2).after(oldestDate)) {
-                    logger.info("Hit for image: {}", ops);
-                    inputStream = resultSet.getBinaryStream(1);
-                } else {
-                    logger.info("Miss for image: {}", ops);
-                    purgeDerivativeImage(ops, conn);
-                }
+                logger.info("Hit for image: {}", opList);
+                inputStream = resultSet.getBinaryStream(1);
+                accessDerivativeImage(opList, conn);
+            } else {
+                logger.info("Miss for image: {}", opList);
+                purgeDerivativeImage(opList, conn);
             }
         } catch (SQLException e) {
             logger.error(e.getMessage(), e);
@@ -404,7 +476,7 @@ class JdbcCache implements Cache {
     @Override
     public OutputStream getImageOutputStream(Identifier identifier)
             throws CacheException {
-        // TODO: return a dummy stream when a write corresponding to the same
+        // TODO: return a no-op stream when a write corresponding to the same
         // identifier is in progress in another thread
         logger.info("Miss; caching {}", identifier);
         try {
@@ -417,7 +489,7 @@ class JdbcCache implements Cache {
     @Override
     public OutputStream getImageOutputStream(OperationList ops)
             throws CacheException {
-        // TODO: return a dummy stream when a write corresponding to an
+        // TODO: return a no-op stream when a write corresponding to an
         // identical op list is in progress in another thread
         logger.info("Miss; caching {}", ops);
         try {
@@ -430,7 +502,7 @@ class JdbcCache implements Cache {
     private Timestamp now() {
         Calendar calendar = Calendar.getInstance();
         java.util.Date now = calendar.getTime();
-        return new java.sql.Timestamp(now.getTime());
+        return new Timestamp(now.getTime());
     }
 
     public Timestamp oldestValidDate() {
@@ -504,7 +576,7 @@ class JdbcCache implements Cache {
             throws SQLException, CacheException {
         final String sql = String.format("DELETE FROM %s WHERE %s < ?",
                 getDerivativeImageTableName(),
-                DERIVATIVE_IMAGE_TABLE_LAST_MODIFIED_COLUMN);
+                DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN);
         final PreparedStatement statement = conn.prepareStatement(sql);
         statement.setTimestamp(1, oldestValidDate());
         logger.debug(sql);
@@ -520,7 +592,7 @@ class JdbcCache implements Cache {
     private int purgeExpiredInfos(Connection conn)
             throws SQLException, CacheException {
         final String sql = String.format("DELETE FROM %s WHERE %s < ?",
-                getInfoTableName(), INFO_TABLE_LAST_MODIFIED_COLUMN);
+                getInfoTableName(), INFO_TABLE_LAST_ACCESSED_COLUMN);
         final PreparedStatement statement = conn.prepareStatement(sql);
         statement.setTimestamp(1, oldestValidDate());
         logger.debug(sql);
@@ -537,7 +609,7 @@ class JdbcCache implements Cache {
             throws SQLException, CacheException {
         final String sql = String.format("DELETE FROM %s WHERE %s < ?",
                 getSourceImageTableName(),
-                SOURCE_IMAGE_TABLE_LAST_MODIFIED_COLUMN);
+                SOURCE_IMAGE_TABLE_LAST_ACCESSED_COLUMN);
         final PreparedStatement statement = conn.prepareStatement(sql);
         statement.setTimestamp(1, oldestValidDate());
         logger.debug(sql);
@@ -685,15 +757,16 @@ class JdbcCache implements Cache {
             // Add a new info corresponding to the given identifier.
             String sql = String.format(
                     "INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
-                    getInfoTableName(), INFO_TABLE_IDENTIFIER_COLUMN,
-                    INFO_TABLE_INFO_COLUMN, INFO_TABLE_LAST_MODIFIED_COLUMN);
+                    getInfoTableName(),
+                    INFO_TABLE_IDENTIFIER_COLUMN,
+                    INFO_TABLE_INFO_COLUMN,
+                    INFO_TABLE_LAST_ACCESSED_COLUMN);
+            logger.debug(sql);
             PreparedStatement statement = conn.prepareStatement(sql);
             statement.setString(1, identifier.toString());
             statement.setString(2, imageInfo.toJson());
             statement.setTimestamp(3, now());
-            logger.debug(sql);
             statement.executeUpdate();
-
             conn.commit();
         } catch (SQLException | JsonProcessingException e) {
             throw new CacheException(e.getMessage(), e);
