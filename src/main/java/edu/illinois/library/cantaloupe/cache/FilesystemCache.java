@@ -28,6 +28,7 @@ import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -316,6 +317,16 @@ class FilesystemCache implements Cache {
         return path.toString();
     }
 
+    private static long getLastAccessTime(File file) {
+        try {
+            return ((FileTime) Files.getAttribute(file.toPath(), "lastAccessTime")).
+                    toMillis();
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+            return file.lastModified();
+        }
+    }
+
     /**
      * @return Pathname of the root cache folder.
      * @throws CacheException if {@link #PATHNAME_CONFIG_KEY} is undefined.
@@ -361,7 +372,7 @@ class FilesystemCache implements Cache {
         final long ttlMsec = 1000 * Application.getConfiguration().
                 getLong(TTL_CONFIG_KEY, 0);
         return ttlMsec > 0 && file.isFile() &&
-                System.currentTimeMillis() - file.lastModified() > ttlMsec;
+                System.currentTimeMillis() - getLastAccessTime(file) > ttlMsec;
     }
 
     /**
