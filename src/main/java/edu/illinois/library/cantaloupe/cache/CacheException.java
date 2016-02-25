@@ -2,6 +2,8 @@ package edu.illinois.library.cantaloupe.cache;
 
 public class CacheException extends Exception {
 
+    public CacheException() {}
+
     public CacheException(String message) {
         super(message);
     }
