@@ -19,7 +19,10 @@ public interface SourceCache extends Cache {
      * cache but is expired, implementations should delete it before returning
      * null.</p>
      *
-     * <p><strong>Clients should not use the returned File for
+     * <p>If the desired image is being written in another thread, this method
+     * should block while waiting for it to complete.</p>
+     *
+     * <p><strong>Clients must not use the returned File for
      * writing.</strong> They should use
      * {@link #getImageOutputStream(Identifier)} instead.</p>
      *

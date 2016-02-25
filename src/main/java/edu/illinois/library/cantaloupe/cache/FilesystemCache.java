@@ -249,6 +249,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     private final Object lock4 = new Object();
     private final Object lock5 = new Object();
     private final Object lock6 = new Object();
+    private final Object lock7 = new Object();
 
     /**
      * Returns a reversible, filename-safe version of the input string.
@@ -468,6 +469,15 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
     @Override
     public File getImageFile(Identifier identifier) throws CacheException {
+        synchronized (lock7) {
+            while (sourceImagesBeingWritten.contains(identifier)) {
+                try {
+                    lock7.wait();
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        }
         File file = null;
         final File cacheFile = getSourceImageFile(identifier);
         if (cacheFile != null && cacheFile.exists()) {
