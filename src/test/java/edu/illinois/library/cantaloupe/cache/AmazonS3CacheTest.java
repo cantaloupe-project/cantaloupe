@@ -70,12 +70,16 @@ public class AmazonS3CacheTest {
         assertEquals(count, i);
     }
 
+    /* getBucketName() */
+
     @Test
     public void testGetBucketName() {
         assertEquals(
                 Application.getConfiguration().getString(AmazonS3Cache.BUCKET_NAME_CONFIG_KEY),
                 instance.getBucketName());
     }
+
+    /* getImageInfo() */
 
     @Test
     public void testGetImageInfo() throws Exception {
@@ -88,6 +92,8 @@ public class AmazonS3CacheTest {
     public void testGetImageInfoWithNonexistentInfo() throws Exception {
         assertNull(instance.getImageInfo(identifier));
     }
+
+    /* getImageInputStream(OperationList) */
 
     @Test
     public void testGetImageInputStream() throws Exception {
@@ -116,6 +122,8 @@ public class AmazonS3CacheTest {
         assertNull(instance.getImageInputStream(opList));
     }
 
+    /* getImageOutputStream(OperationList) */
+
     @Test
     public void testGetImageOutputStream() throws Exception {
         assertObjectCount(0);
@@ -131,6 +139,8 @@ public class AmazonS3CacheTest {
         assertObjectCount(1);
     }
 
+    /* getObjectKey(Identifier) */
+
     @Test
     public void testGetObjectKeyWithIdentifier() {
         assertEquals(
@@ -138,12 +148,16 @@ public class AmazonS3CacheTest {
                 instance.getObjectKey(identifier));
     }
 
+    /* getObjectKey(OperationList */
+
     @Test
     public void testGetObjectKeyWithOperationList() {
         assertEquals(
                 instance.getObjectKeyPrefix() + "image/" + opList.toString(),
                 instance.getObjectKey(opList));
     }
+
+    /* getObjectKeyPrefix() */
 
     @Test
     public void testGetObjectKeyPrefix() {
@@ -161,6 +175,8 @@ public class AmazonS3CacheTest {
         config.setProperty(AmazonS3Cache.OBJECT_KEY_PREFIX_CONFIG_KEY, "cats/");
         assertEquals("cats/", instance.getObjectKeyPrefix());
     }
+
+    /* purge() */
 
     @Test
     public void testPurge() throws Exception {
@@ -183,31 +199,7 @@ public class AmazonS3CacheTest {
         assertObjectCount(0);
     }
 
-    @Test
-    public void testPurgeWithIdentifier() throws Exception {
-        // add an image
-        InputStream inputStream = new FileInputStream(
-                TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.getImageOutputStream(opList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
-
-        // add an ImageInfo
-        instance.putImageInfo(identifier, imageInfo);
-
-        // add another ImageInfo
-        Identifier otherId = new Identifier("cats");
-        ImageInfo otherInfo = new ImageInfo(64, 56, Format.GIF);
-        instance.putImageInfo(otherId, otherInfo);
-
-        assertObjectCount(3);
-
-        // purge an info
-        instance.purge(identifier);
-
-        assertObjectCount(2);
-    }
+    /* purge(OperationList */
 
     @Test
     public void testPurgeWithOperationList() throws Exception {
@@ -239,6 +231,8 @@ public class AmazonS3CacheTest {
 
         assertObjectCount(2);
     }
+
+    /* purgeExpired() */
 
     @Test
     public void testPurgeExpired() throws Exception {
@@ -277,6 +271,36 @@ public class AmazonS3CacheTest {
 
         assertObjectCount(2);
     }
+
+    /* purgeImage(Identifier) */
+
+    @Test
+    public void testPurgeImage() throws Exception {
+        // add an image
+        InputStream inputStream = new FileInputStream(
+                TestUtil.getImage(identifier.toString()));
+        OutputStream outputStream = instance.getImageOutputStream(opList);
+        IOUtils.copy(inputStream, outputStream);
+        inputStream.close();
+        outputStream.close();
+
+        // add an ImageInfo
+        instance.putImageInfo(identifier, imageInfo);
+
+        // add another ImageInfo
+        Identifier otherId = new Identifier("cats");
+        ImageInfo otherInfo = new ImageInfo(64, 56, Format.GIF);
+        instance.putImageInfo(otherId, otherInfo);
+
+        assertObjectCount(3);
+
+        // purge an info
+        instance.purgeImage(identifier);
+
+        assertObjectCount(2);
+    }
+
+    /* putImageInfo(ImageInfo) */
 
     @Test
     public void testPutImageInfo() throws Exception {

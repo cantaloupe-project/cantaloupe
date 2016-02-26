@@ -36,7 +36,7 @@ import java.util.Date;
  * @see <a href="http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/welcome.html">
  *     AWS SDK for Java</a>
  */
-class AmazonS3Cache implements Cache {
+class AmazonS3Cache implements DerivativeCache {
 
     /**
      * <p>S3 does not allow uploads without a Content-Length header, which is
@@ -277,11 +277,6 @@ class AmazonS3Cache implements Cache {
     }
 
     @Override
-    public void purge(final Identifier identifier) {
-        purge(getObjectKey(identifier));
-    }
-
-    @Override
     public void purge(final OperationList opList) {
         purge(getObjectKey(opList));
     }
@@ -308,6 +303,11 @@ class AmazonS3Cache implements Cache {
                 s3.deleteObject(bucketName, summary.getKey());
             }
         }
+    }
+
+    @Override
+    public void purgeImage(final Identifier identifier) {
+        purge(getObjectKey(identifier));
     }
 
     @Override
