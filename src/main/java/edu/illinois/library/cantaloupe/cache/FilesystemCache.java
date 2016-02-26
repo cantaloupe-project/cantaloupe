@@ -456,15 +456,13 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
     /**
      * @param ops Operation list identifying the file.
-     * @return File corresponding to the given operation list.
+     * @return Temp file corresponding to the given operation list. Clients
+     * should delete it when they are done with it.
      */
     public File getDerivativeImageTempFile(OperationList ops)
             throws CacheException {
-        File tempFile = new File(
-                getDerivativeImageFile(ops).getAbsolutePath() +
-                        TEMP_EXTENSION);
-        tempFile.deleteOnExit();
-        return tempFile;
+        return new File(getDerivativeImageFile(ops).getAbsolutePath() +
+                TEMP_EXTENSION);
     }
 
     @Override
@@ -594,6 +592,12 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     tempFile, destFile, sourceImagesBeingWritten, identifier);
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);
+        } finally {
+            try {
+                FileUtils.forceDelete(tempFile);
+            } catch (IOException e) {
+                logger.warn(e.getMessage(), e);
+            }
         }
     }
 
@@ -635,6 +639,12 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     tempFile, destFile, derivativeImagesBeingWritten, ops);
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);
+        } finally {
+            try {
+                FileUtils.forceDelete(tempFile);
+            } catch (IOException e) {
+                logger.warn(e.getMessage(), e);
+            }
         }
     }
 
@@ -680,15 +690,13 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
     /**
      * @param identifier Identifier identifying the file.
-     * @return File corresponding to the given identifier.
+     * @return Temp file corresponding to a source image with the given
+     * identifier. Clients should delete it when they are done with it.
      */
     public File getSourceImageTempFile(Identifier identifier)
             throws CacheException {
-        final File tempFile = new File(
-                getSourceImageFile(identifier).getAbsolutePath() +
+        return new File(getSourceImageFile(identifier).getAbsolutePath() +
                 TEMP_EXTENSION);
-        tempFile.deleteOnExit();
-        return tempFile;
     }
 
     /**
@@ -774,16 +782,12 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             imagesBeingPurged.add(opList);
             logger.info("Purging {}...", opList);
 
-            final File[] filesToDelete = {
-                    getDerivativeImageFile(opList),
-                    getDerivativeImageTempFile(opList) };
-            for (File file : filesToDelete) {
-                if (file != null && file.exists()) {
-                    try {
-                        FileUtils.forceDelete(file);
-                    } catch (IOException e) {
-                        logger.warn("Unable to delete {}", file);
-                    }
+            File file = getDerivativeImageFile(opList);
+            if (file != null && file.exists()) {
+                try {
+                    FileUtils.forceDelete(file);
+                } catch (IOException e) {
+                    logger.warn("Unable to delete {}", file);
                 }
             }
         } finally {
