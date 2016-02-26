@@ -20,6 +20,9 @@ title: Upgrading
   <li>Add the following keys from the sample configuration:
     <ul>
       <li><code>endpoint.iiif.2.restrict_to_sizes</code></li>
+      <li><code>StreamProcessor.retrieval_strategy</code></li>
+      <li><code>cache.source</code></li>
+      <li><code>AmazonS3Cache.*</code></li>
     </ul>
   </li>
   <li>If you are using JdbcCache, modify your database schema:

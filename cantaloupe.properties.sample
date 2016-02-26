@@ -453,24 +453,24 @@ JdbcCache.ttl_seconds = 2592000
 # AmazonS3Cache
 #----------------------------------------
 
-# Time before a cached image becomes stale and needs to be reloaded. Set to
-# blank or 0 for "never"
-AmazonS3Cache.ttl_seconds = 2592000
-
 # !! Access key ID and secret key associated with your AWS account.
 # See: http://aws.amazon.com/security-credentials
 AmazonS3Cache.access_key_id =
 AmazonS3Cache.secret_key =
 
+# !! Name of a bucket to use to hold cached data.
+AmazonS3Cache.bucket.name =
+
 # !! Can be commented out or left blank.
 # See: http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
 AmazonS3Cache.bucket.region =
 
-# !! Name of a bucket to use to hold cached data.
-AmazonS3Cache.bucket.name =
-
 # !! String that will be prefixed to object keys.
 AmazonS3Cache.object_key_prefix =
+
+# Time before a cached image becomes stale and needs to be reloaded. Set to
+# blank or 0 for "never"
+AmazonS3Cache.ttl_seconds = 2592000
 
 ###########################################################################
 # WATERMARKING
