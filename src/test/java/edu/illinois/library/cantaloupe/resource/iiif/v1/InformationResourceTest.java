@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;
-import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -254,7 +253,7 @@ public class InformationResourceTest extends ResourceTest {
     @Test
     public void testUrisInJsonWithBaseUriOverride() throws IOException {
         Configuration config = Application.getConfiguration();
-        config.setProperty(AbstractResource.BASE_URI_CONFIG_KEY,
+        config.setProperty(Iiif1Resource.BASE_URI_CONFIG_KEY,
                 "http://example.org/");
 
         ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
@@ -284,7 +283,7 @@ public class InformationResourceTest extends ResourceTest {
     @Test
     public void testBaseUriOverridesProxyHeaders() throws IOException {
         Configuration config = Application.getConfiguration();
-        config.setProperty(AbstractResource.BASE_URI_CONFIG_KEY,
+        config.setProperty(Iiif1Resource.BASE_URI_CONFIG_KEY,
                 "https://example.net/");
 
         ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");

@@ -14,7 +14,6 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AccessDeniedException;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
-import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Disposition;
@@ -40,13 +39,10 @@ import java.util.Set;
  * @see <a href="http://iiif.io/api/image/1.1/#url-syntax-image-request">Image
  * Request Operations</a>
  */
-public class ImageResource extends AbstractResource {
+public class ImageResource extends Iiif1Resource {
 
     private static final Logger logger = LoggerFactory.
             getLogger(ImageResource.class);
-
-    public static final String ENDPOINT_ENABLED_CONFIG_KEY =
-            "endpoint.iiif.1.enabled";
 
     /**
      * Format to assume when no extension is present in the URI.
@@ -55,11 +51,8 @@ public class ImageResource extends AbstractResource {
 
     @Override
     protected void doInit() throws ResourceException {
-        if (!Application.getConfiguration().
-                getBoolean(ENDPOINT_ENABLED_CONFIG_KEY, true)) {
-            throw new EndpointDisabledException();
-        }
         super.doInit();
+        getResponseCacheDirectives().addAll(getCacheDirectives());
     }
 
     /**

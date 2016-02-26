@@ -13,10 +13,8 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
-import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.AccessDeniedException;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
-import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
 import org.restlet.data.Disposition;
 import org.restlet.representation.OutputRepresentation;
@@ -37,21 +35,15 @@ import java.util.Set;
  * @see <a href="http://iiif.io/api/image/2.0/#image-request-parameters">Image
  * Request Operations</a>
  */
-public class ImageResource extends AbstractResource {
+public class ImageResource extends Iiif2Resource {
 
     private static Logger logger = LoggerFactory.getLogger(ImageResource.class);
 
     public static final String CONTENT_DISPOSITION_CONFIG_KEY =
             "endpoint.iiif.content_disposition";
-    public static final String ENDPOINT_ENABLED_CONFIG_KEY =
-            "endpoint.iiif.2.enabled";
 
     @Override
     protected void doInit() throws ResourceException {
-        if (!Application.getConfiguration().
-                getBoolean(ENDPOINT_ENABLED_CONFIG_KEY, true)) {
-            throw new EndpointDisabledException();
-        }
         super.doInit();
         getResponseCacheDirectives().addAll(getCacheDirectives());
     }

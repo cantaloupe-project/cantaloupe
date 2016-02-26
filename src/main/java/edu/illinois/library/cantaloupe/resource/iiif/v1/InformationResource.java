@@ -14,7 +14,6 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
-import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
@@ -29,15 +28,12 @@ import org.restlet.resource.ResourceException;
  * @see <a href="http://iiif.io/api/image/1.1/#image-info-request">Information
  * Requests</a>
  */
-public class InformationResource extends AbstractResource {
+public class InformationResource extends Iiif1Resource {
 
     @Override
     protected void doInit() throws ResourceException {
-        if (!Application.getConfiguration().
-                getBoolean("endpoint.iiif.1.enabled", true)) {
-            throw new EndpointDisabledException();
-        }
         super.doInit();
+        getResponseCacheDirectives().addAll(getCacheDirectives());
     }
 
     /**
