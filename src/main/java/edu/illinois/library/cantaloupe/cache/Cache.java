@@ -39,16 +39,6 @@ public interface Cache {
     void purge() throws CacheException;
 
     /**
-     * Deletes the cached image corresponding to the given operation list.
-     *
-     * @param opList
-     * @throws CacheException Upon fatal error. Implementations should do the
-     *         best they can to complete the operation and swallow and log
-     *         non-fatal errors.
-     */
-    void purge(OperationList opList) throws CacheException;
-
-    /**
      * Deletes expired images and dimensions from the cache.
      *
      * @throws CacheException Upon fatal error. Implementations should do the

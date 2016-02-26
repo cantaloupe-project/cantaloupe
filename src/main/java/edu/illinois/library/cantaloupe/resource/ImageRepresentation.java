@@ -97,10 +97,11 @@ public class ImageRepresentation extends OutputRepresentation {
      *
      * @param outputStream
      * @param cache
-     * @throws IOException
+     * @throws CacheException
      */
     private void doCacheAwareWrite(OutputStream outputStream,
-                                   Cache cache) throws CacheException {
+                                   DerivativeCache cache)
+            throws CacheException {
         try {
             doWrite(outputStream);
         } catch (IOException e) {
