@@ -146,7 +146,8 @@ public class ApplicationTest {
         infoDir.mkdirs();
 
         Configuration config = newConfiguration();
-        config.setProperty("cache.server", "FilesystemCache");
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
+                "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
                 getCacheDir().getAbsolutePath());
         config.setProperty("FilesystemCache.ttl_seconds", "1");
@@ -184,7 +185,8 @@ public class ApplicationTest {
 
         // set up the cache
         final Configuration config = newConfiguration();
-        config.setProperty("cache.server", "FilesystemCache");
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
+                "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
                 getCacheDir().getAbsolutePath());
         config.setProperty("FilesystemCache.ttl_seconds", "10");
@@ -229,7 +231,8 @@ public class ApplicationTest {
         infoDir.mkdirs();
 
         Configuration config = newConfiguration();
-        config.setProperty("cache.server", "FilesystemCache");
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
+                "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
                 getCacheDir().getAbsolutePath());
         config.setProperty("FilesystemCache.ttl_seconds", "1");

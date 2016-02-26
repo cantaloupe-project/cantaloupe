@@ -12,7 +12,7 @@ public abstract class CacheFactory {
 
     private static Logger logger = LoggerFactory.getLogger(CacheFactory.class);
 
-    public static final String DERIVATIVE_CACHE_CONFIG_KEY = "cache.server";
+    public static final String DERIVATIVE_CACHE_CONFIG_KEY = "cache.derivative";
     public static final String SOURCE_CACHE_CONFIG_KEY = "cache.source";
 
     /** Singleton instance */

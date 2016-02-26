@@ -365,23 +365,20 @@ cache.client.proxy_revalidate = false
 cache.client.no_transform = true
 
 ###########################################################################
-# SERVER-SIDE SOURCE IMAGE CACHING
+# SERVER-SIDE CACHING
 ###########################################################################
 
-# The only available value is `FilesystemCache`. Comment out or set blank
-# to disable source image caching. Note that source images will only be
-# cached when a FileProcessor is used with a StreamResolver, or when a
-# StreamProcessor is used with `StreamProcessor.retrieval_strategy` set to
-# `CacheStrategy`.
+# Enables the source cache. The only available value is `FilesystemCache`.
+# Comment out or set blank to disable source image caching. Note that
+# source images will only be cached when a FileProcessor is used with a
+# StreamResolver, or when a StreamProcessor is used with
+# `StreamProcessor.retrieval_strategy` set to `CacheStrategy`.
 #cache.source = FilesystemCache
 
-###########################################################################
-# SERVER-SIDE DERIVATIVE CACHING
-###########################################################################
-
-# Available values are `FilesystemCache`, `JdbcCache`, and `AmazonS3Cache`.
+# Enables the derivative (processed image) cache. Available values are
+# `FilesystemCache`, `JdbcCache`, and `AmazonS3Cache`.
 # Comment out or set blank to disable caching.
-#cache.server = FilesystemCache
+#cache.derivative = FilesystemCache
 
 # If true, when a resolver reports that the requested source image has gone
 # missing, all cached information relating to it (if any) will be deleted.

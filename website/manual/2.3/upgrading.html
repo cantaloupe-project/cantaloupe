@@ -25,6 +25,11 @@ title: Upgrading
       <li><code>AmazonS3Cache.*</code></li>
     </ul>
   </li>
+  <li>Rename the following keys:
+    <ul>
+      <li><code>cache.server</code> to <code>cache.derivative</code></li>
+    </ul>
+  </li>
   <li>If you are using JdbcCache, modify your database schema:
     <pre>ALTER TABLE {JdbcCache.info_table} CHANGE COLUMN last_modified last_accessed;
 ALTER TABLE {JdbcCache.derivative_image_table} CHANGE COLUMN last_modified last_accessed;</pre>

@@ -117,7 +117,8 @@ public class InformationResourceTest extends ResourceTest {
         }
 
         final Configuration config = Application.getConfiguration();
-        config.setProperty("cache.server", "FilesystemCache");
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
+                "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
                 cacheFolder.getAbsolutePath());
         config.setProperty("FilesystemCache.ttl_seconds", 10);
