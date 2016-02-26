@@ -409,6 +409,29 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
+    public void testRestrictToSizes() {
+        final Configuration config = Application.getConfiguration();
+
+        // not restricted
+        config.setProperty(ImageResource.RESTRICT_TO_SIZES_CONFIG_KEY, false);
+        ClientResource client = getClientForUriPath(
+                "/" + IMAGE + "/full/53,37/0/default.jpg");
+
+        client.get();
+        assertEquals(Status.SUCCESS_OK, client.getResponse().getStatus());
+
+        // restricted
+        config.setProperty(ImageResource.RESTRICT_TO_SIZES_CONFIG_KEY, true);
+        client = getClientForUriPath("/" + IMAGE + "/full/53,37/0/default.jpg");
+        try {
+            client.get();
+            fail();
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_FORBIDDEN, e.getStatus());
+        }
+    }
+
+    @Test
     public void testSlashSubstitution() throws Exception {
         WebServer server = new WebServer();
         Application.getConfiguration().setProperty("slash_substitute", "CATS");

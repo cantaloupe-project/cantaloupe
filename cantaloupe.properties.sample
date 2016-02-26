@@ -73,6 +73,10 @@ endpoint.iiif.content_disposition = inline
 # manual for details of how these are calculated.
 endpoint.iiif.min_tile_size = 1024
 
+# If true, requests for sizes other than those specified in an info.json
+# response will be denied with HTTP 403 Forbidden.
+endpoint.iiif.2.restrict_to_sizes = false
+
 ###########################################################################
 # RESOLVERS
 ###########################################################################

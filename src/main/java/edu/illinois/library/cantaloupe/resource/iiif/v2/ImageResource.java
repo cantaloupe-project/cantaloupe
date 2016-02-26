@@ -16,6 +16,7 @@ import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AccessDeniedException;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
+import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
 import org.restlet.data.Disposition;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.resource.Get;
@@ -41,6 +42,8 @@ public class ImageResource extends Iiif2Resource {
 
     public static final String CONTENT_DISPOSITION_CONFIG_KEY =
             "endpoint.iiif.content_disposition";
+    public static final String RESTRICT_TO_SIZES_CONFIG_KEY =
+            "endpoint.iiif.2.restrict_to_sizes";
 
     @Override
     protected void doInit() throws ResourceException {
@@ -117,6 +120,24 @@ public class ImageResource extends Iiif2Resource {
 
         if (!isAuthorized(ops, fullSize)) {
             throw new AccessDeniedException();
+        }
+
+        if (Application.getConfiguration().getBoolean(RESTRICT_TO_SIZES_CONFIG_KEY, false)) {
+            final ImageInfo imageInfo = ImageInfoFactory.newImageInfo(
+                    identifier, null, processor,
+                    getOrReadInfo(identifier, processor));
+            final Dimension resultingSize = ops.getResultingSize(fullSize);
+            boolean ok = false;
+            for (ImageInfo.Size size : imageInfo.sizes) {
+                if (size.width == resultingSize.width &&
+                        size.height == resultingSize.height) {
+                    ok = true;
+                    break;
+                }
+            }
+            if (!ok) {
+                throw new SizeRestrictedException();
+            }
         }
 
         addNonEndpointOperations(ops, fullSize);

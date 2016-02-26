@@ -17,6 +17,11 @@ title: Upgrading
 <h2>From 2.2 to 2.3</h2>
 
 <ul>
+  <li>Add the following keys from the sample configuration:
+    <ul>
+      <li><code>endpoint.iiif.2.restrict_to_sizes</code></li>
+    </ul>
+  </li>
   <li>If you are using JdbcCache, modify your database schema:
     <pre>ALTER TABLE {JdbcCache.info_table} CHANGE COLUMN last_modified last_accessed;
 ALTER TABLE {JdbcCache.derivative_image_table} CHANGE COLUMN last_modified last_accessed;</pre>
