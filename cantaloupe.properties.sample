@@ -238,6 +238,11 @@ processor.webm = FfmpegProcessor
 # Fall back to this processor for any formats not assigned above.
 processor.fallback = Java2dProcessor
 
+# This option is kind of hard to explian; see the user manual.
+# Available values are `StreamStrategy` and `CacheStrategy` If CacheStrategy
+# is selected, FilesystemCache will also need to be configured, below.
+StreamProcessor.retrieval_strategy = StreamStrategy
+
 #----------------------------------------
 # FfmpegProcessor
 #----------------------------------------
@@ -356,7 +361,18 @@ cache.client.proxy_revalidate = false
 cache.client.no_transform = true
 
 ###########################################################################
-# SERVER-SIDE CACHING
+# SERVER-SIDE SOURCE IMAGE CACHING
+###########################################################################
+
+# The only available value is `FilesystemCache`. Comment out or set blank
+# to disable source image caching. Note that source images will only be
+# cached when a FileProcessor is used with a StreamResolver, or when a
+# StreamProcessor is used with `StreamProcessor.retrieval_strategy` set to
+# `CacheStrategy`.
+#cache.source = FilesystemCache
+
+###########################################################################
+# SERVER-SIDE DERIVATIVE CACHING
 ###########################################################################
 
 # Available values are `FilesystemCache`, `JdbcCache`, and `AmazonS3Cache`.
@@ -421,7 +437,8 @@ JdbcCache.max_pool_size = 9
 JdbcCache.connection_timeout = 10
 
 # These must be created manually; see the user manual.
-JdbcCache.image_table = image_cache
+JdbcCache.source_image_table = source_cache
+JdbcCache.derivative_image_table = derivative_cache
 JdbcCache.info_table = info_cache
 
 # Time before a cached image becomes stale and needs to be reloaded. Set to

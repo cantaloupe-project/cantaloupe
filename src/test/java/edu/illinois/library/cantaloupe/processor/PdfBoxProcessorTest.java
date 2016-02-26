@@ -1,9 +1,12 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,6 +24,10 @@ public class PdfBoxProcessorTest extends ProcessorTest {
 
     @Before
     public void setUp() throws Exception {
+        Configuration config = new BaseConfiguration();
+        config.setProperty(PdfBoxProcessor.DPI_CONFIG_KEY, 72);
+        Application.setConfiguration(config);
+
         instance = new PdfBoxProcessor();
         instance.setSourceFormat(Format.PDF);
     }

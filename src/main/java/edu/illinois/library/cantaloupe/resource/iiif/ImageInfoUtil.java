@@ -54,10 +54,13 @@ public class ImageInfoUtil {
      * @return Tile size
      */
     public static Dimension smallestTileSize(final Dimension fullSize,
-                                             final Dimension nativeTileSize,
+                                             Dimension nativeTileSize,
                                              final int minDimension) {
         final int minWidth = Math.min(minDimension, fullSize.width);
         final int minHeight = Math.min(minDimension, fullSize.height);
+        if (nativeTileSize == null) {
+            nativeTileSize = (Dimension) fullSize.clone();
+        }
         final Dimension tileSize = (Dimension) nativeTileSize.clone();
         while (tileSize.width < minWidth || tileSize.height < minHeight) {
             tileSize.width *= 2;

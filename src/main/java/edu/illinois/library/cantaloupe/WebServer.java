@@ -12,22 +12,29 @@ import javax.net.ssl.KeyManagerFactory;
 
 public class WebServer {
 
-    private static Component component;
+    private Component component;
 
     public void start() throws Exception {
         stop();
+
         final Configuration config = Application.getConfiguration();
         component = new Component();
 
         // set up HTTP server
         if (config.getBoolean("http.enabled", true)) {
             final int port = config.getInteger("http.port", 8182);
-            component.getServers().add(Protocol.HTTP, port);
+            final Server server = component.getServers().
+                    add(Protocol.HTTP, port);
+            server.getContext().getParameters().
+                    add("useForwardedForHeader", "true");
         }
         // set up HTTPS server
         if (config.getBoolean("https.enabled", false)) {
             final int port = config.getInteger("https.port", 8183);
-            Server server = component.getServers().add(Protocol.HTTPS, port);
+            final Server server = component.getServers().
+                    add(Protocol.HTTPS, port);
+            server.getContext().getParameters().
+                    add("useForwardedForHeader", "true");
             Series<Parameter> parameters = server.getContext().getParameters();
             parameters.add("sslContextFactory",
                     "org.restlet.engine.ssl.DefaultSslContextFactory");

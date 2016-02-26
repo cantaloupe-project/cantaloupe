@@ -166,12 +166,12 @@ class ImageMagickProcessor extends AbstractProcessor
                     }
                     process.waitFor();
                 } catch (InterruptedException e) {
-                    logger.error(e.getMessage(), e);
+                    logger.error(e.getMessage());
                 } finally {
                     processInputStream.close();
                 }
             } catch (IOException e) {
-                logger.error(e.getMessage(), e);
+                logger.error(e.getMessage());
             }
 
             supportedFormats = new HashMap<>();

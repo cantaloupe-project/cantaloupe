@@ -211,10 +211,8 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
                     if (parts.length == 2) {
                         final int tileWidth = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
                         final int tileHeight = Integer.parseInt(parts[1].replaceAll("[^0-9]", ""));
-                        if (tileWidth != width && tileHeight != height) {
-                            info.getImages().get(0).tileWidth = tileWidth;
-                            info.getImages().get(0).tileHeight = tileHeight;
-                        }
+                        info.getImages().get(0).tileWidth = tileWidth;
+                        info.getImages().get(0).tileHeight = tileHeight;
                     }
                 }
             }

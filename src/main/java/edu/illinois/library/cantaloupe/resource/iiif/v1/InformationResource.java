@@ -15,6 +15,7 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
+import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
@@ -61,9 +62,9 @@ public class InformationResource extends AbstractResource {
             if (Application.getConfiguration().
                     getBoolean(PURGE_MISSING_CONFIG_KEY, false)) {
                 // if the image was not found, purge it from the cache
-                final Cache cache = CacheFactory.getInstance();
+                final Cache cache = CacheFactory.getDerivativeCache();
                 if (cache != null) {
-                    cache.purge(identifier);
+                    cache.purgeImage(identifier);
                 }
             }
             throw e;
@@ -71,13 +72,14 @@ public class InformationResource extends AbstractResource {
 
         // Obtain an instance of the processor assigned to that format in
         // the config file
-        Processor proc = ProcessorFactory.getProcessor(resolver, identifier,
-                format);
+        final Processor processor = ProcessorFactory.getProcessor(format);
+
+        new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
         // Get an ImageInfo instance corresponding to the source image
         ImageInfo imageInfo = ImageInfoFactory.newImageInfo(
-                getImageUri(identifier), proc,
-                getOrReadInfo(identifier, proc));
+                getImageUri(identifier), processor,
+                getOrReadInfo(identifier, processor));
         StringRepresentation rep = new StringRepresentation(imageInfo.toJson());
 
         this.addHeader("Link", String.format("<%s>;rel=\"profile\";",

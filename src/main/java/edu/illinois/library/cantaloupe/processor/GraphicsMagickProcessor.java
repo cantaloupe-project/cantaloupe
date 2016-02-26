@@ -170,12 +170,12 @@ class GraphicsMagickProcessor extends AbstractProcessor
                     // GIF output is buggy
                     //outputFormats.add(OutputFormat.GIF);
                 } catch (InterruptedException e) {
-                    logger.error(e.getMessage(), e);
+                    logger.error(e.getMessage());
                 } finally {
                     processInputStream.close();
                 }
             } catch (IOException e) {
-                logger.error(e.getMessage(), e);
+                logger.error(e.getMessage());
             }
 
             supportedFormats = new HashMap<>();

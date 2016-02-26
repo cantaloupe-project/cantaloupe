@@ -1,9 +1,9 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -97,7 +97,7 @@ public abstract class AbstractResource extends ServerResource {
             final String pathStr = headers.getFirstValue("X-Forwarded-Path",
                     true, null);
             if (hostStr != null) {
-                logger.info("Assembling base URI from X-Forwarded-* headers. " +
+                logger.debug("Assembling base URI from X-Forwarded headers. " +
                                 "Proto: {}; Host: {}; Port: {}; Path: {}",
                         protocolStr, hostStr, portStr, pathStr);
 
@@ -182,7 +182,7 @@ public abstract class AbstractResource extends ServerResource {
                 opList.add(WatermarkService.newWatermark(
                         opList, fullSize, getReference().toUrl(),
                         getRequest().getHeaders().getValuesMap(),
-                        getRequest().getClientInfo().getAddress(),
+                        getCanonicalClientIpAddress(),
                         getRequest().getCookies().getValuesMap()));
             } catch (DelegateScriptDisabledException e) {
                 // no problem
@@ -257,6 +257,19 @@ public abstract class AbstractResource extends ServerResource {
         return directives;
     }
 
+    /**
+     * @return The client IP address, respecting the X-Forwarded-For header,
+     * if present.
+     */
+    protected String getCanonicalClientIpAddress() {
+        final List<String> forwardedIps = getRequest().getClientInfo().
+                getForwardedAddresses();
+        if (forwardedIps.size() > 0) {
+            return forwardedIps.get(forwardedIps.size() - 1);
+        }
+        return getRequest().getClientInfo().getAddress();
+    }
+
     protected ImageRepresentation getRepresentation(OperationList ops,
                                                     Format format,
                                                     Disposition disposition,
@@ -290,7 +303,7 @@ public abstract class AbstractResource extends ServerResource {
                                             final Processor proc)
             throws ProcessorException, CacheException {
         ImageInfo info = null;
-        Cache cache = CacheFactory.getInstance();
+        DerivativeCache cache = CacheFactory.getDerivativeCache();
         if (cache != null) {
             long msec = System.currentTimeMillis();
             info = cache.getImageInfo(identifier);
@@ -330,17 +343,19 @@ public abstract class AbstractResource extends ServerResource {
         resultingSizeArg.put("width", resultingSize.width);
         resultingSizeArg.put("height", resultingSize.height);
 
+        final Map opListMap = opList.toMap(fullSize);
+
         // delegate method parameters
         final Object args[] = new Object[9];
-        args[0] = opList.getIdentifier().toString();           // identifier
-        args[1] = fullSizeArg;                                 // full_size
-        args[2] = opList.toMap(fullSize).get("operations");    // operations
-        args[3] = resultingSizeArg;                            // resulting_size
-        args[4] = opList.toMap(fullSize).get("output_format"); // output_format
-        args[5] = getReference().toString();                   // request_uri
-        args[6] = getRequest().getHeaders().getValuesMap();    // request_headers
-        args[7] = getRequest().getClientInfo().getAddress();   // client_ip
-        args[8] = getRequest().getCookies().getValuesMap();    // cookies
+        args[0] = opList.getIdentifier().toString();        // identifier
+        args[1] = fullSizeArg;                              // full_size
+        args[2] = opListMap.get("operations");              // operations
+        args[3] = resultingSizeArg;                         // resulting_size
+        args[4] = opListMap.get("output_format");           // output_format
+        args[5] = getReference().toString();                // request_uri
+        args[6] = getRequest().getHeaders().getValuesMap(); // request_headers
+        args[7] = getCanonicalClientIpAddress();            // client_ip
+        args[8] = getRequest().getCookies().getValuesMap(); // cookies
 
         try {
             final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();

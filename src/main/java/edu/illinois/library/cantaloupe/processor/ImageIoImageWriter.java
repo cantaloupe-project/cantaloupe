@@ -98,7 +98,6 @@ class ImageIoImageWriter {
                 }
                 break;
             default:
-                // TODO: jp2 doesn't seem to work
                 ImageIO.write(image, outputFormat.getPreferredExtension(),
                         ImageIO.createImageOutputStream(outputStream));
                 break;

@@ -94,7 +94,7 @@ public class LandingResource extends AbstractResource {
         // cache name
         String cacheStr = "Disabled";
         try {
-            Cache cache = CacheFactory.getInstance();
+            Cache cache = CacheFactory.getDerivativeCache();
             if (cache != null) {
                 cacheStr = cache.getClass().getSimpleName();
             }

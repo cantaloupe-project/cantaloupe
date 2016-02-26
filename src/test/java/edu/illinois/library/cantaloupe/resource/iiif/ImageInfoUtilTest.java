@@ -59,6 +59,13 @@ public class ImageInfoUtilTest {
         minTileSize = 768;
         assertEquals(new Dimension(512, 512),
                 ImageInfoUtil.smallestTileSize(fullSize, tileSize, minTileSize));
+
+        // null native size
+        fullSize = new Dimension(512, 512);
+        tileSize = null;
+        minTileSize = 512;
+        assertEquals(new Dimension(512, 512),
+                ImageInfoUtil.smallestTileSize(fullSize, tileSize, minTileSize));
     }
 
 }

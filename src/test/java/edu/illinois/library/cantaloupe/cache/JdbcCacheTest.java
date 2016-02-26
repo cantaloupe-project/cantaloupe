@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -40,24 +41,60 @@ public class JdbcCacheTest {
         config.setProperty(JdbcCache.JDBC_URL_CONFIG_KEY, "jdbc:h2:mem:test");
         config.setProperty(JdbcCache.USER_CONFIG_KEY, "sa");
         config.setProperty(JdbcCache.PASSWORD_CONFIG_KEY, "");
-        config.setProperty(JdbcCache.IMAGE_TABLE_CONFIG_KEY, "image_cache");
-        config.setProperty(JdbcCache.INFO_TABLE_CONFIG_KEY, "info_cache");
+        config.setProperty(JdbcCache.DERIVATIVE_IMAGE_TABLE_CONFIG_KEY, "deriv");
+        config.setProperty(JdbcCache.INFO_TABLE_CONFIG_KEY, "info");
         config.setProperty(JdbcCache.TTL_CONFIG_KEY, 0);
         Application.setConfiguration(config);
 
         try (Connection connection = JdbcCache.getConnection()) {
             createTables(connection);
+            instance = new JdbcCache();
+            seed(connection);
         }
+    }
 
-        instance = new JdbcCache();
+    @After
+    public void tearDown() throws CacheException {
+        instance.purge();
+    }
 
-        // persist some images
+    private void createTables(Connection connection) throws Exception {
+        // derivative image table
+        String sql = String.format("CREATE TABLE IF NOT EXISTS %s (" +
+                "%s VARCHAR(4096) NOT NULL, " +
+                "%s BLOB, " +
+                "%s DATETIME);",
+                JdbcCache.getDerivativeImageTableName(),
+                JdbcCache.DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
+                JdbcCache.DERIVATIVE_IMAGE_TABLE_IMAGE_COLUMN,
+                JdbcCache.DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN);
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.execute();
+
+        // info table
+        sql = String.format(
+                "CREATE TABLE IF NOT EXISTS %s (" +
+                        "%s VARCHAR(4096) NOT NULL, " +
+                        "%s VARCHAR(8192) NOT NULL, " +
+                        "%s DATETIME);",
+                JdbcCache.getInfoTableName(),
+                JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN,
+                JdbcCache.INFO_TABLE_INFO_COLUMN,
+                JdbcCache.INFO_TABLE_LAST_ACCESSED_COLUMN);
+        statement = connection.prepareStatement(sql);
+        statement.execute();
+    }
+
+    private void seed(Connection connection) throws Exception {
+        final Configuration config = Application.getConfiguration();
+
+        // persist some derivative images
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
 
-        OutputStream bc = instance.getImageOutputStream(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), bc);
-        bc.close();
+        OutputStream os = instance.getImageOutputStream(ops);
+        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
+        os.close();
 
         Identifier identifier = new Identifier("dogs");
         Crop crop = new Crop();
@@ -76,9 +113,9 @@ public class JdbcCacheTest {
         ops.add(rotate);
         ops.setOutputFormat(format);
 
-        bc = instance.getImageOutputStream(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), bc);
-        bc.close();
+        os = instance.getImageOutputStream(ops);
+        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
+        os.close();
 
         identifier = new Identifier("bunnies");
         crop = new Crop();
@@ -98,203 +135,43 @@ public class JdbcCacheTest {
         ops.add(rotate);
         ops.setOutputFormat(format);
 
-        bc = instance.getImageOutputStream(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), bc);
-        bc.close();
+        os = instance.getImageOutputStream(ops);
+        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
+        os.close();
 
-        // persist some corresponding dimensions
+        // persist some infos corresponding to the above images
         instance.putImageInfo(new Identifier("cats"), new ImageInfo(50, 40));
         instance.putImageInfo(new Identifier("dogs"), new ImageInfo(500, 300));
         instance.putImageInfo(new Identifier("bunnies"), new ImageInfo(350, 240));
 
-        try (Connection connection = JdbcCache.getConnection()) {
-            // assert that the data has been seeded
-            String sql = String.format("SELECT COUNT(%s) AS count FROM %s;",
-                    JdbcCache.IMAGE_TABLE_OPERATIONS_COLUMN,
-                    config.getString(JdbcCache.IMAGE_TABLE_CONFIG_KEY));
-            PreparedStatement statement = connection.prepareStatement(sql);
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                assertEquals(3, resultSet.getInt("count"));
-            } else {
-                fail();
-            }
-
-            sql = String.format("SELECT COUNT(%s) AS count FROM %s;",
-                    JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN,
-                    config.getString(JdbcCache.INFO_TABLE_CONFIG_KEY));
-            statement = connection.prepareStatement(sql);
-            resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                assertEquals(3, resultSet.getInt("count"));
-            } else {
-                fail();
-            }
-        }
-    }
-
-    @After
-    public void tearDown() throws CacheException {
-        instance.purge();
-    }
-
-    private void createTables(Connection connection) throws Exception {
-        // image table
-        String sql = String.format("CREATE TABLE IF NOT EXISTS %s (" +
-                "%s VARCHAR(4096) NOT NULL, " +
-                "%s BLOB, " +
-                "%s DATETIME);",
-                JdbcCache.getImageTableName(),
-                JdbcCache.IMAGE_TABLE_OPERATIONS_COLUMN,
-                JdbcCache.IMAGE_TABLE_IMAGE_COLUMN,
-                JdbcCache.IMAGE_TABLE_LAST_MODIFIED_COLUMN);
+        // assert that the data has been seeded
+        String sql = String.format("SELECT COUNT(%s) AS count FROM %s;",
+                JdbcCache.DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
+                config.getString(JdbcCache.DERIVATIVE_IMAGE_TABLE_CONFIG_KEY));
         PreparedStatement statement = connection.prepareStatement(sql);
-        statement.execute();
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            assertEquals(3, resultSet.getInt("count"));
+        } else {
+            fail();
+        }
 
-        // info table
-        sql = String.format(
-                "CREATE TABLE IF NOT EXISTS %s (" +
-                        "%s VARCHAR(4096) NOT NULL, " +
-                        "%s VARCHAR(8192) NOT NULL, " +
-                        "%s DATETIME);",
-                JdbcCache.getInfoTableName(),
+        sql = String.format("SELECT COUNT(%s) AS count FROM %s;",
                 JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN,
-                JdbcCache.INFO_TABLE_INFO_COLUMN,
-                JdbcCache.INFO_TABLE_LAST_MODIFIED_COLUMN);
+                config.getString(JdbcCache.INFO_TABLE_CONFIG_KEY));
         statement = connection.prepareStatement(sql);
-        statement.execute();
-    }
-
-    /* purge() */
-
-    @Test
-    public void testPurge() throws Exception {
-        Configuration config = Application.getConfiguration();
-
-        instance.purge();
-
-        try (Connection connection = JdbcCache.getConnection()) {
-            // assert that the images and infos were purged
-            String sql = String.format("SELECT COUNT(%s) AS count FROM %s",
-                    JdbcCache.IMAGE_TABLE_OPERATIONS_COLUMN,
-                    config.getString(JdbcCache.IMAGE_TABLE_CONFIG_KEY));
-            PreparedStatement statement = connection.prepareStatement(sql);
-            ResultSet resultSet = statement.executeQuery();
-            resultSet.next();
-            assertEquals(0, resultSet.getInt("count"));
-
-            sql = String.format("SELECT COUNT(%s) AS count FROM %s",
-                    JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN,
-                    config.getString(JdbcCache.INFO_TABLE_CONFIG_KEY));
-            statement = connection.prepareStatement(sql);
-            resultSet = statement.executeQuery();
-            resultSet.next();
-            assertEquals(0, resultSet.getInt("count"));
+        resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            assertEquals(3, resultSet.getInt("count"));
+        } else {
+            fail();
         }
     }
 
-    /* purge(Identifier) */
+    /* getImageInfo(Identifier) */
 
     @Test
-    public void testPurgeWithIdentifier() throws Exception {
-        Configuration config = Application.getConfiguration();
-
-        Identifier id1 = new Identifier("cats");
-        instance.purge(id1);
-
-        try (Connection connection = JdbcCache.getConnection()) {
-            // assert that the images and infos were purged
-            String sql = String.format("SELECT COUNT(%s) AS count FROM %s",
-                    JdbcCache.IMAGE_TABLE_OPERATIONS_COLUMN,
-                    config.getString(JdbcCache.IMAGE_TABLE_CONFIG_KEY));
-            PreparedStatement statement = connection.prepareStatement(sql);
-            ResultSet resultSet = statement.executeQuery();
-            resultSet.next();
-            assertEquals(2, resultSet.getInt("count"));
-
-            sql = String.format("SELECT COUNT(%s) AS count FROM %s",
-                    JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN,
-                    config.getString(JdbcCache.INFO_TABLE_CONFIG_KEY));
-            statement = connection.prepareStatement(sql);
-            resultSet = statement.executeQuery();
-            resultSet.next();
-            assertEquals(2, resultSet.getInt("count"));
-        }
-    }
-
-    /* purge(OperationList) */
-
-    @Test
-    public void testPurgeWithOperations() throws Exception {
-        OperationList ops = TestUtil.newOperationList();
-        ops.setIdentifier(new Identifier("cats"));
-        instance.purge(ops);
-
-        Configuration config = Application.getConfiguration();
-
-        try (Connection connection = JdbcCache.getConnection()) {
-            // assert that the image and info were purged
-            String sql = String.format("SELECT COUNT(%s) AS count FROM %s",
-                    JdbcCache.IMAGE_TABLE_OPERATIONS_COLUMN,
-                    config.getString(JdbcCache.IMAGE_TABLE_CONFIG_KEY));
-            PreparedStatement statement = connection.prepareStatement(sql);
-            ResultSet resultSet = statement.executeQuery();
-            resultSet.next();
-            assertEquals(2, resultSet.getInt("count"));
-
-            sql = String.format("SELECT COUNT(%s) AS count FROM %s",
-                    JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN,
-                    config.getString(JdbcCache.INFO_TABLE_CONFIG_KEY));
-            statement = connection.prepareStatement(sql);
-            resultSet = statement.executeQuery();
-            resultSet.next();
-            assertEquals(2, resultSet.getInt("count"));
-        }
-    }
-
-    /* purgeExpired() */
-
-    @Test
-    public void testPurgeExpired() throws Exception {
-        Application.getConfiguration().setProperty(JdbcCache.TTL_CONFIG_KEY, 1);
-
-        // wait for the seed data to invalidate
-        Thread.sleep(1500);
-
-        // add some fresh entities
-        OperationList ops = TestUtil.newOperationList();
-        ops.setIdentifier(new Identifier("cats"));
-
-        OutputStream bc = instance.getImageOutputStream(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), bc);
-        bc.close();
-        instance.putImageInfo(new Identifier("bees"), new ImageInfo(50, 40));
-
-        instance.purgeExpired();
-
-        try (Connection connection = JdbcCache.getConnection()) {
-            // assert that only the expired images and infos were purged
-            Configuration config = Application.getConfiguration();
-            String sql = String.format("SELECT COUNT(%s) AS count FROM %s",
-                    JdbcCache.IMAGE_TABLE_OPERATIONS_COLUMN,
-                    config.getString(JdbcCache.IMAGE_TABLE_CONFIG_KEY));
-            PreparedStatement statement = connection.prepareStatement(sql);
-            ResultSet resultSet = statement.executeQuery();
-            resultSet.next();
-            assertEquals(1, resultSet.getInt("count"));
-
-            sql = String.format("SELECT COUNT(%s) AS count FROM %s",
-                    JdbcCache.IMAGE_TABLE_OPERATIONS_COLUMN,
-                    config.getString(JdbcCache.IMAGE_TABLE_CONFIG_KEY));
-            statement = connection.prepareStatement(sql);
-            resultSet = statement.executeQuery();
-            resultSet.next();
-            assertEquals(1, resultSet.getInt("count"));
-        }
-    }
-
-    @Test
-    public void testGetDimensionWithZeroTtl() throws CacheException {
+    public void testGetImageInfoWithZeroTtl() throws CacheException {
         // existing image
         try {
             ImageInfo actual = instance.getImageInfo(new Identifier("cats"));
@@ -307,7 +184,7 @@ public class JdbcCacheTest {
     }
 
     @Test
-    public void testGetDimensionWithNonZeroTtl() throws Exception {
+    public void testGetImageInfoWithNonZeroTtl() throws Exception {
         Application.getConfiguration().setProperty(JdbcCache.TTL_CONFIG_KEY, 1);
 
         // wait for the seed data to invalidate
@@ -335,14 +212,52 @@ public class JdbcCacheTest {
     }
 
     @Test
-    public void testGetImageInputStreamWithZeroTtl() throws Exception {
+    public void testGetImageInfoUpdatesLastAccessedTime() throws Exception {
+        final Configuration config = Application.getConfiguration();
+
+        final Identifier identifier = new Identifier("cats");
+
+        try (Connection connection = JdbcCache.getConnection()) {
+            // get the initial last-accessed time
+            String sql = String.format("SELECT %s FROM %s WHERE %s = ?;",
+                    JdbcCache.INFO_TABLE_LAST_ACCESSED_COLUMN,
+                    config.getString(JdbcCache.INFO_TABLE_CONFIG_KEY),
+                    JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN);
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, identifier.toString());
+            ResultSet resultSet = statement.executeQuery();
+            resultSet.next();
+            Timestamp time1 = resultSet.getTimestamp(1);
+
+            // run the clock
+            Thread.sleep(10);
+
+            // update the last-accessed time
+            instance.getImageInfo(identifier);
+
+            // get the new last-accessed time
+            resultSet = statement.executeQuery();
+            resultSet.next();
+            Timestamp time2 = resultSet.getTimestamp(1);
+
+            // compare them
+            assertTrue(time2.after(time1));
+        }
+    }
+
+    /* getImageInputStream(OperationList) */
+
+    @Test
+    public void testGetImageInputStreamWithOpListWithZeroTtl()
+            throws Exception {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
         assertNotNull(instance.getImageInputStream(ops));
     }
 
     @Test
-    public void testGetImageInputStreamWithNonzeroTtl() throws Exception {
+    public void testGetImageInputStreamWithOpListWithNonzeroTtl()
+            throws Exception {
         Application.getConfiguration().setProperty(JdbcCache.TTL_CONFIG_KEY, 1);
 
         // wait for the seed data to invalidate
@@ -355,7 +270,6 @@ public class JdbcCacheTest {
         OutputStream bc = instance.getImageOutputStream(ops);
         IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), bc);
         bc.close();
-        instance.putImageInfo(new Identifier("bees"), new ImageInfo(50, 40));
 
         // existing, non-expired image
         assertNotNull(instance.getImageInputStream(ops));
@@ -372,11 +286,51 @@ public class JdbcCacheTest {
     }
 
     @Test
-    public void testGetImageOutputStream() throws Exception {
+    public void testGetImageInputStreamWithOpListUpdatesLastAccessedTime()
+            throws Exception {
+        final Configuration config = Application.getConfiguration();
+
+        final OperationList opList = TestUtil.newOperationList();
+        opList.setIdentifier(new Identifier("cats"));
+
+        try (Connection connection = JdbcCache.getConnection()) {
+            // get the initial last-accessed time
+            String sql = String.format("SELECT %s FROM %s WHERE %s = ?;",
+                    JdbcCache.DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN,
+                    config.getString(JdbcCache.DERIVATIVE_IMAGE_TABLE_CONFIG_KEY),
+                    JdbcCache.DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN);
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, opList.toString());
+            ResultSet resultSet = statement.executeQuery();
+            resultSet.next();
+            Timestamp time1 = resultSet.getTimestamp(1);
+
+            // run the clock
+            Thread.sleep(10);
+
+            // update the last-accessed time
+            instance.getImageInputStream(opList);
+
+            // get the new last-accessed time
+            resultSet = statement.executeQuery();
+            resultSet.next();
+            Timestamp time2 = resultSet.getTimestamp(1);
+
+            // compare them
+            assertTrue(time2.after(time1));
+        }
+    }
+
+    /* getImageOutputStream(OperationList) */
+
+    @Test
+    public void testGetImageOutputStreamWithOperationList() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
         assertNotNull(instance.getImageOutputStream(ops));
     }
+
+    /* oldestValidDate() */
 
     @Test
     public void testOldestValidDate() {
@@ -389,12 +343,168 @@ public class JdbcCacheTest {
         assertTrue(Math.abs(actualTime - expectedTime) < 100);
     }
 
+    /* purge() */
+
     @Test
-    public void testPutDimension() throws CacheException {
+    public void testPurge() throws Exception {
+        final Configuration config = Application.getConfiguration();
+
+        instance.purge();
+
+        try (Connection connection = JdbcCache.getConnection()) {
+            // assert that the derivative images were purged
+            String sql = String.format("SELECT COUNT(%s) AS count FROM %s",
+                    JdbcCache.DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
+                    config.getString(JdbcCache.DERIVATIVE_IMAGE_TABLE_CONFIG_KEY));
+            PreparedStatement statement = connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
+            resultSet.next();
+            assertEquals(0, resultSet.getInt("count"));
+
+            // assert that the infos were purged
+            sql = String.format("SELECT COUNT(%s) AS count FROM %s",
+                    JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN,
+                    config.getString(JdbcCache.INFO_TABLE_CONFIG_KEY));
+            statement = connection.prepareStatement(sql);
+            resultSet = statement.executeQuery();
+            resultSet.next();
+            assertEquals(0, resultSet.getInt("count"));
+        }
+    }
+
+    /* purge(OperationList) */
+
+    @Test
+    public void testPurgeWithOperationList() throws Exception {
+        OperationList ops = TestUtil.newOperationList();
+        ops.setIdentifier(new Identifier("cats"));
+        instance.purge(ops);
+
+        Configuration config = Application.getConfiguration();
+
+        try (Connection connection = JdbcCache.getConnection()) {
+            // assert that the derivative image was purged
+            String sql = String.format("SELECT COUNT(%s) AS count FROM %s",
+                    JdbcCache.DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
+                    config.getString(JdbcCache.DERIVATIVE_IMAGE_TABLE_CONFIG_KEY));
+            PreparedStatement statement = connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
+            resultSet.next();
+            assertEquals(2, resultSet.getInt("count"));
+
+            // assert that the info was NOT purged
+            sql = String.format("SELECT COUNT(%s) AS count FROM %s",
+                    JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN,
+                    config.getString(JdbcCache.INFO_TABLE_CONFIG_KEY));
+            statement = connection.prepareStatement(sql);
+            resultSet = statement.executeQuery();
+            resultSet.next();
+            assertEquals(3, resultSet.getInt("count"));
+        }
+    }
+
+    /* purgeExpired() */
+
+    @Test
+    public void testPurgeExpired() throws Exception {
+        Configuration config = Application.getConfiguration();
+        config.setProperty(JdbcCache.TTL_CONFIG_KEY, 1);
+
+        // wait for the seed data to invalidate
+        Thread.sleep(1500);
+
+        // add some fresh entities...
+        OperationList ops = TestUtil.newOperationList();
+        ops.setIdentifier(new Identifier("cats"));
+        // ...derivative image
+        OutputStream os = instance.getImageOutputStream(ops);
+        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
+        os.close();
+        // ...info
+        instance.putImageInfo(new Identifier("bees"), new ImageInfo(50, 40));
+
+        instance.purgeExpired();
+
+        try (Connection connection = JdbcCache.getConnection()) {
+            // assert that only the expired derivative images were purged
+            String sql = String.format("SELECT COUNT(%s) AS count FROM %s",
+                    JdbcCache.DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
+                    config.getString(JdbcCache.DERIVATIVE_IMAGE_TABLE_CONFIG_KEY));
+            PreparedStatement statement = connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
+            resultSet.next();
+            assertEquals(1, resultSet.getInt("count"));
+
+            // assert that only the expired infos were purged
+            sql = String.format("SELECT COUNT(%s) AS count FROM %s",
+                    JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN,
+                    config.getString(JdbcCache.INFO_TABLE_CONFIG_KEY));
+            statement = connection.prepareStatement(sql);
+            resultSet = statement.executeQuery();
+            resultSet.next();
+            assertEquals(1, resultSet.getInt("count"));
+        }
+    }
+
+    /* purgeImage(Identifier) */
+
+    @Test
+    public void testPurgeImage() throws Exception {
+        Configuration config = Application.getConfiguration();
+
+        Identifier id1 = new Identifier("cats");
+        instance.purgeImage(id1);
+
+        try (Connection connection = JdbcCache.getConnection()) {
+            // assert that the derivative images were purged
+            String sql = String.format("SELECT COUNT(%s) AS count FROM %s",
+                    JdbcCache.DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
+                    config.getString(JdbcCache.DERIVATIVE_IMAGE_TABLE_CONFIG_KEY));
+            PreparedStatement statement = connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
+            resultSet.next();
+            assertEquals(2, resultSet.getInt("count"));
+
+            sql = String.format("SELECT COUNT(%s) AS count FROM %s",
+                    JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN,
+                    config.getString(JdbcCache.INFO_TABLE_CONFIG_KEY));
+            statement = connection.prepareStatement(sql);
+            resultSet = statement.executeQuery();
+            resultSet.next();
+            assertEquals(2, resultSet.getInt("count"));
+        }
+    }
+
+    /* putImageInfo(Identifier, ImageInfo) */
+
+    @Test
+    public void testPutImageInfo() throws CacheException {
         Identifier identifier = new Identifier("birds");
         ImageInfo info = new ImageInfo(52, 52);
         instance.putImageInfo(identifier, info);
         assertEquals(info, instance.getImageInfo(identifier));
+    }
+
+    @Test
+    public void testPutImageInfoSetsLastAccessedTime() throws Exception {
+        final Configuration config = Application.getConfiguration();
+
+        Identifier identifier = new Identifier("birds");
+        ImageInfo info = new ImageInfo(52, 52);
+        instance.putImageInfo(identifier, info);
+
+        try (Connection connection = JdbcCache.getConnection()) {
+            // get the initial last-accessed time
+            String sql = String.format("SELECT %s FROM %s WHERE %s = ?;",
+                    JdbcCache.INFO_TABLE_LAST_ACCESSED_COLUMN,
+                    config.getString(JdbcCache.INFO_TABLE_CONFIG_KEY),
+                    JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN);
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, identifier.toString());
+            ResultSet resultSet = statement.executeQuery();
+            resultSet.next();
+            assertNotNull(resultSet.getTimestamp(1));
+        }
     }
 
 }
