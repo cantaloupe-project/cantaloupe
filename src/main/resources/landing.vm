@@ -14,38 +14,50 @@
 
         <section>
             <div class="row">
-                <div class="col-sm-4">
-                    <h3>Endpoints</h3>
-                    <table class="table-condensed">
-                        <tr>
-                            <td><a href="$baseUri/iiif/1">IIIF Image API 1.x</a></td>
-                            <td>
-                                #if ($iiif1EndpointEnabled)
-                                    <span class="label label-success">Enabled</span>
-                                #else
-                                    <span class="label label-danger">Disabled</span>
-                                #end
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><a href="$baseUri/iiif/2">IIIF Image API 2.x</a></td>
-                            <td>
-                                #if ($iiif2EndpointEnabled)
-                                    <span class="label label-success">Enabled</span>
-                                #else
-                                    <span class="label label-danger">Disabled</span>
-                                #end
-                            </td>
-                        </tr>
-                    </table>
+                <div class="col-sm-6">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h3>Endpoints</h3>
+                            <table class="table-condensed">
+                                <tr>
+                                    <td><a href="$baseUri/iiif/1">IIIF Image API 1.x</a></td>
+                                    <td>
+                                        #if ($iiif1EndpointEnabled)
+                                            <span class="label label-success">Enabled</span>
+                                        #else
+                                            <span class="label label-danger">Disabled</span>
+                                        #end
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><a href="$baseUri/iiif/2">IIIF Image API 2.x</a></td>
+                                    <td>
+                                        #if ($iiif2EndpointEnabled)
+                                            <span class="label label-success">Enabled</span>
+                                        #else
+                                            <span class="label label-danger">Disabled</span>
+                                        #end
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h3>Resolver</h3>
+                            <p>$resolverName</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-sm-4">
-                    <h3>Resolver</h3>
-                    <p>$resolverName</p>
-                </div>
-                <div class="col-sm-4">
-                    <h3>Cache</h3>
-                    <p>$cacheName</p>
+                <div class="col-sm-6">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h3>Source Cache</h3>
+                            <p>$sourceCacheName</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h3>Derivative Cache</h3>
+                            <p>$derivativeCacheName</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

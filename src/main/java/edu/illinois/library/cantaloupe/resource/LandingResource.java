@@ -91,17 +91,29 @@ public class LandingResource extends AbstractResource {
         }
         vars.put("resolverName", resolverStr);
 
-        // cache name
-        String cacheStr = "Disabled";
+        // source cache name
+        String sourceCacheStr = "Disabled";
         try {
-            Cache cache = CacheFactory.getDerivativeCache();
+            Cache cache = CacheFactory.getSourceCache();
             if (cache != null) {
-                cacheStr = cache.getClass().getSimpleName();
+                sourceCacheStr = cache.getClass().getSimpleName();
             }
         } catch (Exception e) {
             // noop
         }
-        vars.put("cacheName", cacheStr);
+        vars.put("sourceCacheName", sourceCacheStr);
+
+        // derivative cache name
+        String derivativeCacheStr = "Disabled";
+        try {
+            Cache cache = CacheFactory.getDerivativeCache();
+            if (cache != null) {
+                derivativeCacheStr = cache.getClass().getSimpleName();
+            }
+        } catch (Exception e) {
+            // noop
+        }
+        vars.put("derivativeCacheName", derivativeCacheStr);
 
         // VM arguments
         RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
