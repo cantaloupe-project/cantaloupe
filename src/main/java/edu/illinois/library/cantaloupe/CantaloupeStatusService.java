@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
-import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import org.apache.commons.configuration.Configuration;
 import org.apache.velocity.app.Velocity;
@@ -22,14 +21,7 @@ import java.nio.file.AccessDeniedException;
 import java.util.Map;
 
 /**
- * Overrides the built-in Restlet status pages. Converts the following
- * exceptions to the following HTTP statuses:
- *
- * <ul>
- *     <li>IllegalArgumentException: 400</li>
- *     <li>FileNotFoundException: 404</li>
- *     <li>Exception: 500</li>
- * </ul>
+ * Overrides the built-in Restlet response codes and status pages.
  */
 class CantaloupeStatusService extends StatusService {
 
@@ -80,8 +72,6 @@ class CantaloupeStatusService extends StatusService {
                 t instanceof UnsupportedEncodingException ||
                 t instanceof UnsupportedOutputFormatException) {
             status = new Status(Status.CLIENT_ERROR_BAD_REQUEST, t);
-        } else if (t instanceof UnsupportedSourceFormatException) {
-            status = new Status(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE, t);
         } else if (t instanceof FileNotFoundException) {
             status = new Status(Status.CLIENT_ERROR_NOT_FOUND, t);
         } else if (t instanceof AccessDeniedException) {
