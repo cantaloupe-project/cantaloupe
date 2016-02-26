@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
@@ -344,17 +343,19 @@ public abstract class AbstractResource extends ServerResource {
         resultingSizeArg.put("width", resultingSize.width);
         resultingSizeArg.put("height", resultingSize.height);
 
+        final Map opListMap = opList.toMap(fullSize);
+
         // delegate method parameters
         final Object args[] = new Object[9];
-        args[0] = opList.getIdentifier().toString();           // identifier
-        args[1] = fullSizeArg;                                 // full_size
-        args[2] = opList.toMap(fullSize).get("operations");    // operations
-        args[3] = resultingSizeArg;                            // resulting_size
-        args[4] = opList.toMap(fullSize).get("output_format"); // output_format
-        args[5] = getReference().toString();                   // request_uri
-        args[6] = getRequest().getHeaders().getValuesMap();    // request_headers
-        args[7] = getCanonicalClientIpAddress();               // client_ip
-        args[8] = getRequest().getCookies().getValuesMap();    // cookies
+        args[0] = opList.getIdentifier().toString();        // identifier
+        args[1] = fullSizeArg;                              // full_size
+        args[2] = opListMap.get("operations");              // operations
+        args[3] = resultingSizeArg;                         // resulting_size
+        args[4] = opListMap.get("output_format");           // output_format
+        args[5] = getReference().toString();                // request_uri
+        args[6] = getRequest().getHeaders().getValuesMap(); // request_headers
+        args[7] = getCanonicalClientIpAddress();            // client_ip
+        args[8] = getRequest().getCookies().getValuesMap(); // cookies
 
         try {
             final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
