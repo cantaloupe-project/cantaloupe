@@ -592,12 +592,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     tempFile, destFile, sourceImagesBeingWritten, identifier);
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);
-        } finally {
-            try {
-                FileUtils.forceDelete(tempFile);
-            } catch (IOException e) {
-                logger.warn(e.getMessage(), e);
-            }
         }
     }
 
@@ -639,12 +633,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     tempFile, destFile, derivativeImagesBeingWritten, ops);
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);
-        } finally {
-            try {
-                FileUtils.forceDelete(tempFile);
-            } catch (IOException e) {
-                logger.warn(e.getMessage(), e);
-            }
         }
     }
 
