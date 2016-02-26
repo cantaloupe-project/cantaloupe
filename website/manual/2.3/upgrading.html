@@ -17,23 +17,8 @@ title: Upgrading
 <h2>From 2.2 to 2.3</h2>
 
 <ul>
-  <li>Add the following keys from the sample configuration:
-    <ul>
-      <li><code>JdbcCache.source_image_table</code></li>
-    </ul>
-  </li>
-  <li>Rename the following configuration keys:
-    <ul>
-      <li><code>JdbcCache.image_table</code> to <code>JdbcCache.derivative_image_table</code></li>
-    </ul>
-  </li>
   <li>If you are using JdbcCache, modify your database schema:
-    <pre>CREATE TABLE IF NOT EXISTS {JdbcCache.source_image_table} (
-    identifier VARCHAR(4096) NOT NULL,
-    image BLOB,
-    last_accessed DATETIME
-);
-ALTER TABLE {JdbcCache.info_table} CHANGE COLUMN last_modified last_accessed;
+    <pre>ALTER TABLE {JdbcCache.info_table} CHANGE COLUMN last_modified last_accessed;
 ALTER TABLE {JdbcCache.derivative_image_table} CHANGE COLUMN last_modified last_accessed;</pre>
   </li>
 </ul>

@@ -16,6 +16,7 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
+import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
@@ -73,13 +74,14 @@ public class InformationResource extends AbstractResource {
 
         // Obtain an instance of the processor assigned to that format in
         // the config file
-        Processor proc = ProcessorFactory.getProcessor(resolver, identifier,
-                format);
+        Processor processor = ProcessorFactory.getProcessor(format);
+
+        new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
         // Get an ImageInfo instance corresponding to the source image
         ImageInfo imageInfo = ImageInfoFactory.newImageInfo(
-                identifier, getImageUri(identifier), proc,
-                getOrReadInfo(identifier, proc));
+                identifier, getImageUri(identifier), processor,
+                getOrReadInfo(identifier, processor));
         StringRepresentation rep = new StringRepresentation(imageInfo.toJson());
 
         this.addHeader("Link", "<http://iiif.io/api/image/2/context.json>; " +

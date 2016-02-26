@@ -17,6 +17,7 @@ import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.AccessDeniedException;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
+import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
 import org.restlet.data.Disposition;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.resource.Get;
@@ -115,12 +116,12 @@ public class ImageResource extends AbstractResource {
             throw e;
         }
 
-        // Obtain an instance of the processor assigned to that format in
-        // the config file
-        Processor proc = ProcessorFactory.getProcessor(resolver, identifier,
-                format);
+        final Processor processor = ProcessorFactory.getProcessor(format);
 
-        final Dimension fullSize = getOrReadInfo(ops.getIdentifier(), proc).getSize();
+        new SourceImageWrangler(resolver, processor, identifier).wrangle();
+
+        final Dimension fullSize =
+                getOrReadInfo(ops.getIdentifier(), processor).getSize();
 
         if (!isAuthorized(ops, fullSize)) {
             throw new AccessDeniedException();
@@ -130,10 +131,10 @@ public class ImageResource extends AbstractResource {
 
         // Find out whether the processor supports that source format by
         // asking it whether it offers any output formats for it
-        Set<Format> availableOutputFormats = proc.getAvailableOutputFormats();
+        Set<Format> availableOutputFormats = processor.getAvailableOutputFormats();
         if (!availableOutputFormats.contains(ops.getOutputFormat())) {
             String msg = String.format("%s does not support the \"%s\" output format",
-                    proc.getClass().getSimpleName(),
+                    processor.getClass().getSimpleName(),
                     ops.getOutputFormat().getPreferredExtension());
             logger.warn(msg + ": " + this.getReference());
             throw new UnsupportedSourceFormatException(msg);
@@ -141,7 +142,7 @@ public class ImageResource extends AbstractResource {
 
         this.addLinkHeader(params);
 
-        return getRepresentation(ops, format, disposition, proc);
+        return getRepresentation(ops, format, disposition, processor);
     }
 
     private void addLinkHeader(Parameters params) {

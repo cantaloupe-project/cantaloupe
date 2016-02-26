@@ -15,6 +15,7 @@ import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AccessDeniedException;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
+import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Disposition;
 import org.restlet.data.Reference;
@@ -95,11 +96,12 @@ public class ImageResource extends AbstractResource {
         // Obtain an instance of the processor assigned to that format in
         // the config file. This will throw a variety of exceptions if there
         // are any issues.
-        final Processor proc = ProcessorFactory.getProcessor(
-                resolver, identifier, format);
+        final Processor processor = ProcessorFactory.getProcessor(format);
+
+        new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
         final Set<Format> availableOutputFormats =
-                proc.getAvailableOutputFormats();
+                processor.getAvailableOutputFormats();
 
         // Extract the quality and format from the URI
         String[] qualityAndFormat = StringUtils.
@@ -146,13 +148,13 @@ public class ImageResource extends AbstractResource {
         }
 
         final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
-                proc.getSupportedFeatures(),
-                proc.getSupportedIiif1_1Qualities(),
-                proc.getAvailableOutputFormats());
+                processor.getSupportedFeatures(),
+                processor.getSupportedIiif1_1Qualities(),
+                processor.getAvailableOutputFormats());
         this.addHeader("Link", String.format("<%s>;rel=\"profile\";",
                 complianceLevel.getUri()));
 
-        final Dimension fullSize = getOrReadInfo(identifier, proc).getSize();
+        final Dimension fullSize = getOrReadInfo(identifier, processor).getSize();
 
         if (!isAuthorized(ops, fullSize)) {
             throw new AccessDeniedException();
@@ -164,13 +166,13 @@ public class ImageResource extends AbstractResource {
         // asking it whether it offers any output formats for it
         if (!availableOutputFormats.contains(ops.getOutputFormat())) {
             String msg = String.format("%s does not support the \"%s\" output format",
-                    proc.getClass().getSimpleName(),
+                    processor.getClass().getSimpleName(),
                     ops.getOutputFormat().getPreferredExtension());
             logger.warn(msg + ": " + this.getReference());
             throw new UnsupportedSourceFormatException(msg);
         }
 
-        return getRepresentation(ops, format, disposition, proc);
+        return getRepresentation(ops, format, disposition, processor);
     }
 
     /**
