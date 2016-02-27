@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
  */
 public class AmazonS3ResolverTest {
 
-    private static final Identifier IMAGE = new Identifier("f50.jpg");
+    private static final Identifier IDENTIFIER = new Identifier("f50.jpg");
 
     AmazonS3Resolver instance;
 
@@ -61,19 +61,21 @@ public class AmazonS3ResolverTest {
         Application.setConfiguration(config);
 
         instance = new AmazonS3Resolver();
+        instance.setIdentifier(IDENTIFIER);
     }
 
     @Test
     public void testGetStreamSourceWithBasicLookupStrategy() {
         // present, readable image
         try {
-            assertNotNull(instance.getStreamSource(IMAGE));
+            assertNotNull(instance.getStreamSource());
         } catch (IOException e) {
             fail();
         }
         // missing image
         try {
-            instance.getStreamSource(new Identifier("bogus"));
+            instance.setIdentifier(new Identifier("bogus"));
+            instance.getStreamSource();
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
@@ -91,14 +93,15 @@ public class AmazonS3ResolverTest {
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         // present image
         try {
-            StreamSource source = instance.getStreamSource(IMAGE);
+            StreamSource source = instance.getStreamSource();
             assertNotNull(source.newInputStream());
         } catch (IOException e) {
             fail();
         }
         // missing image
         try {
-            instance.getStreamSource(new Identifier("bogus"));
+            instance.setIdentifier(new Identifier("bogus"));
+            instance.getStreamSource();
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
@@ -109,15 +112,17 @@ public class AmazonS3ResolverTest {
 
     @Test
     public void testGetSourceFormatWithBasicLookupStrategy() throws IOException {
-        assertEquals(Format.JPG, instance.getSourceFormat(IMAGE));
+        assertEquals(Format.JPG, instance.getSourceFormat());
         try {
-            instance.getSourceFormat(new Identifier("image.bogus"));
+            instance.setIdentifier(new Identifier("image.bogus"));
+            instance.getSourceFormat();
             fail("Expected exception");
         } catch (IOException e) {
             // pass
         }
         try {
-            instance.getSourceFormat(new Identifier("image"));
+            instance.setIdentifier(new Identifier("image"));
+            instance.getSourceFormat();
             fail("Expected exception");
         } catch (IOException e) {
             // pass
@@ -132,19 +137,21 @@ public class AmazonS3ResolverTest {
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         // present image
-        assertEquals(Format.JPG, instance.getSourceFormat(IMAGE));
+        assertEquals(Format.JPG, instance.getSourceFormat());
         // present image without extension TODO: write this
 
         // missing image with extension
         try {
-            instance.getSourceFormat(new Identifier("image.bogus"));
+            instance.setIdentifier(new Identifier("image.bogus"));
+            instance.getSourceFormat();
             fail("Expected exception");
         } catch (IOException e) {
             // pass
         }
         // missing image without extension
         try {
-            instance.getSourceFormat(new Identifier("image"));
+            instance.setIdentifier(new Identifier("image"));
+            instance.getSourceFormat();
             fail("Expected exception");
         } catch (IOException e) {
             // pass

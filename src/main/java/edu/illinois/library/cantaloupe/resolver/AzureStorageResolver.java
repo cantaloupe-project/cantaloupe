@@ -7,7 +7,6 @@ import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
@@ -19,12 +18,9 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.AccessDeniedException;
 import java.security.InvalidKeyException;
 
 /**
@@ -95,12 +91,11 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public StreamSource getStreamSource(Identifier identifier)
-            throws IOException {
-        return new AzureStorageStreamSource(getObject(identifier));
+    public StreamSource getStreamSource() throws IOException {
+        return new AzureStorageStreamSource(getObject());
     }
 
-    private CloudBlockBlob getObject(Identifier identifier) throws IOException {
+    private CloudBlockBlob getObject() throws IOException {
         final Configuration config = Application.getConfiguration();
         final String containerName = config.getString(CONTAINER_NAME_CONFIG_KEY);
         logger.info("Using container: {}", containerName);
@@ -109,7 +104,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
         try {
             final CloudBlobContainer container =
                     client.getContainerReference(containerName);
-            final String objectKey = getObjectKey(identifier);
+            final String objectKey = getObjectKey();
 
             logger.info("Requesting {}", objectKey);
             final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
@@ -122,14 +117,14 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
         }
     }
 
-    private String getObjectKey(Identifier identifier) throws IOException {
+    private String getObjectKey() throws IOException {
         final Configuration config = Application.getConfiguration();
         switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
             case "BasicLookupStrategy":
                 return identifier.toString();
             case "ScriptLookupStrategy":
                 try {
-                    return getObjectKeyWithDelegateStrategy(identifier);
+                    return getObjectKeyWithDelegateStrategy();
                 } catch (ScriptException | DelegateScriptDisabledException e) {
                     logger.error(e.getMessage(), e);
                     throw new IOException(e);
@@ -141,13 +136,12 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     }
 
     /**
-     * @param identifier
      * @return
      * @throws FileNotFoundException If the delegate script does not exist
      * @throws IOException
      * @throws ScriptException If the script fails to execute
      */
-    private String getObjectKeyWithDelegateStrategy(Identifier identifier)
+    private String getObjectKeyWithDelegateStrategy()
             throws IOException, ScriptException,
             DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
@@ -162,8 +156,8 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public Format getSourceFormat(Identifier identifier) throws IOException {
-        final CloudBlockBlob blob = getObject(identifier);
+    public Format getSourceFormat() throws IOException {
+        final CloudBlockBlob blob = getObject();
         final String contentType = blob.getProperties().getContentType();
         if (contentType != null) {
             final Format format = Format.getFormat(contentType);

@@ -39,19 +39,21 @@ public class FilesystemResolverTest {
     public void setUp() throws IOException {
         Application.setConfiguration(newConfiguration());
         instance = new FilesystemResolver();
+        instance.setIdentifier(IDENTIFIER);
     }
 
     @Test
     public void testGetStreamSource() {
         // present, readable image
         try {
-            assertNotNull(instance.getStreamSource(IDENTIFIER));
+            assertNotNull(instance.getStreamSource());
         } catch (IOException e) {
             fail();
         }
         // missing image
         try {
-            instance.getStreamSource(new Identifier("bogus"));
+            instance.setIdentifier(new Identifier("bogus"));
+            instance.getStreamSource();
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
@@ -64,16 +66,16 @@ public class FilesystemResolverTest {
     public void testGetFile() throws Exception {
         // present, readable file
         try {
-            assertNotNull(instance.getFile(IDENTIFIER));
+            assertNotNull(instance.getFile());
         } catch (FileNotFoundException e) {
             fail();
         }
 
         // present, unreadable file
-        File file = new File(instance.getPathname(IDENTIFIER, File.separator));
+        File file = new File(instance.getPathname(File.separator));
         try {
             file.setReadable(false);
-            instance.getFile(IDENTIFIER);
+            instance.getFile();
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             fail();
@@ -85,7 +87,8 @@ public class FilesystemResolverTest {
 
         // missing file
         try {
-            instance.getFile(new Identifier("bogus"));
+            instance.setIdentifier(new Identifier("bogus"));
+            instance.getFile();
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
@@ -103,21 +106,26 @@ public class FilesystemResolverTest {
                 "BasicLookupStrategy");
         // with prefix
         config.setProperty(FilesystemResolver.PATH_PREFIX_CONFIG_KEY, "/prefix/");
-        assertEquals("/prefix/id", instance.getPathname(new Identifier("id"), File.separator));
+        instance.setIdentifier(new Identifier("id"));
+        assertEquals("/prefix/id", instance.getPathname(File.separator));
         // with suffix
         config.setProperty(FilesystemResolver.PATH_SUFFIX_CONFIG_KEY, "/suffix");
-        assertEquals("/prefix/id/suffix", instance.getPathname(new Identifier("id"), File.separator));
+        assertEquals("/prefix/id/suffix", instance.getPathname(File.separator));
         // without prefix or suffix
         config.setProperty(FilesystemResolver.PATH_PREFIX_CONFIG_KEY, "");
         config.setProperty(FilesystemResolver.PATH_SUFFIX_CONFIG_KEY, "");
-        assertEquals("id", instance.getPathname(new Identifier("id"), File.separator));
+        assertEquals("id", instance.getPathname(File.separator));
         // test sanitization
         config.setProperty(FilesystemResolver.PATH_PREFIX_CONFIG_KEY, "");
         config.setProperty(FilesystemResolver.PATH_SUFFIX_CONFIG_KEY, "");
-        assertEquals("id/", instance.getPathname(new Identifier("id/../"), "/"));
-        assertEquals("/id", instance.getPathname(new Identifier("/../id"), "/"));
-        assertEquals("id\\", instance.getPathname(new Identifier("id\\..\\"), "\\"));
-        assertEquals("\\id", instance.getPathname(new Identifier("\\..\\id"), "\\"));
+        instance.setIdentifier(new Identifier("id/../"));
+        assertEquals("id/", instance.getPathname("/"));
+        instance.setIdentifier(new Identifier("/../id"));
+        assertEquals("/id", instance.getPathname("/"));
+        instance.setIdentifier(new Identifier("id\\..\\"));
+        assertEquals("id\\", instance.getPathname("\\"));
+        instance.setIdentifier(new Identifier("\\..\\id"));
+        assertEquals("\\id", instance.getPathname("\\"));
     }
 
     @Test
@@ -131,13 +139,13 @@ public class FilesystemResolverTest {
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         assertEquals("/bla/" + IDENTIFIER,
-                instance.getPathname(IDENTIFIER, File.separator));
+                instance.getPathname(File.separator));
 
         // missing script
         try {
             config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
                     TestUtil.getFixture("bogus.rb").getAbsolutePath());
-            instance.getPathname(IDENTIFIER, File.separator);
+            instance.getPathname(File.separator);
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
@@ -146,53 +154,68 @@ public class FilesystemResolverTest {
 
     @Test
     public void testGetSourceFormatByDetection() throws IOException {
-        assertEquals(Format.BMP,
-                instance.getSourceFormat(new Identifier("bmp")));
-        assertEquals(Format.GIF,
-                instance.getSourceFormat(new Identifier("gif")));
-        assertEquals(Format.JP2,
-                instance.getSourceFormat(new Identifier("jp2")));
-        assertEquals(Format.JPG,
-                instance.getSourceFormat(new Identifier("jpg")));
-        assertEquals(Format.PDF,
-                instance.getSourceFormat(new Identifier("pdf")));
-        assertEquals(Format.PNG,
-                instance.getSourceFormat(new Identifier("png")));
-        assertEquals(Format.TIF,
-                instance.getSourceFormat(new Identifier("tif")));
-        assertEquals(Format.UNKNOWN,
-                instance.getSourceFormat(new Identifier("txt")));
+        instance.setIdentifier(new Identifier("bmp"));
+        assertEquals(Format.BMP, instance.getSourceFormat());
+
+        instance.setIdentifier(new Identifier("gif"));
+        assertEquals(Format.GIF, instance.getSourceFormat());
+
+        instance.setIdentifier(new Identifier("jp2"));
+        assertEquals(Format.JP2, instance.getSourceFormat());
+
+        instance.setIdentifier(new Identifier("jpg"));
+        assertEquals(Format.JPG, instance.getSourceFormat());
+
+        instance.setIdentifier(new Identifier("pdf"));
+        assertEquals(Format.PDF, instance.getSourceFormat());
+
+        instance.setIdentifier(new Identifier("png"));
+        assertEquals(Format.PNG, instance.getSourceFormat());
+
+        instance.setIdentifier(new Identifier("tif"));
+        assertEquals(Format.TIF, instance.getSourceFormat());
+
+        instance.setIdentifier(new Identifier("txt"));
+        assertEquals(Format.UNKNOWN, instance.getSourceFormat());
     }
 
     @Test
     public void testGetSourceFormatByInference() throws IOException {
-        assertEquals(Format.BMP,
-                instance.getSourceFormat(new Identifier("bmp-rgb-64x56x8.bmp")));
-        assertEquals(Format.GIF,
-                instance.getSourceFormat(new Identifier("gif-rgb-64x56x8.gif")));
-        assertEquals(Format.JP2,
-                instance.getSourceFormat(new Identifier("jp2-rgb-64x56x8-monotiled-lossy.jp2")));
-        assertEquals(Format.JPG,
-                instance.getSourceFormat(new Identifier("jpg-rgb-64x56x8-baseline.jpg")));
-        assertEquals(Format.PDF,
-                instance.getSourceFormat(new Identifier("pdf.pdf")));
-        assertEquals(Format.PNG,
-                instance.getSourceFormat(new Identifier("png-rgb-64x56x8.png")));
-        assertEquals(Format.TIF,
-                instance.getSourceFormat(new Identifier("tif-rgb-monores-64x56x8-striped-jpeg.tif")));
+        instance.setIdentifier(new Identifier("bmp-rgb-64x56x8.bmp"));
+        assertEquals(Format.BMP, instance.getSourceFormat());
+
+        instance.setIdentifier(new Identifier("gif-rgb-64x56x8.gif"));
+        assertEquals(Format.GIF, instance.getSourceFormat());
+
+        instance.setIdentifier(new Identifier("jp2-rgb-64x56x8-monotiled-lossy.jp2"));
+        assertEquals(Format.JP2, instance.getSourceFormat());
+
+        instance.setIdentifier(new Identifier("jpg-rgb-64x56x8-baseline.jpg"));
+        assertEquals(Format.JPG, instance.getSourceFormat());
+
+        instance.setIdentifier(new Identifier("pdf.pdf"));
+        assertEquals(Format.PDF, instance.getSourceFormat());
+
+        instance.setIdentifier(new Identifier("png-rgb-64x56x8.png"));
+        assertEquals(Format.PNG, instance.getSourceFormat());
+
+        instance.setIdentifier(new Identifier("tif-rgb-monores-64x56x8-striped-jpeg.tif"));
+        assertEquals(Format.TIF, instance.getSourceFormat());
     }
 
     @Test
     public void testGetSourceFormatThrowsExceptionWhenResourceIsMissing()
             throws IOException {
         try {
-            instance.getSourceFormat(new Identifier("bogus"));
+            instance.setIdentifier(new Identifier("bogus"));
+            instance.getSourceFormat();
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
         }
         try {
-            instance.getSourceFormat(new Identifier("bla.jpg"));
+            instance.setIdentifier(new Identifier("bla.jpg"));
+            instance.getSourceFormat();
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass

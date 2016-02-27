@@ -39,6 +39,7 @@ public class HttpResolverTest {
         Application.setConfiguration(config);
 
         instance = new HttpResolver();
+        instance.setIdentifier(IDENTIFIER);
     }
 
     @After
@@ -49,7 +50,7 @@ public class HttpResolverTest {
     @Test
     public void testGetStreamSourceWithPresentReadableImage() throws IOException {
         try {
-            assertNotNull(instance.getStreamSource(IDENTIFIER));
+            assertNotNull(instance.getStreamSource());
         } catch (IOException e) {
             fail();
         }
@@ -58,7 +59,8 @@ public class HttpResolverTest {
     @Test
     public void testGetStreamSourceWithMissingImage() throws IOException {
         try {
-            instance.getStreamSource(new Identifier("bogus"));
+            instance.setIdentifier(new Identifier("bogus"));
+            instance.getStreamSource();
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
@@ -90,9 +92,10 @@ public class HttpResolverTest {
 
     @Test
     public void testGetSourceFormat() throws IOException {
-        assertEquals(Format.JPG, instance.getSourceFormat(IDENTIFIER));
+        assertEquals(Format.JPG, instance.getSourceFormat());
         try {
-            instance.getSourceFormat(new Identifier("image.bogus"));
+            instance.setIdentifier(new Identifier("image.bogus"));
+            instance.getSourceFormat();
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
@@ -105,17 +108,19 @@ public class HttpResolverTest {
         // with prefix
         config.setProperty(HttpResolver.URL_PREFIX_CONFIG_KEY,
                 "http://example.org/prefix/");
+        instance.setIdentifier(new Identifier("id"));
         assertEquals("http://example.org/prefix/id",
-                instance.getUrl(new Identifier("id")).toString());
+                instance.getUrl().toString());
         // with suffix
         config.setProperty(HttpResolver.URL_SUFFIX_CONFIG_KEY, "/suffix");
         assertEquals("http://example.org/prefix/id/suffix",
-                instance.getUrl(new Identifier("id")).toString());
+                instance.getUrl().toString());
         // without prefix or suffix
         config.setProperty(HttpResolver.URL_PREFIX_CONFIG_KEY, "");
         config.setProperty(HttpResolver.URL_SUFFIX_CONFIG_KEY, "");
+        instance.setIdentifier(new Identifier("http://example.org/images/image.jpg"));
         assertEquals("http://example.org/images/image.jpg",
-                instance.getUrl(new Identifier("http://example.org/images/image.jpg")).toString());
+                instance.getUrl().toString());
     }
 
     @Test
@@ -128,13 +133,13 @@ public class HttpResolverTest {
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         assertEquals(new Reference("http://example.org/bla/" + IDENTIFIER),
-                instance.getUrl(IDENTIFIER));
+                instance.getUrl());
 
         // missing script
         try {
             config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
                     TestUtil.getFixture("bogus.rb").getAbsolutePath());
-            instance.getUrl(IDENTIFIER);
+            instance.getUrl();
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass

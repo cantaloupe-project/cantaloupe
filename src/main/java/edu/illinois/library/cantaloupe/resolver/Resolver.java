@@ -17,17 +17,16 @@ import java.nio.file.AccessDeniedException;
 public interface Resolver {
 
     /**
-     * @param identifier
-     * @return The expected source format of the image corresponding with the
-     * given identifier, or {@link Format#UNKNOWN} if unknown;
-     * never null.
+     * @return The expected source format of the image corresponding to the
+     * identifier set by {@link #setIdentifier}, or {@link Format#UNKNOWN} if
+     * unknown; never null.
      * @throws FileNotFoundException if an image corresponding to the given
      * identifier does not exist
      * @throws AccessDeniedException if an image corresponding to the given
      * identifier is not readable
      * @throws IOException if there is some other issue accessing the image
      */
-    Format getSourceFormat(Identifier identifier) throws IOException;
+    Format getSourceFormat() throws IOException;
 
     /**
      * <dl>
@@ -45,5 +44,10 @@ public interface Resolver {
      * @return Whether the instance is compatible with the given processor.
      */
     boolean isCompatible(Processor processor);
+
+    /**
+     * @param identifier Identifier of a source image to resolve.
+     */
+    void setIdentifier(Identifier identifier);
 
 }

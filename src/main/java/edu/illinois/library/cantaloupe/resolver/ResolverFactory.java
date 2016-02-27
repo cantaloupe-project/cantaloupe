@@ -34,8 +34,8 @@ public abstract class ResolverFactory {
      * resolver for the given identifier. Otherwise, returns an instance of
      * the resolver specified in {@link #STATIC_RESOLVER_CONFIG_KEY}.
      *
-     * @return An instance of the appropriate resolver for the given
-     * identifier.
+     * @return Instance of the appropriate resolver for the given identifier,
+     *         with identifier already set.
      * @throws Exception
      * @throws FileNotFoundException If the specified chooser script is not
      * found.
@@ -52,7 +52,9 @@ public abstract class ResolverFactory {
             final String resolverName = config.
                     getString(STATIC_RESOLVER_CONFIG_KEY);
             if (resolverName != null) {
-                return newStaticResolver(resolverName);
+                final Resolver resolver = newStaticResolver(resolverName);
+                resolver.setIdentifier(identifier);
+                return resolver;
             } else {
                 throw new ConfigurationException(STATIC_RESOLVER_CONFIG_KEY +
                         " is not set to a valid resolver.");

@@ -81,7 +81,7 @@ public class SourceImageWranglerTest {
         new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
         assertEquals(
-                ((FileResolver) resolver).getFile(identifier),
+                ((FileResolver) resolver).getFile(),
                 ((FileProcessor) processor).getSourceFile());
     }
 
@@ -97,7 +97,7 @@ public class SourceImageWranglerTest {
 
         new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
-        StreamSource ss1 = ((StreamResolver) resolver).getStreamSource(identifier);
+        StreamSource ss1 = ((StreamResolver) resolver).getStreamSource();
         StreamSource ss2 = ((StreamProcessor) processor).getStreamSource();
 
         assertEqualSources(ss1, ss2);
@@ -184,7 +184,7 @@ public class SourceImageWranglerTest {
 
             new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
-            StreamSource ss1 = ((StreamResolver) resolver).getStreamSource(identifier);
+            StreamSource ss1 = ((StreamResolver) resolver).getStreamSource();
             StreamSource ss2 = ((StreamProcessor) processor).getStreamSource();
 
             assertEqualSources(ss1, ss2);

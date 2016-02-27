@@ -60,16 +60,15 @@ class FilesystemResolver extends AbstractResolver
     }
 
     @Override
-    public StreamSource getStreamSource(Identifier identifier)
-            throws IOException {
-        return new FilesystemStreamSource(getFile(identifier));
+    public StreamSource getStreamSource() throws IOException {
+        return new FilesystemStreamSource(getFile());
     }
 
     @Override
-    public File getFile(Identifier identifier) throws IOException {
-        File file = new File(getPathname(identifier, File.separator));
+    public File getFile() throws IOException {
+        File file = new File(getPathname(File.separator));
         try {
-            checkAccess(file, identifier);
+            checkAccess(file);
             logger.info("Resolved {} to {}", identifier,
                     file.getAbsolutePath());
         } catch (FileNotFoundException | AccessDeniedException e) {
@@ -84,20 +83,18 @@ class FilesystemResolver extends AbstractResolver
      * current lookup strategy ({@link #LOOKUP_STRATEGY_CONFIG_KEY}) in the
      * application configuration.
      *
-     * @param identifier
      * @param fileSeparator Return value of {@link File#separator}
      * @return
      * @throws IOException
      */
-    public String getPathname(Identifier identifier, String fileSeparator)
-            throws IOException {
+    public String getPathname(String fileSeparator) throws IOException {
         final Configuration config = Application.getConfiguration();
         switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
             case "BasicLookupStrategy":
-                return getPathnameWithBasicStrategy(identifier, fileSeparator);
+                return getPathnameWithBasicStrategy(fileSeparator);
             case "ScriptLookupStrategy":
                 try {
-                    return getPathnameWithScriptStrategy(identifier);
+                    return getPathnameWithScriptStrategy();
                 } catch (ScriptException | DelegateScriptDisabledException e) {
                     logger.error(e.getMessage(), e);
                     throw new IOException(e);
@@ -108,24 +105,22 @@ class FilesystemResolver extends AbstractResolver
         }
     }
 
-    private String getPathnameWithBasicStrategy(final Identifier identifier,
-                                                final String fileSeparator) {
+    private String getPathnameWithBasicStrategy(final String fileSeparator) {
         final Configuration config = Application.getConfiguration();
         final String prefix = config.getString(PATH_PREFIX_CONFIG_KEY, "");
         final String suffix = config.getString(PATH_SUFFIX_CONFIG_KEY, "");
-        final Identifier sanitizedId = sanitize(identifier, fileSeparator);
+        final Identifier sanitizedId = sanitizedIdentifier(fileSeparator);
         return prefix + sanitizedId.toString() + suffix;
     }
 
     /**
-     * @param identifier
      * @return
      * @throws FileNotFoundException If the delegate script does not exist
      * @throws IOException
      * @throws ScriptException If the script fails to execute
      * @throws DelegateScriptDisabledException
      */
-    private String getPathnameWithScriptStrategy(Identifier identifier)
+    private String getPathnameWithScriptStrategy()
             throws IOException, ScriptException,
             DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
@@ -140,18 +135,17 @@ class FilesystemResolver extends AbstractResolver
     }
 
     @Override
-    public Format getSourceFormat(Identifier identifier)
-            throws IOException {
-        File file = new File(getPathname(identifier, File.separator));
-        checkAccess(file, identifier);
+    public Format getSourceFormat() throws IOException {
+        File file = new File(getPathname(File.separator));
+        checkAccess(file);
         Format format = ResolverUtil.inferSourceFormat(identifier);
         if (format.equals(Format.UNKNOWN)) {
-            format = detectSourceFormat(identifier);
+            format = detectSourceFormat();
         }
         return format;
     }
 
-    private void checkAccess(File file, Identifier identifier)
+    private void checkAccess(File file)
             throws FileNotFoundException, AccessDeniedException {
         if (!file.exists()) {
             throw new FileNotFoundException("Failed to resolve " +
@@ -165,15 +159,13 @@ class FilesystemResolver extends AbstractResolver
     /**
      * Detects the source format of a file by reading its header.
      *
-     * @param identifier
      * @return Inferred source format, or {@link Format#UNKNOWN} if
      * unknown.
      * @throws IOException
      */
-    private Format detectSourceFormat(Identifier identifier)
-            throws IOException {
+    private Format detectSourceFormat() throws IOException {
         Format format = Format.UNKNOWN;
-        String pathname = getPathname(identifier, File.separator);
+        final String pathname = getPathname(File.separator);
         Collection<?> detectedTypes = MimeUtil.getMimeTypes(pathname);
         if (detectedTypes.size() > 0) {
             String detectedType = detectedTypes.toArray()[0].toString();
@@ -186,12 +178,10 @@ class FilesystemResolver extends AbstractResolver
      * Filters out "fileseparator.." and "..fileseparator" to prevent arbitrary
      * directory traversal.
      *
-     * @param identifier Identifier to sanitize.
      * @param fileSeparator Return value of {@link File#separator}
      * @return Sanitized identifier.
      */
-    private Identifier sanitize(final Identifier identifier,
-                                final String fileSeparator) {
+    private Identifier sanitizedIdentifier(final String fileSeparator) {
         String idStr = identifier.toString();
         idStr = StringUtils.replace(idStr, fileSeparator + "..", "");
         idStr = StringUtils.replace(idStr, ".." + fileSeparator, "");

@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
@@ -95,9 +94,8 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public StreamSource getStreamSource(final Identifier identifier)
-            throws IOException {
-        Reference url = getUrl(identifier);
+    public StreamSource getStreamSource() throws IOException {
+        Reference url = getUrl();
         logger.info("Resolved {} to {}", identifier, url);
         ClientResource resource = newClientResource(url);
         resource.setNext(client);
@@ -121,25 +119,24 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public Format getSourceFormat(final Identifier identifier)
-            throws IOException {
+    public Format getSourceFormat() throws IOException {
         Format format = ResolverUtil.inferSourceFormat(identifier);
         if (format == Format.UNKNOWN) {
-            format = getSourceFormatFromContentTypeHeader(identifier);
+            format = getSourceFormatFromContentTypeHeader();
         }
-        getStreamSource(identifier).newInputStream(); // throws IOException if not found etc.
+        getStreamSource().newInputStream(); // throws IOException if not found etc.
         return format;
     }
 
-    public Reference getUrl(final Identifier identifier) throws IOException {
+    public Reference getUrl() throws IOException {
         final Configuration config = Application.getConfiguration();
 
         switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
             case "BasicLookupStrategy":
-                return getUrlWithBasicStrategy(identifier);
+                return getUrlWithBasicStrategy();
             case "ScriptLookupStrategy":
                 try {
-                    return getUrlWithScriptStrategy(identifier);
+                    return getUrlWithScriptStrategy();
                 } catch (ScriptException | DelegateScriptDisabledException e) {
                     logger.error(e.getMessage(), e);
                     throw new IOException(e);
@@ -154,15 +151,13 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
      * Issues an HTTP HEAD request and checks the Content-Type header in the
      * response to determine the source format.
      *
-     * @param identifier
      * @return A source format, or {@link Format#UNKNOWN} if unknown.
      * @throws IOException
      */
-    private Format getSourceFormatFromContentTypeHeader(Identifier identifier)
-            throws IOException {
+    private Format getSourceFormatFromContentTypeHeader() throws IOException {
         Format format = Format.UNKNOWN;
         String contentType = "";
-        Reference url = getUrl(identifier);
+        Reference url = getUrl();
         ClientResource resource = newClientResource(url);
         resource.setNext(client);
         try {
@@ -187,7 +182,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         return format;
     }
 
-    private Reference getUrlWithBasicStrategy(final Identifier identifier) {
+    private Reference getUrlWithBasicStrategy() {
         final Configuration config = Application.getConfiguration();
         final String prefix = config.getString(URL_PREFIX_CONFIG_KEY, "");
         final String suffix = config.getString(URL_SUFFIX_CONFIG_KEY, "");
@@ -195,14 +190,13 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     }
 
     /**
-     * @param identifier
      * @return
      * @throws FileNotFoundException If the delegate script does not exist
      * @throws IOException
      * @throws ScriptException If the script fails to execute
      * @throws DelegateScriptDisabledException
      */
-    private Reference getUrlWithScriptStrategy(Identifier identifier)
+    private Reference getUrlWithScriptStrategy()
             throws IOException, ScriptException,
             DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();

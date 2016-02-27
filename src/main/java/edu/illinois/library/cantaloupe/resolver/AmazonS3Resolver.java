@@ -10,7 +10,6 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
@@ -108,18 +107,18 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public StreamSource getStreamSource(Identifier identifier)
+    public StreamSource getStreamSource()
             throws IOException {
-        return new AmazonS3StreamSource(getObject(identifier));
+        return new AmazonS3StreamSource(getObject());
     }
 
-    private S3Object getObject(Identifier identifier) throws IOException {
+    private S3Object getObject() throws IOException {
         AmazonS3 s3 = getClientInstance();
 
         Configuration config = Application.getConfiguration();
         final String bucketName = config.getString(BUCKET_NAME_CONFIG_KEY);
         logger.info("Using bucket: {}", bucketName);
-        final String objectKey = getObjectKey(identifier);
+        final String objectKey = getObjectKey();
         try {
             logger.info("Requesting {}", objectKey);
             return s3.getObject(new GetObjectRequest(bucketName, objectKey));
@@ -132,14 +131,14 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
         }
     }
 
-    private String getObjectKey(Identifier identifier) throws IOException {
+    private String getObjectKey() throws IOException {
         final Configuration config = Application.getConfiguration();
         switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
             case "BasicLookupStrategy":
                 return identifier.toString();
             case "ScriptLookupStrategy":
                 try {
-                    return getObjectKeyWithDelegateStrategy(identifier);
+                    return getObjectKeyWithDelegateStrategy();
                 } catch (ScriptException | DelegateScriptDisabledException e) {
                     logger.error(e.getMessage(), e);
                     throw new IOException(e);
@@ -151,13 +150,12 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     }
 
     /**
-     * @param identifier
      * @return
      * @throws FileNotFoundException If the delegate script does not exist
      * @throws IOException
      * @throws ScriptException If the script fails to execute
      */
-    private String getObjectKeyWithDelegateStrategy(Identifier identifier)
+    private String getObjectKeyWithDelegateStrategy()
             throws IOException, ScriptException,
             DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
@@ -172,8 +170,8 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public Format getSourceFormat(Identifier identifier) throws IOException {
-        S3Object object = getObject(identifier);
+    public Format getSourceFormat() throws IOException {
+        S3Object object = getObject();
         String contentType = object.getObjectMetadata().getContentType();
         if (contentType != null) {
             Format format = Format.getFormat(contentType);

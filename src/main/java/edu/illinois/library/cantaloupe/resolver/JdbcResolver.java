@@ -3,9 +3,7 @@ package edu.illinois.library.cantaloupe.resolver;
 import com.zaxxer.hikari.HikariDataSource;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import org.apache.commons.configuration.Configuration;
-import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,8 +106,7 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public StreamSource getStreamSource(Identifier identifier)
-            throws IOException {
+    public StreamSource getStreamSource() throws IOException {
         try (Connection connection = getConnection()) {
             Configuration config = Application.getConfiguration();
             String sql = config.getString(LOOKUP_SQL_CONFIG_KEY);
@@ -120,7 +117,7 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
             logger.debug(sql);
 
             PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setString(1, executeGetDatabaseIdentifier(identifier));
+            statement.setString(1, executeGetDatabaseIdentifier());
             ResultSet result = statement.executeQuery();
             if (result.next()) {
                 return new JdbcStreamSource(result, 1);
@@ -132,12 +129,11 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public Format getSourceFormat(Identifier identifier)
-            throws IOException {
+    public Format getSourceFormat() throws IOException {
         try {
             // JdbcResolver.function.media_type may contain a JavaScript
             // function or null.
-            String functionResult = executeGetMediaType(identifier);
+            String functionResult = executeGetMediaType();
             String mediaType = null;
             if (functionResult != null) {
                 // the function result may be a media type, or an SQL
@@ -148,7 +144,7 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
                     try (Connection connection = getConnection()) {
                         PreparedStatement statement = connection.
                                 prepareStatement(functionResult);
-                        statement.setString(1, executeGetDatabaseIdentifier(identifier));
+                        statement.setString(1, executeGetDatabaseIdentifier());
                         ResultSet resultSet = statement.executeQuery();
                         if (resultSet.next()) {
                             mediaType = resultSet.getString(1);
@@ -168,13 +164,11 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     }
 
     /**
-     * @param identifier
      * @return Result of the <code>getDatabaseIdentifier()</code> function.
      * @throws ScriptException
      * @throws SQLException
      */
-    public String executeGetDatabaseIdentifier(Identifier identifier)
-            throws ScriptException {
+    public String executeGetDatabaseIdentifier() throws ScriptException {
         Configuration config = Application.getConfiguration();
         final String statement = String.format("%s\ngetDatabaseIdentifier(\"%s\")",
                 config.getString(IDENTIFIER_FUNCTION_CONFIG_KEY), identifier);
@@ -184,13 +178,11 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     }
 
     /**
-     * @param identifier
      * @return Result of the <code>getMediaType()</code> function.
      * @throws ScriptException
      * @throws SQLException
      */
-    public String executeGetMediaType(Identifier identifier)
-            throws ScriptException, SQLException {
+    public String executeGetMediaType() throws ScriptException, SQLException {
         Configuration config = Application.getConfiguration();
         String function = config.getString(MEDIA_TYPE_FUNCTION_CONFIG_KEY);
         if (function != null && function.length() > 0) {

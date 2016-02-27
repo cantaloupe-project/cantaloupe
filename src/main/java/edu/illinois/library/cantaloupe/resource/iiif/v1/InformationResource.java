@@ -53,7 +53,7 @@ public class InformationResource extends Iiif1Resource {
         Format format = Format.UNKNOWN;
         try {
             // Determine the format of the source image
-            format = resolver.getSourceFormat(identifier);
+            format = resolver.getSourceFormat();
         } catch (FileNotFoundException e) {
             if (Application.getConfiguration().
                     getBoolean(PURGE_MISSING_CONFIG_KEY, false)) {
