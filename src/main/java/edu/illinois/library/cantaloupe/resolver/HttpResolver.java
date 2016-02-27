@@ -120,12 +120,14 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
     @Override
     public Format getSourceFormat() throws IOException {
-        Format format = ResolverUtil.inferSourceFormat(identifier);
-        if (format == Format.UNKNOWN) {
-            format = getSourceFormatFromContentTypeHeader();
+        if (sourceFormat == null) {
+            sourceFormat = ResolverUtil.inferSourceFormat(identifier);
+            if (sourceFormat == Format.UNKNOWN) {
+                sourceFormat = getSourceFormatFromContentTypeHeader();
+            }
+            getStreamSource().newInputStream(); // throws IOException if not found etc.
         }
-        getStreamSource().newInputStream(); // throws IOException if not found etc.
-        return format;
+        return sourceFormat;
     }
 
     public Reference getUrl() throws IOException {

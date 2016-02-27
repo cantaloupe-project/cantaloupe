@@ -136,13 +136,15 @@ class FilesystemResolver extends AbstractResolver
 
     @Override
     public Format getSourceFormat() throws IOException {
-        File file = new File(getPathname(File.separator));
-        checkAccess(file);
-        Format format = ResolverUtil.inferSourceFormat(identifier);
-        if (format.equals(Format.UNKNOWN)) {
-            format = detectSourceFormat();
+        if (sourceFormat == null) {
+            final File file = new File(getPathname(File.separator));
+            checkAccess(file);
+            sourceFormat = ResolverUtil.inferSourceFormat(identifier);
+            if (sourceFormat.equals(Format.UNKNOWN)) {
+                sourceFormat = detectSourceFormat();
+            }
         }
-        return format;
+        return sourceFormat;
     }
 
     private void checkAccess(File file)

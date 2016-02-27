@@ -130,37 +130,40 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
 
     @Override
     public Format getSourceFormat() throws IOException {
-        try {
-            // JdbcResolver.function.media_type may contain a JavaScript
-            // function or null.
-            String functionResult = executeGetMediaType();
-            String mediaType = null;
-            if (functionResult != null) {
-                // the function result may be a media type, or an SQL
-                // statement to look it up.
-                if (functionResult.toUpperCase().contains("SELECT") &&
-                        functionResult.toUpperCase().contains("FROM")) {
-                    logger.debug(functionResult);
-                    try (Connection connection = getConnection()) {
-                        PreparedStatement statement = connection.
-                                prepareStatement(functionResult);
-                        statement.setString(1, executeGetDatabaseIdentifier());
-                        ResultSet resultSet = statement.executeQuery();
-                        if (resultSet.next()) {
-                            mediaType = resultSet.getString(1);
+        if (sourceFormat == null) {
+            try {
+                // JdbcResolver.function.media_type may contain a JavaScript
+                // function or null.
+                String functionResult = executeGetMediaType();
+                String mediaType = null;
+                if (functionResult != null) {
+                    // the function result may be a media type, or an SQL
+                    // statement to look it up.
+                    if (functionResult.toUpperCase().contains("SELECT") &&
+                            functionResult.toUpperCase().contains("FROM")) {
+                        logger.debug(functionResult);
+                        try (Connection connection = getConnection()) {
+                            PreparedStatement statement = connection.
+                                    prepareStatement(functionResult);
+                            statement.setString(1, executeGetDatabaseIdentifier());
+                            ResultSet resultSet = statement.executeQuery();
+                            if (resultSet.next()) {
+                                mediaType = resultSet.getString(1);
+                            }
                         }
+                    } else {
+                        mediaType = functionResult;
                     }
                 } else {
-                    mediaType = functionResult;
+                    mediaType = Format.getFormat(identifier).
+                            getPreferredMediaType().toString();
                 }
-            } else {
-                mediaType = Format.getFormat(identifier).
-                        getPreferredMediaType().toString();
+                sourceFormat = Format.getFormat(mediaType);
+            } catch (ScriptException | SQLException e) {
+                throw new IOException(e.getMessage(), e);
             }
-            return Format.getFormat(mediaType);
-        } catch (ScriptException | SQLException e) {
-            throw new IOException(e.getMessage(), e);
         }
+        return sourceFormat;
     }
 
     /**
