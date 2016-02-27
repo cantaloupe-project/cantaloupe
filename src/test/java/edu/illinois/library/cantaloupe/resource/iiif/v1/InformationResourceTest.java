@@ -235,8 +235,7 @@ public class InformationResourceTest extends ResourceTest {
             client.get();
             fail("Expected exception");
         } catch (ResourceException e) {
-            assertEquals(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE,
-                    client.getStatus());
+            assertEquals(Status.SERVER_ERROR_INTERNAL, client.getStatus());
         }
     }
 
