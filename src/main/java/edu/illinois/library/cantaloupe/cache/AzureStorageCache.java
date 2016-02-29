@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.cache;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.blob.CloudBlob;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
@@ -208,10 +209,11 @@ class AzureStorageCache implements DerivativeCache {
                     client.getContainerReference(containerName);
             int count = 0;
             for (ListBlobItem item : container.listBlobs(getObjectKeyPrefix(), true)) {
-                final CloudBlockBlob blob = container.
-                        getBlockBlobReference(new Reference(item.getUri()).getLastSegment(false));
-                if (blob.deleteIfExists()) {
-                    count++;
+                if (item instanceof CloudBlob) {
+                    CloudBlob blob = (CloudBlob) item;
+                    if (blob.deleteIfExists()) {
+                        count++;
+                    }
                 }
             }
             logger.info("purge(): deleted {} items", count);
@@ -252,17 +254,14 @@ class AzureStorageCache implements DerivativeCache {
             final CloudBlobContainer container =
                     client.getContainerReference(containerName);
             int count = 0, deletedCount = 0;
-
             for (ListBlobItem item : container.listBlobs(getObjectKeyPrefix(), true)) {
-                CloudBlockBlob blob = container.
-                        getBlockBlobReference(item.getUri().toString());
-                if (blob.exists()) {
-                    System.out.println("exists: " + blob.getUri());
+                if (item instanceof CloudBlob) {
+                    CloudBlob blob = (CloudBlob) item;
                     count++;
                     if (blob.getProperties().getLastModified().before(cutoffDate)) {
-                        System.out.println(blob.getProperties().getLastModified());
-                        blob.delete();
-                        deletedCount++;
+                        if (blob.deleteIfExists()) {
+                            deletedCount++;
+                        }
                     }
                 }
             }
