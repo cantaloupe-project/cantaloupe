@@ -271,9 +271,12 @@ class AmazonS3Cache implements DerivativeCache {
         final AmazonS3 s3 = getClientInstance();
         final ObjectListing listing = s3.listObjects(getBucketName(),
                 getObjectKeyPrefix());
+        int count = 0;
         for (S3ObjectSummary summary : listing.getObjectSummaries()) {
             s3.deleteObject(getBucketName(), summary.getKey());
+            count++;
         }
+        logger.info("purge(): deleted {} items", count);
     }
 
     @Override
@@ -298,11 +301,16 @@ class AmazonS3Cache implements DerivativeCache {
 
         final S3Objects objects = S3Objects.withPrefix(s3, bucketName,
                 getObjectKeyPrefix());
+        int count = 0, deletedCount = 0;
         for (S3ObjectSummary summary : objects) {
+            count++;
             if (summary.getLastModified().before(cutoffDate)) {
+                deletedCount++;
                 s3.deleteObject(bucketName, summary.getKey());
             }
         }
+        logger.info("purgeExpired(): deleted {} of {} items",
+                deletedCount, count);
     }
 
     @Override
