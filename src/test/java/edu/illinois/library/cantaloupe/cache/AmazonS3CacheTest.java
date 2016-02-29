@@ -294,10 +294,10 @@ public class AmazonS3CacheTest {
 
         assertObjectCount(3);
 
-        // purge an info
+        // purge
         instance.purgeImage(identifier);
 
-        assertObjectCount(2);
+        assertObjectCount(1);
     }
 
     /* putImageInfo(ImageInfo) */

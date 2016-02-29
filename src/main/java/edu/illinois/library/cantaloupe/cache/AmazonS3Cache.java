@@ -307,7 +307,20 @@ class AmazonS3Cache implements DerivativeCache {
 
     @Override
     public void purgeImage(final Identifier identifier) {
+        // purge the info
         purge(getObjectKey(identifier));
+
+        // purge images
+        final AmazonS3 s3 = getClientInstance();
+        final String bucketName = getBucketName();
+        final S3Objects objects = S3Objects.withPrefix(s3, bucketName,
+                getObjectKeyPrefix() + "image/" + identifier.toString());
+        int count = 0;
+        for (S3ObjectSummary summary : objects) {
+            count++;
+            s3.deleteObject(bucketName, summary.getKey());
+        }
+        logger.info("purgeImage(): deleted {} items", count);
     }
 
     @Override
