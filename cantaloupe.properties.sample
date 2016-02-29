@@ -376,8 +376,8 @@ cache.client.no_transform = true
 #cache.source = FilesystemCache
 
 # Enables the derivative (processed image) cache. Available values are
-# `FilesystemCache`, `JdbcCache`, and `AmazonS3Cache`.
-# Comment out or set blank to disable caching.
+# `FilesystemCache`, `JdbcCache`, `AmazonS3Cache`, and `AzureStorageCache`.
+# Comment out or set blank to disable derivative caching.
 #cache.derivative = FilesystemCache
 
 # If true, when a resolver reports that the requested source image has gone
@@ -468,6 +468,26 @@ AmazonS3Cache.object_key_prefix =
 # Time before a cached image becomes stale and needs to be reloaded. Set to
 # blank or 0 for "never"
 AmazonS3Cache.ttl_seconds = 2592000
+
+#----------------------------------------
+# AzureStorageCache
+#----------------------------------------
+
+# !! Name of your Azure account.
+AzureStorageCache.account_name =
+
+# !! Key of your Azure account.
+AzureStorageCache.account_key =
+
+# !! Name of the container containing cached images.
+AzureStorageCache.container_name =
+
+# !! String that will be prefixed to object keys.
+AzureStorageCache.object_key_prefix =
+
+# Time before a cached image becomes stale and needs to be reloaded. Set to
+# blank or 0 for "never"
+AzureStorageCache.ttl_seconds = 2592000
 
 ###########################################################################
 # WATERMARKING

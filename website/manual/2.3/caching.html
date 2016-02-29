@@ -31,6 +31,7 @@ title: Caches
           <li><a href="#FilesystemCache">FilesystemCache</a></li>
           <li><a href="#JdbcCache">JdbcCache</a></li>
           <li><a href="#AmazonS3Cache">AmazonS3Cache</a></li>
+          <li><a href="#AzureStorageCache">AzureStorageCache</a></li>
         </ul>
       </li>
     </ul>
@@ -196,7 +197,7 @@ cache.client.no_transform = true
 
 <h4 id="JdbcCache">JdbcCache</h4>
 
-<p>JdbcCache caches generated images and (parts of) information requests into tables in a relational database (RDBMS). To use this cache, a JDBC driver for your database must be installed on the classpath.</p>
+<p>JdbcCache caches derivative images and metadata in relational database tables. To use this cache, a JDBC driver for your database must be installed on the classpath.</p>
 
 <p>JdbcCache has been tested with H2 1.4. It is known to <strong>not</strong> work with the official PostgreSQL driver, as of version 9.4.1207. Other databases may work, but are untested.</p>
 
@@ -242,7 +243,7 @@ CREATE INDEX identifier_idx ON {JdbcCache.info_table} (identifier);
 
 <h4 id="AmazonS3Cache">AmazonS3Cache</h4>
 
-<p>AmazonS3Cache caches generated images and (parts of) information requests into an Amazon Simple Storage Service (S3) bucket. It can be configured with the following options:</p>
+<p>AmazonS3Cache caches derivative images and metadata into an Amazon Simple Storage Service (S3) bucket. It can be configured with the following options:</p>
 
 <dl>
   <dt><code>AmazonS3Cache.access_key_id</code></dt>
@@ -258,7 +259,30 @@ CREATE INDEX identifier_idx ON {JdbcCache.info_table} (identifier);
   <dt><code>AmazonS3Cache.ttl_seconds</code></dt>
   <dd>Time-to-live of cached content, in seconds.
     <div class="alert alert-info">
-      Note: Amazon S3 does not provide a last-accessed time in object metadata, meaning that the time-to-live will be on the basis of last-modified time (generally equivalent to creation time) instead.
+      Note: Amazon S3 does not provide a last-accessed time in object metadata, meaning that the time-to-live will be on the basis of last-modified time (generally the same as creation time) instead.
+    </div>
+  </dd>
+</dl>
+
+<hr>
+
+<h4 id="AzureStorageCache">AzureStorageCache</h4>
+
+<p>AzureStorageCache caches derivative images and metadata into a Microsoft Azure Storage container. It can be configured with the following options:</p>
+
+<dl>
+  <dt><code>AzureStorageCache.account_name</code></dt>
+  <dd>The name of your Azure account.</dd>
+  <dt><code>AzureStorageCache.account_key</code></dt>
+  <dd>A key to access your Azure Storage account.</dd>
+  <dt><code>AzureStorageCache.container_name</code></dt>
+  <dd>Name of the container from which to serve images.</dd>
+  <dt><code>AzureStorageCache.object_key_prefix</code></dt>
+  <dd>String to prepend to object keys&mdash;for example, to achieve a virtual folder hierarchy.</dd>
+  <dt><code>AzureStorageCache.ttl_seconds</code></dt>
+  <dd>Time-to-live of cached content, in seconds.
+    <div class="alert alert-info">
+      Note: Azure Storage does not provide a last-accessed time in object metadata, meaning that the time-to-live will be on the basis of last-modified time (generally the same as creation time) instead.
     </div>
   </dd>
 </dl>
