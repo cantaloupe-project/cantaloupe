@@ -45,6 +45,14 @@ module Cantaloupe
     'http://example.org/bla/' + URI.escape(identifier)
   end
 
+  def self.redactions(identifier, request_headers, client_ip, cookies)
+    redactions = []
+    if identifier == 'cats'
+      redactions << { 'x' => 0, 'y' => 10, 'width' => 50, 'height' => 70 }
+    end
+    redactions
+  end
+
   def self.watermark(identifier, operations, resulting_size, output_format,
       request_uri, request_headers, client_ip, cookies)
     if identifier == 'cats'

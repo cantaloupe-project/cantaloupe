@@ -490,6 +490,14 @@ AzureStorageCache.object_key_prefix =
 AzureStorageCache.ttl_seconds = 2592000
 
 ###########################################################################
+# REDACTION
+###########################################################################
+
+# Whether to enable redactions. See the user manual for information about
+# how these work.
+redaction.enabled = false
+
+###########################################################################
 # WATERMARKING
 ###########################################################################
 
