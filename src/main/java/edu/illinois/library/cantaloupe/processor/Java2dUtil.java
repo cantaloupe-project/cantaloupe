@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Position;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
@@ -13,14 +14,17 @@ import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * A collection of methods for operating on {@link BufferedImage}s.
@@ -28,6 +32,45 @@ import java.io.IOException;
 abstract class Java2dUtil {
 
     private static Logger logger = LoggerFactory.getLogger(Java2dUtil.class);
+
+    /**
+     * Redacts regions from the given image.
+     *
+     * @param baseImage Image to apply the watermark on top of.
+     * @param appliedCrop Crop already applied to <code>baseImage</code>.
+     * @param redactions Regions of the image to redact.
+     * @return Input image with redactions applied.
+     */
+    public static BufferedImage applyRedactions(final BufferedImage baseImage,
+                                                final Crop appliedCrop,
+                                                final List<Redaction> redactions) { // TODO: rename to apply()
+        if (redactions.size() > 0) {
+            final long msec = System.currentTimeMillis();
+            final Dimension imageSize = new Dimension(
+                    baseImage.getWidth(), baseImage.getHeight());
+
+            final Graphics2D g2d = baseImage.createGraphics();
+            g2d.setColor(Color.black);
+
+            for (final Redaction redaction : redactions) {
+                final Rectangle redactionRegion =
+                        redaction.getResultingRegion(imageSize, appliedCrop);
+                if (!redactionRegion.isEmpty()) {
+                    logger.debug("applyRedactions(): applying {} at {},{}/{}x{}",
+                            redaction, redactionRegion.x, redactionRegion.y,
+                            redactionRegion.width, redactionRegion.height);
+                    g2d.fill(redactionRegion);
+                } else {
+                    logger.debug("applyRedactions(): {} is outside crop area; skipping",
+                            redaction);
+                }
+            }
+            g2d.dispose();
+            logger.info("applyRedactions() executed in {} msec",
+                    System.currentTimeMillis() - msec);
+        }
+        return baseImage;
+    }
 
     /**
      * Applies the watermark to the given image.
@@ -39,7 +82,7 @@ abstract class Java2dUtil {
      * @throws ConfigurationException
      * @throws IOException
      */
-    public static BufferedImage applyWatermark(final BufferedImage baseImage,
+    public static BufferedImage applyWatermark(final BufferedImage baseImage, // TODO: rename to apply()
                                                final Watermark watermark)
             throws ConfigurationException, IOException {
         BufferedImage markedImage = baseImage;

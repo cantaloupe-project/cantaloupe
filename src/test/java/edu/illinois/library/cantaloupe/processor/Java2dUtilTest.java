@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Position;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -13,13 +14,66 @@ import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
 public class Java2dUtilTest {
+
+    @Test
+    public void testApplyRedactions() throws Exception {
+        // read the base image into a BufferedImage
+        final File fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
+        final BufferedImage baseImage = ImageIO.read(fixture);
+
+        int pixel = baseImage.getRGB(0, 0);
+        int alpha = (pixel >> 24) & 0xff;
+        int red = (pixel >> 16) & 0xff;
+        int green = (pixel >> 8) & 0xff;
+        int blue = (pixel) & 0xff;
+        assertEquals(255, alpha);
+        assertEquals(106, red);
+        assertEquals(90, green);
+        assertEquals(60, blue);
+
+        // create some Redactions
+        List<Redaction> redactions = new ArrayList<>();
+        redactions.add(new Redaction(new Rectangle(0, 0, 20, 20)));
+        redactions.add(new Redaction(new Rectangle(20, 20, 20, 20)));
+        final Crop crop = new Crop(0, 0, baseImage.getWidth(),
+                baseImage.getTileHeight());
+
+        // apply them
+        final BufferedImage redactedImage = Java2dUtil.applyRedactions(
+                baseImage, crop, redactions);
+
+        // test for the first one
+        pixel = redactedImage.getRGB(0, 0);
+        alpha = (pixel >> 24) & 0xff;
+        red = (pixel >> 16) & 0xff;
+        green = (pixel >> 8) & 0xff;
+        blue = (pixel) & 0xff;
+        assertEquals(255, alpha);
+        assertEquals(0, red);
+        assertEquals(0, green);
+        assertEquals(0, blue);
+
+        // test for the second one
+        pixel = redactedImage.getRGB(25, 25);
+        alpha = (pixel >> 24) & 0xff;
+        red = (pixel >> 16) & 0xff;
+        green = (pixel >> 8) & 0xff;
+        blue = (pixel) & 0xff;
+        assertEquals(255, alpha);
+        assertEquals(0, red);
+        assertEquals(0, green);
+        assertEquals(0, blue);
+    }
 
     @Test
     public void testApplyWatermark() throws Exception {
