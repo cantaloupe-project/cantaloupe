@@ -38,6 +38,18 @@ public class Crop implements Operation {
     }
 
     /**
+     * No-op constructor.
+     */
+    public Crop() {}
+
+    public Crop(int x, int y, int width, int height) {
+        setX(x);
+        setY(y);
+        setWidth(width);
+        setHeight(height);
+    }
+
+    /**
      * @return The height of the operation. If {@link #getUnit()} returns
      * {@link Unit#PERCENT}, this will be a percentage of the full image height
      * between 0 and 1.
