@@ -99,19 +99,21 @@ require 'net/http'
 require 'cgi'
 
 module Cantaloupe
-  def self.get_pathname(identifier)
-    uri = 'http://localhost:8983/solr/collection1/select?q=' +
-        CGI.escape('id:"' + identifier + '"') +
-        '&amp;fl=pathname_si&amp;wt=ruby'
-    uri = URI.parse(uri)
+  module FilesystemResolver
+    def self.get_pathname(identifier)
+      uri = 'http://localhost:8983/solr/collection1/select?q=' +
+          CGI.escape('id:"' + identifier + '"') +
+          '&amp;fl=pathname_si&amp;wt=ruby'
+      uri = URI.parse(uri)
 
-    http = Net::HTTP.new(uri.host, uri.port)
-    request = Net::HTTP::Get.new(uri.request_uri)
-    response = http.request(request)
-    return nil if response.code.to_i >= 400
+      http = Net::HTTP.new(uri.host, uri.port)
+      request = Net::HTTP::Get.new(uri.request_uri)
+      response = http.request(request)
+      return nil if response.code.to_i >= 400
 
-    results = eval(response.body)['response']['docs']
-    results.any? ? results.first['pathname_si'] : nil
+      results = eval(response.body)['response']['docs']
+      results.any? ? results.first['pathname_si'] : nil
+    end
   end
 end
 {% endhighlight %}
@@ -151,7 +153,7 @@ HttpResolver.url_suffix =
 
 <h3 id="JdbcResolver">JdbcResolver</h3>
 
-<p>JdbcResolver maps a URL identifier to an RDBMS BLOB field, for retrieving images from a relational database.</p>
+<p>JdbcResolver maps a URL identifier to an RDBMS BLOB field, for retrieving images from a relational database. It does not require a custom schema and can adapt to any schema. The downside of that is that some <a href="delegate-script.html">delegate script</a> methods must be implemented in order to obtain the information needed to run the SQL queries.</p>
 
 <p>Cantaloupe does not include any JDBC drivers, so a driver JAR for the desired database must be obtained separately and saved somewhere on the classpath.</p>
 
@@ -166,55 +168,60 @@ jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre
 <p>Then, the resolver needs to be told:</p>
 
 <ol>
-  <li><a href="#JdbcResolverIdentifierFunction">The database value corresponding to a given identifier</a></li>
-  <li><a href="#JdbcResolverMediaTypeFunction">The media type corresponding to that value</a></li>
-  <li><a href="#JdbcResolverBlobSQL">The SQL command that retrieves the BLOB corresponding to that value</a></li>
+  <li><a href="#JdbcResolverIdentifierMethod">The database value corresponding to a given identifier</a></li>
+  <li><a href="#JdbcResolverMediaTypeMethod">The media type corresponding to that value</a></li>
+  <li><a href="#JdbcResolverBlobSQLMethod">The SQL statement that retrieves the BLOB value corresponding to that value</a></li>
 </ol>
 
-<h4 id="JdbcResolverIdentifierFunction">Database Identifier Retrieval Function</h4>
+<h4 id="JdbcResolverIdentifierMethod">Database Identifier Retrieval Method</h4>
 
-<p>This JavaScript function takes in an unencoded identifier and returns the corresponding database value of the identifier. For example, the following will work when the identifiers in the URL map directly to values in the database:</p>
+<p>This method takes in an unencoded URL identifier and returns the corresponding database value of the identifier.</p>
 
-{% highlight properties %}
-JdbcResolver.function.identifier = function getDatabaseIdentifier(url_identifier) {\
-      return url_identifier;\
-  }
+{% highlight ruby %}
+module Cantaloupe
+  module JdbcResolver
+    get_database_identifier(url_identifier)
+      # If URL identifiers map directly to values in the database, simply
+      # return url_identifier. Otherwise, you could transform it, perform
+      # a service request to look it up, etc.
+      url_identifier
+    end
+  end
+end
 {% endhighlight %}
 
-<p>Otherwise, if the URL identifiers require some transformation first:</p>
+<h4 id="JdbcResolverMediaTypeMethod">Media Type Retrieval Method</h4>
 
-{% highlight properties %}
-JdbcResolver.function.identifier = function getDatabaseIdentifier(url_identifier) {\
-        // Assumes that the identifier is stored in the database as\
-        // "identifier-something"\
-        return url_identifier + "-something";\
-    }
+<p>This method returns a media (MIME) type corresponding to the value returned by the <code><a href="#JdbcResolverIdentifierMethod">get_database_identifier</a></code> method. If the media type is stored in the database, this example will return an SQL statement to retrieve it.</p>
+
+{% highlight ruby %}
+module Cantaloupe
+  module JdbcResolver
+    def get_media_type
+      'SELECT media_type ' +
+          'FROM some_table ' +
+          'WHERE some_identifier = ?'
+    end
+  end
+end
 {% endhighlight %}
 
-<div class="alert alert-info">Note that in properties files, all lines in multi-line strings except the last need to end with a backslash (\).</div>
+<p>If the URL identifier will <strong>always</strong> have a known, valid image extension, like <span class="filename">.jpg</span>, <span class="filename">.tif</span>, etc., this method can return <code>nil</code>, and Cantaloupe will infer the media type from the extension.</p>
 
-<h4 id="JdbcResolverMediaTypeFunction">Media Type Retrieval Function</h4>
+<h4 id="JdbcResolverBlobSQLMethod">BLOB Retrieval SQL Method</h4>
 
-<p>This JavaScript function returns a media (MIME) type corresponding to the value returned by the <code><a href="#JdbcResolverIdentifierFunction">getDatabaseIdentifier()</a></code> function. If the media type is stored in the database, this example will return an SQL statement to retrieve it.</p>
+<p>The <code>get_lookup_sql</code> method returns an SQL statement that selects the BLOB value corresponding to the value returned by the <code><a href="#JdbcResolverIdentifierMethod">get_database_identifier</a></code> method.</p>
 
-{% highlight properties %}
-JdbcResolver.function.media_type = function getMediaType(identifier) {\
-      return "SELECT media_type " +\
-          "FROM some_table " +\
-          "WHERE some_identifier = ?"\
-  }
-{% endhighlight %}
-
-<p>If the URL identifier will <strong>always</strong> have a known, valid image extension, like <span class="filename">.jpg</span>, <span class="filename">.tif</span>, etc., the entire <code>JdbcResolver.function.media_type</code> option can be commented out, and Cantaloupe will infer the media type from the extension.</p>
-
-<h4 id="JdbcResolverBlobSQL">BLOB Retrieval SQL</h4>
-
-<p><code>JdbcResolver.lookup_sql</code> is an SQL statement that selects the BLOB corresponding to the value returned by the <code><a href="#JdbcResolverIdentifierFunction">getDatabaseIdentifier()</a></code> function.</p>
-
-{% highlight properties %}
-JdbcResolver.lookup_sql = SELECT image_blob_column \
-    FROM some_table \
-    WHERE some_identifier = ?
+{% highlight ruby %}
+module Cantaloupe
+  module JdbcResolver
+    def get_lookup_sql
+      'SELECT image_blob_column '
+          'FROM some_table '
+          'WHERE some_identifier = ?'
+    end
+  end
+end
 {% endhighlight %}
 
 <hr>

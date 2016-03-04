@@ -32,7 +32,28 @@ title: Upgrading
       <li><code>cache.server</code> to <code>cache.derivative</code></li>
     </ul>
   </li>
-  <li>Add the <code>redactions</code> method from the sample delegate script.</li>
+  <li>Remove the following keys:
+    <ul>
+      <li><code>JdbcResolver.function.*</code></li>
+    </ul>
+  </li>
+  <li>Add the following methods from the sample delegate script:
+    <ul>
+      <li><code>redactions</code></li>
+      <li><code>Cantaloupe::JdbcResolver::get_database_identifier</code></li>
+      <li><code>Cantaloupe::JdbcResolver::get_media_type</code></li>
+      <li><code>Cantaloupe::JdbcResolver::get_lookup_sql</code></li>
+    </ul>
+  </li>
+  <li>Move/rename the following delegate script methods:
+    <ul>
+      <li><code>Cantaloupe::get_pathname</code> to <code>Cantaloupe::FilesystemResolver::get_pathname</code></li>
+      <li><code>Cantaloupe::get_url</code> to <code>Cantaloupe::HttpResolver::get_url</code></li>
+      <li><code>Cantaloupe::get_azure_storage_blob_key</code> to <code>Cantaloupe::AzureStorageResolver::get_blob_key</code></li>
+      <li><code>Cantaloupe::get_s3_object_key</code> to <code>Cantaloupe::AmazonS3Resolver::get_object_key</code></li>
+    </ul>
+  </li>
+  <li>If you are using JdbcResolver, be aware that the <code>JdbcResolver.function.*</code> configuration keys are now obsolete, and these methods will have to be rewritten as delegate script methods.</li>
   <li>If you are using JdbcCache, modify your database schema:
     <pre>ALTER TABLE {JdbcCache.info_table} CHANGE COLUMN last_modified last_accessed;
 ALTER TABLE {JdbcCache.derivative_image_table} CHANGE COLUMN last_modified last_accessed;</pre>

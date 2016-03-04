@@ -47,27 +47,31 @@ require 'cgi'
 require 'net/http'
 
 module Cantaloupe
-  ##
-  # Used by FilesystemResolver's ScriptLookupStrategy.
-  #
-  # @param identifier [String] Image identifier
-  # @return [String,nil] Absolute pathname of the image corresponding to the
-  #                      given identifier, or nil if not found.
-  #
-  def self.get_pathname(identifier)
-    uri = 'http://localhost:8983/solr/collection1/select?q=' +
-        CGI.escape('id:"' + identifier + '"') +
-        '&amp;fl=pathname_si&amp;wt=ruby'
-    uri = URI.parse(uri)
 
-    http = Net::HTTP.new(uri.host, uri.port)
-    request = Net::HTTP::Get.new(uri.request_uri)
-    response = http.request(request)
-    return nil if response.code.to_i >= 400
+  module FilesystemResolver
+    ##
+    # Used by FilesystemResolver's ScriptLookupStrategy.
+    #
+    # @param identifier [String] Image identifier
+    # @return [String,nil] Absolute pathname of the image corresponding to the
+    #                      given identifier, or nil if not found.
+    #
+    def self.get_pathname(identifier)
+      uri = 'http://localhost:8983/solr/collection1/select?q=' +
+          CGI.escape('id:"' + identifier + '"') +
+          '&amp;fl=pathname_si&amp;wt=ruby'
+      uri = URI.parse(uri)
 
-    results = eval(response.body)['response']['docs']
-    results.any? ? results.first['pathname_si'] : nil
+      http = Net::HTTP.new(uri.host, uri.port)
+      request = Net::HTTP::Get.new(uri.request_uri)
+      response = http.request(request)
+      return nil if response.code.to_i >= 400
+
+      results = eval(response.body)['response']['docs']
+      results.any? ? results.first['pathname_si'] : nil
+    end
   end
+
 end
 {% endhighlight %}
 
@@ -78,9 +82,9 @@ end
 <p>Using the example above, <code>get_pathname()</code> could be tested by adding the following line to the end of the script:
 
 {% highlight ruby %}
-puts Cantaloupe::get_pathname('identifier-to-test')
+puts Cantaloupe::FilesystemResolver::get_pathname('identifier-to-test')
 {% endhighlight %}
 
-And running it on the command line with a command like: <code>ruby delegates.rb</code>.</p>
+And running it on the command line with a command like: <code>ruby delegates.rb</code>. The method output will appear in the console.</p>
 
 <p>The delegate script is standard Ruby code that will work in any Ruby interpreter. The only thing to be aware of is that gems with platform-native extensions will not work in JRuby. For that reason, it would be best to install a standalone <a href="http://jruby.org">JRuby interpreter</a> and test with that. (Something like <a href="http://rvm.io/">RVM</a> can make it easier to switch between different versions of the Ruby interpreter.)</p>
