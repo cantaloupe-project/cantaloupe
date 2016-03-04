@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
@@ -25,8 +26,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -192,10 +195,28 @@ class PdfBoxProcessor extends AbstractProcessor
                                         final ReductionFactor reductionFactor,
                                         final OutputStream outputStream)
             throws IOException, ProcessorException {
+        Crop crop = null;
         for (Operation op : opList) {
             if (op instanceof Crop) {
-                image = Java2dUtil.cropImage(image, (Crop) op);
-            } else if (op instanceof Scale) {
+                crop = (Crop) op;
+                image = Java2dUtil.cropImage(image, crop);
+                break;
+            }
+        }
+
+        // Redactions happen immediately after cropping.
+        List<Redaction> redactions = new ArrayList<>();
+        for (Operation op : opList) {
+            if (op instanceof Redaction) {
+                redactions.add((Redaction) op);
+            }
+        }
+        image = Java2dUtil.applyRedactions(image, crop, reductionFactor,
+                redactions);
+
+        // Apply all other operations.
+        for (Operation op : opList) {
+            if (op instanceof Scale) {
                 final boolean highQuality = Application.getConfiguration().
                         getString(JAVA2D_SCALE_MODE_CONFIG_KEY, "speed").
                         equals("quality");

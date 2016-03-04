@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
@@ -567,6 +568,28 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
                                         final OutputStream outputStream)
             throws IOException, ProcessorException {
         BufferedImage image = reader.read();
+
+        // The crop has already been applied, but we need to retain a
+        // reference to it for any redactions.
+        Crop crop = null;
+        for (Operation op : opList) {
+            if (op instanceof Crop) {
+                crop = (Crop) op;
+                break;
+            }
+        }
+
+        // Redactions happen immediately after cropping.
+        List<Redaction> redactions = new ArrayList<>();
+        for (Operation op : opList) {
+            if (op instanceof Redaction) {
+                redactions.add((Redaction) op);
+            }
+        }
+        image = Java2dUtil.applyRedactions(image, crop, reductionFactor,
+                redactions);
+
+        // Perform all remaining operations.
         for (Operation op : opList) {
             if (op instanceof Scale) {
                 final boolean highQuality = Application.getConfiguration().

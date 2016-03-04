@@ -9,17 +9,19 @@ import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -119,11 +121,30 @@ class Java2dProcessor extends AbstractImageIoProcessor
             final Set<ImageIoImageReader.ReaderHint> hints = new HashSet<>();
             BufferedImage image = reader.read(ops, rf, hints);
 
+            // Apply the crop operation, if present, and maintain a reference
+            // to it for subsequent operations to refer to.
+            Crop crop = new Crop(0, 0, image.getWidth(), image.getHeight());
             for (Operation op : ops) {
-                if (op instanceof Crop &&
-                        !hints.contains(ImageIoImageReader.ReaderHint.ALREADY_CROPPED)) {
-                    image = Java2dUtil.cropImage(image, (Crop) op, rf);
-                } else if (op instanceof Scale) {
+                if (op instanceof Crop) {
+                    crop = (Crop) op;
+                    if (!hints.contains(ImageIoImageReader.ReaderHint.ALREADY_CROPPED)) {
+                        image = Java2dUtil.cropImage(image, crop, rf);
+                    }
+                }
+            }
+
+            // Apply redactions, if present.
+            final List<Redaction> redactions = new ArrayList<>();
+            for (Operation op : ops) {
+                if (op instanceof Redaction) {
+                    redactions.add((Redaction) op);
+                }
+            }
+            image = Java2dUtil.applyRedactions(image, crop, rf, redactions);
+
+            // Apply all other operations.
+            for (Operation op : ops) {
+                if (op instanceof Scale) {
                     final boolean highQuality = Application.getConfiguration().
                             getString(SCALE_MODE_CONFIG_KEY, "speed").
                             equals("quality");
