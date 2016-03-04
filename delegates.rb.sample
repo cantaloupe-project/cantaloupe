@@ -53,16 +53,6 @@ module Cantaloupe
   end
 
   ##
-  # Used by FilesystemResolver's ScriptLookupStrategy.
-  #
-  # @param identifier [String] Image identifier
-  # @return [String,nil] Absolute pathname of the image corresponding to the
-  #                      given identifier, or nil if not found.
-  #
-  def self.get_pathname(identifier)
-  end
-
-  ##
   # Tells which resolver to use for the given identifier.
   #
   # @param identifier [String] Image identifier
@@ -71,64 +61,82 @@ module Cantaloupe
   def self.get_resolver(identifier)
   end
 
-  ##
-  # Used by AmazonS3Resolver's ScriptLookupStrategy.
-  #
-  # @param identifier [String] Image identifier
-  # @return [String,nil] S3 object key of the image corresponding to the
-  #                      given identifier, or nil if not found.
-  #
-  def self.get_s3_object_key(identifier)
+  module FilesystemResolver
+
+    ##
+    # @param identifier [String] Image identifier
+    # @return [String,nil] Absolute pathname of the image corresponding to the
+    #                      given identifier, or nil if not found.
+    #
+    def self.get_pathname(identifier)
+    end
+
   end
 
-  ##
-  # Used by AzureStorageResolver's ScriptLookupStrategy.
-  #
-  # @param identifier [String] Image identifier
-  # @return [String,nil] Blob key of the image corresponding to the given
-  #                      identifier, or nil if not found.
-  #
-  def self.get_azure_storage_blob_key(identifier)
+  module AmazonS3Resolver
+
+    ##
+    # @param identifier [String] Image identifier
+    # @return [String,nil] S3 object key of the image corresponding to the
+    #                      given identifier, or nil if not found.
+    #
+    def self.get_object_key(identifier)
+    end
+
   end
 
-  ##
-  # Used by HttpResolver's ScriptLookupStrategy.
-  #
-  # @param identifier [String] Image identifier
-  # @return [String,nil] URL of the image corresponding to the given
-  #                      identifier, or nil if not found.
-  #
-  def self.get_url(identifier)
+  module AzureStorageResolver
+
+    ##
+    # @param identifier [String] Image identifier
+    # @return [String,nil] Blob key of the image corresponding to the given
+    #                      identifier, or nil if not found.
+    #
+    def self.get_blob_key(identifier)
+    end
+
   end
 
-  ##
-  # Used by JdbcResolver.
-  #
-  # @param identifier [String] Image identifier
-  # @return [String] Identifier of the image corresponding to the given
-  #                  identifier in the database.
-  #
-  def self.get_database_identifier(identifier)
+  module HttpResolver
+
+    ##
+    # @param identifier [String] Image identifier
+    # @return [String,nil] URL of the image corresponding to the given
+    #                      identifier, or nil if not found.
+    #
+    def self.get_url(identifier)
+    end
+
   end
 
-  ##
-  # Used by JdbcResolver.
-  #
-  # Returns an SQL statement that can be used to retrieve the media (MIME)
-  # type of an image. If the media type is
-  # stored in the database, this can return an SQL statement to retrieve it,
-  # in which case the "SELECT" and "FROM" clauses should be in uppercase in
-  # order to be autodetected. If commented out, the media type will be
-  # inferred from the identifier extension (if present).
-  #
-  def self.get_media_type
-  end
+  module JdbcResolver
 
-  ##
-  # Returns an SQL statement that selects the BLOB corresponding to the value
-  # returned by get_database_identifier.
-  #
-  def self.get_lookup_sql
+    ##
+    # @param identifier [String] Image identifier
+    # @return [String] Identifier of the image corresponding to the given
+    #                  identifier in the database.
+    #
+    def self.get_database_identifier(identifier)
+    end
+
+    ##
+    # Returns an SQL statement that can be used to retrieve the media (MIME)
+    # type of an image. If the media type is
+    # stored in the database, this can return an SQL statement to retrieve it,
+    # in which case the "SELECT" and "FROM" clauses should be in uppercase in
+    # order to be autodetected. If commented out, the media type will be
+    # inferred from the identifier extension (if present).
+    #
+    def self.get_media_type
+    end
+
+    ##
+    # Returns an SQL statement that selects the BLOB corresponding to the value
+    # returned by get_database_identifier.
+    #
+    def self.get_lookup_sql
+    end
+
   end
 
   ##
@@ -182,4 +190,4 @@ module Cantaloupe
 end
 
 # Uncomment to test on the command line (`ruby delegates.rb`)
-# puts Cantaloupe::get_pathname('image.jpg')
+# puts Cantaloupe::FilesystemResolver::get_pathname('image.jpg')

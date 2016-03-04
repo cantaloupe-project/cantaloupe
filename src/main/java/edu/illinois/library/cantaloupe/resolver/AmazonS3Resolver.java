@@ -66,6 +66,9 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     public static final String SECRET_KEY_CONFIG_KEY =
             "AmazonS3Resolver.secret_key";
 
+    public static final String GET_KEY_DELEGATE_METHOD =
+            "AmazonS3Resolver::get_object_key";
+
     private static AmazonS3 client;
 
     private static AmazonS3 getClientInstance() {
@@ -160,11 +163,10 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
             DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final String[] args = { identifier.toString() };
-        final String method = "get_s3_object_key";
-        final Object result = engine.invoke(method, args);
+        final Object result = engine.invoke(GET_KEY_DELEGATE_METHOD, args);
         if (result == null) {
-            throw new FileNotFoundException(method + " returned nil for " +
-                    identifier);
+            throw new FileNotFoundException(GET_KEY_DELEGATE_METHOD +
+                    " returned nil for " + identifier);
         }
         return (String) result;
     }

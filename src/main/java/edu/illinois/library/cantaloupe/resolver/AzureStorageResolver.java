@@ -65,6 +65,9 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     public static final String LOOKUP_STRATEGY_CONFIG_KEY =
             "AzureStorageResolver.lookup_strategy";
 
+    public static final String GET_KEY_DELEGATE_METHOD =
+            "AzureStorageResolver::get_blob_key";
+
     private static CloudBlobClient client;
 
     private static CloudBlobClient getClientInstance() {
@@ -145,12 +148,11 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
             throws IOException, ScriptException,
             DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final String method = "get_azure_storage_blob_key";
         final String[] args = { identifier.toString() };
-        final Object result = engine.invoke(method, args);
+        final Object result = engine.invoke(GET_KEY_DELEGATE_METHOD, args);
         if (result == null) {
-            throw new FileNotFoundException(method + " returned nil for " +
-                    identifier);
+            throw new FileNotFoundException(GET_KEY_DELEGATE_METHOD +
+                    " returned nil for " + identifier);
         }
         return (String) result;
     }

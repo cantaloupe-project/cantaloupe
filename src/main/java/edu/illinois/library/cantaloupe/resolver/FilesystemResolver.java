@@ -47,6 +47,8 @@ class FilesystemResolver extends AbstractResolver
     private static Logger logger = LoggerFactory.
             getLogger(FilesystemResolver.class);
 
+    public static final String GET_PATHNAME_DELEGATE_METHOD =
+            "FilesystemResolver::get_pathname";
     public static final String LOOKUP_STRATEGY_CONFIG_KEY =
             "FilesystemResolver.lookup_strategy";
     public static final String PATH_PREFIX_CONFIG_KEY =
@@ -125,10 +127,10 @@ class FilesystemResolver extends AbstractResolver
             DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final String[] args = { identifier.toString() };
-        final String method = "get_pathname";
-        final Object result = engine.invoke(method, args);
+        final Object result = engine.invoke(GET_PATHNAME_DELEGATE_METHOD, args);
         if (result == null) {
-            throw new FileNotFoundException(method + " returned nil for " +
+            throw new FileNotFoundException(
+                    GET_PATHNAME_DELEGATE_METHOD + " returned nil for " +
                     identifier);
         }
         return (String) result;

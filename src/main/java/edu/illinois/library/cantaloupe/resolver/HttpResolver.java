@@ -70,6 +70,9 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     public static final String URL_SUFFIX_CONFIG_KEY =
             "HttpResolver.BasicLookupStrategy.url_suffix";
 
+    public static final String GET_URL_DELEGATE_METHOD =
+            "HttpResolver::get_url";
+
     private final Client client = new Client(
             Arrays.asList(Protocol.HTTP, Protocol.HTTPS));
 
@@ -203,11 +206,10 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
             DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final String[] args = { identifier.toString() };
-        final String method = "get_url";
-        final Object result = engine.invoke(method, args);
+        final Object result = engine.invoke(GET_URL_DELEGATE_METHOD, args);
         if (result == null) {
-            throw new FileNotFoundException(method + " returned nil for " +
-                    identifier);
+            throw new FileNotFoundException(GET_URL_DELEGATE_METHOD +
+                    " returned nil for " + identifier);
         }
         return new Reference((String) result);
     }

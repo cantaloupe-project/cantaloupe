@@ -19,10 +19,6 @@ module Cantaloupe
     nil
   end
 
-  def self.get_pathname(identifier)
-    '/bla/' + identifier
-  end
-
   def self.get_resolver(identifier)
     if identifier == 'http'
       return 'HttpResolver'
@@ -33,28 +29,42 @@ module Cantaloupe
     end
   end
 
-  def self.get_azure_storage_blob_key(identifier)
-    identifier
+  module FilesystemResolver
+    def self.get_pathname(identifier)
+      '/bla/' + identifier
+    end
   end
 
-  def self.get_s3_object_key(identifier)
-    identifier
+  module AzureStorageResolver
+    def self.get_blob_key(identifier)
+      identifier
+    end
   end
 
-  def self.get_url(identifier)
-    'http://example.org/bla/' + URI.escape(identifier)
+  module AmazonS3Resolver
+    def self.get_object_key(identifier)
+      identifier
+    end
   end
 
-  def self.get_database_identifier(identifier)
-    identifier
+  module HttpResolver
+    def self.get_url(identifier)
+      'http://example.org/bla/' + URI.escape(identifier)
+    end
   end
 
-  def self.get_media_type
-    'SELECT media_type FROM items WHERE filename = ?'
-  end
+  module JdbcResolver
+    def self.get_database_identifier(identifier)
+      identifier
+    end
 
-  def self.get_lookup_sql
-    'SELECT image FROM items WHERE filename = ?'
+    def self.get_media_type
+      'SELECT media_type FROM items WHERE filename = ?'
+    end
+
+    def self.get_lookup_sql
+      'SELECT image FROM items WHERE filename = ?'
+    end
   end
 
   def self.redactions(identifier, request_headers, client_ip, cookies)

@@ -59,6 +59,13 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     public static final String PASSWORD_CONFIG_KEY = "JdbcResolver.password";
     public static final String USER_CONFIG_KEY = "JdbcResolver.user";
 
+    public static final String GET_DATABASE_IDENTIFIER_DELEGATE_METHOD =
+            "JdbcResolver::get_database_identifier";
+    public static final String GET_LOOKUP_SQL_DELEGATE_METHOD =
+            "JdbcResolver::get_lookup_sql";
+    public static final String GET_MEDIA_TYPE_DELEGATE_METHOD =
+            "JdbcResolver::get_media_type";
+
     private static HikariDataSource dataSource;
 
     static {
@@ -105,8 +112,8 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
         try (Connection connection = getConnection()) {
             final String sql = getLookupSql();
             if (!sql.contains("?")) {
-                throw new IOException("get_lookup_sql() implementation does " +
-                        "not support prepared statements");
+                throw new IOException(GET_LOOKUP_SQL_DELEGATE_METHOD +
+                        " implementation does not support prepared statements");
             }
             logger.debug(sql);
 
@@ -163,7 +170,8 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     }
 
     /**
-     * @return Result of the <code>getDatabaseIdentifier()</code> method.
+     * @return Result of the {@link #GET_DATABASE_IDENTIFIER_DELEGATE_METHOD}
+     *         method.
      * @throws ScriptException
      * @throws DelegateScriptDisabledException
      * @throws IOException
@@ -172,13 +180,13 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
             ScriptException, DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final String[] args = { identifier.toString() };
-        final String method = "get_database_identifier";
-        final Object result = engine.invoke(method, args);
+        final Object result = engine.invoke(
+                GET_DATABASE_IDENTIFIER_DELEGATE_METHOD, args);
         return (String) result;
     }
 
     /**
-     * @return Result of the <code>get_lookup_sql</code> method.
+     * @return Result of the {@link #GET_LOOKUP_SQL_DELEGATE_METHOD} method.
      * @throws ScriptException
      * @throws DelegateScriptDisabledException
      * @throws IOException
@@ -186,12 +194,12 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     public String getLookupSql() throws IOException, ScriptException,
             DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final Object result = engine.invoke("get_lookup_sql");
+        final Object result = engine.invoke(GET_LOOKUP_SQL_DELEGATE_METHOD);
         return (String) result;
     }
 
     /**
-     * @return Result of the <code>get_media_type</code> method.
+     * @return Result of the {@link #GET_MEDIA_TYPE_DELEGATE_METHOD} method.
      * @throws ScriptException
      * @throws DelegateScriptDisabledException
      * @throws IOException
@@ -199,7 +207,7 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     public String getMediaType() throws IOException, ScriptException,
             DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final Object result = engine.invoke("get_media_type");
+        final Object result = engine.invoke(GET_MEDIA_TYPE_DELEGATE_METHOD);
         return (String) result;
     }
 
