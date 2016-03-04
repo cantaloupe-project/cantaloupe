@@ -48,25 +48,27 @@ title: Redaction
 <h2 id="Example">Example</h2>
 
 {% highlight ruby %}
-##
-# See the argument and return value documentation in delegates.rb.sample.
-#
-def self.redactions(identifier, request_headers, client_ip, cookies)
-  redactions = []
+module Cantaloupe
+  ##
+  # See the argument and return value documentation in delegates.rb.sample.
+  #
+  def self.redactions(identifier, request_headers, client_ip, cookies)
+    redactions = []
 
-  # Add a redaction to an image with an identifier of "sample" for all
-  # clients except localhost (127.x.x.x).
-  if identifier == 'sample'
-    unless client_ip.start_with?('127.')
-      redactions << {
-          'x' => 673,
-          'y' => 812,
-          'width' => 1320,
-          'height' => 620
-      }
+    # Add a redaction to an image with an identifier of "sample" for all
+    # clients except localhost (127.x.x.x).
+    if identifier == 'sample'
+      unless client_ip.start_with?('127.')
+        redactions << {
+            'x' => 673,
+            'y' => 812,
+            'width' => 1320,
+            'height' => 620
+        }
+      end
     end
+    redactions
   end
-  redactions
 end
 {% endhighlight %}
 

@@ -48,42 +48,44 @@ title: Watermarking
 <p>With the <code>Cantaloupe::watermark</code> delegate script method, you can tell the image server whether or not to apply a watermark in response to a particular request, in what position to apply it, and what image to apply. An example of how this can be accomplished appears below:</p>
 
 {% highlight ruby %}
-##
-# See the argument & return value documentation in delegates.rb.sample.
-#
-def self.watermark(identifier, operations, resulting_size, output_format,
-                   request_uri, request_headers, client_ip, cookies)
-  # If the resulting image is less than this many pixels on a side, don't
-  # apply the watermark.
-  min_size_cutoff = 300
-  return false if resulting_size['width'] < min_size_cutoff or
-      resulting_size['height'] < min_size_cutoff
+module Cantaloupe
+  ##
+  # See the argument & return value documentation in delegates.rb.sample.
+  #
+  def self.watermark(identifier, operations, resulting_size, output_format,
+                     request_uri, request_headers, client_ip, cookies)
+    # If the resulting image is less than this many pixels on a side, don't
+    # apply the watermark.
+    min_size_cutoff = 300
+    return false if resulting_size['width'] < min_size_cutoff or
+        resulting_size['height'] < min_size_cutoff
 
-  # Don't render a watermark to clients on localhost.
-  return false if %w(127.0.0.1 ::1/128).include?(client_ip)
+    # Don't render a watermark to clients on localhost.
+    return false if %w(127.0.0.1 ::1/128).include?(client_ip)
 
-  # Don't render a watermark on GIF images.
-  return false if output_format['media_type'] == 'image/gif'
+    # Don't render a watermark on GIF images.
+    return false if output_format['media_type'] == 'image/gif'
 
-  # Don't render a watermark on images of cantaloupes.
-  return false if identifier.downcase.include?('cantaloupe')
+    # Don't render a watermark on images of cantaloupes.
+    return false if identifier.downcase.include?('cantaloupe')
 
-  # Render a different watermark for iOS clients.
-  if request_headers.
-      select{ |k,v| k.downcase == 'user-agent' and v.include?('iOS') }.any?
-    return {
-      'pathname' => '/path/to/ios-watermark.png',
+    # Render a different watermark for iOS clients.
+    if request_headers.
+        select{ |k,v| k.downcase == 'user-agent' and v.include?('iOS') }.any?
+      return {
+        'pathname' => '/path/to/ios-watermark.png',
+        'position' => 'bottom right',
+        'inset' => 0
+      }
+    end
+
+    # Render the default watermark for all other clients.
+    {
+      'pathname' => '/path/to/default-watermark.png',
       'position' => 'bottom right',
-      'inset' => 0
+      'inset' => 10
     }
   end
-
-  # Render the default watermark for all other clients.
-  {
-    'pathname' => '/path/to/default-watermark.png',
-    'position' => 'bottom right',
-    'inset' => 10
-  }
 end
 {% endhighlight %}
 
