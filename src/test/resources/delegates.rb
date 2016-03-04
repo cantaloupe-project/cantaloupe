@@ -45,6 +45,18 @@ module Cantaloupe
     'http://example.org/bla/' + URI.escape(identifier)
   end
 
+  def self.get_database_identifier(identifier)
+    identifier
+  end
+
+  def self.get_media_type
+    'SELECT media_type FROM items WHERE filename = ?'
+  end
+
+  def self.get_lookup_sql
+    'SELECT image FROM items WHERE filename = ?'
+  end
+
   def self.redactions(identifier, request_headers, client_ip, cookies)
     redactions = []
     if identifier == 'cats'

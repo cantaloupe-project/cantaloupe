@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resolver;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.junit.Before;
@@ -30,12 +31,8 @@ public class JdbcResolverTest {
         config.setProperty(JdbcResolver.JDBC_URL_CONFIG_KEY, "jdbc:h2:mem:test");
         config.setProperty(JdbcResolver.USER_CONFIG_KEY, "sa");
         config.setProperty(JdbcResolver.PASSWORD_CONFIG_KEY, "");
-        config.setProperty(JdbcResolver.IDENTIFIER_FUNCTION_CONFIG_KEY,
-                "function getDatabaseIdentifier(url_identifier) { return url_identifier; }");
-        config.setProperty(JdbcResolver.LOOKUP_SQL_CONFIG_KEY,
-                "SELECT image FROM items WHERE filename = ?");
-        config.setProperty(JdbcResolver.MEDIA_TYPE_FUNCTION_CONFIG_KEY,
-                "function getMediaType(identifier) { return \"SELECT media_type FROM items WHERE filename = ?\" }");
+        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
+                TestUtil.getFixture("delegates.rb").getAbsolutePath());
         Application.setConfiguration(config);
 
         try (Connection conn = JdbcResolver.getConnection()) {
@@ -71,6 +68,18 @@ public class JdbcResolverTest {
     }
 
     @Test
+    public void testGetSourceFormat() throws IOException {
+        // get_media_type returns SQL
+        instance.setIdentifier(new Identifier("jpg.jpg"));
+        assertEquals(Format.JPG, instance.getSourceFormat());
+        instance.setIdentifier(new Identifier("bogus"));
+        assertEquals(Format.UNKNOWN, instance.getSourceFormat());
+
+        // JdbcResolver.function.media_type returns a media type
+        // TODO: write this
+    }
+
+    @Test
     public void testGetStreamSource() throws IOException {
         // present, readable image
         try {
@@ -92,42 +101,22 @@ public class JdbcResolverTest {
     }
 
     @Test
-    public void testGetSourceFormat() throws IOException {
-        // JdbcResolver.function.media_type returns SQL
-        instance.setIdentifier(new Identifier("jpg.jpg"));
-        assertEquals(Format.JPG, instance.getSourceFormat());
-        instance.setIdentifier(new Identifier("bogus"));
-        assertEquals(Format.UNKNOWN, instance.getSourceFormat());
-
-        // JdbcResolver.function.media_type returns a media type
-        Application.getConfiguration().setProperty(
-                "JdbcResolver.function.media_type",
-                "function getMediaType(identifier) { return (identifier == 'bogus') ? null : 'image/jpeg'; }");
-        instance.setIdentifier(new Identifier("jpg.jpg"));
-        assertEquals(Format.JPG, instance.getSourceFormat());
-        instance.setIdentifier(new Identifier("bogus"));
-        assertEquals(Format.UNKNOWN, instance.getSourceFormat());
-
-        // JdbcResolver.function.media_type is undefined
-        Application.getConfiguration().setProperty(
-                "JdbcResolver.function.media_type", null);
-        instance.setIdentifier(new Identifier("jpg.jpg"));
-        assertEquals(Format.JPG, instance.getSourceFormat());
-        instance.setIdentifier(new Identifier("bogus"));
-        assertEquals(Format.UNKNOWN, instance.getSourceFormat());
-    }
-
-    @Test
-    public void testExecuteGetDatabaseIdentifier() throws Exception {
+    public void testGetDatabaseIdentifier() throws Exception {
         instance.setIdentifier(new Identifier("cats.jpg"));
-        String result = instance.executeGetDatabaseIdentifier();
+        String result = instance.getDatabaseIdentifier();
         assertEquals("cats.jpg", result);
     }
 
     @Test
-    public void testExecuteGetMediaType() throws Exception {
+    public void testGetLookupSql() throws Exception {
+        String result = instance.getLookupSql();
+        assertEquals("SELECT image FROM items WHERE filename = ?", result);
+    }
+
+    @Test
+    public void testGetMediaType() throws Exception {
         instance.setIdentifier(new Identifier("cats.jpg"));
-        String result = instance.executeGetMediaType();
+        String result = instance.getMediaType();
         assertEquals("SELECT media_type FROM items WHERE filename = ?", result);
     }
 
