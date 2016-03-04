@@ -1,0 +1,85 @@
+---
+layout: manual_2.3
+title: Redaction
+---
+
+<ol class="breadcrumb">
+  <li><a href="{{ site.baseurl }}/">Home</a></li>
+  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
+  <li><a href="{{ site.baseurl }}/manual/2.3/">2.3</a></li>
+  <li class="active">Redaction</li>
+</ol>
+
+<h1>Redaction</h1>
+
+<ul>
+  <li><a href="#Overview">Overview</a></li>
+  <li><a href="#Example">Example</a></li>
+  <li><a href="#Processor%20Support">Processor Support</a></li>
+  <li><a href="#Implications">Implications</a>
+    <ul>
+      <li><a href="#Performance">Performance</a></li>
+      <li><a href="#Caching">Caching</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="Overview">Overview</h2>
+
+<p>Redactions are black rectangles that are overlaid onto source images in order to obscure parts of them. This can be used for copyright protection, privacy protection, or censorship, without altering any source images. Different redactions can be applied to the same image dynamically for different audiences based on client IP address, cookies, and more.</p>
+
+<div class="row">
+  <div class="col-sm-6">
+    <figure>
+      <img class="img-responsive" src="images/redaction-pre-960.jpg">
+      <figcaption>Original image</figcaption>
+    </figure>
+  </div>
+  <div class="col-sm-6">
+    <figure>
+      <img class="img-responsive" src="images/redaction-post-960.jpg">
+      <figcaption>Redactions applied</figcaption>
+    </figure>
+  </div>
+</div>
+
+<p>The redaction feature works via the <a href="delegate-script.html">delegate script</a>. First, the delegate script must be enabled, and then, <code>redactions.enabled</code> must be set to <code>true</code> in the configuration file. The delegate script must implement a method called <code>Cantaloupe::redactions</code> that returns an array of source image redaction coordinates in response to a particular request.</p>
+
+<h2 id="Example">Example</h2>
+
+{% highlight ruby %}
+##
+# See the argument and return value documentation in delegates.rb.sample.
+#
+def self.redactions(identifier, request_headers, client_ip, cookies)
+  redactions = []
+
+  # Add a redaction to an image with an identifier of "sample" for all
+  # clients except localhost (127.x.x.x).
+  if identifier == 'sample'
+    unless client_ip.start_with?('127.')
+      redactions << {
+          'x' => 673,
+          'y' => 812,
+          'width' => 1320,
+          'height' => 620
+      }
+    end
+  end
+  redactions
+end
+{% endhighlight %}
+
+<h2 id="Processor Support">Processor Support</h2>
+
+<p>Not all processors support redaction; see the <a href="processors.html#Supported%20Features">table of processor-supported features</a>.</p>
+
+<h2 id="Implications">Implications</h2>
+
+<h3 id="#Performance">Performance</h3>
+
+<p>The performance of the redaction feature largely depends on the efficiency of the delegate script method implementation. Drawing of the redactions is very cheap, costing probably no more than a few milliseconds, in most cases.</p>
+
+<h3 id="Caching">Caching</h3>
+
+<p>Redaction coordinates are encoded in cached-image identifiers. When redaction settings change, cached redacted images will be re-generated automatically, and images with different redactions will be cached separately.</p>

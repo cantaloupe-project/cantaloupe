@@ -24,6 +24,7 @@ title: Upgrading
       <li><code>cache.source</code></li>
       <li><code>AmazonS3Cache.*</code></li>
       <li><code>AzureStorageCache.*</code></li>
+      <li><code>redaction.enabled</code></li>
     </ul>
   </li>
   <li>Rename the following keys:
@@ -31,6 +32,7 @@ title: Upgrading
       <li><code>cache.server</code> to <code>cache.derivative</code></li>
     </ul>
   </li>
+  <li>Add the <code>redactions</code> method from the sample delegate script.</li>
   <li>If you are using JdbcCache, modify your database schema:
     <pre>ALTER TABLE {JdbcCache.info_table} CHANGE COLUMN last_modified last_accessed;
 ALTER TABLE {JdbcCache.derivative_image_table} CHANGE COLUMN last_modified last_accessed;</pre>
