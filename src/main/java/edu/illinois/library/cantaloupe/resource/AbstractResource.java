@@ -4,6 +4,8 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
+import edu.illinois.library.cantaloupe.image.redaction.Redaction;
+import edu.illinois.library.cantaloupe.image.redaction.RedactionService;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -172,24 +174,48 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * @param opList
-     * @param fullSize
+     * Most image-processing operations (crop, scale, etc.) are specified in
+     * a client request to an endpoint. This method adds any operations that
+     * endpoints have nothing to do with.
+     *
+     * @param opList Operation list to add the operations to.
+     * @param fullSize Full size of the source image.
      */
     public void addNonEndpointOperations(final OperationList opList,
                                          final Dimension fullSize) {
-        if (WatermarkService.isEnabled()) {
-            try {
+        try {
+            if (RedactionService.isEnabled()) {
+                List<Redaction> redactions = RedactionService.redactionsFor(
+                        opList.getIdentifier(),
+                        getRequest().getHeaders().getValuesMap(),
+                        getCanonicalClientIpAddress(),
+                        getRequest().getCookies().getValuesMap());
+                for (Redaction redaction : redactions) {
+                    opList.add(redaction);
+                }
+            } else {
+                logger.info("Redactions are disabled ({} = false); skipping.",
+                        RedactionService.REDACTION_ENABLED_CONFIG_KEY);
+            }
+
+            if (WatermarkService.isEnabled()) {
                 opList.add(WatermarkService.newWatermark(
                         opList, fullSize, getReference().toUrl(),
                         getRequest().getHeaders().getValuesMap(),
                         getCanonicalClientIpAddress(),
                         getRequest().getCookies().getValuesMap()));
-            } catch (DelegateScriptDisabledException e) {
-                // no problem
-            } catch (Exception e) {
-                logger.error(e.getMessage());
+            } else {
+                logger.info("Watermarking is disabled ({} = false); skipping.",
+                        WatermarkService.WATERMARK_ENABLED_CONFIG_KEY);
             }
+        } catch (DelegateScriptDisabledException e) {
+            // no problem
+            logger.info("Delegate script disabled; skipping non-endpoint " +
+                    "operations.");
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
         }
+
     }
 
     /**
