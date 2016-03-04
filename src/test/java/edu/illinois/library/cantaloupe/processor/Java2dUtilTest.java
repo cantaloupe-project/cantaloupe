@@ -30,6 +30,7 @@ public class Java2dUtilTest {
         // read the base image into a BufferedImage
         final File fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
         final BufferedImage baseImage = ImageIO.read(fixture);
+        final ReductionFactor rf = new ReductionFactor(0);
 
         int pixel = baseImage.getRGB(0, 0);
         int alpha = (pixel >> 24) & 0xff;
@@ -50,7 +51,7 @@ public class Java2dUtilTest {
 
         // apply them
         final BufferedImage redactedImage = Java2dUtil.applyRedactions(
-                baseImage, crop, redactions);
+                baseImage, crop, rf, redactions);
 
         // test for the first one
         pixel = redactedImage.getRGB(0, 0);

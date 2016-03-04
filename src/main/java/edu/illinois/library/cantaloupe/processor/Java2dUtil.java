@@ -38,11 +38,14 @@ abstract class Java2dUtil {
      *
      * @param baseImage Image to apply the watermark on top of.
      * @param appliedCrop Crop already applied to <code>baseImage</code>.
+     * @param reductionFactor Reduction factor already applied to
+     *                        <code>baseImage</code>.
      * @param redactions Regions of the image to redact.
      * @return Input image with redactions applied.
      */
     public static BufferedImage applyRedactions(final BufferedImage baseImage,
                                                 final Crop appliedCrop,
+                                                final ReductionFactor reductionFactor,
                                                 final List<Redaction> redactions) { // TODO: rename to apply()
         if (redactions.size() > 0) {
             final long msec = System.currentTimeMillis();
@@ -55,6 +58,11 @@ abstract class Java2dUtil {
             for (final Redaction redaction : redactions) {
                 final Rectangle redactionRegion =
                         redaction.getResultingRegion(imageSize, appliedCrop);
+                redactionRegion.x *= reductionFactor.getScale();
+                redactionRegion.y *= reductionFactor.getScale();
+                redactionRegion.width *= reductionFactor.getScale();
+                redactionRegion.height *= reductionFactor.getScale();
+
                 if (!redactionRegion.isEmpty()) {
                     logger.debug("applyRedactions(): applying {} at {},{}/{}x{}",
                             redaction, redactionRegion.x, redactionRegion.y,
