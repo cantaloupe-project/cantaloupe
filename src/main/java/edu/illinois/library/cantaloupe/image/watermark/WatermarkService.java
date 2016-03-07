@@ -241,14 +241,14 @@ public abstract class WatermarkService {
      * @return Whether a watermark should be applied to an output image with
      * the given dimensions.
      */
-    public static boolean shouldApplyToImage(Dimension outputImageSize) { // TODO: get rid of this
+    public static boolean shouldApplyToImage(Dimension outputImageSize) {
         final Configuration config = Application.getConfiguration();
         final int minOutputWidth =
                 config.getInt(WATERMARK_OUTPUT_WIDTH_THRESHOLD_CONFIG_KEY, 0);
         final int minOutputHeight =
                 config.getInt(WATERMARK_OUTPUT_HEIGHT_THRESHOLD_CONFIG_KEY, 0);
-        return (outputImageSize.width > minOutputWidth &&
-                outputImageSize.height > minOutputHeight);
+        return (outputImageSize.width >= minOutputWidth &&
+                outputImageSize.height >= minOutputHeight);
     }
 
 }

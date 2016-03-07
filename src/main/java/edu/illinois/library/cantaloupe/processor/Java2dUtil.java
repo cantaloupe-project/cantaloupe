@@ -46,7 +46,7 @@ abstract class Java2dUtil {
     public static BufferedImage applyRedactions(final BufferedImage baseImage,
                                                 final Crop appliedCrop,
                                                 final ReductionFactor reductionFactor,
-                                                final List<Redaction> redactions) { // TODO: rename to apply()
+                                                final List<Redaction> redactions) {
         if (redactions.size() > 0) {
             final long msec = System.currentTimeMillis();
             final Dimension imageSize = new Dimension(
@@ -90,7 +90,7 @@ abstract class Java2dUtil {
      * @throws ConfigurationException
      * @throws IOException
      */
-    public static BufferedImage applyWatermark(final BufferedImage baseImage, // TODO: rename to apply()
+    public static BufferedImage applyWatermark(final BufferedImage baseImage,
                                                final Watermark watermark)
             throws ConfigurationException, IOException {
         BufferedImage markedImage = baseImage;
