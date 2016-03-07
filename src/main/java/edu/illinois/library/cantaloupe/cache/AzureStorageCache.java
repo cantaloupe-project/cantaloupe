@@ -13,7 +13,6 @@ import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.StringUtils;
-import org.restlet.data.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -297,15 +296,26 @@ class AzureStorageCache implements DerivativeCache {
         final CloudBlobClient client = getClientInstance();
         final String objectKey = getObjectKey(identifier);
 
+        OutputStream os = null;
         try {
             final CloudBlobContainer container =
                     client.getContainerReference(containerName);
             final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
             blob.getProperties().setContentType("application/json");
             blob.getProperties().setContentEncoding("UTF-8");
-            blob.uploadText(imageInfo.toJson()); // TODO: stream it
+
+            os = blob.openOutputStream();
+            imageInfo.writeAsJson(os);
         } catch (IOException | URISyntaxException | StorageException e) {
             throw new CacheException(e.getMessage(), e);
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
         }
     }
 }
