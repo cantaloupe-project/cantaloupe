@@ -10,11 +10,6 @@
     <div class="container-fluid">
         #parse("header.vm")
 
-        <ol class="breadcrumb">
-            <li><a href="$baseUri/">Home</a></li>
-            <li class="active">IIIF Image API 1.x Endpoint</li>
-        </ol>
-
         <h2>IIIF Image API 1.x Endpoint</h2>
 
         <ul>
