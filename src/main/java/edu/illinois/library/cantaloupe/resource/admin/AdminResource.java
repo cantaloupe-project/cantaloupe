@@ -123,6 +123,16 @@ public class AdminResource extends AbstractResource {
         vars.put("freeHeap", runtime.freeMemory() / mb);
         vars.put("totalHeap", runtime.totalMemory() / mb);
         vars.put("maxHeap", runtime.maxMemory() / mb);
+        final double usedPercent = (runtime.totalMemory() - runtime.freeMemory()) /
+                (double) runtime.maxMemory();
+        vars.put("memoryBarValue", usedPercent * 100);
+        String memoryBarClass = "progress-bar-success";
+        if (usedPercent > 0.8) {
+            memoryBarClass = "progress-bar-danger";
+        } else if (usedPercent > 0.7) {
+            memoryBarClass = "progress-bar-warning";
+        }
+        vars.put("memoryBarClass", memoryBarClass);
 
         // source format assignments
         Map<Format,String> assignments = new TreeMap<>();

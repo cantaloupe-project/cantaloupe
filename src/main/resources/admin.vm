@@ -1,7 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-    #parse("admin_head_common.vm")
+    #if ($baseUri)
+        <base href="$baseUri/">
+    #end
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="static/styles/admin.css">
+
+    <!-- TODO: move these to footer -->
+    <script type="text/javascript" src="static/scripts/jquery.min.js"></script>
+    <script type="text/javascript" src="static/scripts/bootstrap.min.js"></script>
 
     <title>Cantaloupe Image Server</title>
 </head>
@@ -9,24 +21,30 @@
 <body id="cl-landing">
 
 <div class="container-fluid">
-    #parse("admin_header.vm")
+    <div class="clearfix">
+        <header>
+            <img src="$baseUri/static/images/cantaloupe-320.png" alt="Cantaloupe icon"
+                 width="154" height="82" style="float:left">
+            <h1>Cantaloupe Image Server <small>$version</small></h1>
+        </header>
+    </div>
 
     <div class="row">
         <div class="col-sm-3 col-md-2">
-            <ul class="nav nav-pills nav-stacked">
-                <li role="presentation" class="active">
+            <ul class="nav nav-pills nav-stacked list-group">
+                <li role="presentation" class="list-group-item active">
                     <a href="#cl-status" aria-controls="cl-status" role="tab" data-toggle="tab">Status</a>
                 </li>
-                <li role="presentation">
+                <li role="presentation" class="list-group-item">
                     <a href="#cl-endpoints" aria-controls="cl-endpoints" role="tab" data-toggle="tab">Endpoints</a>
                 </li>
-                <li role="presentation">
+                <li role="presentation" class="list-group-item">
                     <a href="#cl-resolver" aria-controls="cl-resolver" role="tab" data-toggle="tab">Resolver</a>
                 </li>
-                <li role="presentation">
+                <li role="presentation" class="list-group-item">
                     <a href="#cl-processors" aria-controls="cl-processors" role="tab" data-toggle="tab">Processors</a>
                 </li>
-                <li role="presentation">
+                <li role="presentation" class="list-group-item">
                     <a href="#cl-caches" aria-controls="cl-caches" role="tab" data-toggle="tab">Caches</a>
                 </li>
             </ul>
@@ -38,7 +56,7 @@
 
                     <section>
                         <h3>Memory</h3>
-                        <table class="table table-condensed table-bordered">
+                        <table class="table table-striped">
                             <tr>
                                 <td>Used Heap</td>
                                 <td>$usedHeap MB</td>
@@ -56,11 +74,21 @@
                                 <td>$maxHeap MB</td>
                             </tr>
                         </table>
+
+                        <div class="progress">
+                            <div class="progress-bar $memoryBarClass"
+                                 aria-valuenow="$memoryBarValue"
+                                 aria-valuemin="0" aria-valuemax="100"
+                                 style="width: $memoryBarValue%">
+                                <span class="sr-only">$memoryBarValue% memory used</span>
+                            </div>
+                        </div>
+
                     </section>
 
                     <section>
                         <h3>VM Arguments</h3>
-                        <table class="table table-condensed table-bordered">
+                        <table class="table">
                             #foreach ($arg in $vmArguments)
                                 <tr>
                                     <td>$arg</td>
@@ -71,56 +99,53 @@
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="cl-endpoints">
-                    <h3>Endpoints</h3>
-                    <table class="table-condensed">
-                        <tr>
-                            <td><a href="$baseUri/iiif/1">IIIF Image API 1.x</a></td>
-                            <td>
-                                #if ($iiif1EndpointEnabled)
-                                    <span class="label label-success">Enabled</span>
-                                #else
-                                    <span class="label label-danger">Disabled</span>
-                                #end
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><a href="$baseUri/iiif/2">IIIF Image API 2.x</a></td>
-                            <td>
-                                #if ($iiif2EndpointEnabled)
-                                    <span class="label label-success">Enabled</span>
-                                #else
-                                    <span class="label label-danger">Disabled</span>
-                                #end
-                            </td>
-                        </tr>
-                    </table>
+                    <h2>Endpoints</h2>
+
+                    <div class="list-group">
+                        <a href="$baseUri/iiif/1" class="list-group-item" target="_blank">
+                            IIIF Image API 1.x
+                            #if ($iiif1EndpointEnabled)
+                                <span class="label label-success">Enabled</span>
+                            #else
+                                <span class="label label-danger">Disabled</span>
+                            #end
+                        </a>
+                        <a href="$baseUri/iiif/2" class="list-group-item" target="_blank">
+                            IIIF Image API 2.x
+                            #if ($iiif2EndpointEnabled)
+                                <span class="label label-success">Enabled</span>
+                            #else
+                                <span class="label label-danger">Disabled</span>
+                            #end
+                        </a>
+                    </div>
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="cl-resolver">
-                    <h3>Resolver</h3>
+                    <h2>Resolver</h2>
                     <p>$resolverName</p>
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="cl-processors">
                     <section>
-                        <h3>Effective Source Format Assignments</h3>
+                        <h2>Effective Source Format Assignments</h2>
 
                         <ul class="nav nav-tabs" role="tablist">
                             <li role="presentation" class="active">
-                                <a href="#image-assignments"
-                                   aria-controls="image-assignments" role="tab"
+                                <a href="#cl-image-assignments"
+                                   aria-controls="cl-image-assignments" role="tab"
                                    data-toggle="tab">Image</a>
                             </li>
                             <li role="presentation">
-                                <a href="#video-assignments"
-                                   aria-controls="video-assignments" role="tab"
+                                <a href="#cl-video-assignments"
+                                   aria-controls="cl-video-assignments" role="tab"
                                    data-toggle="tab">Video</a>
                             </li>
                         </ul>
 
                         <div class="tab-content">
-                            <div role="tabpanel" class="tab-pane active" id="image-assignments">
-                                <table class="table table-condensed table-bordered cl-source-format-assignments">
+                            <div role="tabpanel" class="tab-pane active" id="cl-image-assignments">
+                                <table class="table table-striped cl-source-format-assignments">
                                     #foreach ($format in $processorAssignments.keySet())
                                         #if ($format.isImage())
                                             <tr>
@@ -132,8 +157,8 @@
                                 </table>
                             </div>
 
-                            <div role="tabpanel" class="tab-pane" id="video-assignments">
-                                <table class="table table-condensed table-bordered cl-source-format-assignments">
+                            <div role="tabpanel" class="tab-pane" id="cl-video-assignments">
+                                <table class="table table-striped cl-source-format-assignments">
                                     #foreach ($format in $processorAssignments.keySet())
                                         #if (!$format.isImage())
                                             <tr>
@@ -148,7 +173,7 @@
                     </section>
 
                     <section>
-                        <h3>Supported Source Formats</h3>
+                        <h2>Supported Source Formats</h2>
 
                         <ul class="nav nav-tabs" role="tablist">
                             <li role="presentation" class="active">
@@ -165,7 +190,7 @@
 
                         <div class="tab-content">
                             <div role="tabpanel" class="tab-pane active" id="supported-image-formats">
-                                <table class="table table-condensed table-bordered">
+                                <table class="table">
                                     <tr>
                                         <th></th>
                                         #foreach ($format in $imageSourceFormats)
@@ -192,7 +217,7 @@
                             </div>
 
                             <div role="tabpanel" class="tab-pane" id="supported-video-formats">
-                                <table class="table table-condensed table-bordered">
+                                <table class="table">
                                     <tr>
                                         <th></th>
                                         #foreach ($format in $videoSourceFormats)
@@ -223,17 +248,22 @@
 
                 <div role="tabpanel" class="tab-pane" id="cl-caches">
                     <section>
-                        <h3>Source Cache</h3>
+                        <h2>Source Cache</h2>
                         <p>$sourceCacheName</p>
                     </section>
                     <section>
-                        <h3>Derivative Cache</h3>
+                        <h2>Derivative Cache</h2>
                         <p>$derivativeCacheName</p>
                     </section>
                 </div>
             </div>
         </div>
     </div>
+
+    <footer>
+        <a href="https://medusa-project.github.io/cantaloupe/">Home (GitHub)</a> |
+        <a href="https://medusa-project.github.io/cantaloupe/manual/$version/">User Manual</a>
+    </footer>
 
 </div>
 </body>

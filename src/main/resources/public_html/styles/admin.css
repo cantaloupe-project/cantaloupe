@@ -1,15 +1,33 @@
 @import url(bootstrap-admin.min.css);
 
 header {
-    margin-bottom: 2em;
+    margin-bottom: 3em;
 }
 
-body#cl-admin table.cl-source-format-assignments td:first-child {
+header img {
+    margin-right: 0.8em;
+}
+
+header h1 {
+    padding-top: 0.4em;
+}
+
+footer {
+    text-align: center;
+}
+
+h2 {
+    margin-top: 0px;
+}
+
+table, .table {
+    font-size: 1em;
+}
+
+.label {
+    text-transform: uppercase;
+}
+
+table.cl-source-format-assignments td:first-child {
     text-align: right;
 }
-/*
-body#cl-admin section {
-    border-top: 1px solid #e0e0e0;
-    padding: 0.6em 0em 1.1em 0em;
-}
-*/
