@@ -7,7 +7,9 @@ import org.junit.Test;
 
 import java.awt.Dimension;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
@@ -105,6 +107,14 @@ public class ImageInfoTest {
     @Test
     public void testToString() throws Exception {
         assertEquals(instance.toJson(), instance.toString());
+    }
+
+    @Test
+    public void testWriteAsJson() throws Exception {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        instance.writeAsJson(baos);
+        assertTrue(Arrays.equals(baos.toByteArray(),
+                instance.toJson().getBytes()));
     }
 
 }

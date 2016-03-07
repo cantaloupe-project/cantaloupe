@@ -12,6 +12,7 @@ import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -264,6 +265,18 @@ public final class ImageInfo {
         } catch (JsonProcessingException e) {
             return super.toString();
         }
+    }
+
+    /**
+     * @param os Output stream to write to.
+     * @throws IOException
+     */
+    @JsonIgnore
+    public void writeAsJson(OutputStream os) throws IOException {
+        new ObjectMapper().writer().
+                without(SerializationFeature.WRITE_NULL_MAP_VALUES).
+                without(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS).
+                writeValue(os, this);
     }
 
 }
