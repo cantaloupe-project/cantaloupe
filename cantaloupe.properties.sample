@@ -10,6 +10,10 @@
 # marked with "!!".
 ###########################################################################
 
+# Password to access the Control Panel, at /admin. (The username is always
+# "admin".)
+admin.password = password
+
 # !! Whether to enable HTTP access (http://), and on what TCP port.
 http.enabled = true
 http.port = 8182

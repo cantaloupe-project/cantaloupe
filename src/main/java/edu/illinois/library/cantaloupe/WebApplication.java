@@ -1,12 +1,15 @@
 package edu.illinois.library.cantaloupe;
 
+import edu.illinois.library.cantaloupe.resource.AdminResource;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
 import org.apache.commons.configuration.Configuration;
 import org.restlet.Application;
+import org.restlet.Request;
+import org.restlet.Response;
 import org.restlet.Restlet;
 import org.restlet.data.ChallengeScheme;
+import org.restlet.data.Status;
 import org.restlet.resource.Directory;
-import org.restlet.resource.ServerResource;
 import org.restlet.routing.Redirector;
 import org.restlet.routing.Router;
 import org.restlet.routing.Template;
@@ -16,6 +19,7 @@ import org.restlet.service.CorsService;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.logging.Level;
 
 /**
  * Restlet Application implementation. Creates endpoint routes and connects
@@ -23,6 +27,7 @@ import java.util.HashSet;
  */
 public class WebApplication extends Application {
 
+    public static final String ADMIN_SECRET_CONFIG_KEY = "admin.password";
     public static final String BASIC_AUTH_ENABLED_CONFIG_KEY =
             "auth.basic.enabled";
     public static final String BASIC_AUTH_SECRET_CONFIG_KEY =
@@ -30,6 +35,7 @@ public class WebApplication extends Application {
     public static final String BASIC_AUTH_USERNAME_CONFIG_KEY =
             "auth.basic.username";
 
+    public static final String ADMIN_PATH = "/admin";
     public static final String IIIF_PATH = "/iiif";
     public static final String IIIF_1_PATH = "/iiif/1";
     public static final String IIIF_2_PATH = "/iiif/2";
@@ -43,6 +49,59 @@ public class WebApplication extends Application {
         corsService.setAllowedOrigins(new HashSet<>(Collections.singletonList("*")));
         corsService.setAllowedCredentials(true);
         this.getServices().add(corsService);
+    }
+
+    private ChallengeAuthenticator createAdminAuthenticator()
+            throws ConfigurationException {
+        final Configuration config =
+                edu.illinois.library.cantaloupe.Application.getConfiguration();
+        final String secret = config.getString(ADMIN_SECRET_CONFIG_KEY);
+        if (secret == null || secret.length() < 1) {
+            throw new ConfigurationException(
+                    ADMIN_SECRET_CONFIG_KEY + " is not set.");
+        }
+
+        final MapVerifier verifier = new MapVerifier();
+        verifier.getLocalSecrets().put("admin", secret.toCharArray());
+        final ChallengeAuthenticator auth = new ChallengeAuthenticator(
+                getContext(), ChallengeScheme.HTTP_BASIC, "Cantaloupe Realm");
+        auth.setVerifier(verifier);
+        return auth;
+    }
+
+    private ChallengeAuthenticator createEndpointAuthenticator() {
+        final Configuration config =
+                edu.illinois.library.cantaloupe.Application.getConfiguration();
+        final String username = config.getString(BASIC_AUTH_USERNAME_CONFIG_KEY);
+        final String secret = config.getString(BASIC_AUTH_SECRET_CONFIG_KEY);
+
+        if (username != null && username.length() > 0 && secret != null &&
+                secret.length() > 0) {
+            getLogger().log(Level.INFO,
+                    "Enabling HTTP Basic authentication for all endpoints");
+            final MapVerifier verifier = new MapVerifier();
+            verifier.getLocalSecrets().put(username, secret.toCharArray());
+            final ChallengeAuthenticator auth = new ChallengeAuthenticator(
+                    getContext(), ChallengeScheme.HTTP_BASIC, "Image Realm") {
+                @Override
+                protected int beforeHandle(Request request, Response response) {
+                    if (config.getBoolean(BASIC_AUTH_ENABLED_CONFIG_KEY, false)) {
+                        if (!request.getResourceRef().getPath().startsWith(ADMIN_PATH) &&
+                                !request.getResourceRef().getPath().startsWith(STATIC_ROOT_PATH)) {
+                            return super.beforeHandle(request, response);
+                        }
+                    }
+                    response.setStatus(Status.SUCCESS_OK);
+                    return CONTINUE;
+                }
+            };
+            auth.setVerifier(verifier);
+            return auth;
+        }
+        getLogger().log(Level.INFO, "Endpoint authentication is disabled. (" +
+                BASIC_AUTH_USERNAME_CONFIG_KEY + " or " +
+                BASIC_AUTH_SECRET_CONFIG_KEY + " are null)");
+        return null;
     }
 
     /**
@@ -73,14 +132,12 @@ public class WebApplication extends Application {
         router.attach(IIIF_1_PATH + "/", redirector);
 
         // image request
-        Class<? extends ServerResource> resource =
-                edu.illinois.library.cantaloupe.resource.iiif.v1.ImageResource.class;
         router.attach(IIIF_1_PATH + "/{identifier}/{region}/{size}/{rotation}/{quality_format}",
-                resource);
+                edu.illinois.library.cantaloupe.resource.iiif.v1.ImageResource.class);
 
         // information request
-        resource = edu.illinois.library.cantaloupe.resource.iiif.v1.InformationResource.class;
-        router.attach(IIIF_1_PATH + "/{identifier}/info.{format}", resource);
+        router.attach(IIIF_1_PATH + "/{identifier}/info.{format}",
+                edu.illinois.library.cantaloupe.resource.iiif.v1.InformationResource.class);
 
         /****************** IIIF Image API 2.0 routes *******************/
 
@@ -100,18 +157,27 @@ public class WebApplication extends Application {
         router.attach(IIIF_2_PATH + "/", redirector);
 
         // image request
-        resource = edu.illinois.library.cantaloupe.resource.iiif.v2.ImageResource.class;
         router.attach(IIIF_2_PATH + "/{identifier}/{region}/{size}/{rotation}/{quality}.{format}",
-                resource);
+                edu.illinois.library.cantaloupe.resource.iiif.v2.ImageResource.class);
 
         // information request
-        resource = edu.illinois.library.cantaloupe.resource.iiif.v2.InformationResource.class;
-        router.attach(IIIF_2_PATH + "/{identifier}/info.{format}", resource);
+        router.attach(IIIF_2_PATH + "/{identifier}/info.{format}",
+                edu.illinois.library.cantaloupe.resource.iiif.v2.InformationResource.class);
 
         // 303-redirect IIIF_PATH to IIIF_2_PATH
         redirector = new Redirector(getContext(), IIIF_2_PATH,
                 Redirector.MODE_CLIENT_SEE_OTHER);
         router.attach(IIIF_PATH, redirector);
+
+        /****************** Admin route ********************/
+
+        try {
+            ChallengeAuthenticator adminAuth = createAdminAuthenticator();
+            adminAuth.setNext(AdminResource.class);
+            router.attach(ADMIN_PATH, adminAuth);
+        } catch (ConfigurationException e) {
+            getLogger().log(Level.SEVERE, e.getMessage());
+        }
 
         /****************** Other routes *******************/
 
@@ -126,20 +192,11 @@ public class WebApplication extends Application {
         dir.setNegotiatingContent(false);
         router.attach(STATIC_ROOT_PATH, dir);
 
-        // Hook up HTTP Basic authentication
-        Configuration config = edu.illinois.library.cantaloupe.Application.
-                getConfiguration();
-        if (config.getBoolean(BASIC_AUTH_ENABLED_CONFIG_KEY, false)) {
-            ChallengeAuthenticator authenticator = new ChallengeAuthenticator(
-                    getContext(), ChallengeScheme.HTTP_BASIC,
-                    "Cantaloupe Realm");
-            MapVerifier verifier = new MapVerifier();
-            verifier.getLocalSecrets().put(
-                    config.getString(BASIC_AUTH_USERNAME_CONFIG_KEY),
-                    config.getString(BASIC_AUTH_SECRET_CONFIG_KEY).toCharArray());
-            authenticator.setVerifier(verifier);
-            authenticator.setNext(router);
-            return authenticator;
+        // Hook up endpoint authentication
+        ChallengeAuthenticator endpointAuth = createEndpointAuthenticator();
+        if (endpointAuth != null) {
+            endpointAuth.setNext(router);
+            return endpointAuth;
         }
         return router;
     }

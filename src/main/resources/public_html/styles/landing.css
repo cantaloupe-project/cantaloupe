@@ -1,0 +1,8 @@
+/* @import url(base.css); */
+
+body#cl-landing {
+    background-image: url(../images/cantaloupe.jpg);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: 50% 50%;
+}
