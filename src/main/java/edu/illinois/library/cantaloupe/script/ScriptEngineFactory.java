@@ -13,6 +13,22 @@ public abstract class ScriptEngineFactory {
 
     public static final String DELEGATE_SCRIPT_CONFIG_KEY = "delegate_script";
 
+    public static File getScript() throws FileNotFoundException,
+            DelegateScriptDisabledException {
+        final Configuration config = Application.getConfiguration();
+        // The script name may be an absolute path or a filename.
+        final String scriptValue = config.getString(DELEGATE_SCRIPT_CONFIG_KEY);
+        if (scriptValue != null && scriptValue.length() > 0) {
+            File script = findScript(scriptValue);
+            if (!script.exists()) {
+                throw new FileNotFoundException(script.getAbsolutePath());
+            }
+            return script;
+        } else {
+            throw new DelegateScriptDisabledException();
+        }
+    }
+
     /**
      * @return New ScriptEngine instance with the delegate script code loaded;
      *         or, if there is no delegate script, an empty module.
@@ -29,22 +45,6 @@ public abstract class ScriptEngineFactory {
         final ScriptEngine engine = new RubyScriptEngine();
         engine.load(FileUtils.readFileToString(getScript()));
         return engine;
-    }
-
-    private static File getScript() throws FileNotFoundException,
-            DelegateScriptDisabledException {
-        final Configuration config = Application.getConfiguration();
-        // The script name may be an absolute path or a filename.
-        final String scriptValue = config.getString(DELEGATE_SCRIPT_CONFIG_KEY);
-        if (scriptValue != null && scriptValue.length() > 0) {
-            File script = findScript(scriptValue);
-            if (!script.exists()) {
-                throw new FileNotFoundException(script.getAbsolutePath());
-            }
-            return script;
-        } else {
-            throw new DelegateScriptDisabledException();
-        }
     }
 
     /**
