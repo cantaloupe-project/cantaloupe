@@ -12,6 +12,19 @@ import javax.net.ssl.KeyManagerFactory;
 
 public class WebServer {
 
+    public static final String HTTP_ENABLED_CONFIG_KEY = "http.enabled";
+    public static final String HTTP_PORT_CONFIG_KEY = "http.port";
+    public static final String HTTPS_ENABLED_CONFIG_KEY = "https.enabled";
+    public static final String HTTPS_KEY_PASSWORD_CONFIG_KEY =
+            "https.key_password";
+    public static final String HTTPS_KEY_STORE_PASSWORD_CONFIG_KEY =
+            "https.key_store_password";
+    public static final String HTTPS_KEY_STORE_PATH_CONFIG_KEY =
+            "https.key_store_path";
+    public static final String HTTPS_KEY_STORE_TYPE_CONFIG_KEY =
+            "https.key_store_type";
+    public static final String HTTPS_PORT_CONFIG_KEY = "https.port";
+
     private Component component;
 
     public void start() throws Exception {
@@ -21,16 +34,16 @@ public class WebServer {
         component = new Component();
 
         // set up HTTP server
-        if (config.getBoolean("http.enabled", true)) {
-            final int port = config.getInteger("http.port", 8182);
+        if (config.getBoolean(HTTP_ENABLED_CONFIG_KEY, true)) {
+            final int port = config.getInteger(HTTP_PORT_CONFIG_KEY, 8182);
             final Server server = component.getServers().
                     add(Protocol.HTTP, port);
             server.getContext().getParameters().
                     add("useForwardedForHeader", "true");
         }
         // set up HTTPS server
-        if (config.getBoolean("https.enabled", false)) {
-            final int port = config.getInteger("https.port", 8183);
+        if (config.getBoolean(HTTPS_ENABLED_CONFIG_KEY, false)) {
+            final int port = config.getInteger(HTTPS_PORT_CONFIG_KEY, 8183);
             final Server server = component.getServers().
                     add(Protocol.HTTPS, port);
             server.getContext().getParameters().
@@ -39,13 +52,13 @@ public class WebServer {
             parameters.add("sslContextFactory",
                     "org.restlet.engine.ssl.DefaultSslContextFactory");
             parameters.add("keyStorePath",
-                    config.getString("https.key_store_path"));
+                    config.getString(HTTPS_KEY_STORE_PATH_CONFIG_KEY));
             parameters.add("keyStorePassword",
-                    config.getString("https.key_store_password"));
+                    config.getString(HTTPS_KEY_STORE_PASSWORD_CONFIG_KEY));
             parameters.add("keyPassword",
-                    config.getString("https.key_password"));
+                    config.getString(HTTPS_KEY_PASSWORD_CONFIG_KEY));
             parameters.add("keyStoreType",
-                    config.getString("https.key_store_type"));
+                    config.getString(HTTPS_KEY_STORE_TYPE_CONFIG_KEY));
             parameters.add("keyManagerAlgorithm",
                     KeyManagerFactory.getDefaultAlgorithm());
         }

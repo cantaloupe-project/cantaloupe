@@ -45,6 +45,26 @@ public abstract class AbstractResource extends ServerResource {
             getLogger(AbstractResource.class);
 
     public static final String BASE_URI_CONFIG_KEY = "base_uri";
+    public static final String CLIENT_CACHE_ENABLED_CONFIG_KEY =
+            "cache.client.enabled";
+    public static final String CLIENT_CACHE_MAX_AGE_CONFIG_KEY =
+            "cache.client.max_age";
+    public static final String CLIENT_CACHE_MUST_REVALIDATE_CONFIG_KEY =
+            "cache.client.must_revalidate";
+    public static final String CLIENT_CACHE_NO_CACHE_CONFIG_KEY =
+            "cache.client.no_cache";
+    public static final String CLIENT_CACHE_NO_STORE_CONFIG_KEY =
+            "cache.client.no_store";
+    public static final String CLIENT_CACHE_NO_TRANSFORM_CONFIG_KEY =
+            "cache.client.no_transform";
+    public static final String CLIENT_CACHE_PRIVATE_CONFIG_KEY =
+            "cache.client.private";
+    public static final String CLIENT_CACHE_PROXY_REVALIDATE_CONFIG_KEY =
+            "cache.client.proxy_revalidate";
+    public static final String CLIENT_CACHE_PUBLIC_CONFIG_KEY =
+            "cache.client.public";
+    public static final String CLIENT_CACHE_SHARED_MAX_AGE_CONFIG_KEY =
+            "cache.client.shared_max_age";
     public static final String CONTENT_DISPOSITION_CONFIG_KEY =
             "endpoint.iiif.content_disposition";
     public static final String MAX_PIXELS_CONFIG_KEY = "max_pixels";
@@ -243,36 +263,39 @@ public abstract class AbstractResource extends ServerResource {
     protected final List<CacheDirective> getCacheDirectives() {
         List<CacheDirective> directives = new ArrayList<>();
         try {
-            Configuration config = Application.getConfiguration();
-            boolean enabled = config.getBoolean("cache.client.enabled", false);
+            final Configuration config = Application.getConfiguration();
+            final boolean enabled = config.getBoolean(
+                    CLIENT_CACHE_ENABLED_CONFIG_KEY, false);
             if (enabled) {
-                String maxAge = config.getString("cache.client.max_age");
+                final String maxAge = config.getString(
+                        CLIENT_CACHE_MAX_AGE_CONFIG_KEY);
                 if (maxAge != null && maxAge.length() > 0) {
                     directives.add(CacheDirective.maxAge(Integer.parseInt(maxAge)));
                 }
-                String sMaxAge = config.getString("cache.client.shared_max_age");
+                String sMaxAge = config.getString(
+                        CLIENT_CACHE_SHARED_MAX_AGE_CONFIG_KEY);
                 if (sMaxAge != null && sMaxAge.length() > 0) {
                     directives.add(CacheDirective.
                             sharedMaxAge(Integer.parseInt(sMaxAge)));
                 }
-                if (config.getBoolean("cache.client.public", true)) {
+                if (config.getBoolean(CLIENT_CACHE_PUBLIC_CONFIG_KEY, true)) {
                     directives.add(CacheDirective.publicInfo());
-                } else if (config.getBoolean("cache.client.private", false)) {
+                } else if (config.getBoolean(CLIENT_CACHE_PRIVATE_CONFIG_KEY, false)) {
                     directives.add(CacheDirective.privateInfo());
                 }
-                if (config.getBoolean("cache.client.no_cache", false)) {
+                if (config.getBoolean(CLIENT_CACHE_NO_CACHE_CONFIG_KEY, false)) {
                     directives.add(CacheDirective.noCache());
                 }
-                if (config.getBoolean("cache.client.no_store", false)) {
+                if (config.getBoolean(CLIENT_CACHE_NO_STORE_CONFIG_KEY, false)) {
                     directives.add(CacheDirective.noStore());
                 }
-                if (config.getBoolean("cache.client.must_revalidate", false)) {
+                if (config.getBoolean(CLIENT_CACHE_MUST_REVALIDATE_CONFIG_KEY, false)) {
                     directives.add(CacheDirective.mustRevalidate());
                 }
-                if (config.getBoolean("cache.client.proxy_revalidate", false)) {
+                if (config.getBoolean(CLIENT_CACHE_PROXY_REVALIDATE_CONFIG_KEY, false)) {
                     directives.add(CacheDirective.proxyMustRevalidate());
                 }
-                if (config.getBoolean("cache.client.no_transform", false)) {
+                if (config.getBoolean(CLIENT_CACHE_NO_TRANSFORM_CONFIG_KEY, false)) {
                     directives.add(CacheDirective.noTransform());
                 }
             }
