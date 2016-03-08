@@ -86,6 +86,9 @@ public class AdminResource extends AbstractResource {
         final Configuration config = Application.getConfiguration();
         final Map<String, Object> vars = getCommonTemplateVars(getRequest());
 
+        vars.put("configFilePath",
+                Application.getConfigurationFile().getAbsolutePath());
+
         ////////////////////////////////////////////////////////////////////
         //////////////////////// status section ////////////////////////////
         ////////////////////////////////////////////////////////////////////

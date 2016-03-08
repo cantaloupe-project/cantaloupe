@@ -1,7 +1,0 @@
-<div class="clearfix">
-    <header>
-        <img src="$baseUri/static/images/cantaloupe-320.png" alt="Cantaloupe icon"
-             width="154" height="82" style="float:left">
-        <h1>Cantaloupe Image Server <small>$version</small></h1>
-    </header>
-</div>

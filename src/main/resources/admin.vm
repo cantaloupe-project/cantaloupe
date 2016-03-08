@@ -1283,6 +1283,7 @@
     </div>
 
     <footer>
+        <p>Configuration file: $configFilePath</p>
         <a href="https://medusa-project.github.io/cantaloupe/">Home (GitHub)</a> |
         <a href="https://medusa-project.github.io/cantaloupe/manual/$version/">User Manual</a>
     </footer>
