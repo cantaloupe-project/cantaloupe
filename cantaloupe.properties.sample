@@ -101,9 +101,9 @@ resolver.delegate = false
 #----------------------------------------
 
 # Tells FilesystemResolver how to look up files. Allowed values are
-# `BasicLookupStrategy` and `ScriptLookupStrategy`. For
-# ScriptLookupStrategy, a method named `get_pathname(identifier)` must be
-# implemented in the delegate script -- see the user manual.
+# `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
+# uses the delegate script for dynamic lookups--see the user manual for
+# details.
 FilesystemResolver.lookup_strategy = BasicLookupStrategy
 
 # Server-side path that will be prefixed to the identifier in the URL.
@@ -119,9 +119,9 @@ FilesystemResolver.BasicLookupStrategy.path_suffix =
 #----------------------------------------
 
 # Tells HttpResolver how to look up resources. Allowed values are
-# `BasicLookupStrategy` and `ScriptLookupStrategy`. For
-# ScriptLookupStrategy, a method named `get_url(identifier)` must be
-# implemented in the delegate script.
+# `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
+# uses the delegate script for dynamic lookups--see the user manual for
+# details.
 HttpResolver.lookup_strategy = BasicLookupStrategy
 
 # URL that will be prefixed to the identifier in the request URL. Trailing
@@ -174,9 +174,9 @@ AmazonS3Resolver.bucket.name =
 #AmazonS3Resolver.bucket.region = us-east-1
 
 # Tells AmazonS3Resolver how to look up objects. Allowed values are
-# `BasicLookupStrategy` and `ScriptLookupStrategy`. For
-# ScriptLookupStrategy, a method named `get_s3_object_key(identifier)` must
-# be implemented in the delegate script.
+# `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
+# uses the delegate script for dynamic lookups--see the user manual for
+# details.
 AmazonS3Resolver.lookup_strategy = BasicLookupStrategy
 
 #----------------------------------------
@@ -193,10 +193,9 @@ AzureStorageResolver.account_key =
 AzureStorageResolver.container_name =
 
 # Tells AzureStorageResolver how to look up objects. Allowed values are
-# `BasicLookupStrategy` and `ScriptLookupStrategy`. For
-# ScriptLookupStrategy, a method named
-# `get_azure_storage_object_key(identifier)` must be implemented in the
-# delegate script.
+# `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
+# uses the delegate script for dynamic lookups--see the user manual for
+# details.
 AzureStorageResolver.lookup_strategy = BasicLookupStrategy
 
 ###########################################################################
@@ -222,7 +221,7 @@ processor.webm = FfmpegProcessor
 # Fall back to this processor for any formats not assigned above.
 processor.fallback = Java2dProcessor
 
-# This option is kind of hard to explian; see the user manual.
+# This option is kind of hard to explain; see the user manual.
 # Available values are `StreamStrategy` and `CacheStrategy` If CacheStrategy
 # is selected, FilesystemCache will also need to be configured, below.
 StreamProcessor.retrieval_strategy = StreamStrategy
@@ -470,14 +469,6 @@ AzureStorageCache.object_key_prefix =
 AzureStorageCache.ttl_seconds = 2592000
 
 ###########################################################################
-# REDACTION
-###########################################################################
-
-# Whether to enable redactions. See the user manual for information about
-# how these work.
-redaction.enabled = false
-
-###########################################################################
 # WATERMARKING
 ###########################################################################
 
@@ -507,6 +498,14 @@ watermark.BasicStrategy.output_width_threshold = 400
 # Output images less than this many pixels tall will not receive a watermark.
 # Comment out or set to 0 to add the watermark regardless.
 watermark.BasicStrategy.output_height_threshold = 300
+
+###########################################################################
+# REDACTION
+###########################################################################
+
+# Whether to enable redactions. See the user manual for information about
+# how these work.
+redaction.enabled = false
 
 ###########################################################################
 # LOGGING

@@ -19,6 +19,7 @@ title: Upgrading
 <ul>
   <li>Add the following keys from the sample configuration:
     <ul>
+      <li><code>admin.password</code></li>
       <li><code>endpoint.iiif.2.restrict_to_sizes</code></li>
       <li><code>StreamProcessor.retrieval_strategy</code></li>
       <li><code>cache.source</code></li>
@@ -59,6 +60,8 @@ title: Upgrading
 ALTER TABLE {JdbcCache.derivative_image_table} CHANGE COLUMN last_modified last_accessed;</pre>
   </li>
 </ul>
+
+<div class="alert alert-info">Note that the content that used to be available on the landing page (<span class="filename">/</span>) has moved to the Control Panel (<span class="filename">/admin</span>). Log in with a username of "admin" and the password defined in the <code>admin.password</code> configuration option.</div>
 
 <h2>From 2.1.1 to 2.2</h2>
 
