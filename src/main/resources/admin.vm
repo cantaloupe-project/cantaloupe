@@ -33,29 +33,44 @@
         <div class="col-sm-3 col-md-2">
             <ul class="nav nav-pills nav-stacked list-group">
                 <li role="presentation" class="list-group-item active">
-                    <a href="#cl-status" aria-controls="cl-status" role="tab" data-toggle="tab">Status</a>
+                    <a href="#cl-status" aria-controls="cl-status"
+                       role="tab" data-toggle="tab">Status</a>
                 </li>
                 <li role="presentation" class="list-group-item">
-                    <a href="#cl-endpoints" aria-controls="cl-endpoints" role="tab" data-toggle="tab">Endpoints</a>
+                    <a href="#cl-server" aria-controls="cl-server"
+                       role="tab" data-toggle="tab">Server</a>
                 </li>
                 <li role="presentation" class="list-group-item">
-                    <a href="#cl-resolver" aria-controls="cl-resolver" role="tab" data-toggle="tab">Resolver</a>
+                    <a href="#cl-endpoints" aria-controls="cl-endpoints"
+                       role="tab" data-toggle="tab">Endpoints</a>
                 </li>
                 <li role="presentation" class="list-group-item">
-                    <a href="#cl-processors" aria-controls="cl-processors" role="tab" data-toggle="tab">Processors</a>
+                    <a href="#cl-resolver" aria-controls="cl-resolver"
+                       role="tab" data-toggle="tab">Resolver</a>
                 </li>
                 <li role="presentation" class="list-group-item">
-                    <a href="#cl-caches" aria-controls="cl-caches" role="tab" data-toggle="tab">Caches</a>
+                    <a href="#cl-processors" aria-controls="cl-processors"
+                       role="tab" data-toggle="tab">Processors</a>
+                </li>
+                <li role="presentation" class="list-group-item">
+                    <a href="#cl-caches" aria-controls="cl-caches"
+                       role="tab" data-toggle="tab">Caches</a>
+                </li>
+                <li role="presentation" class="list-group-item">
+                    <a href="#cl-overlays" aria-controls="cl-overlays"
+                       role="tab" data-toggle="tab">Overlays</a>
+                </li>
+                <li role="presentation" class="list-group-item">
+                    <a href="#cl-logging" aria-controls="cl-logging"
+                       role="tab" data-toggle="tab">Logging</a>
                 </li>
             </ul>
         </div>
         <div class="col-sm-9 col-md-10">
             <div class="tab-content">
                 <div role="tabpanel" class="tab-pane active" id="cl-status">
-                    <h2>Status</h2>
-
                     <section>
-                        <h3>Memory</h3>
+                        <h2>Memory</h2>
                         <table class="table table-striped">
                             <tr>
                                 <td>Used Heap</td>
@@ -83,11 +98,10 @@
                                 <span class="sr-only">$memoryBarValue% memory used</span>
                             </div>
                         </div>
-
                     </section>
 
                     <section>
-                        <h3>VM Arguments</h3>
+                        <h2>VM Arguments</h2>
                         <table class="table">
                             #foreach ($arg in $vmArguments)
                                 <tr>
@@ -98,39 +112,361 @@
                     </section>
                 </div>
 
-                <div role="tabpanel" class="tab-pane" id="cl-endpoints">
-                    <h2>Endpoints</h2>
+                <div role="tabpanel" class="tab-pane" id="cl-server">
+                    <section>
+                        <h2>HTTP</h2>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Enabled</td>
+                                <td>
+                                    #if ($httpEnabled)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Port</td>
+                                <td>$httpPort</td>
+                            </tr>
+                        </table>
+                    </section>
 
-                    <div class="list-group">
-                        <a href="$baseUri/iiif/1" class="list-group-item" target="_blank">
-                            IIIF Image API 1.x
-                            #if ($iiif1EndpointEnabled)
-                                <span class="label label-success">Enabled</span>
-                            #else
-                                <span class="label label-danger">Disabled</span>
-                            #end
-                        </a>
-                        <a href="$baseUri/iiif/2" class="list-group-item" target="_blank">
-                            IIIF Image API 2.x
-                            #if ($iiif2EndpointEnabled)
-                                <span class="label label-success">Enabled</span>
-                            #else
-                                <span class="label label-danger">Disabled</span>
-                            #end
-                        </a>
-                    </div>
+                    <section>
+                        <h2>HTTPS</h2>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Enabled</td>
+                                <td>
+                                    #if ($httpsEnabled)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Port</td>
+                                <td>$httpsPort</td>
+                            </tr>
+                            <tr>
+                                <td>Key Store Type</td>
+                                <td>$httpsKeyStoreType</td>
+                            </tr>
+                            <tr>
+                                <td>Key Store Path</td>
+                                <td>$httpsKeyStorePath</td>
+                            </tr>
+                        </table>
+                    </section>
+
+                    <section>
+                        <h2>HTTP Basic Authentication</h2>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Enabled</td>
+                                <td>
+                                    #if ($basicAuthEnabled)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Username</td>
+                                <td>$basicAuthUsername</td>
+                            </tr>
+                            <tr>
+                                <td>Secret</td>
+                                <td>$basicAuthSecret</td>
+                            </tr>
+                        </table>
+                    </section>
+
+                    <section>
+                        <h2>Proxy Headers</h2>
+                        (These will appear empty if this page is not accessed
+                        via a reverse-proxy server.)
+                        <table class="table table-striped">
+                            <tr>
+                                <td>X-Forwarded-Proto</td>
+                                <td>$xForwardedProtoHeader</td>
+                            </tr>
+                            <tr>
+                                <td>X-Forwarded-Host</td>
+                                <td>$xForwardedHostHeader</td>
+                            </tr>
+                            <tr>
+                                <td>X-Forwarded-Port</td>
+                                <td>$xForwardedPortHeader</td>
+                            </tr>
+                            <tr>
+                                <td>X-Forwarded-Path</td>
+                                <td>$xForwardedPathHeader</td>
+                            </tr>
+                            <tr>
+                                <td>X-Forwarded-For</td>
+                                <td>$xForwardedForHeader</td>
+                            </tr>
+                        </table>
+                    </section>
+
+                    <section>
+                        <h2>Other Settings</h2>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Base URI</td>
+                                <td>$baseUriConfig</td>
+                            </tr>
+                            <tr>
+                                <td>URI Slash Substitute</td>
+                                <td>$uriSlashSubstitute</td>
+                            </tr>
+                            <tr>
+                                <td>Print stack trace on error pages</td>
+                                <td>
+                                    #if ($printStackTraceOnErrorPages)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Delegate script</td>
+                                <td>$delegateScript</td>
+                            </tr>
+                        </table>
+                    </section>
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="cl-endpoints">
+                    <section>
+                        <h2>All Endpoints</h2>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Max Pixels</td>
+                                <td>$maxPixels</td>
+                            </tr>
+                        </table>
+                    </section>
+
+                    <section>
+                        <h3>IIIF Image API Endpoints</h3>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Content Disposition</td>
+                                <td>$iiifContentDisposition</td>
+                            </tr>
+                            <tr>
+                                <td>Minimum Tile Size</td>
+                                <td>$iiifMinTileSize</td>
+                            </tr>
+                        </table>
+                    </section>
+
+                    <section>
+                        <h4>IIIF Image API 1.x</h4>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Enabled</td>
+                                <td>
+                                    #if ($iiif1EndpointEnabled)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                        </table>
+                    </section>
+
+                    <section>
+                        <h4>IIIF Image API 2.x</h4>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Enabled</td>
+                                <td>
+                                    #if ($iiif2EndpointEnabled)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Restrict to sizes in info.json</td>
+                                <td>
+                                    #if ($iiif2RestrictToSizes)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                        </table>
+                    </section>
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="cl-resolver">
-                    <h2>Resolver</h2>
-                    <p>$resolverName</p>
+                    <section>
+                        <h2>Resolver</h2>
+                        <p>$resolverName</p>
+                    </section>
+
+                    <section>
+                        <ul class="nav nav-pills" role="tablist">
+                            <li role="presentation">
+                                <a href="#AmazonS3Resolver"
+                                   aria-controls="AmazonS3Resolver" role="tab"
+                                   data-toggle="tab">AmazonS3Resolver</a>
+                            </li>
+                            <li role="presentation">
+                                <a href="#AzureStorageResolver"
+                                   aria-controls="AzureStorageResolver" role="tab"
+                                   data-toggle="tab">AzureStorageResolver</a>
+                            </li>
+                            <li role="presentation">
+                                <a href="#FilesystemResolver"
+                                   aria-controls="FilesystemResolver" role="tab"
+                                   data-toggle="tab">FilesystemResolver</a>
+                            </li>
+                            <li role="presentation">
+                                <a href="#HttpResolver"
+                                   aria-controls="HttpResolver" role="tab"
+                                   data-toggle="tab">HttpResolver</a>
+                            </li>
+                            <li role="presentation">
+                                <a href="#JdbcResolver"
+                                   aria-controls="JdbcResolver" role="tab"
+                                   data-toggle="tab">JdbcResolver</a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <div role="tabpanel" class="tab-pane" id="AmazonS3Resolver">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>Access Key ID</td>
+                                        <td>$amazonS3ResolverAccessKeyId</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Secret Key</td>
+                                        <td>$amazonS3ResolverSecretKey</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Bucket Name</td>
+                                        <td>$amazonS3ResolverBucketName</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Bucket Region</td>
+                                        <td>$amazonS3ResolverBucketRegion</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Lookup Strategy</td>
+                                        <td>$amazonS3ResolverLookupStrategy</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane" id="AzureStorageResolver">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>Account Name</td>
+                                        <td>$azureStorageResolverAccountName</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Account Key</td>
+                                        <td>$azureStorageResolverAccountKey</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Container Name</td>
+                                        <td>$azureStorageResolverContainerName</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Lookup Strategy</td>
+                                        <td>$azureStorageResolverLookupStrategy</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane" id="FilesystemResolver">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>Lookup Strategy</td>
+                                        <td>$filesystemResolverLookupStrategy</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Path Prefix</td>
+                                        <td>$filesystemResolverPathPrefix</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Path Suffix</td>
+                                        <td>$filesystemResolverPathSuffix</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane" id="HttpResolver">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>Lookup Strategy</td>
+                                        <td>$httpResolverLookupStrategy</td>
+                                    </tr>
+                                    <tr>
+                                        <td>URL Prefix</td>
+                                        <td>$httpResolverUrlPrefix</td>
+                                    </tr>
+                                    <tr>
+                                        <td>URL Suffix</td>
+                                        <td>$httpResolverUrlSuffix</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Basic Auth Username</td>
+                                        <td>$httpResolverBasicAuthUsername</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Basic Auth Password</td>
+                                        <td>$httpResolverBasicAuthPassword</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane" id="JdbcResolver">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>URL</td>
+                                        <td>$jdbcResolverUrl</td>
+                                    </tr>
+                                    <tr>
+                                        <td>User</td>
+                                        <td>$jdbcResolverUser</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Password</td>
+                                        <td>$jdbcResolverPassword</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Max Pool Size</td>
+                                        <td>$jdbcResolverMaxPoolSize</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Connection Timeout</td>
+                                        <td>$jdbcResolverConnectionTimeout</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="cl-processors">
                     <section>
                         <h2>Effective Source Format Assignments</h2>
 
-                        <ul class="nav nav-tabs" role="tablist">
+                        <ul class="nav nav-pills" role="tablist">
                             <li role="presentation" class="active">
                                 <a href="#cl-image-assignments"
                                    aria-controls="cl-image-assignments" role="tab"
@@ -175,7 +511,7 @@
                     <section>
                         <h2>Supported Source Formats</h2>
 
-                        <ul class="nav nav-tabs" role="tablist">
+                        <ul class="nav nav-pills" role="tablist">
                             <li role="presentation" class="active">
                                 <a href="#supported-image-formats"
                                    aria-controls="supported-image-formats" role="tab"
@@ -244,16 +580,702 @@
                             </div>
                         </div>
                     </section>
+
+                    <section>
+                        <h2>Processors</h2>
+
+                        <ul class="nav nav-pills" role="tablist">
+                            <li role="presentation">
+                                <a href="#FfmpegProcessor"
+                                   aria-controls="FfmpegProcessor" role="tab"
+                                   data-toggle="tab">FfmpegProcessor</a>
+                            </li>
+                            <li role="presentation">
+                                <a href="#GraphicsMagickProcessor"
+                                   aria-controls="GraphicsMagickProcessor" role="tab"
+                                   data-toggle="tab">GraphicsMagickProcessor</a>
+                            </li>
+                            <li role="presentation">
+                                <a href="#ImageMagickProcessor"
+                                   aria-controls="ImageMagickProcessor" role="tab"
+                                   data-toggle="tab">ImageMagickProcessor</a>
+                            </li>
+                            <li role="presentation">
+                                <a href="#JaiProcessor"
+                                   aria-controls="JaiProcessor" role="tab"
+                                   data-toggle="tab">JaiProcessor</a>
+                            </li>
+                            <li role="presentation">
+                                <a href="#Java2dProcessor"
+                                   aria-controls="Java2dProcessor" role="tab"
+                                   data-toggle="tab">Java2dProcessor</a>
+                            </li>
+                            <li role="presentation">
+                                <a href="#KakaduProcessor"
+                                   aria-controls="KakaduProcessor" role="tab"
+                                   data-toggle="tab">KakaduProcessor</a>
+                            </li>
+                            <li role="presentation">
+                                <a href="#OpenJpegProcessor"
+                                   aria-controls="OpenJpegProcessor" role="tab"
+                                   data-toggle="tab">OpenJpegProcessor</a>
+                            </li>
+                            <li role="presentation">
+                                <a href="#PdfBoxProcessor"
+                                   aria-controls="PdfBoxProcessor" role="tab"
+                                   data-toggle="tab">PdfBoxProcessor</a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <div role="tabpanel" class="tab-pane" id="FfmpegProcessor">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>Path to binaries</td>
+                                        <td>$ffmpegProcessorPathToBinaries</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane" id="GraphicsMagickProcessor">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>Path to binaries</td>
+                                        <td>$graphicsMagickProcessorPathToBinaries</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Background color</td>
+                                        <td>$graphicsMagickProcessorBackgroundColor</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane" id="ImageMagickProcessor">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>Path to binaries</td>
+                                        <td>$imageMagickProcessorPathToBinaries</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Background color</td>
+                                        <td>$imageMagickProcessorBackgroundColor</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane" id="JaiProcessor">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>JPEG quality</td>
+                                        <td>$jaiProcessorJpegQuality</td>
+                                    </tr>
+                                    <tr>
+                                        <td>TIFF compression</td>
+                                        <td>$jaiProcessorTiffCompression</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane" id="Java2dProcessor">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>Scale mode</td>
+                                        <td>$java2dProcessorScaleMode</td>
+                                    </tr>
+                                    <tr>
+                                        <td>JPEG quality</td>
+                                        <td>$java2dProcessorJpegQuality</td>
+                                    </tr>
+                                    <tr>
+                                        <td>TIFF compression</td>
+                                        <td>$java2dProcessorTiffCompression</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane" id="KakaduProcessor">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>Path to binaries</td>
+                                        <td>$kakaduProcessorPathToBinaries</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Post-processor</td>
+                                        <td>$kakaduProcessorPostProcessor</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Java 2D scale mode</td>
+                                        <td>$kakaduProcessorPostProcessorJava2dScaleMode</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane" id="OpenJpegProcessor">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>Path to binaries</td>
+                                        <td>$openJpegProcessorPathToBinaries</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Post-processor</td>
+                                        <td>$openJpegProcessorPostProcessor</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Java 2D scale mode</td>
+                                        <td>$openJpegProcessorPostProcessorJava2dScaleMode</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane" id="PdfBoxProcessor">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>DPI</td>
+                                        <td>$pdfBoxProcessorDpi</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Java 2D scale mode</td>
+                                        <td>$pdfBoxProcessorPostProcessorJava2dScaleMode</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="cl-caches">
                     <section>
-                        <h2>Source Cache</h2>
-                        <p>$sourceCacheName</p>
+                        <h2>Cache-Control Header</h2>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Enabled</td>
+                                <td>
+                                    #if ($clientCacheEnabled)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Max Age</td>
+                                <td>$clientCacheMaxAge</td>
+                            </tr>
+                            <tr>
+                                <td>Shared Max Age</td>
+                                <td>$clientCacheSharedMaxAge</td>
+                            </tr>
+                            <tr>
+                                <td>Public</td>
+                                <td>
+                                    #if ($clientCachePublic)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Private</td>
+                                <td>
+                                    #if ($clientCachePrivate)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>No Cache</td>
+                                <td>
+                                    #if ($clientCacheNoCache)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>No Store</td>
+                                <td>
+                                    #if ($clientCacheNoStore)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Must Revalidate</td>
+                                <td>
+                                    #if ($clientCacheMustRevalidate)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Proxy Revalidate</td>
+                                <td>
+                                    #if ($clientCacheProxyRevalidate)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>No Transform</td>
+                                <td>
+                                    #if ($clientCacheNoTransform)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                        </table>
                     </section>
                     <section>
-                        <h2>Derivative Cache</h2>
-                        <p>$derivativeCacheName</p>
+                        <h2>Server-Side Caches</h2>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Source Cache</td>
+                                <td>$sourceCacheName</td>
+                            </tr>
+                            <tr>
+                                <td>Derivative Cache</td>
+                                <td>$derivativeCacheName</td>
+                            </tr>
+                            <tr>
+                                <td>Purge Missing</td>
+                                <td>
+                                    #if ($cachePurgeMissing)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Resolve First</td>
+                                <td>
+                                    #if ($cacheResolveFirst)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                        </table>
+                    </section>
+
+                    <section>
+                        <h2>Cache Worker</h2>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Enabled</td>
+                                <td>
+                                    #if ($cacheWorkerEnabled)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Interval</td>
+                                <td>$cacheWorkerInterval</td>
+                            </tr>
+                        </table>
+                    </section>
+
+                    <section>
+                        <h2>Caches</h2>
+
+                        <ul class="nav nav-pills" role="tablist">
+                            <li role="presentation">
+                                <a href="#AmazonS3Cache"
+                                   aria-controls="AmazonS3Cache" role="tab"
+                                   data-toggle="tab">AmazonS3Cache</a>
+                            </li>
+                            <li role="presentation">
+                                <a href="#AzureStorageCache"
+                                   aria-controls="AzureStorageCache" role="tab"
+                                   data-toggle="tab">AzureStorageCache</a>
+                            </li>
+                            <li role="presentation">
+                                <a href="#FilesystemCache"
+                                   aria-controls="FilesystemCache" role="tab"
+                                   data-toggle="tab">FilesystemCache</a>
+                            </li>
+                            <li role="presentation">
+                                <a href="#JdbcCache"
+                                   aria-controls="JdbcCache" role="tab"
+                                   data-toggle="tab">JdbcCache</a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <div role="tabpanel" class="tab-pane" id="AmazonS3Cache">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>Access Key ID</td>
+                                        <td>$amazonS3CacheAccessKeyId</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Secret Key</td>
+                                        <td>$amazonS3CacheSecretKey</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Bucket Name</td>
+                                        <td>$amazonS3CacheBucketName</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Bucket Region</td>
+                                        <td>$amazonS3CacheBucketRegion</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Object Key Prefix</td>
+                                        <td>$amazonS3CacheObjectKeyPrefix</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Time-To-Live</td>
+                                        <td>$amazonS3CacheTimeToLive</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane" id="AzureStorageCache">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>Account Name</td>
+                                        <td>$azureStorageCacheAccountName</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Account Key</td>
+                                        <td>$azureStorageCacheAccountKey</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Container Name</td>
+                                        <td>$azureStorageCacheContainerName</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Object Key Prefix</td>
+                                        <td>$azureStorageCacheObjectKeyPrefix</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Time-To-Live</td>
+                                        <td>$azureStorageCacheTimeToLive</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane" id="FilesystemCache">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>Pathname</td>
+                                        <td>$filesystemCachePathname</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Directory Depth</td>
+                                        <td>$filesystemCacheDirectoryDepth</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Directory Name Length</td>
+                                        <td>$filesystemCacheDirectoryNameLength</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Time-To-Live</td>
+                                        <td>$filesystemCacheTimeToLive</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane" id="JdbcCache">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>URL</td>
+                                        <td>$jdbcCacheUrl</td>
+                                    </tr>
+                                    <tr>
+                                        <td>User</td>
+                                        <td>$jdbcCacheUser</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Password</td>
+                                        <td>$jdbcCachePassword</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Max Pool Size</td>
+                                        <td>$jdbcCacheMaxPoolSize</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Connection Timeout</td>
+                                        <td>$jdbcCacheConnectionTimeout</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Source Image Table</td>
+                                        <td>$jdbcCacheSourceImageTable</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Derivative Image Table</td>
+                                        <td>$jdbcCacheDerivativeImageTable</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Info Table</td>
+                                        <td>$jdbcCacheInfoTable</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Time-To-Live</td>
+                                        <td>$jdbcCacheTimeToLive</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="cl-overlays">
+                    <section>
+                        <h2>Watermarking</h2>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Enabled</td>
+                                <td>
+                                    #if ($watermarkEnabled)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Strategy</td>
+                                <td>$watermarkStrategy</td>
+                            </tr>
+                            <tr>
+                                <td>Image</td>
+                                <td>$watermarkBasicStrategyImage</td>
+                            </tr>
+                            <tr>
+                                <td>Position</td>
+                                <td>$watermarkBasicStrategyPosition</td>
+                            </tr>
+                            <tr>
+                                <td>Inset</td>
+                                <td>$watermarkBasicStrategyInset</td>
+                            </tr>
+                            <tr>
+                                <td>Output Width Threshold</td>
+                                <td>$watermarkBasicStrategyOutputWidthThreshold</td>
+                            </tr>
+                            <tr>
+                                <td>Output Height Threshold</td>
+                                <td>$watermarkBasicStrategyOutputHeightThreshold</td>
+                            </tr>
+                        </table>
+                    </section>
+
+                    <section>
+                        <h2>Redaction</h2>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Enabled</td>
+                                <td>
+                                    #if ($redactionEnabled)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                        </table>
+                    </section>
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="cl-logging">
+                    <section>
+                        <h2>Application Log</h2>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Log Level</td>
+                                <td>$applicationLogLevel</td>
+                            </tr>
+                        </table>
+
+                        <h3>Console Appender</h3>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Enabled</td>
+                                <td>
+                                    #if ($applicationLogConsoleAppenderEnabled)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                        </table>
+
+                        <h3>File Appender</h3>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Enabled</td>
+                                <td>
+                                    #if ($applicationLogFileAppenderEnabled)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Pathname</td>
+                                <td>$applicationLogConsoleAppenderPathname</td>
+                            </tr>
+                        </table>
+
+                        <h3>Rolling File Appender</h3>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Enabled</td>
+                                <td>
+                                    #if ($applicationLogRollingFileAppenderEnabled)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Pathname</td>
+                                <td>$applicationLogRollingFileAppenderPathname</td>
+                            </tr>
+                            <tr>
+                                <td>Filename Pattern</td>
+                                <td>$applicationLogRollingFileAppenderFilenamePattern</td>
+                            </tr>
+                            <tr>
+                                <td>Max History</td>
+                                <td>$applicationLogRollingFileAppenderMaxHistory</td>
+                            </tr>
+                        </table>
+
+                        <h3>Syslog Appender</h3>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Enabled</td>
+                                <td>
+                                    #if ($applicationLogSyslogAppenderEnabled)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Host</td>
+                                <td>$applicationLogSyslogAppenderHost</td>
+                            </tr>
+                            <tr>
+                                <td>Port</td>
+                                <td>$applicationLogSyslogAppenderPort</td>
+                            </tr>
+                            <tr>
+                                <td>Facility</td>
+                                <td>$applicationLogSyslogAppenderFacility</td>
+                            </tr>
+                        </table>
+                    </section>
+
+                    <section>
+                        <h2>Access Log</h2>
+
+                        <h3>Console Appender</h3>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Enabled</td>
+                                <td>
+                                    #if ($accessLogConsoleAppenderEnabled)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                        </table>
+
+                        <h3>File Appender</h3>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Enabled</td>
+                                <td>
+                                    #if ($accessLogFileAppenderEnabled)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Pathname</td>
+                                <td>$accessLogFileAppenderPathname</td>
+                            </tr>
+                        </table>
+
+                        <h3>Rolling File Appender</h3>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Enabled</td>
+                                <td>
+                                    #if ($accessLogRollingFileAppenderEnabled)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Pathname</td>
+                                <td>$accessLogRollingFileAppenderPathname</td>
+                            </tr>
+                            <tr>
+                                <td>Filename Pattern</td>
+                                <td>$accessLogRollingFileAppenderFilenamePattern</td>
+                            </tr>
+                            <tr>
+                                <td>Max History</td>
+                                <td>$accessLogRollingFileAppenderMaxHistory</td>
+                            </tr>
+                        </table>
+
+                        <h3>Syslog Appender</h3>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Enabled</td>
+                                <td>
+                                    #if ($accessLogSyslogAppenderEnabled)
+                                        <span class="text-success">&check;</span>
+                                    #else
+                                        <span class="text-danger">&times;</span>
+                                    #end
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Host</td>
+                                <td>$accessLogSyslogAppenderHost</td>
+                            </tr>
+                            <tr>
+                                <td>Port</td>
+                                <td>$accessLogSyslogAppenderPort</td>
+                            </tr>
+                            <tr>
+                                <td>Facility</td>
+                                <td>$accessLogSyslogAppenderFacility</td>
+                            </tr>
+                        </table>
                     </section>
                 </div>
             </div>

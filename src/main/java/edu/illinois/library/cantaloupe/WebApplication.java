@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe;
 
-import edu.illinois.library.cantaloupe.resource.AdminResource;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
+import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
 import org.apache.commons.configuration.Configuration;
 import org.restlet.Application;
 import org.restlet.Request;

@@ -13,7 +13,12 @@ header h1 {
 }
 
 footer {
+    padding: 2em 0em;
     text-align: center;
+}
+
+section {
+    margin-bottom: 2em;
 }
 
 h2 {
@@ -24,8 +29,12 @@ table, .table {
     font-size: 1em;
 }
 
-.label {
-    text-transform: uppercase;
+.list-group-item {
+    padding: 0px;
+}
+
+.nav > li.list-group-item > a {
+    padding: 17px 15px;
 }
 
 table.cl-source-format-assignments td:first-child {
