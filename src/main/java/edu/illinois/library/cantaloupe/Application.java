@@ -46,6 +46,8 @@ public class Application {
             "cantaloupe.cache.purge_expired";
 
     private static Configuration config;
+    private static Thread configWatcher;
+    private static FilesystemWatcher fsWatcher;
     /** This will be assigned in a standalone context. */
     private static WebServer webServer;
 
@@ -128,7 +130,7 @@ public class Application {
                 Slf4jLogChute.class.getCanonicalName());
         Velocity.init();
 
-        initializeConfigWatcher();
+        startConfigWatcher();
 
         final int mb = 1024 * 1024;
         Runtime runtime = Runtime.getRuntime();
@@ -139,37 +141,6 @@ public class Application {
         logger.info("Heap total: {}MB; max: {}MB", runtime.totalMemory() / mb,
                 runtime.maxMemory() / mb);
         logger.info("\uD83C\uDF48 Starting Cantaloupe {}", getVersion());
-    }
-
-    private static synchronized void initializeConfigWatcher() {
-        if (getConfigurationFile() != null) {
-            // Use FilesystemWatcher to listen for changes to the directory
-            // containing the configuration file. When the config file is found to
-            // have been changed, reload it.
-            final Thread configWatcher = new Thread() {
-                public void run() {
-                    FilesystemWatcher.Callback callback = new FilesystemWatcher.Callback() {
-                        public void created(Path path) { handle(path); }
-                        public void deleted(Path path) {}
-                        public void modified(Path path) { handle(path); }
-                        private void handle(Path path) {
-                            if (path.toFile().equals(getConfigurationFile())) {
-                                reloadConfigurationFile();
-                            }
-                        }
-                    };
-                    try {
-                        Path path = getConfigurationFile().toPath().getParent();
-                        new FilesystemWatcher(path, callback).processEvents();
-                    } catch (IOException e) {
-                        logger.error(e.getMessage(), e);
-                    }
-                }
-            };
-            configWatcher.setPriority(Thread.MIN_PRIORITY);
-            configWatcher.setName("ConfigWatcher");
-            configWatcher.start();
-        }
     }
 
     private static synchronized void initializeLogging() {
@@ -319,6 +290,58 @@ public class Application {
      */
     public static synchronized void setConfiguration(Configuration c) {
         config = c;
+    }
+
+    /**
+     * Shuts down the application in a Servlet context.
+     */
+    public static synchronized void shutdown() {
+        stopConfigWatcher();
+    }
+
+    private static synchronized void startConfigWatcher() {
+        if (getConfigurationFile() != null) {
+            // Use FilesystemWatcher to listen for changes to the directory
+            // containing the configuration file. When the config file is found to
+            // have been changed, reload it.
+            configWatcher = new Thread() {
+                public void run() {
+                    FilesystemWatcher.Callback callback = new FilesystemWatcher.Callback() {
+                        public void created(Path path) { handle(path); }
+                        public void deleted(Path path) {}
+                        public void modified(Path path) { handle(path); }
+                        private void handle(Path path) {
+                            if (path.toFile().equals(getConfigurationFile())) {
+                                reloadConfigurationFile();
+                            }
+                        }
+                    };
+                    try {
+                        Path path = getConfigurationFile().toPath().getParent();
+                        fsWatcher = new FilesystemWatcher(path, callback);
+                        fsWatcher.processEvents();
+                    } catch (IOException e) {
+                        logger.error(e.getMessage(), e);
+                    }
+                }
+            };
+            configWatcher.setPriority(Thread.MIN_PRIORITY);
+            configWatcher.setName("ConfigWatcher");
+            configWatcher.start();
+        }
+    }
+
+    private static synchronized void stopConfigWatcher() {
+        if (fsWatcher != null) {
+            fsWatcher.stop();
+        }
+        if (configWatcher != null) {
+            try {
+                configWatcher.join();
+            } catch (InterruptedException e) {
+                // expected
+            }
+        }
     }
 
     /**

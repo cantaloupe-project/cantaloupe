@@ -27,6 +27,7 @@ class FilesystemWatcher {
 
     private final Callback callback;
     private final Map<WatchKey,Path> keys;
+    private volatile boolean shouldStop = false;
     private final WatchService watcher;
 
     @SuppressWarnings("unchecked")
@@ -50,8 +51,11 @@ class FilesystemWatcher {
     /**
      * Process all events for keys queued to the watcher
      */
-    void processEvents() {
+    public void processEvents() {
         while (true) {
+            if (shouldStop) {
+                return;
+            }
             // wait for key to be signalled
             WatchKey key;
             try {
@@ -101,6 +105,10 @@ class FilesystemWatcher {
                 }
             }
         }
+    }
+
+    public void stop() {
+        shouldStop = true;
     }
 
 }

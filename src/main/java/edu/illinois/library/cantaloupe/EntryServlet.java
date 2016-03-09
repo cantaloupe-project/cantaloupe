@@ -16,4 +16,10 @@ public class EntryServlet extends ServerServlet {
         Application.initializeGeneral();
     }
 
+    @Override
+    public void destroy() {
+        super.destroy();
+        Application.shutdown();
+    }
+
 }
