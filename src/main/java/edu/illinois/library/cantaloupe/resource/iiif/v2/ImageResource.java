@@ -21,8 +21,6 @@ import org.restlet.data.Disposition;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.io.FileNotFoundException;
@@ -37,8 +35,6 @@ import java.util.Set;
  * Request Operations</a>
  */
 public class ImageResource extends Iiif2Resource {
-
-    private static Logger logger = LoggerFactory.getLogger(ImageResource.class);
 
     public static final String CONTENT_DISPOSITION_CONFIG_KEY =
             "endpoint.iiif.content_disposition";
@@ -149,7 +145,7 @@ public class ImageResource extends Iiif2Resource {
             String msg = String.format("%s does not support the \"%s\" output format",
                     processor.getClass().getSimpleName(),
                     ops.getOutputFormat().getPreferredExtension());
-            logger.warn(msg + ": " + this.getReference());
+            getLogger().warning(msg + ": " + this.getReference());
             throw new UnsupportedSourceFormatException(msg);
         }
 

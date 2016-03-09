@@ -22,8 +22,6 @@ import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Variant;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.io.FileNotFoundException;
@@ -40,9 +38,6 @@ import java.util.Set;
  * Request Operations</a>
  */
 public class ImageResource extends Iiif1Resource {
-
-    private static final Logger logger = LoggerFactory.
-            getLogger(ImageResource.class);
 
     /**
      * Format to assume when no extension is present in the URI.
@@ -161,7 +156,7 @@ public class ImageResource extends Iiif1Resource {
             String msg = String.format("%s does not support the \"%s\" output format",
                     processor.getClass().getSimpleName(),
                     ops.getOutputFormat().getPreferredExtension());
-            logger.warn(msg + ": " + this.getReference());
+            getLogger().warning(msg + ": " + this.getReference());
             throw new UnsupportedSourceFormatException(msg);
         }
 
