@@ -27,7 +27,11 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 /**
- * Main application class.
+ * <p>Main application class.</p>
+ *
+ * <p>In a standalone context, {@link #main(String[])} is the startup entry
+ * point. In a Servlet context, {@link #initializeGeneral()} is called from an
+ * entry Servlet.</p>
  */
 public class Application {
 
@@ -42,27 +46,13 @@ public class Application {
             "cantaloupe.cache.purge_expired";
 
     private static Configuration config;
-    private static WebServer webServer = new WebServer();
-
-    static {
-        // Suppress a Dock icon in OS X
-        System.setProperty("java.awt.headless", "true");
-
-        initializeLogging();
-
-        Velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
-        Velocity.setProperty("classpath.resource.loader.class",
-                ClasspathResourceLoader.class.getName());
-        Velocity.setProperty("class.resource.loader.cache", true);
-        Velocity.setProperty("runtime.log.logsystem.class",
-                Slf4jLogChute.class.getCanonicalName());
-        Velocity.init();
-    }
+    /** This will be assigned in a standalone context. */
+    private static WebServer webServer;
 
     /**
      * @return Application-wide Configuration object. Will be loaded from a
-     * file at startup (see {@link #getConfigurationFile}), but can also be
-     * overridden by {@link #setConfiguration}.
+     *         file at startup (see {@link #getConfigurationFile}), but can
+     *         also be overridden by {@link #setConfiguration}.
      */
     public static Configuration getConfiguration() {
         if (config == null) {
@@ -73,7 +63,7 @@ public class Application {
 
     /**
      * @return File object corresponding to the active configuration file, or
-     * null if there is no configuration file.
+     *         null if there is no configuration file.
      */
     public static File getConfigurationFile() {
         String configFilePath = System.getProperty(CONFIG_FILE_VM_ARGUMENT);
@@ -92,7 +82,7 @@ public class Application {
 
     /**
      * @return The application version from manifest.mf, or a string like
-     * "Non-Release" if not running from a jar.
+     *         "Non-Release" if not running from a jar.
      */
     public static String getVersion() {
         String versionStr = "Non-Release";
@@ -120,7 +110,69 @@ public class Application {
         return webServer;
     }
 
-    private static void initializeLogging() {
+    /**
+     * Performs general initialization needed in any mode (standalone or
+     * Servlet).
+     */
+    public static synchronized void initializeGeneral() {
+        // Suppress a Dock icon in OS X
+        System.setProperty("java.awt.headless", "true");
+
+        initializeLogging();
+
+        Velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
+        Velocity.setProperty("classpath.resource.loader.class",
+                ClasspathResourceLoader.class.getName());
+        Velocity.setProperty("class.resource.loader.cache", true);
+        Velocity.setProperty("runtime.log.logsystem.class",
+                Slf4jLogChute.class.getCanonicalName());
+        Velocity.init();
+
+        initializeConfigWatcher();
+
+        final int mb = 1024 * 1024;
+        Runtime runtime = Runtime.getRuntime();
+        logger.info(System.getProperty("java.vm.name") + " / " +
+                System.getProperty("java.vm.info"));
+        logger.info("{} available processor cores",
+                runtime.availableProcessors());
+        logger.info("Heap total: {}MB; max: {}MB", runtime.totalMemory() / mb,
+                runtime.maxMemory() / mb);
+        logger.info("\uD83C\uDF48 Starting Cantaloupe {}", getVersion());
+    }
+
+    private static synchronized void initializeConfigWatcher() {
+        if (getConfigurationFile() != null) {
+            // Use FilesystemWatcher to listen for changes to the directory
+            // containing the configuration file. When the config file is found to
+            // have been changed, reload it.
+            final Thread configWatcher = new Thread() {
+                public void run() {
+                    FilesystemWatcher.Callback callback = new FilesystemWatcher.Callback() {
+                        public void created(Path path) { handle(path); }
+                        public void deleted(Path path) {}
+                        public void modified(Path path) { handle(path); }
+                        private void handle(Path path) {
+                            if (path.toFile().equals(getConfigurationFile())) {
+                                reloadConfigurationFile();
+                            }
+                        }
+                    };
+                    try {
+                        Path path = getConfigurationFile().toPath().getParent();
+                        new FilesystemWatcher(path, callback).processEvents();
+                    } catch (IOException e) {
+                        logger.error(e.getMessage(), e);
+                    }
+                }
+            };
+            configWatcher.setPriority(Thread.MIN_PRIORITY);
+            configWatcher.setName("ConfigWatcher");
+            configWatcher.start();
+        }
+    }
+
+    private static synchronized void initializeLogging() {
         // Restlet normally uses JUL; we want it to use slf4j.
         System.getProperties().put("org.restlet.engine.loggerFacadeClass",
                 "org.restlet.ext.slf4j.Slf4jLoggerFacade");
@@ -157,7 +209,13 @@ public class Application {
         }
     }
 
-    public static void main(String[] args) throws Exception {
+    /**
+     * Performs initialization specific to standalone mode. Should be called
+     * after {@link #initializeGeneral()}.
+     *
+     * @throws Exception
+     */
+    private static synchronized void initializeStandalone() throws Exception {
         try {
             validateConfiguration();
         } catch (edu.illinois.library.cantaloupe.ConfigurationException e) {
@@ -165,45 +223,6 @@ public class Application {
             System.out.println("Exiting.");
             System.exit(-1);
         }
-
-        if (getConfigurationFile() != null) {
-            // Use FilesystemWatcher to listen for changes to the directory
-            // containing the configuration file. When the config file is found to
-            // have been changed, reload it.
-            final Thread configWatcher = new Thread() {
-                public void run() {
-                    FilesystemWatcher.Callback callback = new FilesystemWatcher.Callback() {
-                        public void created(Path path) { handle(path); }
-                        public void deleted(Path path) {}
-                        public void modified(Path path) { handle(path); }
-                        private void handle(Path path) {
-                            if (path.toFile().equals(getConfigurationFile())) {
-                                reloadConfigurationFile();
-                            }
-                        }
-                    };
-                    try {
-                        Path path = getConfigurationFile().toPath().getParent();
-                        new FilesystemWatcher(path, callback).processEvents();
-                    } catch (IOException e) {
-                        logger.error(e.getMessage(), e);
-                    }
-                }
-            };
-            configWatcher.setPriority(Thread.MIN_PRIORITY);
-            configWatcher.setName("ConfigWatcher");
-            configWatcher.start();
-        }
-
-        final int mb = 1024 * 1024;
-        Runtime runtime = Runtime.getRuntime();
-        logger.info(System.getProperty("java.vm.name") + " / " +
-                System.getProperty("java.vm.info"));
-        logger.info("{} available processor cores",
-                runtime.availableProcessors());
-        logger.info("Heap total: {}MB; max: {}MB", runtime.totalMemory() / mb,
-                runtime.maxMemory() / mb);
-        logger.info("\uD83C\uDF48 Starting Cantaloupe {}", getVersion());
 
         if (System.getProperty(CLEAN_CACHE_VM_ARGUMENT) != null) {
             Cache cache = CacheFactory.getSourceCache();
@@ -256,15 +275,21 @@ public class Application {
             }
             System.out.println("Done.");
             System.exit(0);
-        } else {
-            // If the cache worker is enabled, run it in a low-priority
-            // background thread.
-            if (getConfiguration().getBoolean(CacheWorker.ENABLED_CONFIG_KEY, false)) {
-                // Wait 10 seconds to reduce startup load.
-                CacheWorker.runInBackground(10);
-            }
-            webServer.start();
         }
+
+        // If the cache worker is enabled, run it in a low-priority
+        // background thread.
+        if (getConfiguration().getBoolean(CacheWorker.ENABLED_CONFIG_KEY, false)) {
+            // Wait 10 seconds to reduce startup load.
+            CacheWorker.runInBackground(10);
+        }
+        webServer = new WebServer();
+        webServer.start();
+    }
+
+    public static void main(String[] args) throws Exception {
+        initializeGeneral();
+        initializeStandalone();
     }
 
     public static synchronized void reloadConfigurationFile() {

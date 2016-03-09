@@ -1,9 +1,10 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.illinois.library.cantaloupe</groupId>
   <artifactId>Cantaloupe</artifactId>
-  <packaging>jar</packaging>
+  <packaging>war</packaging>
   <!-- needs to be kept synchronized with properties/cantaloupe.version -->
   <version>2.3-SNAPSHOT</version>
   <name>Cantaloupe</name>
@@ -55,7 +56,7 @@
       <artifactId>logback-classic</artifactId>
       <version>1.1.3</version>
     </dependency>
-    <!-- Used by AmazonS3Resolver -->
+    <!-- Used by AmazonS3Resolver and AmazonS3Cache -->
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-s3</artifactId>
@@ -75,7 +76,7 @@
       <version>1.4.190</version>
       <scope>test</scope>
     </dependency>
-    <!-- Provides an Azure Storage client for AzureStorageResolver -->
+    <!-- Used by AzureStorageResolver and AzureStorageCache-->
     <dependency>
       <groupId>com.microsoft.azure</groupId>
       <artifactId>azure-storage</artifactId>
@@ -93,6 +94,7 @@
       <artifactId>commons-configuration</artifactId>
       <version>1.6</version>
     </dependency>
+    <!-- IOUtils.copy() is used all over the place -->
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
@@ -119,6 +121,11 @@
       <groupId>it.geosolutions.imageio-ext</groupId>
       <artifactId>imageio-ext-tiff</artifactId>
       <version>1.1.13</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.1.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -156,19 +163,20 @@
       <version>9.0.5.0</version>
       <type>pom</type>
     </dependency>
+    <!-- Restlet is our REST framework. -->
     <dependency>
-      <groupId>org.restlet.jse</groupId>
+      <groupId>org.restlet.jee</groupId>
       <artifactId>org.restlet</artifactId>
       <version>${restlet.version}</version>
     </dependency>
-    <!-- Provides Jackson for serialization of information response objects to
-    JSON -->
+    <!-- Provides Jackson for JSON object (de)serialization -->
     <dependency>
-      <groupId>org.restlet.jse</groupId>
+      <groupId>org.restlet.jee</groupId>
       <artifactId>org.restlet.ext.jackson</artifactId>
       <version>${restlet.version}</version>
     </dependency>
-    <!-- use the Simple HTTP server instead of the default Sun server -->
+    <!-- use the Simple HTTP server instead of the default Sun server in
+    standalone mode. -->
     <dependency>
       <groupId>org.restlet.jse</groupId>
       <artifactId>org.restlet.ext.simple</artifactId>
@@ -176,13 +184,19 @@
     </dependency>
     <!-- Enables Restlet to log to SLF4J -->
     <dependency>
-      <groupId>org.restlet.jse</groupId>
+      <groupId>org.restlet.jee</groupId>
       <artifactId>org.restlet.ext.slf4j</artifactId>
+      <version>${restlet.version}</version>
+    </dependency>
+    <!-- Enable usage of the application in a Servlet container -->
+    <dependency>
+      <groupId>org.restlet.jee</groupId>
+      <artifactId>org.restlet.ext.servlet</artifactId>
       <version>${restlet.version}</version>
     </dependency>
     <!-- Provides Velocity for the landing and error page templates -->
     <dependency>
-      <groupId>org.restlet.jse</groupId>
+      <groupId>org.restlet.jee</groupId>
       <artifactId>org.restlet.ext.velocity</artifactId>
       <version>${restlet.version}</version>
       <exclusions>
@@ -204,6 +218,13 @@
       <groupId>org.slf4j</groupId>
       <artifactId>jcl-over-slf4j</artifactId>
       <version>1.7.12</version>
+    </dependency>
+    <!-- Helps achieve a command-line-runnable WAR:
+     http://jowisoftware.de/wp/2011/02/creating-runnable-wars-with-maven-and-jetty/ -->
+    <dependency>
+      <groupId>edu.illinois.library.cantaloupe</groupId>
+      <artifactId>Cantaloupe</artifactId>
+      <version>${cantaloupe.version}</version>
     </dependency>
   </dependencies>
 
@@ -233,29 +254,30 @@
           <target>1.7</target>
         </configuration>
       </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
+        <artifactId>maven-war-plugin</artifactId>
         <version>2.6</version>
         <configuration>
           <archive>
             <manifest>
               <mainClass>edu.illinois.library.cantaloupe.Application</mainClass>
             </manifest>
-            <!-- JAI apparently requires these:
-            http://stackoverflow.com/questions/7051603/jai-vendorname-null -->
-            <manifestEntries>
-              <Specification-Title>Cantaloupe</Specification-Title>
-              <Specification-Version>${cantaloupe.version}</Specification-Version>
-              <Specification-Vendor>Cantaloupe</Specification-Vendor>
-              <Implementation-Title>Cantaloupe</Implementation-Title>
-              <Implementation-Version>${cantaloupe.version}</Implementation-Version>
-              <Implementation-Vendor>Cantaloupe</Implementation-Vendor>
-            </manifestEntries>
           </archive>
+          <overlays>
+            <!-- Copy the Simple server to the root of the WAR to enable
+            running from the command line -->
+            <overlay>
+              <groupId>org.restlet.jse</groupId>
+              <artifactId>org.restlet.ext.simple</artifactId>
+              <type>jar</type>
+            </overlay>
+          </overlays>
         </configuration>
       </plugin>
-      <!-- Creates a jar with bundled dependencies -->
+
+      <!-- Creates a war with bundled dependencies -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
@@ -282,7 +304,8 @@
           </execution>
         </executions>
       </plugin>
-      <!-- Assembles the created jar into a release package -->
+
+      <!-- Assembles the created war into a release package -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <version>2.5.5</version>
