@@ -142,6 +142,6 @@ title: Deployment
 
 <h2 id="SSL/TLS">SSL/TLS</h2>
 
-<p>SSL/TLS is an involved subject that will not be covered here in any depth. Suffice to say that Cantaloupe supports TLS connections over HTTPS, configurable via the <code>https.*</code> keys in the configuration file. The general process for getting it working is to add a signed x.509 certificate to either a Java KeyStore (JKS) or PKCS#12 key store, and then refer to the key store file with the <code>https.key_store_path</code> configuration option.</p>
+<p>SSL/TLS is an involved subject that will not be covered here in any depth. Suffice to say that in standalone mode, Cantaloupe supports TLS connections over HTTPS, configurable via the <code>https.*</code> keys in the configuration file. The general process for getting this working is to add a signed x.509 certificate to either a Java KeyStore (JKS) or PKCS#12 key store, and then refer to the key store file with the <code>https.key_store_path</code> configuration option.</p>
 
-<p>HTTPS can also be enabled on a <a href="#Reverse-Proxying">reverse proxy server</a>, in which case the image server requires no special configuration.</p>
+<p>HTTPS can also be enabled on a Servlet container or <a href="#Reverse-Proxying">reverse proxy server</a>, in which case Cantaloupe requires no special configuration.</p>
