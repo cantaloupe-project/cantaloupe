@@ -1,22 +1,23 @@
 ---
-layout: manual_2.3
+layout: manual_3.0
 title: What's New
 ---
 
 <ol class="breadcrumb">
   <li><a href="{{ site.baseurl }}/">Home</a></li>
   <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
-  <li><a href="{{ site.baseurl }}/manual/2.3/">2.3</a></li>
+  <li><a href="{{ site.baseurl }}/manual/3.0/">3.0</a></li>
   <li class="active">What's New</li>
 </ol>
 
-<h2>What's New in <span class="version">2.3</span></h2>
+<h2>What's New in <span class="version">3.0</span></h2>
 
 <ul>
+  <li>Moved the landing page content to a new, restricted Control Panel.</li>
+  <li>Changed the distribution archive to a custom <span class="filename">.war</span> file which can be run standalone (as usual) or in a Servlet container.</li>
   <li>Added AmazonS3Cache.</li>
   <li>Added AzureStorageCache.</li>
   <li>Added redaction.</li>
-  <li>Moved the landing page content to a new, restricted Control Panel.</li>
   <li>Added the ability to restrict available sizes to those specified in the <span class="filename">info.json</span> response in the IIIF Image API 2.0 endpoint.</li>
   <li>Added an optional source image cache, which can improve the performance of StreamProcessors, as well as enable FileProcessors to work with StreamResolvers.</li>
   <li>Moved JdbcResolver delegate methods to the delegate script.</li>

@@ -1,12 +1,12 @@
 ---
-layout: manual_2.3
+layout: manual_3.0
 title: Caches
 ---
 
 <ol class="breadcrumb">
   <li><a href="{{ site.baseurl }}/">Home</a></li>
   <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
-  <li><a href="{{ site.baseurl }}/manual/2.3/">2.3</a></li>
+  <li><a href="{{ site.baseurl }}/manual/3.0/">3.0</a></li>
   <li class="active">Caches</li>
 </ol>
 
@@ -83,9 +83,9 @@ cache.client.no_transform = true
 
 <p>As is explained in the <a href="resolvers.html">Resolvers</a> section, though, images do not have to be served from a local filesystem&mdash;they can also be served from a remote web server, cloud storage, or what have you. The source cache can be beneficial when one of these non-filesystem sources performs poorer than ideal. Setting <code>cache.source</code> to <code>FilesystemCache</code> will cause all source images from non-FilesystemResolvers to be automatically downloaded and stored in the source cache.</p>
 
-<p>Another reason for a source cache is to work around the <a href="processors.html#Resolver%20Compatibility">incompatibility between certain processors and resolvers</a>. Some processors are only capable of reading source images located on the filesystem, which is obviously not possible when they do not reside there. By setting <code>StreamProcessor.retrieval_strategy</code> to <code>CacheStrategy</code>, and then <a href="#FilesystemCache">configuring FilesystemCache</a>, the source cache will be utilized to deal with incompatible processor/resolver situations by automatically pre-downloading source images, This makes it possible to use something like <a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a> with <a href="resolvers.html#AmazonS3Resolver">AmazonS3Resolver</a>.</p>
+<p>Another reason for a source cache is to work around the <a href="processors.html#Resolver%20Compatibility">incompatibility between certain processors and resolvers</a>. Some processors are only capable of reading source images located on the filesystem. By setting <code>StreamProcessor.retrieval_strategy</code> to <code>CacheStrategy</code>, and then <a href="#FilesystemCache">configuring FilesystemCache</a>, the source cache will be utilized to deal with incompatible processor/resolver situations by automatically pre-downloading source images, This makes it possible to use something like <a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a> with <a href="resolvers.html#AmazonS3Resolver">AmazonS3Resolver</a>.</p>
 
-<p>In a perfect world, all cloud services and so on would offer faster-than-light-latency seekable-stream access, all image readers would be able to read from them as efficiently as from the local filesystem, and there would be no need to deal with the added complexity of a source cache. But, that is not the reality. Cantaloupe tries to keep things simple by integrating the source cache into the larger caching architecture, so all of the information about <a href="#Modes%20of%20Operation">modes of operation</a> and <a href="#Maintenance">maintenance</a> is applicable to both the source and derivative caches.</p>
+<p>Idealy, all cloud services and so on would offer faster-than-light-latency seekable-stream access, all image readers would be able to read from them as efficiently as from the local filesystem, and there would be no need to deal with the added complexity of a source cache. But, that is not the reality. Cantaloupe tries to keep things simple by integrating the source cache into the larger caching architecture, so all of the information about <a href="#Modes%20of%20Operation">modes of operation</a> and <a href="#Maintenance">maintenance</a> is applicable to both the source and derivative caches.</p>
 
 <p>Note that unlike the derivative cache, there is only one available source cache implementation&mdash;<a href="#FilesystemCache">FilesystemCache</a>&mdash;and it will be used independently of the derivative cache.</p>
 
@@ -95,7 +95,7 @@ cache.client.no_transform = true
 
 <p>The derivative cache caches post-processed images in order to spare the computational expense of processing the same image request over and over again. Derivative caches are pluggable, in order to enable different cache stores.</p>
 
-<p>Derivative caching is recommended in production, as it will greatly reduce load on the server and improve response times accordingly. There are other ways of caching image content, such as by using a caching reverse proxy, but the built-in derivative cache is custom-tailored for this application and easy enough to set up.</p>
+<p>Derivative caching is recommended in production, as it will greatly reduce load on the server and improve response times accordingly. There are other ways of caching derivatives, such as by using a caching reverse proxy, but the built-in derivative cache is custom-tailored for this application and easy enough to set up.</p>
 
 <p>Derivative caching is disabled by default. To enable it, set <code>cache.derivative</code> to the name of a cache, such as <a href="#FilesystemCache">FilesystemCache</a>.</p>
 

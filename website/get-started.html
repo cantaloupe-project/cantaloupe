@@ -10,7 +10,7 @@ title: Get Started
 
 <h1>Get Started</h1>
 
-<p>This is a short guide to help you get going quickly with a typical configuration. Consult the <a href="manual/">user manual</a> for in-depth information about available features and functionality.</p>
+<p>This is a short guide to help you get going quickly with a typical standalone configuration. Consult the <a href="manual/">user manual</a> for in-depth information about available features and functionality.</p>
 
 <h2 id="Requirements">Requirements</h2>
 
@@ -36,17 +36,13 @@ title: Get Started
 
 <p>From the command prompt (OS X/Linux):</p>
 
-<pre>java -Dcantaloupe.config=/path/to/cantaloupe.properties -Xmx2g -jar Cantaloupe-x.x.x.jar</pre>
+<pre>java -Dcantaloupe.config=/path/to/cantaloupe.properties -Xmx2g -jar Cantaloupe-x.x.x.war</pre>
 
 <p>From the command prompt (Windows):</p>
 
-<pre>java -Dcantaloupe.config=C:\path\to\cantaloupe.properties -Xmx2g -jar Cantaloupe-x.x.x.jar</pre>
+<pre>java -Dcantaloupe.config=C:\path\to\cantaloupe.properties -Xmx2g -jar Cantaloupe-x.x.x.war</pre>
 
-<p>Cantaloupe is now running. A status page is available at:</p>
-
-<p><a href="http://localhost:8182/">http://localhost:8182/</a></p>
-
-<p>Assuming you have an image named <span class="filename">image.tif</span>, try accessing:</p>
+<p>Cantaloupe is now running. Assuming you have an image named <span class="filename">image.tif</span>, try accessing:</p>
 
 <ul>
   <li><a href="http://localhost:8182/iiif/2/image.tif/info.json">http://localhost:8182/iiif/2/image.tif/info.json</a></li>
