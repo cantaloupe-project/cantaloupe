@@ -1,13 +1,16 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.apache.commons.configuration.Configuration;
+import org.junit.Before;
 import org.junit.Test;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.ChallengeResponse;
 import org.restlet.data.ChallengeScheme;
+import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
@@ -23,15 +26,53 @@ import static org.junit.Assert.*;
  */
 public class AdminResourceTest extends ResourceTest {
 
-    @Test
-    public void testBasicAuthentication() throws Exception {
-        final String username = "admin";
-        final String secret = "secret";
+    private static final String username = "admin";
+    private static final String secret = "secret";
+
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
         Application.getWebServer().stop();
         Configuration config = Application.getConfiguration();
-        config.setProperty(WebApplication.ADMIN_SECRET_CONFIG_KEY, "secret");
+        config.setProperty(WebApplication.ADMIN_SECRET_CONFIG_KEY, secret);
         Application.getWebServer().start();
+    }
 
+    @Test
+    public void testCacheHeaders() {
+        Configuration config = Application.getConfiguration();
+        config.setProperty("cache.client.enabled", "true");
+        config.setProperty("cache.client.max_age", "1234");
+        config.setProperty("cache.client.shared_max_age", "4567");
+        config.setProperty("cache.client.public", "false");
+        config.setProperty("cache.client.private", "false");
+        config.setProperty("cache.client.no_cache", "true");
+        config.setProperty("cache.client.no_store", "false");
+        config.setProperty("cache.client.must_revalidate", "false");
+        config.setProperty("cache.client.proxy_revalidate", "false");
+
+        Map<String, String> expectedDirectives = new HashMap<>();
+        expectedDirectives.put("no-cache", null);
+
+        ClientResource client = getClientForUriPath(WebApplication.ADMIN_PATH);
+        client.setChallengeResponse(
+                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, username, secret));
+        client.get();
+        List<CacheDirective> actualDirectives = client.getResponse().getCacheDirectives();
+        for (CacheDirective d : actualDirectives) {
+            if (d.getName() != null) {
+                assertTrue(expectedDirectives.keySet().contains(d.getName()));
+                if (d.getValue() != null) {
+                    assertTrue(expectedDirectives.get(d.getName()).equals(d.getValue()));
+                } else {
+                    assertNull(expectedDirectives.get(d.getName()));
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testDoGetAsHtml() throws Exception {
         // no credentials
         ClientResource client = getClientForUriPath(WebApplication.ADMIN_PATH);
         try {
@@ -54,39 +95,38 @@ public class AdminResourceTest extends ResourceTest {
         // valid credentials
         client.setChallengeResponse(
                 new ChallengeResponse(ChallengeScheme.HTTP_BASIC, username, secret));
-        client.get();
+        client.get(MediaType.TEXT_HTML);
         assertEquals(Status.SUCCESS_OK, client.getStatus());
+        System.out.println(client.getResponse().getEntityAsText());
+        assertTrue(client.getResponse().getEntityAsText().
+                contains("Cantaloupe Image Server"));
     }
 
     @Test
-    public void testCacheHeaders() {
-        Configuration config = Application.getConfiguration();
-        config.setProperty("cache.client.enabled", "true");
-        config.setProperty("cache.client.max_age", "1234");
-        config.setProperty("cache.client.shared_max_age", "4567");
-        config.setProperty("cache.client.public", "false");
-        config.setProperty("cache.client.private", "false");
-        config.setProperty("cache.client.no_cache", "true");
-        config.setProperty("cache.client.no_store", "false");
-        config.setProperty("cache.client.must_revalidate", "false");
-        config.setProperty("cache.client.proxy_revalidate", "false");
+    public void testDoGetAsJson() {
+        Application.getConfiguration().setProperty("test", "cats");
 
-        Map<String, String> expectedDirectives = new HashMap<>();
-        expectedDirectives.put("no-cache", null);
+        ClientResource client = getClientForUriPath(WebApplication.ADMIN_PATH);
+        client.setChallengeResponse(
+                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, username, secret));
 
-        ClientResource client = getClientForUriPath("");
-        client.get();
-        List<CacheDirective> actualDirectives = client.getResponse().getCacheDirectives();
-        for (CacheDirective d : actualDirectives) {
-            if (d.getName() != null) {
-                assertTrue(expectedDirectives.keySet().contains(d.getName()));
-                if (d.getValue() != null) {
-                    assertTrue(expectedDirectives.get(d.getName()).equals(d.getValue()));
-                } else {
-                    assertNull(expectedDirectives.get(d.getName()));
-                }
-            }
-        }
+        client.get(MediaType.APPLICATION_JSON);
+        assertTrue(client.getResponse().getEntityAsText().
+                contains("\"test\":\"cats\""));
+    }
+
+    @Test
+    public void testDoPost() throws Exception {
+        Map<String,Object> entityMap = new HashMap<>();
+        entityMap.put("test", "cats");
+        String entity = new ObjectMapper().writer().writeValueAsString(entityMap);
+
+        ClientResource client = getClientForUriPath(WebApplication.ADMIN_PATH);
+        client.setChallengeResponse(
+                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, username, secret));
+        client.post(entity, MediaType.APPLICATION_JSON);
+
+        assertEquals("cats", Application.getConfiguration().getString("test"));
     }
 
 }

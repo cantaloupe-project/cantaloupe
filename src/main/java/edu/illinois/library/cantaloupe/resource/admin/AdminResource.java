@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.WebServer;
@@ -22,18 +23,24 @@ import org.apache.velocity.app.Velocity;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.Header;
 import org.restlet.data.MediaType;
+import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.ext.velocity.TemplateRepresentation;
+import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
+import org.restlet.resource.Post;
 import org.restlet.resource.ResourceException;
 import org.restlet.util.Series;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -75,19 +82,74 @@ public class AdminResource extends AbstractResource {
         getResponseCacheDirectives().add(CacheDirective.noCache());
     }
 
-    @Get
-    public Representation doGet() throws Exception {
+    /**
+     * @return HTML representation of the admin interface.
+     * @throws Exception
+     */
+    @Get("html")
+    public Representation doGetAsHtml() throws Exception {
         Template template = Velocity.getTemplate("admin.vm");
         return new TemplateRepresentation(template, getTemplateVars(),
                 MediaType.TEXT_HTML);
     }
 
+    /**
+     * @return JSON application configuration. <strong>This may contain
+     *         sensitive info and must be protected.</strong>
+     * @throws Exception
+     */
+    @Get("application/json")
+    public Representation doGetAsJson() throws Exception {
+        return new JacksonRepresentation<>(configurationAsMap());
+    }
+
+    /**
+     * Deserializes submitted JSON data and updates the application
+     * configuration instance with it.
+     *
+     * @param rep
+     * @throws IOException
+     */
+    @Post("application/json")
+    public Representation doPost(Representation rep) throws IOException {
+        final Configuration config = Application.getConfiguration();
+        final Map submittedConfig = new ObjectMapper().readValue(
+                rep.getStream(), HashMap.class);
+
+        for (final Object key : submittedConfig.keySet()) {
+            config.setProperty((String) key, submittedConfig.get(key));
+        }
+        return new EmptyRepresentation();
+    }
+
+    /**
+     * @return Map representation of the application configuration.
+     */
+    private Map<String,Object> configurationAsMap() {
+        final Configuration config = Application.getConfiguration();
+        final Map<String,Object> configMap = new HashMap<>();
+        final Iterator it = config.getKeys();
+        while (it.hasNext()) {
+            final String key = (String) it.next();
+            final Object value = config.getProperty(key);
+            configMap.put(key, value);
+        }
+        return configMap;
+    }
+
+    /**
+     * @return Map containing variables for use in the admin interface HTML
+     *         template.
+     * @throws Exception
+     */
     private Map<String,Object> getTemplateVars() throws Exception {
         final Configuration config = Application.getConfiguration();
         final Map<String, Object> vars = getCommonTemplateVars(getRequest());
 
-        vars.put("configFilePath",
-                Application.getConfigurationFile().getAbsolutePath());
+        final File configFile = Application.getConfigurationFile();
+        if (configFile != null) {
+            vars.put("configFilePath", configFile.getAbsolutePath());
+        }
 
         ////////////////////////////////////////////////////////////////////
         //////////////////////// status section ////////////////////////////
