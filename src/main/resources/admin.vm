@@ -11,10 +11,6 @@
 
     <link rel="stylesheet" href="static/styles/admin.css">
 
-    <!-- TODO: move these to footer -->
-    <script type="text/javascript" src="static/scripts/jquery.min.js"></script>
-    <script type="text/javascript" src="static/scripts/bootstrap.min.js"></script>
-
     <title>Cantaloupe Image Server</title>
 </head>
 
@@ -110,80 +106,6 @@
                             #end
                         </table>
                     </section>
-                </div>
-
-                <div role="tabpanel" class="tab-pane" id="cl-server">
-                    <section>
-                        <h2>HTTP</h2>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Enabled</td>
-                                <td>
-                                    #if ($httpEnabled)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Port</td>
-                                <td>$httpPort</td>
-                            </tr>
-                        </table>
-                    </section>
-
-                    <section>
-                        <h2>HTTPS</h2>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Enabled</td>
-                                <td>
-                                    #if ($httpsEnabled)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Port</td>
-                                <td>$httpsPort</td>
-                            </tr>
-                            <tr>
-                                <td>Key Store Type</td>
-                                <td>$httpsKeyStoreType</td>
-                            </tr>
-                            <tr>
-                                <td>Key Store Path</td>
-                                <td>$httpsKeyStorePath</td>
-                            </tr>
-                        </table>
-                    </section>
-
-                    <section>
-                        <h2>HTTP Basic Authentication</h2>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Enabled</td>
-                                <td>
-                                    #if ($basicAuthEnabled)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Username</td>
-                                <td>$basicAuthUsername</td>
-                            </tr>
-                            <tr>
-                                <td>Secret</td>
-                                <td>$basicAuthSecret</td>
-                            </tr>
-                        </table>
-                    </section>
 
                     <section>
                         <h2>Proxy Headers</h2>
@@ -212,254 +134,476 @@
                             </tr>
                         </table>
                     </section>
+                </div>
 
-                    <section>
-                        <h2>Other Settings</h2>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Base URI</td>
-                                <td>$baseUriConfig</td>
-                            </tr>
-                            <tr>
-                                <td>URI Slash Substitute</td>
-                                <td>$uriSlashSubstitute</td>
-                            </tr>
-                            <tr>
-                                <td>Print stack trace on error pages</td>
-                                <td>
-                                    #if ($printStackTraceOnErrorPages)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Delegate script</td>
-                                <td>$delegateScript</td>
-                            </tr>
-                        </table>
-                    </section>
+                <div role="tabpanel" class="tab-pane" id="cl-server">
+                    <form method="post">
+                        <section>
+                            <h2>HTTP</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Enabled</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="http.enabled">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Port</td>
+                                    <td>
+                                        <input class="form-control" type="number"
+                                               name="http.port" min="1" max="65536">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
+                        <section>
+                            <h2>HTTPS</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Enabled</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="https.enabled">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Port</td>
+                                    <td>
+                                        <input class="form-control" type="number"
+                                               name="https.port" min="1" max="65536">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Key Store Type</td>
+                                    <td>
+                                        <select class="form-control" name="https.key_store_type">
+                                            <option>JKS</option>
+                                            <option>PKCS12</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Key Store Path</td>
+                                    <td>
+                                        <input class="form-control" type="text"
+                                               name="https.key_store_path" maxlength="4096">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Key Store Password</td>
+                                    <td>
+                                        <input class="form-control" type="password"
+                                               name="https.key_store_password">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
+                        <section>
+                            <h2>HTTP Basic Authentication</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Enabled</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="auth.basic.enabled">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Username</td>
+                                    <td>
+                                        <input class="form-control" type="text"
+                                               name="auth.basic.username">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Secret</td>
+                                    <td>
+                                        <input class="form-control" type="password"
+                                               name="auth.basic.secret">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
+                        <section>
+                            <h2>Other Settings</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Base URI</td>
+                                    <td>
+                                        <input class="form-control" type="text"
+                                               name="base_uri" maxlength="4096">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>URI Slash Substitute</td>
+                                    <td>
+                                        <input class="form-control" type="text"
+                                               name="slash_substitute" size="4" maxlength="4">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="print_stack_trace_on_error_pages"
+                                                       value="true">
+                                                Print stack trace on error pages
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Delegate script</td>
+                                    <td>
+                                        <input class="form-control" type="text"
+                                               name="delegate_script" maxlength="4096">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
+                        <input type="submit" class="btn btn-primary" value="Save">
+                    </form>
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="cl-endpoints">
-                    <section>
-                        <h2>All Endpoints</h2>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Max Pixels</td>
-                                <td>$maxPixels</td>
-                            </tr>
-                        </table>
-                    </section>
+                    <form method="post">
+                        <section>
+                            <h2>All Endpoints</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Max Pixels</td>
+                                    <td>
+                                        <input class="form-control" type="number"
+                                               name="max_pixels" min="0">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
 
-                    <section>
-                        <h3>IIIF Image API Endpoints</h3>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Content Disposition</td>
-                                <td>$iiifContentDisposition</td>
-                            </tr>
-                            <tr>
-                                <td>Minimum Tile Size</td>
-                                <td>$iiifMinTileSize</td>
-                            </tr>
-                        </table>
-                    </section>
+                        <section>
+                            <h3>IIIF Image API Endpoints</h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Content Disposition</td>
+                                    <td>
+                                        <select class="form-control" name="endpoint.iiif.content_disposition">
+                                            <option value="none">None</option>
+                                            <option value="inline">Inline</option>
+                                            <option value="attachment">Attachment</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Minimum Tile Size</td>
+                                    <td>
+                                        <input class="form-control" type="number"
+                                               name="endpoint.iiif.min_tile_size" min="0">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
 
-                    <section>
-                        <h4>IIIF Image API 1.x</h4>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Enabled</td>
-                                <td>
-                                    #if ($iiif1EndpointEnabled)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                        </table>
-                    </section>
+                        <section>
+                            <h4>IIIF Image API 1.x</h4>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Enabled</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="endpoint.iiif.1.enabled"
+                                                       value="true">
+                                                Yeah
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
 
-                    <section>
-                        <h4>IIIF Image API 2.x</h4>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Enabled</td>
-                                <td>
-                                    #if ($iiif2EndpointEnabled)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Restrict to sizes in info.json</td>
-                                <td>
-                                    #if ($iiif2RestrictToSizes)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                        </table>
-                    </section>
+                        <section>
+                            <h4>IIIF Image API 2.x</h4>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Enabled</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="endpoint.iiif.2.enabled"
+                                                       value="true">
+                                                Yeah
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Restrict to sizes in info.json</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="endpoint.iiif.2.restrict_to_sizes"
+                                                       value="true">
+                                                Yeah
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+                        <input type="submit" class="btn btn-primary" value="Save">
+                    </form>
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="cl-resolver">
-                    <section>
-                        <h2>Resolver</h2>
-                        <p>$resolverName</p>
-                    </section>
+                    <form method="post">
+                        <section>
+                            <h2>Resolver</h2>
+                            <p>$resolverName</p>
+                        </section>
 
-                    <section>
-                        <ul class="nav nav-pills" role="tablist">
-                            <li role="presentation">
-                                <a href="#AmazonS3Resolver"
-                                   aria-controls="AmazonS3Resolver" role="tab"
-                                   data-toggle="tab">AmazonS3Resolver</a>
-                            </li>
-                            <li role="presentation">
-                                <a href="#AzureStorageResolver"
-                                   aria-controls="AzureStorageResolver" role="tab"
-                                   data-toggle="tab">AzureStorageResolver</a>
-                            </li>
-                            <li role="presentation">
-                                <a href="#FilesystemResolver"
-                                   aria-controls="FilesystemResolver" role="tab"
-                                   data-toggle="tab">FilesystemResolver</a>
-                            </li>
-                            <li role="presentation">
-                                <a href="#HttpResolver"
-                                   aria-controls="HttpResolver" role="tab"
-                                   data-toggle="tab">HttpResolver</a>
-                            </li>
-                            <li role="presentation">
-                                <a href="#JdbcResolver"
-                                   aria-controls="JdbcResolver" role="tab"
-                                   data-toggle="tab">JdbcResolver</a>
-                            </li>
-                        </ul>
+                        <section>
+                            <ul class="nav nav-pills" role="tablist">
+                                <li role="presentation">
+                                    <a href="#AmazonS3Resolver"
+                                       aria-controls="AmazonS3Resolver" role="tab"
+                                       data-toggle="tab">AmazonS3Resolver</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#AzureStorageResolver"
+                                       aria-controls="AzureStorageResolver" role="tab"
+                                       data-toggle="tab">AzureStorageResolver</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#FilesystemResolver"
+                                       aria-controls="FilesystemResolver" role="tab"
+                                       data-toggle="tab">FilesystemResolver</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#HttpResolver"
+                                       aria-controls="HttpResolver" role="tab"
+                                       data-toggle="tab">HttpResolver</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#JdbcResolver"
+                                       aria-controls="JdbcResolver" role="tab"
+                                       data-toggle="tab">JdbcResolver</a>
+                                </li>
+                            </ul>
 
-                        <div class="tab-content">
-                            <div role="tabpanel" class="tab-pane" id="AmazonS3Resolver">
-                                <table class="table table-striped">
-                                    <tr>
-                                        <td>Access Key ID</td>
-                                        <td>$amazonS3ResolverAccessKeyId</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Secret Key</td>
-                                        <td>$amazonS3ResolverSecretKey</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Bucket Name</td>
-                                        <td>$amazonS3ResolverBucketName</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Bucket Region</td>
-                                        <td>$amazonS3ResolverBucketRegion</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Lookup Strategy</td>
-                                        <td>$amazonS3ResolverLookupStrategy</td>
-                                    </tr>
-                                </table>
+                            <div class="tab-content">
+                                <div role="tabpanel" class="tab-pane" id="AmazonS3Resolver">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Access Key ID</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="AmazonS3Resolver.access_key_id">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Secret Key</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="AmazonS3Resolver.secret_key">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Bucket Name</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="AmazonS3Resolver.bucket.name">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Bucket Region</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="AmazonS3Resolver.bucket.region">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Lookup Strategy</td>
+                                            <td>
+                                                <select class="form-control" name="AmazonS3Resolver.lookup_strategy">
+                                                    <option value="BasicLookupStrategy">Basic</option>
+                                                    <option value="ScriptLookupStrategy">Delegate Script</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="AzureStorageResolver">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Account Name</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="AzureStorageResolver.account_name">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Account Key</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="AzureStorageResolver.account_key">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Container Name</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="AzureStorageResolver.container_name">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Lookup Strategy</td>
+                                            <td>
+                                                <select class="form-control" name="AzureStorageResolver.lookup_strategy">
+                                                    <option value="BasicLookupStrategy">Basic</option>
+                                                    <option value="ScriptLookupStrategy">Delegate Script</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="FilesystemResolver">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Lookup Strategy</td>
+                                            <td>
+                                                <select class="form-control" name="FilesystemResolver.lookup_strategy">
+                                                    <option value="BasicLookupStrategy">Basic</option>
+                                                    <option value="ScriptLookupStrategy">Delegate Script</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Path Prefix</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="FilesystemResolver.BasicLookupStrategy.path_prefix">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Path Suffix</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="FilesystemResolver.BasicLookupStrategy.path_suffix">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="HttpResolver">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Lookup Strategy</td>
+                                            <td>
+                                                <select class="form-control" name="HttpResolver.lookup_strategy">
+                                                    <option value="BasicLookupStrategy">Basic</option>
+                                                    <option value="ScriptLookupStrategy">Delegate Script</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>URL Prefix</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="HttpResolver.BasicLookupStrategy.url_prefix">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>URL Suffix</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="HttpResolver.BasicLookupStrategy.url_suffix">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Basic Auth Username</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="HttpResolver.auth.basic.username">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Basic Auth Secret</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="HttpResolver.auth.basic.secret">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="JdbcResolver">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>URL</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="JdbcResolver.url">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>User</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="JdbcResolver.user">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Password</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="JdbcResolver.password">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Max Pool Size</td>
+                                            <td>
+                                                <input class="form-control" type="number"
+                                                       name="JdbcResolver.max_pool_size" min="1" max="200">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Connection Timeout</td>
+                                            <td>
+                                                <input class="form-control" type="number"
+                                                       name="JdbcResolver.connection_timeout" min="0">
+                                                seconds
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
                             </div>
-
-                            <div role="tabpanel" class="tab-pane" id="AzureStorageResolver">
-                                <table class="table table-striped">
-                                    <tr>
-                                        <td>Account Name</td>
-                                        <td>$azureStorageResolverAccountName</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Account Key</td>
-                                        <td>$azureStorageResolverAccountKey</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Container Name</td>
-                                        <td>$azureStorageResolverContainerName</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Lookup Strategy</td>
-                                        <td>$azureStorageResolverLookupStrategy</td>
-                                    </tr>
-                                </table>
-                            </div>
-
-                            <div role="tabpanel" class="tab-pane" id="FilesystemResolver">
-                                <table class="table table-striped">
-                                    <tr>
-                                        <td>Lookup Strategy</td>
-                                        <td>$filesystemResolverLookupStrategy</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Path Prefix</td>
-                                        <td>$filesystemResolverPathPrefix</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Path Suffix</td>
-                                        <td>$filesystemResolverPathSuffix</td>
-                                    </tr>
-                                </table>
-                            </div>
-
-                            <div role="tabpanel" class="tab-pane" id="HttpResolver">
-                                <table class="table table-striped">
-                                    <tr>
-                                        <td>Lookup Strategy</td>
-                                        <td>$httpResolverLookupStrategy</td>
-                                    </tr>
-                                    <tr>
-                                        <td>URL Prefix</td>
-                                        <td>$httpResolverUrlPrefix</td>
-                                    </tr>
-                                    <tr>
-                                        <td>URL Suffix</td>
-                                        <td>$httpResolverUrlSuffix</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Basic Auth Username</td>
-                                        <td>$httpResolverBasicAuthUsername</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Basic Auth Password</td>
-                                        <td>$httpResolverBasicAuthPassword</td>
-                                    </tr>
-                                </table>
-                            </div>
-
-                            <div role="tabpanel" class="tab-pane" id="JdbcResolver">
-                                <table class="table table-striped">
-                                    <tr>
-                                        <td>URL</td>
-                                        <td>$jdbcResolverUrl</td>
-                                    </tr>
-                                    <tr>
-                                        <td>User</td>
-                                        <td>$jdbcResolverUser</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Password</td>
-                                        <td>$jdbcResolverPassword</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Max Pool Size</td>
-                                        <td>$jdbcResolverMaxPoolSize</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Connection Timeout</td>
-                                        <td>$jdbcResolverConnectionTimeout</td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
-                    </section>
+                        </section>
+                        <input type="submit" class="btn btn-primary" value="Save">
+                    </form>
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="cl-processors">
@@ -581,702 +725,997 @@
                         </div>
                     </section>
 
-                    <section>
-                        <h2>Processors</h2>
+                    <form method="post">
+                        <section>
+                            <h2>Processors</h2>
 
-                        <ul class="nav nav-pills" role="tablist">
-                            <li role="presentation">
-                                <a href="#FfmpegProcessor"
-                                   aria-controls="FfmpegProcessor" role="tab"
-                                   data-toggle="tab">FfmpegProcessor</a>
-                            </li>
-                            <li role="presentation">
-                                <a href="#GraphicsMagickProcessor"
-                                   aria-controls="GraphicsMagickProcessor" role="tab"
-                                   data-toggle="tab">GraphicsMagickProcessor</a>
-                            </li>
-                            <li role="presentation">
-                                <a href="#ImageMagickProcessor"
-                                   aria-controls="ImageMagickProcessor" role="tab"
-                                   data-toggle="tab">ImageMagickProcessor</a>
-                            </li>
-                            <li role="presentation">
-                                <a href="#JaiProcessor"
-                                   aria-controls="JaiProcessor" role="tab"
-                                   data-toggle="tab">JaiProcessor</a>
-                            </li>
-                            <li role="presentation">
-                                <a href="#Java2dProcessor"
-                                   aria-controls="Java2dProcessor" role="tab"
-                                   data-toggle="tab">Java2dProcessor</a>
-                            </li>
-                            <li role="presentation">
-                                <a href="#KakaduProcessor"
-                                   aria-controls="KakaduProcessor" role="tab"
-                                   data-toggle="tab">KakaduProcessor</a>
-                            </li>
-                            <li role="presentation">
-                                <a href="#OpenJpegProcessor"
-                                   aria-controls="OpenJpegProcessor" role="tab"
-                                   data-toggle="tab">OpenJpegProcessor</a>
-                            </li>
-                            <li role="presentation">
-                                <a href="#PdfBoxProcessor"
-                                   aria-controls="PdfBoxProcessor" role="tab"
-                                   data-toggle="tab">PdfBoxProcessor</a>
-                            </li>
-                        </ul>
+                            <ul class="nav nav-pills" role="tablist">
+                                <li role="presentation">
+                                    <a href="#FfmpegProcessor"
+                                       aria-controls="FfmpegProcessor" role="tab"
+                                       data-toggle="tab">FfmpegProcessor</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#GraphicsMagickProcessor"
+                                       aria-controls="GraphicsMagickProcessor" role="tab"
+                                       data-toggle="tab">GraphicsMagickProcessor</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#ImageMagickProcessor"
+                                       aria-controls="ImageMagickProcessor" role="tab"
+                                       data-toggle="tab">ImageMagickProcessor</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#JaiProcessor"
+                                       aria-controls="JaiProcessor" role="tab"
+                                       data-toggle="tab">JaiProcessor</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#Java2dProcessor"
+                                       aria-controls="Java2dProcessor" role="tab"
+                                       data-toggle="tab">Java2dProcessor</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#KakaduProcessor"
+                                       aria-controls="KakaduProcessor" role="tab"
+                                       data-toggle="tab">KakaduProcessor</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#OpenJpegProcessor"
+                                       aria-controls="OpenJpegProcessor" role="tab"
+                                       data-toggle="tab">OpenJpegProcessor</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#PdfBoxProcessor"
+                                       aria-controls="PdfBoxProcessor" role="tab"
+                                       data-toggle="tab">PdfBoxProcessor</a>
+                                </li>
+                            </ul>
 
-                        <div class="tab-content">
-                            <div role="tabpanel" class="tab-pane" id="FfmpegProcessor">
-                                <table class="table table-striped">
-                                    <tr>
-                                        <td>Path to binaries</td>
-                                        <td>$ffmpegProcessorPathToBinaries</td>
-                                    </tr>
-                                </table>
+                            <div class="tab-content">
+                                <div role="tabpanel" class="tab-pane" id="FfmpegProcessor">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Path to binaries</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="FfmpegProcessor.path_to_binaries">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="GraphicsMagickProcessor">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Path to binaries</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="GraphicsMagickProcessor.path_to_binaries">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Background color</td>
+                                            <td>
+                                                <select class="form-control" name="GraphicsMagickProcessor.background_color">
+                                                    <option value="black">Black</option>
+                                                    <option value="white">White</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="ImageMagickProcessor">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Path to binaries</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="ImageMagickProcessor.path_to_binaries">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Background color</td>
+                                            <td>
+                                                <select class="form-control" name="ImageMagickProcessor.background_color">
+                                                    <option value="black">Black</option>
+                                                    <option value="white">White</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="JaiProcessor">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>JPEG quality</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="JaiProcessor.jpg.quality" min="1" max="100">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>TIFF compression</td>
+                                            <td>
+                                                <select class="form-control" name="JaiProcessor.tif.compression">
+                                                    <option>LZW</option>
+                                                    <option>Deflate</option>
+                                                    <option>ZLib</option>
+                                                    <option>JPEG</option>
+                                                    <option>PackBits</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="Java2dProcessor">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Scale mode</td>
+                                            <td>
+                                                <select class="form-control" name="Java2dProcessor.scale_mode">
+                                                    <option value="speed">Speed</option>
+                                                    <option value="quality">Quality</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>JPEG quality</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="Java2dProcessor.jpg.quality" min="1" max="100">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>TIFF compression</td>
+                                            <td>
+                                                <select class="form-control" name="Java2dProcessor.tif.compression">
+                                                    <option>LZW</option>
+                                                    <option>Deflate</option>
+                                                    <option>ZLib</option>
+                                                    <option>JPEG</option>
+                                                    <option>PackBits</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="KakaduProcessor">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Path to binaries</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="KakaduProcessor.path_to_binaries">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Post-processor</td>
+                                            <td>
+                                                <select class="form-control" name="KakaduProcessor.post_processor">
+                                                    <option value="java2d">Java 2D</option>
+                                                    <option value="jai">JAI</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Java 2D scale mode</td>
+                                            <td>
+                                                <select class="form-control" name="KakaduProcessor.post_processor.java2d.scale_mode">
+                                                    <option value="speed">Speed</option>
+                                                    <option value="quality">Quality</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="OpenJpegProcessor">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Path to binaries</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="OpenJpegProcessor.path_to_binaries">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Post-processor</td>
+                                            <td>
+                                                <select class="form-control" name="OpenJpegProcessor.post_processor">
+                                                    <option value="java2d">Java 2D</option>
+                                                    <option value="jai">JAI</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Java 2D scale mode</td>
+                                            <td>
+                                                <select class="form-control" name="OpenJpegProcessor.post_processor.java2d.scale_mode">
+                                                    <option value="speed">Speed</option>
+                                                    <option value="quality">Quality</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="PdfBoxProcessor">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>DPI</td>
+                                            <td>
+                                                <input class="form-control" type="number"
+                                                       name="PdfBoxProcessor.dpi">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Java 2D scale mode</td>
+                                            <td>
+                                                <select class="form-control" name="PdfBoxProcessor.post_processor.java2d.scale_mode">
+                                                    <option value="speed">Speed</option>
+                                                    <option value="quality">Quality</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
                             </div>
-
-                            <div role="tabpanel" class="tab-pane" id="GraphicsMagickProcessor">
-                                <table class="table table-striped">
-                                    <tr>
-                                        <td>Path to binaries</td>
-                                        <td>$graphicsMagickProcessorPathToBinaries</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Background color</td>
-                                        <td>$graphicsMagickProcessorBackgroundColor</td>
-                                    </tr>
-                                </table>
-                            </div>
-
-                            <div role="tabpanel" class="tab-pane" id="ImageMagickProcessor">
-                                <table class="table table-striped">
-                                    <tr>
-                                        <td>Path to binaries</td>
-                                        <td>$imageMagickProcessorPathToBinaries</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Background color</td>
-                                        <td>$imageMagickProcessorBackgroundColor</td>
-                                    </tr>
-                                </table>
-                            </div>
-
-                            <div role="tabpanel" class="tab-pane" id="JaiProcessor">
-                                <table class="table table-striped">
-                                    <tr>
-                                        <td>JPEG quality</td>
-                                        <td>$jaiProcessorJpegQuality</td>
-                                    </tr>
-                                    <tr>
-                                        <td>TIFF compression</td>
-                                        <td>$jaiProcessorTiffCompression</td>
-                                    </tr>
-                                </table>
-                            </div>
-
-                            <div role="tabpanel" class="tab-pane" id="Java2dProcessor">
-                                <table class="table table-striped">
-                                    <tr>
-                                        <td>Scale mode</td>
-                                        <td>$java2dProcessorScaleMode</td>
-                                    </tr>
-                                    <tr>
-                                        <td>JPEG quality</td>
-                                        <td>$java2dProcessorJpegQuality</td>
-                                    </tr>
-                                    <tr>
-                                        <td>TIFF compression</td>
-                                        <td>$java2dProcessorTiffCompression</td>
-                                    </tr>
-                                </table>
-                            </div>
-
-                            <div role="tabpanel" class="tab-pane" id="KakaduProcessor">
-                                <table class="table table-striped">
-                                    <tr>
-                                        <td>Path to binaries</td>
-                                        <td>$kakaduProcessorPathToBinaries</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Post-processor</td>
-                                        <td>$kakaduProcessorPostProcessor</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Java 2D scale mode</td>
-                                        <td>$kakaduProcessorPostProcessorJava2dScaleMode</td>
-                                    </tr>
-                                </table>
-                            </div>
-
-                            <div role="tabpanel" class="tab-pane" id="OpenJpegProcessor">
-                                <table class="table table-striped">
-                                    <tr>
-                                        <td>Path to binaries</td>
-                                        <td>$openJpegProcessorPathToBinaries</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Post-processor</td>
-                                        <td>$openJpegProcessorPostProcessor</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Java 2D scale mode</td>
-                                        <td>$openJpegProcessorPostProcessorJava2dScaleMode</td>
-                                    </tr>
-                                </table>
-                            </div>
-
-                            <div role="tabpanel" class="tab-pane" id="PdfBoxProcessor">
-                                <table class="table table-striped">
-                                    <tr>
-                                        <td>DPI</td>
-                                        <td>$pdfBoxProcessorDpi</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Java 2D scale mode</td>
-                                        <td>$pdfBoxProcessorPostProcessorJava2dScaleMode</td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
-                    </section>
+                        </section>
+                        <input type="submit" class="btn btn-primary" value="Save">
+                    </form>
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="cl-caches">
-                    <section>
-                        <h2>Cache-Control Header</h2>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Enabled</td>
-                                <td>
-                                    #if ($clientCacheEnabled)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Max Age</td>
-                                <td>$clientCacheMaxAge</td>
-                            </tr>
-                            <tr>
-                                <td>Shared Max Age</td>
-                                <td>$clientCacheSharedMaxAge</td>
-                            </tr>
-                            <tr>
-                                <td>Public</td>
-                                <td>
-                                    #if ($clientCachePublic)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Private</td>
-                                <td>
-                                    #if ($clientCachePrivate)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>No Cache</td>
-                                <td>
-                                    #if ($clientCacheNoCache)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>No Store</td>
-                                <td>
-                                    #if ($clientCacheNoStore)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Must Revalidate</td>
-                                <td>
-                                    #if ($clientCacheMustRevalidate)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Proxy Revalidate</td>
-                                <td>
-                                    #if ($clientCacheProxyRevalidate)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>No Transform</td>
-                                <td>
-                                    #if ($clientCacheNoTransform)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                        </table>
-                    </section>
-                    <section>
-                        <h2>Server-Side Caches</h2>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Source Cache</td>
-                                <td>$sourceCacheName</td>
-                            </tr>
-                            <tr>
-                                <td>Derivative Cache</td>
-                                <td>$derivativeCacheName</td>
-                            </tr>
-                            <tr>
-                                <td>Purge Missing</td>
-                                <td>
-                                    #if ($cachePurgeMissing)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Resolve First</td>
-                                <td>
-                                    #if ($cacheResolveFirst)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                        </table>
-                    </section>
+                    <form method="post">
+                        <section>
+                            <h2>Cache-Control Header</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Enabled</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.client.enabled"
+                                                       value="true">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Max Age</td>
+                                    <td>
+                                        <input class="form-control" type="number"
+                                               name="cache.client.max_age" min="0">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Shared Max Age</td>
+                                    <td>
+                                        <input class="form-control" type="number"
+                                               name="cache.client.shared_max_age" min="0">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Public</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.client.public"
+                                                       value="true">
+                                                Public
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Private</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.client.private"
+                                                       value="true">
+                                                Private
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>No Cache</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.client.no_cache"
+                                                       value="true">
+                                                No Cache
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>No Store</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.client.no_store"
+                                                       value="true">
+                                                No Store
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Must Revalidate</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.client.must_revalidate"
+                                                       value="true">
+                                                Must Revalidate
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Proxy Revalidate</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.client.proxy_revalidate"
+                                                       value="true">
+                                                Proxy Revalidate
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>No Transform</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.client.no_transform"
+                                                       value="true">
+                                                No Transform
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+                        <section>
+                            <h2>Server-Side Caches</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Source Cache</td>
+                                    <td>$sourceCacheName</td>
+                                </tr>
+                                <tr>
+                                    <td>Derivative Cache</td>
+                                    <td>$derivativeCacheName</td>
+                                </tr>
+                                <tr>
+                                    <td>Purge Missing</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.server.purge_missing"
+                                                       value="true">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Resolve First</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.server.resolve_first"
+                                                       value="true">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
 
-                    <section>
-                        <h2>Cache Worker</h2>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Enabled</td>
-                                <td>
-                                    #if ($cacheWorkerEnabled)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Interval</td>
-                                <td>$cacheWorkerInterval</td>
-                            </tr>
-                        </table>
-                    </section>
+                        <section>
+                            <h2>Cache Worker</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Enabled</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.worker.enabled"
+                                                       value="true">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Interval</td>
+                                    <td>
+                                        <input type="number" name="cache.worker.interval"
+                                               value="true" min="0">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
 
-                    <section>
-                        <h2>Caches</h2>
+                        <section>
+                            <h2>Caches</h2>
 
-                        <ul class="nav nav-pills" role="tablist">
-                            <li role="presentation">
-                                <a href="#AmazonS3Cache"
-                                   aria-controls="AmazonS3Cache" role="tab"
-                                   data-toggle="tab">AmazonS3Cache</a>
-                            </li>
-                            <li role="presentation">
-                                <a href="#AzureStorageCache"
-                                   aria-controls="AzureStorageCache" role="tab"
-                                   data-toggle="tab">AzureStorageCache</a>
-                            </li>
-                            <li role="presentation">
-                                <a href="#FilesystemCache"
-                                   aria-controls="FilesystemCache" role="tab"
-                                   data-toggle="tab">FilesystemCache</a>
-                            </li>
-                            <li role="presentation">
-                                <a href="#JdbcCache"
-                                   aria-controls="JdbcCache" role="tab"
-                                   data-toggle="tab">JdbcCache</a>
-                            </li>
-                        </ul>
+                            <ul class="nav nav-pills" role="tablist">
+                                <li role="presentation">
+                                    <a href="#AmazonS3Cache"
+                                       aria-controls="AmazonS3Cache" role="tab"
+                                       data-toggle="tab">AmazonS3Cache</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#AzureStorageCache"
+                                       aria-controls="AzureStorageCache" role="tab"
+                                       data-toggle="tab">AzureStorageCache</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#FilesystemCache"
+                                       aria-controls="FilesystemCache" role="tab"
+                                       data-toggle="tab">FilesystemCache</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#JdbcCache"
+                                       aria-controls="JdbcCache" role="tab"
+                                       data-toggle="tab">JdbcCache</a>
+                                </li>
+                            </ul>
 
-                        <div class="tab-content">
-                            <div role="tabpanel" class="tab-pane" id="AmazonS3Cache">
-                                <table class="table table-striped">
-                                    <tr>
-                                        <td>Access Key ID</td>
-                                        <td>$amazonS3CacheAccessKeyId</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Secret Key</td>
-                                        <td>$amazonS3CacheSecretKey</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Bucket Name</td>
-                                        <td>$amazonS3CacheBucketName</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Bucket Region</td>
-                                        <td>$amazonS3CacheBucketRegion</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Object Key Prefix</td>
-                                        <td>$amazonS3CacheObjectKeyPrefix</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Time-To-Live</td>
-                                        <td>$amazonS3CacheTimeToLive</td>
-                                    </tr>
-                                </table>
+                            <div class="tab-content">
+                                <div role="tabpanel" class="tab-pane" id="AmazonS3Cache">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Access Key ID</td>
+                                            <td>
+                                                <input type="text"
+                                                       name="AmazonS3Cache.access_key_id">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Secret Key</td>
+                                            <td>
+                                                <input type="text"
+                                                       name="AmazonS3Cache.secret_key">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Bucket Name</td>
+                                            <td>
+                                                <input type="text"
+                                                       name="AmazonS3Cache.bucket.name">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Bucket Region</td>
+                                            <td>
+                                                <input type="text"
+                                                       name="AmazonS3Cache.bucket.region">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Object Key Prefix</td>
+                                            <td>
+                                                <input type="text"
+                                                       name="AmazonS3Cache.object_key_prefix">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Time-To-Live</td>
+                                            <td>
+                                                <input type="number" name="AmazonS3Cache.ttl_seconds"
+                                                       min="0">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="AzureStorageCache">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Account Name</td>
+                                            <td>
+                                                <input type="text"
+                                                       name="AzureStorageCache.account_name">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Account Key</td>
+                                            <td>
+                                                <input type="text"
+                                                       name="AzureStorageCache.account_key">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Container Name</td>
+                                            <td>
+                                                <input type="text"
+                                                       name="AzureStorageCache.container_name">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Object Key Prefix</td>
+                                            <td>
+                                                <input type="text"
+                                                       name="AzureStorageCache.object_key_prefix">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Time-To-Live</td>
+                                            <td>
+                                                <input type="number" name="AzureStorageCache.ttl_seconds"
+                                                       min="0">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="FilesystemCache">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Pathname</td>
+                                            <td>
+                                                <input type="text" name="FilesystemCache.pathname">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Directory Depth</td>
+                                            <td>
+                                                <input type="number" name="FilesystemCache.dir.depth"
+                                                       min="0" max="6">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Directory Name Length</td>
+                                            <td>
+                                                <input type="number" name="FilesystemCache.dir.name_length"
+                                                       min="1" max="6">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Time-To-Live</td>
+                                            <td>
+                                                <input type="number" name="FilesystemCache.ttl_seconds"
+                                                       min="0">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="JdbcCache">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>URL</td>
+                                            <td>
+                                                <input type="text" name="JdbcCache.url">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>User</td>
+                                            <td>
+                                                <input type="text" name="JdbcCache.user">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Password</td>
+                                            <td>
+                                                <input type="text" name="JdbcCache.password">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Max Pool Size</td>
+                                            <td>
+                                                <input type="number" name="JdbcCache.max_pool_size"
+                                                       min="1" max="200">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Connection Timeout</td>
+                                            <td>
+                                                <input type="number" name="JdbcCache.connection_timeout"
+                                                       min="0">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Source Image Table</td>
+                                            <td>
+                                                <input type="text" name="JdbcCache.source_image_table">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Derivative Image Table</td>
+                                            <td>
+                                                <input type="text" name="JdbcCache.derivative_image_table">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Info Table</td>
+                                            <td>
+                                                <input type="text" name="JdbcCache.info_table">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Time-To-Live</td>
+                                            <td>
+                                                <input type="number" name="JdbcCache.ttl_seconds"
+                                                       min="0">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
                             </div>
-
-                            <div role="tabpanel" class="tab-pane" id="AzureStorageCache">
-                                <table class="table table-striped">
-                                    <tr>
-                                        <td>Account Name</td>
-                                        <td>$azureStorageCacheAccountName</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Account Key</td>
-                                        <td>$azureStorageCacheAccountKey</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Container Name</td>
-                                        <td>$azureStorageCacheContainerName</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Object Key Prefix</td>
-                                        <td>$azureStorageCacheObjectKeyPrefix</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Time-To-Live</td>
-                                        <td>$azureStorageCacheTimeToLive</td>
-                                    </tr>
-                                </table>
-                            </div>
-
-                            <div role="tabpanel" class="tab-pane" id="FilesystemCache">
-                                <table class="table table-striped">
-                                    <tr>
-                                        <td>Pathname</td>
-                                        <td>$filesystemCachePathname</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Directory Depth</td>
-                                        <td>$filesystemCacheDirectoryDepth</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Directory Name Length</td>
-                                        <td>$filesystemCacheDirectoryNameLength</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Time-To-Live</td>
-                                        <td>$filesystemCacheTimeToLive</td>
-                                    </tr>
-                                </table>
-                            </div>
-
-                            <div role="tabpanel" class="tab-pane" id="JdbcCache">
-                                <table class="table table-striped">
-                                    <tr>
-                                        <td>URL</td>
-                                        <td>$jdbcCacheUrl</td>
-                                    </tr>
-                                    <tr>
-                                        <td>User</td>
-                                        <td>$jdbcCacheUser</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Password</td>
-                                        <td>$jdbcCachePassword</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Max Pool Size</td>
-                                        <td>$jdbcCacheMaxPoolSize</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Connection Timeout</td>
-                                        <td>$jdbcCacheConnectionTimeout</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Source Image Table</td>
-                                        <td>$jdbcCacheSourceImageTable</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Derivative Image Table</td>
-                                        <td>$jdbcCacheDerivativeImageTable</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Info Table</td>
-                                        <td>$jdbcCacheInfoTable</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Time-To-Live</td>
-                                        <td>$jdbcCacheTimeToLive</td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
-                    </section>
+                        </section>
+                        <input type="submit" class="btn btn-primary" value="Save">
+                    </form>
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="cl-overlays">
-                    <section>
-                        <h2>Watermarking</h2>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Enabled</td>
-                                <td>
-                                    #if ($watermarkEnabled)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Strategy</td>
-                                <td>$watermarkStrategy</td>
-                            </tr>
-                            <tr>
-                                <td>Image</td>
-                                <td>$watermarkBasicStrategyImage</td>
-                            </tr>
-                            <tr>
-                                <td>Position</td>
-                                <td>$watermarkBasicStrategyPosition</td>
-                            </tr>
-                            <tr>
-                                <td>Inset</td>
-                                <td>$watermarkBasicStrategyInset</td>
-                            </tr>
-                            <tr>
-                                <td>Output Width Threshold</td>
-                                <td>$watermarkBasicStrategyOutputWidthThreshold</td>
-                            </tr>
-                            <tr>
-                                <td>Output Height Threshold</td>
-                                <td>$watermarkBasicStrategyOutputHeightThreshold</td>
-                            </tr>
-                        </table>
-                    </section>
+                    <form method="post">
+                        <section>
+                            <h2>Watermarking</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Enabled</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="watermark.enabled"
+                                                       value="true">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Strategy</td>
+                                    <td>
+                                        <select class="form-control" name="watermark.strategy">
+                                            <option value="BasicStrategy">Basic</option>
+                                            <option value="DelegateScript">Delegate Script</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Image</td>
+                                    <td>
+                                        <input type="text" name="watermark.BasicStrategy.image">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Position</td>
+                                    <td>
+                                        <select class="form-control" name="watermark.BasicStrategy.position">
+                                            <option value="top left">Top Left</option>
+                                            <option value="top center">Top Center</option>
+                                            <option value="top right">Top Right</option>
+                                            <option value="left center">Left Center</option>
+                                            <option value="center">Center</option>
+                                            <option value="right center">Right Center</option>
+                                            <option value="bottom left">Bottom Left</option>
+                                            <option value="bottom center">Bottom Center</option>
+                                            <option value="bottom right">Bottom Right</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Inset</td>
+                                    <td>
+                                        <input type="number" name="watermark.BasicStrategy.inset"
+                                            min="0">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Output Width Threshold</td>
+                                    <td>
+                                        <input type="number" name="watermark.BasicStrategy.output_width_threshold"
+                                               min="0">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Output Height Threshold</td>
+                                    <td>
+                                        <input type="number" name="watermark.BasicStrategy.output_height_threshold"
+                                               min="0">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
 
-                    <section>
-                        <h2>Redaction</h2>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Enabled</td>
-                                <td>
-                                    #if ($redactionEnabled)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                        </table>
-                    </section>
+                        <section>
+                            <h2>Redaction</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Enabled</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="redaction.enabled"
+                                                       value="true">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+                        <input type="submit" class="btn btn-primary" value="Save">
+                    </form>
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="cl-logging">
-                    <section>
-                        <h2>Application Log</h2>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Log Level</td>
-                                <td>$applicationLogLevel</td>
-                            </tr>
-                        </table>
+                    <form method="post">
+                        <section>
+                            <h2>Application Log</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Log Level</td>
+                                    <td>
+                                        <select class="form-control" name="log.application.level">
+                                            <option value="trace">Trace</option>
+                                            <option value="debug">Debug</option>
+                                            <option value="info">Info</option>
+                                            <option value="warn">Warning</option>
+                                            <option value="error">Error</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </table>
 
-                        <h3>Console Appender</h3>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Enabled</td>
-                                <td>
-                                    #if ($applicationLogConsoleAppenderEnabled)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                        </table>
+                            <h3>Console Appender</h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Enabled</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="log.application.ConsoleAppender.enabled"
+                                                       value="true">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
 
-                        <h3>File Appender</h3>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Enabled</td>
-                                <td>
-                                    #if ($applicationLogFileAppenderEnabled)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Pathname</td>
-                                <td>$applicationLogConsoleAppenderPathname</td>
-                            </tr>
-                        </table>
+                            <h3>File Appender</h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Enabled</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="log.application.FileAppender.enabled"
+                                                       value="true">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Pathname</td>
+                                    <td>
+                                        <input type="text" name="log.application.FileAppender.pathname">
+                                    </td>
+                                </tr>
+                            </table>
 
-                        <h3>Rolling File Appender</h3>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Enabled</td>
-                                <td>
-                                    #if ($applicationLogRollingFileAppenderEnabled)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Pathname</td>
-                                <td>$applicationLogRollingFileAppenderPathname</td>
-                            </tr>
-                            <tr>
-                                <td>Filename Pattern</td>
-                                <td>$applicationLogRollingFileAppenderFilenamePattern</td>
-                            </tr>
-                            <tr>
-                                <td>Max History</td>
-                                <td>$applicationLogRollingFileAppenderMaxHistory</td>
-                            </tr>
-                        </table>
+                            <h3>Rolling File Appender</h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Enabled</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="log.application.RollingFileAppender.enabled"
+                                                       value="true">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Pathname</td>
+                                    <td>
+                                        <input type="text" name="log.application.RollingFileAppender.pathname">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Filename Pattern</td>
+                                    <td>
+                                        <input type="text" name="log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Max History</td>
+                                    <td>
+                                        <input type="number" name="log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history">
+                                    </td>
+                                </tr>
+                            </table>
 
-                        <h3>Syslog Appender</h3>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Enabled</td>
-                                <td>
-                                    #if ($applicationLogSyslogAppenderEnabled)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Host</td>
-                                <td>$applicationLogSyslogAppenderHost</td>
-                            </tr>
-                            <tr>
-                                <td>Port</td>
-                                <td>$applicationLogSyslogAppenderPort</td>
-                            </tr>
-                            <tr>
-                                <td>Facility</td>
-                                <td>$applicationLogSyslogAppenderFacility</td>
-                            </tr>
-                        </table>
-                    </section>
+                            <h3>Syslog Appender</h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Enabled</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="log.application.SyslogAppender.enabled"
+                                                       value="true">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Host</td>
+                                    <td>
+                                        <input type="text" name="log.application.SyslogAppender.host">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Port</td>
+                                    <td>
+                                        <input type="number" name="log.application.SyslogAppender.port"
+                                               min="1" max="65536">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Facility</td>
+                                    <td>
+                                        <input type="text" name="log.application.SyslogAppender.facility">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
 
-                    <section>
-                        <h2>Access Log</h2>
+                        <section>
+                            <h2>Access Log</h2>
 
-                        <h3>Console Appender</h3>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Enabled</td>
-                                <td>
-                                    #if ($accessLogConsoleAppenderEnabled)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                        </table>
+                            <h3>Console Appender</h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Enabled</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="log.access.ConsoleAppender.enabled"
+                                                       value="true">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
 
-                        <h3>File Appender</h3>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Enabled</td>
-                                <td>
-                                    #if ($accessLogFileAppenderEnabled)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Pathname</td>
-                                <td>$accessLogFileAppenderPathname</td>
-                            </tr>
-                        </table>
+                            <h3>File Appender</h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Enabled</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="log.access.FileAppender.enabled"
+                                                       value="true">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Pathname</td>
+                                    <td>
+                                        <input type="text" name="log.access.FileAppender.pathname">
+                                    </td>
+                                </tr>
+                            </table>
 
-                        <h3>Rolling File Appender</h3>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Enabled</td>
-                                <td>
-                                    #if ($accessLogRollingFileAppenderEnabled)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Pathname</td>
-                                <td>$accessLogRollingFileAppenderPathname</td>
-                            </tr>
-                            <tr>
-                                <td>Filename Pattern</td>
-                                <td>$accessLogRollingFileAppenderFilenamePattern</td>
-                            </tr>
-                            <tr>
-                                <td>Max History</td>
-                                <td>$accessLogRollingFileAppenderMaxHistory</td>
-                            </tr>
-                        </table>
+                            <h3>Rolling File Appender</h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Enabled</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="log.access.RollingFileAppender.enabled"
+                                                       value="true">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Pathname</td>
+                                    <td>
+                                        <input type="text" name="log.access.RollingFileAppender.pathname">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Filename Pattern</td>
+                                    <td>
+                                        <input type="text" name="log.access.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Max History</td>
+                                    <td>
+                                        <input type="number" name="log.access.RollingFileAppender.TimeBasedRollingPolicy.max_history">
+                                    </td>
+                                </tr>
+                            </table>
 
-                        <h3>Syslog Appender</h3>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Enabled</td>
-                                <td>
-                                    #if ($accessLogSyslogAppenderEnabled)
-                                        <span class="text-success">&check;</span>
-                                    #else
-                                        <span class="text-danger">&times;</span>
-                                    #end
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Host</td>
-                                <td>$accessLogSyslogAppenderHost</td>
-                            </tr>
-                            <tr>
-                                <td>Port</td>
-                                <td>$accessLogSyslogAppenderPort</td>
-                            </tr>
-                            <tr>
-                                <td>Facility</td>
-                                <td>$accessLogSyslogAppenderFacility</td>
-                            </tr>
-                        </table>
-                    </section>
+                            <h3>Syslog Appender</h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Enabled</td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="log.access.SyslogAppender.enabled"
+                                                       value="true">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Host</td>
+                                    <td>
+                                        <input type="text" name="log.access.SyslogAppender.host">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Port</td>
+                                    <td>
+                                        <input type="number" name="log.access.SyslogAppender.port"
+                                        min="1" max="65536">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Facility</td>
+                                    <td>
+                                        <input type="text" name="log.access.SyslogAppender.facility">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+                        <input type="submit" class="btn btn-primary" value="Save">
+                    </form>
                 </div>
             </div>
         </div>
@@ -1289,5 +1728,10 @@
     </footer>
 
 </div>
+
+<script type="text/javascript" src="static/scripts/jquery.min.js"></script>
+<script type="text/javascript" src="static/scripts/bootstrap.min.js"></script>
+<script type="text/javascript" src="static/scripts/admin.js"></script>
+
 </body>
 </html>
