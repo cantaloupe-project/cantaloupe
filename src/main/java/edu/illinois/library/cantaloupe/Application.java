@@ -48,8 +48,25 @@ public class Application {
     private static Configuration config;
     private static Thread configWatcher;
     private static FilesystemWatcher fsWatcher;
-    /** This will be assigned in a standalone context. */
-    private static WebServer webServer;
+    /** Will be used in standalone and testing contexts. */
+    private static WebServer webServer = new WebServer();
+
+    static {
+        // Suppress a Dock icon in OS X
+        System.setProperty("java.awt.headless", "true");
+
+        initializeLogging();
+
+        Velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
+        Velocity.setProperty("classpath.resource.loader.class",
+                ClasspathResourceLoader.class.getName());
+        Velocity.setProperty("class.resource.loader.cache", true);
+        Velocity.setProperty("runtime.log.logsystem.class",
+                Slf4jLogChute.class.getCanonicalName());
+        Velocity.init();
+
+        startConfigWatcher();
+    }
 
     /**
      * @return Application-wide Configuration object. Will be loaded from a
@@ -117,21 +134,6 @@ public class Application {
      * Servlet).
      */
     public static synchronized void initializeGeneral() {
-        // Suppress a Dock icon in OS X
-        System.setProperty("java.awt.headless", "true");
-
-        initializeLogging();
-
-        Velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
-        Velocity.setProperty("classpath.resource.loader.class",
-                ClasspathResourceLoader.class.getName());
-        Velocity.setProperty("class.resource.loader.cache", true);
-        Velocity.setProperty("runtime.log.logsystem.class",
-                Slf4jLogChute.class.getCanonicalName());
-        Velocity.init();
-
-        startConfigWatcher();
-
         final int mb = 1024 * 1024;
         Runtime runtime = Runtime.getRuntime();
         logger.info(System.getProperty("java.vm.name") + " / " +
@@ -254,7 +256,6 @@ public class Application {
             // Wait 10 seconds to reduce startup load.
             CacheWorker.runInBackground(10);
         }
-        webServer = new WebServer();
         webServer.start();
     }
 
