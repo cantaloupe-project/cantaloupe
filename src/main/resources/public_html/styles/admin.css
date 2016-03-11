@@ -35,13 +35,34 @@ table, .table, .checkbox label, .radio label {
     font-size: 1em;
 }
 
-.checkbox, .radio {
-    margin-top: 0px;
-    margin-bottom: 0px;
+.table > tbody > tr > td:first-child {
+    text-align: right;
+    vertical-align: middle;
+    width: 30%;
 }
 
 .list-group-item {
     padding: 0px;
+}
+
+.form-control, code {
+    background-color: #1b2e40;
+    color: white;
+}
+
+#cl-status td:first-child {
+    width: 40%;
+}
+
+#cl-status ul {
+    margin-left: 0px;
+    padding-left: 0px;
+}
+
+#cl-status li {
+    list-style-type: none;
+    margin-left: 2em;
+    text-indent: -2em;
 }
 
 .nav > li.list-group-item > a {

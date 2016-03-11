@@ -1,6 +1,13 @@
 var Configuration = function(data) {
 
     /**
+     * @returns {*}
+     */
+    this.data = function() {
+        return data;
+    };
+
+    /**
      * @param key
      * @returns {*}
      */
@@ -13,7 +20,7 @@ var Configuration = function(data) {
      */
     this.keys = function() {
         return Object.keys(data);
-    }
+    };
 
     /**
      * @param key {String}
@@ -43,6 +50,9 @@ var Form = function(config) {
      * instance.
      */
     this.load = function() {
+        console.info('Loading configuration');
+        console.debug(config.data());
+
         config.keys().forEach(function(key) {
             var configValue = config.get(key);
             var elements = $('[name="' + key + '"]');
@@ -67,31 +77,44 @@ var Form = function(config) {
 
     /**
      * Updates the Configuration instance to correspond with the form state.
+     *
+     * @param formElem Form element
      */
-    this.save = function() {
-        config.keys().forEach(function(key) {
-            config.set(key, $('[name="' + key + '"]').val());
+    this.save = function(formElem) {
+        // Copy the values of non-checkbox form controls into the
+        // configuration object.
+        $(formElem).find('input, textarea, select').
+        not('[type=submit], [type=checkbox]').each(function() {
+            config.set($(this).attr('name'), $(this).val());
+        });
+        // Copy the checkbox values. This works only with one checkbox per
+        // input name.
+        $(formElem).find('input[type=checkbox]').each(function() {
+            config.set($(this).attr('name'), $(this).is(':checked'));
         });
 
-        console.log(config.toString());
-        /*
+        console.info('Saving configuration');
+        console.debug(config.data());
+
         $.ajax({
             type: 'POST',
             contentType: 'application/json',
             url: window.location,
             data: config.toString(),
-            success: function(data) {
+            success: function() {
                 alert('Configuration updated.');
+            },
+            error: function() {
+                alert('Failed to update the configuration.');
             }
         });
-        */
     };
 
     /**
      * Checks the validity of the form and updates it with error messages if
      * invalid.
      *
-     * @returns Boolean
+     * @returns {Boolean}
      */
     this.validate = function() {
         // TODO: write this
@@ -104,6 +127,11 @@ config = null;
 form = null;
 
 $(document).ready(function() {
+    $('.cl-help').popover({
+        placement: 'auto',
+        html: true
+    });
+
     // Download configuration data into a Configuration instance.
     $.ajax({
         dataType: 'json',
@@ -115,13 +143,13 @@ $(document).ready(function() {
             form.load();
         },
         error: function() {
-            alert('Error');
+            alert('Failed to load the configuration.');
         }
     });
 
-    $(document).on('submit', 'form', function() {
+    $('input[type="submit"]').on('click', function() {
         if (form.validate()) {
-            form.save();
+            form.save($(this).parents('form'));
         }
         return false;
     });
