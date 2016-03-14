@@ -154,6 +154,8 @@ public class AdminResource extends AbstractResource {
                 logger.debug("Saving {}", configFile);
                 fileConfig.setFile(configFile);
                 fileConfig.save();
+            } else {
+                logger.debug("No configuration file; nothing to save.");
             }
         }
 
@@ -313,29 +315,36 @@ public class AdminResource extends AbstractResource {
         //////////////////////// caches section ////////////////////////////
         ////////////////////////////////////////////////////////////////////
 
-        // source cache name
-        String sourceCacheStr = "Disabled";
+        // source caches
         try {
-            Cache cache = CacheFactory.getSourceCache();
-            if (cache != null) {
-                sourceCacheStr = cache.getClass().getSimpleName();
-            }
+            vars.put("currentSourceCache", CacheFactory.getSourceCache());
         } catch (Exception e) {
             // noop
         }
-        vars.put("sourceCacheName", sourceCacheStr);
 
-        // derivative cache name
-        String derivativeCacheStr = "Disabled";
+        sortedProxies = new ArrayList<>();
+        for (Cache cache : CacheFactory.getAllSourceCaches()) {
+            sortedProxies.add(new ObjectProxy(cache));
+        }
+
+        Collections.sort(sortedProxies, new ObjectProxyComparator());
+        vars.put("sourceCaches", sortedProxies);
+
+        // derivative caches
         try {
-            Cache cache = CacheFactory.getDerivativeCache();
-            if (cache != null) {
-                derivativeCacheStr = cache.getClass().getSimpleName();
-            }
+            vars.put("currentDerivativeCache",
+                    CacheFactory.getDerivativeCache());
         } catch (Exception e) {
             // noop
         }
-        vars.put("derivativeCacheName", derivativeCacheStr);
+
+        sortedProxies = new ArrayList<>();
+        for (Cache cache : CacheFactory.getAllDerivativeCaches()) {
+            sortedProxies.add(new ObjectProxy(cache));
+        }
+
+        Collections.sort(sortedProxies, new ObjectProxyComparator());
+        vars.put("derivativeCaches", sortedProxies);
 
         return vars;
     }
