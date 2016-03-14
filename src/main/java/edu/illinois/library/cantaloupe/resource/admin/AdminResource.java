@@ -5,14 +5,14 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.redaction.RedactionService;
-import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.FileConfiguration;
 import org.apache.velocity.Template;
 import org.apache.velocity.app.Velocity;
 import org.restlet.data.CacheDirective;
@@ -26,6 +26,7 @@ import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 import org.restlet.resource.ResourceException;
 import org.restlet.util.Series;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +42,9 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class AdminResource extends AbstractResource {
+
+    private static org.slf4j.Logger logger = LoggerFactory.
+            getLogger(AdminResource.class);
 
     /**
      * <p>Processors can't be used in the templates directly, so instances of
@@ -104,16 +108,31 @@ public class AdminResource extends AbstractResource {
      *
      * @param rep
      * @throws IOException
+     * @throws ConfigurationException
      */
     @Post("application/json")
-    public Representation doPost(Representation rep) throws IOException {
+    public Representation doPost(Representation rep)
+            throws IOException, ConfigurationException {
         final Configuration config = Application.getConfiguration();
         final Map submittedConfig = new ObjectMapper().readValue(
                 rep.getStream(), HashMap.class);
 
         for (final Object key : submittedConfig.keySet()) {
-            config.setProperty((String) key, submittedConfig.get(key));
+            final Object value = submittedConfig.get(key);
+            logger.debug("Setting {} = {}", key, value);
+            config.setProperty((String) key, value);
         }
+
+        if (config instanceof FileConfiguration) {
+            final FileConfiguration fileConfig = (FileConfiguration) config;
+            final File configFile = Application.getConfigurationFile();
+            if (configFile != null) {
+                logger.debug("Saving {}", configFile);
+                fileConfig.setFile(configFile);
+                fileConfig.save();
+            }
+        }
+
         return new EmptyRepresentation();
     }
 

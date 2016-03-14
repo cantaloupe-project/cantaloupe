@@ -129,4 +129,9 @@ public class AdminResourceTest extends ResourceTest {
         assertEquals("cats", Application.getConfiguration().getString("test"));
     }
 
+    @Test
+    public void testDoPostSavesFile() {
+        // TODO: write this
+    }
+
 }
