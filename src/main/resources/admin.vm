@@ -155,7 +155,8 @@
                                         <div class="checkbox">
                                             <label>
                                                 <input type="checkbox"
-                                                       name="http.enabled">
+                                                       name="http.enabled"
+                                                       data-requires-restart="true">
                                                 Enabled
                                             </label>
                                         </div>
@@ -170,7 +171,8 @@
                                     </td>
                                     <td>
                                         <input class="form-control" type="number"
-                                               name="http.port" min="1" max="65536">
+                                               name="http.port" min="1" max="65536"
+                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                             </table>
@@ -189,7 +191,9 @@
                                     <td>
                                         <div class="checkbox">
                                             <label>
-                                                <input type="checkbox" name="https.enabled">
+                                                <input type="checkbox"
+                                                       name="https.enabled"
+                                                       data-requires-restart="true">
                                                 Enabled
                                             </label>
                                         </div>
@@ -204,7 +208,8 @@
                                     </td>
                                     <td>
                                         <input class="form-control" type="number"
-                                               name="https.port" min="1" max="65536">
+                                               name="https.port" min="1" max="65536"
+                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                                 <tr>
@@ -220,14 +225,16 @@
                                     <td>Key Store Path</td>
                                     <td>
                                         <input class="form-control" type="text"
-                                               name="https.key_store_path" maxlength="4096">
+                                               name="https.key_store_path" maxlength="4096"
+                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>Key Store Password</td>
                                     <td>
                                         <input class="form-control" type="password"
-                                               name="https.key_store_password">
+                                               name="https.key_store_password"
+                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                             </table>
@@ -241,7 +248,9 @@
                                     <td>
                                         <div class="checkbox">
                                             <label>
-                                                <input type="checkbox" name="auth.basic.enabled">
+                                                <input type="checkbox"
+                                                       name="auth.basic.enabled"
+                                                       data-requires-restart="true">
                                                 Enabled
                                             </label>
                                         </div>
@@ -251,14 +260,16 @@
                                     <td>Username</td>
                                     <td>
                                         <input class="form-control" type="text"
-                                               name="auth.basic.username">
+                                               name="auth.basic.username"
+                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>Secret</td>
                                     <td>
                                         <input class="form-control" type="password"
-                                               name="auth.basic.secret">
+                                               name="auth.basic.secret"
+                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                             </table>
@@ -280,7 +291,8 @@
                                     </td>
                                     <td>
                                         <input class="form-control" type="text"
-                                               name="base_uri" maxlength="4096">
+                                               name="base_uri" maxlength="4096"
+                                               data-requires-restart="false">
                                     </td>
                                 </tr>
                                 <tr>
@@ -297,7 +309,9 @@
                                     </td>
                                     <td>
                                         <input class="form-control" type="text"
-                                               name="slash_substitute" size="4" maxlength="4">
+                                               name="slash_substitute"
+                                               size="4" maxlength="4"
+                                               data-requires-restart="false">
                                     </td>
                                 </tr>
                                 <tr>
@@ -307,7 +321,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="print_stack_trace_on_error_pages"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="false">
                                                 Print stack trace on error pages
                                             </label>
                                         </div>
@@ -327,13 +342,15 @@
                                     </td>
                                     <td>
                                         <input class="form-control" type="text"
-                                               name="delegate_script" maxlength="4096">
+                                               name="delegate_script" maxlength="4096"
+                                               data-requires-restart="false">
                                     </td>
                                 </tr>
                             </table>
                         </section>
 
                         <input type="submit" class="btn btn-primary" value="Save">
+                        <span class="cl-on-save-message"></span>
                     </form>
                 </div>
 
@@ -355,7 +372,8 @@
                                     </td>
                                     <td>
                                         <input class="form-control" type="number"
-                                               name="max_pixels" min="0">
+                                               name="max_pixels" min="0"
+                                               data-requires-restart="false">
                                     </td>
                                 </tr>
                             </table>
@@ -373,7 +391,9 @@
                                            for images.">?</a>
                                     </td>
                                     <td>
-                                        <select class="form-control" name="endpoint.iiif.content_disposition">
+                                        <select class="form-control"
+                                                name="endpoint.iiif.content_disposition"
+                                                data-requires-restart="false">
                                             <option value="none">None</option>
                                             <option value="inline">Inline</option>
                                             <option value="attachment">Attachment</option>
@@ -391,7 +411,8 @@
                                     </td>
                                     <td>
                                         <input class="form-control" type="number"
-                                               name="endpoint.iiif.min_tile_size" min="0">
+                                               name="endpoint.iiif.min_tile_size" min="0"
+                                               data-requires-restart="false">
                                     </td>
                                 </tr>
                             </table>
@@ -407,7 +428,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="endpoint.iiif.1.enabled"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="false">
                                                 Enabled
                                             </label>
                                         </div>
@@ -426,7 +448,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="endpoint.iiif.2.enabled"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="false">
                                                 Enabled
                                             </label>
                                         </div>
@@ -446,7 +469,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="endpoint.iiif.2.restrict_to_sizes"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="false">
                                                 Restrict to sizes in info.json
                                             </label>
                                         </div>
@@ -455,6 +479,7 @@
                             </table>
                         </section>
                         <input type="submit" class="btn btn-primary" value="Save">
+                        <span class="cl-on-save-message"></span>
                     </form>
                 </div>
 
@@ -508,7 +533,8 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="AmazonS3Resolver.access_key_id">
+                                                       name="AmazonS3Resolver.access_key_id"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
@@ -522,7 +548,8 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="AmazonS3Resolver.secret_key">
+                                                       name="AmazonS3Resolver.secret_key"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
@@ -535,7 +562,8 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="AmazonS3Resolver.bucket.name">
+                                                       name="AmazonS3Resolver.bucket.name"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
@@ -549,7 +577,8 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="AmazonS3Resolver.bucket.region">
+                                                       name="AmazonS3Resolver.bucket.region"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
@@ -562,7 +591,9 @@
                                                    the user manual for details.">?</a>
                                             </td>
                                             <td>
-                                                <select class="form-control" name="AmazonS3Resolver.lookup_strategy">
+                                                <select class="form-control"
+                                                        name="AmazonS3Resolver.lookup_strategy"
+                                                        data-requires-restart="false">
                                                     <option value="BasicLookupStrategy">Basic</option>
                                                     <option value="ScriptLookupStrategy">Delegate Script</option>
                                                 </select>
@@ -582,7 +613,8 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="AzureStorageResolver.account_name">
+                                                       name="AzureStorageResolver.account_name"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
@@ -594,7 +626,8 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="AzureStorageResolver.account_key">
+                                                       name="AzureStorageResolver.account_key"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
@@ -607,7 +640,8 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="AzureStorageResolver.container_name">
+                                                       name="AzureStorageResolver.container_name"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
@@ -620,7 +654,9 @@
                                                    the user manual for details.">?</a>
                                             </td>
                                             <td>
-                                                <select class="form-control" name="AzureStorageResolver.lookup_strategy">
+                                                <select class="form-control"
+                                                        name="AzureStorageResolver.lookup_strategy"
+                                                        data-requires-restart="false">
                                                     <option value="BasicLookupStrategy">Basic</option>
                                                     <option value="ScriptLookupStrategy">Delegate Script</option>
                                                 </select>
@@ -641,7 +677,9 @@
                                                    the user manual for details.">?</a>
                                             </td>
                                             <td>
-                                                <select class="form-control" name="FilesystemResolver.lookup_strategy">
+                                                <select class="form-control"
+                                                        name="FilesystemResolver.lookup_strategy"
+                                                        data-requires-restart="false">
                                                     <option value="BasicLookupStrategy">Basic</option>
                                                     <option value="ScriptLookupStrategy">Delegate Script</option>
                                                 </select>
@@ -658,7 +696,8 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="FilesystemResolver.BasicLookupStrategy.path_prefix">
+                                                       name="FilesystemResolver.BasicLookupStrategy.path_prefix"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                         <tr>
@@ -671,7 +710,8 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="FilesystemResolver.BasicLookupStrategy.path_suffix">
+                                                       name="FilesystemResolver.BasicLookupStrategy.path_suffix"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                     </table>
@@ -689,7 +729,9 @@
                                                    the user manual for details.">?</a>
                                             </td>
                                             <td>
-                                                <select class="form-control" name="HttpResolver.lookup_strategy">
+                                                <select class="form-control"
+                                                        name="HttpResolver.lookup_strategy"
+                                                        data-requires-restart="false">
                                                     <option value="BasicLookupStrategy">Basic</option>
                                                     <option value="ScriptLookupStrategy">Delegate Script</option>
                                                 </select>
@@ -706,7 +748,8 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="HttpResolver.BasicLookupStrategy.url_prefix">
+                                                       name="HttpResolver.BasicLookupStrategy.url_prefix"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                         <tr>
@@ -719,7 +762,8 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="HttpResolver.BasicLookupStrategy.url_suffix">
+                                                       name="HttpResolver.BasicLookupStrategy.url_suffix"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                         <tr>
@@ -732,7 +776,8 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="HttpResolver.auth.basic.username">
+                                                       name="HttpResolver.auth.basic.username"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                         <tr>
@@ -745,7 +790,8 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="HttpResolver.auth.basic.secret">
+                                                       name="HttpResolver.auth.basic.secret"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                     </table>
@@ -757,21 +803,24 @@
                                             <td>JDBC URL</td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="JdbcResolver.url">
+                                                       name="JdbcResolver.url"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>User</td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="JdbcResolver.user">
+                                                       name="JdbcResolver.user"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>Password</td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="JdbcResolver.password">
+                                                       name="JdbcResolver.password"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
@@ -785,14 +834,17 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="number"
-                                                       name="JdbcResolver.max_pool_size" min="1" max="200">
+                                                       name="JdbcResolver.max_pool_size"
+                                                       min="1" max="200"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>Connection Timeout (seconds)</td>
                                             <td>
                                                 <input class="form-control" type="number"
-                                                       name="JdbcResolver.connection_timeout" min="0">
+                                                       name="JdbcResolver.connection_timeout" min="0"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                     </table>
@@ -800,6 +852,7 @@
                             </div>
                         </section>
                         <input type="submit" class="btn btn-primary" value="Save">
+                        <span class="cl-on-save-message"></span>
                     </form>
                 </div>
 
@@ -982,7 +1035,8 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="FfmpegProcessor.path_to_binaries">
+                                                       name="FfmpegProcessor.path_to_binaries"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                     </table>
@@ -1000,7 +1054,8 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="GraphicsMagickProcessor.path_to_binaries">
+                                                       name="GraphicsMagickProcessor.path_to_binaries"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1013,7 +1068,9 @@
                                                    support transparency.">?</a>
                                             </td>
                                             <td>
-                                                <select class="form-control" name="GraphicsMagickProcessor.background_color">
+                                                <select class="form-control"
+                                                        name="GraphicsMagickProcessor.background_color"
+                                                        data-requires-restart="false">
                                                     <option value="black">Black</option>
                                                     <option value="white">White</option>
                                                 </select>
@@ -1034,7 +1091,8 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="ImageMagickProcessor.path_to_binaries">
+                                                       name="ImageMagickProcessor.path_to_binaries"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1047,7 +1105,9 @@
                                                    support transparency.">?</a>
                                             </td>
                                             <td>
-                                                <select class="form-control" name="ImageMagickProcessor.background_color">
+                                                <select class="form-control"
+                                                        name="ImageMagickProcessor.background_color"
+                                                        data-requires-restart="false">
                                                     <option value="black">Black</option>
                                                     <option value="white">White</option>
                                                 </select>
@@ -1068,7 +1128,9 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="JaiProcessor.jpg.quality" min="0" max="1">
+                                                       name="JaiProcessor.jpg.quality"
+                                                       min="0" max="1"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1079,7 +1141,9 @@
                                                    data-content="TIFF output compression type.">?</a>
                                             </td>
                                             <td>
-                                                <select class="form-control" name="JaiProcessor.tif.compression">
+                                                <select class="form-control"
+                                                        name="JaiProcessor.tif.compression"
+                                                        data-requires-restart="false">
                                                     <option value="">No Compression</option>
                                                     <option value="LZW">LZW</option>
                                                     <option value="Deflate">Deflate</option>
@@ -1103,7 +1167,9 @@
                                                    visible aliasing at small scales.">?</a>
                                             </td>
                                             <td>
-                                                <select class="form-control" name="Java2dProcessor.scale_mode">
+                                                <select class="form-control"
+                                                        name="Java2dProcessor.scale_mode"
+                                                        data-requires-restart="false">
                                                     <option value="speed">Speed</option>
                                                     <option value="quality">Quality</option>
                                                 </select>
@@ -1119,7 +1185,9 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="Java2dProcessor.jpg.quality" min="1" max="100">
+                                                       name="Java2dProcessor.jpg.quality"
+                                                       min="1" max="100"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1130,7 +1198,9 @@
                                                    data-content="TIFF output compression type.">?</a>
                                             </td>
                                             <td>
-                                                <select class="form-control" name="Java2dProcessor.tif.compression">
+                                                <select class="form-control"
+                                                        name="Java2dProcessor.tif.compression"
+                                                        data-requires-restart="false">
                                                     <option>LZW</option>
                                                     <option>Deflate</option>
                                                     <option>ZLib</option>
@@ -1154,13 +1224,16 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="KakaduProcessor.path_to_binaries">
+                                                       name="KakaduProcessor.path_to_binaries"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>Post-processor</td>
                                             <td>
-                                                <select class="form-control" name="KakaduProcessor.post_processor">
+                                                <select class="form-control"
+                                                        name="KakaduProcessor.post_processor"
+                                                        data-requires-restart="false">
                                                     <option value="java2d">Java 2D</option>
                                                     <option value="jai">JAI</option>
                                                 </select>
@@ -1175,7 +1248,9 @@
                                                    visible aliasing at small scales.">?</a>
                                             </td>
                                             <td>
-                                                <select class="form-control" name="KakaduProcessor.post_processor.java2d.scale_mode">
+                                                <select class="form-control"
+                                                        name="KakaduProcessor.post_processor.java2d.scale_mode"
+                                                        data-requires-restart="false">
                                                     <option value="speed">Speed</option>
                                                     <option value="quality">Quality</option>
                                                 </select>
@@ -1196,13 +1271,16 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="OpenJpegProcessor.path_to_binaries">
+                                                       name="OpenJpegProcessor.path_to_binaries"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>Post-processor</td>
                                             <td>
-                                                <select class="form-control" name="OpenJpegProcessor.post_processor">
+                                                <select class="form-control"
+                                                        name="OpenJpegProcessor.post_processor"
+                                                        data-requires-restart="false">
                                                     <option value="java2d">Java 2D</option>
                                                     <option value="jai">JAI</option>
                                                 </select>
@@ -1217,7 +1295,9 @@
                                                    visible aliasing at small scales.">?</a>
                                             </td>
                                             <td>
-                                                <select class="form-control" name="OpenJpegProcessor.post_processor.java2d.scale_mode">
+                                                <select class="form-control"
+                                                        name="OpenJpegProcessor.post_processor.java2d.scale_mode"
+                                                        data-requires-restart="false">
                                                     <option value="speed">Speed</option>
                                                     <option value="quality">Quality</option>
                                                 </select>
@@ -1241,7 +1321,8 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="number"
-                                                       name="PdfBoxProcessor.dpi">
+                                                       name="PdfBoxProcessor.dpi"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1253,7 +1334,9 @@
                                                    visible aliasing at small scales.">?</a>
                                             </td>
                                             <td>
-                                                <select class="form-control" name="PdfBoxProcessor.post_processor.java2d.scale_mode">
+                                                <select class="form-control"
+                                                        name="PdfBoxProcessor.post_processor.java2d.scale_mode"
+                                                        data-requires-restart="false">
                                                     <option value="speed">Speed</option>
                                                     <option value="quality">Quality</option>
                                                 </select>
@@ -1264,6 +1347,7 @@
                             </div>
                         </section>
                         <input type="submit" class="btn btn-primary" value="Save">
+                        <span class="cl-on-save-message"></span>
                     </form>
                 </div>
 
@@ -1279,7 +1363,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="cache.client.enabled"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="false">
                                                 Enabled
                                             </label>
                                         </div>
@@ -1289,14 +1374,16 @@
                                     <td>Max Age</td>
                                     <td>
                                         <input class="form-control" type="number"
-                                               name="cache.client.max_age" min="0">
+                                               name="cache.client.max_age" min="0"
+                                               data-requires-restart="false">
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>Shared Max Age</td>
                                     <td>
                                         <input class="form-control" type="number"
-                                               name="cache.client.shared_max_age" min="0">
+                                               name="cache.client.shared_max_age" min="0"
+                                               data-requires-restart="false">
                                     </td>
                                 </tr>
                                 <tr>
@@ -1306,7 +1393,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="cache.client.public"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="false">
                                                 Public
                                             </label>
                                         </div>
@@ -1319,7 +1407,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="cache.client.private"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="false">
                                                 Private
                                             </label>
                                         </div>
@@ -1332,7 +1421,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="cache.client.no_cache"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="false">
                                                 No Cache
                                             </label>
                                         </div>
@@ -1345,7 +1435,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="cache.client.no_store"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="false">
                                                 No Store
                                             </label>
                                         </div>
@@ -1358,7 +1449,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="cache.client.must_revalidate"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="false">
                                                 Must Revalidate
                                             </label>
                                         </div>
@@ -1371,7 +1463,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="cache.client.proxy_revalidate"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="false">
                                                 Proxy Revalidate
                                             </label>
                                         </div>
@@ -1384,7 +1477,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="cache.client.no_transform"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="false">
                                                 No Transform
                                             </label>
                                         </div>
@@ -1419,7 +1513,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="cache.server.purge_missing"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="false">
                                                 Purge Missing
                                             </label>
                                         </div>
@@ -1440,7 +1535,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="cache.server.resolve_first"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="false">
                                                 Resolve First
                                             </label>
                                         </div>
@@ -1465,7 +1561,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="cache.worker.enabled"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="true">
                                                 Enabled
                                             </label>
                                         </div>
@@ -1482,7 +1579,8 @@
                                     <td>
                                         <input class="form-control" type="number"
                                                name="cache.worker.interval"
-                                               value="true" min="0">
+                                               value="true" min="0"
+                                               data-requires-restart="false">
                                     </td>
                                 </tr>
                             </table>
@@ -1528,7 +1626,8 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="AmazonS3Cache.access_key_id">
+                                                       name="AmazonS3Cache.access_key_id"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1542,7 +1641,8 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="AmazonS3Cache.secret_key">
+                                                       name="AmazonS3Cache.secret_key"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1555,7 +1655,8 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="AmazonS3Cache.bucket.name">
+                                                       name="AmazonS3Cache.bucket.name"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1569,7 +1670,8 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="AmazonS3Cache.bucket.region">
+                                                       name="AmazonS3Cache.bucket.region"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1582,7 +1684,8 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="AmazonS3Cache.object_key_prefix">
+                                                       name="AmazonS3Cache.object_key_prefix"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1597,7 +1700,8 @@
                                             <td>
                                                 <input type="number" class="form-control"
                                                        name="AmazonS3Cache.ttl_seconds"
-                                                       min="0">
+                                                       min="0"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                     </table>
@@ -1614,7 +1718,8 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="AzureStorageCache.account_name">
+                                                       name="AzureStorageCache.account_name"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1626,7 +1731,8 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="AzureStorageCache.account_key">
+                                                       name="AzureStorageCache.account_key"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1639,7 +1745,8 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="AzureStorageCache.container_name">
+                                                       name="AzureStorageCache.container_name"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1652,7 +1759,8 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="AzureStorageCache.object_key_prefix">
+                                                       name="AzureStorageCache.object_key_prefix"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1667,7 +1775,8 @@
                                             <td>
                                                 <input type="number" class="form-control"
                                                        name="AzureStorageCache.ttl_seconds"
-                                                       min="0">
+                                                       min="0"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                     </table>
@@ -1685,7 +1794,8 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="FilesystemCache.pathname">
+                                                       name="FilesystemCache.pathname"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1701,7 +1811,8 @@
                                             <td>
                                                 <input type="number" class="form-control"
                                                        name="FilesystemCache.dir.depth"
-                                                       min="0" max="6">
+                                                       min="0" max="6"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1718,7 +1829,8 @@
                                             <td>
                                                 <input type="number" class="form-control"
                                                        name="FilesystemCache.dir.name_length"
-                                                       min="1" max="6">
+                                                       min="1" max="6"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1733,7 +1845,8 @@
                                             <td>
                                                 <input type="number" class="form-control"
                                                        name="FilesystemCache.ttl_seconds"
-                                                       min="0">
+                                                       min="0"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                     </table>
@@ -1745,21 +1858,24 @@
                                             <td>JDBC URL</td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="JdbcCache.url">
+                                                       name="JdbcCache.url"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>User</td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="JdbcCache.user">
+                                                       name="JdbcCache.user"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>Password</td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="JdbcCache.password">
+                                                       name="JdbcCache.password"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1774,7 +1890,8 @@
                                             <td>
                                                 <input type="number" class="form-control"
                                                        name="JdbcCache.max_pool_size"
-                                                       min="1" max="200">
+                                                       min="1" max="200"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1782,7 +1899,8 @@
                                             <td>
                                                 <input type="number" class="form-control"
                                                        name="JdbcCache.connection_timeout"
-                                                       min="0">
+                                                       min="0"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1795,7 +1913,8 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="JdbcCache.source_image_table">
+                                                       name="JdbcCache.source_image_table"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1808,7 +1927,8 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="JdbcCache.derivative_image_table">
+                                                       name="JdbcCache.derivative_image_table"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1821,7 +1941,8 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="JdbcCache.info_table">
+                                                       name="JdbcCache.info_table"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1836,7 +1957,8 @@
                                             <td>
                                                 <input type="number" class="form-control"
                                                        name="JdbcCache.ttl_seconds"
-                                                       min="0">
+                                                       min="0"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                     </table>
@@ -1844,6 +1966,7 @@
                             </div>
                         </section>
                         <input type="submit" class="btn btn-primary" value="Save">
+                        <span class="cl-on-save-message"></span>
                     </form>
                 </div>
 
@@ -1859,7 +1982,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="watermark.enabled"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="false">
                                                 Enabled
                                             </label>
                                         </div>
@@ -1877,7 +2001,9 @@
                                            See the user manual for more information.">?</a>
                                     </td>
                                     <td>
-                                        <select class="form-control" name="watermark.strategy">
+                                        <select class="form-control"
+                                                name="watermark.strategy"
+                                                data-requires-restart="false">
                                             <option value="BasicStrategy">Basic</option>
                                             <option value="DelegateScript">Delegate Script</option>
                                         </select>
@@ -1893,13 +2019,16 @@
                                     </td>
                                     <td>
                                         <input type="text" class="form-control"
-                                               name="watermark.BasicStrategy.image">
+                                               name="watermark.BasicStrategy.image"
+                                               data-requires-restart="false">
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>Position</td>
                                     <td>
-                                        <select class="form-control" name="watermark.BasicStrategy.position">
+                                        <select class="form-control"
+                                                name="watermark.BasicStrategy.position"
+                                                data-requires-restart="false">
                                             <option value="top left">Top Left</option>
                                             <option value="top center">Top Center</option>
                                             <option value="top right">Top Right</option>
@@ -1923,7 +2052,8 @@
                                     <td>
                                         <input type="number" class="form-control"
                                                name="watermark.BasicStrategy.inset"
-                                            min="0">
+                                               min="0"
+                                               data-requires-restart="false">
                                     </td>
                                 </tr>
                                 <tr>
@@ -1938,7 +2068,8 @@
                                     <td>
                                         <input type="number" class="form-control"
                                                name="watermark.BasicStrategy.output_width_threshold"
-                                               min="0">
+                                               min="0"
+                                               data-requires-restart="false">
                                     </td>
                                 </tr>
                                 <tr>
@@ -1953,7 +2084,8 @@
                                     <td>
                                         <input type="number" class="form-control"
                                                name="watermark.BasicStrategy.output_height_threshold"
-                                               min="0">
+                                               min="0"
+                                               data-requires-restart="false">
                                     </td>
                                 </tr>
                             </table>
@@ -1976,7 +2108,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="redaction.enabled"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="false">
                                                 Enabled
                                             </label>
                                         </div>
@@ -1985,6 +2118,7 @@
                             </table>
                         </section>
                         <input type="submit" class="btn btn-primary" value="Save">
+                        <span class="cl-on-save-message"></span>
                     </form>
                 </div>
 
@@ -1996,7 +2130,9 @@
                                 <tr>
                                     <td>Log Level</td>
                                     <td>
-                                        <select class="form-control" name="log.application.level">
+                                        <select class="form-control"
+                                                name="log.application.level"
+                                                data-requires-restart="true">
                                             <option value="trace">Trace</option>
                                             <option value="debug">Debug</option>
                                             <option value="info">Info</option>
@@ -2016,7 +2152,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="log.application.ConsoleAppender.enabled"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="true">
                                                 Enabled
                                             </label>
                                         </div>
@@ -2033,7 +2170,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="log.application.FileAppender.enabled"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="true">
                                                 Enabled
                                             </label>
                                         </div>
@@ -2043,7 +2181,8 @@
                                     <td>Pathname</td>
                                     <td>
                                         <input type="text" class="form-control"
-                                               name="log.application.FileAppender.pathname">
+                                               name="log.application.FileAppender.pathname"
+                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                             </table>
@@ -2057,7 +2196,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="log.application.RollingFileAppender.enabled"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="true">
                                                 Enabled
                                             </label>
                                         </div>
@@ -2067,21 +2207,24 @@
                                     <td>Pathname</td>
                                     <td>
                                         <input type="text" class="form-control"
-                                               name="log.application.RollingFileAppender.pathname">
+                                               name="log.application.RollingFileAppender.pathname"
+                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>Filename Pattern</td>
                                     <td>
                                         <input type="text" class="form-control"
-                                               name="log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern">
+                                               name="log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern"
+                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>Max History</td>
                                     <td>
                                         <input type="number" class="form-control"
-                                               name="log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history">
+                                               name="log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history"
+                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                             </table>
@@ -2095,7 +2238,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="log.application.SyslogAppender.enabled"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="true">
                                                 Enabled
                                             </label>
                                         </div>
@@ -2105,7 +2249,8 @@
                                     <td>Host</td>
                                     <td>
                                         <input type="text" class="form-control"
-                                               name="log.application.SyslogAppender.host">
+                                               name="log.application.SyslogAppender.host"
+                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                                 <tr>
@@ -2113,7 +2258,8 @@
                                     <td>
                                         <input type="number" class="form-control"
                                                name="log.application.SyslogAppender.port"
-                                               min="1" max="65536">
+                                               min="1" max="65536"
+                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                                 <tr>
@@ -2128,7 +2274,8 @@
                                     </td>
                                     <td>
                                         <input type="text" class="form-control"
-                                               name="log.application.SyslogAppender.facility">
+                                               name="log.application.SyslogAppender.facility"
+                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                             </table>
@@ -2146,7 +2293,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="log.access.ConsoleAppender.enabled"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="true">
                                                 Enabled
                                             </label>
                                         </div>
@@ -2163,7 +2311,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="log.access.FileAppender.enabled"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="true">
                                                 Enabled
                                             </label>
                                         </div>
@@ -2173,7 +2322,8 @@
                                     <td>Pathname</td>
                                     <td>
                                         <input type="text" class="form-control"
-                                               name="log.access.FileAppender.pathname">
+                                               name="log.access.FileAppender.pathname"
+                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                             </table>
@@ -2187,7 +2337,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="log.access.RollingFileAppender.enabled"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="true">
                                                 Enabled
                                             </label>
                                         </div>
@@ -2197,21 +2348,24 @@
                                     <td>Pathname</td>
                                     <td>
                                         <input type="text" class="form-control"
-                                               name="log.access.RollingFileAppender.pathname">
+                                               name="log.access.RollingFileAppender.pathname"
+                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>Filename Pattern</td>
                                     <td>
                                         <input type="text" class="form-control"
-                                               name="log.access.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern">
+                                               name="log.access.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern"
+                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>Max History</td>
                                     <td>
                                         <input type="number" class="form-control"
-                                               name="log.access.RollingFileAppender.TimeBasedRollingPolicy.max_history">
+                                               name="log.access.RollingFileAppender.TimeBasedRollingPolicy.max_history"
+                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                             </table>
@@ -2225,7 +2379,8 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="log.access.SyslogAppender.enabled"
-                                                       value="true">
+                                                       value="true"
+                                                       data-requires-restart="true">
                                                 Enabled
                                             </label>
                                         </div>
@@ -2235,7 +2390,8 @@
                                     <td>Host</td>
                                     <td>
                                         <input type="text" class="form-control"
-                                               name="log.access.SyslogAppender.host">
+                                               name="log.access.SyslogAppender.host"
+                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                                 <tr>
@@ -2243,7 +2399,8 @@
                                     <td>
                                         <input type="number" class="form-control"
                                                name="log.access.SyslogAppender.port"
-                                               min="1" max="65536">
+                                               min="1" max="65536"
+                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                                 <tr>
@@ -2258,12 +2415,14 @@
                                     </td>
                                     <td>
                                         <input type="text" class="form-control"
-                                               name="log.access.SyslogAppender.facility">
+                                               name="log.access.SyslogAppender.facility"
+                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                             </table>
                         </section>
                         <input type="submit" class="btn btn-primary" value="Save">
+                        <span class="cl-on-save-message"></span>
                     </form>
                 </div>
             </div>

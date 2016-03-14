@@ -45,6 +45,8 @@ var Configuration = function(data) {
  */
 var Form = function(config) {
 
+    var restart_required = false;
+
     /**
      * Updates the form state to correspond to that of the Configuration
      * instance.
@@ -75,6 +77,10 @@ var Form = function(config) {
         });
     };
 
+    this.setRestartRequired = function(bool) {
+        restart_required = bool;
+    };
+
     /**
      * Updates the Configuration instance to correspond with the form state.
      *
@@ -102,7 +108,21 @@ var Form = function(config) {
             url: window.location,
             data: config.toString(),
             success: function() {
-                alert('Configuration updated.');
+                // Disable the submit button
+                var submit = $(formElem).find('input[type="submit"]');
+                submit.prop('disabled', true);
+
+                // Set the success message, make it appear, and fade it out on
+                // a delay.
+                var msg = '&check; Configuration saved.';
+                if (restart_required) {
+                    msg += ' Restart is required.';
+                }
+                $(formElem).find('.cl-on-save-message').html(msg).show().
+                delay(5000).fadeOut(1000, function() {
+                    submit.prop('disabled', false);
+                    restart_required = false;
+                });
             },
             error: function() {
                 alert('Failed to update the configuration.');
@@ -145,6 +165,11 @@ $(document).ready(function() {
         error: function() {
             alert('Failed to load the configuration.');
         }
+    });
+
+    $('[data-requires-restart="true"], [data-requires-restart="1"]').
+    on('change', function() {
+        form.setRestartRequired(true);
     });
 
     $('input[type="submit"]').on('click', function() {

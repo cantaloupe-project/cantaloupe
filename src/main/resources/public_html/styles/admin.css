@@ -65,6 +65,13 @@ table, .table, .checkbox label, .radio label {
     text-indent: -2em;
 }
 
+.cl-on-save-message {
+    color: green;
+    font-size: 1.5em;
+    margin-left: 0.4em;
+    padding-top: 0.2em;
+}
+
 .nav > li.list-group-item > a {
     padding: 17px 15px;
 }
