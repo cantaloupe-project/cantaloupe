@@ -134,4 +134,26 @@ public class AdminResourceTest extends ResourceTest {
         // TODO: write this
     }
 
+    @Test
+    public void testEnabled() {
+        Configuration config = Application.getConfiguration();
+        // enabled
+        config.setProperty(AdminResource.CONTROL_PANEL_ENABLED_CONFIG_KEY, true);
+
+        ClientResource client = getClientForUriPath(WebApplication.ADMIN_PATH);
+        client.setChallengeResponse(
+                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, username, secret));
+        client.get();
+        assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        // disabled
+        config.setProperty(AdminResource.CONTROL_PANEL_ENABLED_CONFIG_KEY, false);
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_FORBIDDEN, client.getStatus());
+        }
+    }
+
 }

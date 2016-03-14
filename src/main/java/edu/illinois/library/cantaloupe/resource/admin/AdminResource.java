@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
+import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.FileConfiguration;
@@ -43,9 +44,6 @@ import java.util.TreeMap;
 
 public class AdminResource extends AbstractResource {
 
-    private static org.slf4j.Logger logger = LoggerFactory.
-            getLogger(AdminResource.class);
-
     /**
      * <p>Processors can't be used in the templates directly, so instances of
      * this class will proxy for them.</p>
@@ -73,9 +71,20 @@ public class AdminResource extends AbstractResource {
         }
     }
 
+    private static org.slf4j.Logger logger = LoggerFactory.
+            getLogger(AdminResource.class);
+
+    public static final String CONTROL_PANEL_ENABLED_CONFIG_KEY =
+            "admin.enabled";
+
     @Override
     protected void doInit() throws ResourceException {
+        if (!Application.getConfiguration().
+                getBoolean(CONTROL_PANEL_ENABLED_CONFIG_KEY, true)) {
+            throw new EndpointDisabledException();
+        }
         super.doInit();
+
         // Add a "Cache-Control: no-cache" header because this page contains
         // live information pertaining to the function of the application.
         getResponseCacheDirectives().add(CacheDirective.noCache());
