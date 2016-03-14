@@ -12,6 +12,9 @@ import org.slf4j.LoggerFactory;
 import javax.script.ScriptException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Used to obtain an instance of a {@link Resolver} defined in the
@@ -27,6 +30,16 @@ public abstract class ResolverFactory {
     public static final String RESOLVER_CHOOSER_DELEGATE_METHOD =
             "get_resolver";
     public static final String STATIC_RESOLVER_CONFIG_KEY = "resolver.static";
+
+
+    public static Set<Resolver> getAllResolvers() {
+        return new HashSet<Resolver>(Arrays.asList(
+                new AmazonS3Resolver(),
+                new AzureStorageResolver(),
+                new FilesystemResolver(),
+                new HttpResolver(),
+                new JdbcResolver()));
+    }
 
     /**
      * If {@link #STATIC_RESOLVER_CONFIG_KEY} is null or undefined, uses a

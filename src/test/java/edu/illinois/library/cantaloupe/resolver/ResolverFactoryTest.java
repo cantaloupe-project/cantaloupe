@@ -13,6 +13,11 @@ import static org.junit.Assert.*;
 public class ResolverFactoryTest {
 
     @Test
+    public void testGetAllResolvers() {
+        assertEquals(5, ResolverFactory.getAllResolvers().size());
+    }
+
+    @Test
     public void testGetResolverWithStaticResolver() throws Exception {
         BaseConfiguration config = new BaseConfiguration();
         Application.setConfiguration(config);
