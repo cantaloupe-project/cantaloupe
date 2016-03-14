@@ -149,27 +149,6 @@ class JdbcCache implements DerivativeCache {
 
     private static HikariDataSource dataSource;
 
-    static {
-        try (Connection connection = getConnection()) {
-            final DatabaseMetaData metadata = connection.getMetaData();
-            logger.info("Using {} {}", metadata.getDriverName(),
-                    metadata.getDriverVersion());
-            final Configuration config = Application.getConfiguration();
-            logger.info("Connection URL: {}",
-                    config.getString(JDBC_URL_CONFIG_KEY));
-
-            final String[] tableNames = { getDerivativeImageTableName(),
-                    getInfoTableName() };
-            for (String tableName : tableNames) {
-                if (!tableExists(connection, tableName)) {
-                    logger.error("Missing table: {}", tableName);
-                }
-            }
-        } catch (CacheException | SQLException e) {
-            logger.error(e.getMessage(), e);
-        }
-    }
-
     /**
      * @return Connection from the connection pool. Clients must call
      * {@link Connection#close} when they are done with it.
@@ -193,6 +172,24 @@ class JdbcCache implements DerivativeCache {
             dataSource.setPoolName("JdbcCachePool");
             dataSource.setMaximumPoolSize(maxPoolSize);
             dataSource.setConnectionTimeout(connectionTimeout);
+
+            try (Connection connection = dataSource.getConnection()) {
+                final DatabaseMetaData metadata = connection.getMetaData();
+                logger.info("Using {} {}", metadata.getDriverName(),
+                        metadata.getDriverVersion());
+                logger.info("Connection URL: {}",
+                        config.getString(JDBC_URL_CONFIG_KEY));
+
+                final String[] tableNames = { getDerivativeImageTableName(),
+                        getInfoTableName() };
+                for (String tableName : tableNames) {
+                    if (!tableExists(connection, tableName)) {
+                        logger.error("Missing table: {}", tableName);
+                    }
+                }
+            } catch (CacheException e) {
+                logger.error(e.getMessage(), e);
+            }
         }
         return dataSource.getConnection();
     }
