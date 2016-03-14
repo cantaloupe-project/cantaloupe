@@ -5,9 +5,11 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
+import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
@@ -45,29 +47,42 @@ import java.util.TreeMap;
 public class AdminResource extends AbstractResource {
 
     /**
-     * <p>Processors can't be used in the templates directly, so instances of
-     * this class will proxy for them.</p>
+     * <p>Resolver, caches, etc. can't be accessed from the templates, so
+     * instances of this class will proxy for them.</p>
      *
      * <p>Velocity requires this class to be public.</p>
      */
-    public static class ProcessorProxy {
-        private Processor processor;
+    public static class ObjectProxy {
+        protected Object object;
 
-        public ProcessorProxy(Processor proc) {
-            processor = proc;
+        public ObjectProxy(Object object) {
+            this.object = object;
         }
 
         public String getName() {
-            return processor.getClass().getSimpleName();
+            return object.getClass().getSimpleName();
+        }
+    }
+
+    public static class ProcessorProxy extends ObjectProxy {
+
+        public ProcessorProxy(Processor proc) {
+            super(proc);
         }
 
         public boolean supports(Format format) {
             try {
-                processor.setSourceFormat(format);
+                ((Processor) object).setSourceFormat(format);
                 return true;
             } catch (UnsupportedSourceFormatException e) {
                 return false;
             }
+        }
+    }
+
+    private class ObjectProxyComparator implements Comparator<ObjectProxy> {
+        public int compare(ObjectProxy o1, ObjectProxy o2) {
+            return o1.getName().compareTo(o2.getName());
         }
     }
 
@@ -217,13 +232,22 @@ public class AdminResource extends AbstractResource {
         /////////////////////// resolver section ///////////////////////////
         ////////////////////////////////////////////////////////////////////
 
-        // resolver name
-        String resolverStr = config.getString(
-                ResolverFactory.STATIC_RESOLVER_CONFIG_KEY);
-        if (config.getBoolean(ResolverFactory.DELEGATE_RESOLVER_CONFIG_KEY, false)) {
-            resolverStr = "Delegate Script";
+        ResolverFactory.SelectionStrategy selectionStrategy =
+                ResolverFactory.getSelectionStrategy();
+        vars.put("resolverSelectionStrategy", selectionStrategy);
+
+        if (selectionStrategy.equals(ResolverFactory.SelectionStrategy.STATIC)) {
+            vars.put("currentResolver", new ObjectProxy(
+                    ResolverFactory.getResolver(new Identifier("irrelevant"))));
         }
-        vars.put("resolverName", resolverStr);
+
+        List<ObjectProxy> sortedProxies = new ArrayList<>();
+        for (Resolver resolver : ResolverFactory.getAllResolvers()) {
+            sortedProxies.add(new ObjectProxy(resolver));
+        }
+
+        Collections.sort(sortedProxies, new ObjectProxyComparator());
+        vars.put("resolvers", sortedProxies);
 
         ////////////////////////////////////////////////////////////////////
         ////////////////////// processors section //////////////////////////
@@ -276,13 +300,14 @@ public class AdminResource extends AbstractResource {
             }
         }
 
-        List<ProcessorProxy> sortedProxies = new ArrayList<>();
+        List<ProcessorProxy> sortedProcessorProxies = new ArrayList<>();
         for (Processor proc : ProcessorFactory.getAllProcessors()) {
-            sortedProxies.add(new ProcessorProxy(proc));
+            sortedProcessorProxies.add(new ProcessorProxy(proc));
         }
 
-        Collections.sort(sortedProxies, new ProcessorProxyComparator());
-        vars.put("processors", sortedProxies);
+        Collections.sort(sortedProcessorProxies,
+                new ProcessorProxyComparator());
+        vars.put("processors", sortedProcessorProxies);
 
         ////////////////////////////////////////////////////////////////////
         //////////////////////// caches section ////////////////////////////

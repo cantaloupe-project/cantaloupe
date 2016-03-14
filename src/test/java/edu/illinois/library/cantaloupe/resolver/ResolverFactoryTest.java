@@ -18,20 +18,6 @@ public class ResolverFactoryTest {
     }
 
     @Test
-    public void testGetLookupStrategy() {
-        BaseConfiguration config = new BaseConfiguration();
-        Application.setConfiguration(config);
-
-        config.setProperty(ResolverFactory.DELEGATE_RESOLVER_CONFIG_KEY, "false");
-        assertEquals(ResolverFactory.LookupStrategy.STATIC,
-                ResolverFactory.getLookupStrategy());
-
-        config.setProperty(ResolverFactory.DELEGATE_RESOLVER_CONFIG_KEY, "true");
-        assertEquals(ResolverFactory.LookupStrategy.DELEGATE_SCRIPT,
-                ResolverFactory.getLookupStrategy());
-    }
-
-    @Test
     public void testGetResolverWithStaticResolver() throws Exception {
         BaseConfiguration config = new BaseConfiguration();
         Application.setConfiguration(config);
@@ -80,6 +66,20 @@ public class ResolverFactoryTest {
         identifier = new Identifier("anythingelse");
         assertTrue(ResolverFactory.getResolver(identifier)
                 instanceof FilesystemResolver);
+    }
+
+    @Test
+    public void testGetSelectionStrategy() {
+        BaseConfiguration config = new BaseConfiguration();
+        Application.setConfiguration(config);
+
+        config.setProperty(ResolverFactory.DELEGATE_RESOLVER_CONFIG_KEY, "false");
+        assertEquals(ResolverFactory.SelectionStrategy.STATIC,
+                ResolverFactory.getSelectionStrategy());
+
+        config.setProperty(ResolverFactory.DELEGATE_RESOLVER_CONFIG_KEY, "true");
+        assertEquals(ResolverFactory.SelectionStrategy.DELEGATE_SCRIPT,
+                ResolverFactory.getSelectionStrategy());
     }
 
 }

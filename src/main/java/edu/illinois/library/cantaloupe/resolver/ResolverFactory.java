@@ -25,7 +25,7 @@ public abstract class ResolverFactory {
     /**
      * @return How resolvers are chosen by {@link #getResolver(Identifier)}.
      */
-    public enum LookupStrategy {
+    public enum SelectionStrategy {
         STATIC, DELEGATE_SCRIPT
     }
 
@@ -50,12 +50,6 @@ public abstract class ResolverFactory {
                 new JdbcResolver()));
     }
 
-    public static LookupStrategy getLookupStrategy() {
-        final Configuration config = Application.getConfiguration();
-        return config.getBoolean(DELEGATE_RESOLVER_CONFIG_KEY, false) ?
-                LookupStrategy.DELEGATE_SCRIPT : LookupStrategy.STATIC;
-    }
-
     /**
      * If {@link #STATIC_RESOLVER_CONFIG_KEY} is null or undefined, uses a
      * delegate script method to return an instance of the appropriate
@@ -70,7 +64,7 @@ public abstract class ResolverFactory {
      */
     public static Resolver getResolver(Identifier identifier) throws Exception {
         final Configuration config = Application.getConfiguration();
-        if (getLookupStrategy().equals(LookupStrategy.DELEGATE_SCRIPT)) {
+        if (getSelectionStrategy().equals(SelectionStrategy.DELEGATE_SCRIPT)) {
             Resolver resolver = newDynamicResolver(identifier);
             logger.info("{}() returned a {} for {}",
                     RESOLVER_CHOOSER_DELEGATE_METHOD,
@@ -88,6 +82,12 @@ public abstract class ResolverFactory {
                         " is not set to a valid resolver.");
             }
         }
+    }
+
+    public static SelectionStrategy getSelectionStrategy() {
+        final Configuration config = Application.getConfiguration();
+        return config.getBoolean(DELEGATE_RESOLVER_CONFIG_KEY, false) ?
+                SelectionStrategy.DELEGATE_SCRIPT : SelectionStrategy.STATIC;
     }
 
     /**

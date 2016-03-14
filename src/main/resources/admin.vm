@@ -387,8 +387,11 @@
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="Controls the response Content-Disposition header
-                                           for images.">?</a>
+                                           data-content="Controls the response
+                                           Content-Disposition header for images.
+                                           &quot;Attachment&quot; will generally
+                                           cause web browsers to download images
+                                           rather than display them.">?</a>
                                     </td>
                                     <td>
                                         <select class="form-control"
@@ -407,7 +410,7 @@
                                            data-trigger="focus"
                                            data-content="Minimum size that will be used in info.json
                                            &lt;code&gt;tiles&lt;/code&gt; keys. See the user manual for
-                                           details of how these are calculated.">?</a>
+                                           an explanation of how these are calculated.">?</a>
                                     </td>
                                     <td>
                                         <input class="form-control" type="number"
@@ -487,7 +490,55 @@
                     <form method="post">
                         <section>
                             <h2>Resolver</h2>
-                            <p>$resolverName</p>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Strategy
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="When set to &quot;Static,&quot; the
+                                           static resolver (below) will be used. When set to
+                                           &quot;Delegate Script,&quot; a delegate script
+                                           method will be used to select a resolver per-request;
+                                           see the User Manual for more information.">?</a>
+                                    </td>
+                                    <td>
+                                        <select class="form-control"
+                                                name="resolver.delegate">
+                                            #if ($resolverSelectionStrategy.toString().equals("STATIC"))
+                                                <option value="false" selected>Static</option>
+                                                <option value="true">Delegate Script</option>
+                                            #else
+                                                <option value="false">Static</option>
+                                                <option value="true" selected>Delegate Script</option>
+                                            #end
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Static Resolver
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="The one resolver to use to
+                                           translate the identifier in the URL to an image
+                                           source for all requests, when the strategy is
+                                           &quot;Delegate Script.&quot;">?</a>
+                                    </td>
+                                    <td>
+                                        <select class="form-control"
+                                                name="resolver.static">
+                                            #foreach ($resolver in $resolvers)
+                                                #if ($resolver.equals($currentResolver))
+                                                    <option selected>$resolver.getName()</option>
+                                                #else
+                                                    <option>$resolver.getName()</option>
+                                                #end
+                                            #end
+                                        </select>
+                                    </td>
+                                </tr>
+                            </table>
                         </section>
 
                         <section>
