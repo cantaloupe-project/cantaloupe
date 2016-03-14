@@ -22,6 +22,13 @@ import java.util.Set;
  */
 public abstract class ResolverFactory {
 
+    /**
+     * @return How resolvers are chosen by {@link #getResolver(Identifier)}.
+     */
+    public enum LookupStrategy {
+        STATIC, DELEGATE_SCRIPT
+    }
+
     private static Logger logger = LoggerFactory.
             getLogger(ResolverFactory.class);
 
@@ -31,7 +38,9 @@ public abstract class ResolverFactory {
             "get_resolver";
     public static final String STATIC_RESOLVER_CONFIG_KEY = "resolver.static";
 
-
+    /**
+     * @return Set of instances of each unique resolver.
+     */
     public static Set<Resolver> getAllResolvers() {
         return new HashSet<Resolver>(Arrays.asList(
                 new AmazonS3Resolver(),
@@ -39,6 +48,12 @@ public abstract class ResolverFactory {
                 new FilesystemResolver(),
                 new HttpResolver(),
                 new JdbcResolver()));
+    }
+
+    public static LookupStrategy getLookupStrategy() {
+        final Configuration config = Application.getConfiguration();
+        return config.getBoolean(DELEGATE_RESOLVER_CONFIG_KEY, false) ?
+                LookupStrategy.DELEGATE_SCRIPT : LookupStrategy.STATIC;
     }
 
     /**
@@ -55,7 +70,7 @@ public abstract class ResolverFactory {
      */
     public static Resolver getResolver(Identifier identifier) throws Exception {
         final Configuration config = Application.getConfiguration();
-        if (config.getBoolean(DELEGATE_RESOLVER_CONFIG_KEY, false)) {
+        if (getLookupStrategy().equals(LookupStrategy.DELEGATE_SCRIPT)) {
             Resolver resolver = newDynamicResolver(identifier);
             logger.info("{}() returned a {} for {}",
                     RESOLVER_CHOOSER_DELEGATE_METHOD,

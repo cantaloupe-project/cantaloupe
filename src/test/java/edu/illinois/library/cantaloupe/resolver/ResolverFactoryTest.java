@@ -18,6 +18,20 @@ public class ResolverFactoryTest {
     }
 
     @Test
+    public void testGetLookupStrategy() {
+        BaseConfiguration config = new BaseConfiguration();
+        Application.setConfiguration(config);
+
+        config.setProperty(ResolverFactory.DELEGATE_RESOLVER_CONFIG_KEY, "false");
+        assertEquals(ResolverFactory.LookupStrategy.STATIC,
+                ResolverFactory.getLookupStrategy());
+
+        config.setProperty(ResolverFactory.DELEGATE_RESOLVER_CONFIG_KEY, "true");
+        assertEquals(ResolverFactory.LookupStrategy.DELEGATE_SCRIPT,
+                ResolverFactory.getLookupStrategy());
+    }
+
+    @Test
     public void testGetResolverWithStaticResolver() throws Exception {
         BaseConfiguration config = new BaseConfiguration();
         Application.setConfiguration(config);
