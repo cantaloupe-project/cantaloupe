@@ -68,18 +68,6 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
 
     private static HikariDataSource dataSource;
 
-    static {
-        try (Connection connection = getConnection()) {
-            logger.info("Using {} {}", connection.getMetaData().getDriverName(),
-                    connection.getMetaData().getDriverVersion());
-            Configuration config = Application.getConfiguration();
-            logger.info("Connection string: {}",
-                    config.getString(JDBC_URL_CONFIG_KEY));
-        } catch (SQLException e) {
-            logger.error("Failed to establish a database connection", e);
-        }
-    }
-
     /**
      * @return Connection from the connection pool. Clients must
      * <code>close()</code> it when they are done with it.
@@ -88,6 +76,16 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     public static synchronized Connection getConnection() throws SQLException {
         if (dataSource == null) {
             final Configuration config = Application.getConfiguration();
+
+            try (Connection connection = getConnection()) {
+                logger.info("Using {} {}", connection.getMetaData().getDriverName(),
+                        connection.getMetaData().getDriverVersion());
+                logger.info("Connection string: {}",
+                        config.getString(JDBC_URL_CONFIG_KEY));
+            } catch (SQLException e) {
+                logger.error("Failed to establish a database connection", e);
+            }
+
             final String connectionString = config.
                     getString(JDBC_URL_CONFIG_KEY, "");
             final int connectionTimeout = 1000 *
