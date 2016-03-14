@@ -4,6 +4,11 @@ import edu.illinois.library.cantaloupe.Application;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Used to obtain an instance of the current {@link Cache} according to the
  * application configuration.
@@ -20,6 +25,25 @@ public abstract class CacheFactory {
 
     /** Singleton instance */
     private static SourceCache sourceCache;
+
+    /**
+     * @return Set of single instances of all available derivative caches.
+     */
+    public static Set<DerivativeCache> getAllDerivativeCaches() {
+        return new HashSet<>(Arrays.asList(
+                new AmazonS3Cache(),
+                new AzureStorageCache(),
+                new FilesystemCache(),
+                new JdbcCache()));
+    }
+
+    /**
+     * @return Set of single instances of all available source caches.
+     */
+    public static Set<SourceCache> getAllSourceCaches() {
+        return new HashSet<SourceCache>(
+                Collections.singletonList(new FilesystemCache()));
+    }
 
     /**
      * <p>Provides access to the shared {@link Cache} instance.</p>

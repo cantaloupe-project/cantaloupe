@@ -9,6 +9,16 @@ import static org.junit.Assert.*;
 public class CacheFactoryTest {
 
     @Test
+    public void testGetAllDerivativeCaches() {
+        assertEquals(4, CacheFactory.getAllDerivativeCaches().size());
+    }
+
+    @Test
+    public void testGetAllSourceCaches() {
+        assertEquals(1, CacheFactory.getAllSourceCaches().size());
+    }
+
+    @Test
     public void testGetInstance() throws Exception {
         BaseConfiguration config = new BaseConfiguration();
         Application.setConfiguration(config);
