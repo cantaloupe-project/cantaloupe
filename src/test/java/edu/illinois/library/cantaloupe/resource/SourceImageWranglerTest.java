@@ -74,6 +74,24 @@ public class SourceImageWranglerTest {
     }
 
     @Test
+    public void testGetStreamProcessorRetrievalStrategy() {
+        final Configuration config = Application.getConfiguration();
+        // stream
+        config.setProperty(
+                SourceImageWrangler.STREAMPROCESSOR_RETRIEVAL_STRATEGY_CONFIG_KEY,
+                "StreamStrategy");
+        assertEquals(SourceImageWrangler.StreamProcessorRetrievalStrategy.STREAM,
+                SourceImageWrangler.getStreamProcessorRetrievalStrategy());
+
+        // cache
+        config.setProperty(
+                SourceImageWrangler.STREAMPROCESSOR_RETRIEVAL_STRATEGY_CONFIG_KEY,
+                "CacheStrategy");
+        assertEquals(SourceImageWrangler.StreamProcessorRetrievalStrategy.CACHE,
+                SourceImageWrangler.getStreamProcessorRetrievalStrategy());
+    }
+
+    @Test
     public void testWrangleWithFileResolverAndFileProcessor() throws Exception {
         final Resolver resolver = ResolverFactory.getResolver(identifier);
         final Processor processor = ProcessorFactory.getProcessor(Format.JPG);

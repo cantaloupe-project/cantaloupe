@@ -30,6 +30,10 @@ import java.io.OutputStream;
  */
 public class SourceImageWrangler {
 
+    public enum StreamProcessorRetrievalStrategy {
+        STREAM, CACHE
+    }
+
     private static final Logger logger = LoggerFactory.
             getLogger(SourceImageWrangler.class);
 
@@ -39,6 +43,15 @@ public class SourceImageWrangler {
     private Identifier identifier;
     private Processor processor;
     private Resolver resolver;
+
+    public static StreamProcessorRetrievalStrategy
+    getStreamProcessorRetrievalStrategy() {
+        return Application.getConfiguration().getString(
+                STREAMPROCESSOR_RETRIEVAL_STRATEGY_CONFIG_KEY,
+                "StreamStrategy").equals("StreamStrategy") ?
+                StreamProcessorRetrievalStrategy.STREAM :
+                StreamProcessorRetrievalStrategy.CACHE;
+    }
 
     public SourceImageWrangler(Resolver resolver,
                                Processor processor,
@@ -127,10 +140,8 @@ public class SourceImageWrangler {
                     throw new IncompatibleResolverException(resolver, processor);
                 }
             } else {
-                switch (Application.getConfiguration().getString(
-                        STREAMPROCESSOR_RETRIEVAL_STRATEGY_CONFIG_KEY,
-                        "StreamStrategy")) {
-                    case "CacheStrategy":
+                switch (getStreamProcessorRetrievalStrategy()) {
+                    case CACHE:
                         logger.info("Using CacheStrategy with {} as a StreamProcessor",
                                 processorName);
                         SourceCache sourceCache = CacheFactory.getSourceCache();
@@ -141,7 +152,7 @@ public class SourceImageWrangler {
                             throw new SourceCacheDisabledException();
                         }
                         break;
-                    default: // StreamStrategy
+                    default: // stream
                         // All FileResolvers are also StreamResolvers.
                         logger.info("StreamResolver -> StreamProcessor " +
                                 "connection between {} and {}",
