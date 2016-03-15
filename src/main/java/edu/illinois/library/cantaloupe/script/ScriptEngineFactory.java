@@ -13,8 +13,7 @@ public abstract class ScriptEngineFactory {
 
     public static final String DELEGATE_SCRIPT_CONFIG_KEY = "delegate_script";
 
-    public static File getScript() throws FileNotFoundException,
-            DelegateScriptDisabledException {
+    public static File getScript() throws FileNotFoundException {
         final Configuration config = Application.getConfiguration();
         // The script name may be an absolute path or a filename.
         final String scriptValue = config.getString(DELEGATE_SCRIPT_CONFIG_KEY);
@@ -24,9 +23,8 @@ public abstract class ScriptEngineFactory {
                 throw new FileNotFoundException(script.getAbsolutePath());
             }
             return script;
-        } else {
-            throw new DelegateScriptDisabledException();
         }
+        return null;
     }
 
     /**
