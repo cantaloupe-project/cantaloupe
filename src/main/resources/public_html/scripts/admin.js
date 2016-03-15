@@ -119,13 +119,15 @@ var Form = function(config) {
                     msg += ' Restart is required.';
                 }
                 $(formElem).find('.cl-on-save-message').html(msg).show().
-                delay(5000).fadeOut(1000, function() {
+                delay(4000).fadeOut(800, function() {
                     submit.prop('disabled', false);
                     restart_required = false;
                 });
             },
-            error: function() {
-                alert('Failed to update the configuration.');
+            error: function(xhr, status, error) {
+                console.error(xhr);
+                console.error(error);
+                alert('Failed to save the configuration: ' + error);
             }
         });
     };

@@ -50,6 +50,11 @@ table, .table, .checkbox label, .radio label {
     color: white;
 }
 
+textarea.form-control {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.9em;
+}
+
 #cl-status td:first-child {
     width: 40%;
 }

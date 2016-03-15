@@ -57,6 +57,10 @@
                        role="tab" data-toggle="tab">Overlays</a>
                 </li>
                 <li role="presentation" class="list-group-item">
+                    <a href="#cl-delegate-script" aria-controls="cl-delegate-script"
+                       role="tab" data-toggle="tab">Delegate Script</a>
+                </li>
+                <li role="presentation" class="list-group-item">
                     <a href="#cl-logging" aria-controls="cl-logging"
                        role="tab" data-toggle="tab">Logging</a>
                 </li>
@@ -136,6 +140,11 @@
                                 <td>$xForwardedForHeader</td>
                             </tr>
                         </table>
+                    </section>
+
+                    <section>
+                        <h2>Configuration File</h2>
+                        $configFilePath
                     </section>
                 </div>
 
@@ -326,24 +335,6 @@
                                                 Print stack trace on error pages
                                             </label>
                                         </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Delegate script
-                                        <a tabindex="0" class="btn btn-sm cl-help"
-                                           role="button" data-toggle="popover"
-                                           data-trigger="focus"
-                                           data-content="The name of a Ruby script containing various
-                                           delegate methods. (See the user manual.) This can be an
-                                           absolute path, or a filename; if only a filename is specified,
-                                           it will be searched for in the same folder as the config file,
-                                           and then the current working directory. Leave empty to
-                                           disable the delegate script.">?</a>
-                                    </td>
-                                    <td>
-                                        <input class="form-control" type="text"
-                                               name="delegate_script" maxlength="4096"
-                                               data-requires-restart="false">
                                     </td>
                                 </tr>
                             </table>
@@ -909,51 +900,6 @@
 
                 <div role="tabpanel" class="tab-pane" id="cl-processors">
                     <section>
-                        <h2>Effective Source Format Assignments</h2>
-
-                        <ul class="nav nav-pills" role="tablist">
-                            <li role="presentation" class="active">
-                                <a href="#cl-image-assignments"
-                                   aria-controls="cl-image-assignments" role="tab"
-                                   data-toggle="tab">Image</a>
-                            </li>
-                            <li role="presentation">
-                                <a href="#cl-video-assignments"
-                                   aria-controls="cl-video-assignments" role="tab"
-                                   data-toggle="tab">Video</a>
-                            </li>
-                        </ul>
-
-                        <div class="tab-content">
-                            <div role="tabpanel" class="tab-pane active" id="cl-image-assignments">
-                                <table class="table table-striped cl-source-format-assignments">
-                                    #foreach ($format in $processorAssignments.keySet())
-                                        #if ($format.isImage())
-                                            <tr>
-                                                <td style="width:30%">$format.getName()</td>
-                                                <td>$processorAssignments.get($format)</td>
-                                            </tr>
-                                        #end
-                                    #end
-                                </table>
-                            </div>
-
-                            <div role="tabpanel" class="tab-pane" id="cl-video-assignments">
-                                <table class="table table-striped cl-source-format-assignments">
-                                    #foreach ($format in $processorAssignments.keySet())
-                                        #if (!$format.isImage())
-                                            <tr>
-                                                <td style="width:30%">$format.getName()</td>
-                                                <td>$processorAssignments.get($format)</td>
-                                            </tr>
-                                        #end
-                                    #end
-                                </table>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section>
                         <h2>Supported Source Formats</h2>
 
                         <ul class="nav nav-pills" role="tablist">
@@ -1026,7 +972,141 @@
                         </div>
                     </section>
 
-                    <form method="post">
+                    <section>
+                        <h2>Source Format Assignments</h2>
+
+                        <ul class="nav nav-pills" role="tablist">
+                            <li role="presentation" class="active">
+                                <a href="#cl-image-assignments"
+                                   aria-controls="cl-image-assignments" role="tab"
+                                   data-toggle="tab">Image</a>
+                            </li>
+                            <li role="presentation">
+                                <a href="#cl-video-assignments"
+                                   aria-controls="cl-video-assignments" role="tab"
+                                   data-toggle="tab">Video</a>
+                            </li>
+                        </ul>
+
+                        <form method="post">
+                            <div class="tab-content">
+                                <div role="tabpanel" class="tab-pane active" id="cl-image-assignments">
+                                    <table class="table table-striped cl-source-format-assignments">
+                                        #foreach ($format in $sourceFormats)
+                                            #if ($format.isImage())
+                                                <tr>
+                                                    <td style="width:30%">$format.getName()</td>
+                                                    <td>
+                                                        <select class="form-control"
+                                                                name="processor.$format.toString()"
+                                                                data-restart-required="false">
+                                                            #if ($currentProcessors.get($format))
+                                                                <option value="">Use Fallback</option>
+                                                            #else
+                                                                <option value="" selected>Use Fallback</option>
+                                                            #end
+                                                            #foreach ($processor in $processors)
+                                                                #if ($processor.supports($format))
+                                                                    #if ($currentProcessors.get($format).equals($processor))
+                                                                        <option selected>$processor.getName()</option>
+                                                                    #else
+                                                                        <option>$processor.getName()</option>
+                                                                    #end
+                                                                #end
+                                                            #end
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                            #end
+                                        #end
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="cl-video-assignments">
+                                    <table class="table table-striped cl-source-format-assignments">
+                                        #foreach ($format in $sourceFormats)
+                                            #if ($format.isVideo())
+                                                <tr>
+                                                    <td style="width:30%">$format.getName()</td>
+                                                    <td>
+                                                        <select class="form-control"
+                                                                name="processor.$format.toString()"
+                                                                data-restart-required="false">
+                                                            #if ($currentProcessors.get($format))
+                                                                <option value="">Use Fallback</option>
+                                                            #else
+                                                                <option value="" selected>Use Fallback</option>
+                                                            #end
+                                                            #foreach ($processor in $processors)
+                                                                #if ($processor.supports($format))
+                                                                    #if ($currentProcessors.get($format).equals($processor))
+                                                                        <option selected>$processor.getName()</option>
+                                                                    #else
+                                                                        <option>$processor.getName()</option>
+                                                                    #end
+                                                                #end
+                                                            #end
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                            #end
+                                        #end
+                                    </table>
+                                </div>
+
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>
+                                            Fallback Processor
+                                            <a tabindex="0" class="btn btn-sm cl-help"
+                                               role="button" data-toggle="popover"
+                                               data-trigger="focus"
+                                               data-content="This processor will be used
+                                               for any formats not assigned above.">?</a>
+                                        </td>
+                                        <td>
+                                            <select class="form-control"
+                                                    name="processor.fallback"
+                                                    data-restart-required="false">
+                                                #foreach ($processor in $processors)
+                                                    #if ($currentFallbackProcessor.equals($processor))
+                                                        <option selected>$processor.getName()</option>
+                                                    #else
+                                                        <option>$processor.getName()</option>
+                                                    #end
+                                                #end
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>StreamProcessor Retrieval Strategy
+                                            <a tabindex="0" class="btn btn-sm cl-help"
+                                               role="button" data-toggle="popover"
+                                               data-trigger="focus"
+                                               data-content="When a processor is reading
+                                               from streams, rather than the filesystem,
+                                               this option configures how it loads source images.
+                                               With &quot;stream,&quot; it will read them from
+                                               a stream per-request. With &quot;cache,&quot; it
+                                               will read them from a stream, cache
+                                               them in the source cache, and read from that
+                                               thereafter.<br><br>
+                                               With &quot;cache,&quot; FilesystemCache must be
+                                               configured.">?</a>
+                                        </td>
+                                        <td>
+                                            <select class="form-control"
+                                                    name="StreamProcessor.retrieval_strategy"
+                                                    data-restart-required="false">
+                                                <option value="StreamStrategy">Stream Each Request</option>
+                                                <option value="CacheStrategy">Cache in Source Cache</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </section>
+
                         <section>
                             <h2>Processors</h2>
 
@@ -2222,6 +2302,51 @@
                     </form>
                 </div>
 
+                <div role="tabpanel" class="tab-pane" id="cl-delegate-script">
+                    <form method="post">
+                        <section>
+                            <h2>Delegate Script</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Script File
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="The name of a Ruby script containing various
+                                           delegate methods. (See the user manual.) This can be an
+                                           absolute path, or a filename; if only a filename is specified,
+                                           it will be searched for in the same folder as the config file,
+                                           and then the current working directory. Leave empty to
+                                           disable the delegate script.">?</a>
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="text"
+                                               name="delegate_script" maxlength="4096"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
+                        <section>
+                            <h3>Contents
+                                <a tabindex="0" class="btn btn-sm cl-help"
+                                   role="button" data-toggle="popover"
+                                   data-trigger="focus"
+                                   data-content="Contents of the delegate script.
+                                           Must be valid Ruby code.">?</a>
+                            </h3>
+                            <textarea name="delegate_script_contents"
+                                      class="form-control"
+                                      rows="24"
+                                      data-requires-restart="false">$delegateScriptContents</textarea>
+                        </section>
+
+                        <input type="submit" class="btn btn-primary" value="Save">
+                        <span class="cl-on-save-message"></span>
+                    </form>
+                </div>
+
                 <div role="tabpanel" class="tab-pane" id="cl-logging">
                     <form method="post">
                         <section>
@@ -2243,7 +2368,12 @@
                                 </tr>
                             </table>
 
-                            <h3>Console Appender</h3>
+                            <h3>Console Appender
+                                <a tabindex="0" class="btn btn-sm cl-help"
+                                   role="button" data-toggle="popover"
+                                   data-trigger="focus"
+                                   data-content="Logs to the console.">?</a>
+                            </h3>
                             <table class="table table-striped">
                                 <tr>
                                     <td></td>
@@ -2261,7 +2391,12 @@
                                 </tr>
                             </table>
 
-                            <h3>File Appender</h3>
+                            <h3>File Appender
+                                <a tabindex="0" class="btn btn-sm cl-help"
+                                   role="button" data-toggle="popover"
+                                   data-trigger="focus"
+                                   data-content="Logs to a single file.">?</a>
+                            </h3>
                             <table class="table table-striped">
                                 <tr>
                                     <td></td>
@@ -2287,7 +2422,13 @@
                                 </tr>
                             </table>
 
-                            <h3>Rolling File Appender</h3>
+                            <h3>Rolling File Appender
+                                <a tabindex="0" class="btn btn-sm cl-help"
+                                   role="button" data-toggle="popover"
+                                   data-trigger="focus"
+                                   data-content="Logs to a file which gets
+                                   rotated daily.">?</a>
+                            </h3>
                             <table class="table table-striped">
                                 <tr>
                                     <td></td>
@@ -2329,7 +2470,12 @@
                                 </tr>
                             </table>
 
-                            <h3>Syslog Appender</h3>
+                            <h3>Syslog Appender
+                                <a tabindex="0" class="btn btn-sm cl-help"
+                                   role="button" data-toggle="popover"
+                                   data-trigger="focus"
+                                   data-content="Sends log messages to syslogd.">?</a>
+                            </h3>
                             <table class="table table-striped">
                                 <tr>
                                     <td></td>
@@ -2384,7 +2530,12 @@
                         <section>
                             <h2>Access Log</h2>
 
-                            <h3>Console Appender</h3>
+                            <h3>Console Appender
+                                <a tabindex="0" class="btn btn-sm cl-help"
+                                   role="button" data-toggle="popover"
+                                   data-trigger="focus"
+                                   data-content="Logs to the console.">?</a>
+                            </h3>
                             <table class="table table-striped">
                                 <tr>
                                     <td></td>
@@ -2402,7 +2553,12 @@
                                 </tr>
                             </table>
 
-                            <h3>File Appender</h3>
+                            <h3>File Appender
+                                <a tabindex="0" class="btn btn-sm cl-help"
+                                   role="button" data-toggle="popover"
+                                   data-trigger="focus"
+                                   data-content="Logs to a single file.">?</a>
+                            </h3>
                             <table class="table table-striped">
                                 <tr>
                                     <td></td>
@@ -2428,7 +2584,13 @@
                                 </tr>
                             </table>
 
-                            <h3>Rolling File Appender</h3>
+                            <h3>Rolling File Appender
+                                <a tabindex="0" class="btn btn-sm cl-help"
+                                   role="button" data-toggle="popover"
+                                   data-trigger="focus"
+                                   data-content="Logs to a file which gets rotated
+                                   daily.">?</a>
+                            </h3>
                             <table class="table table-striped">
                                 <tr>
                                     <td></td>
@@ -2470,7 +2632,12 @@
                                 </tr>
                             </table>
 
-                            <h3>Syslog Appender</h3>
+                            <h3>Syslog Appender
+                                <a tabindex="0" class="btn btn-sm cl-help"
+                                   role="button" data-toggle="popover"
+                                   data-trigger="focus"
+                                   data-content="Sends log messages to syslogd.">?</a>
+                            </h3>
                             <table class="table table-striped">
                                 <tr>
                                     <td></td>
@@ -2530,7 +2697,6 @@
     </div>
 
     <footer>
-        <p>Configuration file: $configFilePath</p>
         <a href="https://medusa-project.github.io/cantaloupe/">Home (GitHub)</a> |
         <a href="https://medusa-project.github.io/cantaloupe/manual/$version/">User Manual</a>
     </footer>

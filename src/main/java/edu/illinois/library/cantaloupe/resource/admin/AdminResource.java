@@ -13,9 +13,12 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
+import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
+import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.io.FileUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.app.Velocity;
 import org.restlet.data.CacheDirective;
@@ -32,6 +35,7 @@ import org.restlet.util.Series;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -141,12 +145,32 @@ public class AdminResource extends AbstractResource {
         final Map submittedConfig = new ObjectMapper().readValue(
                 rep.getStream(), HashMap.class);
 
+        // Copy configuration keys and values from the request JSON payload to
+        // the application configuration.
         for (final Object key : submittedConfig.keySet()) {
-            final Object value = submittedConfig.get(key);
-            logger.debug("Setting {} = {}", key, value);
-            config.setProperty((String) key, value);
+            // Some POSTed keys are not actually configuration keys and will
+            // need to be handled separately.
+            if (!key.equals("delegate_script_contents")) {
+                final Object value = submittedConfig.get(key);
+                logger.debug("Setting {} = {}", key, value);
+                config.setProperty((String) key, value);
+            }
         }
 
+        // Handle certain submitted keys differently.
+        final String scriptContents =
+                (String) submittedConfig.get("delegate_script_contents");
+        if (scriptContents != null) {
+            final File scriptFile = ScriptEngineFactory.getScript();
+            if (scriptFile != null) {
+                logger.info("Updating delegate script contents");
+                FileUtils.writeStringToFile(scriptFile, scriptContents);
+            } else {
+                logger.info("No delegate script file; skipping update.");
+            }
+        }
+
+        // If the application configuration is file-based, save it.
         if (config instanceof FileConfiguration) {
             final FileConfiguration fileConfig = (FileConfiguration) config;
             final File configFile = Application.getConfigurationFile();
@@ -255,11 +279,11 @@ public class AdminResource extends AbstractResource {
         ////////////////////////////////////////////////////////////////////
 
         // source format assignments
-        Map<Format,String> assignments = new TreeMap<>();
+        Map<Format,ProcessorProxy> assignments = new TreeMap<>();
         for (Format format : Format.values()) {
             try {
                 assignments.put(format,
-                        ProcessorFactory.getProcessor(format).getClass().getSimpleName());
+                        new ProcessorProxy(ProcessorFactory.getProcessor(format)));
             } catch (UnsupportedSourceFormatException e) {
                 // noop
             }
@@ -294,21 +318,19 @@ public class AdminResource extends AbstractResource {
         Collections.sort(videoFormats, new SourceFormatComparator());
         vars.put("videoSourceFormats", videoFormats);
 
-        // processors
-        class ProcessorProxyComparator implements Comparator<ProcessorProxy> {
-            public int compare(ProcessorProxy o1, ProcessorProxy o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        }
+        // source format assignments
+        vars.put("sourceFormats", Format.values());
 
         List<ProcessorProxy> sortedProcessorProxies = new ArrayList<>();
         for (Processor proc : ProcessorFactory.getAllProcessors()) {
             sortedProcessorProxies.add(new ProcessorProxy(proc));
         }
 
-        Collections.sort(sortedProcessorProxies,
-                new ProcessorProxyComparator());
+        Collections.sort(sortedProcessorProxies, new ObjectProxyComparator());
         vars.put("processors", sortedProcessorProxies);
+
+        vars.put("streamProcessorRetrievalStrategy",
+                SourceImageWrangler.getStreamProcessorRetrievalStrategy());
 
         ////////////////////////////////////////////////////////////////////
         //////////////////////// caches section ////////////////////////////
@@ -344,6 +366,21 @@ public class AdminResource extends AbstractResource {
 
         Collections.sort(sortedProxies, new ObjectProxyComparator());
         vars.put("derivativeCaches", sortedProxies);
+
+        ////////////////////////////////////////////////////////////////////
+        //////////////////// delegate script section ///////////////////////
+        ////////////////////////////////////////////////////////////////////
+
+        String scriptData = "";
+        try {
+            File scriptFile = ScriptEngineFactory.getScript();
+            if (scriptFile != null) {
+                scriptData = FileUtils.readFileToString(scriptFile);
+            }
+        } catch (FileNotFoundException e) {
+            logger.debug(e.getMessage());
+        }
+        vars.put("delegateScriptContents", scriptData);
 
         return vars;
     }
