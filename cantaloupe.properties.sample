@@ -47,7 +47,7 @@ base_uri =
 #slash_substitute =
 
 # Maximum number of pixels to return in a response, to prevent overloading
-# the server. Requests for more pixels than this will receive an HTTP 4xx
+# the server. Requests for more pixels than this will receive an HTTP 403
 # response. Comment out or set to 0 for no maximum.
 # Note: this is ignored when requesting an unmodified source image.
 max_pixels = 400000000

@@ -366,7 +366,7 @@
                                            data-trigger="focus"
                                            data-content="Maximum number of pixels to return in a response,
                                            to prevent overloading the server. Requests for more pixels than
-                                           this will receive an HTTP 4xx response. Set to 0
+                                           this will receive an HTTP 403 response. Set to 0
                                            for no maximum. Note: this is ignored when requesting an
                                            unmodified source image.">?</a>
                                     </td>
