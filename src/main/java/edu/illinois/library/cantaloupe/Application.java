@@ -277,6 +277,7 @@ public class Application {
                 }
                 PropertiesConfiguration propConfig = new PropertiesConfiguration();
                 propConfig.load(configFile);
+                propConfig.setFile(configFile);
                 config = propConfig;
             }
         } catch (ConfigurationException e) {

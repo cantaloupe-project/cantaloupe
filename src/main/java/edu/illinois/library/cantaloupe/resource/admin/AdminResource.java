@@ -152,7 +152,6 @@ public class AdminResource extends AbstractResource {
             final File configFile = Application.getConfigurationFile();
             if (configFile != null) {
                 logger.debug("Saving {}", configFile);
-                fileConfig.setFile(configFile);
                 fileConfig.save();
             } else {
                 logger.debug("No configuration file; nothing to save.");
