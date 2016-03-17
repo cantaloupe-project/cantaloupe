@@ -13,7 +13,7 @@
 # Enables the Control Panel, at /admin.
 admin.enabled = true
 # Password to access the Control Panel. (The username is always "admin".)
-admin.password = password
+admin.password =
 
 # !! Whether to enable HTTP access (http://), and on what TCP port.
 http.enabled = true
