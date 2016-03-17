@@ -58,7 +58,8 @@ public class WebApplication extends Application {
         final String secret = config.getString(ADMIN_SECRET_CONFIG_KEY);
         if (secret == null || secret.length() < 1) {
             throw new ConfigurationException(
-                    ADMIN_SECRET_CONFIG_KEY + " is not set.");
+                    ADMIN_SECRET_CONFIG_KEY + " is not set. The control " +
+                            "panel will be unavailable.");
         }
 
         final MapVerifier verifier = new MapVerifier();
