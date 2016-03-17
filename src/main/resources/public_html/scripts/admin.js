@@ -46,6 +46,73 @@ var Configuration = function(data) {
 var Form = function(config) {
 
     var restart_required = false;
+    var self = this;
+
+    var attachEventListeners = function() {
+
+        /**
+         * Shows or hides all the other rows in the same table as a checkbox
+         * element, depending on whether it is checked or not.
+         *
+         * @param checkbox_selector jQuery selector for one or multiple
+         *                          checkboxes
+         */
+        var showOrHideAllOtherTableRows = function(checkbox_selector) {
+            $(checkbox_selector).on('change', function() {
+                var other_rows = $(this).parents('tr').siblings('tr');
+                if ($(this).prop('checked')) {
+                    other_rows.show();
+                } else {
+                    other_rows.hide();
+                }
+            }).trigger('change');
+        };
+
+        ///////////////////// global form listeners /////////////////////////
+
+        // When a form element that represents a property that requires
+        // a restart is changed, save that fact.
+        $('[data-requires-restart="true"], [data-requires-restart="1"]').
+        on('change', function() {
+            self.setRestartRequired(true);
+        });
+
+        // Override the form submit behavior to invoke custom validation and
+        // save functions.
+        $('input[type="submit"]').on('click', function() {
+            if (self.validate()) {
+                self.save($(this).parents('form'));
+            }
+            return false;
+        });
+
+        ////////////////////// individual sections //////////////////////////
+
+        // Server
+        showOrHideAllOtherTableRows(
+            '[name="http.enabled"], [name="https.enabled"], [name="auth.basic.enabled"]');
+        // Endpoints
+        showOrHideAllOtherTableRows(
+            '[name="endpoint.iiif.1.enabled"], [name="endpoint.iiif.2.enabled"]');
+        // Caches
+        showOrHideAllOtherTableRows(
+            '[name="cache.client.enabled"], [name="cache.worker.enabled"]');
+        // Overlays
+        showOrHideAllOtherTableRows(
+            '[name="watermark.enabled"], [name="redaction.enabled"]');
+        // Delegate Script
+        showOrHideAllOtherTableRows('#delegate_script_enabled');
+        // Logging
+        showOrHideAllOtherTableRows(
+            '[name="log.application.ConsoleAppender.enabled"], ' +
+            '[name="log.application.FileAppender.enabled"], ' +
+            '[name="log.application.RollingFileAppender.enabled"], ' +
+            '[name="log.application.SyslogAppender.enabled"], ' +
+            '[name="log.access.ConsoleAppender.enabled"], ' +
+            '[name="log.access.FileAppender.enabled"], ' +
+            '[name="log.access.RollingFileAppender.enabled"], ' +
+            '[name="log.access.SyslogAppender.enabled"]');
+    };
 
     /**
      * Updates the form state to correspond to that of the Configuration
@@ -75,6 +142,8 @@ var Form = function(config) {
                 });
             }
         });
+
+        attachEventListeners();
     };
 
     this.setRestartRequired = function(bool) {
@@ -145,39 +214,25 @@ var Form = function(config) {
 
 };
 
-config = null;
-form = null;
-
 $(document).ready(function() {
     $('.cl-help').popover({
         placement: 'auto',
         html: true
     });
 
-    // Download configuration data into a Configuration instance.
+    // Download configuration data into a Configuration instance, and
+    // initialize a Form instance on success.
     $.ajax({
         dataType: 'json',
         url: window.location,
         data: null,
         success: function(data) {
-            config = new Configuration(data);
-            form = new Form(config);
-            form.load();
+            new Form(new Configuration(data)).load();
         },
-        error: function() {
-            alert('Failed to load the configuration.');
+        error: function(xhr, status, error) {
+            console.error(xhr);
+            console.error(error);
+            alert('Failed to load the configuration: ' + error);
         }
-    });
-
-    $('[data-requires-restart="true"], [data-requires-restart="1"]').
-    on('change', function() {
-        form.setRestartRequired(true);
-    });
-
-    $('input[type="submit"]').on('click', function() {
-        if (form.validate()) {
-            form.save($(this).parents('form'));
-        }
-        return false;
     });
 });
