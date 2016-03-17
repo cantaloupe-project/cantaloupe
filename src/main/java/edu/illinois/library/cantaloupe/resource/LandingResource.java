@@ -9,6 +9,9 @@ import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Handles the landing page.
  */
@@ -17,9 +20,12 @@ public class LandingResource extends AbstractResource {
     @Override
     protected void doInit() throws ResourceException {
         super.doInit();
-        // add a "Cache-Control: no-cache" header because this page contains
-        // live information pertaining to the function of the application
-        getResponseCacheDirectives().add(CacheDirective.noCache());
+        // Add a Cache-Control header that tells clients this page never
+        // expires.
+        final List<CacheDirective> directives = new ArrayList<>();
+        directives.add(CacheDirective.maxAge(Integer.MAX_VALUE));
+        directives.add(CacheDirective.publicInfo());
+        getResponseCacheDirectives().addAll(directives);
     }
 
     @Get
