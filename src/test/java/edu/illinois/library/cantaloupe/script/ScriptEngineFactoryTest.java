@@ -17,30 +17,37 @@ public class ScriptEngineFactoryTest {
     @Before
     public void setUp() throws Exception {
         Configuration config = new BaseConfiguration();
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
+        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
+                "true");
+        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         Application.setConfiguration(config);
     }
 
     @Test
-    public void testGetScriptEngine() throws Exception {
-        // test with delegate script config key set to a present, valid script
-        ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        assertNotNull(engine);
-
-        // test with delegate script config key set to a missing script
+    public void testGetScriptEngineWithDelegateScriptDisabled() throws Exception {
         Configuration config = Application.getConfiguration();
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
-                "/bla/bla/blaasdfasdfasfd");
+        config.setProperty(
+                ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY, false);
         try {
             ScriptEngineFactory.getScriptEngine();
             fail("Expected exception");
-        } catch (FileNotFoundException e) {
+        } catch (DelegateScriptDisabledException e) {
             // pass
         }
+    }
 
-        // test with present, invalid delegate script
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
+    @Test
+    public void testGetScriptEngineWithPresentValidScript() throws Exception {
+        ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
+        assertNotNull(engine);
+    }
+
+    @Test
+    public void testGetScriptEngineWithPresentInvalidScript() throws Exception {
+        final Configuration config = Application.getConfiguration();
+        config.setProperty(
+                ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
                 TestUtil.getImage("txt").getAbsolutePath());
         try {
             ScriptEngineFactory.getScriptEngine();
@@ -50,5 +57,29 @@ public class ScriptEngineFactoryTest {
         }
     }
 
+    @Test
+    public void testGetScriptEngineWithMissingScript() throws Exception {
+        Configuration config = Application.getConfiguration();
+        // bogus script
+        config.setProperty(
+                ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
+                "/bla/bla/blaasdfasdfasfd");
+        try {
+            ScriptEngineFactory.getScriptEngine();
+            fail("Expected exception");
+        } catch (FileNotFoundException e) {
+            // pass
+        }
+
+        // empty value
+        config.setProperty(
+                ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY, "");
+        try {
+            ScriptEngineFactory.getScriptEngine();
+            fail("Expected exception");
+        } catch (FileNotFoundException e) {
+            // pass
+        }
+    }
 
 }

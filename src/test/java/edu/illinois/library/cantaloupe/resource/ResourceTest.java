@@ -25,7 +25,9 @@ public abstract class ResourceTest {
     public static BaseConfiguration newConfiguration() throws IOException {
         BaseConfiguration config = new BaseConfiguration();
         config.setProperty("print_stack_trace_on_error_pages", false);
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
+        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
+                "true");
+        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         config.setProperty("http.enabled", true);
         config.setProperty("http.port", PORT);

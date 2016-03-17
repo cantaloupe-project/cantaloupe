@@ -11,12 +11,23 @@ import java.io.IOException;
 
 public abstract class ScriptEngineFactory {
 
-    public static final String DELEGATE_SCRIPT_CONFIG_KEY = "delegate_script";
+    public static final String DELEGATE_SCRIPT_ENABLED_CONFIG_KEY =
+            "delegate_script.enabled";
+    public static final String DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY =
+            "delegate_script.pathname";
 
+    /**
+     * @return File representing the delegate script, whether or not the
+     *         delegate script system is enabled.
+     * @throws FileNotFoundException If the script specified in
+     *         {@link #DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY} does not exist, or
+     *         if no script is specified.
+     */
     public static File getScript() throws FileNotFoundException {
         final Configuration config = Application.getConfiguration();
         // The script name may be an absolute path or a filename.
-        final String scriptValue = config.getString(DELEGATE_SCRIPT_CONFIG_KEY);
+        final String scriptValue =
+                config.getString(DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY, "");
         if (scriptValue != null && scriptValue.length() > 0) {
             File script = findScript(scriptValue);
             if (!script.exists()) {
@@ -24,7 +35,7 @@ public abstract class ScriptEngineFactory {
             }
             return script;
         }
-        return null;
+        throw new FileNotFoundException();
     }
 
     /**
@@ -40,9 +51,13 @@ public abstract class ScriptEngineFactory {
      */
     public static ScriptEngine getScriptEngine() throws IOException,
             DelegateScriptDisabledException, ScriptException {
-        final ScriptEngine engine = new RubyScriptEngine();
-        engine.load(FileUtils.readFileToString(getScript()));
-        return engine;
+        final Configuration config = Application.getConfiguration();
+        if (config.getBoolean(DELEGATE_SCRIPT_ENABLED_CONFIG_KEY, false)) {
+            final ScriptEngine engine = new RubyScriptEngine();
+            engine.load(FileUtils.readFileToString(getScript()));
+            return engine;
+        }
+        throw new DelegateScriptDisabledException();
     }
 
     /**

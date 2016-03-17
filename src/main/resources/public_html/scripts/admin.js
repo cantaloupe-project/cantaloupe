@@ -1,3 +1,9 @@
+/**
+ * Wraps an application configuration object.
+ *
+ * @param data {Object} of key-value configuration key-value pairs
+ * @constructor
+ */
 var Configuration = function(data) {
 
     /**
@@ -101,7 +107,7 @@ var Form = function(config) {
         showOrHideAllOtherTableRows(
             '[name="watermark.enabled"], [name="redaction.enabled"]');
         // Delegate Script
-        showOrHideAllOtherTableRows('#delegate_script_enabled');
+        showOrHideAllOtherTableRows('[name="delegate_script.enabled"]');
         // Logging
         showOrHideAllOtherTableRows(
             '[name="log.application.ConsoleAppender.enabled"], ' +

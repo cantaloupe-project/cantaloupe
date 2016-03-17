@@ -20,6 +20,7 @@ title: Upgrading
   <li>Add the following keys from the sample configuration:
     <ul>
       <li><code>admin.*</code></li>
+      <li><code>delegate_script.enabled</code></li>
       <li><code>endpoint.iiif.2.restrict_to_sizes</code></li>
       <li><code>StreamProcessor.retrieval_strategy</code></li>
       <li><code>cache.source</code></li>
@@ -30,6 +31,7 @@ title: Upgrading
   </li>
   <li>Rename the following keys:
     <ul>
+      <li><code>delegate_script</code> to <code>delegate_script.pathname</code></li>
       <li><code>cache.server</code> to <code>cache.derivative</code></li>
     </ul>
   </li>

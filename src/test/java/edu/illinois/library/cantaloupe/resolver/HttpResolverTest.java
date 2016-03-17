@@ -130,14 +130,18 @@ public class HttpResolverTest {
                 "ScriptLookupStrategy");
 
         // valid, present script
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
+        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
+                "true");
+        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         assertEquals(new Reference("http://example.org/bla/" + IDENTIFIER),
                 instance.getUrl());
 
         // missing script
         try {
-            config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
+            config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
+                    "true");
+            config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
                     TestUtil.getFixture("bogus.rb").getAbsolutePath());
             instance.getUrl();
             fail("Expected exception");

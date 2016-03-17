@@ -22,7 +22,9 @@ public class RedactionServiceTest {
         Configuration config = new BaseConfiguration();
         Application.setConfiguration(config);
         // valid config options
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
+        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
+                true);
+        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         config.setProperty(RedactionService.REDACTION_ENABLED_CONFIG_KEY, true);
     }
