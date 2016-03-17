@@ -139,7 +139,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
     private static String getPath(String binaryName) {
         String path = Application.getConfiguration().
                 getString(PATH_TO_BINARIES_CONFIG_KEY);
-        if (path != null) {
+        if (path != null && path.length() > 0) {
             path = StringUtils.stripEnd(path, File.separator) +
                     File.separator + binaryName;
         } else {
