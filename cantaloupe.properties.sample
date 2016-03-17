@@ -44,11 +44,11 @@ base_uri =
 # decoding them, you can define an alternate character or character
 # sequence to substitute for a slash. Supply the non-percent-encoded
 # version here, and use the percent-encoded version in URLs.
-#slash_substitute =
+slash_substitute =
 
 # Maximum number of pixels to return in a response, to prevent overloading
 # the server. Requests for more pixels than this will receive an HTTP 403
-# response. Comment out or set to 0 for no maximum.
+# response. Set to 0 for no maximum.
 # Note: this is ignored when requesting an unmodified source image.
 max_pixels = 400000000
 
@@ -56,7 +56,7 @@ max_pixels = 400000000
 # user manual.) This can be an absolute path, or a filename; if only a
 # filename is specified, it will be searched for in the same folder as this
 # file, and then the current working directory.
-# Comment out or set blank to disable the delegate script.
+# Set blank to disable the delegate script.
 #delegate_script = delegates.rb
 
 # Sometimes helpful.
@@ -170,9 +170,9 @@ AmazonS3Resolver.secret_key =
 # !! Name of the bucket containing images to be served.
 AmazonS3Resolver.bucket.name =
 
-# !! Can be commented out or left blank.
+# !! Can be left blank.
 # See: http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
-#AmazonS3Resolver.bucket.region = us-east-1
+AmazonS3Resolver.bucket.region =
 
 # Tells AmazonS3Resolver how to look up objects. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
@@ -210,14 +210,18 @@ AzureStorageResolver.lookup_strategy = BasicLookupStrategy
 
 # These extension-specific definitions are optional.
 processor.avi = FfmpegProcessor
-#processor.jpg = ImageMagickProcessor
-#processor.jp2 = KakaduProcessor
-#processor.jp2 = OpenJpegProcessor
+processor.bmp =
+processor.gif =
+processor.jp2 = KakaduProcessor
+processor.jpg =
 processor.mov = FfmpegProcessor
-processor.mpg = FfmpegProcessor
 processor.mp4 = FfmpegProcessor
+processor.mpg = FfmpegProcessor
 processor.pdf = PdfBoxProcessor
+processor.png =
+processor.tif =
 processor.webm = FfmpegProcessor
+processor.webp = ImageMagickProcessor
 
 # Fall back to this processor for any formats not assigned above.
 processor.fallback = Java2dProcessor
@@ -231,15 +235,17 @@ StreamProcessor.retrieval_strategy = StreamStrategy
 # FfmpegProcessor
 #----------------------------------------
 
-# Optional; overrides the PATH
-#FfmpegProcessor.path_to_binaries = /usr/local/bin
+# Optional absolute path of the directory containing the FFmpeg binaries.
+# Overrides the PATH.
+FfmpegProcessor.path_to_binaries =
 
 #----------------------------------------
 # GraphicsMagickProcessor
 #----------------------------------------
 
-# Optional; overrides the PATH
-#GraphicsMagickProcessor.path_to_binaries = /usr/local/bin
+# Optional absolute path of the directory containing the GraphicsMagick binary.
+# Overrides the PATH.
+GraphicsMagickProcessor.path_to_binaries =
 
 # Color of the background when an image is rotated. Only affects output
 # formats that do not support transparency.
@@ -249,8 +255,9 @@ GraphicsMagickProcessor.background_color = black
 # ImageMagickProcessor
 #----------------------------------------
 
-# Optional; overrides the PATH
-#ImageMagickProcessor.path_to_binaries = /usr/local/bin
+# Optional absolute path of the directory containing the ImageMagick binaries.
+# Overrides the PATH.
+ImageMagickProcessor.path_to_binaries = /usr/local/bin
 
 # Color of the background when an image is rotated. Only affects output
 # formats that do not support transparency.
@@ -260,12 +267,11 @@ ImageMagickProcessor.background_color = black
 # JaiProcessor
 #----------------------------------------
 
-# JPEG output quality. Should be a number between 0-1 ending in "f"
-JaiProcessor.jpg.quality = 0.7f
+# JPEG output quality. Should be a number between 0-1.
+JaiProcessor.jpg.quality = 0.7
 
 # TIFF output compression type. Available values are `LZW`, `Deflate`,
-# `ZLib`, `JPEG`, and `PackBits`. Comment out or leave blank for no
-# compression.
+# `ZLib`, `JPEG`, and `PackBits`. Leave blank for no compression.
 JaiProcessor.tif.compression = LZW
 
 #----------------------------------------
@@ -276,20 +282,20 @@ JaiProcessor.tif.compression = LZW
 # the expense of visible aliasing at small scales.
 Java2dProcessor.scale_mode = speed
 
-# JPEG output quality. Should be a number between 0-1 ending in "f"
-Java2dProcessor.jpg.quality = 0.7f
+# JPEG output quality. Should be a number between 0-1.
+Java2dProcessor.jpg.quality = 0.7
 
 # TIFF output compression type. Available values are `LZW`, `Deflate`,
-# `ZLib`, `JPEG`, and `PackBits`. Comment out or leave blank for no
-# compression.
+# `ZLib`, `JPEG`, and `PackBits`. Leave blank for no compression.
 Java2dProcessor.tif.compression = LZW
 
 #----------------------------------------
 # KakaduProcessor
 #----------------------------------------
 
-# Optional; overrides the PATH
-#KakaduProcessor.path_to_binaries = /usr/local/bin
+# Optional absolute path of the directory containing the Kakadu binaries.
+# Overrides the PATH.
+KakaduProcessor.path_to_binaries =
 
 # Available values are `jai` and `java2d`.
 KakaduProcessor.post_processor = java2d
@@ -302,8 +308,9 @@ KakaduProcessor.post_processor.java2d.scale_mode = speed
 # OpenJpegProcessor
 #----------------------------------------
 
-# Optional; overrides the PATH
-#OpenJpegProcessor.path_to_binaries = /usr/local/bin
+# Optional absolute path of the directory containing the OpenJPEG binaries.
+# Overrides the PATH.
+OpenJpegProcessor.path_to_binaries =
 
 # Available values are `jai` and `java2d`.
 OpenJpegProcessor.post_processor = java2d
@@ -332,8 +339,6 @@ PdfBoxProcessor.post_processor.java2d.scale_mode = speed
 # Whether to enable the response Cache-Control header.
 cache.client.enabled = true
 
-# Customize the response Cache-Control header. (This may be overridden by
-# proxies.) Comment out to disable the Cache-Control header.
 cache.client.max_age = 2592000
 cache.client.shared_max_age =
 cache.client.public = true
@@ -349,16 +354,16 @@ cache.client.no_transform = true
 ###########################################################################
 
 # Enables the source cache. The only available value is `FilesystemCache`.
-# Comment out or set blank to disable source image caching. Note that
-# source images will only be cached when a FileProcessor is used with a
-# StreamResolver, or when a StreamProcessor is used with
-# `StreamProcessor.retrieval_strategy` set to `CacheStrategy`.
-#cache.source = FilesystemCache
+# Set blank to disable source image caching. Note that source images will
+# only be cached when a FileProcessor is used with a StreamResolver, or
+# when a StreamProcessor is used with `StreamProcessor.retrieval_strategy`
+# set to `CacheStrategy`.
+cache.source =
 
 # Enables the derivative (processed image) cache. Available values are
 # `FilesystemCache`, `JdbcCache`, `AmazonS3Cache`, and `AzureStorageCache`.
-# Comment out or set blank to disable derivative caching.
-#cache.derivative = FilesystemCache
+# Set blank to disable derivative caching.
+cache.derivative =
 
 # If true, when a resolver reports that the requested source image has gone
 # missing, all cached information relating to it (if any) will be deleted.
@@ -437,7 +442,7 @@ AmazonS3Cache.secret_key =
 # !! Name of a bucket to use to hold cached data.
 AmazonS3Cache.bucket.name =
 
-# !! Can be commented out or left blank.
+# !! Can be left blank.
 # See: http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
 AmazonS3Cache.bucket.region =
 
@@ -492,11 +497,11 @@ watermark.BasicStrategy.position = bottom right
 watermark.BasicStrategy.inset = 10
 
 # Output images less than this many pixels wide will not receive a watermark.
-# Comment out or set to 0 to add the watermark regardless.
+# Set to 0 to add the watermark regardless.
 watermark.BasicStrategy.output_width_threshold = 400
 
 # Output images less than this many pixels tall will not receive a watermark.
-# Comment out or set to 0 to add the watermark regardless.
+# Set to 0 to add the watermark regardless.
 watermark.BasicStrategy.output_height_threshold = 300
 
 ###########################################################################
