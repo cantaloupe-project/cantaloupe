@@ -77,15 +77,6 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
         if (dataSource == null) {
             final Configuration config = Application.getConfiguration();
 
-            try (Connection connection = getConnection()) {
-                logger.info("Using {} {}", connection.getMetaData().getDriverName(),
-                        connection.getMetaData().getDriverVersion());
-                logger.info("Connection string: {}",
-                        config.getString(JDBC_URL_CONFIG_KEY));
-            } catch (SQLException e) {
-                logger.error("Failed to establish a database connection", e);
-            }
-
             final String connectionString = config.
                     getString(JDBC_URL_CONFIG_KEY, "");
             final int connectionTimeout = 1000 *
@@ -101,6 +92,13 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
             dataSource.setPoolName("JdbcResolverPool");
             dataSource.setMaximumPoolSize(maxPoolSize);
             dataSource.setConnectionTimeout(connectionTimeout);
+
+            try (Connection connection = dataSource.getConnection()) {
+                logger.info("Using {} {}", connection.getMetaData().getDriverName(),
+                        connection.getMetaData().getDriverVersion());
+                logger.info("Connection string: {}",
+                        config.getString(JDBC_URL_CONFIG_KEY));
+            }
         }
         return dataSource.getConnection();
     }
