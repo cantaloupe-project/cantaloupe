@@ -418,7 +418,6 @@ JdbcCache.max_pool_size = 9
 JdbcCache.connection_timeout = 10
 
 # These must be created manually; see the user manual.
-JdbcCache.source_image_table = source_cache
 JdbcCache.derivative_image_table = derivative_cache
 JdbcCache.info_table = info_cache
 
