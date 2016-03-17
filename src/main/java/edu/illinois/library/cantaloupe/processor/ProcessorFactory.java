@@ -62,15 +62,21 @@ public abstract class ProcessorFactory {
         return processor;
     }
 
+    /**
+     * @param format
+     * @return Name of the processor assigned to the given format, or null if
+     *         one is not set.
+     */
     private static String getAssignedProcessorName(Format format) {
-        Configuration config = Application.getConfiguration();
-        return config.getString("processor." +
+        final Configuration config = Application.getConfiguration();
+        final String value = config.getString("processor." +
                 format.getPreferredExtension());
+        return (value != null && value.length() > 0) ? value : null;
     }
 
     private static String getFallbackProcessorName() {
-        Configuration config = Application.getConfiguration();
-        return config.getString(FALLBACK_PROCESSOR_CONFIG_KEY);
+        return Application.getConfiguration().
+                getString(FALLBACK_PROCESSOR_CONFIG_KEY);
     }
 
 }
