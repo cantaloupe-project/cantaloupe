@@ -102,7 +102,7 @@ var Form = function(config) {
             '[name="endpoint.iiif.1.enabled"], [name="endpoint.iiif.2.enabled"]');
         // Caches
         showOrHideAllOtherTableRows(
-            '[name="cache.client.enabled"], [name="cache.worker.enabled"]');
+            '[name="cache.client.enabled"], [name="cache.server.worker.enabled"]');
         // Overlays
         showOrHideAllOtherTableRows(
             '[name="watermark.enabled"], [name="redaction.enabled"]');
@@ -191,7 +191,8 @@ var Form = function(config) {
                 // a delay.
                 var msg = '&check; Configuration saved.';
                 if (restart_required) {
-                    msg += ' Restart is required.';
+                    msg += ' A restart will be required for some changes to ' +
+                        'take effect.';
                 }
                 $(formElem).find('.cl-on-save-message').html(msg).show().
                 delay(4000).fadeOut(800, function() {

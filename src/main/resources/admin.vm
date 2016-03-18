@@ -151,14 +151,16 @@
                 <div role="tabpanel" class="tab-pane" id="cl-server">
                     <form method="post">
                         <section>
-                            <h2>HTTP</h2>
+                            <h2>HTTP <small>(Standalone)</small></h2>
                             <table class="table table-striped">
                                 <tr>
                                     <td>
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="Whether to enable HTTP access (http://).">?</a>
+                                           data-content="Whether to enable the built-in HTTP server.
+                                           &lt;br&gt;&lt;br&gt;(This has no effect in a
+                                           Servlet container.)">?</a>
                                     </td>
                                     <td>
                                         <div class="checkbox">
@@ -176,7 +178,8 @@
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="TCP port to bind the HTTP server to.">?</a>
+                                           data-content="TCP port to bind the built-in HTTP
+                                           server to.">?</a>
                                     </td>
                                     <td>
                                         <input class="form-control" type="number"
@@ -188,14 +191,16 @@
                         </section>
 
                         <section>
-                            <h2>HTTPS</h2>
+                            <h2>HTTPS <small>(Standalone)</small></h2>
                             <table class="table table-striped">
                                 <tr>
                                     <td>
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="Whether to enable HTTPS access (https://).">?</a>
+                                           data-content="Whether to enable the built-in HTTPS server.
+                                           &lt;br&gt;&lt;br&gt;(This has no effect in a
+                                           Servlet container.)">?</a>
                                     </td>
                                     <td>
                                         <div class="checkbox">
@@ -213,7 +218,8 @@
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="TCP port to bind the HTTPS server to.">?</a>
+                                           data-content="TCP port to bind the built-in
+                                           HTTPS server to.">?</a>
                                     </td>
                                     <td>
                                         <input class="form-control" type="number"
@@ -972,23 +978,23 @@
                         </div>
                     </section>
 
-                    <section>
-                        <h2>Source Format Assignments</h2>
+                    <form method="post">
+                        <section>
+                            <h2>Source Format Assignments</h2>
 
-                        <ul class="nav nav-pills" role="tablist">
-                            <li role="presentation" class="active">
-                                <a href="#cl-image-assignments"
-                                   aria-controls="cl-image-assignments" role="tab"
-                                   data-toggle="tab">Image</a>
-                            </li>
-                            <li role="presentation">
-                                <a href="#cl-video-assignments"
-                                   aria-controls="cl-video-assignments" role="tab"
-                                   data-toggle="tab">Video</a>
-                            </li>
-                        </ul>
+                            <ul class="nav nav-pills" role="tablist">
+                                <li role="presentation" class="active">
+                                    <a href="#cl-image-assignments"
+                                       aria-controls="cl-image-assignments" role="tab"
+                                       data-toggle="tab">Image</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#cl-video-assignments"
+                                       aria-controls="cl-video-assignments" role="tab"
+                                       data-toggle="tab">Video</a>
+                                </li>
+                            </ul>
 
-                        <form method="post">
                             <div class="tab-content">
                                 <div role="tabpanel" class="tab-pane active" id="cl-image-assignments">
                                     <table class="table table-striped cl-source-format-assignments">
@@ -2120,7 +2126,7 @@
                                         <div class="checkbox">
                                             <label>
                                                 <input type="checkbox"
-                                                       name="cache.worker.enabled"
+                                                       name="cache.server.worker.enabled"
                                                        value="true"
                                                        data-requires-restart="true">
                                                 Enabled
@@ -2134,11 +2140,11 @@
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
                                            data-content="The cache worker will wait this many
-                                           seconds between purgings.">?</a>
+                                           seconds before starting work again.">?</a>
                                     </td>
                                     <td>
                                         <input class="form-control" type="number"
-                                               name="cache.worker.interval"
+                                               name="cache.server.worker.interval"
                                                value="true" min="0"
                                                data-requires-restart="false">
                                     </td>
@@ -2279,7 +2285,7 @@
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="Whether to enable redactions. Redactions require
+                                           data-content="Redactions require
                                            use of the delegate script. See the user manual for
                                            information about how these work.">?</a>
                                     </td>
@@ -2708,8 +2714,10 @@
     </div>
 
     <footer>
-        <a href="https://medusa-project.github.io/cantaloupe/">Home (GitHub)</a> |
-        <a href="https://medusa-project.github.io/cantaloupe/manual/$version/">User Manual</a>
+        <a href="https://medusa-project.github.io/cantaloupe/"
+           target="_blank">Home (GitHub)</a> |
+        <a href="https://medusa-project.github.io/cantaloupe/manual/$version/"
+           target="_blank">User Manual</a>
     </footer>
 
 </div>
