@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.WebServer;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -29,8 +30,6 @@ public abstract class ResourceTest {
                 "true");
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
-        config.setProperty("http.enabled", true);
-        config.setProperty("http.port", PORT);
         config.setProperty("processor.fallback", "Java2dProcessor");
         config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
                 "FilesystemResolver");
@@ -44,7 +43,11 @@ public abstract class ResourceTest {
     @Before
     public void setUp() throws Exception {
         Application.setConfiguration(newConfiguration());
-        Application.getWebServer().start();
+
+        WebServer webServer = Application.getWebServer();
+        webServer.setHttpEnabled(true);
+        webServer.setHttpPort(PORT);
+        webServer.start();
     }
 
     @After
