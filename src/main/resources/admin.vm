@@ -28,39 +28,39 @@
     <div class="row">
         <div class="col-sm-3 col-md-2">
             <ul class="nav nav-pills nav-stacked list-group">
-                <li role="presentation" class="list-group-item active">
+                <li role="presentation" class="list-group-item active" id="cl-status-button">
                     <a href="#cl-status" aria-controls="cl-status"
                        role="tab" data-toggle="tab">Status</a>
                 </li>
-                <li role="presentation" class="list-group-item">
+                <li role="presentation" class="list-group-item" id="cl-server-button">
                     <a href="#cl-server" aria-controls="cl-server"
                        role="tab" data-toggle="tab">Server</a>
                 </li>
-                <li role="presentation" class="list-group-item">
+                <li role="presentation" class="list-group-item" id="cl-endpoints-button">
                     <a href="#cl-endpoints" aria-controls="cl-endpoints"
                        role="tab" data-toggle="tab">Endpoints</a>
                 </li>
-                <li role="presentation" class="list-group-item">
+                <li role="presentation" class="list-group-item" id="cl-resolver-button">
                     <a href="#cl-resolver" aria-controls="cl-resolver"
                        role="tab" data-toggle="tab">Resolver</a>
                 </li>
-                <li role="presentation" class="list-group-item">
+                <li role="presentation" class="list-group-item" id="cl-processors-button">
                     <a href="#cl-processors" aria-controls="cl-processors"
                        role="tab" data-toggle="tab">Processors</a>
                 </li>
-                <li role="presentation" class="list-group-item">
+                <li role="presentation" class="list-group-item" id="cl-caches-button">
                     <a href="#cl-caches" aria-controls="cl-caches"
                        role="tab" data-toggle="tab">Caches</a>
                 </li>
-                <li role="presentation" class="list-group-item">
+                <li role="presentation" class="list-group-item" id="cl-overlays-button">
                     <a href="#cl-overlays" aria-controls="cl-overlays"
                        role="tab" data-toggle="tab">Overlays</a>
                 </li>
-                <li role="presentation" class="list-group-item">
+                <li role="presentation" class="list-group-item" id="cl-delegate-script-button">
                     <a href="#cl-delegate-script" aria-controls="cl-delegate-script"
                        role="tab" data-toggle="tab">Delegate Script</a>
                 </li>
-                <li role="presentation" class="list-group-item">
+                <li role="presentation" class="list-group-item" id="cl-logging-button">
                     <a href="#cl-logging" aria-controls="cl-logging"
                        role="tab" data-toggle="tab">Logging</a>
                 </li>

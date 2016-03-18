@@ -207,6 +207,13 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <!-- Used to test the control panel -->
+    <dependency>
+      <groupId>org.seleniumhq.selenium</groupId>
+      <artifactId>selenium-java</artifactId>
+      <version>2.53.0</version>
+      <scope>test</scope>
+    </dependency>
     <!-- Logging interface used by the application -->
     <dependency>
       <groupId>org.slf4j</groupId>
