@@ -2049,20 +2049,6 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Source Image Table
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="This must be created manually; see the
-                                                   user manual.">?</a>
-                                            </td>
-                                            <td>
-                                                <input type="text" class="form-control"
-                                                       name="JdbcCache.source_image_table"
-                                                       data-requires-restart="false">
-                                            </td>
-                                        </tr>
-                                        <tr>
                                             <td>Derivative Image Table
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
