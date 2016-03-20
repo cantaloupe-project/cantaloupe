@@ -220,13 +220,6 @@
       <artifactId>jcl-over-slf4j</artifactId>
       <version>1.7.12</version>
     </dependency>
-    <!-- Helps achieve a command-line-runnable WAR:
-     http://jowisoftware.de/wp/2011/02/creating-runnable-wars-with-maven-and-jetty/ -->
-    <dependency>
-      <groupId>edu.illinois.library.cantaloupe</groupId>
-      <artifactId>Cantaloupe</artifactId>
-      <version>${cantaloupe.version}</version>
-    </dependency>
   </dependencies>
 
   <repositories>
@@ -257,53 +250,60 @@
       </plugin>
 
       <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>classes-copy</id>
+            <phase>prepare-package</phase>
+            <configuration>
+              <tasks>
+                <copy todir="${project.build.directory}/${project.artifactId}-${project.version}">
+                  <fileset dir="${project.build.directory}/classes/"/>
+                </copy>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>2.3</version>
+        <executions>
+          <execution>
+            <id>jetty-classpath</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>unpack-dependencies</goal>
+            </goals>
+            <configuration>
+              <excludes>**\/*.DSA,**\/*.SF,**\/*.RSA,**\/*.MF</excludes>
+              <excludeTypes>pom</excludeTypes>
+              <outputDirectory>
+                ${project.build.directory}/${project.artifactId}-${project.version}
+              </outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
         <version>2.6</version>
         <configuration>
+          <warName>${project.artifactId}-${project.version}</warName>
           <archive>
             <manifest>
               <mainClass>edu.illinois.library.cantaloupe.Application</mainClass>
+              <addClasspath>true</addClasspath>
             </manifest>
           </archive>
-          <overlays>
-            <!-- Copy the Simple server to the root of the WAR to enable
-            running from the command line -->
-            <overlay>
-              <groupId>org.restlet.jse</groupId>
-              <artifactId>org.restlet.ext.simple</artifactId>
-              <type>jar</type>
-            </overlay>
-          </overlays>
         </configuration>
-      </plugin>
-
-      <!-- Creates a war with bundled dependencies -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>2.4.1</version>
-        <configuration>
-          <filters>
-            <!-- Fixes a SecurityException: http://stackoverflow.com/a/6743609/177529 -->
-            <filter>
-              <artifact>*:*</artifact>
-              <excludes>
-                <exclude>META-INF/*.SF</exclude>
-                <exclude>META-INF/*.DSA</exclude>
-                <exclude>META-INF/*.RSA</exclude>
-              </excludes>
-            </filter>
-          </filters>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
 
       <!-- Assembles the created war into a release package -->
@@ -325,6 +325,7 @@
           </execution>
         </executions>
       </plugin>
+
     </plugins>
   </build>
 </project>
