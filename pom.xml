@@ -126,7 +126,6 @@
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
       <version>3.1.0</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -150,6 +149,17 @@
       <groupId>org.codehaus.janino</groupId>
       <artifactId>janino</artifactId>
       <version>2.7.8</version>
+    </dependency>
+    <!-- Provides the standalone servlet container -->
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
+      <version>9.3.8.v20160314</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-servlet</artifactId>
+      <version>9.3.8.v20160314</version>
     </dependency>
     <!-- Used by GraphicsMagickProcessor and ImageMagickProcessor -->
     <dependency>
@@ -176,14 +186,7 @@
       <artifactId>org.restlet.ext.jackson</artifactId>
       <version>${restlet.version}</version>
     </dependency>
-    <!-- use the Simple HTTP server instead of the default Sun server in
-    standalone mode. -->
-    <dependency>
-      <groupId>org.restlet.jse</groupId>
-      <artifactId>org.restlet.ext.simple</artifactId>
-      <version>${restlet.version}</version>
-    </dependency>
-    <!-- Enables Restlet to log to SLF4J -->
+    <!-- Makes Restlet log to SLF4J -->
     <dependency>
       <groupId>org.restlet.jee</groupId>
       <artifactId>org.restlet.ext.slf4j</artifactId>

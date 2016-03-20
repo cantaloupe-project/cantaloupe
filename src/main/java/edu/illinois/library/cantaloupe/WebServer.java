@@ -1,14 +1,14 @@
 package edu.illinois.library.cantaloupe;
 
-import edu.illinois.library.cantaloupe.logging.AccessLogService;
 import org.apache.commons.configuration.Configuration;
-import org.restlet.Component;
-import org.restlet.Server;
-import org.restlet.data.Parameter;
-import org.restlet.data.Protocol;
-import org.restlet.util.Series;
-
-import javax.net.ssl.KeyManagerFactory;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 public class WebServer {
 
@@ -25,53 +25,60 @@ public class WebServer {
             "https.key_store_type";
     public static final String HTTPS_PORT_CONFIG_KEY = "https.port";
 
-    private Component component;
+    private static final int IDLE_TIMEOUT = 30000;
+
+    private Server server;
 
     public void start() throws Exception {
         stop();
 
         final Configuration config = Application.getConfiguration();
-        component = new Component();
+
+        server = new Server();
+
+        ServletContextHandler context = new ServletContextHandler(
+                ServletContextHandler.NO_SESSIONS);
+        context.setContextPath("/");
+        context.setInitParameter("org.restlet.application",
+                WebApplication.class.getName());
+        context.setResourceBase(System.getProperty("java.io.tmpdir"));
+        context.addServlet(EntryServlet.class, "/*");
+        server.setHandler(context);
 
         // set up HTTP server
         if (config.getBoolean(HTTP_ENABLED_CONFIG_KEY, true)) {
-            final int port = config.getInteger(HTTP_PORT_CONFIG_KEY, 8182);
-            final Server server = component.getServers().
-                    add(Protocol.HTTP, port);
-            server.getContext().getParameters().
-                    add("useForwardedForHeader", "true");
+            ServerConnector connector = new ServerConnector(server);
+            connector.setHost("localhost");
+            connector.setPort(config.getInt(HTTP_PORT_CONFIG_KEY));
+            connector.setIdleTimeout(IDLE_TIMEOUT);
+            server.addConnector(connector);
         }
         // set up HTTPS server
         if (config.getBoolean(HTTPS_ENABLED_CONFIG_KEY, false)) {
-            final int port = config.getInteger(HTTPS_PORT_CONFIG_KEY, 8183);
-            final Server server = component.getServers().
-                    add(Protocol.HTTPS, port);
-            server.getContext().getParameters().
-                    add("useForwardedForHeader", "true");
-            Series<Parameter> parameters = server.getContext().getParameters();
-            parameters.add("sslContextFactory",
-                    "org.restlet.engine.ssl.DefaultSslContextFactory");
-            parameters.add("keyStorePath",
+            HttpConfiguration httpsConfig = new HttpConfiguration();
+            httpsConfig.addCustomizer(new SecureRequestCustomizer());
+            SslContextFactory sslContextFactory = new SslContextFactory();
+
+            sslContextFactory.setKeyStorePath(
                     config.getString(HTTPS_KEY_STORE_PATH_CONFIG_KEY));
-            parameters.add("keyStorePassword",
+            sslContextFactory.setKeyStorePassword(
                     config.getString(HTTPS_KEY_STORE_PASSWORD_CONFIG_KEY));
-            parameters.add("keyPassword",
+            sslContextFactory.setKeyManagerPassword(
                     config.getString(HTTPS_KEY_PASSWORD_CONFIG_KEY));
-            parameters.add("keyStoreType",
-                    config.getString(HTTPS_KEY_STORE_TYPE_CONFIG_KEY));
-            parameters.add("keyManagerAlgorithm",
-                    KeyManagerFactory.getDefaultAlgorithm());
+            ServerConnector sslConnector = new ServerConnector(server,
+                    new SslConnectionFactory(sslContextFactory, "HTTP/1.1"),
+                    new HttpConnectionFactory(httpsConfig));
+            sslConnector.setPort(config.getInt(HTTPS_PORT_CONFIG_KEY));
+            server.addConnector(sslConnector);
         }
-        component.getClients().add(Protocol.CLAP);
-        component.getDefaultHost().attach("", new WebApplication());
-        component.setLogService(new AccessLogService());
-        component.start();
+
+        server.start();
     }
 
     public void stop() throws Exception {
-        if (component != null) {
-            component.stop();
-            component = null;
+        if (server != null) {
+            server.stop();
+            server = null;
         }
     }
 
