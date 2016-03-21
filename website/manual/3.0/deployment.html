@@ -137,7 +137,7 @@ title: Deployment
     proxy_set_header X-Forwarded-Port $server_port;
     proxy_set_header X-Forwarded-Path /;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_redirect off;
+    proxy_redirect http://127.0.0.1:8182/ /;
 }</pre>
 
 <hr>
