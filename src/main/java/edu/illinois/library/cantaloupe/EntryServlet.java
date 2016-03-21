@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe;
 
-import org.restlet.data.Protocol;
 import org.restlet.ext.servlet.ServerServlet;
 
 import javax.servlet.ServletException;
@@ -14,7 +13,6 @@ public class EntryServlet extends ServerServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        getComponent().getClients().add(Protocol.CLAP);
         Application.initializeGeneral();
     }
 
