@@ -364,7 +364,8 @@
                                            data-content="Maximum number of pixels to return in a response,
                                            to prevent overloading the server. Requests for more pixels than
                                            this will receive an HTTP 403 response. Set to 0
-                                           for no maximum. Note: this is ignored when requesting an
+                                           for no maximum.&lt;br&gt;&lt;br&gt;
+                                           This is ignored when requesting an
                                            unmodified source image.">?</a>
                                     </td>
                                     <td>
@@ -386,6 +387,7 @@
                                            data-trigger="focus"
                                            data-content="Controls the response
                                            Content-Disposition header for images.
+                                           &lt;br&gt;&lt;br&gt;
                                            &quot;Attachment&quot; will generally
                                            cause web browsers to download images
                                            rather than display them.">?</a>
@@ -406,7 +408,9 @@
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
                                            data-content="Minimum size that will be used in info.json
-                                           &lt;code&gt;tiles&lt;/code&gt; keys. See the user manual for
+                                           &lt;code&gt;tiles&lt;/code&gt; keys.
+                                           &lt;br&gt;&lt;br&gt;
+                                           See the user manual for
                                            an explanation of how these are calculated.">?</a>
                                     </td>
                                     <td>
@@ -517,10 +521,10 @@
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="The one resolver to use to
+                                           data-content="The resolver to use to
                                            translate the identifier in the URL to an image
                                            source for all requests, when the strategy is
-                                           &quot;Delegate Script.&quot;">?</a>
+                                           &quot;Static.&quot;">?</a>
                                     </td>
                                     <td>
                                         <select class="form-control"

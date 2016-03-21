@@ -65,7 +65,7 @@ var Form = function(config) {
          */
         var showOrHideAllOtherTableRows = function(checkbox_selector) {
             $(checkbox_selector).on('change', function() {
-                var other_rows = $(this).parents('tr').siblings('tr');
+                var other_rows = $(this).parents('tr').nextAll('tr');
                 if ($(this).prop('checked')) {
                     other_rows.show();
                 } else {
@@ -100,6 +100,15 @@ var Form = function(config) {
         // Endpoints
         showOrHideAllOtherTableRows(
             '[name="endpoint.iiif.1.enabled"], [name="endpoint.iiif.2.enabled"]');
+        // Resolver
+        $('[name="resolver.delegate"]').on('change', function() {
+            var other_rows = $(this).parents('tr').nextAll('tr');
+            if ($(this).val() == 'false') {
+                other_rows.show();
+            } else {
+                other_rows.hide();
+            }
+        }).trigger('change');
         // Caches
         showOrHideAllOtherTableRows(
             '[name="cache.client.enabled"], [name="cache.server.worker.enabled"]');
