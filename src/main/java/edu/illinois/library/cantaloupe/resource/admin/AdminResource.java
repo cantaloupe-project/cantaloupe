@@ -148,26 +148,10 @@ public class AdminResource extends AbstractResource {
         // Copy configuration keys and values from the request JSON payload to
         // the application configuration.
         for (final Object key : submittedConfig.keySet()) {
-            // Some POSTed keys are not actually configuration keys and will
-            // need to be handled separately.
-            if (!key.equals("delegate_script_contents")) {
-                final Object value = submittedConfig.get(key);
-                logger.debug("Setting {} = {}", key, value);
-                config.setProperty((String) key, value);
-            }
-        }
+            final Object value = submittedConfig.get(key);
+            logger.debug("Setting {} = {}", key, value);
+            config.setProperty((String) key, value);
 
-        // Handle certain submitted keys differently.
-        final String scriptContents =
-                (String) submittedConfig.get("delegate_script_contents");
-        if (scriptContents != null) {
-            final File scriptFile = ScriptEngineFactory.getScript();
-            if (scriptFile != null) {
-                logger.info("Updating delegate script contents");
-                FileUtils.writeStringToFile(scriptFile, scriptContents);
-            } else {
-                logger.info("No delegate script file; skipping update.");
-            }
         }
 
         // If the application configuration is file-based, save it.
@@ -366,21 +350,6 @@ public class AdminResource extends AbstractResource {
 
         Collections.sort(sortedProxies, new ObjectProxyComparator());
         vars.put("derivativeCaches", sortedProxies);
-
-        ////////////////////////////////////////////////////////////////////
-        //////////////////// delegate script section ///////////////////////
-        ////////////////////////////////////////////////////////////////////
-
-        String scriptData = "";
-        try {
-            File scriptFile = ScriptEngineFactory.getScript();
-            if (scriptFile != null) {
-                scriptData = FileUtils.readFileToString(scriptFile);
-            }
-        } catch (FileNotFoundException e) {
-            logger.debug(e.getMessage());
-        }
-        vars.put("delegateScriptContents", scriptData);
 
         return vars;
     }

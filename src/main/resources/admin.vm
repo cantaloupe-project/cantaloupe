@@ -2331,20 +2331,6 @@
                             </table>
                         </section>
 
-                        <section>
-                            <h3>Contents
-                                <a tabindex="0" class="btn btn-sm cl-help"
-                                   role="button" data-toggle="popover"
-                                   data-trigger="focus"
-                                   data-content="Contents of the delegate script.
-                                           Must be valid Ruby code.">?</a>
-                            </h3>
-                            <textarea name="delegate_script_contents"
-                                      class="form-control"
-                                      rows="24"
-                                      data-requires-restart="false">$delegateScriptContents</textarea>
-                        </section>
-
                         <input type="submit" class="btn btn-primary" value="Save">
                         <span class="cl-on-save-message"></span>
                     </form>
