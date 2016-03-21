@@ -1,11 +1,7 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import edu.illinois.library.cantaloupe.Application;
-import org.apache.commons.configuration.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Purges expired items from the cache.
@@ -20,104 +16,48 @@ public class CacheWorker implements Runnable {
     public static final String INTERVAL_CONFIG_KEY =
             "cache.server.worker.interval";
 
-    private static AtomicBoolean running = new AtomicBoolean(false);
-
-    private int startupDelay = 0;
-
     /**
-     * Runs a new CacheWorker instance in a low-priority background thread.
-     *
-     * @param delay Number of seconds to wait before running.
+     * Runs one sweep of the worker.
      */
-    public static synchronized void runInBackground(int delay) {
-        if (!running.get()) {
-            CacheWorker worker = new CacheWorker();
-            worker.setStartupDelay(delay);
-            Thread workerThread = new Thread(worker);
-            workerThread.setName(worker.getClass().getSimpleName());
-            workerThread.setPriority(Thread.MIN_PRIORITY);
-            workerThread.start();
-            running.set(true);
-        }
-    }
-
-    public int getStartupDelay() {
-        return startupDelay;
-    }
-
     @Override
     public void run() {
-        final Configuration config = Application.getConfiguration();
+        // Disabled caches will be null.
+        final Cache sourceCache = CacheFactory.getSourceCache();
+        final Cache derivativeCache = CacheFactory.getDerivativeCache();
+        logger.info("Working...");
 
-        if (!config.getBoolean(ENABLED_CONFIG_KEY, false)) {
-            logger.info("Cache worker is disabled. To enable it, set {} to " +
-                    "true and restart.", ENABLED_CONFIG_KEY);
-            return;
-        }
-
-        try {
-            logger.info("Will start in {} seconds", getStartupDelay());
-            Thread.sleep(getStartupDelay() * 1000);
-        } catch (InterruptedException e) {
-            logger.error(e.getMessage(), e);
-        }
-
-        while (true) {
-            // Disabled caches will be null.
-            final Cache sourceCache = CacheFactory.getSourceCache();
-            final Cache derivativeCache = CacheFactory.getDerivativeCache();
+        if (sourceCache != null) {
+            // Purge expired items from the source cache.
             try {
-                final int interval = config.getInt(INTERVAL_CONFIG_KEY, -1);
-                if (derivativeCache != null) {
-                    logger.info("Working...");
-                    try {
-                        // Ensure the validity of the interval.
-                        if (interval < 0) {
-                            throw new IllegalArgumentException("Invalid " +
-                                    "interval (" + INTERVAL_CONFIG_KEY +
-                                    "). Aborting.");
-                        }
-                        // Purge expired items from the source cache.
-                        try {
-                            sourceCache.purgeExpired();
-                        } catch (CacheException e) {
-                            logger.error(e.getMessage());
-                        }
-                        // Clean up the source cache.
-                        try {
-                            sourceCache.cleanUp();
-                        } catch (CacheException e) {
-                            logger.error(e.getMessage());
-                        }
-                        // Purge expired items from the derivative cache.
-                        try {
-                            derivativeCache.purgeExpired();
-                        } catch (CacheException e) {
-                            logger.error(e.getMessage());
-                        }
-                        // Clean up the derivative cache.
-                        try {
-                            derivativeCache.cleanUp();
-                        } catch (CacheException e) {
-                            logger.error(e.getMessage());
-                        }
-                        logger.info("Done working.");
-                    } catch (IllegalArgumentException e) {
-                        logger.error(e.getMessage());
-                    }
-                } else {
-                    logger.info("Caching is disabled. Nothing to do.");
-                }
-                logger.info("Sleeping for {} seconds...", interval);
-                Thread.sleep(interval * 1000);
-            } catch (InterruptedException e) {
+                sourceCache.purgeExpired();
+            } catch (CacheException e) {
+                logger.error(e.getMessage());
+            }
+            // Clean up the source cache.
+            try {
+                sourceCache.cleanUp();
+            } catch (CacheException e) {
                 logger.error(e.getMessage());
             }
         }
-    }
+        if (derivativeCache != null) {
+            // Purge expired items from the derivative cache.
+            try {
+                derivativeCache.purgeExpired();
+            } catch (CacheException e) {
+                logger.error(e.getMessage());
+            }
+            // Clean up the derivative cache.
+            try {
+                derivativeCache.cleanUp();
+            } catch (CacheException e) {
+                logger.error(e.getMessage());
+            }
+        } else {
+            logger.info("Caching is disabled. Nothing to do.");
+        }
 
-    public void setStartupDelay(int delay) {
-        startupDelay = delay;
+        logger.info("Done working.");
     }
 
 }

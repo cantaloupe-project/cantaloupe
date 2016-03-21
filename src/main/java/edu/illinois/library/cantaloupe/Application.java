@@ -23,6 +23,10 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Iterator;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -45,6 +49,8 @@ public class Application {
     public static final String PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT =
             "cantaloupe.cache.purge_expired";
 
+    private static ScheduledExecutorService cacheWorkerExecutorService;
+    private static ScheduledFuture<?> cacheWorkerFuture;
     private static Configuration config;
     private static Thread configWatcher;
     private static FilesystemWatcher fsWatcher;
@@ -253,8 +259,7 @@ public class Application {
         // If the cache worker is enabled, run it in a low-priority
         // background thread.
         if (getConfiguration().getBoolean(CacheWorker.ENABLED_CONFIG_KEY, false)) {
-            // Wait 10 seconds to reduce startup load.
-            CacheWorker.runInBackground(10);
+            startCacheWorker();
         }
         webServer.start();
     }
@@ -298,7 +303,17 @@ public class Application {
      * Shuts down the application in a Servlet context.
      */
     public static synchronized void shutdown() {
+        stopCacheWorker();
         stopConfigWatcher();
+    }
+
+    private static synchronized void startCacheWorker() {
+        cacheWorkerExecutorService =
+                Executors.newSingleThreadScheduledExecutor();
+        cacheWorkerFuture = cacheWorkerExecutorService.scheduleAtFixedRate(
+                new CacheWorker(), 5,
+                getConfiguration().getInt(CacheWorker.INTERVAL_CONFIG_KEY, -1),
+                TimeUnit.SECONDS);
     }
 
     private static synchronized void startConfigWatcher() {
@@ -331,6 +346,11 @@ public class Application {
             configWatcher.setName("ConfigWatcher");
             configWatcher.start();
         }
+    }
+
+    private static synchronized void stopCacheWorker() {
+        cacheWorkerFuture.cancel(true);
+        cacheWorkerExecutorService.shutdown();
     }
 
     private static synchronized void stopConfigWatcher() {
