@@ -56,7 +56,7 @@ title: Upgrading
       <li><code>Cantaloupe::get_s3_object_key</code> to <code>Cantaloupe::AmazonS3Resolver::get_object_key</code></li>
     </ul>
   </li>
-  <li>If you are using JdbcResolver, be aware that the <code>JdbcResolver.function.*</code> configuration keys are now obsolete, and these methods will have to be rewritten as delegate script methods.</li>
+  <li>If you are using JdbcResolver, be aware that the <code>JdbcResolver.function.*</code> configuration keys are now obsolete, and these functions will have to be rewritten as delegate script methods.</li>
   <li>If you are using JdbcCache, modify your database schema:
     <pre>ALTER TABLE {JdbcCache.info_table} CHANGE COLUMN last_modified last_accessed;
 ALTER TABLE {JdbcCache.derivative_image_table} CHANGE COLUMN last_modified last_accessed;</pre>

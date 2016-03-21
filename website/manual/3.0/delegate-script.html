@@ -20,7 +20,7 @@ title: Delegate Script
 
 <p>The delegate script mechanism enables the use of custom Ruby methods as "hooks" to provide dynamic information back to the image server. A truly customized image server can be created with minimal code.</p>
 
-<p>Delegate methods are implemented in Ruby, and are invoked inside a JRuby interpreter bundled into Cantaloupe. There is no need to install an external Ruby environment and no need to know Java; just type some code into a file, and go.</p>
+<p>Delegate methods are implemented in Ruby, and are invoked inside a JRuby interpreter bundled into the image server. There is no need to install an external Ruby environment and no need to know Java; just type some code into a file, and go.</p>
 
 <p>The delegate script mechanism is disabled by default. To enable it, copy the sample delegate script, <span class="filename">delegates.rb.sample</span>, included in the distribution, to <span class="filename">delegates.rb</span>, and reference it from the <code>delegate_script</code> configuration option.</p>
 

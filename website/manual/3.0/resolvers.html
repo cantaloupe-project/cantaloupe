@@ -126,7 +126,7 @@ end
 
 <p>HttpResolver maps a URL identifier to an HTTP or HTTPS resource, for retrieving images from a web server.</p>
 
-<p>It is preferable to use this resolver with source images with recognizable file extensions. For images with an extension that is missing or unrecognizable, it will issue an HTTP HEAD request to the server to check the <code>Content-Type</code> header. If the type cannot be inferred from that, an HTTP 415 response will be returned.</p>
+<p>It is preferable to use this resolver with source images with recognizable file extensions. For images with an extension that is missing or unrecognizable, it will issue an HTTP HEAD request to the server to check the <code>Content-Type</code> header. If the type cannot be inferred from that, an error response will be returned.</p>
 
 <p>HttpResolver supports two distinct lookup strategies, defined by the <code>HttpResolver.lookup_strategy</code> configuration option.</p>
 

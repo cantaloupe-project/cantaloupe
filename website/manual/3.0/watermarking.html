@@ -176,7 +176,7 @@ end
 
 <p>Zooming image viewers display a mosaic of cropped image tiles. When watermarking is enabled, each tile will have a watermark, which may look more or less strange depending on the size of the watermark and the tile size used by the viewer. The image server has no control over this.</p>
 
-<p>One way of getting around this is to set the <code>watermark.output_width_threshold</code> and <code>watermark.output_height_threshold</code> configuration options to values that are slightly larger than the tile size used by the zooming image viewer. This will disable watermarking for zooming image viewer tiles, but enable for it for anything larger. Unfortunately, the tile size used by the viewer may differ depending on the source image, as the recommended tile sizes in <a href="endpoints.html">information responses</a> will vary on a per-image basis.</p>
+<p>One way of getting around this might be to set the <code>watermark.output_width_threshold</code> and <code>watermark.output_height_threshold</code> configuration options to values that are slightly larger than the tile size used by the zooming image viewer. This will disable watermarking for zooming image viewer tiles, but enable for it for anything larger. Unfortunately, the tile size used by the viewer may differ depending on the source image, as the recommended tile sizes in <a href="endpoints.html">information responses</a> will vary on a per-image basis.</p>
 
 <h3 id="Caching">Caching</h3>
 

@@ -32,7 +32,7 @@ title: Source Formats
 
 <h2 id="Size Considerations">Size Considerations</h2>
 
-<p>Most requests to an image server will call for cropped tiles and/or downscaled derivatives of a source image. Both of these will return less data than is contained in the entire image. A basic image reader, unconscious of efficiency, will try to read the entire source image into memory before the cropping and scaling operations are carried out. This works fine for small images&mdash;up to a few thousand pixels square&mdash;because they can be read quickly and won't consume much memory. As image size increases, though, it works progressively less fine. As source images expand into the range of hundreds of megapixels, it places a huge burden on the server while delivering a slow and unsatisfying experience to the client.</p>
+<p>Most requests to an image server will call for cropped tiles and/or downscaled derivatives of a source image. Both of these will return less data than is contained in the entire image. A basic image reader, disregarding efficiency, will try to read the entire source image into memory before the cropping and scaling operations are carried out. This works fine for small images&mdash;up to a few thousand pixels square&mdash;because they can be read quickly and won't consume much memory. As image size increases, though, it works progressively less fine. As source images expand into the range of hundreds of megapixels, it places a huge burden on the server while delivering a slow and unsatisfying experience to the client.</p>
 
 <p>It would be much better if the image reader could read only the requested region, and even employ subsampling to read only the pixels within that region that are needed to satisfy the requested scale factor. This strategy would require a reader that is written to support it, as well as an image format capable of facilitating it. Two such formats&mdash;<a href="#JPEG2000">JPEG2000</a> and <a href="#TIFF">multi-resolution tiled TIFF</a>&mdash;are detailed later in this section.</p>
 
@@ -44,7 +44,7 @@ title: Source Formats
 
 <p>Most processors that support image sources support this format, with (the author assumes) roughly similar performance.</p>
 
-<p>Java2dProcessor and JaiProcessor use the default ImageIO JPEG reader to read JPEGs. The performance of this reader is known to vary greatly from JRE to JRE, with newer versions performing better.</p>
+<p><a href="processors.html#Java2dProcessor">Java2dProcessor</a> and <a href="processors.html#JaiProcessor">JaiProcessor</a> use the default ImageIO JPEG reader to read JPEGs. The performance of this reader is known to vary greatly from JRE to JRE, with newer versions performing better.</p>
 
 <h3 id="JPEG2000">JPEG2000</h3>
 
