@@ -264,7 +264,7 @@ public class Application {
         if (getConfiguration().getBoolean(CacheWorker.ENABLED_CONFIG_KEY, false)) {
             startCacheWorker();
         }
-        webServer.start();
+        getWebServer().start();
     }
 
     public static void main(String[] args) throws Exception {
