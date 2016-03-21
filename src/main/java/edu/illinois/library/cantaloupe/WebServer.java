@@ -127,31 +127,25 @@ public class WebServer {
         component = new Component();
 
         // set up HTTP server
-        if (config.getBoolean(HTTP_ENABLED_CONFIG_KEY, true)) {
-            final int port = config.getInteger(HTTP_PORT_CONFIG_KEY, 8182);
+        if (isHttpEnabled()) {
             final Server server = component.getServers().
-                    add(Protocol.HTTP, port);
+                    add(Protocol.HTTP, getHttpPort());
             server.getContext().getParameters().
                     add("useForwardedForHeader", "true");
         }
         // set up HTTPS server
-        if (config.getBoolean(HTTPS_ENABLED_CONFIG_KEY, false)) {
-            final int port = config.getInteger(HTTPS_PORT_CONFIG_KEY, 8183);
+        if (isHttpsEnabled()) {
             final Server server = component.getServers().
-                    add(Protocol.HTTPS, port);
+                    add(Protocol.HTTPS, getHttpsPort());
             server.getContext().getParameters().
                     add("useForwardedForHeader", "true");
             Series<Parameter> parameters = server.getContext().getParameters();
             parameters.add("sslContextFactory",
                     "org.restlet.engine.ssl.DefaultSslContextFactory");
-            parameters.add("keyStorePath",
-                    config.getString(HTTPS_KEY_STORE_PATH_CONFIG_KEY));
-            parameters.add("keyStorePassword",
-                    config.getString(HTTPS_KEY_STORE_PASSWORD_CONFIG_KEY));
-            parameters.add("keyPassword",
-                    config.getString(HTTPS_KEY_PASSWORD_CONFIG_KEY));
-            parameters.add("keyStoreType",
-                    config.getString(HTTPS_KEY_STORE_TYPE_CONFIG_KEY));
+            parameters.add("keyStorePath", getHttpsKeyStorePath());
+            parameters.add("keyStorePassword", getHttpsKeyStorePassword());
+            parameters.add("keyPassword", getHttpsKeyPassword());
+            parameters.add("keyStoreType", getHttpsKeyStoreType());
             parameters.add("keyManagerAlgorithm",
                     KeyManagerFactory.getDefaultAlgorithm());
         }
