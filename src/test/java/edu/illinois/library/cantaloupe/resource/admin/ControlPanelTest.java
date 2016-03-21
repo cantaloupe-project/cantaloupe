@@ -21,6 +21,7 @@ import static org.junit.Assert.*;
 
 public class ControlPanelTest {
 
+    private static final int SLEEP_AFTER_SUBMIT = 700;
     private static final String username = "admin";
     private static final String secret = "secret";
 
@@ -60,9 +61,19 @@ public class ControlPanelTest {
     }
 
     @Test
-    public void testServerSectionUi() throws Exception {
-        // Navigate to the server section
+    public void testUi() throws Exception {
         webDriver.get(getAdminUri());
+        testServerSection();
+        testEndpointsSection();
+        testResolverSection();
+        testProcessorsSection();
+        testCachesSection();
+        testOverlaysSection();
+        testDelegateScriptSection();
+        testLoggingSection();
+    }
+
+    private void testServerSection() throws Exception {
         css("#cl-server-button").click();
 
         // Fill in the form
@@ -83,7 +94,7 @@ public class ControlPanelTest {
         // Submit the form
         css("#cl-server input[type=\"submit\"]").click();
 
-        Thread.sleep(500);
+        Thread.sleep(SLEEP_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
         final Configuration config = Application.getConfiguration();
@@ -102,10 +113,7 @@ public class ControlPanelTest {
         assertTrue(config.getBoolean("print_stack_trace_on_error_pages"));
     }
 
-    @Test
-    public void testEndpointsSectionUi() throws Exception {
-        // Navigate to the endpoints section
-        webDriver.get(getAdminUri());
+    private void testEndpointsSection() throws Exception {
         css("#cl-endpoints-button").click();
 
         // Fill in the form
@@ -120,7 +128,7 @@ public class ControlPanelTest {
         // Submit the form
         css("#cl-endpoints input[type=\"submit\"]").click();
 
-        Thread.sleep(500);
+        Thread.sleep(SLEEP_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
         final Configuration config = Application.getConfiguration();
@@ -133,10 +141,7 @@ public class ControlPanelTest {
         assertTrue(config.getBoolean("endpoint.iiif.2.restrict_to_sizes"));
     }
 
-    @Test
-    public void testResolverSectionUi() throws Exception {
-        // Navigate to the resolver section
-        webDriver.get(getAdminUri());
+    private void testResolverSection() throws Exception {
         css("#cl-resolver-button").click();
 
         // Fill in the form
@@ -187,7 +192,7 @@ public class ControlPanelTest {
         // Submit the form
         css("#cl-resolver input[type=\"submit\"]").click();
 
-        Thread.sleep(500);
+        Thread.sleep(SLEEP_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
         final Configuration config = Application.getConfiguration();
@@ -233,10 +238,7 @@ public class ControlPanelTest {
         assertEquals("5", config.getString("JdbcResolver.connection_timeout"));
     }
 
-    @Test
-    public void testProcessorsSectionUi() throws Exception {
-        // Navigate to the processors section
-        webDriver.get(getAdminUri());
+    private void testProcessorsSection() throws Exception {
         css("#cl-processors-button").click();
 
         // Fill in the form
@@ -295,7 +297,7 @@ public class ControlPanelTest {
         // Submit the form
         css("#cl-processors input[type=\"submit\"]").click();
 
-        Thread.sleep(500);
+        Thread.sleep(SLEEP_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
         final Configuration config = Application.getConfiguration();
@@ -345,10 +347,7 @@ public class ControlPanelTest {
                 config.getString("PdfBoxProcessor.post_processor.java2d.scale_mode"));
     }
 
-    @Test
-    public void testCachesSectionUi() throws Exception {
-        // Navigate to the endpoints section
-        webDriver.get(getAdminUri());
+    private void testCachesSection() throws Exception {
         css("#cl-caches-button").click();
 
         // Fill in the form
@@ -404,7 +403,7 @@ public class ControlPanelTest {
         // Submit the form
         css("#cl-caches input[type=\"submit\"]").click();
 
-        Thread.sleep(500);
+        Thread.sleep(SLEEP_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
         final Configuration config = Application.getConfiguration();
@@ -453,10 +452,7 @@ public class ControlPanelTest {
         assertEquals("9", config.getString("JdbcCache.ttl_seconds"));
     }
 
-    @Test
-    public void testOverlaysSectionUi() throws Exception {
-        // Navigate to the endpoints section
-        webDriver.get(getAdminUri());
+    private void testOverlaysSection() throws Exception {
         css("#cl-overlays-button").click();
 
         // Fill in the form
@@ -474,7 +470,7 @@ public class ControlPanelTest {
         // Submit the form
         css("#cl-overlays input[type=\"submit\"]").click();
 
-        Thread.sleep(500);
+        Thread.sleep(SLEEP_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
         final Configuration config = Application.getConfiguration();
@@ -492,15 +488,13 @@ public class ControlPanelTest {
                 config.getString("watermark.BasicStrategy.output_height_threshold"));
         assertTrue(config.getBoolean("redaction.enabled"));
     }
-/*
-    @Test
-    public void testDelegateScriptSectionUi() {
+
+    private void testDelegateScriptSection() {
         // TODO: write this
     }
 
-    @Test
-    public void testLoggingSectionUi() {
+    private void testLoggingSection() {
         // TODO: write this
     }
-*/
+
 }
