@@ -47,7 +47,7 @@ abstract class Java2dUtil {
                                                 final Crop appliedCrop,
                                                 final ReductionFactor reductionFactor,
                                                 final List<Redaction> redactions) {
-        if (redactions.size() > 0) {
+        if (baseImage != null && redactions.size() > 0) {
             final long msec = System.currentTimeMillis();
             final Dimension imageSize = new Dimension(
                     baseImage.getWidth(), baseImage.getHeight());
