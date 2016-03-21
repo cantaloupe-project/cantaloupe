@@ -55,7 +55,7 @@ public class Application {
     private static Thread configWatcher;
     private static FilesystemWatcher fsWatcher;
     /** Will be used in standalone and testing contexts. */
-    private static WebServer webServer = new WebServer();
+    private static WebServer webServer;
 
     static {
         // Suppress a Dock icon in OS X
@@ -132,6 +132,9 @@ public class Application {
     }
 
     public static WebServer getWebServer() {
+        if (webServer == null) {
+            webServer = new WebServer();
+        }
         return webServer;
     }
 

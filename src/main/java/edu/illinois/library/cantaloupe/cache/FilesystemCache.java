@@ -724,12 +724,16 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 try {
                     logger.info("Purging image dir: {}", pathname);
                     FileUtils.cleanDirectory(new File(pathname));
+                } catch (IllegalArgumentException e) {
+                    logger.info(e.getMessage());
                 } catch (IOException e) {
                     logger.warn(e.getMessage());
                 }
                 try {
                     logger.info("Purging info dir: {}", pathname);
                     FileUtils.cleanDirectory(new File(pathname));
+                } catch (IllegalArgumentException e) {
+                    logger.info(e.getMessage());
                 } catch (IOException e) {
                     logger.warn(e.getMessage());
                 }

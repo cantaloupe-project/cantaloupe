@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;
+import edu.illinois.library.cantaloupe.WebServer;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
@@ -48,6 +49,8 @@ public class Version1_1ConformanceTest {
 
     private static Client client = new Client(new Context(), Protocol.HTTP);
 
+    private WebServer webServer;
+
     public static BaseConfiguration newConfiguration() {
         BaseConfiguration config = new BaseConfiguration();
         try {
@@ -83,12 +86,15 @@ public class Version1_1ConformanceTest {
     @Before
     public void setUp() throws Exception {
         Application.setConfiguration(newConfiguration());
-        Application.getWebServer().start();
+        webServer = Application.getWebServer();
+        webServer.setHttpEnabled(true);
+        webServer.setHttpPort(PORT);
+        webServer.start();
     }
 
     @After
     public void tearDown() throws Exception {
-        Application.getWebServer().stop();
+        webServer.stop();
     }
 
     /**

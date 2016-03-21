@@ -252,34 +252,6 @@ public class ApplicationTest {
     }
 
     @Test
-    public void testStartServerWithHttp() throws Exception {
-        try {
-            Application.setConfiguration(newConfiguration());
-            Application.getWebServer().start();
-            ClientResource resource = getHttpClientForUriPath("/");
-            resource.get();
-            assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
-        } finally {
-            Application.getWebServer().stop();
-        }
-    }
-
-    @Test
-    public void testStartServerWithHttps() throws Exception {
-        try {
-            Configuration config = newConfiguration();
-            config.setProperty("https.enabled", true);
-            Application.setConfiguration(config);
-            Application.getWebServer().start();
-            ClientResource resource = getHttpsClientForUriPath("/");
-            resource.get();
-            assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
-        } finally {
-            Application.getWebServer().stop();
-        }
-    }
-
-    @Test
     public void testStopServerStopsHttp() throws Exception {
         Application.getWebServer().stop();
         // test that the HTTP server is stopped
