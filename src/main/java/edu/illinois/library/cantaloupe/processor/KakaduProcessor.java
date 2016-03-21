@@ -35,6 +35,7 @@ import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,7 +48,6 @@ import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
@@ -378,6 +378,9 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
                 processErrorStream.close();
                 process.destroy();
             }
+        } catch (EOFException e) {
+            // This happens frequently in Tomcat, but appears to be harmless.
+            logger.warn("EOFException: {}", e.getMessage());
         } catch (IOException | InterruptedException e) {
             String msg = e.getMessage();
             final String errorStr = errorBucket.toString();

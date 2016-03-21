@@ -26,6 +26,7 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -338,6 +339,9 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                 processErrorStream.close();
                 process.destroy();
             }
+        } catch (EOFException e) {
+            // This happens frequently in Tomcat, but appears to be harmless.
+            logger.warn("EOFException: {}", e.getMessage());
         } catch (IOException | InterruptedException e) {
             String msg = e.getMessage();
             final String errorStr = errorBucket.toString();
