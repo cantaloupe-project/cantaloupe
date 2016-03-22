@@ -70,7 +70,7 @@
             <div class="tab-content">
                 <div role="tabpanel" class="tab-pane active" id="cl-status">
                     <div class="row">
-                        <div class="col-md-5">
+                        <div class="col-sm-6">
                             <section>
                                 <h2>Memory</h2>
                                 <table class="table table-striped">
@@ -102,44 +102,44 @@
                                 </div>
                             </section>
                         </div>
-                        <div class="col-md-7">
+                        <div class="col-sm-6">
                             <section>
-                                <h2>VM Arguments</h2>
-                                <ul>
-                                    #foreach ($arg in $vmArguments)
-                                        <li>$arg</li>
-                                    #end
-                                </ul>
+                                <h2>Proxy Headers</h2>
+                                (These will not appear if this page is not accessed
+                                via a reverse proxy server.)
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>X-Forwarded-Proto</td>
+                                        <td>$xForwardedProtoHeader</td>
+                                    </tr>
+                                    <tr>
+                                        <td>X-Forwarded-Host</td>
+                                        <td>$xForwardedHostHeader</td>
+                                    </tr>
+                                    <tr>
+                                        <td>X-Forwarded-Port</td>
+                                        <td>$xForwardedPortHeader</td>
+                                    </tr>
+                                    <tr>
+                                        <td>X-Forwarded-Path</td>
+                                        <td>$xForwardedPathHeader</td>
+                                    </tr>
+                                    <tr>
+                                        <td>X-Forwarded-For</td>
+                                        <td>$xForwardedForHeader</td>
+                                    </tr>
+                                </table>
                             </section>
                         </div>
                     </div>
 
                     <section>
-                        <h2>Proxy Headers</h2>
-                        (These will not appear if this page is not accessed
-                        via a reverse proxy server.)
-                        <table class="table table-striped">
-                            <tr>
-                                <td>X-Forwarded-Proto</td>
-                                <td>$xForwardedProtoHeader</td>
-                            </tr>
-                            <tr>
-                                <td>X-Forwarded-Host</td>
-                                <td>$xForwardedHostHeader</td>
-                            </tr>
-                            <tr>
-                                <td>X-Forwarded-Port</td>
-                                <td>$xForwardedPortHeader</td>
-                            </tr>
-                            <tr>
-                                <td>X-Forwarded-Path</td>
-                                <td>$xForwardedPathHeader</td>
-                            </tr>
-                            <tr>
-                                <td>X-Forwarded-For</td>
-                                <td>$xForwardedForHeader</td>
-                            </tr>
-                        </table>
+                        <h2>VM Arguments</h2>
+                        <ul>
+                            #foreach ($arg in $vmArguments)
+                                <li>$arg</li>
+                            #end
+                        </ul>
                     </section>
 
                     <section>
@@ -347,7 +347,6 @@
                         </section>
 
                         <input type="submit" class="btn btn-primary" value="Save">
-                        <span class="cl-on-save-message"></span>
                     </form>
                 </div>
 
@@ -483,7 +482,6 @@
                             </table>
                         </section>
                         <input type="submit" class="btn btn-primary" value="Save">
-                        <span class="cl-on-save-message"></span>
                     </form>
                 </div>
 
@@ -904,7 +902,6 @@
                             </div>
                         </section>
                         <input type="submit" class="btn btn-primary" value="Save">
-                        <span class="cl-on-save-message"></span>
                     </form>
                 </div>
 
@@ -1488,7 +1485,6 @@
                             </div>
                         </section>
                         <input type="submit" class="btn btn-primary" value="Save">
-                        <span class="cl-on-save-message"></span>
                     </form>
                 </div>
 
@@ -2142,7 +2138,6 @@
                             </table>
                         </section>
                         <input type="submit" class="btn btn-primary" value="Save">
-                        <span class="cl-on-save-message"></span>
                     </form>
                 </div>
 
@@ -2294,7 +2289,6 @@
                             </table>
                         </section>
                         <input type="submit" class="btn btn-primary" value="Save">
-                        <span class="cl-on-save-message"></span>
                     </form>
                 </div>
 
@@ -2336,7 +2330,6 @@
                         </section>
 
                         <input type="submit" class="btn btn-primary" value="Save">
-                        <span class="cl-on-save-message"></span>
                     </form>
                 </div>
 
@@ -2682,7 +2675,6 @@
                             </table>
                         </section>
                         <input type="submit" class="btn btn-primary" value="Save">
-                        <span class="cl-on-save-message"></span>
                     </form>
                 </div>
             </div>

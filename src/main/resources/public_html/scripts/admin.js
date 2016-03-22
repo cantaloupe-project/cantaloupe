@@ -203,10 +203,12 @@ var Form = function(config) {
                     msg += ' A restart will be required for some changes to ' +
                         'take effect.';
                 }
-                $(formElem).find('.cl-on-save-message').html(msg).show().
-                delay(4000).fadeOut(800, function() {
+                var alert = $('<div class="alert alert-success">' + msg + '</div>');
+                submit.before(alert);
+                alert.delay(4000).fadeOut(800, function () {
                     submit.prop('disabled', false);
                     restart_required = false;
+                    alert.remove();
                 });
             },
             error: function(xhr, status, error) {
