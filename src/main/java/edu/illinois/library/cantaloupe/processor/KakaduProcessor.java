@@ -80,7 +80,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
     static final String POST_PROCESSOR_CONFIG_KEY =
             "KakaduProcessor.post_processor";
 
-    private static final short MAX_REDUCTION_FACTOR = 0;
+    private static final short MAX_REDUCTION_FACTOR = 5;
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
