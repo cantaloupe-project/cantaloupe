@@ -28,7 +28,7 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
         private final int column;
         private final ResultSet resultSet;
 
-        public JdbcStreamSource(ResultSet resultSet, int column) {
+        JdbcStreamSource(ResultSet resultSet, int column) {
             this.resultSet = resultSet;
             this.column = column;
         }
@@ -51,19 +51,19 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
 
     private static Logger logger = LoggerFactory.getLogger(JdbcResolver.class);
 
-    public static final String CONNECTION_TIMEOUT_CONFIG_KEY =
+    static final String CONNECTION_TIMEOUT_CONFIG_KEY =
             "JdbcResolver.connection_timeout";
-    public static final String JDBC_URL_CONFIG_KEY = "JdbcResolver.url";
-    public static final String MAX_POOL_SIZE_CONFIG_KEY =
+    static final String JDBC_URL_CONFIG_KEY = "JdbcResolver.url";
+    static final String MAX_POOL_SIZE_CONFIG_KEY =
             "JdbcResolver.max_pool_size";
-    public static final String PASSWORD_CONFIG_KEY = "JdbcResolver.password";
-    public static final String USER_CONFIG_KEY = "JdbcResolver.user";
+    static final String PASSWORD_CONFIG_KEY = "JdbcResolver.password";
+    static final String USER_CONFIG_KEY = "JdbcResolver.user";
 
-    public static final String GET_DATABASE_IDENTIFIER_DELEGATE_METHOD =
+    static final String GET_DATABASE_IDENTIFIER_DELEGATE_METHOD =
             "JdbcResolver::get_database_identifier";
-    public static final String GET_LOOKUP_SQL_DELEGATE_METHOD =
+    static final String GET_LOOKUP_SQL_DELEGATE_METHOD =
             "JdbcResolver::get_lookup_sql";
-    public static final String GET_MEDIA_TYPE_DELEGATE_METHOD =
+    static final String GET_MEDIA_TYPE_DELEGATE_METHOD =
             "JdbcResolver::get_media_type";
 
     private static HikariDataSource dataSource;
@@ -172,7 +172,7 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
      * @throws DelegateScriptDisabledException
      * @throws IOException
      */
-    public String getDatabaseIdentifier() throws IOException,
+    String getDatabaseIdentifier() throws IOException,
             ScriptException, DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final String[] args = { identifier.toString() };
@@ -187,7 +187,7 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
      * @throws DelegateScriptDisabledException
      * @throws IOException
      */
-    public String getLookupSql() throws IOException, ScriptException,
+    String getLookupSql() throws IOException, ScriptException,
             DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final Object result = engine.invoke(GET_LOOKUP_SQL_DELEGATE_METHOD);

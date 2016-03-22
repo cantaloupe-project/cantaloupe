@@ -67,10 +67,10 @@ class AmazonS3Cache implements DerivativeCache {
         private final String objectKey;
         private final AmazonS3 s3;
 
-        public AmazonS3OutputStream(final AmazonS3 s3,
-                                    final String bucketName,
-                                    final String objectKey,
-                                    final ObjectMetadata metadata) {
+        AmazonS3OutputStream(final AmazonS3 s3,
+                             final String bucketName,
+                             final String objectKey,
+                             final ObjectMetadata metadata) {
             this.bucketName = bucketName;
             this.s3 = s3;
             this.objectKey = objectKey;
@@ -121,23 +121,20 @@ class AmazonS3Cache implements DerivativeCache {
 
     private static Logger logger = LoggerFactory.getLogger(AmazonS3Cache.class);
 
-    public static final String ACCESS_KEY_ID_CONFIG_KEY =
+    static final String ACCESS_KEY_ID_CONFIG_KEY =
             "AmazonS3Cache.access_key_id";
-    public static final String BUCKET_NAME_CONFIG_KEY =
-            "AmazonS3Cache.bucket.name";
-    public static final String BUCKET_REGION_CONFIG_KEY =
+    static final String BUCKET_NAME_CONFIG_KEY = "AmazonS3Cache.bucket.name";
+    static final String BUCKET_REGION_CONFIG_KEY =
             "AmazonS3Cache.bucket.region";
-    public static final String OBJECT_KEY_PREFIX_CONFIG_KEY =
+    static final String OBJECT_KEY_PREFIX_CONFIG_KEY =
             "AmazonS3Cache.object_key_prefix";
-    public static final String SECRET_KEY_CONFIG_KEY =
-            "AmazonS3Cache.secret_key";
-    public static final String TTL_SECONDS_CONFIG_KEY =
-            "AmazonS3Cache.ttl_seconds";
+    static final String SECRET_KEY_CONFIG_KEY = "AmazonS3Cache.secret_key";
+    static final String TTL_SECONDS_CONFIG_KEY = "AmazonS3Cache.ttl_seconds";
 
     /** Lazy-initialized by {@link #getClientInstance} */
     private static AmazonS3 client;
 
-    public static synchronized AmazonS3 getClientInstance() {
+    static synchronized AmazonS3 getClientInstance() {
         if (client == null) {
             class ConfigFileCredentials implements AWSCredentials {
                 @Override
@@ -174,7 +171,7 @@ class AmazonS3Cache implements DerivativeCache {
     @Override
     public void cleanUp() {}
 
-    public String getBucketName() {
+    String getBucketName() {
         return Application.getConfiguration().getString(BUCKET_NAME_CONFIG_KEY);
     }
 
@@ -241,7 +238,7 @@ class AmazonS3Cache implements DerivativeCache {
      * @return Object key of the serialized ImageInfo associated with the given
      *         identifier.
      */
-    public String getObjectKey(Identifier identifier) {
+    String getObjectKey(Identifier identifier) {
         return getObjectKeyPrefix() + "info/" + identifier.toString() + ".json";
     }
 
@@ -249,7 +246,7 @@ class AmazonS3Cache implements DerivativeCache {
      * @param opList
      * @return Object key of the image associated with the given operation list.
      */
-    public String getObjectKey(OperationList opList) {
+    String getObjectKey(OperationList opList) {
         return getObjectKeyPrefix() + "image/" + opList.toString();
     }
 
@@ -257,7 +254,7 @@ class AmazonS3Cache implements DerivativeCache {
      * @return Value of {@link #OBJECT_KEY_PREFIX_CONFIG_KEY} with trailing
      * slash.
      */
-    public String getObjectKeyPrefix() {
+    String getObjectKeyPrefix() {
         String prefix = Application.getConfiguration().
                 getString(OBJECT_KEY_PREFIX_CONFIG_KEY);
         if (prefix.length() < 1 || prefix.equals("/")) {

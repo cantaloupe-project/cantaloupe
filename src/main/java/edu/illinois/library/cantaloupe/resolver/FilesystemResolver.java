@@ -28,7 +28,7 @@ class FilesystemResolver extends AbstractResolver
 
         private final File file;
 
-        public FilesystemStreamSource(File file) {
+        FilesystemStreamSource(File file) {
             this.file = file;
         }
 
@@ -47,13 +47,13 @@ class FilesystemResolver extends AbstractResolver
     private static Logger logger = LoggerFactory.
             getLogger(FilesystemResolver.class);
 
-    public static final String GET_PATHNAME_DELEGATE_METHOD =
+    static final String GET_PATHNAME_DELEGATE_METHOD =
             "FilesystemResolver::get_pathname";
-    public static final String LOOKUP_STRATEGY_CONFIG_KEY =
+    static final String LOOKUP_STRATEGY_CONFIG_KEY =
             "FilesystemResolver.lookup_strategy";
-    public static final String PATH_PREFIX_CONFIG_KEY =
+    static final String PATH_PREFIX_CONFIG_KEY =
             "FilesystemResolver.BasicLookupStrategy.path_prefix";
-    public static final String PATH_SUFFIX_CONFIG_KEY =
+    static final String PATH_SUFFIX_CONFIG_KEY =
             "FilesystemResolver.BasicLookupStrategy.path_suffix";
 
     static {
@@ -89,7 +89,7 @@ class FilesystemResolver extends AbstractResolver
      * @return
      * @throws IOException
      */
-    public String getPathname(String fileSeparator) throws IOException {
+    String getPathname(String fileSeparator) throws IOException {
         final Configuration config = Application.getConfiguration();
         switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
             case "BasicLookupStrategy":

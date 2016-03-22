@@ -47,9 +47,9 @@ class GraphicsMagickProcessor extends AbstractProcessor
     private static Logger logger = LoggerFactory.
             getLogger(GraphicsMagickProcessor.class);
 
-    public static final String BACKGROUND_COLOR_CONFIG_KEY =
+    static final String BACKGROUND_COLOR_CONFIG_KEY =
             "GraphicsMagickProcessor.background_color";
-    public static final String PATH_TO_BINARIES_CONFIG_KEY =
+    static final String PATH_TO_BINARIES_CONFIG_KEY =
             "GraphicsMagickProcessor.path_to_binaries";
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
@@ -125,9 +125,8 @@ class GraphicsMagickProcessor extends AbstractProcessor
             try {
                 logger.info("Executing {}", commandString);
                 final Process process = pb.start();
-                final InputStream processInputStream = process.getInputStream();
 
-                try {
+                try (final InputStream processInputStream = process.getInputStream()) {
                     BufferedReader stdInput = new BufferedReader(
                             new InputStreamReader(processInputStream));
                     String s;
@@ -171,8 +170,6 @@ class GraphicsMagickProcessor extends AbstractProcessor
                     //outputFormats.add(OutputFormat.GIF);
                 } catch (InterruptedException e) {
                     logger.error(e.getMessage());
-                } finally {
-                    processInputStream.close();
                 }
             } catch (IOException e) {
                 logger.error(e.getMessage());
@@ -200,9 +197,7 @@ class GraphicsMagickProcessor extends AbstractProcessor
         if (getAvailableOutputFormats().size() < 1) {
             throw new UnsupportedSourceFormatException(format);
         }
-        InputStream inputStream = null;
-        try {
-            inputStream = streamSource.newInputStream();
+        try (InputStream inputStream = streamSource.newInputStream()) {
             Info sourceInfo = new Info(
                     format.getPreferredExtension() + ":-",
                     inputStream, true);
@@ -211,14 +206,6 @@ class GraphicsMagickProcessor extends AbstractProcessor
                     sourceInfo.getImageHeight(), getSourceFormat());
         } catch (IM4JavaException | IOException e) {
             throw new ProcessorException(e.getMessage(), e);
-        } finally {
-            try {
-                if (inputStream != null) {
-                    inputStream.close();
-                }
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
         }
     }
 
@@ -283,13 +270,10 @@ class GraphicsMagickProcessor extends AbstractProcessor
                 convert.setSearchPath(binaryPath);
             }
 
-            InputStream inputStream = streamSource.newInputStream();
-            try {
+            try (InputStream inputStream = streamSource.newInputStream()) {
                 convert.setInputProvider(new Pipe(inputStream, null));
                 convert.setOutputConsumer(new Pipe(null, outputStream));
                 convert.run(op);
-            } finally {
-                inputStream.close();
             }
         } catch (InterruptedException | IM4JavaException | IOException e) {
             throw new ProcessorException(e.getMessage(), e);

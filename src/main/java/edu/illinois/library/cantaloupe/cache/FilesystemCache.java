@@ -64,7 +64,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         private final PathMatcher matcher;
         private int numDeleted = 0;
 
-        public CacheCleaner() {
+        CacheCleaner() {
             matcher = FileSystems.getDefault()
                     .getPathMatcher("glob:*" + TEMP_EXTENSION);
         }
@@ -132,10 +132,10 @@ class FilesystemCache implements SourceCache, DerivativeCache {
          * @throws FileNotFoundException
          */
         @SuppressWarnings("unchecked")
-        public ConcurrentFileOutputStream(File tempFile,
-                                          File destinationFile,
-                                          Set imagesBeingWritten,
-                                          Object toRemove)
+        ConcurrentFileOutputStream(File tempFile,
+                                   File destinationFile,
+                                   Set imagesBeingWritten,
+                                   Object toRemove)
                 throws FileNotFoundException {
             super(tempFile);
             imagesBeingWritten.add(toRemove);
@@ -158,7 +158,11 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             } finally {
                 logger.debug("Closing stream for {}", toRemove);
                 imagesBeingWritten.remove(toRemove);
-                super.close();
+                try {
+                    super.close();
+                } catch (IOException e) {
+                    logger.info(e.getMessage(), e);
+                }
             }
         }
 
@@ -187,12 +191,12 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     private static final Logger logger = LoggerFactory.
             getLogger(FilesystemCache.class);
 
-    public static final String DIRECTORY_DEPTH_CONFIG_KEY =
+    static final String DIRECTORY_DEPTH_CONFIG_KEY =
             "FilesystemCache.dir.depth";
-    public static final String DIRECTORY_NAME_LENGTH_CONFIG_KEY =
+    static final String DIRECTORY_NAME_LENGTH_CONFIG_KEY =
             "FilesystemCache.dir.name_length";
-    public static final String PATHNAME_CONFIG_KEY = "FilesystemCache.pathname";
-    public static final String TTL_CONFIG_KEY = "FilesystemCache.ttl_seconds";
+    static final String PATHNAME_CONFIG_KEY = "FilesystemCache.pathname";
+    static final String TTL_CONFIG_KEY = "FilesystemCache.ttl_seconds";
 
     private static final short FILENAME_MAX_LENGTH = 255;
     // https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations
@@ -258,7 +262,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @param inputString String to make filename-safe
      * @return Filename-safe string
      */
-    public static String filenameSafe(String inputString) {
+    static String filenameSafe(String inputString) {
         final StringBuffer sb = new StringBuffer();
         final Matcher matcher = FILENAME_SAFE_PATTERN.matcher(inputString);
 
@@ -279,7 +283,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @return Directory path composed of fragments of a hash of the given
      * string.
      */
-    public static String getHashedStringBasedSubdirectory(String uniqueString) {
+    static String getHashedStringBasedSubdirectory(String uniqueString) {
         final StringBuilder path = new StringBuilder();
         try {
             // Use a fast algo. Collisions don't matter.
@@ -404,7 +408,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @param ops Operation list identifying the file.
      * @return File corresponding to the given operation list.
      */
-    public File getDerivativeImageFile(OperationList ops) throws CacheException {
+    File getDerivativeImageFile(OperationList ops) throws CacheException {
         final List<String> parts = new ArrayList<>();
         final String cacheRoot =
                 StringUtils.stripEnd(getRootDerivativeImagePathname(), File.separator);
@@ -432,12 +436,12 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      *         given identifier.
      * @throws CacheException
      */
-    public Collection<File> getDerivativeImageFiles(Identifier identifier)
+    Collection<File> getDerivativeImageFiles(Identifier identifier)
             throws CacheException {
         class IdentifierFilter implements FilenameFilter {
             private Identifier identifier;
 
-            public IdentifierFilter(Identifier identifier) {
+            private IdentifierFilter(Identifier identifier) {
                 this.identifier = identifier;
             }
 
@@ -459,8 +463,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @return Temp file corresponding to the given operation list. Clients
      * should delete it when they are done with it.
      */
-    public File getDerivativeImageTempFile(OperationList ops)
-            throws CacheException {
+    File getDerivativeImageTempFile(OperationList ops) throws CacheException {
         return new File(getDerivativeImageFile(ops).getAbsolutePath() +
                 TEMP_EXTENSION);
     }
@@ -640,7 +643,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @param identifier
      * @return File corresponding to the given parameters.
      */
-    public File getInfoFile(final Identifier identifier) throws CacheException {
+    File getInfoFile(final Identifier identifier) throws CacheException {
         final String cacheRoot =
                 StringUtils.stripEnd(getRootInfoPathname(), File.separator);
         final String subfolderPath = StringUtils.stripEnd(
@@ -652,8 +655,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         return new File(pathname);
     }
 
-    public File getInfoTempFile(final Identifier identifier)
-            throws CacheException {
+    File getInfoTempFile(final Identifier identifier) throws CacheException {
         return new File(getInfoFile(identifier).getAbsolutePath() +
                 TEMP_EXTENSION);
     }
@@ -664,7 +666,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @param identifier Identifier identifying the file.
      * @return File corresponding to the given identifier.
      */
-    public File getSourceImageFile(Identifier identifier) throws CacheException {
+    File getSourceImageFile(Identifier identifier) throws CacheException {
         final String cacheRoot = StringUtils.stripEnd(
                 getRootSourceImagePathname(), File.separator);
         final String subfolderPath = StringUtils.stripEnd(
@@ -681,8 +683,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @return Temp file corresponding to a source image with the given
      * identifier. Clients should delete it when they are done with it.
      */
-    public File getSourceImageTempFile(Identifier identifier)
-            throws CacheException {
+    File getSourceImageTempFile(Identifier identifier) throws CacheException {
         return new File(getSourceImageFile(identifier).getAbsolutePath() +
                 TEMP_EXTENSION);
     }

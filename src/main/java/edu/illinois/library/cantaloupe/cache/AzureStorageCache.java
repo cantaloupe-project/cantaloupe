@@ -35,20 +35,20 @@ class AzureStorageCache implements DerivativeCache {
     private static Logger logger = LoggerFactory.
             getLogger(AzureStorageCache.class);
 
-    public static final String ACCOUNT_KEY_CONFIG_KEY =
+    static final String ACCOUNT_KEY_CONFIG_KEY =
             "AzureStorageCache.account_key";
-    public static final String ACCOUNT_NAME_CONFIG_KEY =
+    static final String ACCOUNT_NAME_CONFIG_KEY =
             "AzureStorageCache.account_name";
-    public static final String CONTAINER_NAME_CONFIG_KEY =
+    static final String CONTAINER_NAME_CONFIG_KEY =
             "AzureStorageCache.container_name";
-    public static final String OBJECT_KEY_PREFIX_CONFIG_KEY =
+    static final String OBJECT_KEY_PREFIX_CONFIG_KEY =
             "AzureStorageCache.object_key_prefix";
-    public static final String TTL_SECONDS_CONFIG_KEY =
+    static final String TTL_SECONDS_CONFIG_KEY =
             "AzureStorageCache.ttl_seconds";
 
     private static CloudBlobClient client;
 
-    public static synchronized CloudBlobClient getClientInstance() {
+    static synchronized CloudBlobClient getClientInstance() {
         if (client == null) {
             try {
                 final Configuration config = Application.getConfiguration();
@@ -75,7 +75,7 @@ class AzureStorageCache implements DerivativeCache {
         return client;
     }
 
-    public static String getContainerName() {
+    static String getContainerName() {
         final Configuration config = Application.getConfiguration();
         // All letters in a container name must be lowercase.
         return config.getString(CONTAINER_NAME_CONFIG_KEY).toLowerCase();
@@ -160,7 +160,7 @@ class AzureStorageCache implements DerivativeCache {
      * @return Object key of the serialized ImageInfo associated with the given
      *         identifier.
      */
-    public String getObjectKey(Identifier identifier) {
+    String getObjectKey(Identifier identifier) {
         try {
             return getObjectKeyPrefix() + "info/" +
                     URLEncoder.encode(identifier.toString(), "UTF-8") + ".json";
@@ -174,7 +174,7 @@ class AzureStorageCache implements DerivativeCache {
      * @param opList
      * @return Object key of the image associated with the given operation list.
      */
-    public String getObjectKey(OperationList opList) {
+    String getObjectKey(OperationList opList) {
         try {
             return getObjectKeyPrefix() + "image/" +
                     URLEncoder.encode(opList.toString(), "UTF-8");
@@ -188,7 +188,7 @@ class AzureStorageCache implements DerivativeCache {
      * @return Value of {@link #OBJECT_KEY_PREFIX_CONFIG_KEY} with trailing
      * slash.
      */
-    public String getObjectKeyPrefix() {
+    String getObjectKeyPrefix() {
         String prefix = Application.getConfiguration().
                 getString(OBJECT_KEY_PREFIX_CONFIG_KEY);
         if (prefix.length() < 1 || prefix.equals("/")) {
@@ -296,7 +296,6 @@ class AzureStorageCache implements DerivativeCache {
         final CloudBlobClient client = getClientInstance();
         final String objectKey = getObjectKey(identifier);
 
-        OutputStream os = null;
         try {
             final CloudBlobContainer container =
                     client.getContainerReference(containerName);
@@ -304,18 +303,11 @@ class AzureStorageCache implements DerivativeCache {
             blob.getProperties().setContentType("application/json");
             blob.getProperties().setContentEncoding("UTF-8");
 
-            os = blob.openOutputStream();
-            imageInfo.writeAsJson(os);
+            try (OutputStream os = blob.openOutputStream()) {
+                imageInfo.writeAsJson(os);
+            }
         } catch (IOException | URISyntaxException | StorageException e) {
             throw new CacheException(e.getMessage(), e);
-        } finally {
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
-                }
-            }
         }
     }
 }

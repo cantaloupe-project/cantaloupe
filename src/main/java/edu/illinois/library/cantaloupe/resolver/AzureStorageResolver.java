@@ -33,7 +33,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
 
         private final CloudBlockBlob blob;
 
-        public AzureStorageStreamSource(CloudBlockBlob blob) {
+        AzureStorageStreamSource(CloudBlockBlob blob) {
             this.blob = blob;
         }
 
@@ -56,16 +56,16 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     private static Logger logger = LoggerFactory.
             getLogger(AzureStorageResolver.class);
 
-    public static final String ACCOUNT_KEY_CONFIG_KEY =
+    static final String ACCOUNT_KEY_CONFIG_KEY =
             "AzureStorageResolver.account_key";
-    public static final String ACCOUNT_NAME_CONFIG_KEY =
+    static final String ACCOUNT_NAME_CONFIG_KEY =
             "AzureStorageResolver.account_name";
-    public static final String CONTAINER_NAME_CONFIG_KEY =
+    static final String CONTAINER_NAME_CONFIG_KEY =
             "AzureStorageResolver.container_name";
-    public static final String LOOKUP_STRATEGY_CONFIG_KEY =
+    static final String LOOKUP_STRATEGY_CONFIG_KEY =
             "AzureStorageResolver.lookup_strategy";
 
-    public static final String GET_KEY_DELEGATE_METHOD =
+    static final String GET_KEY_DELEGATE_METHOD =
             "AzureStorageResolver::get_blob_key";
 
     private static CloudBlobClient client;

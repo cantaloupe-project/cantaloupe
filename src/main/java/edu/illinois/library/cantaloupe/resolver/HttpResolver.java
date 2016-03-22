@@ -32,7 +32,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         private final Client client;
         private final Reference url;
 
-        public HttpStreamSource(Client client, Reference url) {
+        HttpStreamSource(Client client, Reference url) {
             this.client = client;
             this.url = url;
         }
@@ -59,19 +59,18 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
     private static Logger logger = LoggerFactory.getLogger(HttpResolver.class);
 
-    public static final String BASIC_AUTH_SECRET_CONFIG_KEY =
+    static final String BASIC_AUTH_SECRET_CONFIG_KEY =
             "HttpResolver.auth.basic.secret";
-    public static final String BASIC_AUTH_USERNAME_CONFIG_KEY =
+    static final String BASIC_AUTH_USERNAME_CONFIG_KEY =
             "HttpResolver.auth.basic.username";
-    public static final String LOOKUP_STRATEGY_CONFIG_KEY =
+    static final String LOOKUP_STRATEGY_CONFIG_KEY =
             "HttpResolver.lookup_strategy";
-    public static final String URL_PREFIX_CONFIG_KEY =
+    static final String URL_PREFIX_CONFIG_KEY =
             "HttpResolver.BasicLookupStrategy.url_prefix";
-    public static final String URL_SUFFIX_CONFIG_KEY =
+    static final String URL_SUFFIX_CONFIG_KEY =
             "HttpResolver.BasicLookupStrategy.url_suffix";
 
-    public static final String GET_URL_DELEGATE_METHOD =
-            "HttpResolver::get_url";
+    static final String GET_URL_DELEGATE_METHOD = "HttpResolver::get_url";
 
     private final Client client = new Client(
             Arrays.asList(Protocol.HTTP, Protocol.HTTPS));

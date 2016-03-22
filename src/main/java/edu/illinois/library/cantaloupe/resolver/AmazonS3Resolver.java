@@ -34,7 +34,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
         private final S3Object object;
 
-        public AmazonS3StreamSource(S3Object object) {
+        AmazonS3StreamSource(S3Object object) {
             this.object = object;
         }
 
@@ -53,20 +53,18 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     private static Logger logger = LoggerFactory.
             getLogger(AmazonS3Resolver.class);
 
-    public static final String ACCESS_KEY_ID_CONFIG_KEY =
+    static final String ACCESS_KEY_ID_CONFIG_KEY =
             "AmazonS3Resolver.access_key_id";
-    public static final String BUCKET_NAME_CONFIG_KEY =
+    static final String BUCKET_NAME_CONFIG_KEY =
             "AmazonS3Resolver.bucket.name";
-    public static final String BUCKET_REGION_CONFIG_KEY =
+    static final String BUCKET_REGION_CONFIG_KEY =
             "AmazonS3Resolver.bucket.region";
-    public static final String ENDPOINT_CONFIG_KEY =
-            "AmazonS3Resolver.endpoint";
-    public static final String LOOKUP_STRATEGY_CONFIG_KEY =
+    static final String ENDPOINT_CONFIG_KEY = "AmazonS3Resolver.endpoint";
+    static final String LOOKUP_STRATEGY_CONFIG_KEY =
             "AmazonS3Resolver.lookup_strategy";
-    public static final String SECRET_KEY_CONFIG_KEY =
-            "AmazonS3Resolver.secret_key";
+    static final String SECRET_KEY_CONFIG_KEY = "AmazonS3Resolver.secret_key";
 
-    public static final String GET_KEY_DELEGATE_METHOD =
+    static final String GET_KEY_DELEGATE_METHOD =
             "AmazonS3Resolver::get_object_key";
 
     private static AmazonS3 client;

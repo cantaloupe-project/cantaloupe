@@ -63,7 +63,7 @@ class JdbcCache implements DerivativeCache {
          * @param ops Derivative image operation list
          * @throws SQLException
          */
-        public ImageBlobOutputStream(Connection conn, OperationList ops)
+        ImageBlobOutputStream(Connection conn, OperationList ops)
                 throws SQLException {
             this.connection = conn;
             this.ops = ops;
@@ -124,28 +124,25 @@ class JdbcCache implements DerivativeCache {
     private static final Logger logger = LoggerFactory.
             getLogger(JdbcCache.class);
 
-    public static final String DERIVATIVE_IMAGE_TABLE_IMAGE_COLUMN =
-            "image";
-    public static final String DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN =
+    static final String DERIVATIVE_IMAGE_TABLE_IMAGE_COLUMN = "image";
+    static final String DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN =
             "last_accessed";
-    public static final String DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN =
-            "operations";
+    static final String DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN = "operations";
 
-    public static final String INFO_TABLE_IDENTIFIER_COLUMN = "identifier";
-    public static final String INFO_TABLE_INFO_COLUMN = "info";
-    public static final String INFO_TABLE_LAST_ACCESSED_COLUMN = "last_accessed";
+    static final String INFO_TABLE_IDENTIFIER_COLUMN = "identifier";
+    static final String INFO_TABLE_INFO_COLUMN = "info";
+    static final String INFO_TABLE_LAST_ACCESSED_COLUMN = "last_accessed";
 
-    public static final String CONNECTION_TIMEOUT_CONFIG_KEY =
+    static final String CONNECTION_TIMEOUT_CONFIG_KEY =
             "JdbcCache.connection_timeout";
-    public static final String DERIVATIVE_IMAGE_TABLE_CONFIG_KEY =
+    static final String DERIVATIVE_IMAGE_TABLE_CONFIG_KEY =
             "JdbcCache.derivative_image_table";
-    public static final String JDBC_URL_CONFIG_KEY = "JdbcCache.url";
-    public static final String PASSWORD_CONFIG_KEY = "JdbcCache.password";
-    public static final String INFO_TABLE_CONFIG_KEY = "JdbcCache.info_table";
-    public static final String MAX_POOL_SIZE_CONFIG_KEY =
-            "JdbcCache.max_pool_size";
-    public static final String TTL_CONFIG_KEY = "JdbcCache.ttl_seconds";
-    public static final String USER_CONFIG_KEY = "JdbcCache.user";
+    static final String JDBC_URL_CONFIG_KEY = "JdbcCache.url";
+    static final String PASSWORD_CONFIG_KEY = "JdbcCache.password";
+    static final String INFO_TABLE_CONFIG_KEY = "JdbcCache.info_table";
+    static final String MAX_POOL_SIZE_CONFIG_KEY = "JdbcCache.max_pool_size";
+    static final String TTL_CONFIG_KEY = "JdbcCache.ttl_seconds";
+    static final String USER_CONFIG_KEY = "JdbcCache.user";
 
     private static HikariDataSource dataSource;
 
@@ -198,7 +195,7 @@ class JdbcCache implements DerivativeCache {
      * @return Name of the derivative image table.
      * @throws CacheException If the image table name is not set.
      */
-    public static String getDerivativeImageTableName() throws CacheException {
+    static String getDerivativeImageTableName() throws CacheException {
         final String name = Application.getConfiguration().
                 getString(DERIVATIVE_IMAGE_TABLE_CONFIG_KEY);
         if (name == null) {
@@ -212,7 +209,7 @@ class JdbcCache implements DerivativeCache {
      * @return Name of the image info table.
      * @throws CacheException If the info table name is not set.
      */
-    public static String getInfoTableName() throws CacheException {
+    static String getInfoTableName() throws CacheException {
         final String name = Application.getConfiguration().
                 getString(INFO_TABLE_CONFIG_KEY);
         if (name == null) {
@@ -368,7 +365,7 @@ class JdbcCache implements DerivativeCache {
         return new Timestamp(now.getTime());
     }
 
-    public Timestamp oldestValidDate() {
+    Timestamp oldestValidDate() {
         final Configuration config = Application.getConfiguration();
         final long ttl = config.getLong(TTL_CONFIG_KEY, 0);
         if (ttl > 0) {

@@ -20,7 +20,6 @@ import org.apache.pdfbox.rendering.PDFRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -42,8 +41,8 @@ class PdfBoxProcessor extends AbstractProcessor
     private static Logger logger = LoggerFactory.
             getLogger(PdfBoxProcessor.class);
 
-    public static final String DPI_CONFIG_KEY = "PdfBoxProcessor.dpi";
-    public static final String JAVA2D_SCALE_MODE_CONFIG_KEY =
+    static final String DPI_CONFIG_KEY = "PdfBoxProcessor.dpi";
+    static final String JAVA2D_SCALE_MODE_CONFIG_KEY =
             "PdfBoxProcessor.post_processor.java2d.scale_mode";
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
@@ -278,11 +277,14 @@ class PdfBoxProcessor extends AbstractProcessor
                 return renderer.renderImageWithDPI(0, dpi);
             }
         } finally {
-            if (doc != null) {
-                doc.close();
-            }
-            if (inputStream != null) {
-                inputStream.close();
+            try {
+                if (doc != null) {
+                    doc.close();
+                }
+            } finally {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
             }
         }
     }

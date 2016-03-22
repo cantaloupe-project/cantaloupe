@@ -37,11 +37,9 @@ class Java2dProcessor extends AbstractImageIoProcessor
     private static Logger logger = LoggerFactory.
             getLogger(Java2dProcessor.class);
 
-    public static final String JPG_QUALITY_CONFIG_KEY =
-            "Java2dProcessor.jpg.quality";
-    public static final String SCALE_MODE_CONFIG_KEY =
-            "Java2dProcessor.scale_mode";
-    public static final String TIF_COMPRESSION_CONFIG_KEY =
+    static final String JPG_QUALITY_CONFIG_KEY = "Java2dProcessor.jpg.quality";
+    static final String SCALE_MODE_CONFIG_KEY = "Java2dProcessor.scale_mode";
+    static final String TIF_COMPRESSION_CONFIG_KEY =
             "Java2dProcessor.tif.compression";
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =

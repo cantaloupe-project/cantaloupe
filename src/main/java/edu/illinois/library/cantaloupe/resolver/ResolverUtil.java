@@ -13,7 +13,7 @@ abstract class ResolverUtil {
      * @return Inferred source format, or {@link Format#UNKNOWN} if
      * unknown.
      */
-    public static Format inferSourceFormat(Identifier identifier) {
+    static Format inferSourceFormat(Identifier identifier) {
         String idStr = identifier.toString().toLowerCase();
         String extension = null;
         Format format = Format.UNKNOWN;

@@ -57,11 +57,11 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
     private static Logger logger = LoggerFactory.
             getLogger(OpenJpegProcessor.class);
 
-    public static final String JAVA2D_SCALE_MODE_CONFIG_KEY =
+    static final String JAVA2D_SCALE_MODE_CONFIG_KEY =
             "OpenJpegProcessor.post_processor.java2d.scale_mode";
-    public static final String PATH_TO_BINARIES_CONFIG_KEY =
+    static final String PATH_TO_BINARIES_CONFIG_KEY =
             "OpenJpegProcessor.path_to_binaries";
-    public static final String POST_PROCESSOR_CONFIG_KEY =
+    static final String POST_PROCESSOR_CONFIG_KEY =
             "OpenJpegProcessor.post_processor";
 
     private static final short MAX_REDUCTION_FACTOR = 0;
@@ -123,6 +123,13 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
         }
     }
 
+    /**
+     * Creates a unique symlink to /dev/stdout in a temporary directory, and
+     * sets it to delete on exit.
+     *
+     * @return Path to the symlink.
+     * @throws IOException
+     */
     private static Path createStdoutSymlink() throws IOException {
         File tempDir = new File(System.getProperty("java.io.tmpdir"));
         final File link = new File(tempDir.getAbsolutePath() + "/cantaloupe-" +
@@ -215,11 +222,8 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
         logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
         Process process = pb.start();
 
-        InputStream processInputStream = process.getInputStream();
-        try {
+        try (InputStream processInputStream = process.getInputStream()) {
             imageInfo = IOUtils.toString(processInputStream, "UTF-8");
-        } finally {
-            processInputStream.close();
         }
     }
 
@@ -296,11 +300,9 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                     ops, imageInfo.getSize(), reductionFactor);
             logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
-            final InputStream processInputStream = process.getInputStream();
-            final InputStream processErrorStream = process.getErrorStream();
-            final OutputStream processOutputStream = process.getOutputStream();
 
-            try {
+            try (final InputStream processInputStream = process.getInputStream();
+                 final InputStream processErrorStream = process.getErrorStream()) {
                 executorService.submit(new StreamCopier(
                         processErrorStream, errorBucket));
 
@@ -334,9 +336,6 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                     }
                 }
             } finally {
-                processInputStream.close();
-                processOutputStream.close();
-                processErrorStream.close();
                 process.destroy();
             }
         } catch (EOFException e) {
