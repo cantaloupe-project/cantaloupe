@@ -246,26 +246,6 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
             throw new UnsupportedOutputFormatException();
         }
 
-        class StreamCopier implements Runnable {
-            private final InputStream inputStream;
-            private final OutputStream outputStream;
-
-            public StreamCopier(InputStream in, OutputStream out) {
-                inputStream = in;
-                outputStream = out;
-            }
-
-            public void run() {
-                try {
-                    IOUtils.copy(inputStream, outputStream);
-                } catch (IOException e) {
-                    if (!e.getMessage().startsWith("Broken pipe")) {
-                        logger.error(e.getMessage(), e);
-                    }
-                }
-            }
-        }
-
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
             final ProcessBuilder pb = getProcessBuilder(ops,
