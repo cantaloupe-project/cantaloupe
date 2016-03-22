@@ -11,7 +11,7 @@
 ###########################################################################
 
 # Enables the Control Panel, at /admin.
-admin.enabled = true
+admin.enabled = false
 # Password to access the Control Panel. (The username is always "admin".)
 admin.password =
 
