@@ -77,11 +77,11 @@ endpoint.iiif.2.enabled = true
 endpoint.iiif.content_disposition = inline
 
 # Minimum size that will be used in info.json "tiles" keys. See the user
-# manual for details of how these are calculated.
+# manual for an explanation of how these are calculated.
 endpoint.iiif.min_tile_size = 1024
 
 # If true, requests for sizes other than those specified in an info.json
-# response will be denied with HTTP 403 Forbidden.
+# response will be denied.
 endpoint.iiif.2.restrict_to_sizes = false
 
 ###########################################################################
@@ -356,10 +356,10 @@ cache.client.no_transform = true
 ###########################################################################
 
 # Enables the source cache. The only available value is `FilesystemCache`.
-# Set blank to disable source image caching. Note that source images will
-# only be cached when a FileProcessor is used with a StreamResolver, or
-# when a StreamProcessor is used with `StreamProcessor.retrieval_strategy`
-# set to `CacheStrategy`.
+# Set blank to disable source image caching.
+# Note that source images will only be cached when a FileProcessor is used
+# with a StreamResolver, or when a StreamProcessor is used with
+# `StreamProcessor.retrieval_strategy` set to `CacheStrategy`.
 cache.source =
 
 # Enables the derivative (processed image) cache. Available values are

@@ -73,7 +73,7 @@ title: Deployment
     <th>Required?</th>
   </tr>
   <tr>
-    <td><code>X-Forwarded-Proto</code></td>
+    <td style="white-space: nowrap"><code>X-Forwarded-Proto</code></td>
     <td>Protocol of the client request; either <code>HTTP</code> or <code>HTTPS</code>.  If missing, HTTP will be assumed.</td>
     <td>No</td>
   </tr>
@@ -94,7 +94,7 @@ title: Deployment
   </tr>
   <tr>
     <td><code>X-Forwarded-For</code></td>
-    <td>Client IP address. If missing, any features that require a client IP address (such as IP-based authorization) will not work.</td>
+    <td>Client IP address. If missing, any features that require a client IP address will either not work (such as IP-based authorization), or be incorrect (such as access logs).</td>
     <td>No</td>
   </tr>
 </table>

@@ -13,7 +13,6 @@ title: Redaction
 <h1>Redaction</h1>
 
 <ul>
-  <li><a href="#Overview">Overview</a></li>
   <li><a href="#Example">Example</a></li>
   <li><a href="#Processor%20Support">Processor Support</a></li>
   <li><a href="#Implications">Implications</a>
@@ -24,9 +23,9 @@ title: Redaction
   </li>
 </ul>
 
-<h2 id="Overview">Overview</h2>
-
 <p>Redactions are black rectangles that are overlaid onto source images in order to obscure parts of them. This can be used for copyright protection, privacy protection, or censorship, without altering any source images. Different redactions can be applied to the same image dynamically for different audiences based on client IP address, cookies, and more.</p>
+
+<p>Redactions are defined with <code>x</code>, <code>y</code>, <code>width</code>, and <code>height</code> properties corresponding to source image coordinates. Redacted regions will be blacked out at every intersecting crop region and scale.</p>
 
 <div class="row">
   <div class="col-sm-6">
@@ -54,10 +53,16 @@ module Cantaloupe
   #
   def self.redactions(identifier, request_headers, client_ip, cookies)
     redactions = []
-    # Add a redaction to an image with an identifier of "sample" for all
-    # clients except localhost (127.x.x.x).
+    # Add two redactions to an image with an identifier of "sample" for all
+    # clients except localhost.
     if identifier == 'sample'
-      unless client_ip.start_with?('127.')
+      unless %w(127.0.0.1 ::1/128).include?(client_ip)
+        redactions << {
+            'x' => 50,
+            'y' => 65,
+            'width' => 120,
+            'height' => 105
+        }
         redactions << {
             'x' => 673,
             'y' => 812,

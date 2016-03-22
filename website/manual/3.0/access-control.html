@@ -42,12 +42,11 @@ auth.basic.secret = mypassword
 
 <p>The delegate method in question is called <code>authorized?</code>. A skeleton with documented parameters and return values is present in the <span class="filename">delegates.rb.sample</span> file. By default, it just returns <code>true</code>, authorizing all requests.</p>
 
-<div class="alert alert-warning">This method will be called upon requests to all image endpoints, but not information endpoints, landing pages, etc.</div>
-
 <h3 id="Authorization Notes">Notes</h3>
 
 <ul>
   <li>The authorization method will be called on every image request and should therefore be written to be efficient.</li>
+  <li>The authorization method will be called upon requests to all image endpoints, but not information endpoints.</li>
   <li>Implementations should not assume that the underlying source image actually exists, but they should not try to check for it regardless&mdash;the image server will handle that. (But, the check may occur after the delegate method is invoked.)</li>
 </ul>
 
