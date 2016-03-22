@@ -189,16 +189,12 @@ public class SourceImageWrangler {
     private void downloadToSourceCache(SourceCache sourceCache)
             throws IOException, CacheException {
         // Download to the SourceCache and then read from it.
-        InputStream inputStream = ((StreamResolver) resolver).
+        try (InputStream inputStream = ((StreamResolver) resolver).
                 getStreamSource().newInputStream();
-        OutputStream outputStream =
-                sourceCache.getImageOutputStream(identifier);
-        try {
+             OutputStream outputStream =
+                     sourceCache.getImageOutputStream(identifier)) {
             logger.info("Downloading {} to the source cache", identifier);
             IOUtils.copy(inputStream, outputStream);
-        } finally {
-            inputStream.close();
-            outputStream.close();
         }
     }
 
