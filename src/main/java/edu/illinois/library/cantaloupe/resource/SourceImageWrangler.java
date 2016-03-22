@@ -30,14 +30,14 @@ import java.io.OutputStream;
  */
 public class SourceImageWrangler {
 
-    public enum StreamProcessorRetrievalStrategy {
+    enum StreamProcessorRetrievalStrategy {
         STREAM, CACHE
     }
 
     private static final Logger logger = LoggerFactory.
             getLogger(SourceImageWrangler.class);
 
-    public static final String STREAMPROCESSOR_RETRIEVAL_STRATEGY_CONFIG_KEY =
+    static final String STREAMPROCESSOR_RETRIEVAL_STRATEGY_CONFIG_KEY =
             "StreamProcessor.retrieval_strategy";
 
     private Identifier identifier;
