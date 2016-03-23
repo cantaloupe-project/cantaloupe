@@ -4,6 +4,8 @@ import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
@@ -15,10 +17,11 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
+import org.restlet.data.CharacterSet;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
-import org.restlet.representation.StringRepresentation;
+import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
 
@@ -39,11 +42,12 @@ public class InformationResource extends Iiif1Resource {
     /**
      * Responds to information requests.
      *
-     * @return StringRepresentation
+     * @return JacksonRepresentation that will write an {@link ImageInfo}
+     *         instance to JSON.
      * @throws Exception
      */
     @Get("json")
-    public StringRepresentation doGet() throws Exception {
+    public JacksonRepresentation doGet() throws Exception {
         Map<String,Object> attrs = this.getRequest().getAttributes();
         Identifier identifier = new Identifier(
                 Reference.decode((String) attrs.get("identifier")));
@@ -76,10 +80,11 @@ public class InformationResource extends Iiif1Resource {
         ImageInfo imageInfo = ImageInfoFactory.newImageInfo(
                 getImageUri(identifier), processor,
                 getOrReadInfo(identifier, processor));
-        StringRepresentation rep = new StringRepresentation(imageInfo.toJson());
 
         this.addHeader("Link", String.format("<%s>;rel=\"profile\";",
                 imageInfo.profile));
+
+        JacksonRepresentation rep = new JacksonRepresentation<>(imageInfo);
 
         // If the client has requested JSON-LD, set the content type to
         // that; otherwise set it to JSON
@@ -91,6 +96,11 @@ public class InformationResource extends Iiif1Resource {
         } else {
             rep.setMediaType(new MediaType("application/json"));
         }
+
+        rep.getObjectWriter().
+                without(SerializationFeature.WRITE_NULL_MAP_VALUES).
+                without(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
+        rep.setCharacterSet(CharacterSet.UTF_8);
         return rep;
     }
 

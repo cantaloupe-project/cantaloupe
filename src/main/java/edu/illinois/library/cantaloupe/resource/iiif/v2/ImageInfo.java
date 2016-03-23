@@ -3,9 +3,6 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -97,16 +94,5 @@ class ImageInfo {
      * "The width of the image to be requested."
      */
     public Integer width;
-
-    /**
-     * @return JSON representation of the instance.
-     * @throws JsonProcessingException
-     */
-    public String toJson() throws JsonProcessingException {
-        return new ObjectMapper().writer().
-                without(SerializationFeature.WRITE_NULL_MAP_VALUES).
-                without(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS).
-                writeValueAsString(this);
-    }
 
 }
