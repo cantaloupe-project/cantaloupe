@@ -2,24 +2,38 @@ package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
+import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
 import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
+import org.apache.velocity.app.Velocity;
 import org.restlet.Application;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
 import org.restlet.data.ChallengeScheme;
+import org.restlet.data.MediaType;
 import org.restlet.data.Status;
+import org.restlet.ext.velocity.TemplateRepresentation;
+import org.restlet.representation.Representation;
 import org.restlet.resource.Directory;
+import org.restlet.resource.ResourceException;
 import org.restlet.routing.Redirector;
 import org.restlet.routing.Router;
 import org.restlet.routing.Template;
 import org.restlet.security.ChallengeAuthenticator;
 import org.restlet.security.MapVerifier;
 import org.restlet.service.CorsService;
+import org.restlet.service.StatusService;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.nio.file.AccessDeniedException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.logging.Level;
 
 /**
@@ -27,6 +41,66 @@ import java.util.logging.Level;
  * them to Resources.
  */
 public class WebApplication extends Application {
+
+    private class CustomStatusService extends StatusService {
+
+        @Override
+        public Representation toRepresentation(Status status, Request request,
+                                               Response response) {
+            String message = null, stackTrace = null;
+            Throwable throwable = status.getThrowable();
+            if (throwable != null) {
+                if (throwable.getCause() != null) {
+                    throwable = throwable.getCause();
+                }
+                message = throwable.getMessage();
+                Configuration config = Configuration.getInstance();
+                if (config.getBoolean("print_stack_trace_on_error_pages", false)) {
+                    StringWriter sw = new StringWriter();
+                    throwable.printStackTrace(new PrintWriter(sw));
+                    stackTrace = sw.toString();
+                }
+            } else if (status.getDescription() != null) {
+                message = status.getDescription();
+            } else if (status == Status.CLIENT_ERROR_NOT_FOUND) {
+                message = "No resource exists at this URL.";
+            }
+
+            final Map<String,Object> templateVars =
+                    AbstractResource.getCommonTemplateVars(request);
+            templateVars.put("pageTitle", status.getCode() + " " +
+                    status.getReasonPhrase());
+            templateVars.put("message", message);
+            templateVars.put("stackTrace", stackTrace);
+
+            org.apache.velocity.Template template = Velocity.getTemplate("error.vm");
+            return new TemplateRepresentation(template, templateVars,
+                    MediaType.TEXT_HTML);
+        }
+
+        @Override
+        public Status toStatus(Throwable t, Request request,
+                               Response response) {
+            Status status;
+            t = (t.getCause() != null) ? t.getCause() : t;
+
+            if (t instanceof ResourceException) {
+                status = ((ResourceException) t).getStatus();
+            } else if (t instanceof IllegalArgumentException ||
+                    t instanceof UnsupportedEncodingException ||
+                    t instanceof UnsupportedOutputFormatException) {
+                status = new Status(Status.CLIENT_ERROR_BAD_REQUEST, t);
+            } else if (t instanceof FileNotFoundException) {
+                status = new Status(Status.CLIENT_ERROR_NOT_FOUND, t);
+            } else if (t instanceof AccessDeniedException) {
+                status = new Status(Status.CLIENT_ERROR_FORBIDDEN, t);
+            } else {
+                status = new Status(Status.SERVER_ERROR_INTERNAL, t);
+            }
+            return status;
+        }
+
+    }
 
     public static final String ADMIN_SECRET_CONFIG_KEY = "admin.password";
     public static final String BASIC_AUTH_ENABLED_CONFIG_KEY =
@@ -44,7 +118,7 @@ public class WebApplication extends Application {
 
     public WebApplication() {
         super();
-        this.setStatusService(new CantaloupeStatusService());
+        this.setStatusService(new CustomStatusService());
         // http://restlet.com/blog/2015/12/15/understanding-and-using-cors/
         CorsService corsService = new CorsService();
         corsService.setAllowedOrigins(new HashSet<>(Collections.singletonList("*")));
