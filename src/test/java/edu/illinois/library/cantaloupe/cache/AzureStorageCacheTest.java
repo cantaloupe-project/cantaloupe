@@ -4,14 +4,12 @@ import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.ListBlobItem;
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.junit.After;
@@ -43,13 +41,13 @@ public class AzureStorageCacheTest {
         final String accountKey = lines[1].replace("account_key=", "").trim();
         final String container = lines[3].replace("test_container=", "").trim();
 
-        BaseConfiguration config = new BaseConfiguration();
+        Configuration config = Configuration.getInstance();
+        config.clear();
         config.setProperty(AzureStorageCache.OBJECT_KEY_PREFIX_CONFIG_KEY, "test/");
         config.setProperty(AzureStorageCache.TTL_SECONDS_CONFIG_KEY, 1);
         config.setProperty(AzureStorageCache.ACCOUNT_NAME_CONFIG_KEY, accountName);
         config.setProperty(AzureStorageCache.ACCOUNT_KEY_CONFIG_KEY, accountKey);
         config.setProperty(AzureStorageCache.CONTAINER_NAME_CONFIG_KEY, container);
-        Application.setConfiguration(config);
 
         instance = new AzureStorageCache();
     }
@@ -76,7 +74,7 @@ public class AzureStorageCacheTest {
     @Test
     public void testGetContainerName() {
         assertEquals(
-                Application.getConfiguration().
+                Configuration.getInstance().
                         getString(AzureStorageCache.CONTAINER_NAME_CONFIG_KEY),
                 AzureStorageCache.getContainerName());
     }
@@ -161,7 +159,7 @@ public class AzureStorageCacheTest {
 
     @Test
     public void testGetObjectKeyPrefix() {
-        Configuration config = Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
 
         config.setProperty(AzureStorageCache.OBJECT_KEY_PREFIX_CONFIG_KEY, "");
         assertEquals("", instance.getObjectKeyPrefix());

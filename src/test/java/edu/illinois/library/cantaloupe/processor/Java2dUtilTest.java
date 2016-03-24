@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
@@ -9,8 +10,6 @@ import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Position;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
@@ -79,8 +78,8 @@ public class Java2dUtilTest {
     @Test
     public void testApplyWatermark() throws Exception {
         // ward off NPEs
-        Configuration config = new BaseConfiguration();
-        Application.setConfiguration(config);
+        Configuration config = Configuration.getInstance();
+        config.clear();
 
         // read the base image into a BufferedImage
         final File fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
@@ -120,8 +119,8 @@ public class Java2dUtilTest {
     @Test
     public void testApplyWatermarkWithInset() throws Exception {
         // ward off NPEs
-        Configuration config = new BaseConfiguration();
-        Application.setConfiguration(config);
+        Configuration config = Configuration.getInstance();
+        config.clear();
 
         // read the base image into a BufferedImage
         final File fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
@@ -247,8 +246,8 @@ public class Java2dUtilTest {
 
     @Test
     public void testGetWatermarkImage() throws Exception {
-        Configuration config = new BaseConfiguration();
-        Application.setConfiguration(config);
+        Configuration config = Configuration.getInstance();
+        config.clear();
 
         Watermark watermark = new Watermark();
         watermark.setImage(TestUtil.getImage("jpg"));

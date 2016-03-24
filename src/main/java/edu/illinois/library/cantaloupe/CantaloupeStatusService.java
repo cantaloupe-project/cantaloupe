@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
-import org.apache.commons.configuration.Configuration;
 import org.apache.velocity.app.Velocity;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -35,8 +35,7 @@ class CantaloupeStatusService extends StatusService {
                 throwable = throwable.getCause();
             }
             message = throwable.getMessage();
-            Configuration config = edu.illinois.library.cantaloupe.
-                    Application.getConfiguration();
+            Configuration config = Configuration.getInstance();
             if (config.getBoolean("print_stack_trace_on_error_pages", false)) {
                 StringWriter sw = new StringWriter();
                 throwable.printStackTrace(new PrintWriter(sw));

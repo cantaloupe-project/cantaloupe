@@ -1,15 +1,13 @@
 package edu.illinois.library.cantaloupe;
 
-import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -49,8 +47,9 @@ public class ApplicationTest {
     @Rule
     public final ExpectedSystemExit exit = ExpectedSystemExit.none();
 
-    private static BaseConfiguration newConfiguration() {
-        BaseConfiguration config = new BaseConfiguration();
+    private static void resetConfiguration() {
+        Configuration config = Configuration.getInstance();
+        config.clear();
         try {
             config.setProperty("print_stack_trace_on_error_pages", false);
             config.setProperty("http.enabled", true);
@@ -67,12 +66,11 @@ public class ApplicationTest {
         } catch (Exception e) {
             fail("Failed to get the configuration");
         }
-        return config;
     }
 
     @Before
     public void setUp() {
-        Application.setConfiguration(newConfiguration());
+        resetConfiguration();
         System.clearProperty(Application.CLEAN_CACHE_VM_ARGUMENT);
         System.clearProperty(Application.PURGE_CACHE_VM_ARGUMENT);
         System.clearProperty(Application.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT);
@@ -84,39 +82,6 @@ public class ApplicationTest {
         deleteCacheDir();
     }
 
-    @Test
-    public void testGetConfiguration() {
-        try {
-            File directory = new File(".");
-            String cwd = directory.getCanonicalPath();
-            Path testPath = Paths.get(cwd, "src", "test", "java", "edu",
-                    "illinois", "library", "cantaloupe", "test");
-
-            String goodProps = testPath + File.separator + "cantaloupe.properties";
-            System.setProperty(Application.CONFIG_FILE_VM_ARGUMENT, goodProps);
-            assertNotNull(Application.getConfiguration());
-        } catch (IOException e) {
-            fail("Failed to set " + Application.CONFIG_FILE_VM_ARGUMENT);
-        }
-    }
-
-    @Test
-    public void testGetConfigurationFile() {
-        try {
-            File directory = new File(".");
-            String cwd = directory.getCanonicalPath();
-            Path testPath = Paths.get(cwd, "src", "test", "java", "edu",
-                    "illinois", "library", "cantaloupe", "test");
-
-            String goodProps = testPath + File.separator + "cantaloupe.properties";
-            System.setProperty(Application.CONFIG_FILE_VM_ARGUMENT, goodProps);
-            assertEquals(new File(cwd + "/src/test/java/edu/illinois/library/cantaloupe/test/cantaloupe.properties"),
-                    Application.getConfigurationFile());
-        } catch (IOException e) {
-            fail("Failed to set " + Application.CONFIG_FILE_VM_ARGUMENT);
-        }
-    }
-
     /**
      * getVersion() is only partially testable as it checks whether the app is
      * running from a jar
@@ -124,13 +89,6 @@ public class ApplicationTest {
     @Test
     public void testGetVersion() {
         assertEquals("Non-Release", Application.getVersion());
-    }
-
-    @Test
-    public void testSetConfiguration() {
-        Configuration newConfig = newConfiguration();
-        Application.setConfiguration(newConfig);
-        assertSame(newConfig, Application.getConfiguration());
     }
 
     @Test
@@ -145,13 +103,13 @@ public class ApplicationTest {
         imageDir.mkdirs();
         infoDir.mkdirs();
 
-        Configuration config = newConfiguration();
+        Configuration config = Configuration.getInstance();
+        config.clear();
         config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
                 "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
                 getCacheDir().getAbsolutePath());
         config.setProperty("FilesystemCache.ttl_seconds", "1");
-        Application.setConfiguration(config);
 
         // TODO: write this
 
@@ -162,8 +120,7 @@ public class ApplicationTest {
     @Test
     public void testMainWithInvalidConfigExits() throws Exception {
         exit.expectSystemExitWithStatus(-1);
-        Application.setConfiguration(null);
-        System.setProperty(Application.CONFIG_FILE_VM_ARGUMENT, "");
+        System.setProperty(Configuration.CONFIG_FILE_VM_ARGUMENT, "");
         Application.main(new String[] {});
     }
 
@@ -184,13 +141,13 @@ public class ApplicationTest {
         final File infoDir = new File(cacheDir.getAbsolutePath() + "/info");
 
         // set up the cache
-        final Configuration config = newConfiguration();
+        resetConfiguration();
+        Configuration config = Configuration.getInstance();
         config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
                 "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
                 getCacheDir().getAbsolutePath());
         config.setProperty("FilesystemCache.ttl_seconds", "10");
-        Application.setConfiguration(config);
 
         // cache a dimension
         DerivativeCache cache = CacheFactory.getDerivativeCache();
@@ -230,13 +187,13 @@ public class ApplicationTest {
         imageDir.mkdirs();
         infoDir.mkdirs();
 
-        Configuration config = newConfiguration();
+        Configuration config = Configuration.getInstance();
+        resetConfiguration();
         config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
                 "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
                 getCacheDir().getAbsolutePath());
         config.setProperty("FilesystemCache.ttl_seconds", "1");
-        Application.setConfiguration(config);
 
         File.createTempFile("bla1", "tmp", imageDir);
         File.createTempFile("bla1", "tmp", infoDir);

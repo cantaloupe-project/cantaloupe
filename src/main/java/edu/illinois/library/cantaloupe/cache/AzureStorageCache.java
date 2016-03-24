@@ -7,11 +7,10 @@ import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azure.storage.blob.ListBlobItem;
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +50,7 @@ class AzureStorageCache implements DerivativeCache {
     static synchronized CloudBlobClient getClientInstance() {
         if (client == null) {
             try {
-                final Configuration config = Application.getConfiguration();
+                final Configuration config = Configuration.getInstance();
                 final String accountName = config.getString(ACCOUNT_NAME_CONFIG_KEY);
                 final String accountKey = config.getString(ACCOUNT_KEY_CONFIG_KEY);
 
@@ -76,9 +75,9 @@ class AzureStorageCache implements DerivativeCache {
     }
 
     static String getContainerName() {
-        final Configuration config = Application.getConfiguration();
         // All letters in a container name must be lowercase.
-        return config.getString(CONTAINER_NAME_CONFIG_KEY).toLowerCase();
+        return Configuration.getInstance().
+                getString(CONTAINER_NAME_CONFIG_KEY).toLowerCase();
     }
 
     /**
@@ -189,7 +188,7 @@ class AzureStorageCache implements DerivativeCache {
      * slash.
      */
     String getObjectKeyPrefix() {
-        String prefix = Application.getConfiguration().
+        String prefix = Configuration.getInstance().
                 getString(OBJECT_KEY_PREFIX_CONFIG_KEY);
         if (prefix.length() < 1 || prefix.equals("/")) {
             return "";
@@ -245,7 +244,7 @@ class AzureStorageCache implements DerivativeCache {
         final CloudBlobClient client = getClientInstance();
 
         final Calendar c = Calendar.getInstance();
-        c.add(Calendar.SECOND, 0 - Application.getConfiguration().
+        c.add(Calendar.SECOND, 0 - Configuration.getInstance().
                 getInt(TTL_SECONDS_CONFIG_KEY));
         final Date cutoffDate = c.getTime();
 

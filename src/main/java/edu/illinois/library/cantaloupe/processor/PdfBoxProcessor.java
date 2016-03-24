@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
@@ -216,7 +216,7 @@ class PdfBoxProcessor extends AbstractProcessor
         // Apply all other operations.
         for (Operation op : opList) {
             if (op instanceof Scale) {
-                final boolean highQuality = Application.getConfiguration().
+                final boolean highQuality = Configuration.getInstance().
                         getString(JAVA2D_SCALE_MODE_CONFIG_KEY, "speed").
                         equals("quality");
                 image = Java2dUtil.scaleImage(image,
@@ -290,7 +290,7 @@ class PdfBoxProcessor extends AbstractProcessor
     }
 
     private float getDpi(int reductionFactor) {
-        float dpi = Application.getConfiguration().getFloat(DPI_CONFIG_KEY, 150);
+        float dpi = Configuration.getInstance().getFloat(DPI_CONFIG_KEY, 150);
         // Decrease the DPI if the reduction factor is positive.
         for (int i = 0; i < reductionFactor; i++) {
             dpi /= 2f;

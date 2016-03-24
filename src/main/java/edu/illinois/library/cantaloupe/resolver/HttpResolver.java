@@ -1,11 +1,10 @@
 package edu.illinois.library.cantaloupe.resolver;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
-import org.apache.commons.configuration.Configuration;
 import org.restlet.Client;
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.Protocol;
@@ -85,7 +84,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
      */
     private static ClientResource newClientResource(final Reference url) {
         final ClientResource resource = new ClientResource(url);
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
         final String username = config.getString(BASIC_AUTH_USERNAME_CONFIG_KEY, "");
         final String secret = config.getString(BASIC_AUTH_SECRET_CONFIG_KEY, "");
         if (username.length() > 0 && secret.length() > 0) {
@@ -133,7 +132,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     }
 
     public Reference getUrl() throws IOException {
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
 
         switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
             case "BasicLookupStrategy":
@@ -187,7 +186,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     }
 
     private Reference getUrlWithBasicStrategy() {
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
         final String prefix = config.getString(URL_PREFIX_CONFIG_KEY, "");
         final String suffix = config.getString(URL_SUFFIX_CONFIG_KEY, "");
         return new Reference(prefix + identifier.toString() + suffix);

@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe;
 
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,8 +12,8 @@ public class WebServerTest {
 
     @Before
     public void setUp() {
-        Configuration config = new BaseConfiguration();
-        Application.setConfiguration(config);
+        Configuration config = Configuration.getInstance();
+        config.clear();
 
         instance = new WebServer();
     }

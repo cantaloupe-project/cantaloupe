@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -11,8 +11,6 @@ import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -49,13 +47,13 @@ public class FilesystemCacheTest {
             throw new IOException("Failed to create folder: " + infoPath);
         }
 
-        final BaseConfiguration config = new BaseConfiguration();
+        Configuration config = Configuration.getInstance();
+        config.clear();
         config.setProperty(FilesystemCache.DIRECTORY_DEPTH_CONFIG_KEY, 3);
         config.setProperty(FilesystemCache.DIRECTORY_NAME_LENGTH_CONFIG_KEY, 2);
         config.setProperty(FilesystemCache.PATHNAME_CONFIG_KEY,
                 fixturePath.toString());
         config.setProperty(FilesystemCache.TTL_CONFIG_KEY, 0);
-        Application.setConfiguration(config);
 
         instance = new FilesystemCache();
     }
@@ -73,7 +71,7 @@ public class FilesystemCacheTest {
                 String.format("/08%s32%sc1", File.separator, File.separator),
                 FilesystemCache.getHashedStringBasedSubdirectory("cats"));
 
-        Configuration config = Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
         config.setProperty(FilesystemCache.DIRECTORY_DEPTH_CONFIG_KEY, 2);
         config.setProperty(FilesystemCache.DIRECTORY_NAME_LENGTH_CONFIG_KEY, 3);
         assertEquals(
@@ -142,7 +140,7 @@ public class FilesystemCacheTest {
 
     @Test
     public void testGetDerivativeImageFileWithOperationList() throws Exception {
-        String pathname = Application.getConfiguration().
+        String pathname = Configuration.getInstance().
                 getString(FilesystemCache.PATHNAME_CONFIG_KEY);
 
         Identifier identifier = new Identifier("cats_~!@#$%^&*()");
@@ -180,7 +178,7 @@ public class FilesystemCacheTest {
 
     @Test
     public void testGetDerivativeImageFileWithNoOpOperations() throws Exception {
-        String pathname = Application.getConfiguration().
+        String pathname = Configuration.getInstance().
                 getString(FilesystemCache.PATHNAME_CONFIG_KEY);
 
         final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
@@ -257,7 +255,7 @@ public class FilesystemCacheTest {
     @Test
     public void testGetImageFileWithIdentifierWithNonzeroTtl()
             throws Exception {
-        Application.getConfiguration().
+        Configuration.getInstance().
                 setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
 
         Identifier identifier = new Identifier("cats");
@@ -289,7 +287,8 @@ public class FilesystemCacheTest {
 
     @Test
     public void testGetImageInfoWithNonZeroTtl() throws Exception {
-        Application.getConfiguration().setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
+        Configuration.getInstance().
+                setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
 
         Identifier identifier = new Identifier("test");
         File file = instance.getInfoFile(identifier);
@@ -319,7 +318,7 @@ public class FilesystemCacheTest {
 
     @Test
     public void testGetImageInputStreamWithOpListWithNonzeroTtl() throws Exception {
-        Application.getConfiguration().
+        Configuration.getInstance().
                 setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
 
         OperationList ops = TestUtil.newOperationList();
@@ -372,7 +371,7 @@ public class FilesystemCacheTest {
 
     @Test
     public void testGetInfoFile() throws CacheException {
-        final String pathname = Application.getConfiguration().
+        final String pathname = Configuration.getInstance().
                 getString(FilesystemCache.PATHNAME_CONFIG_KEY);
 
         final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
@@ -397,7 +396,7 @@ public class FilesystemCacheTest {
     public void testGetSourceImageFileWithIdentifier() throws Exception {
         final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
 
-        final String pathname = Application.getConfiguration().
+        final String pathname = Configuration.getInstance().
                 getString(FilesystemCache.PATHNAME_CONFIG_KEY);
         final String expected = String.format("%s%ssource%s%s%s",
                 pathname,
@@ -472,7 +471,7 @@ public class FilesystemCacheTest {
 
     @Test
     public void testPurgeExpired() throws Exception {
-        Application.getConfiguration().setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
+        Configuration.getInstance().setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
 
         Crop crop = new Crop();
         crop.setFull(true);

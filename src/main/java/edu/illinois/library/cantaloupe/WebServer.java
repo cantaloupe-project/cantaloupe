@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.logging.AccessLogService;
-import org.apache.commons.configuration.Configuration;
 import org.restlet.Component;
 import org.restlet.Server;
 import org.restlet.data.Parameter;
@@ -40,10 +40,10 @@ public class WebServer {
      * configuration.
      */
     public WebServer() {
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
         if (config != null) {
             httpEnabled = config.getBoolean(HTTP_ENABLED_CONFIG_KEY, false);
-            httpPort = config.getInteger(HTTP_PORT_CONFIG_KEY, 8182);
+            httpPort = config.getInt(HTTP_PORT_CONFIG_KEY, 8182);
             httpsEnabled = config.getBoolean(HTTPS_ENABLED_CONFIG_KEY, false);
             httpsKeyPassword = config.getString(HTTPS_KEY_PASSWORD_CONFIG_KEY);
             httpsKeyStorePassword =
@@ -52,7 +52,7 @@ public class WebServer {
                     config.getString(HTTPS_KEY_STORE_PATH_CONFIG_KEY);
             httpsKeyStoreType =
                     config.getString(HTTPS_KEY_STORE_TYPE_CONFIG_KEY);
-            httpsPort = config.getInteger(HTTPS_PORT_CONFIG_KEY, 8183);
+            httpsPort = config.getInt(HTTPS_PORT_CONFIG_KEY, 8183);
         }
     }
 
@@ -123,7 +123,6 @@ public class WebServer {
     public void start() throws Exception {
         stop();
 
-        final Configuration config = Application.getConfiguration();
         component = new Component();
 
         // set up HTTP server

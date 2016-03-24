@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -9,8 +10,6 @@ import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -36,7 +35,8 @@ public class JdbcCacheTest {
 
     @Before
     public void setUp() throws Exception {
-        BaseConfiguration config = new BaseConfiguration();
+        Configuration config = Configuration.getInstance();
+        config.clear();
         // use an in-memory H2 database
         config.setProperty(JdbcCache.JDBC_URL_CONFIG_KEY, "jdbc:h2:mem:test");
         config.setProperty(JdbcCache.USER_CONFIG_KEY, "sa");
@@ -44,7 +44,6 @@ public class JdbcCacheTest {
         config.setProperty(JdbcCache.DERIVATIVE_IMAGE_TABLE_CONFIG_KEY, "deriv");
         config.setProperty(JdbcCache.INFO_TABLE_CONFIG_KEY, "info");
         config.setProperty(JdbcCache.TTL_CONFIG_KEY, 0);
-        Application.setConfiguration(config);
 
         try (Connection connection = JdbcCache.getConnection()) {
             createTables(connection);
@@ -86,7 +85,7 @@ public class JdbcCacheTest {
     }
 
     private void seed(Connection connection) throws Exception {
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
 
         // persist some derivative images
         OperationList ops = TestUtil.newOperationList();
@@ -185,7 +184,7 @@ public class JdbcCacheTest {
 
     @Test
     public void testGetImageInfoWithNonZeroTtl() throws Exception {
-        Application.getConfiguration().setProperty(JdbcCache.TTL_CONFIG_KEY, 1);
+        Configuration.getInstance().setProperty(JdbcCache.TTL_CONFIG_KEY, 1);
 
         // wait for the seed data to invalidate
         Thread.sleep(1500);
@@ -213,7 +212,7 @@ public class JdbcCacheTest {
 
     @Test
     public void testGetImageInfoUpdatesLastAccessedTime() throws Exception {
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
 
         final Identifier identifier = new Identifier("cats");
 
@@ -258,7 +257,7 @@ public class JdbcCacheTest {
     @Test
     public void testGetImageInputStreamWithOpListWithNonzeroTtl()
             throws Exception {
-        Application.getConfiguration().setProperty(JdbcCache.TTL_CONFIG_KEY, 1);
+        Configuration.getInstance().setProperty(JdbcCache.TTL_CONFIG_KEY, 1);
 
         // wait for the seed data to invalidate
         Thread.sleep(1500);
@@ -288,7 +287,7 @@ public class JdbcCacheTest {
     @Test
     public void testGetImageInputStreamWithOpListUpdatesLastAccessedTime()
             throws Exception {
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
 
         final OperationList opList = TestUtil.newOperationList();
         opList.setIdentifier(new Identifier("cats"));
@@ -337,7 +336,7 @@ public class JdbcCacheTest {
         // ttl = 0
         assertEquals(new Date(Long.MIN_VALUE), instance.oldestValidDate());
         // ttl = 50
-        Application.getConfiguration().setProperty(JdbcCache.TTL_CONFIG_KEY, 50);
+        Configuration.getInstance().setProperty(JdbcCache.TTL_CONFIG_KEY, 50);
         long expectedTime = Date.from(Instant.now().minus(Duration.ofSeconds(50))).getTime();
         long actualTime = instance.oldestValidDate().getTime();
         assertTrue(Math.abs(actualTime - expectedTime) < 100);
@@ -347,7 +346,7 @@ public class JdbcCacheTest {
 
     @Test
     public void testPurge() throws Exception {
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
 
         instance.purge();
 
@@ -380,7 +379,7 @@ public class JdbcCacheTest {
         ops.setIdentifier(new Identifier("cats"));
         instance.purge(ops);
 
-        Configuration config = Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
 
         try (Connection connection = JdbcCache.getConnection()) {
             // assert that the derivative image was purged
@@ -407,7 +406,7 @@ public class JdbcCacheTest {
 
     @Test
     public void testPurgeExpired() throws Exception {
-        Configuration config = Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
         config.setProperty(JdbcCache.TTL_CONFIG_KEY, 1);
 
         // wait for the seed data to invalidate
@@ -450,7 +449,7 @@ public class JdbcCacheTest {
 
     @Test
     public void testPurgeImage() throws Exception {
-        Configuration config = Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
 
         Identifier id1 = new Identifier("cats");
         instance.purgeImage(id1);
@@ -487,7 +486,7 @@ public class JdbcCacheTest {
 
     @Test
     public void testPutImageInfoSetsLastAccessedTime() throws Exception {
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
 
         Identifier identifier = new Identifier("birds");
         ImageInfo info = new ImageInfo(52, 52);

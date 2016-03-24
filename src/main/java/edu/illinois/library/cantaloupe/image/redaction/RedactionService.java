@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.image.redaction;
 
-import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
@@ -26,7 +26,7 @@ public abstract class RedactionService {
      * @return Whether {@link #REDACTION_ENABLED_CONFIG_KEY} is true.
      */
     public static boolean isEnabled() {
-        return Application.getConfiguration().
+        return Configuration.getInstance().
                 getBoolean(REDACTION_ENABLED_CONFIG_KEY, false);
     }
 

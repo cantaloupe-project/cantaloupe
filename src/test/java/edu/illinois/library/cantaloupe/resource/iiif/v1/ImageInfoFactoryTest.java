@@ -1,13 +1,11 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,9 +19,9 @@ public class ImageInfoFactoryTest {
 
     @Before
     public void setUp() throws Exception {
-        Configuration config = new BaseConfiguration();
+        Configuration config = Configuration.getInstance();
+        config.clear();
         config.setProperty("processor.fallback", "Java2dProcessor");
-        Application.setConfiguration(config);
 
         imageUri = "http://example.org/bla";
         processor = ProcessorFactory.getProcessor(Format.JPG);

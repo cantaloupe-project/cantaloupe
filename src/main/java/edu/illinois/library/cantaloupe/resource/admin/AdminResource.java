@@ -1,9 +1,10 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -14,11 +15,6 @@ import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
-import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.FileConfiguration;
-import org.apache.commons.io.FileUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.app.Velocity;
 import org.restlet.data.CacheDirective;
@@ -35,7 +31,6 @@ import org.restlet.util.Series;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -93,12 +88,11 @@ public class AdminResource extends AbstractResource {
     private static org.slf4j.Logger logger = LoggerFactory.
             getLogger(AdminResource.class);
 
-    public static final String CONTROL_PANEL_ENABLED_CONFIG_KEY =
-            "admin.enabled";
+    static final String CONTROL_PANEL_ENABLED_CONFIG_KEY = "admin.enabled";
 
     @Override
     protected void doInit() throws ResourceException {
-        if (!Application.getConfiguration().
+        if (!Configuration.getInstance().
                 getBoolean(CONTROL_PANEL_ENABLED_CONFIG_KEY, true)) {
             throw new EndpointDisabledException();
         }
@@ -141,7 +135,7 @@ public class AdminResource extends AbstractResource {
     @Post("application/json")
     public Representation doPost(Representation rep)
             throws IOException, ConfigurationException {
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
         final Map submittedConfig = new ObjectMapper().readValue(
                 rep.getStream(), HashMap.class);
 
@@ -155,15 +149,12 @@ public class AdminResource extends AbstractResource {
         }
 
         // If the application configuration is file-based, save it.
-        if (config instanceof FileConfiguration) {
-            final FileConfiguration fileConfig = (FileConfiguration) config;
-            final File configFile = Application.getConfigurationFile();
-            if (configFile != null) {
-                logger.debug("Saving {}", configFile);
-                fileConfig.save();
-            } else {
-                logger.debug("No configuration file; nothing to save.");
-            }
+        final File configFile = config.getConfigurationFile();
+        if (configFile != null) {
+            logger.debug("Saving {}", configFile);
+            config.save();
+        } else {
+            logger.debug("No configuration file; nothing to save.");
         }
 
         return new EmptyRepresentation();
@@ -173,7 +164,7 @@ public class AdminResource extends AbstractResource {
      * @return Map representation of the application configuration.
      */
     private Map<String,Object> configurationAsMap() {
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
         final Map<String,Object> configMap = new HashMap<>();
         final Iterator it = config.getKeys();
         while (it.hasNext()) {
@@ -190,10 +181,10 @@ public class AdminResource extends AbstractResource {
      * @throws Exception
      */
     private Map<String,Object> getTemplateVars() throws Exception {
-        final Configuration config = Application.getConfiguration();
         final Map<String, Object> vars = getCommonTemplateVars(getRequest());
 
-        final File configFile = Application.getConfigurationFile();
+        final File configFile =
+                Configuration.getInstance().getConfigurationFile();
         if (configFile != null) {
             vars.put("configFilePath", configFile.getAbsolutePath());
         }

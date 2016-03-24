@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
@@ -14,7 +14,6 @@ import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -145,7 +144,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
      * @return
      */
     private static String getPath(String binaryName) {
-        String path = Application.getConfiguration().
+        String path = Configuration.getInstance().
                 getString(PATH_TO_BINARIES_CONFIG_KEY);
         if (path != null && path.length() > 0) {
             path = StringUtils.stripEnd(path, File.separator) +
@@ -291,7 +290,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                 reader.setSource(
                         new InputStreamStreamSource(processInputStream));
 
-                Configuration config = Application.getConfiguration();
+                Configuration config = Configuration.getInstance();
                 switch (config.getString(POST_PROCESSOR_CONFIG_KEY, "java2d").toLowerCase()) {
                     case "jai":
                         logger.info("Post-processing using JAI ({} = jai)",
@@ -506,7 +505,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
         // Perform all remaining operations.
         for (Operation op : opList) {
             if (op instanceof Scale) {
-                final boolean highQuality = Application.getConfiguration().
+                final boolean highQuality = Configuration.getInstance().
                         getString(JAVA2D_SCALE_MODE_CONFIG_KEY, "speed").
                         equals("quality");
                 image = Java2dUtil.scaleImage(image,

@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
@@ -89,7 +89,7 @@ class ImageMagickProcessor extends AbstractProcessor
      * @return
      */
     private static String getPath(String binaryName) {
-        String path = Application.getConfiguration().
+        String path = Configuration.getInstance().
                 getString(PATH_TO_BINARIES_CONFIG_KEY);
         if (path != null && path.length() > 0) {
             path = StringUtils.stripEnd(path, File.separator) + File.separator +
@@ -259,7 +259,7 @@ class ImageMagickProcessor extends AbstractProcessor
 
             ConvertCmd convert = new ConvertCmd();
 
-            String binaryPath = Application.getConfiguration().
+            String binaryPath = Configuration.getInstance().
                     getString(PATH_TO_BINARIES_CONFIG_KEY, "");
             if (binaryPath.length() > 0) {
                 convert.setSearchPath(binaryPath);
@@ -335,7 +335,7 @@ class ImageMagickProcessor extends AbstractProcessor
                     if (ops.getOutputFormat().supportsTransparency()) {
                         imOp.background("none");
                     } else {
-                        final String bgColor = Application.getConfiguration().
+                        final String bgColor = Configuration.getInstance().
                                 getString(BACKGROUND_COLOR_CONFIG_KEY, "black");
                         imOp.background(bgColor);
                     }

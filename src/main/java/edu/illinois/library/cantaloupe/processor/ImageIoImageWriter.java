@@ -1,8 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
-import org.apache.commons.configuration.Configuration;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -55,7 +54,7 @@ class ImageIoImageWriter {
                 try {
                     ImageWriteParam param = writer.getDefaultWriteParam();
                     param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                    param.setCompressionQuality(Application.getConfiguration().
+                    param.setCompressionQuality(Configuration.getInstance().
                             getFloat(Java2dProcessor.JPG_QUALITY_CONFIG_KEY, 0.7f));
                     param.setCompressionType("JPEG");
                     ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
@@ -76,8 +75,7 @@ class ImageIoImageWriter {
                 Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("TIFF");
                 if (writers.hasNext()) {
                     writer = writers.next();
-                    final String compressionType = Application.
-                            getConfiguration().
+                    final String compressionType = Configuration.getInstance().
                             getString(Java2dProcessor.TIF_COMPRESSION_CONFIG_KEY);
                     final ImageWriteParam param = writer.getDefaultWriteParam();
                     if (compressionType != null) {
@@ -116,7 +114,7 @@ class ImageIoImageWriter {
     public void write(PlanarImage image,
                       Format outputFormat,
                       OutputStream outputStream) throws IOException {
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
         switch (outputFormat) {
             case GIF:
                 Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("GIF");

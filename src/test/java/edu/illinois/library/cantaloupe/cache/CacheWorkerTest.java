@@ -1,8 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import edu.illinois.library.cantaloupe.Application;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,10 +12,10 @@ public class CacheWorkerTest {
 
     @Before
     public void setUp() {
-        Configuration config = new BaseConfiguration();
+        Configuration config = Configuration.getInstance();
+        config.clear();
         config.setProperty(CacheWorker.ENABLED_CONFIG_KEY, true);
         config.setProperty(CacheWorker.INTERVAL_CONFIG_KEY, 1);
-        Application.setConfiguration(config);
 
         worker = new CacheWorker();
     }

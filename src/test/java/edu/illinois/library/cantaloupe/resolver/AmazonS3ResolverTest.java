@@ -1,12 +1,10 @@
 package edu.illinois.library.cantaloupe.resolver;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
@@ -37,7 +35,7 @@ public class AmazonS3ResolverTest {
 
     private static final Identifier IDENTIFIER = new Identifier("f50.jpg");
 
-    AmazonS3Resolver instance;
+    private AmazonS3Resolver instance;
 
     @Before
     public void setUp() throws IOException {
@@ -49,16 +47,13 @@ public class AmazonS3ResolverTest {
         final String secretKey = lines[1].replace("AWSSecretKey=", "").trim();
         final String bucket = lines[2].replace("Bucket=", "").trim();
 
-        BaseConfiguration config = new BaseConfiguration();
+        Configuration config = Configuration.getInstance();
+        config.clear();
         config.setProperty(AmazonS3Resolver.BUCKET_NAME_CONFIG_KEY, bucket);
         config.setProperty(AmazonS3Resolver.ACCESS_KEY_ID_CONFIG_KEY, accessKeyId);
         config.setProperty(AmazonS3Resolver.SECRET_KEY_CONFIG_KEY, secretKey);
         config.setProperty(AmazonS3Resolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "BasicLookupStrategy");
-        // For future reference, note that we can also set
-        // AmazonS3Resolver.ENDPOINT_CONFIG_KEY to point it at a mocked S3
-        // instance.
-        Application.setConfiguration(config);
 
         instance = new AmazonS3Resolver();
         instance.setIdentifier(IDENTIFIER);
@@ -86,7 +81,7 @@ public class AmazonS3ResolverTest {
 
     @Test
     public void testGetStreamSourceWithScriptLookupStrategy() throws Exception {
-        Configuration config = Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
         config.setProperty(AmazonS3Resolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
@@ -133,7 +128,7 @@ public class AmazonS3ResolverTest {
 
     @Test
     public void testGetSourceFormatWithScriptLookupStrategy() throws IOException {
-        Configuration config = Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
         config.setProperty(AmazonS3Resolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,

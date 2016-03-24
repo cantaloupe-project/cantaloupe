@@ -1,13 +1,12 @@
 package edu.illinois.library.cantaloupe.resolver;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import eu.medsea.mimeutil.MimeUtil;
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,7 +89,7 @@ class FilesystemResolver extends AbstractResolver
      * @throws IOException
      */
     String getPathname(String fileSeparator) throws IOException {
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
         switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
             case "BasicLookupStrategy":
                 return getPathnameWithBasicStrategy(fileSeparator);
@@ -108,7 +107,7 @@ class FilesystemResolver extends AbstractResolver
     }
 
     private String getPathnameWithBasicStrategy(final String fileSeparator) {
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
         final String prefix = config.getString(PATH_PREFIX_CONFIG_KEY, "");
         final String suffix = config.getString(PATH_SUFFIX_CONFIG_KEY, "");
         final Identifier sanitizedId = sanitizedIdentifier(fileSeparator);

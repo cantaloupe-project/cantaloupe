@@ -2,13 +2,11 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import static org.junit.Assert.*;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,10 +20,11 @@ public class FilesystemResolverTest {
     private static final Identifier IDENTIFIER =
             new Identifier("jpg-rgb-64x56x8-baseline.jpg");
 
-    FilesystemResolver instance;
+    private FilesystemResolver instance;
 
-    private static Configuration newConfiguration() throws IOException {
-        BaseConfiguration config = new BaseConfiguration();
+    private static void resetConfiguration() throws IOException {
+        Configuration config = Configuration.getInstance();
+        config.clear();
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
                 "true");
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
@@ -34,12 +33,11 @@ public class FilesystemResolverTest {
                 "BasicLookupStrategy");
         config.setProperty(FilesystemResolver.PATH_PREFIX_CONFIG_KEY,
                 TestUtil.getFixturePath() + "/images" + File.separator);
-        return config;
     }
 
     @Before
     public void setUp() throws IOException {
-        Application.setConfiguration(newConfiguration());
+        resetConfiguration();
         instance = new FilesystemResolver();
         instance.setIdentifier(IDENTIFIER);
     }
@@ -103,7 +101,8 @@ public class FilesystemResolverTest {
 
     @Test
     public void testGetPathnameWithBasicLookupStrategy() throws IOException {
-        Configuration config = Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
+
         config.setProperty(FilesystemResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "BasicLookupStrategy");
         // with prefix
@@ -133,7 +132,7 @@ public class FilesystemResolverTest {
     @Test
     public void testGetPathnameWithScriptLookupStrategy()
             throws IOException {
-        Configuration config = Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
         config.setProperty(FilesystemResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
 

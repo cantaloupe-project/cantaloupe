@@ -2,14 +2,12 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import static org.junit.Assert.*;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,12 +29,12 @@ public class HttpResolverTest {
         server = new WebServer();
         server.start();
 
-        BaseConfiguration config = new BaseConfiguration();
+        Configuration config = Configuration.getInstance();
+        config.clear();
         config.setProperty(HttpResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "BasicLookupStrategy");
         config.setProperty(HttpResolver.URL_PREFIX_CONFIG_KEY,
                 "http://localhost:" + server.getPort() + "/");
-        Application.setConfiguration(config);
 
         instance = new HttpResolver();
         instance.setIdentifier(IDENTIFIER);
@@ -104,7 +102,8 @@ public class HttpResolverTest {
 
     @Test
     public void testGetUrlWithBasicLookupStrategy() throws Exception {
-        BaseConfiguration config = (BaseConfiguration) Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
+
         // with prefix
         config.setProperty(HttpResolver.URL_PREFIX_CONFIG_KEY,
                 "http://example.org/prefix/");
@@ -125,7 +124,7 @@ public class HttpResolverTest {
 
     @Test
     public void testGetUrlWithScriptLookupStrategy() throws Exception {
-        Configuration config = Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
         config.setProperty(HttpResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
 

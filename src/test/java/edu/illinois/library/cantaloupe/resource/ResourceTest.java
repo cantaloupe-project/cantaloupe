@@ -2,10 +2,10 @@ package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebServer;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.configuration.BaseConfiguration;
 import org.junit.After;
 import org.junit.Before;
 import org.restlet.Client;
@@ -23,8 +23,9 @@ public abstract class ResourceTest {
 
     protected static Client client = new Client(new Context(), Protocol.HTTP);
 
-    public static BaseConfiguration newConfiguration() throws IOException {
-        BaseConfiguration config = new BaseConfiguration();
+    public static void resetConfiguration() throws IOException {
+        Configuration config = Configuration.getInstance();
+        config.clear();
         config.setProperty("print_stack_trace_on_error_pages", false);
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
                 "true");
@@ -37,13 +38,11 @@ public abstract class ResourceTest {
                 "BasicLookupStrategy");
         config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",
                 TestUtil.getFixturePath() + "/images/");
-        return config;
     }
 
     @Before
     public void setUp() throws Exception {
-        Application.setConfiguration(newConfiguration());
-
+        resetConfiguration();
         WebServer webServer = Application.getWebServer();
         webServer.setHttpEnabled(true);
         webServer.setHttpPort(PORT);

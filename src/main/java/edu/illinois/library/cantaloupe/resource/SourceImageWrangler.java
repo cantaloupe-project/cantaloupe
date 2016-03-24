@@ -1,10 +1,10 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.SourceCache;
 import edu.illinois.library.cantaloupe.cache.SourceCacheDisabledException;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.IncompatibleResolverException;
@@ -46,7 +46,7 @@ public class SourceImageWrangler {
 
     public static StreamProcessorRetrievalStrategy
     getStreamProcessorRetrievalStrategy() {
-        return Application.getConfiguration().getString(
+        return Configuration.getInstance().getString(
                 STREAMPROCESSOR_RETRIEVAL_STRATEGY_CONFIG_KEY,
                 "StreamStrategy").equals("StreamStrategy") ?
                 StreamProcessorRetrievalStrategy.STREAM :

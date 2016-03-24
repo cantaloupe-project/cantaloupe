@@ -1,9 +1,7 @@
 package edu.illinois.library.cantaloupe.script;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,17 +14,17 @@ public class ScriptEngineFactoryTest {
 
     @Before
     public void setUp() throws Exception {
-        Configuration config = new BaseConfiguration();
+        Configuration config = Configuration.getInstance();
+        config.clear();
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
                 "true");
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
-        Application.setConfiguration(config);
     }
 
     @Test
     public void testGetScriptEngineWithDelegateScriptDisabled() throws Exception {
-        Configuration config = Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
         config.setProperty(
                 ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY, false);
         try {
@@ -45,7 +43,7 @@ public class ScriptEngineFactoryTest {
 
     @Test
     public void testGetScriptEngineWithPresentInvalidScript() throws Exception {
-        final Configuration config = Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
         config.setProperty(
                 ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
                 TestUtil.getImage("txt").getAbsolutePath());
@@ -59,7 +57,7 @@ public class ScriptEngineFactoryTest {
 
     @Test
     public void testGetScriptEngineWithMissingScript() throws Exception {
-        Configuration config = Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
         // bogus script
         config.setProperty(
                 ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,

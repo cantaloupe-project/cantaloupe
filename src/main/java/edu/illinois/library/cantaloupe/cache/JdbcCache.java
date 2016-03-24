@@ -2,11 +2,10 @@ package edu.illinois.library.cantaloupe.cache;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.zaxxer.hikari.HikariDataSource;
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
-import org.apache.commons.configuration.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,7 +69,7 @@ class JdbcCache implements DerivativeCache {
 
             connection.setAutoCommit(false);
 
-            final Configuration config = Application.getConfiguration();
+            final Configuration config = Configuration.getInstance();
             final String sql = String.format(
                     "INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
                     config.getString(DERIVATIVE_IMAGE_TABLE_CONFIG_KEY),
@@ -153,7 +152,7 @@ class JdbcCache implements DerivativeCache {
      */
     public static synchronized Connection getConnection() throws SQLException {
         if (dataSource == null) {
-            final Configuration config = Application.getConfiguration();
+            final Configuration config = Configuration.getInstance();
             final String connectionString = config.
                     getString(JDBC_URL_CONFIG_KEY, "");
             final int connectionTimeout = 1000 *
@@ -196,7 +195,7 @@ class JdbcCache implements DerivativeCache {
      * @throws CacheException If the image table name is not set.
      */
     static String getDerivativeImageTableName() throws CacheException {
-        final String name = Application.getConfiguration().
+        final String name = Configuration.getInstance().
                 getString(DERIVATIVE_IMAGE_TABLE_CONFIG_KEY);
         if (name == null) {
             throw new CacheException(DERIVATIVE_IMAGE_TABLE_CONFIG_KEY +
@@ -210,7 +209,7 @@ class JdbcCache implements DerivativeCache {
      * @throws CacheException If the info table name is not set.
      */
     static String getInfoTableName() throws CacheException {
-        final String name = Application.getConfiguration().
+        final String name = Configuration.getInstance().
                 getString(INFO_TABLE_CONFIG_KEY);
         if (name == null) {
             throw new CacheException(INFO_TABLE_CONFIG_KEY + " is not set");
@@ -366,7 +365,7 @@ class JdbcCache implements DerivativeCache {
     }
 
     Timestamp oldestValidDate() {
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
         final long ttl = config.getLong(TTL_CONFIG_KEY, 0);
         if (ttl > 0) {
             final Instant oldestInstant = Instant.now().

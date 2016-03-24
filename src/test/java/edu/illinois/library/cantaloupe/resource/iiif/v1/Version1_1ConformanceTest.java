@@ -3,12 +3,12 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.WebServer;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -51,8 +51,9 @@ public class Version1_1ConformanceTest {
 
     private WebServer webServer;
 
-    public static BaseConfiguration newConfiguration() {
-        BaseConfiguration config = new BaseConfiguration();
+    public static void resetConfiguration() {
+        Configuration config = Configuration.getInstance();
+        config.clear();
         try {
             File directory = new File(".");
             String cwd = directory.getCanonicalPath();
@@ -69,7 +70,6 @@ public class Version1_1ConformanceTest {
         } catch (Exception e) {
             fail("Failed to get the configuration");
         }
-        return config;
     }
 
     private ClientResource getClientForUriPath(String path) {
@@ -85,7 +85,7 @@ public class Version1_1ConformanceTest {
 
     @Before
     public void setUp() throws Exception {
-        Application.setConfiguration(newConfiguration());
+        resetConfiguration();
         webServer = Application.getWebServer();
         webServer.setHttpEnabled(true);
         webServer.setHttpPort(PORT);
@@ -130,10 +130,10 @@ public class Version1_1ConformanceTest {
         File directory = new File(".");
         String cwd = directory.getCanonicalPath();
         Path path = Paths.get(cwd, "src", "test", "resources");
-        BaseConfiguration config = newConfiguration();
+        Configuration config = Configuration.getInstance();
+        resetConfiguration();
         config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",
                 path + File.separator);
-        Application.setConfiguration(config);
 
         // image endpoint
         String identifier = Reference.encode("images/" + IMAGE);

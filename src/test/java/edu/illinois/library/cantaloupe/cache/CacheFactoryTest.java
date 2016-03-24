@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import edu.illinois.library.cantaloupe.Application;
-import org.apache.commons.configuration.BaseConfiguration;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -20,8 +19,8 @@ public class CacheFactoryTest {
 
     @Test
     public void testGetInstance() throws Exception {
-        BaseConfiguration config = new BaseConfiguration();
-        Application.setConfiguration(config);
+        Configuration config = Configuration.getInstance();
+        config.clear();
 
         final String key = CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY;
 

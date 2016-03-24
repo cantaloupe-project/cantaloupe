@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
@@ -143,7 +143,7 @@ class Java2dProcessor extends AbstractImageIoProcessor
             // Apply all other operations.
             for (Operation op : ops) {
                 if (op instanceof Scale) {
-                    final boolean highQuality = Application.getConfiguration().
+                    final boolean highQuality = Configuration.getInstance().
                             getString(SCALE_MODE_CONFIG_KEY, "speed").
                             equals("quality");
                     image = Java2dUtil.scaleImage(image, (Scale) op, rf,

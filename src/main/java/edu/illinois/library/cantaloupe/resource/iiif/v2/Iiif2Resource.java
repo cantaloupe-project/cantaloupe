@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.iiif.IiifResource;
 import org.restlet.resource.ResourceException;
@@ -12,7 +12,7 @@ abstract class Iiif2Resource extends IiifResource {
 
     @Override
     protected void doInit() throws ResourceException {
-        if (!Application.getConfiguration().
+        if (!Configuration.getInstance().
                 getBoolean(ENDPOINT_ENABLED_CONFIG_KEY, true)) {
             throw new EndpointDisabledException();
         }

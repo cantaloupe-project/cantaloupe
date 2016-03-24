@@ -1,9 +1,9 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -70,7 +70,7 @@ public class ImageResource extends Iiif1Resource {
         try {
             format = resolver.getSourceFormat();
         } catch (FileNotFoundException e) {
-            if (Application.getConfiguration().
+            if (Configuration.getInstance().
                     getBoolean(PURGE_MISSING_CONFIG_KEY, false)) {
                 // if the image was not found, purge it from the cache
                 final Cache cache = CacheFactory.getDerivativeCache();
@@ -122,7 +122,7 @@ public class ImageResource extends Iiif1Resource {
         // If we don't need to resolve first, and are using a cache, and the
         // cache contains an image matching the request, skip all the setup and
         // just return the cached image.
-        if (!Application.getConfiguration().
+        if (!Configuration.getInstance().
                 getBoolean(RESOLVE_FIRST_CONFIG_KEY, true)) {
             DerivativeCache cache = CacheFactory.getDerivativeCache();
             if (cache != null) {

@@ -9,12 +9,11 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
-import org.apache.commons.configuration.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,23 +70,22 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
     private static AmazonS3 getClientInstance() {
         if (client == null) {
+            final Configuration config = Configuration.getInstance();
+
             class ConfigFileCredentials implements AWSCredentials {
                 @Override
                 public String getAWSAccessKeyId() {
-                    Configuration config = Application.getConfiguration();
                     return config.getString(ACCESS_KEY_ID_CONFIG_KEY);
                 }
 
                 @Override
                 public String getAWSSecretKey() {
-                    Configuration config = Application.getConfiguration();
                     return config.getString(SECRET_KEY_CONFIG_KEY);
                 }
             }
 
             AWSCredentials credentials = new ConfigFileCredentials();
             client = new AmazonS3Client(credentials);
-            Configuration config = Application.getConfiguration();
 
             // a custom endpoint will be used in testing
             final String endpoint = config.getString(ENDPOINT_CONFIG_KEY);
@@ -116,7 +114,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     private S3Object getObject() throws IOException {
         AmazonS3 s3 = getClientInstance();
 
-        Configuration config = Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
         final String bucketName = config.getString(BUCKET_NAME_CONFIG_KEY);
         logger.info("Using bucket: {}", bucketName);
         final String objectKey = getObjectKey();
@@ -133,7 +131,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     }
 
     private String getObjectKey() throws IOException {
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
         switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
             case "BasicLookupStrategy":
                 return identifier.toString();

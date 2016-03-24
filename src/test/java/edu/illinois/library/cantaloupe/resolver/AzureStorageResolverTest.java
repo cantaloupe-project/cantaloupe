@@ -1,12 +1,10 @@
 package edu.illinois.library.cantaloupe.resolver;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
@@ -38,7 +36,7 @@ public class AzureStorageResolverTest {
     private static final Identifier IDENTIFIER =
             new Identifier("orion-hubble-4096.jpg");
 
-    AzureStorageResolver instance;
+    private AzureStorageResolver instance;
 
     @Before
     public void setUp() throws IOException {
@@ -50,13 +48,13 @@ public class AzureStorageResolverTest {
         final String accountKey = lines[1].replace("account_key=", "").trim();
         final String container = lines[2].replace("container=", "").trim();
 
-        BaseConfiguration config = new BaseConfiguration();
+        Configuration config = Configuration.getInstance();
+        config.clear();
         config.setProperty(AzureStorageResolver.CONTAINER_NAME_CONFIG_KEY, container);
         config.setProperty(AzureStorageResolver.ACCOUNT_NAME_CONFIG_KEY, accountName);
         config.setProperty(AzureStorageResolver.ACCOUNT_KEY_CONFIG_KEY, accountKey);
         config.setProperty(AzureStorageResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "BasicLookupStrategy");
-        Application.setConfiguration(config);
 
         instance = new AzureStorageResolver();
         instance.setIdentifier(IDENTIFIER);
@@ -84,7 +82,7 @@ public class AzureStorageResolverTest {
 
     @Test
     public void testGetStreamSourceWithScriptLookupStrategy() throws Exception {
-        Configuration config = Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
         config.setProperty(AmazonS3Resolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
@@ -131,7 +129,7 @@ public class AzureStorageResolverTest {
 
     @Test
     public void testGetSourceFormatWithScriptLookupStrategy() throws IOException {
-        Configuration config = Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
         config.setProperty(AmazonS3Resolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,

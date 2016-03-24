@@ -2,11 +2,9 @@ package edu.illinois.library.cantaloupe.image;
 
 import static org.junit.Assert.*;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,9 +35,9 @@ public class OperationListTest {
 
     @Before
     public void setUp() {
-        Configuration config = new BaseConfiguration();
+        Configuration config = Configuration.getInstance();
+        config.clear();
         config.setProperty(WatermarkService.WATERMARK_ENABLED_CONFIG_KEY, false);
-        Application.setConfiguration(config);
 
         ops = newOperationList();
 

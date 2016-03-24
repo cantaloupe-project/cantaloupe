@@ -1,8 +1,9 @@
 package edu.illinois.library.cantaloupe;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
 import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
-import org.apache.commons.configuration.Configuration;
 import org.restlet.Application;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -53,8 +54,7 @@ public class WebApplication extends Application {
 
     private ChallengeAuthenticator createAdminAuthenticator()
             throws ConfigurationException {
-        final Configuration config =
-                edu.illinois.library.cantaloupe.Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
         final String secret = config.getString(ADMIN_SECRET_CONFIG_KEY);
         if (secret == null || secret.length() < 1) {
             throw new ConfigurationException(
@@ -71,8 +71,7 @@ public class WebApplication extends Application {
     }
 
     private ChallengeAuthenticator createEndpointAuthenticator() {
-        final Configuration config =
-                edu.illinois.library.cantaloupe.Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
         final String username = config.getString(BASIC_AUTH_USERNAME_CONFIG_KEY);
         final String secret = config.getString(BASIC_AUTH_SECRET_CONFIG_KEY);
 

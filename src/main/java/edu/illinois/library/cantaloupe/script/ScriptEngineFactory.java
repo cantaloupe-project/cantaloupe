@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.script;
 
-import edu.illinois.library.cantaloupe.Application;
-import org.apache.commons.configuration.Configuration;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import org.apache.commons.io.FileUtils;
 
 import javax.script.ScriptException;
@@ -24,7 +23,7 @@ public abstract class ScriptEngineFactory {
      *         if no script is specified.
      */
     public static File getScript() throws FileNotFoundException {
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
         // The script name may be an absolute path or a filename.
         final String scriptValue =
                 config.getString(DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY, "");
@@ -51,7 +50,7 @@ public abstract class ScriptEngineFactory {
      */
     public static ScriptEngine getScriptEngine() throws IOException,
             DelegateScriptDisabledException, ScriptException {
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
         if (config.getBoolean(DELEGATE_SCRIPT_ENABLED_CONFIG_KEY, false)) {
             final ScriptEngine engine = new RubyScriptEngine();
             engine.load(FileUtils.readFileToString(getScript()));
@@ -70,7 +69,8 @@ public abstract class ScriptEngineFactory {
         if (!script.isAbsolute()) {
             // Search for it in the same folder as the application config
             // (if available), or the current working directory if not.
-            final File configFile = Application.getConfigurationFile();
+            final File configFile =
+                    Configuration.getInstance().getConfigurationFile();
             if (configFile != null) {
                 script = new File(configFile.getParent() + "/" +
                         script.getName());

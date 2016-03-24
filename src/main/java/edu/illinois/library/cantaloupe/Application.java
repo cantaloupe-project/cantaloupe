@@ -7,17 +7,15 @@ import ch.qos.logback.core.util.StatusPrinter;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.CacheWorker;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -43,7 +41,6 @@ public class Application {
 
     public static final String CLEAN_CACHE_VM_ARGUMENT =
             "cantaloupe.cache.clean";
-    public static final String CONFIG_FILE_VM_ARGUMENT = "cantaloupe.config";
     public static final String PURGE_CACHE_VM_ARGUMENT =
             "cantaloupe.cache.purge";
     public static final String PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT =
@@ -51,7 +48,6 @@ public class Application {
 
     private static ScheduledExecutorService cacheWorkerExecutorService;
     private static ScheduledFuture<?> cacheWorkerFuture;
-    private static Configuration config;
     private static Thread configWatcher;
     private static FilesystemWatcher fsWatcher;
     /** Will be used in standalone and testing contexts. */
@@ -72,37 +68,6 @@ public class Application {
         Velocity.init();
 
         startConfigWatcher();
-    }
-
-    /**
-     * @return Application-wide Configuration object. Will be loaded from a
-     *         file at startup (see {@link #getConfigurationFile}), but can
-     *         also be overridden by {@link #setConfiguration}.
-     */
-    public static Configuration getConfiguration() {
-        if (config == null) {
-            reloadConfigurationFile();
-        }
-        return config;
-    }
-
-    /**
-     * @return File object corresponding to the active configuration file, or
-     *         null if there is no configuration file.
-     */
-    public static File getConfigurationFile() {
-        String configFilePath = System.getProperty(CONFIG_FILE_VM_ARGUMENT);
-        if (configFilePath != null) {
-            try {
-                // expand paths that start with "~"
-                configFilePath = configFilePath.replaceFirst("^~",
-                                System.getProperty("user.home"));
-                return new File(configFilePath).getCanonicalFile();
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-        return null;
     }
 
     /**
@@ -142,7 +107,7 @@ public class Application {
      * Performs general initialization needed in any mode (standalone or
      * Servlet).
      */
-    public static synchronized void initializeGeneral() {
+    static synchronized void initializeGeneral() {
         final int mb = 1024 * 1024;
         Runtime runtime = Runtime.getRuntime();
         logger.info(System.getProperty("java.vm.name") + " / " +
@@ -159,7 +124,7 @@ public class Application {
         System.getProperties().put("org.restlet.engine.loggerFacadeClass",
                 "org.restlet.ext.slf4j.Slf4jLoggerFacade");
 
-        Configuration appConfig = getConfiguration();
+        Configuration appConfig = Configuration.getInstance();
         if (appConfig != null) {
             // At this point, Logback has already initialized itself, which is a
             // problem because logback.xml depends on application configuration
@@ -172,11 +137,11 @@ public class Application {
             loggerContext.reset();
             // Then copy logging-related configuration key/values into logger
             // context properties...
-            Iterator it = getConfiguration().getKeys();
+            Iterator it = appConfig.getKeys();
             while (it.hasNext()) {
                 String key = (String) it.next();
                 if (key.startsWith("log.")) {
-                    loggerContext.putProperty(key, getConfiguration().getString(key));
+                    loggerContext.putProperty(key, appConfig.getString(key));
                 }
             }
             // Finally, reload the Logback configuration.
@@ -200,7 +165,7 @@ public class Application {
     private static synchronized void initializeStandalone() throws Exception {
         try {
             validateConfiguration();
-        } catch (edu.illinois.library.cantaloupe.ConfigurationException e) {
+        } catch (ConfigurationException e) {
             System.out.println(e.getMessage());
             System.out.println("Exiting.");
             System.exit(-1);
@@ -261,7 +226,7 @@ public class Application {
 
         // If the cache worker is enabled, run it in a low-priority
         // background thread.
-        if (getConfiguration().getBoolean(CacheWorker.ENABLED_CONFIG_KEY, false)) {
+        if (Configuration.getInstance().getBoolean(CacheWorker.ENABLED_CONFIG_KEY, false)) {
             startCacheWorker();
         }
         getWebServer().start();
@@ -272,40 +237,10 @@ public class Application {
         initializeStandalone();
     }
 
-    public static synchronized void reloadConfigurationFile() {
-        try {
-            File configFile = getConfigurationFile();
-            if (configFile != null) {
-                if (config != null) {
-                    logger.info("Reloading configuration file: {}", configFile);
-                } else {
-                    // the logger has probably not been initialized yet
-                    System.out.println("Loading configuration file: " +
-                            configFile);
-                }
-                PropertiesConfiguration propConfig = new PropertiesConfiguration();
-                propConfig.load(configFile);
-                propConfig.setFile(configFile);
-                config = propConfig;
-            }
-        } catch (ConfigurationException e) {
-            // The logger has probably not been initialized yet, as it
-            // depends on a working configuration.
-            System.out.println(e.getMessage());
-        }
-    }
-
-    /**
-     * Overrides the configuration, mainly for testing purposes.
-     */
-    public static synchronized void setConfiguration(Configuration c) {
-        config = c;
-    }
-
     /**
      * Shuts down the application in a Servlet context.
      */
-    public static synchronized void shutdown() {
+    static synchronized void shutdown() {
         stopCacheWorker();
         stopConfigWatcher();
     }
@@ -315,12 +250,12 @@ public class Application {
                 Executors.newSingleThreadScheduledExecutor();
         cacheWorkerFuture = cacheWorkerExecutorService.scheduleAtFixedRate(
                 new CacheWorker(), 5,
-                getConfiguration().getInt(CacheWorker.INTERVAL_CONFIG_KEY, -1),
+                Configuration.getInstance().getInt(CacheWorker.INTERVAL_CONFIG_KEY, -1),
                 TimeUnit.SECONDS);
     }
 
     private static synchronized void startConfigWatcher() {
-        if (getConfigurationFile() != null) {
+        if (Configuration.getInstance().getConfigurationFile() != null) {
             // Use FilesystemWatcher to listen for changes to the directory
             // containing the configuration file. When the config file is found to
             // have been changed, reload it.
@@ -331,13 +266,14 @@ public class Application {
                         public void deleted(Path path) {}
                         public void modified(Path path) { handle(path); }
                         private void handle(Path path) {
-                            if (path.toFile().equals(getConfigurationFile())) {
-                                reloadConfigurationFile();
+                            if (path.toFile().equals(Configuration.getInstance().getConfigurationFile())) {
+                                Configuration.getInstance().reloadConfigurationFile();
                             }
                         }
                     };
                     try {
-                        Path path = getConfigurationFile().toPath().getParent();
+                        Path path = Configuration.getInstance().
+                                getConfigurationFile().toPath().getParent();
                         fsWatcher = new FilesystemWatcher(path, callback);
                         fsWatcher.processEvents();
                     } catch (IOException e) {
@@ -370,16 +306,18 @@ public class Application {
     }
 
     /**
-     * @throws edu.illinois.library.cantaloupe.ConfigurationException
+     * @throws ConfigurationException
      * If the configuration is invalid.
      */
     private static void validateConfiguration()
-            throws edu.illinois.library.cantaloupe.ConfigurationException {
+            throws ConfigurationException {
         // check that a configuration file exists
-        if (getConfiguration() == null) {
-            throw new edu.illinois.library.cantaloupe.ConfigurationException(
+        final String prop = System.getProperty(
+                Configuration.CONFIG_FILE_VM_ARGUMENT);
+        if (prop == null || prop.length() < 1) {
+            throw new ConfigurationException(
                     "No configuration file specified. Try again with the " +
-                            "-D" + CONFIG_FILE_VM_ARGUMENT +
+                            "-D" + Configuration.CONFIG_FILE_VM_ARGUMENT +
                             "=/path/to/cantaloupe.properties argument.");
         }
     }

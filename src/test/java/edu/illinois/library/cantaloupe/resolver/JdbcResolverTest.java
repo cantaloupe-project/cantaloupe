@@ -1,11 +1,10 @@
 package edu.illinois.library.cantaloupe.resolver;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.configuration.BaseConfiguration;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -26,7 +25,8 @@ public class JdbcResolverTest {
 
     @Before
     public void setUp() throws Exception {
-        BaseConfiguration config = new BaseConfiguration();
+        Configuration config = Configuration.getInstance();
+        config.clear();
         // use an in-memory H2 database
         config.setProperty(JdbcResolver.JDBC_URL_CONFIG_KEY, "jdbc:h2:mem:test");
         config.setProperty(JdbcResolver.USER_CONFIG_KEY, "sa");
@@ -35,7 +35,6 @@ public class JdbcResolverTest {
                 "true");
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
-        Application.setConfiguration(config);
 
         try (Connection conn = JdbcResolver.getConnection()) {
             // create the table

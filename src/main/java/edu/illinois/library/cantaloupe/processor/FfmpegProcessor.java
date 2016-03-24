@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -91,7 +91,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
      * @return
      */
     private static String getPath(String binaryName) {
-        String path = Application.getConfiguration().
+        String path = Configuration.getInstance().
                 getString(PATH_TO_BINARIES_CONFIG_KEY);
         if (path != null && path.length() > 0) {
             path = StringUtils.stripEnd(path, File.separator) + File.separator +

@@ -1,11 +1,10 @@
 package edu.illinois.library.cantaloupe.resolver;
 
-import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
-import org.apache.commons.configuration.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +62,7 @@ public abstract class ResolverFactory {
      * found.
      */
     public static Resolver getResolver(Identifier identifier) throws Exception {
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
         if (getSelectionStrategy().equals(SelectionStrategy.DELEGATE_SCRIPT)) {
             Resolver resolver = newDynamicResolver(identifier);
             logger.info("{}() returned a {} for {}",
@@ -85,7 +84,7 @@ public abstract class ResolverFactory {
     }
 
     public static SelectionStrategy getSelectionStrategy() {
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
         return config.getBoolean(DELEGATE_RESOLVER_CONFIG_KEY, false) ?
                 SelectionStrategy.DELEGATE_SCRIPT : SelectionStrategy.STATIC;
     }

@@ -6,12 +6,11 @@ import com.microsoft.azure.storage.blob.BlobInputStream;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
-import org.apache.commons.configuration.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +72,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     private static CloudBlobClient getClientInstance() {
         if (client == null) {
             try {
-                final Configuration config = Application.getConfiguration();
+                final Configuration config = Configuration.getInstance();
                 final String accountName = config.getString(ACCOUNT_NAME_CONFIG_KEY);
                 final String accountKey = config.getString(ACCOUNT_KEY_CONFIG_KEY);
 
@@ -99,7 +98,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     }
 
     private CloudBlockBlob getObject() throws IOException {
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
         final String containerName = config.getString(CONTAINER_NAME_CONFIG_KEY);
         logger.info("Using container: {}", containerName);
 
@@ -121,7 +120,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     }
 
     private String getObjectKey() throws IOException {
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
         switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
             case "BasicLookupStrategy":
                 return identifier.toString();
