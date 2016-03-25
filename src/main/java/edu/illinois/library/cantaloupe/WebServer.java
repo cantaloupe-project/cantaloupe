@@ -1,31 +1,31 @@
 package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.logging.AccessLogService;
-import org.restlet.Component;
-import org.restlet.Server;
-import org.restlet.data.Parameter;
-import org.restlet.data.Protocol;
-import org.restlet.util.Series;
-
-import javax.net.ssl.KeyManagerFactory;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 public class WebServer {
 
-    public static final String HTTP_ENABLED_CONFIG_KEY = "http.enabled";
-    public static final String HTTP_PORT_CONFIG_KEY = "http.port";
-    public static final String HTTPS_ENABLED_CONFIG_KEY = "https.enabled";
-    public static final String HTTPS_KEY_PASSWORD_CONFIG_KEY =
-            "https.key_password";
-    public static final String HTTPS_KEY_STORE_PASSWORD_CONFIG_KEY =
+    static final String HTTP_ENABLED_CONFIG_KEY = "http.enabled";
+    static final String HTTP_PORT_CONFIG_KEY = "http.port";
+    static final String HTTPS_ENABLED_CONFIG_KEY = "https.enabled";
+    static final String HTTPS_KEY_PASSWORD_CONFIG_KEY = "https.key_password";
+    static final String HTTPS_KEY_STORE_PASSWORD_CONFIG_KEY =
             "https.key_store_password";
-    public static final String HTTPS_KEY_STORE_PATH_CONFIG_KEY =
+    static final String HTTPS_KEY_STORE_PATH_CONFIG_KEY =
             "https.key_store_path";
-    public static final String HTTPS_KEY_STORE_TYPE_CONFIG_KEY =
+    static final String HTTPS_KEY_STORE_TYPE_CONFIG_KEY =
             "https.key_store_type";
-    public static final String HTTPS_PORT_CONFIG_KEY = "https.port";
+    static final String HTTPS_PORT_CONFIG_KEY = "https.port";
 
-    private Component component;
+    private static final int IDLE_TIMEOUT = 30000;
+
     private boolean httpEnabled;
     private int httpPort;
     private boolean httpsEnabled;
@@ -34,6 +34,7 @@ public class WebServer {
     private String httpsKeyStorePath;
     private String httpsKeyStoreType;
     private int httpsPort;
+    private Server server;
 
     /**
      * Initializes the instance with defaults from the application
@@ -122,42 +123,48 @@ public class WebServer {
 
     public void start() throws Exception {
         stop();
+        server = new Server();
 
-        component = new Component();
+        ServletContextHandler context = new ServletContextHandler(
+                ServletContextHandler.NO_SESSIONS);
+        context.setContextPath("/");
+        context.setInitParameter("org.restlet.application",
+                WebApplication.class.getName());
+        context.setResourceBase(System.getProperty("java.io.tmpdir"));
+        context.addServlet(EntryServlet.class, "/*");
+        server.setHandler(context);
 
-        // set up HTTP server
+        // Initialize the HTTP server
         if (isHttpEnabled()) {
-            final Server server = component.getServers().
-                    add(Protocol.HTTP, getHttpPort());
-            server.getContext().getParameters().
-                    add("useForwardedForHeader", "true");
+            ServerConnector connector = new ServerConnector(server);
+            connector.setHost("localhost");
+            connector.setPort(getHttpPort());
+            connector.setIdleTimeout(IDLE_TIMEOUT);
+            server.addConnector(connector);
         }
-        // set up HTTPS server
+        // Initialize the HTTPS server
         if (isHttpsEnabled()) {
-            final Server server = component.getServers().
-                    add(Protocol.HTTPS, getHttpsPort());
-            server.getContext().getParameters().
-                    add("useForwardedForHeader", "true");
-            Series<Parameter> parameters = server.getContext().getParameters();
-            parameters.add("sslContextFactory",
-                    "org.restlet.engine.ssl.DefaultSslContextFactory");
-            parameters.add("keyStorePath", getHttpsKeyStorePath());
-            parameters.add("keyStorePassword", getHttpsKeyStorePassword());
-            parameters.add("keyPassword", getHttpsKeyPassword());
-            parameters.add("keyStoreType", getHttpsKeyStoreType());
-            parameters.add("keyManagerAlgorithm",
-                    KeyManagerFactory.getDefaultAlgorithm());
+            HttpConfiguration httpsConfig = new HttpConfiguration();
+            httpsConfig.addCustomizer(new SecureRequestCustomizer());
+            SslContextFactory sslContextFactory = new SslContextFactory();
+
+            sslContextFactory.setKeyStorePath(getHttpsKeyStorePath());
+            sslContextFactory.setKeyStorePassword(getHttpsKeyStorePassword());
+            sslContextFactory.setKeyManagerPassword(getHttpsKeyPassword());
+            ServerConnector sslConnector = new ServerConnector(server,
+                    new SslConnectionFactory(sslContextFactory, "HTTP/1.1"),
+                    new HttpConnectionFactory(httpsConfig));
+            sslConnector.setPort(getHttpsPort());
+            server.addConnector(sslConnector);
         }
-        component.getClients().add(Protocol.CLAP);
-        component.getDefaultHost().attach("", new WebApplication());
-        component.setLogService(new AccessLogService());
-        component.start();
+
+        server.start();
     }
 
     public void stop() throws Exception {
-        if (component != null) {
-            component.stop();
-            component = null;
+        if (server != null) {
+            server.stop();
+            server = null;
         }
     }
 

@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.StandaloneEntry;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.WebServer;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -85,7 +85,7 @@ public class Version2_0ConformanceTest {
     @Before
     public void setUp() throws Exception {
         resetConfiguration();
-        webServer = Application.getWebServer();
+        webServer = StandaloneEntry.getWebServer();
         webServer.setHttpEnabled(true);
         webServer.setHttpPort(PORT);
         webServer.start();

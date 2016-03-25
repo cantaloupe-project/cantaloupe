@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.StandaloneEntry;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
@@ -32,13 +32,13 @@ public class AdminResourceTest extends ResourceTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        Application.getWebServer().stop();
+        StandaloneEntry.getWebServer().stop();
 
         Configuration config = Configuration.getInstance();
         resetConfiguration();
         config.setProperty(WebApplication.ADMIN_SECRET_CONFIG_KEY, secret);
 
-        Application.getWebServer().start();
+        StandaloneEntry.getWebServer().start();
     }
 
     @Test

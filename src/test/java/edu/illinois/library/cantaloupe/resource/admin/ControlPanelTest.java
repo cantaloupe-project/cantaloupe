@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.StandaloneEntry;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.WebServer;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -25,7 +25,7 @@ public class ControlPanelTest {
     private static final String secret = "secret";
 
     private WebDriver webDriver = new FirefoxDriver();
-    private WebServer webServer = Application.getWebServer();
+    private WebServer webServer = StandaloneEntry.getWebServer();
 
     private WebElement css(String selector) {
         return webDriver.findElement(By.cssSelector(selector));

@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.StandaloneEntry;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.WebServer;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -86,7 +86,7 @@ public class Version1_1ConformanceTest {
     @Before
     public void setUp() throws Exception {
         resetConfiguration();
-        webServer = Application.getWebServer();
+        webServer = StandaloneEntry.getWebServer();
         webServer.setHttpEnabled(true);
         webServer.setHttpPort(PORT);
         webServer.start();

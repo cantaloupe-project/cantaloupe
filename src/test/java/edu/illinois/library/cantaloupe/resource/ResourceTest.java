@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.StandaloneEntry;
 import edu.illinois.library.cantaloupe.WebServer;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
@@ -43,7 +44,7 @@ public abstract class ResourceTest {
     @Before
     public void setUp() throws Exception {
         resetConfiguration();
-        WebServer webServer = Application.getWebServer();
+        WebServer webServer = StandaloneEntry.getWebServer();
         webServer.setHttpEnabled(true);
         webServer.setHttpPort(PORT);
         webServer.start();
@@ -51,7 +52,7 @@ public abstract class ResourceTest {
 
     @After
     public void tearDown() throws Exception {
-        Application.getWebServer().stop();
+        StandaloneEntry.getWebServer().stop();
     }
 
     protected ClientResource getClientForUriPath(String path) {

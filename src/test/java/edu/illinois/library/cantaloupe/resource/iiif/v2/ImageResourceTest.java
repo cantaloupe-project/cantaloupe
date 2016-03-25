@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.StandaloneEntry;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
@@ -58,12 +58,12 @@ public class ImageResourceTest extends ResourceTest {
     public void testBasicAuthentication() throws Exception {
         final String username = "user";
         final String secret = "secret";
-        Application.getWebServer().stop();
+        StandaloneEntry.getWebServer().stop();
         Configuration config = Configuration.getInstance();
         config.setProperty(WebApplication.BASIC_AUTH_ENABLED_CONFIG_KEY, "true");
         config.setProperty(WebApplication.BASIC_AUTH_USERNAME_CONFIG_KEY, username);
         config.setProperty(WebApplication.BASIC_AUTH_SECRET_CONFIG_KEY, secret);
-        Application.getWebServer().start();
+        StandaloneEntry.getWebServer().start();
 
         // no credentials
         ClientResource client = getClientForUriPath(

@@ -71,9 +71,9 @@ public class ApplicationTest {
     @Before
     public void setUp() {
         resetConfiguration();
-        System.clearProperty(Application.CLEAN_CACHE_VM_ARGUMENT);
-        System.clearProperty(Application.PURGE_CACHE_VM_ARGUMENT);
-        System.clearProperty(Application.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT);
+        System.clearProperty(EntryServlet.CLEAN_CACHE_VM_ARGUMENT);
+        System.clearProperty(EntryServlet.PURGE_CACHE_VM_ARGUMENT);
+        System.clearProperty(EntryServlet.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT);
 
     }
 
@@ -113,20 +113,20 @@ public class ApplicationTest {
 
         // TODO: write this
 
-        System.setProperty(Application.CLEAN_CACHE_VM_ARGUMENT, "");
-        Application.main(new String[] {});
+        System.setProperty(EntryServlet.CLEAN_CACHE_VM_ARGUMENT, "");
+        StandaloneEntry.main(new String[] {});
     }
 
     @Test
     public void testMainWithInvalidConfigExits() throws Exception {
         exit.expectSystemExitWithStatus(-1);
         System.setProperty(Configuration.CONFIG_FILE_VM_ARGUMENT, "");
-        Application.main(new String[] {});
+        StandaloneEntry.main(new String[] {});
     }
 
     @Test
     public void testMainWithNoArgsStartsServer() throws Exception {
-        Application.main(new String[] {});
+        StandaloneEntry.main(new String[] {});
         ClientResource resource = getHttpClientForUriPath("/");
         resource.get();
         assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
@@ -167,8 +167,8 @@ public class ApplicationTest {
         assertEquals(1, FileUtils.listFiles(infoDir, null, true).size());
 
         // purge the cache
-        System.setProperty(Application.PURGE_CACHE_VM_ARGUMENT, "");
-        Application.main(new String[] {});
+        System.setProperty(EntryServlet.PURGE_CACHE_VM_ARGUMENT, "");
+        StandaloneEntry.main(new String[] {});
 
         // assert that they've been purged
         assertEquals(0, imageDir.listFiles().length);
@@ -201,8 +201,8 @@ public class ApplicationTest {
         File.createTempFile("bla2", "tmp", imageDir);
         File.createTempFile("bla2", "tmp", infoDir);
 
-        System.setProperty(Application.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT, "");
-        Application.main(new String[] {});
+        System.setProperty(EntryServlet.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT, "");
+        StandaloneEntry.main(new String[] {});
 
         assertEquals(1, imageDir.listFiles().length);
         assertEquals(1, infoDir.listFiles().length);
@@ -210,7 +210,7 @@ public class ApplicationTest {
 
     @Test
     public void testStopServerStopsHttp() throws Exception {
-        Application.getWebServer().stop();
+        StandaloneEntry.getWebServer().stop();
         // test that the HTTP server is stopped
         ClientResource resource = getHttpClientForUriPath("/");
         resource.setRetryOnError(false);
@@ -224,7 +224,7 @@ public class ApplicationTest {
 
     @Test
     public void testStopServerStopsHttps() throws Exception {
-        Application.getWebServer().stop();
+        StandaloneEntry.getWebServer().stop();
         ClientResource resource = getHttpsClientForUriPath("/");
         resource.setRetryOnError(false);
         try {
