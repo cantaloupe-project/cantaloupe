@@ -116,11 +116,14 @@
       <artifactId>imageio-ext-tiff</artifactId>
       <version>1.1.13</version>
     </dependency>
+    <!--
+    This will need to be excluded from WEB-INF/lib during the package
+    phase, but an exploded version included in the root for standalone mode.
+    -->
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
       <version>3.1.0</version>
-      <!-- <scope>provided</scope> -->
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -154,6 +157,11 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
+      <version>9.3.8.v20160314</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-webapp</artifactId>
       <version>9.3.8.v20160314</version>
     </dependency>
     <!-- Used by GraphicsMagickProcessor and ImageMagickProcessor -->
@@ -254,40 +262,24 @@
         </configuration>
       </plugin>
 
-      <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>classes-copy</id>
-            <phase>prepare-package</phase>
-            <configuration>
-              <tasks>
-                <copy todir="${project.build.directory}/${project.artifactId}-${project.version}">
-                  <fileset dir="${project.build.directory}/classes/"/>
-                </copy>
-              </tasks>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
+      <!-- Unpack dependencies needed in standalone mode into the root, for
+      compatibility with `java -jar` invocation. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <version>2.3</version>
         <executions>
           <execution>
-            <id>jetty-classpath</id>
+            <id>unpack-dependencies</id>
             <phase>prepare-package</phase>
             <goals>
               <goal>unpack-dependencies</goal>
             </goals>
             <configuration>
-              <excludes>**\/*.DSA,**\/*.SF,**\/*.RSA,**\/*.MF</excludes>
-              <excludeTypes>pom</excludeTypes>
+              <excludes>**/META-INF/*.MF,**/META-INF/*.txt</excludes>
+              <includeGroupIds>
+                org.eclipse.jetty,javax.servlet
+              </includeGroupIds>
               <outputDirectory>
                 ${project.build.directory}/${project.artifactId}-${project.version}
               </outputDirectory>
@@ -296,31 +288,61 @@
         </executions>
       </plugin>
 
+      <!-- Copy the classes needed for standalone mode into the root of the
+      war file for compatibility with `java -jar` invocation. -->
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-standalone-classes-to-root</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <tasks>
+                <copy todir="${project.build.directory}/${project.artifactId}-${project.version}/">
+                  <fileset dir="${project.build.directory}/classes/">
+                    <include name="edu/illinois/library/cantaloupe/config/*" />
+                    <include name="edu/illinois/library/cantaloupe/StandaloneEntry.class" />
+                    <include name="edu/illinois/library/cantaloupe/WebServer.class" />
+                  </fileset>
+                </copy>
+              </tasks>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Create the war file, excluding the Servlet API jar, which the
+      Servlet container will provide. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
         <version>2.6</version>
-        <configuration>
-          <warName>${project.artifactId}-${project.version}</warName>
-          <archive>
-            <manifest>
-              <mainClass>edu.illinois.library.cantaloupe.StandaloneEntry</mainClass>
-              <addClasspath>true</addClasspath>
-            </manifest>
-          </archive>
-        </configuration>
+        <executions>
+          <execution>
+            <id>create-war</id>
+            <phase>package</phase>
+            <goals>
+              <goal>war</goal>
+            </goals>
+            <configuration>
+              <archive>
+                <manifest>
+                  <mainClass>edu.illinois.library.cantaloupe.StandaloneEntry</mainClass>
+                </manifest>
+              </archive>
+              <packagingExcludes>WEB-INF/lib/javax.servlet-api-*.jar</packagingExcludes>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
 
-      <!-- Assembles the created war into a release package -->
+      <!-- Assemble the created war into a release package. -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <version>2.5.5</version>
-        <configuration>
-          <appendAssemblyId>false</appendAssemblyId>
-          <descriptors>
-            <descriptor>${basedir}/build/assembly.xml</descriptor>
-          </descriptors>
-        </configuration>
         <executions>
           <execution>
             <phase>package</phase>
@@ -329,6 +351,12 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <appendAssemblyId>false</appendAssemblyId>
+          <descriptors>
+            <descriptor>${basedir}/build/assembly.xml</descriptor>
+          </descriptors>
+        </configuration>
       </plugin>
 
     </plugins>

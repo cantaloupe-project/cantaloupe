@@ -9,6 +9,11 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.webapp.WebAppContext;
+
+import java.net.URL;
+import java.security.ProtectionDomain;
+import java.util.Arrays;
 
 public class WebServer {
 
@@ -81,6 +86,13 @@ public class WebServer {
         return httpsPort;
     }
 
+    private String getWarLocation() {
+        ProtectionDomain protectionDomain =
+                WebServer.class.getProtectionDomain();
+        URL location = protectionDomain.getCodeSource().getLocation();
+        return location.toExternalForm();
+    }
+
     public boolean isHttpEnabled() {
         return httpEnabled;
     }
@@ -125,14 +137,30 @@ public class WebServer {
         stop();
         server = new Server();
 
-        ServletContextHandler context = new ServletContextHandler(
-                ServletContextHandler.NO_SESSIONS);
-        context.setContextPath("/");
-        context.setInitParameter("org.restlet.application",
-                WebApplication.class.getName());
-        context.setResourceBase(System.getProperty("java.io.tmpdir"));
-        context.addServlet(EntryServlet.class, "/*");
-        server.setHandler(context);
+        // If we are running from a WAR file, tell Jetty to load the war file
+        // via a WebAppContext. Otherwise, use a ServletContextHandler.
+        final String warLocation = getWarLocation();
+        if (warLocation.endsWith(".war")) {
+            WebAppContext context = new WebAppContext();
+            context.setServer(server);
+            context.setConfigurationClasses(Arrays.asList(
+                    "org.eclipse.jetty.webapp.WebInfConfiguration",
+                    "org.eclipse.jetty.webapp.WebXmlConfiguration",
+                    "org.eclipse.jetty.webapp.MetaInfConfiguration",
+                    "org.eclipse.jetty.webapp.FragmentConfiguration",
+                    "org.eclipse.jetty.webapp.JettyWebXmlConfiguration"));
+            context.setContextPath("/");
+            context.setWar(warLocation);
+            server.setHandler(context);
+        } else {
+            ServletContextHandler context = new ServletContextHandler(
+                    ServletContextHandler.NO_SESSIONS);
+            context.setInitParameter("org.restlet.application",
+                    WebApplication.class.getName());
+            context.setResourceBase(System.getProperty("java.io.tmpdir"));
+            context.addServlet(EntryServlet.class, "/*");
+            server.setHandler(context);
+        }
 
         // Initialize the HTTP server
         if (isHttpEnabled()) {
