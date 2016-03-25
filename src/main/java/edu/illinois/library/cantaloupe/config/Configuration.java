@@ -34,6 +34,7 @@ public class Configuration {
                 config = instance;
                 if (config == null) {
                     config = new Configuration();
+                    config.reloadConfigurationFile();
                     instance = config;
                 }
             }
