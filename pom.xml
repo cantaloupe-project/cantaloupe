@@ -88,12 +88,6 @@
       <artifactId>HikariCP</artifactId>
       <version>2.4.1</version>
     </dependency>
-    <!-- The application configuration system -->
-    <dependency>
-      <groupId>commons-configuration</groupId>
-      <artifactId>commons-configuration</artifactId>
-      <version>1.10</version>
-    </dependency>
     <!-- IOUtils.copy() is used all over the place -->
     <dependency>
       <groupId>commons-io</groupId>
@@ -225,7 +219,7 @@
       <artifactId>slf4j-api</artifactId>
       <version>1.7.12</version>
     </dependency>
-    <!-- intercepts jcl log messages from Commons Configuration etc. -->
+    <!-- intercepts jcl log messages from Commons etc. -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>jcl-over-slf4j</artifactId>

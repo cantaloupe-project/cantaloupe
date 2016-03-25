@@ -1,14 +1,17 @@
 package edu.illinois.library.cantaloupe.config;
 
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.FileConfiguration;
-import org.apache.commons.configuration.PropertiesConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Singleton class.
@@ -21,7 +24,7 @@ public class Configuration {
 
     private static Configuration instance;
 
-    private org.apache.commons.configuration.Configuration commonsConfig;
+    private Properties properties = new Properties();
 
     public static synchronized Configuration getInstance() {
         if (instance == null) {
@@ -31,37 +34,49 @@ public class Configuration {
         return instance;
     }
 
-    protected Configuration() {
-        commonsConfig = new BaseConfiguration();
-    }
+    protected Configuration() {}
 
     public void clear() {
-        commonsConfig.clear();
+        properties.clear();
     }
 
     public synchronized void reloadConfigurationFile() {
-        try {
-            File configFile = getConfigurationFile();
-            if (configFile != null) {
-                logger.info("Reloading configuration file: {}", configFile);
-                PropertiesConfiguration propConfig = new PropertiesConfiguration();
-                propConfig.load(configFile);
-                propConfig.setFile(configFile);
-                commonsConfig = propConfig;
+        final File configFile = getConfigurationFile();
+        if (configFile != null) {
+            logger.info("Reloading configuration file: {}", configFile);
+
+            try (FileInputStream is = new FileInputStream(configFile)) {
+                properties.load(is);
+            } catch (IOException e) {
+                // The logger has probably not been initialized yet, as it
+                // depends on a working configuration.
+                System.out.println(e.getMessage());
             }
-        } catch (org.apache.commons.configuration.ConfigurationException e) {
-            // The logger has probably not been initialized yet, as it
-            // depends on a working configuration.
-            System.out.println(e.getMessage());
         }
     }
 
-    public boolean getBoolean(String key) {
-        return commonsConfig.getBoolean(key);
+    public boolean getBoolean(String key) throws ConversionException {
+        String propValue = (String) properties.get(key);
+        if (propValue != null && propValue.length() > 0) {
+            if (new HashSet<>(Arrays.asList("1", "true")).
+                    contains(propValue.trim())) {
+                return true;
+            } else if (new HashSet<>(Arrays.asList("0", "false")).
+                    contains(propValue.trim())) {
+                return false;
+            }
+        }
+        throw new ConversionException("getBoolean(): " + key +
+                " does not map to a boolean");
     }
 
     public boolean getBoolean(String key, boolean defaultValue) {
-        return commonsConfig.getBoolean(key, defaultValue);
+        try {
+            return getBoolean(key);
+        } catch (ConversionException e) {
+            // noop
+        }
+        return defaultValue;
     }
 
     public File getConfigurationFile() {
@@ -80,58 +95,110 @@ public class Configuration {
         return null;
     }
 
-    public float getFloat(String key) {
-        return commonsConfig.getFloat(key);
+    public float getFloat(String key) throws ConversionException {
+        String propValue = (String) properties.get(key);
+        if (propValue != null && propValue.length() > 0) {
+            try {
+                return Float.parseFloat(propValue);
+            } catch (NumberFormatException e) {
+                // noop
+            }
+        }
+        throw new ConversionException(
+                "getFloat(): " + key + " does not map to a float");
     }
 
     public float getFloat(String key, float defaultValue) {
-        return commonsConfig.getFloat(key, defaultValue);
+        float value = defaultValue;
+        try {
+            value = getFloat(key);
+        } catch (ConversionException e) {
+            // noop
+        }
+        return value;
     }
 
-    public int getInt(String key) {
-        return commonsConfig.getInt(key);
+    public int getInt(String key) throws ConversionException {
+        String propValue = (String) properties.get(key);
+        if (propValue != null && propValue.length() > 0) {
+            try {
+                return Integer.parseInt(propValue);
+            } catch (NumberFormatException e) {
+                // noop
+            }
+        }
+        throw new ConversionException("getInt(): " + key +
+                " does not map to an int");
     }
 
     public int getInt(String key, int defaultValue) {
-        return commonsConfig.getInt(key, defaultValue);
+        int value = defaultValue;
+        try {
+            value = getInt(key);
+        } catch (ConversionException e) {
+            // noop
+        }
+        return value;
     }
 
     public Iterator<String> getKeys() {
-        return commonsConfig.getKeys();
+        Set<String> keys = new HashSet<>();
+        for (Object key : properties.keySet()) {
+            keys.add(key.toString());
+        }
+        return keys.iterator();
     }
 
-    public long getLong(String key) {
-        return commonsConfig.getLong(key);
+    public long getLong(String key) throws ConversionException {
+        String propValue = (String) properties.get(key);
+        if (propValue != null && propValue.length() > 0) {
+            try {
+                return Long.parseLong(propValue);
+            } catch (NumberFormatException e) {
+                // noop
+            }
+        }
+        throw new ConversionException("getLong(): " + key +
+                " does not map to a long");
     }
 
     public long getLong(String key, long defaultValue) {
-        return commonsConfig.getLong(key, defaultValue);
+        long value = defaultValue;
+        try {
+            value = getLong(key);
+        } catch (ConversionException e) {
+            // noop
+        }
+        return value;
     }
 
     public Object getProperty(String key) {
-        return commonsConfig.getProperty(key);
+        return properties.get(key);
     }
 
-    public String getString(String key) {
-        return commonsConfig.getString(key);
+    public String getString(String key) throws ConversionException {
+        return (String) properties.get(key);
     }
 
     public String getString(String key, String defaultValue) {
-        return commonsConfig.getString(key, defaultValue);
+        String value = (String) properties.get(key);
+        if (value == null) {
+            value = defaultValue;
+        }
+        return value;
     }
 
     public synchronized void save() throws ConfigurationException {
-        if (commonsConfig instanceof FileConfiguration) {
-            try {
-                ((FileConfiguration) commonsConfig).save();
-            } catch (org.apache.commons.configuration.ConfigurationException e) {
-                throw new ConfigurationException(e.getMessage());
-            }
+        try (FileOutputStream out =
+                     new FileOutputStream(getConfigurationFile())) {
+            properties.store(out, "");
+        } catch (IOException e) {
+            throw new ConfigurationException(e.getMessage());
         }
     }
 
     public synchronized void setProperty(String key, Object value) {
-        commonsConfig.setProperty(key, value);
+        properties.put(key, value);
     }
 
 }

@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
-import org.apache.commons.configuration.ConversionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -179,13 +178,7 @@ public abstract class WatermarkService {
      */
     private static int getBasicInset() {
         final Configuration config = Configuration.getInstance();
-        try {
-            return config.getInt(WATERMARK_INSET_CONFIG_KEY, 0);
-        } catch (ConversionException e) {
-            logger.warn(WATERMARK_INSET_CONFIG_KEY +
-                    " is invalid; defaulting to 0.");
-            return 0;
-        }
+        return config.getInt(WATERMARK_INSET_CONFIG_KEY, 0);
     }
 
     /**
