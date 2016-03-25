@@ -22,16 +22,23 @@ public class Configuration {
 
     public static final String CONFIG_FILE_VM_ARGUMENT = "cantaloupe.config";
 
-    private static Configuration instance;
+    private static volatile Configuration instance;
+    private static final Object lock = new Object();
 
     private Properties properties = new Properties();
 
-    public static synchronized Configuration getInstance() {
-        if (instance == null) {
-            instance = new Configuration();
-            instance.reloadConfigurationFile();
+    public static Configuration getInstance() {
+        Configuration config = instance;
+        if (config == null) {
+            synchronized (lock) {
+                config = instance;
+                if (config == null) {
+                    config = new Configuration();
+                    instance = config;
+                }
+            }
         }
-        return instance;
+        return config;
     }
 
     protected Configuration() {}
@@ -56,14 +63,17 @@ public class Configuration {
     }
 
     public boolean getBoolean(String key) throws ConversionException {
-        String propValue = (String) properties.get(key);
-        if (propValue != null && propValue.length() > 0) {
-            if (new HashSet<>(Arrays.asList("1", "true")).
-                    contains(propValue.trim())) {
-                return true;
-            } else if (new HashSet<>(Arrays.asList("0", "false")).
-                    contains(propValue.trim())) {
-                return false;
+        Object propValue = properties.get(key);
+        if (propValue != null) {
+            String propString = propValue.toString().trim();
+            if (propString.length() > 0) {
+                if (new HashSet<>(Arrays.asList("1", "true")).
+                        contains(propString)) {
+                    return true;
+                } else if (new HashSet<>(Arrays.asList("0", "false")).
+                        contains(propString)) {
+                    return false;
+                }
             }
         }
         throw new ConversionException("getBoolean(): " + key +
@@ -96,12 +106,15 @@ public class Configuration {
     }
 
     public float getFloat(String key) throws ConversionException {
-        String propValue = (String) properties.get(key);
-        if (propValue != null && propValue.length() > 0) {
-            try {
-                return Float.parseFloat(propValue);
-            } catch (NumberFormatException e) {
-                // noop
+        Object propValue = properties.get(key);
+        if (propValue != null) {
+            String propString = propValue.toString().trim();
+            if (propString.length() > 0) {
+                try {
+                    return Float.parseFloat(propString);
+                } catch (NumberFormatException e) {
+                    // noop
+                }
             }
         }
         throw new ConversionException(
@@ -119,12 +132,15 @@ public class Configuration {
     }
 
     public int getInt(String key) throws ConversionException {
-        String propValue = (String) properties.get(key);
-        if (propValue != null && propValue.length() > 0) {
-            try {
-                return Integer.parseInt(propValue);
-            } catch (NumberFormatException e) {
-                // noop
+        Object propValue = properties.get(key);
+        if (propValue != null) {
+            String propString = propValue.toString().trim();
+            if (propString.length() > 0) {
+                try {
+                    return Integer.parseInt(propString);
+                } catch (NumberFormatException e) {
+                    // noop
+                }
             }
         }
         throw new ConversionException("getInt(): " + key +
@@ -150,12 +166,15 @@ public class Configuration {
     }
 
     public long getLong(String key) throws ConversionException {
-        String propValue = (String) properties.get(key);
-        if (propValue != null && propValue.length() > 0) {
-            try {
-                return Long.parseLong(propValue);
-            } catch (NumberFormatException e) {
-                // noop
+        Object propValue = properties.get(key);
+        if (propValue != null) {
+            String propString = propValue.toString().trim();
+            if (propString.length() > 0) {
+                try {
+                    return Long.parseLong(propString);
+                } catch (NumberFormatException e) {
+                    // noop
+                }
             }
         }
         throw new ConversionException("getLong(): " + key +
@@ -176,8 +195,12 @@ public class Configuration {
         return properties.get(key);
     }
 
-    public String getString(String key) throws ConversionException {
-        return (String) properties.get(key);
+    public String getString(String key) {
+        Object propValue = properties.get(key);
+        if (propValue != null) {
+            return propValue.toString().trim();
+        }
+        return null;
     }
 
     public String getString(String key, String defaultValue) {
