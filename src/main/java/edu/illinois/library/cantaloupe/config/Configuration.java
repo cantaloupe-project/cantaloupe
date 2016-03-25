@@ -1,8 +1,5 @@
 package edu.illinois.library.cantaloupe.config;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -17,8 +14,6 @@ import java.util.Set;
  * Singleton class.
  */
 public class Configuration {
-
-    private static Logger logger = LoggerFactory.getLogger(Configuration.class);
 
     public static final String CONFIG_FILE_VM_ARGUMENT = "cantaloupe.config";
 
@@ -51,8 +46,6 @@ public class Configuration {
     public synchronized void reloadConfigurationFile() {
         final File configFile = getConfigurationFile();
         if (configFile != null) {
-            logger.info("Reloading configuration file: {}", configFile);
-
             try (FileInputStream is = new FileInputStream(configFile)) {
                 properties.load(is);
             } catch (IOException e) {
