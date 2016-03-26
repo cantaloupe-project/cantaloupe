@@ -10,18 +10,15 @@ import ch.qos.logback.core.spi.FilterReply;
  */
 public class ApplicationLogFilter extends Filter<ILoggingEvent> {
 
-    /**
-     * Filters out useless log messages.
-     */
     public FilterReply decide(ILoggingEvent event) {
+        // Filter out useless log messages.
         if (event.getLoggerName().equals("org.restlet") &&
                 event.getLevel().equals(Level.INFO) &&
                 event.getMessage().contains("ing the internal HTTP client")) {
             return FilterReply.DENY;
-        } else if (event.getLoggerName().startsWith("org.restlet") &&
-                event.getLevel().equals(Level.INFO) &&
-                event.getMessage().startsWith("Starting") &&
-                event.getMessage().endsWith("application")) {
+        }
+        // Reject Jetty access log messages.
+        if (event.getLoggerName().equals("LogService")) {
             return FilterReply.DENY;
         }
         return FilterReply.NEUTRAL;
