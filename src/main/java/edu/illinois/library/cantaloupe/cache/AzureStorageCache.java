@@ -295,6 +295,7 @@ class AzureStorageCache implements DerivativeCache {
         final CloudBlobClient client = getClientInstance();
         final String objectKey = getObjectKey(identifier);
 
+        OutputStream os = null;
         try {
             final CloudBlobContainer container =
                     client.getContainerReference(containerName);
@@ -302,11 +303,18 @@ class AzureStorageCache implements DerivativeCache {
             blob.getProperties().setContentType("application/json");
             blob.getProperties().setContentEncoding("UTF-8");
 
-            try (OutputStream os = blob.openOutputStream()) {
-                imageInfo.writeAsJson(os);
-            }
+            os = blob.openOutputStream();
+            imageInfo.writeAsJson(os);
         } catch (IOException | URISyntaxException | StorageException e) {
             throw new CacheException(e.getMessage(), e);
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
         }
     }
 }
