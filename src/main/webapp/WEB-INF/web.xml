@@ -14,11 +14,11 @@
     <servlet>
         <servlet-name>ServerServlet</servlet-name>
         <servlet-class>edu.illinois.library.cantaloupe.EntryServlet</servlet-class>
-
         <init-param>
             <param-name>org.restlet.clients</param-name>
             <param-value>CLAP HTTP HTTPS</param-value>
         </init-param>
+        <load-on-startup>1</load-on-startup>
     </servlet>
 
     <servlet-mapping>
