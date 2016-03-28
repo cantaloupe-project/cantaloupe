@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 
 import java.io.File;
 import java.net.URL;
@@ -13,13 +14,27 @@ public class StandaloneEntry {
     private static WebServer webServer;
 
     /**
-     * Starts the embedded Servlet container, which initializes
-     * {@link EntryServlet}.</p>
+     * Checks invocation arguments and starts the embedded Servlet container.
      *
      * @param args Ignored.
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
+        final File configFile = Configuration.getInstance().getConfigurationFile();
+        if (configFile == null) {
+            System.out.println("Usage: java " +
+                    "-D" + Configuration.CONFIG_FILE_VM_ARGUMENT +
+                    "=cantaloupe.properties -jar " + getWarFile().getName());
+            System.exit(0);
+        }
+        if (!configFile.exists()) {
+            System.out.println("Configuration file does not exist.");
+            System.exit(0);
+        }
+        if (!configFile.canRead()) {
+            System.out.println("Configuration file is not readable.");
+            System.exit(0);
+        }
         getWebServer().start();
     }
 
