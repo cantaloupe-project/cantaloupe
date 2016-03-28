@@ -1,14 +1,11 @@
 package edu.illinois.library.cantaloupe;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.joran.JoranConfigurator;
-import ch.qos.logback.core.joran.spi.JoranException;
-import ch.qos.logback.core.util.StatusPrinter;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.CacheWorker;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.logging.LoggerUtil;
 import edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.runtime.RuntimeConstants;
@@ -20,17 +17,21 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.Iterator;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Serves as the entry Servlet in both standalone and Servlet container
- * context.
+ * <p>Serves as the entry Servlet in both standalone and Servlet container
+ * context. Also performs application initialization that cannot be performed
+ * in {@link StandaloneEntry} as that class is not available in a Servlet
+ * container context.</p>
+ *
+ * <p>Because this is a Restlet application, there are no other Servlet
+ * classes. Instead there are Restlet resource classes residing in
+ * {@link edu.illinois.library.cantaloupe.resource}.</p>
  */
 public class EntryServlet extends ServerServlet {
 
@@ -46,19 +47,24 @@ public class EntryServlet extends ServerServlet {
     private static ScheduledExecutorService cacheWorkerExecutorService;
     private static ScheduledFuture<?> cacheWorkerFuture;
     private static Thread configWatcher;
-    private static FilesystemWatcher fsWatcher;
+    private static FilesystemWatcher filesystemWatcher;
 
     static {
         // Suppress a Dock icon in OS X
         System.setProperty("java.awt.headless", "true");
-
-        initializeLogging();
+        // Tell Restlet to use SLF4J instead of JUL
+        // TODO: can this be moved to WebApplication?
+        System.setProperty("org.restlet.engine.loggerFacadeClass",
+                "org.restlet.ext.slf4j.Slf4jLoggerFacade");
+        // Logback has already initialized itself, which is a problem because
+        // logback.xml depends on the application configuration, which has
+        // not been initialized yet. So, reload it.
+        LoggerUtil.reloadConfiguration();
         handleVmArguments();
         initializeVelocity();
-        startConfigWatcher();
 
         final int mb = 1024 * 1024;
-        Runtime runtime = Runtime.getRuntime();
+        final Runtime runtime = Runtime.getRuntime();
         logger.info(System.getProperty("java.vm.name") + " / " +
                 System.getProperty("java.vm.info"));
         logger.info("{} available processor cores",
@@ -67,42 +73,17 @@ public class EntryServlet extends ServerServlet {
                 runtime.maxMemory() / mb);
         logger.info("\uD83C\uDF48 Starting Cantaloupe {}",
                 Application.getVersion());
-    }
 
-    private static void initializeLogging() {
-        // Restlet normally uses JUL; we want it to use slf4j.
-        System.getProperties().put("org.restlet.engine.loggerFacadeClass",
-                "org.restlet.ext.slf4j.Slf4jLoggerFacade");
+        startConfigWatcher();
 
-        Configuration appConfig = Configuration.getInstance();
-        if (appConfig != null) {
-            // At this point, Logback has already initialized itself, which is a
-            // problem because logback.xml depends on application configuration
-            // options, which have not been loaded yet. So, reset the logger
-            // context...
-            LoggerContext loggerContext = (LoggerContext)
-                    LoggerFactory.getILoggerFactory();
-            JoranConfigurator jc = new JoranConfigurator();
-            jc.setContext(loggerContext);
-            loggerContext.reset();
-            // Then copy logging-related configuration key/values into logger
-            // context properties...
-            Iterator it = appConfig.getKeys();
-            while (it.hasNext()) {
-                String key = (String) it.next();
-                if (key.startsWith("log.")) {
-                    loggerContext.putProperty(key, appConfig.getString(key));
-                }
-            }
-            // Finally, reload the Logback configuration.
-            try {
-                InputStream stream = Application.class.getClassLoader().
-                        getResourceAsStream("logback.xml");
-                jc.doConfigure(stream);
-            } catch (JoranException je) {
-                je.printStackTrace();
-            }
-            StatusPrinter.printIfErrorsOccured(loggerContext);
+        // If the cache worker is enabled, run it in a background thread.
+        if (Configuration.getInstance().getBoolean(CacheWorker.ENABLED_CONFIG_KEY, false)) {
+            cacheWorkerExecutorService =
+                    Executors.newSingleThreadScheduledExecutor();
+            cacheWorkerFuture = cacheWorkerExecutorService.scheduleAtFixedRate(
+                    new CacheWorker(), 5,
+                    Configuration.getInstance().getInt(CacheWorker.INTERVAL_CONFIG_KEY, -1),
+                    TimeUnit.SECONDS);
         }
     }
 
@@ -164,15 +145,9 @@ public class EntryServlet extends ServerServlet {
             System.out.println(e.getMessage());
             System.exit(-1);
         }
-
-        // If the cache worker is enabled, run it in a low-priority
-        // background thread.
-        if (Configuration.getInstance().getBoolean(CacheWorker.ENABLED_CONFIG_KEY, false)) {
-            startCacheWorker();
-        }
     }
 
-    private static void initializeVelocity() {
+    private static void initializeVelocity() { // TODO: can this be moved to WebApplication?
         Velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
         Velocity.setProperty("classpath.resource.loader.class",
                 ClasspathResourceLoader.class.getName());
@@ -180,15 +155,6 @@ public class EntryServlet extends ServerServlet {
         Velocity.setProperty("runtime.log.logsystem.class",
                 Slf4jLogChute.class.getCanonicalName());
         Velocity.init();
-    }
-
-    private static void startCacheWorker() {
-        cacheWorkerExecutorService =
-                Executors.newSingleThreadScheduledExecutor();
-        cacheWorkerFuture = cacheWorkerExecutorService.scheduleAtFixedRate(
-                new CacheWorker(), 5,
-                Configuration.getInstance().getInt(CacheWorker.INTERVAL_CONFIG_KEY, -1),
-                TimeUnit.SECONDS);
     }
 
     private static void startConfigWatcher() {
@@ -203,7 +169,8 @@ public class EntryServlet extends ServerServlet {
                         public void deleted(Path path) {}
                         public void modified(Path path) { handle(path); }
                         private void handle(Path path) {
-                            if (path.toFile().equals(Configuration.getInstance().getConfigurationFile())) {
+                            if (path.toFile().equals(
+                                    Configuration.getInstance().getConfigurationFile())) {
                                 Configuration.getInstance().reloadConfigurationFile();
                             }
                         }
@@ -211,8 +178,8 @@ public class EntryServlet extends ServerServlet {
                     try {
                         Path path = Configuration.getInstance().
                                 getConfigurationFile().toPath().getParent();
-                        fsWatcher = new FilesystemWatcher(path, callback);
-                        fsWatcher.processEvents();
+                        filesystemWatcher = new FilesystemWatcher(path, callback);
+                        filesystemWatcher.processEvents();
                     } catch (IOException e) {
                         logger.error(e.getMessage(), e);
                     }
@@ -245,8 +212,8 @@ public class EntryServlet extends ServerServlet {
     }
 
     private void stopConfigWatcher() {
-        if (fsWatcher != null) {
-            fsWatcher.stop();
+        if (filesystemWatcher != null) {
+            filesystemWatcher.stop();
         }
         if (configWatcher != null) {
             try {
