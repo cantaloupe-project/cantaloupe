@@ -69,12 +69,13 @@ public class EntryServlet extends ServerServlet {
         startConfigWatcher();
 
         // If the cache worker is enabled, run it in a background thread.
-        if (Configuration.getInstance().getBoolean(CacheWorker.ENABLED_CONFIG_KEY, false)) {
+        final Configuration config = Configuration.getInstance();
+        if (config.getBoolean(CacheWorker.ENABLED_CONFIG_KEY, false)) {
             cacheWorkerExecutorService =
                     Executors.newSingleThreadScheduledExecutor();
             cacheWorkerFuture = cacheWorkerExecutorService.scheduleAtFixedRate(
                     new CacheWorker(), 5,
-                    Configuration.getInstance().getInt(CacheWorker.INTERVAL_CONFIG_KEY, -1),
+                    config.getInt(CacheWorker.INTERVAL_CONFIG_KEY, -1),
                     TimeUnit.SECONDS);
         }
     }
@@ -140,7 +141,8 @@ public class EntryServlet extends ServerServlet {
     }
 
     private static void startConfigWatcher() {
-        if (Configuration.getInstance().getConfigurationFile() != null) {
+        final Configuration config = Configuration.getInstance();
+        if (config.getConfigurationFile() != null) {
             // Use FilesystemWatcher to listen for changes to the directory
             // containing the configuration file. When the config file is found to
             // have been changed, reload it.
@@ -152,14 +154,13 @@ public class EntryServlet extends ServerServlet {
                         public void modified(Path path) { handle(path); }
                         private void handle(Path path) {
                             if (path.toFile().equals(
-                                    Configuration.getInstance().getConfigurationFile())) {
-                                Configuration.getInstance().reloadConfigurationFile();
+                                    config.getConfigurationFile())) {
+                                config.reloadConfigurationFile();
                             }
                         }
                     };
                     try {
-                        Path path = Configuration.getInstance().
-                                getConfigurationFile().toPath().getParent();
+                        Path path = config.getConfigurationFile().toPath().getParent();
                         filesystemWatcher = new FilesystemWatcher(path, callback);
                         filesystemWatcher.processEvents();
                     } catch (IOException e) {
