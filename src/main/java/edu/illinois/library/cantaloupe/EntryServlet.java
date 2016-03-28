@@ -6,10 +6,6 @@ import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.CacheWorker;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.logging.LoggerUtil;
-import edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute;
-import org.apache.velocity.app.Velocity;
-import org.apache.velocity.runtime.RuntimeConstants;
-import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.restlet.data.Protocol;
 import org.restlet.ext.servlet.ServerServlet;
 import org.slf4j.Logger;
@@ -58,7 +54,6 @@ public class EntryServlet extends ServerServlet {
         // not been initialized yet. So, reload it.
         LoggerUtil.reloadConfiguration();
         handleVmArguments();
-        initializeVelocity();
 
         final int mb = 1024 * 1024;
         final Runtime runtime = Runtime.getRuntime();
@@ -142,16 +137,6 @@ public class EntryServlet extends ServerServlet {
             System.out.println(e.getMessage());
             System.exit(-1);
         }
-    }
-
-    private static void initializeVelocity() { // TODO: can this be moved to WebApplication?
-        Velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
-        Velocity.setProperty("classpath.resource.loader.class",
-                ClasspathResourceLoader.class.getName());
-        Velocity.setProperty("class.resource.loader.cache", true);
-        Velocity.setProperty("runtime.log.logsystem.class",
-                Slf4jLogChute.class.getCanonicalName());
-        Velocity.init();
     }
 
     private static void startConfigWatcher() {
