@@ -547,7 +547,7 @@ log.application.SyslogAppender.facility = LOCAL0
 # !! Access Log
 #----------------------------------------
 
-log.access.ConsoleAppender.enabled = true
+log.access.ConsoleAppender.enabled = false
 
 log.access.FileAppender.enabled = false
 log.access.FileAppender.pathname = /path/to/logs/access.log
