@@ -312,7 +312,8 @@
               <tasks>
                 <copy todir="${project.build.directory}/${project.artifactId}-${project.version}/">
                   <fileset dir="${project.build.directory}/classes/">
-                    <include name="edu/illinois/library/cantaloupe/config/*" />
+                    <include name="edu/illinois/library/cantaloupe/config/Configuration.class" />
+                    <include name="edu/illinois/library/cantaloupe/config/ConfigurationException.class" />
                     <include name="edu/illinois/library/cantaloupe/StandaloneEntry.class" />
                     <include name="edu/illinois/library/cantaloupe/WebServer.class" />
                   </fileset>

@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.CacheWorker;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationWatcher;
 import edu.illinois.library.cantaloupe.logging.LoggerUtil;
 import org.restlet.data.Protocol;
 import org.restlet.ext.servlet.ServerServlet;
@@ -12,9 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -42,15 +42,17 @@ public class EntryServlet extends ServerServlet {
 
     private static ScheduledExecutorService cacheWorkerExecutorService;
     private static ScheduledFuture<?> cacheWorkerFuture;
-    private static Thread configWatcher;
-    private static FilesystemWatcher filesystemWatcher;
+    private static ConfigurationWatcher configWatcher =
+            new ConfigurationWatcher();
+    private static ScheduledExecutorService configWatcherExecutorService;
+    private static Future<?> configWatcherFuture;
 
     static {
         // Suppress a Dock icon in OS X
         System.setProperty("java.awt.headless", "true");
 
         // Logback has already initialized itself, which is a problem because
-        // logback.xml depends on the application configuration, which has
+        // logback.xml depends on the application configuration, which had
         // not been initialized yet. So, reload it.
         LoggerUtil.reloadConfiguration();
 
@@ -66,7 +68,7 @@ public class EntryServlet extends ServerServlet {
                 Application.getVersion());
     }
 
-    private static void handleVmArguments() {
+    private void handleVmArguments() {
         try {
             if (System.getProperty(CLEAN_CACHE_VM_ARGUMENT) != null) {
                 Cache cache = CacheFactory.getSourceCache();
@@ -126,47 +128,6 @@ public class EntryServlet extends ServerServlet {
         }
     }
 
-    private static void startConfigWatcher() {
-        final Configuration config = Configuration.getInstance();
-        if (config.getConfigurationFile() != null) {
-            // Use FilesystemWatcher to listen for changes to the directory
-            // containing the configuration file. When the config file is found to
-            // have been changed, reload it.
-            configWatcher = new Thread() {
-                public void run() {
-                    FilesystemWatcher.Callback callback = new FilesystemWatcher.Callback() {
-                        @Override
-                        public void created(Path path) { handle(path); }
-
-                        @Override
-                        public void deleted(Path path) {}
-
-                        @Override
-                        public void modified(Path path) { handle(path); }
-
-                        private void handle(Path path) {
-                            if (path.toFile().equals(
-                                    config.getConfigurationFile())) {
-                                config.reloadConfigurationFile();
-                                LoggerUtil.reloadConfiguration();
-                            }
-                        }
-                    };
-                    try {
-                        Path path = config.getConfigurationFile().toPath().getParent();
-                        filesystemWatcher = new FilesystemWatcher(path, callback);
-                        filesystemWatcher.processEvents();
-                    } catch (IOException e) {
-                        logger.error(e.getMessage(), e);
-                    }
-                }
-            };
-            configWatcher.setPriority(Thread.MIN_PRIORITY);
-            configWatcher.setName("ConfigWatcher");
-            configWatcher.start();
-        }
-    }
-
     @Override
     public void init() throws ServletException {
         super.init();
@@ -174,8 +135,17 @@ public class EntryServlet extends ServerServlet {
 
         handleVmArguments();
         startConfigWatcher();
+        startCacheWorker();
+    }
 
-        // If the cache worker is enabled, run it in a background thread.
+    @Override
+    public void destroy() {
+        super.destroy();
+        stopCacheWorker();
+        stopConfigWatcher();
+    }
+
+    private void startCacheWorker() {
         final Configuration config = Configuration.getInstance();
         if (config.getBoolean(CacheWorker.ENABLED_CONFIG_KEY, false)) {
             cacheWorkerExecutorService =
@@ -187,31 +157,26 @@ public class EntryServlet extends ServerServlet {
         }
     }
 
-    @Override
-    public void destroy() {
-        super.destroy();
-        logger.info("Stopping cache worker...");
-        stopCacheWorker();
-        logger.info("Stopping config watcher...");
-        stopConfigWatcher();
+    private void startConfigWatcher() {
+        final Configuration config = Configuration.getInstance();
+        if (config.getConfigurationFile() != null) {
+            configWatcherExecutorService =
+                    Executors.newSingleThreadScheduledExecutor();
+            configWatcherFuture = configWatcherExecutorService.submit(configWatcher);
+        }
     }
 
     private void stopCacheWorker() {
+        logger.info("Stopping the cache worker...");
         cacheWorkerFuture.cancel(true);
         cacheWorkerExecutorService.shutdown();
     }
 
     private void stopConfigWatcher() {
-        if (filesystemWatcher != null) {
-            filesystemWatcher.stop();
-        }
-        if (configWatcher != null) {
-            try {
-                configWatcher.join();
-            } catch (InterruptedException e) {
-                // expected
-            }
-        }
+        logger.info("Stopping the config watcher...");
+        configWatcher.stop();
+        configWatcherFuture.cancel(true);
+        configWatcherExecutorService.shutdown();
     }
 
 }

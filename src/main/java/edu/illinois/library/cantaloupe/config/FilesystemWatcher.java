@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe;
+package edu.illinois.library.cantaloupe.config;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -19,7 +19,7 @@ import static java.nio.file.StandardWatchEventKinds.*;
  */
 class FilesystemWatcher {
 
-    public interface Callback {
+    interface Callback {
         void created(Path path);
         void deleted(Path path);
         void modified(Path path);
@@ -51,7 +51,7 @@ class FilesystemWatcher {
     /**
      * Process all events for keys queued to the watcher
      */
-    public void processEvents() {
+    void processEvents() {
         while (true) {
             if (shouldStop) {
                 return;
