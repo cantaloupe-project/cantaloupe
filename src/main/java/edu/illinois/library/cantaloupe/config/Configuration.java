@@ -54,6 +54,11 @@ public class Configuration {
         final File configFile = getConfigurationFile();
         if (configFile != null) {
             try {
+                if (commonsConfig != null && commonsConfig instanceof PropertiesConfiguration) {
+                    System.out.println("Reloading config file: " + configFile);
+                } else {
+                    System.out.println("Loading config file: " + configFile);
+                }
                 commonsConfig = new PropertiesConfiguration(configFile);
             } catch (org.apache.commons.configuration.ConfigurationException e) {
                 // The logger may not have been initialized yet, as it depends
