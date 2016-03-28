@@ -11,8 +11,6 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 
-import java.net.URL;
-import java.security.ProtectionDomain;
 import java.util.Arrays;
 
 public class WebServer {
@@ -86,13 +84,6 @@ public class WebServer {
         return httpsPort;
     }
 
-    private String getWarLocation() {
-        ProtectionDomain protectionDomain =
-                WebServer.class.getProtectionDomain();
-        URL location = protectionDomain.getCodeSource().getLocation();
-        return location.toExternalForm();
-    }
-
     public boolean isHttpEnabled() {
         return httpEnabled;
     }
@@ -139,7 +130,7 @@ public class WebServer {
 
         // If we are running from a WAR file, tell Jetty to load the war file
         // via a WebAppContext. Otherwise, use a ServletContextHandler.
-        final String warLocation = getWarLocation();
+        final String warLocation = StandaloneEntry.getWarFile().getName();
         if (warLocation.endsWith(".war")) {
             WebAppContext context = new WebAppContext();
             context.setServer(server);

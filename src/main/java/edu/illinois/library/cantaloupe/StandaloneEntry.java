@@ -1,5 +1,10 @@
 package edu.illinois.library.cantaloupe;
 
+
+import java.io.File;
+import java.net.URL;
+import java.security.ProtectionDomain;
+
 /**
  * <p>Serves as the main application class in a standalone context.</p>
  */
@@ -16,6 +21,13 @@ public class StandaloneEntry {
      */
     public static void main(String[] args) throws Exception {
         getWebServer().start();
+    }
+
+    static File getWarFile() {
+        ProtectionDomain protectionDomain =
+                WebServer.class.getProtectionDomain();
+        URL location = protectionDomain.getCodeSource().getLocation();
+        return new File(location.toExternalForm());
     }
 
     /**
