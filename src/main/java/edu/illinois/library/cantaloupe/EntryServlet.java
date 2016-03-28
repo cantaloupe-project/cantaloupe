@@ -135,13 +135,20 @@ public class EntryServlet extends ServerServlet {
             configWatcher = new Thread() {
                 public void run() {
                     FilesystemWatcher.Callback callback = new FilesystemWatcher.Callback() {
+                        @Override
                         public void created(Path path) { handle(path); }
+
+                        @Override
                         public void deleted(Path path) {}
+
+                        @Override
                         public void modified(Path path) { handle(path); }
+
                         private void handle(Path path) {
                             if (path.toFile().equals(
                                     config.getConfigurationFile())) {
                                 config.reloadConfigurationFile();
+                                LoggerUtil.reloadConfiguration();
                             }
                         }
                     };

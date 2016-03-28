@@ -519,7 +519,7 @@ redaction.enabled = false
 ###########################################################################
 
 #----------------------------------------
-# !! Application Log
+# Application Log
 #----------------------------------------
 
 # `trace`, `debug`, `info`, `warn`, `error`, `all`, or `off`
@@ -544,7 +544,7 @@ log.application.SyslogAppender.port = 514
 log.application.SyslogAppender.facility = LOCAL0
 
 #----------------------------------------
-# !! Access Log
+# Access Log
 #----------------------------------------
 
 log.access.ConsoleAppender.enabled = false
