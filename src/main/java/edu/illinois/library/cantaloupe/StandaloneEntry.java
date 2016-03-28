@@ -42,7 +42,7 @@ public class StandaloneEntry {
         ProtectionDomain protectionDomain =
                 WebServer.class.getProtectionDomain();
         URL location = protectionDomain.getCodeSource().getLocation();
-        return new File(location.toExternalForm());
+        return new File(location.getFile());
     }
 
     /**

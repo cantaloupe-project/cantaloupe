@@ -137,8 +137,8 @@ public class WebServer {
 
         // If we are running from a WAR file, tell Jetty to load the war file
         // via a WebAppContext. Otherwise, use a ServletContextHandler.
-        final String warLocation = StandaloneEntry.getWarFile().getName();
-        if (warLocation.endsWith(".war")) {
+        final String warPath = StandaloneEntry.getWarFile().getAbsolutePath();
+        if (warPath.endsWith(".war")) {
             WebAppContext context = new WebAppContext();
             context.setServer(server);
             context.setConfigurationClasses(Arrays.asList(
@@ -148,7 +148,7 @@ public class WebServer {
                     "org.eclipse.jetty.webapp.FragmentConfiguration",
                     "org.eclipse.jetty.webapp.JettyWebXmlConfiguration"));
             context.setContextPath("/");
-            context.setWar(warLocation);
+            context.setWar(warPath);
             server.setHandler(context);
         } else {
             ServletContextHandler context = new ServletContextHandler(
