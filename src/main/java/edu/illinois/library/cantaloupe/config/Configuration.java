@@ -22,6 +22,10 @@ public class Configuration {
     private org.apache.commons.configuration.Configuration commonsConfig =
             new BaseConfiguration();
 
+    public static synchronized void clearInstance() {
+        instance = null;
+    }
+
     /**
      * @return Global application configuration instance.
      */

@@ -21,6 +21,16 @@ public class ConfigurationTest {
         instance = new Configuration();
     }
 
+    /* clearInstance() */
+
+    @Test
+    public void testClearInstance() {
+        Configuration instance1 = Configuration.getInstance();
+        Configuration.clearInstance();
+        Configuration instance2 = Configuration.getInstance();
+        assertNotSame(instance1, instance2);
+    }
+
     /* getInstance() */
 
     @Test
