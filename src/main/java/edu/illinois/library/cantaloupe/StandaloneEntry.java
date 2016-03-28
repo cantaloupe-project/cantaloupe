@@ -8,6 +8,9 @@ import java.security.ProtectionDomain;
 
 /**
  * <p>Serves as the main application class in a standalone context.</p>
+ *
+ * <p>This class will be unavailable in a Servlet container and should have
+ * as few dependencies as possible.</p>
  */
 public class StandaloneEntry {
 
@@ -25,15 +28,19 @@ public class StandaloneEntry {
             System.out.println("Usage: java " +
                     "-D" + Configuration.CONFIG_FILE_VM_ARGUMENT +
                     "=cantaloupe.properties -jar " + getWarFile().getName());
-            System.exit(0);
+            System.exit(-1);
         }
         if (!configFile.exists()) {
             System.out.println("Configuration file does not exist.");
-            System.exit(0);
+            System.exit(-1);
+        }
+        if (!configFile.isFile()) {
+            System.out.println("Configuration file is not a file.");
+            System.exit(-1);
         }
         if (!configFile.canRead()) {
             System.out.println("Configuration file is not readable.");
-            System.exit(0);
+            System.exit(-1);
         }
         getWebServer().start();
     }

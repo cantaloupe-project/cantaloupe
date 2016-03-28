@@ -53,7 +53,6 @@ public class EntryServlet extends ServerServlet {
         // logback.xml depends on the application configuration, which has
         // not been initialized yet. So, reload it.
         LoggerUtil.reloadConfiguration();
-        handleVmArguments();
 
         final int mb = 1024 * 1024;
         final Runtime runtime = Runtime.getRuntime();
@@ -65,19 +64,6 @@ public class EntryServlet extends ServerServlet {
                 runtime.maxMemory() / mb);
         logger.info("\uD83C\uDF48 Starting Cantaloupe {}",
                 Application.getVersion());
-
-        startConfigWatcher();
-
-        // If the cache worker is enabled, run it in a background thread.
-        final Configuration config = Configuration.getInstance();
-        if (config.getBoolean(CacheWorker.ENABLED_CONFIG_KEY, false)) {
-            cacheWorkerExecutorService =
-                    Executors.newSingleThreadScheduledExecutor();
-            cacheWorkerFuture = cacheWorkerExecutorService.scheduleAtFixedRate(
-                    new CacheWorker(), 5,
-                    config.getInt(CacheWorker.INTERVAL_CONFIG_KEY, -1),
-                    TimeUnit.SECONDS);
-        }
     }
 
     private static void handleVmArguments() {
@@ -178,6 +164,20 @@ public class EntryServlet extends ServerServlet {
     public void init() throws ServletException {
         super.init();
         getComponent().getClients().add(Protocol.CLAP);
+
+        handleVmArguments();
+        startConfigWatcher();
+
+        // If the cache worker is enabled, run it in a background thread.
+        final Configuration config = Configuration.getInstance();
+        if (config.getBoolean(CacheWorker.ENABLED_CONFIG_KEY, false)) {
+            cacheWorkerExecutorService =
+                    Executors.newSingleThreadScheduledExecutor();
+            cacheWorkerFuture = cacheWorkerExecutorService.scheduleAtFixedRate(
+                    new CacheWorker(), 5,
+                    config.getInt(CacheWorker.INTERVAL_CONFIG_KEY, -1),
+                    TimeUnit.SECONDS);
+        }
     }
 
     @Override
