@@ -313,14 +313,10 @@
                 <copy todir="${project.build.directory}/${project.artifactId}-${project.version}/">
                   <fileset dir="${project.build.directory}/classes/">
                     <include name="edu/illinois/library/cantaloupe/config/*" />
-                  </fileset>
-                </copy>
-                <move todir="${project.build.directory}/${project.artifactId}-${project.version}/">
-                  <fileset dir="${project.build.directory}/classes/">
                     <include name="edu/illinois/library/cantaloupe/StandaloneEntry.class" />
                     <include name="edu/illinois/library/cantaloupe/WebServer.class" />
                   </fileset>
-                </move>
+                </copy>
               </tasks>
             </configuration>
           </execution>
