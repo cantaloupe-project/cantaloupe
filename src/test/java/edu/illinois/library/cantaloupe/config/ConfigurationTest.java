@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.config;
 
+import org.apache.commons.configuration.ConversionException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -7,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.NoSuchElementException;
 
 import static org.junit.Assert.*;
 
@@ -48,7 +50,7 @@ public class ConfigurationTest {
         try {
             instance.getBoolean("test3");
             fail("Expected exception");
-        } catch (ConversionException e) {
+        } catch (NoSuchElementException e) {
             // pass
         }
     }
@@ -96,7 +98,7 @@ public class ConfigurationTest {
         try {
             instance.getFloat("test3");
             fail("Expected exception");
-        } catch (ConversionException e) {
+        } catch (NoSuchElementException e) {
             // pass
         }
     }

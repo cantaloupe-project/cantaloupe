@@ -88,6 +88,12 @@
       <artifactId>HikariCP</artifactId>
       <version>2.4.1</version>
     </dependency>
+    <!-- Manages the application configuration. -->
+    <dependency>
+      <groupId>commons-configuration</groupId>
+      <artifactId>commons-configuration</artifactId>
+      <version>1.10</version>
+    </dependency>
     <!-- IOUtils.copy() is used all over the place -->
     <dependency>
       <groupId>commons-io</groupId>
@@ -278,7 +284,10 @@
             <configuration>
               <excludes>**/META-INF/*.MF,**/META-INF/*.txt</excludes>
               <includeGroupIds>
-                org.eclipse.jetty,javax.servlet
+                <!-- direct dependencies -->
+                commons-configuration, org.eclipse.jetty,javax.servlet
+                <!-- transitive dependencies -->
+                commons-lang, commons-logging
               </includeGroupIds>
               <outputDirectory>
                 ${project.build.directory}/${project.artifactId}-${project.version}

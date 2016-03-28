@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -130,11 +129,9 @@ public class AdminResource extends AbstractResource {
      *
      * @param rep
      * @throws IOException
-     * @throws ConfigurationException
      */
     @Post("application/json")
-    public Representation doPost(Representation rep)
-            throws IOException, ConfigurationException {
+    public Representation doPost(Representation rep) throws IOException {
         final Configuration config = Configuration.getInstance();
         final Map submittedConfig = new ObjectMapper().readValue(
                 rep.getStream(), HashMap.class);
