@@ -66,12 +66,12 @@ title: For Developers
   <li>Finalize the code to be released, addressing any relevant milestone issues, TODOs, etc.</li>
   <li>Ensure that the tests are current, comprehensive, and passing</li>
   <li>Finalize the documentation, including the website, user manual, change log, and Javadoc</li>
-  <li>Merge into "release/x.x"</li>
+  <li>Merge into "release/vX.X"</li>
   <li>Update the version in <span class="filename">pom.xml</span> and commit this change</li>
   <li>Merge into "master"</li>
   <li>Create the release .zip archive with <code>mvn package</code></li>
   <li>Check that the .zip archive is as expected</li>
-  <li>Tag the release: <code>git tag -a {version} -m 'Tag {version}'</code></li>
+  <li>Tag the release: <code>git tag -a v{version} -m 'Tag v{version}'</code></li>
   <li>Push the code: <code>git push origin master; git push origin release/x.x; git push --tags</code></li>
   <li>Add the .zip archive and change log info to the release tag on GitHub</li>
   <li>Deploy the updated website.</li>
