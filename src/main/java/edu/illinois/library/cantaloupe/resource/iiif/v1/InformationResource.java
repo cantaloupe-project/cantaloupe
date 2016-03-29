@@ -15,14 +15,20 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
+import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
 import org.restlet.data.CharacterSet;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
 import org.restlet.ext.jackson.JacksonRepresentation;
+import org.restlet.representation.EmptyRepresentation;
+import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
+import org.restlet.resource.ServerResource;
+
+import static edu.illinois.library.cantaloupe.WebApplication.IIIF_1_PATH;
 
 /**
  * Handles IIIF Image API 1.1 information requests.
@@ -31,6 +37,24 @@ import org.restlet.resource.ResourceException;
  * Requests</a>
  */
 public class InformationResource extends Iiif1Resource {
+
+    /**
+     * Redirects /{identifier} to /{identifier}/info.json, respecting the
+     * Servlet context root.
+     */
+    public static class RedirectingResource extends AbstractResource {
+        @Get
+        public Representation doGet() {
+            final String identifier = (String) this.getRequest().
+                    getAttributes().get("identifier");
+            final Reference newRef = new Reference(
+                    getPublicRootRef(getRequest()) +
+                            WebApplication.IIIF_1_PATH + "/" + identifier +
+                            "/info.json");
+            redirectSeeOther(newRef);
+            return new EmptyRepresentation();
+        }
+    }
 
     @Override
     protected void doInit() throws ResourceException {
@@ -45,12 +69,13 @@ public class InformationResource extends Iiif1Resource {
      *         instance to JSON.
      * @throws Exception
      */
-    @Get("json")
-    public JacksonRepresentation doGet() throws Exception {
+    @Get
+    public Representation doGet() throws Exception {
         Map<String,Object> attrs = this.getRequest().getAttributes();
         Identifier identifier = new Identifier(
                 Reference.decode((String) attrs.get("identifier")));
         identifier = decodeSlashes(identifier);
+
         // Get the resolver
         Resolver resolver = ResolverFactory.getResolver(identifier);
         Format format = Format.UNKNOWN;

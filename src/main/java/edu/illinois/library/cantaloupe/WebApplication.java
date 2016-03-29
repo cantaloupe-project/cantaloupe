@@ -207,14 +207,8 @@ public class WebApplication extends Application {
         router.attach(IIIF_1_PATH,
                 edu.illinois.library.cantaloupe.resource.iiif.v1.LandingResource.class);
 
-        // Redirect image identifier to image information
-        Redirector redirector = new Redirector(getContext(),
-                IIIF_1_PATH + "/{identifier}/info.json",
-                Redirector.MODE_CLIENT_SEE_OTHER);
-        router.attach(IIIF_1_PATH + "/{identifier}", redirector);
-
         // Redirect IIIF_1_PATH/ to IIIF_1_PATH
-        redirector = new Redirector(getContext(), IIIF_1_PATH,
+        Redirector redirector = new Redirector(getContext(), IIIF_1_PATH,
                 Redirector.MODE_CLIENT_PERMANENT);
         router.attach(IIIF_1_PATH + "/", redirector);
 
@@ -223,7 +217,9 @@ public class WebApplication extends Application {
                 edu.illinois.library.cantaloupe.resource.iiif.v1.ImageResource.class);
 
         // information request
-        router.attach(IIIF_1_PATH + "/{identifier}/info.{format}",
+        router.attach(IIIF_1_PATH + "/{identifier}",
+                edu.illinois.library.cantaloupe.resource.iiif.v1.InformationResource.RedirectingResource.class);
+        router.attach(IIIF_1_PATH + "/{identifier}/info.json",
                 edu.illinois.library.cantaloupe.resource.iiif.v1.InformationResource.class);
 
         /****************** IIIF Image API 2.0 routes *******************/
@@ -231,12 +227,6 @@ public class WebApplication extends Application {
         // landing page
         router.attach(IIIF_2_PATH,
                 edu.illinois.library.cantaloupe.resource.iiif.v2.LandingResource.class);
-
-        // Redirect image identifier to image information
-        redirector = new Redirector(getContext(),
-                IIIF_2_PATH + "/{identifier}/info.json",
-                Redirector.MODE_CLIENT_SEE_OTHER);
-        router.attach(IIIF_2_PATH + "/{identifier}", redirector);
 
         // Redirect IIIF_2_PATH/ to IIIF_2_PATH
         redirector = new Redirector(getContext(), IIIF_2_PATH,
@@ -248,7 +238,9 @@ public class WebApplication extends Application {
                 edu.illinois.library.cantaloupe.resource.iiif.v2.ImageResource.class);
 
         // information request
-        router.attach(IIIF_2_PATH + "/{identifier}/info.{format}",
+        router.attach(IIIF_2_PATH + "/{identifier}",
+                edu.illinois.library.cantaloupe.resource.iiif.v2.InformationResource.RedirectingResource.class);
+        router.attach(IIIF_2_PATH + "/{identifier}/info.json",
                 edu.illinois.library.cantaloupe.resource.iiif.v2.InformationResource.class);
 
         // 303-redirect IIIF_PATH to IIIF_2_PATH
