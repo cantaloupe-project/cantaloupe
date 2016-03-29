@@ -19,8 +19,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Calendar;
 
 /**
@@ -365,12 +363,9 @@ class JdbcCache implements DerivativeCache {
     }
 
     Timestamp oldestValidDate() {
-        final Configuration config = Configuration.getInstance();
-        final long ttl = config.getLong(TTL_CONFIG_KEY, 0);
+        final long ttl = Configuration.getInstance().getLong(TTL_CONFIG_KEY, 0);
         if (ttl > 0) {
-            final Instant oldestInstant = Instant.now().
-                    minus(Duration.ofSeconds(ttl));
-            return Timestamp.from(oldestInstant);
+            return new Timestamp(System.currentTimeMillis() - ttl * 1000);
         } else {
             return new Timestamp(Long.MIN_VALUE);
         }
