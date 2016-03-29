@@ -31,6 +31,13 @@ h4 { font-size: 1.4em; }
 h5 { font-size: 1.2em; }
 h6 { font-size: 1em; }
 
+pre {
+    background-color: #1b2e40;
+    border: 0px;
+    color: white;
+    overflow-x: scroll;
+}
+
 table, .table, .checkbox label, .radio label {
     font-size: 1em;
 }

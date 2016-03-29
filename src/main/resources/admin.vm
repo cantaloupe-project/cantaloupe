@@ -135,16 +135,12 @@
 
                     <section>
                         <h2>VM Arguments</h2>
-                        <ul>
-                            #foreach ($arg in $vmArguments)
-                                <li>$arg</li>
-                            #end
-                        </ul>
+                        <pre>#foreach ($arg in $vmArguments)$arg<br>#end</pre>
                     </section>
 
                     <section>
                         <h2>Configuration File</h2>
-                        $configFilePath
+                        <pre>$configFilePath</pre>
                     </section>
                 </div>
 
@@ -1105,8 +1101,8 @@
                                             <select class="form-control"
                                                     name="StreamProcessor.retrieval_strategy"
                                                     data-restart-required="false">
-                                                <option value="StreamStrategy">Stream Each Request</option>
-                                                <option value="CacheStrategy">Cache in Source Cache</option>
+                                                <option value="StreamStrategy">Stream Each Request (StreamStrategy)</option>
+                                                <option value="CacheStrategy">Cache in Source Cache (CacheStrategy)</option>
                                             </select>
                                         </td>
                                     </tr>
@@ -1494,7 +1490,14 @@
                             <h2>Cache-Control Header</h2>
                             <table class="table table-striped">
                                 <tr>
-                                    <td></td>
+                                    <td>
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="The Cache-Control header
+                                           provides a hint to clients as to how they
+                                           should cache content.">?</a>
+                                    </td>
                                     <td>
                                         <div class="checkbox">
                                             <label>
@@ -1711,10 +1714,10 @@
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="When enabled, the source image will be confirmed
-                                           to exist before a cached copy is returned. If false, the cached
+                                           data-content="When enabled, a source image will be confirmed
+                                           to exist before a cached copy is returned. Otherwise, a cached
                                            copy will be returned without any checking. Resolving first
-                                           is slower but safer.">?</a>
+                                           is slower, but safer.">?</a>
                                     </td>
                                     <td>
                                         <div class="checkbox">
@@ -2270,9 +2273,9 @@
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="Redactions require
-                                           use of the delegate script. See the user manual for
-                                           information about how these work.">?</a>
+                                           data-content="Redaction works via the
+                                           delegate script. See the user manual for
+                                           more information.">?</a>
                                     </td>
                                     <td>
                                         <div class="checkbox">
