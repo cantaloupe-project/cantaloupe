@@ -3,11 +3,12 @@
 # Generates the project javadoc. Pass the output pathname as an argument.
 #
 
-if ARGV.length != 2
+if ARGV.length != 1
   puts 'Usage: build_javadoc.rb <version>'
   exit
 end
 
+version = ARGV[0]
+
 `rm -rf website/javadoc/#{version}`
-`mkdir -p website/javadoc/#{version}`
-`javadoc -d #{ARGV[0]} -sourcepath src/main/java -subpackages edu.illinois.library.cantaloupe`
+`javadoc -d website/javadoc/#{version} -sourcepath src/main/java -subpackages edu.illinois.library.cantaloupe`
