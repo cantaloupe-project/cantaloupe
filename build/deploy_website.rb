@@ -22,7 +22,6 @@ end
 Dir.mktmpdir('website') do |tmp_dir|
   puts "Building site in #{tmp_dir}"
   `jekyll build -s website -d #{tmp_dir}`
-  `build/build_javadoc.rb #{tmp_dir}/javadoc`
 
   # switch to the gh-pages branch
   if orphan_exists
