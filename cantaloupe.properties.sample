@@ -16,14 +16,16 @@ admin.enabled = false
 admin.password =
 
 # !! Whether to enable HTTP access (http://), and on what TCP port.
+# (Standalone mode only.)
 http.enabled = true
 http.port = 8182
 
 # !! Whether to enable HTTPS access (https://), and on what TCP port.
+# (Standalone mode only.)
 https.enabled = false
 https.port = 8183
 
-# !! Available values are `JKS` and `PKCS12`.
+# !! Available values are `JKS` and `PKCS12`. (Standalone mode only.)
 https.key_store_type = JKS
 https.key_store_password = myPassword
 https.key_store_path = /path/to/keystore.jks
