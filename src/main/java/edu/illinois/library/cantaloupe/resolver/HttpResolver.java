@@ -1,12 +1,10 @@
 package edu.illinois.library.cantaloupe.resolver;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
-import org.apache.commons.configuration.Configuration;
 import org.restlet.Client;
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.Protocol;
@@ -33,7 +31,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         private final Client client;
         private final Reference url;
 
-        public HttpStreamSource(Client client, Reference url) {
+        HttpStreamSource(Client client, Reference url) {
             this.client = client;
             this.url = url;
         }
@@ -60,16 +58,18 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
     private static Logger logger = LoggerFactory.getLogger(HttpResolver.class);
 
-    public static final String BASIC_AUTH_SECRET_CONFIG_KEY =
+    static final String BASIC_AUTH_SECRET_CONFIG_KEY =
             "HttpResolver.auth.basic.secret";
-    public static final String BASIC_AUTH_USERNAME_CONFIG_KEY =
+    static final String BASIC_AUTH_USERNAME_CONFIG_KEY =
             "HttpResolver.auth.basic.username";
-    public static final String LOOKUP_STRATEGY_CONFIG_KEY =
+    static final String LOOKUP_STRATEGY_CONFIG_KEY =
             "HttpResolver.lookup_strategy";
-    public static final String URL_PREFIX_CONFIG_KEY =
+    static final String URL_PREFIX_CONFIG_KEY =
             "HttpResolver.BasicLookupStrategy.url_prefix";
-    public static final String URL_SUFFIX_CONFIG_KEY =
+    static final String URL_SUFFIX_CONFIG_KEY =
             "HttpResolver.BasicLookupStrategy.url_suffix";
+
+    static final String GET_URL_DELEGATE_METHOD = "HttpResolver::get_url";
 
     private final Client client = new Client(
             Arrays.asList(Protocol.HTTP, Protocol.HTTPS));
@@ -84,7 +84,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
      */
     private static ClientResource newClientResource(final Reference url) {
         final ClientResource resource = new ClientResource(url);
-        final Configuration config = Application.getConfiguration();
+        final Configuration config = Configuration.getInstance();
         final String username = config.getString(BASIC_AUTH_USERNAME_CONFIG_KEY, "");
         final String secret = config.getString(BASIC_AUTH_SECRET_CONFIG_KEY, "");
         if (username.length() > 0 && secret.length() > 0) {
@@ -95,9 +95,8 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public StreamSource getStreamSource(final Identifier identifier)
-            throws IOException {
-        Reference url = getUrl(identifier);
+    public StreamSource getStreamSource() throws IOException {
+        Reference url = getUrl();
         logger.info("Resolved {} to {}", identifier, url);
         ClientResource resource = newClientResource(url);
         resource.setNext(client);
@@ -121,25 +120,26 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public Format getSourceFormat(final Identifier identifier)
-            throws IOException {
-        Format format = ResolverUtil.inferSourceFormat(identifier);
-        if (format == Format.UNKNOWN) {
-            format = getSourceFormatFromContentTypeHeader(identifier);
+    public Format getSourceFormat() throws IOException {
+        if (sourceFormat == null) {
+            sourceFormat = ResolverUtil.inferSourceFormat(identifier);
+            if (sourceFormat == Format.UNKNOWN) {
+                sourceFormat = getSourceFormatFromContentTypeHeader();
+            }
+            getStreamSource().newInputStream(); // throws IOException if not found etc.
         }
-        getStreamSource(identifier).newInputStream(); // throws IOException if not found etc.
-        return format;
+        return sourceFormat;
     }
 
-    public Reference getUrl(final Identifier identifier) throws IOException {
-        final Configuration config = Application.getConfiguration();
+    public Reference getUrl() throws IOException {
+        final Configuration config = Configuration.getInstance();
 
         switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
             case "BasicLookupStrategy":
-                return getUrlWithBasicStrategy(identifier);
+                return getUrlWithBasicStrategy();
             case "ScriptLookupStrategy":
                 try {
-                    return getUrlWithScriptStrategy(identifier);
+                    return getUrlWithScriptStrategy();
                 } catch (ScriptException | DelegateScriptDisabledException e) {
                     logger.error(e.getMessage(), e);
                     throw new IOException(e);
@@ -154,15 +154,13 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
      * Issues an HTTP HEAD request and checks the Content-Type header in the
      * response to determine the source format.
      *
-     * @param identifier
      * @return A source format, or {@link Format#UNKNOWN} if unknown.
      * @throws IOException
      */
-    private Format getSourceFormatFromContentTypeHeader(Identifier identifier)
-            throws IOException {
+    private Format getSourceFormatFromContentTypeHeader() throws IOException {
         Format format = Format.UNKNOWN;
         String contentType = "";
-        Reference url = getUrl(identifier);
+        Reference url = getUrl();
         ClientResource resource = newClientResource(url);
         resource.setNext(client);
         try {
@@ -187,31 +185,29 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         return format;
     }
 
-    private Reference getUrlWithBasicStrategy(final Identifier identifier) {
-        final Configuration config = Application.getConfiguration();
+    private Reference getUrlWithBasicStrategy() {
+        final Configuration config = Configuration.getInstance();
         final String prefix = config.getString(URL_PREFIX_CONFIG_KEY, "");
         final String suffix = config.getString(URL_SUFFIX_CONFIG_KEY, "");
         return new Reference(prefix + identifier.toString() + suffix);
     }
 
     /**
-     * @param identifier
      * @return
      * @throws FileNotFoundException If the delegate script does not exist
      * @throws IOException
      * @throws ScriptException If the script fails to execute
      * @throws DelegateScriptDisabledException
      */
-    private Reference getUrlWithScriptStrategy(Identifier identifier)
+    private Reference getUrlWithScriptStrategy()
             throws IOException, ScriptException,
             DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final String[] args = { identifier.toString() };
-        final String method = "get_url";
-        final Object result = engine.invoke(method, args);
+        final Object result = engine.invoke(GET_URL_DELEGATE_METHOD, args);
         if (result == null) {
-            throw new FileNotFoundException(method + " returned nil for " +
-                    identifier);
+            throw new FileNotFoundException(GET_URL_DELEGATE_METHOD +
+                    " returned nil for " + identifier);
         }
         return new Reference((String) result);
     }

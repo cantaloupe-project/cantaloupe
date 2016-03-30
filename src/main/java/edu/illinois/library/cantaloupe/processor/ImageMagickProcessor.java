@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
@@ -43,9 +43,9 @@ class ImageMagickProcessor extends AbstractProcessor
     private static Logger logger = LoggerFactory.
             getLogger(ImageMagickProcessor.class);
 
-    public static final String BACKGROUND_COLOR_CONFIG_KEY =
+    static final String BACKGROUND_COLOR_CONFIG_KEY =
             "ImageMagickProcessor.background_color";
-    public static final String PATH_TO_BINARIES_CONFIG_KEY =
+    static final String PATH_TO_BINARIES_CONFIG_KEY =
             "ImageMagickProcessor.path_to_binaries";
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
@@ -89,9 +89,9 @@ class ImageMagickProcessor extends AbstractProcessor
      * @return
      */
     private static String getPath(String binaryName) {
-        String path = Application.getConfiguration().
+        String path = Configuration.getInstance().
                 getString(PATH_TO_BINARIES_CONFIG_KEY);
-        if (path != null) {
+        if (path != null && path.length() > 0) {
             path = StringUtils.stripEnd(path, File.separator) + File.separator +
                     binaryName;
         } else {
@@ -122,9 +122,8 @@ class ImageMagickProcessor extends AbstractProcessor
             try {
                 logger.info("Executing {}", commandString);
                 final Process process = pb.start();
-                final InputStream processInputStream = process.getInputStream();
 
-                try {
+                try (final InputStream processInputStream = process.getInputStream()) {
                     BufferedReader stdInput = new BufferedReader(
                             new InputStreamReader(processInputStream));
                     String s;
@@ -167,8 +166,6 @@ class ImageMagickProcessor extends AbstractProcessor
                     process.waitFor();
                 } catch (InterruptedException e) {
                     logger.error(e.getMessage());
-                } finally {
-                    processInputStream.close();
                 }
             } catch (IOException e) {
                 logger.error(e.getMessage());
@@ -196,9 +193,7 @@ class ImageMagickProcessor extends AbstractProcessor
         if (getAvailableOutputFormats().size() < 1) {
             throw new UnsupportedSourceFormatException(format);
         }
-        InputStream inputStream = null;
-        try {
-            inputStream = streamSource.newInputStream();
+        try (InputStream inputStream = streamSource.newInputStream()) {
             Info sourceInfo = new Info(
                     format.getPreferredExtension() + ":-", inputStream,
                     true);
@@ -207,14 +202,6 @@ class ImageMagickProcessor extends AbstractProcessor
                     sourceInfo.getImageHeight(), getSourceFormat());
         } catch (IM4JavaException | IOException e) {
             throw new ProcessorException(e.getMessage(), e);
-        } finally {
-            try {
-                if (inputStream != null) {
-                    inputStream.close();
-                }
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
         }
     }
 
@@ -272,19 +259,16 @@ class ImageMagickProcessor extends AbstractProcessor
 
             ConvertCmd convert = new ConvertCmd();
 
-            String binaryPath = Application.getConfiguration().
+            String binaryPath = Configuration.getInstance().
                     getString(PATH_TO_BINARIES_CONFIG_KEY, "");
             if (binaryPath.length() > 0) {
                 convert.setSearchPath(binaryPath);
             }
 
-            InputStream inputStream = streamSource.newInputStream();
-            try {
+            try (InputStream inputStream = streamSource.newInputStream()) {
                 convert.setInputProvider(new Pipe(inputStream, null));
                 convert.setOutputConsumer(new Pipe(null, outputStream));
                 convert.run(op);
-            } finally {
-                inputStream.close();
             }
         } catch (IOException | IM4JavaException | InterruptedException e) {
             throw new ProcessorException(e.getMessage(), e);
@@ -351,7 +335,7 @@ class ImageMagickProcessor extends AbstractProcessor
                     if (ops.getOutputFormat().supportsTransparency()) {
                         imOp.background("none");
                     } else {
-                        final String bgColor = Application.getConfiguration().
+                        final String bgColor = Configuration.getInstance().
                                 getString(BACKGROUND_COLOR_CONFIG_KEY, "black");
                         imOp.background(bgColor);
                     }

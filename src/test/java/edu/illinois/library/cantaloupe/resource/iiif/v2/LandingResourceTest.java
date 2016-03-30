@@ -1,9 +1,8 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
-import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
@@ -20,15 +19,15 @@ public class LandingResourceTest extends ResourceTest {
 
     @Test
     public void testEndpointDisabled() {
-        Configuration config = Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
         ClientResource client = getClientForUriPath(
                 WebApplication.IIIF_2_PATH);
 
-        config.setProperty("endpoint.iiif.2.enabled", true);
+        config.setProperty(Iiif2Resource.ENDPOINT_ENABLED_CONFIG_KEY, true);
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 
-        config.setProperty("endpoint.iiif.2.enabled", false);
+        config.setProperty(Iiif2Resource.ENDPOINT_ENABLED_CONFIG_KEY, false);
         try {
             client.get();
             fail("Expected exception");

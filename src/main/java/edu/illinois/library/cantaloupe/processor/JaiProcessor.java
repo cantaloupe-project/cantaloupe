@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
@@ -44,9 +44,9 @@ class JaiProcessor extends AbstractImageIoProcessor
 
     private static Logger logger = LoggerFactory.getLogger(JaiProcessor.class);
 
-    public static final String JPG_QUALITY_CONFIG_KEY =
+    static final String JPG_QUALITY_CONFIG_KEY =
             "JaiProcessor.jpg.quality";
-    public static final String TIF_COMPRESSION_CONFIG_KEY =
+    static final String TIF_COMPRESSION_CONFIG_KEY =
             "JaiProcessor.tif.compression";
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =

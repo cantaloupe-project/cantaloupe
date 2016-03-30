@@ -16,7 +16,7 @@ class ReductionFactor {
      * @param scalePercent Scale percentage greater than 0
      * @return Instance corresponding to the given scale.
      */
-    public static ReductionFactor forScale(final double scalePercent) {
+    static ReductionFactor forScale(final double scalePercent) {
         return ReductionFactor.forScale(scalePercent, 0);
     }
 
@@ -26,8 +26,8 @@ class ReductionFactor {
      * @param scalePercent Scale percentage greater than 0
      * @return Instance corresponding to the given scale.
      */
-    public static ReductionFactor forScale(final double scalePercent,
-                                           int maxFactor) {
+    static ReductionFactor forScale(final double scalePercent,
+                                    final int maxFactor) {
         return ReductionFactor.forScale(scalePercent, maxFactor, 0);
     }
 

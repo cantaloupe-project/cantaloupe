@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -12,7 +12,6 @@ import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +49,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
     private static Logger logger = LoggerFactory.
             getLogger(FfmpegProcessor.class);
 
-    public static final String PATH_TO_BINARIES_CONFIG_KEY =
+    static final String PATH_TO_BINARIES_CONFIG_KEY =
             "FfmpegProcessor.path_to_binaries";
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
@@ -92,9 +91,9 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
      * @return
      */
     private static String getPath(String binaryName) {
-        String path = Application.getConfiguration().
+        String path = Configuration.getInstance().
                 getString(PATH_TO_BINARIES_CONFIG_KEY);
-        if (path != null) {
+        if (path != null && path.length() > 0) {
             path = StringUtils.stripEnd(path, File.separator) + File.separator +
                     binaryName;
         } else {
@@ -131,7 +130,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
                 case RIGHT_CENTER:
                     return String.format(
                             "main_w-overlay_w-%d:(main_h-overlay_h)/2",
-                            edgeMargin, edgeMargin);
+                            edgeMargin);
                 case CENTER:
                     return "(main_w-overlay_w)/2:(main_h-overlay_h)/2";
             }
@@ -247,26 +246,6 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
             throw new UnsupportedOutputFormatException();
         }
 
-        class StreamCopier implements Runnable {
-            private final InputStream inputStream;
-            private final OutputStream outputStream;
-
-            public StreamCopier(InputStream in, OutputStream out) {
-                inputStream = in;
-                outputStream = out;
-            }
-
-            public void run() {
-                try {
-                    IOUtils.copy(inputStream, outputStream);
-                } catch (IOException e) {
-                    if (!e.getMessage().startsWith("Broken pipe")) {
-                        logger.error(e.getMessage(), e);
-                    }
-                }
-            }
-        }
-
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
             final ProcessBuilder pb = getProcessBuilder(ops,
@@ -274,28 +253,24 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
             logger.info("Executing {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
-            InputStream processInputStream = process.getInputStream();
-            InputStream processErrorStream = process.getErrorStream();
-            OutputStream processOutputStream = process.getOutputStream();
-
-            executorService.submit(
-                    new StreamCopier(processInputStream, outputStream));
-            executorService.submit(
-                    new StreamCopier(processErrorStream, errorBucket));
-            try {
-                int code = process.waitFor();
-                if (code != 0) {
-                    logger.error("ffmpeg returned with code {}", code);
-                    final String errorStr = errorBucket.toString();
-                    if (errorStr != null && errorStr.length() > 0) {
-                        throw new ProcessorException(errorStr);
+            try (final InputStream processInputStream = process.getInputStream();
+                 final InputStream processErrorStream = process.getErrorStream()) {
+                executorService.submit(
+                        new StreamCopier(processInputStream, outputStream));
+                executorService.submit(
+                        new StreamCopier(processErrorStream, errorBucket));
+                try {
+                    int code = process.waitFor();
+                    if (code != 0) {
+                        logger.error("ffmpeg returned with code {}", code);
+                        final String errorStr = errorBucket.toString();
+                        if (errorStr != null && errorStr.length() > 0) {
+                            throw new ProcessorException(errorStr);
+                        }
                     }
+                } finally {
+                    process.destroy();
                 }
-            } finally {
-                processInputStream.close();
-                processOutputStream.close();
-                processErrorStream.close();
-                process.destroy();
             }
         } catch (IOException | InterruptedException e) {
             String msg = e.getMessage();

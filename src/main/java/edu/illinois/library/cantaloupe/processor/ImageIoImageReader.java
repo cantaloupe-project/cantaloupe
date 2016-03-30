@@ -56,6 +56,10 @@ class ImageIoImageReader {
     /** Set in setFormat() */
     private Format format;
 
+    static {
+        ImageIO.setUseCache(false);
+    }
+
     /**
      * @return Map of available output formats for all known source formats,
      * based on information reported by ImageIO.

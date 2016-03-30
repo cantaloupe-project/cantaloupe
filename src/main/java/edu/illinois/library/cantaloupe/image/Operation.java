@@ -5,8 +5,7 @@ import java.util.Map;
 
 /**
  * Interface to be implemented by all image-processing operations. Clients
- * (e.g. {@link edu.illinois.library.cantaloupe.processor.Processor}s) should
- * check instances' type and recast.
+ * should check instances' type and recast.
  */
 public interface Operation {
 
@@ -19,8 +18,8 @@ public interface Operation {
     Dimension getResultingSize(Dimension fullSize);
 
     /**
-     * @return Whether an application of the operation would result in an
-     * identical source image.
+     * @return Whether application of the operation will result in an identical
+     *         source image.
      */
     boolean isNoOp();
 
@@ -28,7 +27,9 @@ public interface Operation {
      * @param fullSize Full size of the source image on which the operation
      *                 is being applied.
      * @return Map serialization of the operation that expresses the essence
-     *         of the operation relative to the given full size.
+     *         of the operation relative to the given full size. The map
+     *         should include a string "operation" key pointing to the
+     *         lowercase name of the operation.
      */
     Map<String,Object> toMap(Dimension fullSize);
 

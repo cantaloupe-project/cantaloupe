@@ -1,23 +1,32 @@
 package edu.illinois.library.cantaloupe.resolver;
 
-import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
-import org.apache.commons.configuration.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Used to obtain an instance of a {@link Resolver} defined in the
  * configuration, or returned by a delegate method.
  */
 public abstract class ResolverFactory {
+
+    /**
+     * @return How resolvers are chosen by {@link #getResolver(Identifier)}.
+     */
+    public enum SelectionStrategy {
+        STATIC, DELEGATE_SCRIPT
+    }
 
     private static Logger logger = LoggerFactory.
             getLogger(ResolverFactory.class);
@@ -29,20 +38,32 @@ public abstract class ResolverFactory {
     public static final String STATIC_RESOLVER_CONFIG_KEY = "resolver.static";
 
     /**
+     * @return Set of instances of each unique resolver.
+     */
+    public static Set<Resolver> getAllResolvers() {
+        return new HashSet<Resolver>(Arrays.asList(
+                new AmazonS3Resolver(),
+                new AzureStorageResolver(),
+                new FilesystemResolver(),
+                new HttpResolver(),
+                new JdbcResolver()));
+    }
+
+    /**
      * If {@link #STATIC_RESOLVER_CONFIG_KEY} is null or undefined, uses a
      * delegate script method to return an instance of the appropriate
      * resolver for the given identifier. Otherwise, returns an instance of
      * the resolver specified in {@link #STATIC_RESOLVER_CONFIG_KEY}.
      *
-     * @return An instance of the appropriate resolver for the given
-     * identifier.
+     * @return Instance of the appropriate resolver for the given identifier,
+     *         with identifier already set.
      * @throws Exception
      * @throws FileNotFoundException If the specified chooser script is not
      * found.
      */
     public static Resolver getResolver(Identifier identifier) throws Exception {
-        final Configuration config = Application.getConfiguration();
-        if (config.getBoolean(DELEGATE_RESOLVER_CONFIG_KEY, false)) {
+        final Configuration config = Configuration.getInstance();
+        if (getSelectionStrategy().equals(SelectionStrategy.DELEGATE_SCRIPT)) {
             Resolver resolver = newDynamicResolver(identifier);
             logger.info("{}() returned a {} for {}",
                     RESOLVER_CHOOSER_DELEGATE_METHOD,
@@ -52,12 +73,20 @@ public abstract class ResolverFactory {
             final String resolverName = config.
                     getString(STATIC_RESOLVER_CONFIG_KEY);
             if (resolverName != null) {
-                return newStaticResolver(resolverName);
+                final Resolver resolver = newStaticResolver(resolverName);
+                resolver.setIdentifier(identifier);
+                return resolver;
             } else {
                 throw new ConfigurationException(STATIC_RESOLVER_CONFIG_KEY +
                         " is not set to a valid resolver.");
             }
         }
+    }
+
+    public static SelectionStrategy getSelectionStrategy() {
+        final Configuration config = Configuration.getInstance();
+        return config.getBoolean(DELEGATE_RESOLVER_CONFIG_KEY, false) ?
+                SelectionStrategy.DELEGATE_SCRIPT : SelectionStrategy.STATIC;
     }
 
     /**

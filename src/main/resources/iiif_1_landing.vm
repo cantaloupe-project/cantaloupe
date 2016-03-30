@@ -8,22 +8,24 @@
 
 <body id="cl-landing">
     <div class="container-fluid">
-        #parse("header.vm")
-
-        <ol class="breadcrumb">
-            <li><a href="$baseUri/">Home</a></li>
-            <li class="active">IIIF Image API 1.x Endpoint</li>
-        </ol>
-
-        <h2>IIIF Image API 1.x Endpoint</h2>
+        <h1>IIIF Image API 1.x Endpoint</h1>
 
         <ul>
-            <li><a href="http://iiif.io/api/image/1.0/">1.0 Documentation</a></li>
-            <li><a href="http://iiif.io/api/image/1.1/">1.1 Documentation</a></li>
+            <li>Documentation
+                <ul>
+                    <li><a href="http://iiif.io/api/image/1.0/">1.0</a></li>
+                    <li><a href="http://iiif.io/api/image/1.1/">1.1</a></li>
+                </ul>
+            </li>
             <li>Sample Requests
                 <ul>
                     <li>$baseUri/iiif/1/{identifier}/info.json</li>
                     <li>$baseUri/iiif/1/{identifier}/full/full/0/native.jpg</li>
+                </ul>
+            </li>
+            <li>Also available:
+                <ul>
+                    <li><a href="$baseUri/iiif/2">IIIF Image API 2.0 endpoint</a></li>
                 </ul>
             </li>
         </ul>

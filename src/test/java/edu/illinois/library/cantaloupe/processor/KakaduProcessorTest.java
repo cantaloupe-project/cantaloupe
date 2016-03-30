@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -18,7 +18,7 @@ public class KakaduProcessorTest extends ProcessorTest {
 
     @Before
     public void setUp() throws Exception {
-        Application.getConfiguration().setProperty(
+        Configuration.getInstance().setProperty(
                 KakaduProcessor.PATH_TO_BINARIES_CONFIG_KEY, "/usr/local/bin");
 
         instance = new KakaduProcessor();

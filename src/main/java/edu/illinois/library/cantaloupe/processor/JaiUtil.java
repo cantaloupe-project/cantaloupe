@@ -44,7 +44,7 @@ abstract class JaiUtil {
      *         set in the application configuration.
      * @throws IOException
 
-    public static RenderedOp applyWatermark(final RenderedOp baseImage)
+    static RenderedOp applyWatermark(final RenderedOp baseImage)
             throws ConfigurationException, IOException {
         RenderedOp markedImage = baseImage;
         final Dimension imageSize = new Dimension(baseImage.getWidth(),
@@ -65,7 +65,7 @@ abstract class JaiUtil {
      * @return Cropped image, or the input image if the given operation is a
      * no-op.
      */
-    public static RenderedOp cropImage(RenderedOp inImage, Crop crop) {
+    static RenderedOp cropImage(RenderedOp inImage, Crop crop) {
         return cropImage(inImage, crop, new ReductionFactor(0));
     }
 
@@ -83,9 +83,9 @@ abstract class JaiUtil {
      * @return Cropped image, or the input image if the given operation is a
      * no-op.
      */
-    public static RenderedOp cropImage(RenderedOp inImage,
-                                       Crop crop,
-                                       ReductionFactor rf) {
+    static RenderedOp cropImage(RenderedOp inImage,
+                                Crop crop,
+                                ReductionFactor rf) {
         RenderedOp croppedImage = inImage;
         if (!crop.isNoOp()) {
             // calculate the region x, y, and actual width/height
@@ -174,7 +174,7 @@ abstract class JaiUtil {
      * is a no-op.
      */
     @SuppressWarnings({"deprecation"}) // really, JAI itself is basically deprecated
-    public static RenderedOp filterImage(RenderedOp inImage, Filter filter) {
+    static RenderedOp filterImage(RenderedOp inImage, Filter filter) {
         RenderedOp filteredImage = inImage;
         if (!filter.isNoOp()) {
             // convert to grayscale
@@ -330,8 +330,7 @@ abstract class JaiUtil {
      * @param tileSize JAI tile size
      * @return Reformatted image
      */
-    public static RenderedOp reformatImage(PlanarImage inImage,
-                                           Dimension tileSize) {
+    static RenderedOp reformatImage(PlanarImage inImage, Dimension tileSize) {
         final ParameterBlock pb = new ParameterBlock();
         pb.addSource(inImage);
         return JAI.create("format", pb, defaultRenderingHints(tileSize));
@@ -343,8 +342,7 @@ abstract class JaiUtil {
      * @return Rotated image, or the input image if the given rotate operation
      * is a no-op.
      */
-    public static RenderedOp rotateImage(RenderedOp inImage,
-                                         Rotate rotate) {
+    static RenderedOp rotateImage(RenderedOp inImage, Rotate rotate) {
         RenderedOp rotatedImage = inImage;
         if (!rotate.isNoOp()) {
             logger.debug("rotateImage(): rotating {} degrees",
@@ -366,7 +364,7 @@ abstract class JaiUtil {
      * @param scale Scale operation
      * @return Scaled image, or the input image if the given scale is a no-op.
      */
-    public static RenderedOp scaleImage(RenderedOp inImage, Scale scale) {
+    static RenderedOp scaleImage(RenderedOp inImage, Scale scale) {
         return scaleImage(inImage, scale,
                 Interpolation.getInstance(Interpolation.INTERP_BILINEAR),
                 new ReductionFactor(0));
@@ -379,8 +377,8 @@ abstract class JaiUtil {
      *                        <code>inImage</code>
      * @return Scaled image, or the input image if the given scale is a no-op.
      */
-    public static RenderedOp scaleImage(RenderedOp inImage, Scale scale,
-                                        ReductionFactor rf) {
+    static RenderedOp scaleImage(RenderedOp inImage, Scale scale,
+                                 ReductionFactor rf) {
         return scaleImage(inImage, scale,
                 Interpolation.getInstance(Interpolation.INTERP_BILINEAR),
                 rf);
@@ -399,9 +397,9 @@ abstract class JaiUtil {
      *                        <code>inImage</code>
      * @return Scaled image, or the input image if the given scale is a no-op.
      */
-    public static RenderedOp scaleImage(RenderedOp inImage, Scale scale,
-                                        Interpolation interpolation,
-                                        ReductionFactor rf) {
+    static RenderedOp scaleImage(RenderedOp inImage, Scale scale,
+                                 Interpolation interpolation,
+                                 ReductionFactor rf) {
         RenderedOp scaledImage = inImage;
         if (!scale.isNoOp()) {
             final int sourceWidth = inImage.getWidth();
@@ -440,8 +438,7 @@ abstract class JaiUtil {
      * @return Transposed image, or the input image if the given transpose
      * operation is a no-op.
      */
-    public static RenderedOp transposeImage(RenderedOp inImage,
-                                            Transpose transpose) {
+    static RenderedOp transposeImage(RenderedOp inImage, Transpose transpose) {
         ParameterBlock pb = new ParameterBlock();
         pb.addSource(inImage);
         switch (transpose) {

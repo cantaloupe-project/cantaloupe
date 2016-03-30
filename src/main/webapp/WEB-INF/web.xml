@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.5"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://java.sun.com/xml/ns/javaee"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+                  http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+    <display-name>Cantaloupe</display-name>
+
+    <context-param>
+        <param-name>org.restlet.application</param-name>
+        <param-value>edu.illinois.library.cantaloupe.WebApplication</param-value>
+    </context-param>
+
+    <servlet>
+        <servlet-name>ServerServlet</servlet-name>
+        <servlet-class>edu.illinois.library.cantaloupe.EntryServlet</servlet-class>
+        <init-param>
+            <param-name>org.restlet.clients</param-name>
+            <param-value>CLAP HTTP HTTPS</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>ServerServlet</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+</web-app>

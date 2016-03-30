@@ -1,63 +1,10 @@
-<!DOCTYPE html>
-<html>
+---
+layout: default
+title: Home
+---
 
-  <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="High-performance dynamic image server in Java
-">
-
-  <title>
-    Cantaloupe
-    
-      :: Home
-    
-  </title>
-
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-  <link rel="stylesheet" type="text/css" href="/cantaloupe/css/syntax.css">
-  <link rel="stylesheet" href="/cantaloupe/css/base.css">
-
-  <script src="/cantaloupe/scripts/jquery.min.js"></script>
-</head>
-
-
-  <body>
-
-    <div class="container">
-      <nav class="navbar navbar-default navbar-fixed-top">
-  <div class="container-fluid">
-
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand" href="/cantaloupe/">
-        <img alt="Cantaloupe" src="/cantaloupe/images/cantaloupe.png" width="40">
-      </a>
-    </div>
-
-    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-      <ul class="nav navbar-nav">
-        <li><a href="/cantaloupe/get-started.html">Get Started</a></li>
-        <li><a href="/cantaloupe/manual/">User Manual</a></li>
-        <li><a href="/cantaloupe/support.html">Support</a></li>
-      </ul>
-      <ul class="nav navbar-nav navbar-right">
-        <li><a href="https://github.com/medusa-project/cantaloupe/releases.atom" title="Subscribe to Releases"><img width="22" height="22" src="/cantaloupe/images/feed.svg"></a></li>
-      </ul>
-    </div>
-
-  </div>
-</nav>
-
-
-      <header>
-  <img src="/cantaloupe/images/cantaloupe.png" width="154" height="81">
+<header>
+  <img src="{{ site.baseurl }}/images/cantaloupe.png" width="154" height="81">
   <h1>
     Cantaloupe
     <br>
@@ -90,7 +37,7 @@
   <div class="col-sm-6">
     <h3>Easy</h3>
     <ul>
-      <li>Get started in minutes with no web containers or XML files to deal with. A <strong>fast web server</strong> is built right in.</li>
+      <li>Get started in minutes with no web containers or XML files to deal with. A <strong>fast web server</strong> is built right in. Deploy to a container later, if you want.</li>
       <li><strong>Self-contained</strong> for easy prototyping, deployment, and upgrading.</li>
     </ul>
 
@@ -104,6 +51,7 @@
     <h3>Secure</h3>
     <ul>
       <li><strong>Dynamic, selective watermarking</strong> with fine-grained controls.</li>
+      <li><strong>On-the-fly redaction</strong> of image regions.</li>
       <li>Built-in support for HTTPS and HTTP Basic authentication.</li>
       <li>Supports <strong>fine-grained authorization policies</strong> for integration into diverse infrastructures.</li>
     </ul>
@@ -125,12 +73,12 @@
     <h3>Fast</h3>
     <ul>
       <li><strong>Optimized JPEG2000 and TIFF readers</strong> capable of excellent performance with massive images.</li>
-      <li>Available filesystem and database caches to speed up response times and reduce server load.</li>
+      <li>Available filesystem, database, and cloud storage caches to speed up response times and reduce server load.</li>
     </ul>
   </div>
 </div>
 
-<script src="/cantaloupe/scripts/openseadragon.min.js"></script>
+<script src="{{ site.baseurl }}/scripts/openseadragon.min.js"></script>
 <script type="text/javascript">
     var viewer = OpenSeadragon({
         id: "openseadragon1",
@@ -139,16 +87,3 @@
         tileSources: "https://iiif.library.illinois.edu/dls/iiif/2/andromeda-pyramidal-tiled.tif"
     });
 </script>
-
-
-      <footer>
-</footer>
-
-<script src="/cantaloupe/scripts/bootstrap.min.js"></script>
-<script src="/cantaloupe/scripts/base.js"></script>
-
-    </div>
-
-  </body>
-
-</html>

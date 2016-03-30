@@ -126,11 +126,32 @@
         </if>
     </logger>
     <logger name="eu.medsea.mimeutil" level="INFO" />
-    <logger name="org.apache.commons.configuration" level="INFO" />
     <logger name="edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute" level="INFO" />
     <logger name="org.restlet" level="INFO" />
 
     <root level="${log.application.level}">
+        <!-- Hook up access log appenders -->
+        <if condition='property("log.access.ConsoleAppender.enabled").contains("true")'>
+            <then>
+                <appender-ref ref="AccessConsoleLog" />
+            </then>
+        </if>
+        <if condition='property("log.access.FileAppender.enabled").contains("true")'>
+            <then>
+                <appender-ref ref="AccessFileLog" />
+            </then>
+        </if>
+        <if condition='property("log.access.RollingFileAppender.enabled").contains("true")'>
+            <then>
+                <appender-ref ref="AccessRollingFileLog" />
+            </then>
+        </if>
+        <if condition='property("log.access.SyslogAppender.enabled").contains("true")'>
+            <then>
+                <appender-ref ref="AccessSyslogLog" />
+            </then>
+        </if>
+        <!-- Hook up application log appenders -->
         <if condition='property("log.application.ConsoleAppender.enabled").contains("true")'>
             <then>
                 <appender-ref ref="AppConsoleLog" />

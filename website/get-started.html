@@ -1,69 +1,16 @@
-<!DOCTYPE html>
-<html>
+---
+layout: default
+title: Get Started
+---
 
-  <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="High-performance dynamic image server in Java
-">
-
-  <title>
-    Cantaloupe
-    
-      :: Get Started
-    
-  </title>
-
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-  <link rel="stylesheet" type="text/css" href="/cantaloupe/css/syntax.css">
-  <link rel="stylesheet" href="/cantaloupe/css/base.css">
-
-  <script src="/cantaloupe/scripts/jquery.min.js"></script>
-</head>
-
-
-  <body>
-
-    <div class="container">
-      <nav class="navbar navbar-default navbar-fixed-top">
-  <div class="container-fluid">
-
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand" href="/cantaloupe/">
-        <img alt="Cantaloupe" src="/cantaloupe/images/cantaloupe.png" width="40">
-      </a>
-    </div>
-
-    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-      <ul class="nav navbar-nav">
-        <li><a href="/cantaloupe/get-started.html">Get Started</a></li>
-        <li><a href="/cantaloupe/manual/">User Manual</a></li>
-        <li><a href="/cantaloupe/support.html">Support</a></li>
-      </ul>
-      <ul class="nav navbar-nav navbar-right">
-        <li><a href="https://github.com/medusa-project/cantaloupe/releases.atom" title="Subscribe to Releases"><img width="22" height="22" src="/cantaloupe/images/feed.svg"></a></li>
-      </ul>
-    </div>
-
-  </div>
-</nav>
-
-
-      <ol class="breadcrumb">
-  <li><a href="/cantaloupe/">Home</a></li>
+<ol class="breadcrumb">
+  <li><a href="{{ site.baseurl }}/">Home</a></li>
   <li class="active">Get Started</li>
 </ol>
 
 <h1>Get Started</h1>
 
-<p>This is a short guide to help you get going quickly with a typical configuration. Consult the <a href="manual/">user manual</a> for in-depth information about available features and functionality.</p>
+<p>This is a short guide to help you get going quickly with a typical standalone configuration. The <a href="manual/">user manual</a> contains a more in-depth version of this guide that covers some additional features, like running in a web container, and using the web-based "control panel."</p>
 
 <h2 id="Requirements">Requirements</h2>
 
@@ -89,17 +36,13 @@
 
 <p>From the command prompt (OS X/Linux):</p>
 
-<pre>java -Dcantaloupe.config=/path/to/cantaloupe.properties -Xmx2g -jar Cantaloupe-x.x.x.jar</pre>
+<pre>java -Dcantaloupe.config=/path/to/cantaloupe.properties -Xmx2g -jar Cantaloupe-x.x.x.war</pre>
 
 <p>From the command prompt (Windows):</p>
 
-<pre>java -Dcantaloupe.config=C:\path\to\cantaloupe.properties -Xmx2g -jar Cantaloupe-x.x.x.jar</pre>
+<pre>java -Dcantaloupe.config=C:\path\to\cantaloupe.properties -Xmx2g -jar Cantaloupe-x.x.x.war</pre>
 
-<p>Cantaloupe is now running. A status page is available at:</p>
-
-<p><a href="http://localhost:8182/">http://localhost:8182/</a></p>
-
-<p>Assuming you have an image named <span class="filename">image.tif</span>, try accessing:</p>
+<p>Cantaloupe is now running. Assuming you have an image named <span class="filename">image.tif</span>, try accessing:</p>
 
 <ul>
   <li><a href="http://localhost:8182/iiif/2/image.tif/info.json">http://localhost:8182/iiif/2/image.tif/info.json</a></li>
@@ -116,21 +59,8 @@
 
 <h2>Next Steps</h2>
 
-<p>The configuration file contains a lot of inline documentation. Consult the <a href="manual/">user manual</a> for more in-depth documentation. If you have questions, don't be afraid to <a href="support.html">ask for help</a>.</p>
+<p>The <a href="manual/">user manual</a> is the central source of documentation, organized by feature. Also, the configuration file contains a lot of inline documentation. If you have questions, don't be afraid to <a href="support.html">ask for help</a>.</p>
 
 <script type="text/javascript">
     $(document).ready(function() { getLatestReleaseInfo(); });
 </script>
-
-
-      <footer>
-</footer>
-
-<script src="/cantaloupe/scripts/bootstrap.min.js"></script>
-<script src="/cantaloupe/scripts/base.js"></script>
-
-    </div>
-
-  </body>
-
-</html>

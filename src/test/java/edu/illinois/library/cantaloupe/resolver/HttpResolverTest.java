@@ -2,14 +2,12 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import static org.junit.Assert.*;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,14 +29,15 @@ public class HttpResolverTest {
         server = new WebServer();
         server.start();
 
-        BaseConfiguration config = new BaseConfiguration();
+        Configuration config = Configuration.getInstance();
+        config.clear();
         config.setProperty(HttpResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "BasicLookupStrategy");
         config.setProperty(HttpResolver.URL_PREFIX_CONFIG_KEY,
                 "http://localhost:" + server.getPort() + "/");
-        Application.setConfiguration(config);
 
         instance = new HttpResolver();
+        instance.setIdentifier(IDENTIFIER);
     }
 
     @After
@@ -49,7 +48,7 @@ public class HttpResolverTest {
     @Test
     public void testGetStreamSourceWithPresentReadableImage() throws IOException {
         try {
-            assertNotNull(instance.getStreamSource(IDENTIFIER));
+            assertNotNull(instance.getStreamSource());
         } catch (IOException e) {
             fail();
         }
@@ -58,7 +57,8 @@ public class HttpResolverTest {
     @Test
     public void testGetStreamSourceWithMissingImage() throws IOException {
         try {
-            instance.getStreamSource(new Identifier("bogus"));
+            instance.setIdentifier(new Identifier("bogus"));
+            instance.getStreamSource();
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
@@ -90,9 +90,10 @@ public class HttpResolverTest {
 
     @Test
     public void testGetSourceFormat() throws IOException {
-        assertEquals(Format.JPG, instance.getSourceFormat(IDENTIFIER));
+        assertEquals(Format.JPG, instance.getSourceFormat());
         try {
-            instance.getSourceFormat(new Identifier("image.bogus"));
+            instance.setIdentifier(new Identifier("image.bogus"));
+            instance.getSourceFormat();
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
@@ -101,40 +102,47 @@ public class HttpResolverTest {
 
     @Test
     public void testGetUrlWithBasicLookupStrategy() throws Exception {
-        BaseConfiguration config = (BaseConfiguration) Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
+
         // with prefix
         config.setProperty(HttpResolver.URL_PREFIX_CONFIG_KEY,
                 "http://example.org/prefix/");
+        instance.setIdentifier(new Identifier("id"));
         assertEquals("http://example.org/prefix/id",
-                instance.getUrl(new Identifier("id")).toString());
+                instance.getUrl().toString());
         // with suffix
         config.setProperty(HttpResolver.URL_SUFFIX_CONFIG_KEY, "/suffix");
         assertEquals("http://example.org/prefix/id/suffix",
-                instance.getUrl(new Identifier("id")).toString());
+                instance.getUrl().toString());
         // without prefix or suffix
         config.setProperty(HttpResolver.URL_PREFIX_CONFIG_KEY, "");
         config.setProperty(HttpResolver.URL_SUFFIX_CONFIG_KEY, "");
+        instance.setIdentifier(new Identifier("http://example.org/images/image.jpg"));
         assertEquals("http://example.org/images/image.jpg",
-                instance.getUrl(new Identifier("http://example.org/images/image.jpg")).toString());
+                instance.getUrl().toString());
     }
 
     @Test
     public void testGetUrlWithScriptLookupStrategy() throws Exception {
-        Configuration config = Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
         config.setProperty(HttpResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
 
         // valid, present script
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
+        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
+                "true");
+        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         assertEquals(new Reference("http://example.org/bla/" + IDENTIFIER),
-                instance.getUrl(IDENTIFIER));
+                instance.getUrl());
 
         // missing script
         try {
-            config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_CONFIG_KEY,
+            config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
+                    "true");
+            config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
                     TestUtil.getFixture("bogus.rb").getAbsolutePath());
-            instance.getUrl(IDENTIFIER);
+            instance.getUrl();
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass

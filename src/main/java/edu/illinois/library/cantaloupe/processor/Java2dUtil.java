@@ -1,9 +1,10 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Position;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
@@ -13,14 +14,17 @@ import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * A collection of methods for operating on {@link BufferedImage}s.
@@ -28,6 +32,53 @@ import java.io.IOException;
 abstract class Java2dUtil {
 
     private static Logger logger = LoggerFactory.getLogger(Java2dUtil.class);
+
+    /**
+     * Redacts regions from the given image.
+     *
+     * @param baseImage Image to apply the watermark on top of.
+     * @param appliedCrop Crop already applied to <code>baseImage</code>.
+     * @param reductionFactor Reduction factor already applied to
+     *                        <code>baseImage</code>.
+     * @param redactions Regions of the image to redact.
+     * @return Input image with redactions applied.
+     */
+    static BufferedImage applyRedactions(final BufferedImage baseImage,
+                                         final Crop appliedCrop,
+                                         final ReductionFactor reductionFactor,
+                                         final List<Redaction> redactions) {
+        if (baseImage != null && redactions.size() > 0) {
+            final long msec = System.currentTimeMillis();
+            final Dimension imageSize = new Dimension(
+                    baseImage.getWidth(), baseImage.getHeight());
+
+            final Graphics2D g2d = baseImage.createGraphics();
+            g2d.setColor(Color.black);
+
+            for (final Redaction redaction : redactions) {
+                final Rectangle redactionRegion =
+                        redaction.getResultingRegion(imageSize, appliedCrop);
+                redactionRegion.x *= reductionFactor.getScale();
+                redactionRegion.y *= reductionFactor.getScale();
+                redactionRegion.width *= reductionFactor.getScale();
+                redactionRegion.height *= reductionFactor.getScale();
+
+                if (!redactionRegion.isEmpty()) {
+                    logger.debug("applyRedactions(): applying {} at {},{}/{}x{}",
+                            redaction, redactionRegion.x, redactionRegion.y,
+                            redactionRegion.width, redactionRegion.height);
+                    g2d.fill(redactionRegion);
+                } else {
+                    logger.debug("applyRedactions(): {} is outside crop area; skipping",
+                            redaction);
+                }
+            }
+            g2d.dispose();
+            logger.info("applyRedactions() executed in {} msec",
+                    System.currentTimeMillis() - msec);
+        }
+        return baseImage;
+    }
 
     /**
      * Applies the watermark to the given image.
@@ -39,8 +90,8 @@ abstract class Java2dUtil {
      * @throws ConfigurationException
      * @throws IOException
      */
-    public static BufferedImage applyWatermark(final BufferedImage baseImage,
-                                               final Watermark watermark)
+    static BufferedImage applyWatermark(final BufferedImage baseImage,
+                                        final Watermark watermark)
             throws ConfigurationException, IOException {
         BufferedImage markedImage = baseImage;
         final Dimension imageSize = new Dimension(baseImage.getWidth(),
@@ -144,7 +195,7 @@ abstract class Java2dUtil {
      * @return A new BufferedImage of type RGB, or the input image if it
      * is not of custom type.
      */
-    public static BufferedImage convertCustomToRgb(final BufferedImage inImage) {
+    static BufferedImage convertCustomToRgb(final BufferedImage inImage) {
         BufferedImage outImage = inImage;
         if (inImage != null && inImage.getType() == BufferedImage.TYPE_CUSTOM) {
             final long msec = System.currentTimeMillis();
@@ -167,8 +218,8 @@ abstract class Java2dUtil {
      * @return Cropped image, or the input image if the given operation is a
      * no-op.
      */
-    public static BufferedImage cropImage(final BufferedImage inImage,
-                                          final Crop crop) {
+    static BufferedImage cropImage(final BufferedImage inImage,
+                                   final Crop crop) {
         return cropImage(inImage, crop, new ReductionFactor());
     }
 
@@ -185,9 +236,9 @@ abstract class Java2dUtil {
      * @return Cropped image, or the input image if the given operation is a
      * no-op.
      */
-    public static BufferedImage cropImage(final BufferedImage inImage,
-                                          final Crop crop,
-                                          final ReductionFactor rf) {
+    static BufferedImage cropImage(final BufferedImage inImage,
+                                   final Crop crop,
+                                   final ReductionFactor rf) {
         final Dimension croppedSize = crop.getResultingSize(
                 new Dimension(inImage.getWidth(), inImage.getHeight()));
         BufferedImage croppedImage;
@@ -239,8 +290,8 @@ abstract class Java2dUtil {
      * @return Filtered image, or the input image if the given filter operation
      * is a no-op.
      */
-    public static BufferedImage filterImage(final BufferedImage inImage,
-                                            final Filter filter) {
+    static BufferedImage filterImage(final BufferedImage inImage,
+                                     final Filter filter) {
         BufferedImage filteredImage = inImage;
         final long msec = System.currentTimeMillis();
         switch (filter) {
@@ -272,7 +323,7 @@ abstract class Java2dUtil {
      *         {@link WatermarkService#WATERMARK_FILE_CONFIG_KEY} is not set.
      * @throws IOException
      */
-    public static BufferedImage getWatermarkImage(Watermark watermark)
+    static BufferedImage getWatermarkImage(Watermark watermark)
             throws IOException {
         final ImageIoImageReader reader = new ImageIoImageReader();
         reader.setSource(watermark.getImage());
@@ -280,7 +331,7 @@ abstract class Java2dUtil {
         return reader.read();
     }
 
-    public static BufferedImage removeAlpha(final BufferedImage inImage) {
+    static BufferedImage removeAlpha(final BufferedImage inImage) {
         BufferedImage outImage = inImage;
         if (inImage.getColorModel().hasAlpha()) {
             final long msec = System.currentTimeMillis();
@@ -311,8 +362,8 @@ abstract class Java2dUtil {
      * @return Rotated image, or the input image if the given rotation is a
      * no-op.
      */
-    public static BufferedImage rotateImage(final BufferedImage inImage,
-                                            final Rotate rotate) {
+    static BufferedImage rotateImage(final BufferedImage inImage,
+                                     final Rotate rotate) {
         BufferedImage rotatedImage = inImage;
         if (!rotate.isNoOp()) {
             final long msec = System.currentTimeMillis();
@@ -357,8 +408,8 @@ abstract class Java2dUtil {
      * @return Downscaled image, or the input image if the given scale is a
      *         no-op.
      */
-    public static BufferedImage scaleImage(final BufferedImage inImage,
-                                           final Scale scale) {
+    static BufferedImage scaleImage(final BufferedImage inImage,
+                                    final Scale scale) {
         return scaleImage(inImage, scale, new ReductionFactor(0), false);
     }
 
@@ -377,10 +428,10 @@ abstract class Java2dUtil {
      * @return Downscaled image, or the input image if the given scale is a
      *         no-op.
      */
-    public static BufferedImage scaleImage(final BufferedImage inImage,
-                                           final Scale scale,
-                                           final ReductionFactor rf,
-                                           final boolean highQuality) {
+    static BufferedImage scaleImage(final BufferedImage inImage,
+                                    final Scale scale,
+                                    final ReductionFactor rf,
+                                    final boolean highQuality) {
         final Dimension sourceSize = new Dimension(
                 inImage.getWidth(), inImage.getHeight());
 
@@ -443,8 +494,8 @@ abstract class Java2dUtil {
      * @param transpose The transpose operation.
      * @return Transposed image.
      */
-    public static BufferedImage transposeImage(final BufferedImage inImage,
-                                               final Transpose transpose) {
+    static BufferedImage transposeImage(final BufferedImage inImage,
+                                        final Transpose transpose) {
         final long msec = System.currentTimeMillis();
         AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
         switch (transpose) {

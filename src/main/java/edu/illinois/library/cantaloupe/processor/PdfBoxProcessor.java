@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
@@ -19,14 +20,15 @@ import org.apache.pdfbox.rendering.PDFRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -39,8 +41,8 @@ class PdfBoxProcessor extends AbstractProcessor
     private static Logger logger = LoggerFactory.
             getLogger(PdfBoxProcessor.class);
 
-    public static final String DPI_CONFIG_KEY = "PdfBoxProcessor.dpi";
-    public static final String JAVA2D_SCALE_MODE_CONFIG_KEY =
+    static final String DPI_CONFIG_KEY = "PdfBoxProcessor.dpi";
+    static final String JAVA2D_SCALE_MODE_CONFIG_KEY =
             "PdfBoxProcessor.post_processor.java2d.scale_mode";
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
@@ -192,11 +194,29 @@ class PdfBoxProcessor extends AbstractProcessor
                                         final ReductionFactor reductionFactor,
                                         final OutputStream outputStream)
             throws IOException, ProcessorException {
+        Crop crop = null;
         for (Operation op : opList) {
             if (op instanceof Crop) {
-                image = Java2dUtil.cropImage(image, (Crop) op);
-            } else if (op instanceof Scale) {
-                final boolean highQuality = Application.getConfiguration().
+                crop = (Crop) op;
+                image = Java2dUtil.cropImage(image, crop);
+                break;
+            }
+        }
+
+        // Redactions happen immediately after cropping.
+        List<Redaction> redactions = new ArrayList<>();
+        for (Operation op : opList) {
+            if (op instanceof Redaction) {
+                redactions.add((Redaction) op);
+            }
+        }
+        image = Java2dUtil.applyRedactions(image, crop, reductionFactor,
+                redactions);
+
+        // Apply all other operations.
+        for (Operation op : opList) {
+            if (op instanceof Scale) {
+                final boolean highQuality = Configuration.getInstance().
                         getString(JAVA2D_SCALE_MODE_CONFIG_KEY, "speed").
                         equals("quality");
                 image = Java2dUtil.scaleImage(image,
@@ -257,17 +277,20 @@ class PdfBoxProcessor extends AbstractProcessor
                 return renderer.renderImageWithDPI(0, dpi);
             }
         } finally {
-            if (doc != null) {
-                doc.close();
-            }
-            if (inputStream != null) {
-                inputStream.close();
+            try {
+                if (doc != null) {
+                    doc.close();
+                }
+            } finally {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
             }
         }
     }
 
     private float getDpi(int reductionFactor) {
-        float dpi = Application.getConfiguration().getFloat(DPI_CONFIG_KEY, 150);
+        float dpi = Configuration.getInstance().getFloat(DPI_CONFIG_KEY, 150);
         // Decrease the DPI if the reduction factor is positive.
         for (int i = 0; i < reductionFactor; i++) {
             dpi /= 2f;

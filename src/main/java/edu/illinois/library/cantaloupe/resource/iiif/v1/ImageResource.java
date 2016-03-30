@@ -1,8 +1,9 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.cache.DerivativeCache;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -13,7 +14,7 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AccessDeniedException;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
-import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
+import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Disposition;
 import org.restlet.data.Reference;
@@ -21,8 +22,6 @@ import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Variant;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.io.FileNotFoundException;
@@ -38,13 +37,7 @@ import java.util.Set;
  * @see <a href="http://iiif.io/api/image/1.1/#url-syntax-image-request">Image
  * Request Operations</a>
  */
-public class ImageResource extends AbstractResource {
-
-    private static final Logger logger = LoggerFactory.
-            getLogger(ImageResource.class);
-
-    public static final String ENDPOINT_ENABLED_CONFIG_KEY =
-            "endpoint.iiif.1.enabled";
+public class ImageResource extends Iiif1Resource {
 
     /**
      * Format to assume when no extension is present in the URI.
@@ -53,11 +46,8 @@ public class ImageResource extends AbstractResource {
 
     @Override
     protected void doInit() throws ResourceException {
-        if (!Application.getConfiguration().
-                getBoolean(ENDPOINT_ENABLED_CONFIG_KEY, true)) {
-            throw new EndpointDisabledException();
-        }
         super.doInit();
+        getResponseCacheDirectives().addAll(getCacheDirectives());
     }
 
     /**
@@ -78,14 +68,14 @@ public class ImageResource extends AbstractResource {
         // Determine the format of the source image
         Format format = Format.UNKNOWN;
         try {
-            format = resolver.getSourceFormat(identifier);
+            format = resolver.getSourceFormat();
         } catch (FileNotFoundException e) {
-            if (Application.getConfiguration().
+            if (Configuration.getInstance().
                     getBoolean(PURGE_MISSING_CONFIG_KEY, false)) {
                 // if the image was not found, purge it from the cache
-                final Cache cache = CacheFactory.getInstance();
+                final Cache cache = CacheFactory.getDerivativeCache();
                 if (cache != null) {
-                    cache.purge(identifier);
+                    cache.purgeImage(identifier);
                 }
             }
             throw e;
@@ -94,11 +84,12 @@ public class ImageResource extends AbstractResource {
         // Obtain an instance of the processor assigned to that format in
         // the config file. This will throw a variety of exceptions if there
         // are any issues.
-        final Processor proc = ProcessorFactory.getProcessor(
-                resolver, identifier, format);
+        final Processor processor = ProcessorFactory.getProcessor(format);
+
+        new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
         final Set<Format> availableOutputFormats =
-                proc.getAvailableOutputFormats();
+                processor.getAvailableOutputFormats();
 
         // Extract the quality and format from the URI
         String[] qualityAndFormat = StringUtils.
@@ -131,9 +122,9 @@ public class ImageResource extends AbstractResource {
         // If we don't need to resolve first, and are using a cache, and the
         // cache contains an image matching the request, skip all the setup and
         // just return the cached image.
-        if (!Application.getConfiguration().
+        if (!Configuration.getInstance().
                 getBoolean(RESOLVE_FIRST_CONFIG_KEY, true)) {
-            Cache cache = CacheFactory.getInstance();
+            DerivativeCache cache = CacheFactory.getDerivativeCache();
             if (cache != null) {
                 InputStream inputStream = cache.getImageInputStream(ops);
                 if (inputStream != null) {
@@ -145,13 +136,13 @@ public class ImageResource extends AbstractResource {
         }
 
         final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
-                proc.getSupportedFeatures(),
-                proc.getSupportedIiif1_1Qualities(),
-                proc.getAvailableOutputFormats());
-        this.addHeader("Link", String.format("<%s>;rel=\"profile\";",
-                complianceLevel.getUri()));
+                processor.getSupportedFeatures(),
+                processor.getSupportedIiif1_1Qualities(),
+                processor.getAvailableOutputFormats());
+        getResponse().getHeaders().add("Link",
+                String.format("<%s>;rel=\"profile\";", complianceLevel.getUri()));
 
-        final Dimension fullSize = getOrReadInfo(identifier, proc).getSize();
+        final Dimension fullSize = getOrReadInfo(identifier, processor).getSize();
 
         if (!isAuthorized(ops, fullSize)) {
             throw new AccessDeniedException();
@@ -163,13 +154,13 @@ public class ImageResource extends AbstractResource {
         // asking it whether it offers any output formats for it
         if (!availableOutputFormats.contains(ops.getOutputFormat())) {
             String msg = String.format("%s does not support the \"%s\" output format",
-                    proc.getClass().getSimpleName(),
+                    processor.getClass().getSimpleName(),
                     ops.getOutputFormat().getPreferredExtension());
-            logger.warn(msg + ": " + this.getReference());
+            getLogger().warning(msg + ": " + this.getReference());
             throw new UnsupportedSourceFormatException(msg);
         }
 
-        return getRepresentation(ops, format, disposition, proc);
+        return getRepresentation(ops, format, disposition, processor);
     }
 
     /**

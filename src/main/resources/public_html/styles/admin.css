@@ -1,0 +1,86 @@
+@import url(bootstrap-admin.min.css);
+
+header {
+    margin-bottom: 3em;
+}
+
+header img {
+    margin-right: 0.8em;
+}
+
+header h1 {
+    padding-top: 0.4em;
+}
+
+footer {
+    padding: 2em 0em;
+    text-align: center;
+}
+
+section {
+    margin-bottom: 2em;
+}
+
+h2 {
+    font-size: 1.8em;
+    margin-top: 0px;
+}
+
+h3 { font-size: 1.6em; }
+h4 { font-size: 1.4em; }
+h5 { font-size: 1.2em; }
+h6 { font-size: 1em; }
+
+pre {
+    background-color: #1b2e40;
+    border: 0px;
+    color: white;
+    overflow-x: scroll;
+}
+
+table, .table, .checkbox label, .radio label {
+    font-size: 1em;
+}
+
+.table > tbody > tr > td:first-child {
+    text-align: right;
+    vertical-align: middle;
+    width: 30%;
+}
+
+.list-group-item {
+    padding: 0px;
+}
+
+.form-control, code {
+    background-color: #1b2e40;
+    color: white;
+}
+
+textarea.form-control {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.9em;
+}
+
+#cl-status td:first-child {
+    width: 40%;
+}
+
+#cl-status ul {
+    margin-left: 0px;
+    padding-left: 0px;
+}
+
+#cl-status li {
+    list-style-type: none;
+    margin-left: 2em;
+    text-indent: -2em;
+}
+
+.nav > li.list-group-item > a {
+    padding: 17px 15px;
+}
+
+table.cl-source-format-assignments td:first-child {
+    text-align: right;
+}

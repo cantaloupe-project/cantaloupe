@@ -9,13 +9,11 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
-import org.apache.commons.configuration.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +33,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
         private final S3Object object;
 
-        public AmazonS3StreamSource(S3Object object) {
+        AmazonS3StreamSource(S3Object object) {
             this.object = object;
         }
 
@@ -54,40 +52,40 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     private static Logger logger = LoggerFactory.
             getLogger(AmazonS3Resolver.class);
 
-    public static final String ACCESS_KEY_ID_CONFIG_KEY =
+    static final String ACCESS_KEY_ID_CONFIG_KEY =
             "AmazonS3Resolver.access_key_id";
-    public static final String BUCKET_NAME_CONFIG_KEY =
+    static final String BUCKET_NAME_CONFIG_KEY =
             "AmazonS3Resolver.bucket.name";
-    public static final String BUCKET_REGION_CONFIG_KEY =
+    static final String BUCKET_REGION_CONFIG_KEY =
             "AmazonS3Resolver.bucket.region";
-    public static final String ENDPOINT_CONFIG_KEY =
-            "AmazonS3Resolver.endpoint";
-    public static final String LOOKUP_STRATEGY_CONFIG_KEY =
+    static final String ENDPOINT_CONFIG_KEY = "AmazonS3Resolver.endpoint";
+    static final String LOOKUP_STRATEGY_CONFIG_KEY =
             "AmazonS3Resolver.lookup_strategy";
-    public static final String SECRET_KEY_CONFIG_KEY =
-            "AmazonS3Resolver.secret_key";
+    static final String SECRET_KEY_CONFIG_KEY = "AmazonS3Resolver.secret_key";
+
+    static final String GET_KEY_DELEGATE_METHOD =
+            "AmazonS3Resolver::get_object_key";
 
     private static AmazonS3 client;
 
     private static AmazonS3 getClientInstance() {
         if (client == null) {
+            final Configuration config = Configuration.getInstance();
+
             class ConfigFileCredentials implements AWSCredentials {
                 @Override
                 public String getAWSAccessKeyId() {
-                    Configuration config = Application.getConfiguration();
                     return config.getString(ACCESS_KEY_ID_CONFIG_KEY);
                 }
 
                 @Override
                 public String getAWSSecretKey() {
-                    Configuration config = Application.getConfiguration();
                     return config.getString(SECRET_KEY_CONFIG_KEY);
                 }
             }
 
             AWSCredentials credentials = new ConfigFileCredentials();
             client = new AmazonS3Client(credentials);
-            Configuration config = Application.getConfiguration();
 
             // a custom endpoint will be used in testing
             final String endpoint = config.getString(ENDPOINT_CONFIG_KEY);
@@ -108,18 +106,18 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public StreamSource getStreamSource(Identifier identifier)
+    public StreamSource getStreamSource()
             throws IOException {
-        return new AmazonS3StreamSource(getObject(identifier));
+        return new AmazonS3StreamSource(getObject());
     }
 
-    private S3Object getObject(Identifier identifier) throws IOException {
+    private S3Object getObject() throws IOException {
         AmazonS3 s3 = getClientInstance();
 
-        Configuration config = Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
         final String bucketName = config.getString(BUCKET_NAME_CONFIG_KEY);
         logger.info("Using bucket: {}", bucketName);
-        final String objectKey = getObjectKey(identifier);
+        final String objectKey = getObjectKey();
         try {
             logger.info("Requesting {}", objectKey);
             return s3.getObject(new GetObjectRequest(bucketName, objectKey));
@@ -132,14 +130,14 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
         }
     }
 
-    private String getObjectKey(Identifier identifier) throws IOException {
-        final Configuration config = Application.getConfiguration();
+    private String getObjectKey() throws IOException {
+        final Configuration config = Configuration.getInstance();
         switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
             case "BasicLookupStrategy":
                 return identifier.toString();
             case "ScriptLookupStrategy":
                 try {
-                    return getObjectKeyWithDelegateStrategy(identifier);
+                    return getObjectKeyWithDelegateStrategy();
                 } catch (ScriptException | DelegateScriptDisabledException e) {
                     logger.error(e.getMessage(), e);
                     throw new IOException(e);
@@ -151,37 +149,39 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     }
 
     /**
-     * @param identifier
      * @return
      * @throws FileNotFoundException If the delegate script does not exist
      * @throws IOException
      * @throws ScriptException If the script fails to execute
      */
-    private String getObjectKeyWithDelegateStrategy(Identifier identifier)
+    private String getObjectKeyWithDelegateStrategy()
             throws IOException, ScriptException,
             DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final String[] args = { identifier.toString() };
-        final String method = "get_s3_object_key";
-        final Object result = engine.invoke(method, args);
+        final Object result = engine.invoke(GET_KEY_DELEGATE_METHOD, args);
         if (result == null) {
-            throw new FileNotFoundException(method + " returned nil for " +
-                    identifier);
+            throw new FileNotFoundException(GET_KEY_DELEGATE_METHOD +
+                    " returned nil for " + identifier);
         }
         return (String) result;
     }
 
     @Override
-    public Format getSourceFormat(Identifier identifier) throws IOException {
-        S3Object object = getObject(identifier);
-        String contentType = object.getObjectMetadata().getContentType();
-        if (contentType != null) {
-            Format format = Format.getFormat(contentType);
-            if (format != null && !format.equals(Format.UNKNOWN)) {
-                return format;
+    public Format getSourceFormat() throws IOException {
+        if (sourceFormat == null) {
+            S3Object object = getObject();
+            String contentType = object.getObjectMetadata().getContentType();
+            // See if we can determine the format from the Content-Type header.
+            if (contentType != null) {
+                sourceFormat = Format.getFormat(contentType);
+            }
+            if (sourceFormat == null || sourceFormat.equals(Format.UNKNOWN)) {
+                // Try to infer a format based on the identifier.
+                sourceFormat = Format.getFormat(identifier);
             }
         }
-        return Format.getFormat(identifier);
+        return sourceFormat;
     }
 
 }

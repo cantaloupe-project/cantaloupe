@@ -1,11 +1,12 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.illinois.library.cantaloupe</groupId>
   <artifactId>Cantaloupe</artifactId>
-  <packaging>jar</packaging>
+  <packaging>war</packaging>
   <!-- needs to be kept synchronized with properties/cantaloupe.version -->
-  <version>2.2</version>
+  <version>3.0</version>
   <name>Cantaloupe</name>
   <url>https://medusa-project.github.io/cantaloupe/</url>
   <inceptionYear>2015</inceptionYear>
@@ -13,8 +14,8 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <cantaloupe.version>2.2</cantaloupe.version>
-    <restlet.version>2.3.6</restlet.version>
+    <cantaloupe.version>3.0</cantaloupe.version>
+    <restlet.version>2.3.7</restlet.version>
   </properties>
 
   <developers>
@@ -55,11 +56,11 @@
       <artifactId>logback-classic</artifactId>
       <version>1.1.3</version>
     </dependency>
-    <!-- Used by AmazonS3Resolver -->
+    <!-- Used by AmazonS3Resolver and AmazonS3Cache -->
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-s3</artifactId>
-      <version>1.10.43</version>
+      <version>1.10.56</version>
     </dependency>
     <!-- Used in tests to test for System.exit() -->
     <dependency>
@@ -75,7 +76,7 @@
       <version>1.4.190</version>
       <scope>test</scope>
     </dependency>
-    <!-- Provides an Azure Storage client for AzureStorageResolver -->
+    <!-- Used by AzureStorageResolver and AzureStorageCache-->
     <dependency>
       <groupId>com.microsoft.azure</groupId>
       <artifactId>azure-storage</artifactId>
@@ -87,12 +88,13 @@
       <artifactId>HikariCP</artifactId>
       <version>2.4.1</version>
     </dependency>
-    <!-- The application configuration system -->
+    <!-- Manages the application configuration. -->
     <dependency>
       <groupId>commons-configuration</groupId>
       <artifactId>commons-configuration</artifactId>
-      <version>1.6</version>
+      <version>1.10</version>
     </dependency>
+    <!-- IOUtils.copy() is used all over the place -->
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
@@ -120,11 +122,14 @@
       <artifactId>imageio-ext-tiff</artifactId>
       <version>1.1.13</version>
     </dependency>
-    <!-- Provides JAI for JaiProcessor -->
+    <!--
+    This will need to be excluded from WEB-INF/lib during the package
+    phase, but an exploded version included in the root for standalone mode.
+    -->
     <dependency>
-      <groupId>javax.media.jai</groupId>
-      <artifactId>com.springsource.javax.media.jai.core</artifactId>
-      <version>1.1.3</version>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.1.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -149,6 +154,22 @@
       <artifactId>janino</artifactId>
       <version>2.7.8</version>
     </dependency>
+    <!-- Provides the standalone servlet container -->
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
+      <version>9.3.8.v20160314</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-servlet</artifactId>
+      <version>9.3.8.v20160314</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-webapp</artifactId>
+      <version>9.3.8.v20160314</version>
+    </dependency>
     <!-- Used by GraphicsMagickProcessor and ImageMagickProcessor -->
     <dependency>
       <groupId>org.im4java</groupId>
@@ -162,33 +183,33 @@
       <version>9.0.5.0</version>
       <type>pom</type>
     </dependency>
+    <!-- Restlet is our REST framework. -->
     <dependency>
-      <groupId>org.restlet.jse</groupId>
+      <groupId>org.restlet.jee</groupId>
       <artifactId>org.restlet</artifactId>
       <version>${restlet.version}</version>
     </dependency>
-    <!-- Provides Jackson for serialization of information response objects to
-    JSON -->
+    <!-- Provides Jackson for JSON object (de)serialization -->
     <dependency>
-      <groupId>org.restlet.jse</groupId>
+      <groupId>org.restlet.jee</groupId>
       <artifactId>org.restlet.ext.jackson</artifactId>
       <version>${restlet.version}</version>
     </dependency>
-    <!-- use the Simple HTTP server instead of the default Sun server -->
+    <!-- Makes Restlet log to SLF4J -->
     <dependency>
-      <groupId>org.restlet.jse</groupId>
-      <artifactId>org.restlet.ext.simple</artifactId>
+      <groupId>org.restlet.jee</groupId>
+      <artifactId>org.restlet.ext.slf4j</artifactId>
       <version>${restlet.version}</version>
     </dependency>
-    <!-- Enables Restlet to log to SLF4J -->
+    <!-- Enable usage of the application in a Servlet container -->
     <dependency>
-      <groupId>org.restlet.jse</groupId>
-      <artifactId>org.restlet.ext.slf4j</artifactId>
+      <groupId>org.restlet.jee</groupId>
+      <artifactId>org.restlet.ext.servlet</artifactId>
       <version>${restlet.version}</version>
     </dependency>
     <!-- Provides Velocity for the landing and error page templates -->
     <dependency>
-      <groupId>org.restlet.jse</groupId>
+      <groupId>org.restlet.jee</groupId>
       <artifactId>org.restlet.ext.velocity</artifactId>
       <version>${restlet.version}</version>
       <exclusions>
@@ -199,13 +220,20 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <!-- Used to test the control panel -->
+    <dependency>
+      <groupId>org.seleniumhq.selenium</groupId>
+      <artifactId>selenium-java</artifactId>
+      <version>2.53.0</version>
+      <scope>test</scope>
+    </dependency>
     <!-- Logging interface used by the application -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
       <version>1.7.12</version>
     </dependency>
-    <!-- intercepts jcl log messages from Commons Configuration etc. -->
+    <!-- intercepts jcl log messages from Commons etc. -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>jcl-over-slf4j</artifactId>
@@ -214,12 +242,6 @@
   </dependencies>
 
   <repositories>
-    <!-- Provides JAI -->
-    <repository>
-      <id>com.springsource.repository.bundles.external</id>
-      <name>SpringSource Enterprise Bundle Repository - External Bundle Releases</name>
-      <url>http://repository.springsource.com/maven/bundles/external</url>
-    </repository>
     <!-- Provides imageio-ext-tiff -->
     <repository>
       <id>imageio-ext-repository</id>
@@ -245,65 +267,92 @@
           <target>1.7</target>
         </configuration>
       </plugin>
+
+      <!-- Unpack dependencies needed in standalone mode into the root, for
+      compatibility with `java -jar` invocation. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>2.6</version>
-        <configuration>
-          <archive>
-            <manifest>
-              <mainClass>edu.illinois.library.cantaloupe.Application</mainClass>
-            </manifest>
-            <!-- JAI apparently requires these:
-            http://stackoverflow.com/questions/7051603/jai-vendorname-null -->
-            <manifestEntries>
-              <Specification-Title>Cantaloupe</Specification-Title>
-              <Specification-Version>${cantaloupe.version}</Specification-Version>
-              <Specification-Vendor>Cantaloupe</Specification-Vendor>
-              <Implementation-Title>Cantaloupe</Implementation-Title>
-              <Implementation-Version>${cantaloupe.version}</Implementation-Version>
-              <Implementation-Vendor>Cantaloupe</Implementation-Vendor>
-            </manifestEntries>
-          </archive>
-        </configuration>
-      </plugin>
-      <!-- Creates a jar with bundled dependencies -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>2.4.1</version>
-        <configuration>
-          <filters>
-            <!-- Fixes a SecurityException: http://stackoverflow.com/a/6743609/177529 -->
-            <filter>
-              <artifact>*:*</artifact>
-              <excludes>
-                <exclude>META-INF/*.SF</exclude>
-                <exclude>META-INF/*.DSA</exclude>
-                <exclude>META-INF/*.RSA</exclude>
-              </excludes>
-            </filter>
-          </filters>
-        </configuration>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>2.3</version>
         <executions>
           <execution>
-            <phase>package</phase>
+            <id>unpack-dependencies</id>
+            <phase>prepare-package</phase>
             <goals>
-              <goal>shade</goal>
+              <goal>unpack-dependencies</goal>
             </goals>
+            <configuration>
+              <excludes>**/META-INF/*.MF,**/META-INF/*.txt</excludes>
+              <includeGroupIds>
+                <!-- direct dependencies -->
+                commons-configuration, org.eclipse.jetty,javax.servlet
+                <!-- transitive dependencies -->
+                commons-lang, commons-logging
+              </includeGroupIds>
+              <outputDirectory>
+                ${project.build.directory}/${project.artifactId}-${project.version}
+              </outputDirectory>
+            </configuration>
           </execution>
         </executions>
       </plugin>
-      <!-- Assembles the created jar into a release package -->
+
+      <!-- Copy the classes needed for standalone mode into the root of the
+      war file for compatibility with `java -jar` invocation. -->
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-standalone-classes-to-root</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <tasks>
+                <copy todir="${project.build.directory}/${project.artifactId}-${project.version}/">
+                  <fileset dir="${project.build.directory}/classes/">
+                    <include name="edu/illinois/library/cantaloupe/config/Configuration.class" />
+                    <include name="edu/illinois/library/cantaloupe/config/ConfigurationException.class" />
+                    <include name="edu/illinois/library/cantaloupe/StandaloneEntry.class" />
+                    <include name="edu/illinois/library/cantaloupe/WebServer.class" />
+                  </fileset>
+                </copy>
+              </tasks>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Create the war file, excluding the Servlet API jar, which the
+      Servlet container will provide. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>2.6</version>
+        <executions>
+          <execution>
+            <id>create-war</id>
+            <phase>package</phase>
+            <goals>
+              <goal>war</goal>
+            </goals>
+            <configuration>
+              <archive>
+                <manifest>
+                  <mainClass>edu.illinois.library.cantaloupe.StandaloneEntry</mainClass>
+                </manifest>
+              </archive>
+              <packagingExcludes>WEB-INF/lib/javax.servlet-api-*.jar</packagingExcludes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Assemble the created war into a release package. -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <version>2.5.5</version>
-        <configuration>
-          <appendAssemblyId>false</appendAssemblyId>
-          <descriptors>
-            <descriptor>${basedir}/build/assembly.xml</descriptor>
-          </descriptors>
-        </configuration>
         <executions>
           <execution>
             <phase>package</phase>
@@ -312,7 +361,14 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <appendAssemblyId>false</appendAssemblyId>
+          <descriptors>
+            <descriptor>${basedir}/build/assembly.xml</descriptor>
+          </descriptors>
+        </configuration>
       </plugin>
+
     </plugins>
   </build>
 </project>

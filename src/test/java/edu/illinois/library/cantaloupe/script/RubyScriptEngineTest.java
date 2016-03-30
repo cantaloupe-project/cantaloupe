@@ -22,15 +22,29 @@ public class RubyScriptEngineTest {
     }
 
     @Test
-    public void testInvoke() throws Exception {
+    public void testInvokeWithNoArgs() throws Exception {
         final String code = "module Cantaloupe\n" +
                 "SOMETHING = 1\n" +
-                "def self.func(arg)\n" +
+                "def self.func1\n" +
+                "'cats'\n" +
+                "end\n" +
+                "end";
+        instance.load(code);
+
+        String result = (String) instance.invoke("func1");
+        assertEquals("cats", result);
+    }
+
+    @Test
+    public void testInvokeWithArgs() throws Exception {
+        final String code = "module Cantaloupe\n" +
+                "SOMETHING = 1\n" +
+                "def self.func2(arg)\n" +
                 "arg\n" +
                 "end\n" +
                 "end";
         instance.load(code);
-        final String function = "func";
+        final String function = "func2";
 
         for (int i = 0; i < 3; i++) {
             String[] args = { String.valueOf(i) };
@@ -42,12 +56,12 @@ public class RubyScriptEngineTest {
     @Test
     public void testInvokeWithUnexpectedReturnType() throws Exception {
         final String code = "module Cantaloupe\n" +
-                "def self.func\n" +
+                "def self.func3\n" +
                 "[]\n" +
                 "end\n" +
                 "end";
         instance.load(code);
-        String function = "Cantaloupe::func";
+        String function = "func3";
 
         try {
             Map result = (Map) instance.invoke(function);
@@ -60,13 +74,13 @@ public class RubyScriptEngineTest {
     @Test
     public void testMethodExists() throws Exception {
         final String code = "module Cantaloupe\n" +
-                "def self.func(arg)\n" +
+                "def self.func4(arg)\n" +
                 "end\n" +
-                "def self.func2\n" +
+                "def self.func5\n" +
                 "end\n" +
                 "end";
         instance.load(code);
-        assertTrue(instance.methodExists("func"));
+        assertTrue(instance.methodExists("func4"));
         assertFalse(instance.methodExists("bogus"));
     }
 

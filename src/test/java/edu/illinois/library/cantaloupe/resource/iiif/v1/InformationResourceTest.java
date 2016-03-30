@@ -1,17 +1,16 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.WebApplication;
-import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.cache.DerivativeCache;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.restlet.data.CacheDirective;
@@ -39,7 +38,7 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testCacheHeaders() {
-        Configuration config = Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
         config.setProperty("cache.client.enabled", "true");
         config.setProperty("cache.client.max_age", "1234");
         config.setProperty("cache.client.shared_max_age", "4567");
@@ -77,7 +76,7 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testEndpointDisabled() {
-        Configuration config = Application.getConfiguration();
+        Configuration config = Configuration.getInstance();
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/native.jpg");
 
@@ -114,8 +113,9 @@ public class InformationResourceTest extends ResourceTest {
             cacheFolder.mkdir();
         }
 
-        final Configuration config = Application.getConfiguration();
-        config.setProperty("cache.server", "FilesystemCache");
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
+                "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
                 cacheFolder.getAbsolutePath());
         config.setProperty("FilesystemCache.ttl_seconds", 10);
@@ -137,7 +137,7 @@ public class InformationResourceTest extends ResourceTest {
 
             // assert that it has been cached
             assertEquals(2, FileUtils.listFiles(cacheFolder, null, true).size());
-            Cache cache = CacheFactory.getInstance();
+            DerivativeCache cache = CacheFactory.getDerivativeCache();
             assertNotNull(cache.getImageInputStream(ops));
             assertNotNull(cache.getImageInfo(ops.getIdentifier()));
 
@@ -190,14 +190,14 @@ public class InformationResourceTest extends ResourceTest {
     public void testResolverProcessorCompatibility() throws Exception {
         final WebServer server = new WebServer();
 
-        Configuration config = newConfiguration();
+        resetConfiguration();
+        Configuration config = Configuration.getInstance();
         config.setProperty("resolver.static", "HttpResolver");
         config.setProperty("HttpResolver.lookup_strategy", "BasicLookupStrategy");
         config.setProperty("HttpResolver.BasicLookupStrategy.url_prefix",
                 server.getUri() + "/");
         config.setProperty("processor.jp2", "KakaduProcessor");
         config.setProperty("processor.fallback", "KakaduProcessor");
-        Application.setConfiguration(config);
 
         try {
             server.start();
@@ -216,7 +216,7 @@ public class InformationResourceTest extends ResourceTest {
     @Test
     public void testSlashSubstitution() throws Exception {
         WebServer server = new WebServer();
-        Application.getConfiguration().setProperty("slash_substitute", "CATS");
+        Configuration.getInstance().setProperty("slash_substitute", "CATS");
         try {
             server.start();
             ClientResource client = getClientForUriPath("/subfolderCATSjpg/info.json");
@@ -234,8 +234,7 @@ public class InformationResourceTest extends ResourceTest {
             client.get();
             fail("Expected exception");
         } catch (ResourceException e) {
-            assertEquals(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE,
-                    client.getStatus());
+            assertEquals(Status.SERVER_ERROR_INTERNAL, client.getStatus());
         }
     }
 
@@ -252,8 +251,8 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testUrisInJsonWithBaseUriOverride() throws IOException {
-        Configuration config = Application.getConfiguration();
-        config.setProperty(AbstractResource.BASE_URI_CONFIG_KEY,
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Iiif1Resource.BASE_URI_CONFIG_KEY,
                 "http://example.org/");
 
         ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
@@ -282,8 +281,8 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testBaseUriOverridesProxyHeaders() throws IOException {
-        Configuration config = Application.getConfiguration();
-        config.setProperty(AbstractResource.BASE_URI_CONFIG_KEY,
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Iiif1Resource.BASE_URI_CONFIG_KEY,
                 "https://example.net/");
 
         ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");

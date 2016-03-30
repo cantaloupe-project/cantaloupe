@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -8,13 +8,10 @@ import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
-import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -50,7 +47,8 @@ public class ImageMagickProcessorTest extends ProcessorTest {
             // retrieve the output of the `identify -list format` command,
             // which contains a list of all supported formats
             Runtime runtime = Runtime.getRuntime();
-            Configuration config = Application.getConfiguration();
+            Configuration config = Configuration.getInstance();
+            config.clear();
             if (config != null) {
                 String pathPrefix = config.getString("ImageMagickProcessor.path_to_binaries");
                 if (pathPrefix != null) {
@@ -149,9 +147,9 @@ public class ImageMagickProcessorTest extends ProcessorTest {
 
     @Test
     public void testProcessWithRotationAndCustomBackgroundColorAndNonTransparentOutputFormat() throws Exception {
-        Configuration config = new BaseConfiguration();
+        Configuration config = Configuration.getInstance();
+        config.clear();
         config.setProperty(ImageMagickProcessor.BACKGROUND_COLOR_CONFIG_KEY, "blue");
-        Application.setConfiguration(config);
 
         OperationList ops = new OperationList();
         ops.setIdentifier(new Identifier("bla"));
@@ -185,9 +183,9 @@ public class ImageMagickProcessorTest extends ProcessorTest {
 
     @Test
     public void testProcessWithRotationAndCustomBackgroundColorAndTransparentOutputFormat() throws Exception {
-        Configuration config = new BaseConfiguration();
+        Configuration config = Configuration.getInstance();
+        config.clear();
         config.setProperty(ImageMagickProcessor.BACKGROUND_COLOR_CONFIG_KEY, "blue");
-        Application.setConfiguration(config);
 
         OperationList ops = new OperationList();
         ops.setIdentifier(new Identifier("bla"));

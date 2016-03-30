@@ -1,9 +1,12 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.cache.DerivativeCache;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.redaction.Redaction;
+import edu.illinois.library.cantaloupe.image.redaction.RedactionService;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -14,7 +17,6 @@ import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.Request;
 import org.restlet.data.CacheDirective;
@@ -43,6 +45,26 @@ public abstract class AbstractResource extends ServerResource {
             getLogger(AbstractResource.class);
 
     public static final String BASE_URI_CONFIG_KEY = "base_uri";
+    public static final String CLIENT_CACHE_ENABLED_CONFIG_KEY =
+            "cache.client.enabled";
+    public static final String CLIENT_CACHE_MAX_AGE_CONFIG_KEY =
+            "cache.client.max_age";
+    public static final String CLIENT_CACHE_MUST_REVALIDATE_CONFIG_KEY =
+            "cache.client.must_revalidate";
+    public static final String CLIENT_CACHE_NO_CACHE_CONFIG_KEY =
+            "cache.client.no_cache";
+    public static final String CLIENT_CACHE_NO_STORE_CONFIG_KEY =
+            "cache.client.no_store";
+    public static final String CLIENT_CACHE_NO_TRANSFORM_CONFIG_KEY =
+            "cache.client.no_transform";
+    public static final String CLIENT_CACHE_PRIVATE_CONFIG_KEY =
+            "cache.client.private";
+    public static final String CLIENT_CACHE_PROXY_REVALIDATE_CONFIG_KEY =
+            "cache.client.proxy_revalidate";
+    public static final String CLIENT_CACHE_PUBLIC_CONFIG_KEY =
+            "cache.client.public";
+    public static final String CLIENT_CACHE_SHARED_MAX_AGE_CONFIG_KEY =
+            "cache.client.shared_max_age";
     public static final String CONTENT_DISPOSITION_CONFIG_KEY =
             "endpoint.iiif.content_disposition";
     public static final String MAX_PIXELS_CONFIG_KEY = "max_pixels";
@@ -72,7 +94,7 @@ public abstract class AbstractResource extends ServerResource {
     public static Reference getPublicRootRef(final Request request) {
         Reference rootRef = new Reference(request.getRootRef());
 
-        final String baseUri = Application.getConfiguration().
+        final String baseUri = Configuration.getInstance().
                 getString(BASE_URI_CONFIG_KEY);
         if (baseUri != null && baseUri.length() > 0) {
             final Reference baseRef = new Reference(baseUri);
@@ -131,7 +153,7 @@ public abstract class AbstractResource extends ServerResource {
     public static Disposition getRepresentationDisposition(
             Identifier identifier, Format outputFormat) {
         Disposition disposition = new Disposition();
-        switch (Application.getConfiguration().
+        switch (Configuration.getInstance().
                 getString(CONTENT_DISPOSITION_CONFIG_KEY, "none")) {
             case "inline":
                 disposition.setType(Disposition.TYPE_INLINE);
@@ -150,46 +172,53 @@ public abstract class AbstractResource extends ServerResource {
     @Override
     protected void doInit() throws ResourceException {
         super.doInit();
-        addHeader("X-Powered-By", "Cantaloupe/" + Application.getVersion());
+        getResponse().getHeaders().add("X-Powered-By",
+                "Cantaloupe/" + Application.getVersion());
     }
 
     /**
-     * Convenience method that adds a response header.
+     * Most image-processing operations (crop, scale, etc.) are specified in
+     * a client request to an endpoint. This method adds any operations that
+     * endpoints have nothing to do with.
      *
-     * @param key Header key
-     * @param value Header value
-     */
-    @SuppressWarnings({"unchecked"})
-    protected final void addHeader(String key, String value) {
-        Series<Header> responseHeaders = (Series<Header>) getResponse().
-                getAttributes().get("org.restlet.http.headers");
-        if (responseHeaders == null) {
-            responseHeaders = new Series(Header.class);
-            getResponse().getAttributes().
-                    put("org.restlet.http.headers", responseHeaders);
-        }
-        responseHeaders.add(new Header(key, value));
-    }
-
-    /**
-     * @param opList
-     * @param fullSize
+     * @param opList Operation list to add the operations to.
+     * @param fullSize Full size of the source image.
      */
     public void addNonEndpointOperations(final OperationList opList,
                                          final Dimension fullSize) {
-        if (WatermarkService.isEnabled()) {
-            try {
+        try {
+            if (RedactionService.isEnabled()) {
+                List<Redaction> redactions = RedactionService.redactionsFor(
+                        opList.getIdentifier(),
+                        getRequest().getHeaders().getValuesMap(),
+                        getCanonicalClientIpAddress(),
+                        getRequest().getCookies().getValuesMap());
+                for (Redaction redaction : redactions) {
+                    opList.add(redaction);
+                }
+            } else {
+                logger.info("Redactions are disabled ({} = false); skipping.",
+                        RedactionService.REDACTION_ENABLED_CONFIG_KEY);
+            }
+
+            if (WatermarkService.isEnabled()) {
                 opList.add(WatermarkService.newWatermark(
                         opList, fullSize, getReference().toUrl(),
                         getRequest().getHeaders().getValuesMap(),
                         getCanonicalClientIpAddress(),
                         getRequest().getCookies().getValuesMap()));
-            } catch (DelegateScriptDisabledException e) {
-                // no problem
-            } catch (Exception e) {
-                logger.error(e.getMessage());
+            } else {
+                logger.info("Watermarking is disabled ({} = false); skipping.",
+                        WatermarkService.WATERMARK_ENABLED_CONFIG_KEY);
             }
+        } catch (DelegateScriptDisabledException e) {
+            // no problem
+            logger.info("Delegate script disabled; skipping non-endpoint " +
+                    "operations.");
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
         }
+
     }
 
     /**
@@ -202,7 +231,7 @@ public abstract class AbstractResource extends ServerResource {
      * @return Path component with slashes decoded
      */
     protected final String decodeSlashes(final String uriPathComponent) {
-        final String substitute = Application.getConfiguration().
+        final String substitute = Configuration.getInstance().
                 getString(SLASH_SUBSTITUTE_CONFIG_KEY, "");
         if (substitute.length() > 0) {
             return StringUtils.replace(uriPathComponent, substitute, "/");
@@ -217,36 +246,39 @@ public abstract class AbstractResource extends ServerResource {
     protected final List<CacheDirective> getCacheDirectives() {
         List<CacheDirective> directives = new ArrayList<>();
         try {
-            Configuration config = Application.getConfiguration();
-            boolean enabled = config.getBoolean("cache.client.enabled", false);
+            final Configuration config = Configuration.getInstance();
+            final boolean enabled = config.getBoolean(
+                    CLIENT_CACHE_ENABLED_CONFIG_KEY, false);
             if (enabled) {
-                String maxAge = config.getString("cache.client.max_age");
+                final String maxAge = config.getString(
+                        CLIENT_CACHE_MAX_AGE_CONFIG_KEY);
                 if (maxAge != null && maxAge.length() > 0) {
                     directives.add(CacheDirective.maxAge(Integer.parseInt(maxAge)));
                 }
-                String sMaxAge = config.getString("cache.client.shared_max_age");
+                String sMaxAge = config.getString(
+                        CLIENT_CACHE_SHARED_MAX_AGE_CONFIG_KEY);
                 if (sMaxAge != null && sMaxAge.length() > 0) {
                     directives.add(CacheDirective.
                             sharedMaxAge(Integer.parseInt(sMaxAge)));
                 }
-                if (config.getBoolean("cache.client.public", true)) {
+                if (config.getBoolean(CLIENT_CACHE_PUBLIC_CONFIG_KEY, true)) {
                     directives.add(CacheDirective.publicInfo());
-                } else if (config.getBoolean("cache.client.private", false)) {
+                } else if (config.getBoolean(CLIENT_CACHE_PRIVATE_CONFIG_KEY, false)) {
                     directives.add(CacheDirective.privateInfo());
                 }
-                if (config.getBoolean("cache.client.no_cache", false)) {
+                if (config.getBoolean(CLIENT_CACHE_NO_CACHE_CONFIG_KEY, false)) {
                     directives.add(CacheDirective.noCache());
                 }
-                if (config.getBoolean("cache.client.no_store", false)) {
+                if (config.getBoolean(CLIENT_CACHE_NO_STORE_CONFIG_KEY, false)) {
                     directives.add(CacheDirective.noStore());
                 }
-                if (config.getBoolean("cache.client.must_revalidate", false)) {
+                if (config.getBoolean(CLIENT_CACHE_MUST_REVALIDATE_CONFIG_KEY, false)) {
                     directives.add(CacheDirective.mustRevalidate());
                 }
-                if (config.getBoolean("cache.client.proxy_revalidate", false)) {
+                if (config.getBoolean(CLIENT_CACHE_PROXY_REVALIDATE_CONFIG_KEY, false)) {
                     directives.add(CacheDirective.proxyMustRevalidate());
                 }
-                if (config.getBoolean("cache.client.no_transform", false)) {
+                if (config.getBoolean(CLIENT_CACHE_NO_TRANSFORM_CONFIG_KEY, false)) {
                     directives.add(CacheDirective.noTransform());
                 }
             }
@@ -277,7 +309,7 @@ public abstract class AbstractResource extends ServerResource {
             throws IOException, ProcessorException, CacheException {
         // Max allowed size is ignored when the processing is a no-op.
         final long maxAllowedSize = (ops.isNoOp(format)) ?
-                0 : Application.getConfiguration().getLong(MAX_PIXELS_CONFIG_KEY, 0);
+                0 : Configuration.getInstance().getLong(MAX_PIXELS_CONFIG_KEY, 0);
 
         final ImageInfo imageInfo = getOrReadInfo(ops.getIdentifier(), proc);
         final Dimension effectiveSize = ops.getResultingSize(imageInfo.getSize());
@@ -303,7 +335,7 @@ public abstract class AbstractResource extends ServerResource {
                                             final Processor proc)
             throws ProcessorException, CacheException {
         ImageInfo info = null;
-        Cache cache = CacheFactory.getInstance();
+        DerivativeCache cache = CacheFactory.getDerivativeCache();
         if (cache != null) {
             long msec = System.currentTimeMillis();
             info = cache.getImageInfo(identifier);
@@ -343,17 +375,19 @@ public abstract class AbstractResource extends ServerResource {
         resultingSizeArg.put("width", resultingSize.width);
         resultingSizeArg.put("height", resultingSize.height);
 
+        final Map opListMap = opList.toMap(fullSize);
+
         // delegate method parameters
         final Object args[] = new Object[9];
-        args[0] = opList.getIdentifier().toString();           // identifier
-        args[1] = fullSizeArg;                                 // full_size
-        args[2] = opList.toMap(fullSize).get("operations");    // operations
-        args[3] = resultingSizeArg;                            // resulting_size
-        args[4] = opList.toMap(fullSize).get("output_format"); // output_format
-        args[5] = getReference().toString();                   // request_uri
-        args[6] = getRequest().getHeaders().getValuesMap();    // request_headers
-        args[7] = getCanonicalClientIpAddress();               // client_ip
-        args[8] = getRequest().getCookies().getValuesMap();    // cookies
+        args[0] = opList.getIdentifier().toString();        // identifier
+        args[1] = fullSizeArg;                              // full_size
+        args[2] = opListMap.get("operations");              // operations
+        args[3] = resultingSizeArg;                         // resulting_size
+        args[4] = opListMap.get("output_format");           // output_format
+        args[5] = getReference().toString();                // request_uri
+        args[6] = getRequest().getHeaders().getValuesMap(); // request_headers
+        args[7] = getCanonicalClientIpAddress();            // client_ip
+        args[8] = getRequest().getCookies().getValuesMap(); // cookies
 
         try {
             final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();

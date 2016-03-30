@@ -1,204 +1,12 @@
-<!DOCTYPE html>
-<html>
+---
+layout: manual_2.2
+title: Caches
+---
 
-  <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="High-performance dynamic image server in Java
-">
-
-  <title>
-    Cantaloupe
-    
-      :: Caches
-    
-  </title>
-
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-  <link rel="stylesheet" type="text/css" href="/cantaloupe/css/syntax.css">
-  <link rel="stylesheet" href="/cantaloupe/css/base.css">
-
-  <script src="/cantaloupe/scripts/jquery.min.js"></script>
-</head>
-
-
-  <body>
-
-    <div class="container">
-      <nav class="navbar navbar-default navbar-fixed-top">
-  <div class="container-fluid">
-
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand" href="/cantaloupe/">
-        <img alt="Cantaloupe" src="/cantaloupe/images/cantaloupe.png" width="40">
-      </a>
-    </div>
-
-    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-      <ul class="nav navbar-nav">
-        <li><a href="/cantaloupe/get-started.html">Get Started</a></li>
-        <li><a href="/cantaloupe/manual/">User Manual</a></li>
-        <li><a href="/cantaloupe/support.html">Support</a></li>
-      </ul>
-      <ul class="nav navbar-nav navbar-right">
-        <li><a href="https://github.com/medusa-project/cantaloupe/releases.atom" title="Subscribe to Releases"><img width="22" height="22" src="/cantaloupe/images/feed.svg"></a></li>
-      </ul>
-    </div>
-
-  </div>
-</nav>
-
-
-      <div class="row">
-  <div class="col-md-3 hidden-xs hidden-sm">
-    <ul class="toc">
-  <li><a href="changes.html">What's New in <span class="version">2.2</span></a></li>
-  <li><a href="upgrading.html">Upgrading</a></li>
-  <li>
-    <a href="endpoints.html">Endpoints</a>
-    <ul>
-      <li><a href="endpoints.html#IIIFImageAPI1">IIIF Image API 1.x</a></li>
-      <li><a href="endpoints.html#IIIFImageAPI2">IIIF Image API 2.x</a></li>
-    </ul>
-  </li>
-  <li>
-    <a href="images.html">Images</a>
-    <ul>
-      <li><a href="images.html#Size%20Considerations">Size Considerations</a></li>
-      <li><a href="images.html#Source%20Formats">Source Formats</a>
-        <ul>
-          <li><a href="images.html#JPEG">JPEG</a></li>
-          <li><a href="images.html#JPEG2000">JPEG2000</a></li>
-          <li><a href="images.html#TIFF">TIFF</a></li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-  <li>
-    <a href="resolvers.html">Resolvers</a>
-    <ul>
-      <li><a href="resolvers.html#Selection">Selection</a>
-        <ul>
-          <li><a href="resolvers.html#Static%20Resolver">Static</a></li>
-          <li><a href="resolvers.html#Dynamic%20Resolvers">Dynamic</a></li>
-        </ul>
-      <li><a href="resolvers.html#Implementations">Implementations</a>
-        <ul>
-          <li><a href="resolvers.html#FilesystemResolver">FilesystemResolver</a></li>
-          <li><a href="resolvers.html#HttpResolver">HttpResolver</a></li>
-          <li><a href="resolvers.html#JdbcResolver">JdbcResolver</a></li>
-          <li><a href="resolvers.html#AmazonS3Resolver">AmazonS3Resolver</a></li>
-          <li><a href="resolvers.html#AzureStorageResolver">AzureStorageResolver</a></li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-  <li>
-    <a href="processors.html">Processors</a>
-    <ul>
-      <li><a href="processors.html#Operating%20System%20Compatibility">Operating System Compatibility</a></li>
-      <li><a href="processors.html#Compatibility">Resolver Compatibility</a></li>
-      <li><a href="processors.html#Supported%20Features">Supported Features</a></li>
-      <li><a href="processors.html#Supported%20Source%20Formats">Supported Source Formats</a></li>
-      <li><a href="processors.html#Implementations">Implementations</a>
-        <ul>
-          <li><a href="processors.html#Java2dProcessor">Java 2D</a></li>
-          <li><a href="processors.html#JaiProcessor">JAI</a></li>
-          <li><a href="processors.html#GraphicsMagickProcessor">GraphicsMagick</a></li>
-          <li><a href="processors.html#ImageMagickProcessor">ImageMagick</a></li>
-          <li><a href="processors.html#KakaduProcessor">Kakadu</a></li>
-          <li><a href="processors.html#OpenJpegProcessor">OpenJPEG</a></li>
-          <li><a href="processors.html#FfmpegProcessor">FFmpeg</a></li>
-          <li><a href="processors.html#PdfBoxProcessor">PDFBox</a></li>
-        </ul>
-    </ul>
-  </li>
-  <li>
-    <a href="caches.html">Caches (Server-Side)</a>
-    <ul>
-      <li><a href="caches.html#Modes%20of%20Operation">Modes of Operation</a></li>
-      <li><a href="caches.html#Maintenance">Maintenance</a></li>
-      <li><a href="caches.html#Notes">Notes</li>
-      <li><a href="caches.html#Implementations">Implementations</a>
-        <ul>
-          <li><a href="caches.html#FilesystemCache">FilesystemCache</a></li>
-          <li><a href="caches.html#JdbcCache">JdbcCache</a></li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-  <li><a href="client-caching.html">Caching (Client-Side)</a></li>
-  <li>
-    <a href="access-control.html">Access Control</a>
-    <ul>
-      <li><a href="access-control.html#Authentication">Authentication</a></li>
-      <li><a href="access-control.html#Authorization">Authorization</a></li>
-    </ul>
-  </li>
-  <li><a href="watermarking.html">Watermarking</a>
-    <ul>
-      <li><a href="watermarking.html#Modes%20of%20Operation">Modes of Operation</a>
-        <ul>
-            <li><a href="watermarking.html#BasicStrategy">BasicStrategy</a></li>
-            <li><a href="watermarking.html#ScriptStrategy">ScriptStrategy</a></li>
-        </ul>
-      </li>
-      <li><a href="watermarking.html#Requirements">Requirements</a></li>
-      <li><a href="watermarking.html#Positioning">Positioning</a></li>
-      <li><a href="watermarking.html#Processor%20Support">Processor Support</a></li>
-      <li><a href="watermarking.html#Implications">Implications</a></li>
-    </ul>
-  </li>
-  <li>
-    <a href="logging.html">Logging</a>
-    <ul>
-      <li><a href="logging.html#Application%20Log">Application Log</a></li>
-      <li><a href="logging.html#Access%20Log">Access Log</a></li>
-    </ul>
-  </li>
-  <li>
-    <a href="deployment.html">Deployment</a>
-    <ul>
-      <li><a href="deployment.html#Hardware">Hardware</a></li>
-      <li><a href="deployment.html#Limiting">Limiting</a></li>
-      <li><a href="deployment.html#Reverse-Proxying">Reverse-Proxying</a>
-        <ul>
-          <li><a href="deployment.html#Reverse-ProxyingApache">Apache</a></li>
-          <li><a href="deployment.html#Reverse-ProxyingNginx">nginx</a></li>
-        </ul>
-      </li>
-      <li><a href="deployment.html#SSL/TLS">SSL/TLS</a></li>
-    </ul>
-  </li>
-  <li><a href="delegate-script.html">Delegate Script</a>
-    <ul>
-      <li><a href="delegate-script.html#Rules">Rules</a></li>
-      <li><a href="delegate-script.html#Example">Example</a></li>
-      <li><a href="delegate-script.html#Testing%20Script%20Methods">Testing Script Methods</a></li>
-    </ul>
-  </li>
-  <li>
-    <a href="developers.html">For Developers</a>
-    <ul>
-      <li><a href="/cantaloupe/javadoc/2.2/">Javadoc</a></li>
-      <li><a href="developers.html#Contributing">Contributing</a></li>
-    </ul>
-  </li>
-</ul>
-
-  </div>
-  <div class="col-sm-12 col-md-9">
-    <ol class="breadcrumb">
-  <li><a href="/cantaloupe/">Home</a></li>
-  <li><a href="/cantaloupe/manual/">User Manual</a></li>
-  <li><a href="/cantaloupe/manual/2.2/">2.2</a></li>
+<ol class="breadcrumb">
+  <li><a href="{{ site.baseurl }}/">Home</a></li>
+  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
+  <li><a href="{{ site.baseurl }}/manual/2.2/">2.2</a></li>
   <li class="active">Caches</li>
 </ol>
 
@@ -332,41 +140,27 @@
   <dt><code>JdbcCache.password</code></dt>
   <dd>Password to use when connecting to the database. Can be left blank if not needed.</dd>
   <dt><code>JdbcCache.image_table</code></dt>
-  <dd>The table in which to cache images. This will be created automatically.</dd>
+  <dd>The table in which to cache images.</dd>
   <dt><code>JdbcCache.info_table</code></dt>
-  <dd>The table in which to cache information responses. This will be created automatically.</dd>
+  <dd>The table in which to cache information responses.</dd>
   <dt><code>JdbcCache.ttl_seconds</code></dt>
   <dd>Time-to-live of the cached images and information responses, in seconds.</dd>
 </dl>
 
 <p>JdbcCache will not create its schema automatically&mdash;this must be done manually using the following commands, which may have to be altered slightly for your particular database:</p>
 
-<figure class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">IF</span> <span class="k">NOT</span> <span class="k">EXISTS</span> <span class="n">image</span> <span class="p">(</span>
-   <span class="n">operations</span> <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">4096</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
-   <span class="n">image</span> <span class="n">BLOB</span><span class="p">,</span>
-   <span class="n">last_modified</span> <span class="n">DATETIME</span>
-<span class="p">);</span>
+{% highlight sql %}
+CREATE TABLE IF NOT EXISTS image (
+   operations VARCHAR(4096) NOT NULL,
+   image BLOB,
+   last_modified DATETIME
+);
 
-<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">IF</span> <span class="k">NOT</span> <span class="k">EXISTS</span> <span class="n">info</span> <span class="p">(</span>
-  <span class="n">identifier</span> <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">4096</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
-  <span class="n">info</span> <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">8192</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
-  <span class="n">last_modified</span> <span class="n">DATETIME</span>
-<span class="p">);</span></code></pre></figure>
+CREATE TABLE IF NOT EXISTS info (
+  identifier VARCHAR(4096) NOT NULL,
+  info VARCHAR(8192) NOT NULL,
+  last_modified DATETIME
+);
+{% endhighlight %}
 
 <p>JdbcCache uses write transactions and is process-safe: it is safe to point multiple server instances at the same database tables.</p>
-
-  </div>
-</div>
-
-
-      <footer>
-</footer>
-
-<script src="/cantaloupe/scripts/bootstrap.min.js"></script>
-<script src="/cantaloupe/scripts/base.js"></script>
-
-    </div>
-
-  </body>
-
-</html>

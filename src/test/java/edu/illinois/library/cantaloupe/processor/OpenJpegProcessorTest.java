@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.junit.Before;
@@ -17,7 +17,7 @@ public class OpenJpegProcessorTest extends ProcessorTest {
 
     @Before
     public void setUp() throws Exception {
-        Application.getConfiguration().setProperty(
+        Configuration.getInstance().setProperty(
                 OpenJpegProcessor.PATH_TO_BINARIES_CONFIG_KEY, "/usr/local/bin");
 
         instance = new OpenJpegProcessor();

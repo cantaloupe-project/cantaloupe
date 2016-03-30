@@ -1,18 +1,16 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import com.zaxxer.hikari.HikariDataSource;
-import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import org.apache.commons.configuration.Configuration;
-import org.restlet.data.MediaType;
+import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
+import edu.illinois.library.cantaloupe.script.ScriptEngine;
+import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -29,7 +27,7 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
         private final int column;
         private final ResultSet resultSet;
 
-        public JdbcStreamSource(ResultSet resultSet, int column) {
+        JdbcStreamSource(ResultSet resultSet, int column) {
             this.resultSet = resultSet;
             this.column = column;
         }
@@ -52,33 +50,22 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
 
     private static Logger logger = LoggerFactory.getLogger(JdbcResolver.class);
 
-    public static final String CONNECTION_TIMEOUT_CONFIG_KEY =
+    static final String CONNECTION_TIMEOUT_CONFIG_KEY =
             "JdbcResolver.connection_timeout";
-    public static final String IDENTIFIER_FUNCTION_CONFIG_KEY =
-            "JdbcResolver.function.identifier";
-    public static final String JDBC_URL_CONFIG_KEY = "JdbcResolver.url";
-    public static final String LOOKUP_SQL_CONFIG_KEY =
-            "JdbcResolver.lookup_sql";
-    public static final String MAX_POOL_SIZE_CONFIG_KEY =
+    static final String JDBC_URL_CONFIG_KEY = "JdbcResolver.url";
+    static final String MAX_POOL_SIZE_CONFIG_KEY =
             "JdbcResolver.max_pool_size";
-    public static final String MEDIA_TYPE_FUNCTION_CONFIG_KEY =
-            "JdbcResolver.function.media_type";
-    public static final String PASSWORD_CONFIG_KEY = "JdbcResolver.password";
-    public static final String USER_CONFIG_KEY = "JdbcResolver.user";
+    static final String PASSWORD_CONFIG_KEY = "JdbcResolver.password";
+    static final String USER_CONFIG_KEY = "JdbcResolver.user";
+
+    static final String GET_DATABASE_IDENTIFIER_DELEGATE_METHOD =
+            "JdbcResolver::get_database_identifier";
+    static final String GET_LOOKUP_SQL_DELEGATE_METHOD =
+            "JdbcResolver::get_lookup_sql";
+    static final String GET_MEDIA_TYPE_DELEGATE_METHOD =
+            "JdbcResolver::get_media_type";
 
     private static HikariDataSource dataSource;
-
-    static {
-        try (Connection connection = getConnection()) {
-            logger.info("Using {} {}", connection.getMetaData().getDriverName(),
-                    connection.getMetaData().getDriverVersion());
-            Configuration config = Application.getConfiguration();
-            logger.info("Connection string: {}",
-                    config.getString(JDBC_URL_CONFIG_KEY));
-        } catch (SQLException e) {
-            logger.error("Failed to establish a database connection", e);
-        }
-    }
 
     /**
      * @return Connection from the connection pool. Clients must
@@ -87,7 +74,8 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
      */
     public static synchronized Connection getConnection() throws SQLException {
         if (dataSource == null) {
-            final Configuration config = Application.getConfiguration();
+            final Configuration config = Configuration.getInstance();
+
             final String connectionString = config.
                     getString(JDBC_URL_CONFIG_KEY, "");
             final int connectionTimeout = 1000 *
@@ -103,104 +91,119 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
             dataSource.setPoolName("JdbcResolverPool");
             dataSource.setMaximumPoolSize(maxPoolSize);
             dataSource.setConnectionTimeout(connectionTimeout);
+
+            try (Connection connection = dataSource.getConnection()) {
+                logger.info("Using {} {}", connection.getMetaData().getDriverName(),
+                        connection.getMetaData().getDriverVersion());
+                logger.info("Connection string: {}",
+                        config.getString(JDBC_URL_CONFIG_KEY));
+            }
         }
         return dataSource.getConnection();
     }
 
     @Override
-    public StreamSource getStreamSource(Identifier identifier)
-            throws IOException {
+    public StreamSource getStreamSource() throws IOException {
         try (Connection connection = getConnection()) {
-            Configuration config = Application.getConfiguration();
-            String sql = config.getString(LOOKUP_SQL_CONFIG_KEY);
+            final String sql = getLookupSql();
             if (!sql.contains("?")) {
-                throw new IOException(LOOKUP_SQL_CONFIG_KEY +
-                        " does not support prepared statements");
+                throw new IOException(GET_LOOKUP_SQL_DELEGATE_METHOD +
+                        " implementation does not support prepared statements");
             }
             logger.debug(sql);
 
             PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setString(1, executeGetDatabaseIdentifier(identifier));
+            statement.setString(1, getDatabaseIdentifier());
             ResultSet result = statement.executeQuery();
             if (result.next()) {
                 return new JdbcStreamSource(result, 1);
             }
-        } catch (ScriptException | SQLException e) {
+        } catch (ScriptException | SQLException |
+                DelegateScriptDisabledException e) {
             throw new IOException(e.getMessage(), e);
         }
         throw new FileNotFoundException();
     }
 
     @Override
-    public Format getSourceFormat(Identifier identifier)
-            throws IOException {
-        try {
-            // JdbcResolver.function.media_type may contain a JavaScript
-            // function or null.
-            String functionResult = executeGetMediaType(identifier);
-            String mediaType = null;
-            if (functionResult != null) {
-                // the function result may be a media type, or an SQL
-                // statement to look it up.
-                if (functionResult.toUpperCase().contains("SELECT") &&
-                        functionResult.toUpperCase().contains("FROM")) {
-                    logger.debug(functionResult);
-                    try (Connection connection = getConnection()) {
-                        PreparedStatement statement = connection.
-                                prepareStatement(functionResult);
-                        statement.setString(1, executeGetDatabaseIdentifier(identifier));
-                        ResultSet resultSet = statement.executeQuery();
-                        if (resultSet.next()) {
-                            mediaType = resultSet.getString(1);
+    public Format getSourceFormat() throws IOException {
+        if (sourceFormat == null) {
+            try {
+                // JdbcResolver.function.media_type may contain a JavaScript
+                // function or null.
+                String functionResult = getMediaType();
+                String mediaType = null;
+                if (functionResult != null) {
+                    // the function result may be a media type, or an SQL
+                    // statement to look it up.
+                    if (functionResult.toUpperCase().contains("SELECT") &&
+                            functionResult.toUpperCase().contains("FROM")) {
+                        logger.debug(functionResult);
+                        try (Connection connection = getConnection()) {
+                            PreparedStatement statement = connection.
+                                    prepareStatement(functionResult);
+                            statement.setString(1, getDatabaseIdentifier());
+                            ResultSet resultSet = statement.executeQuery();
+                            if (resultSet.next()) {
+                                mediaType = resultSet.getString(1);
+                            }
                         }
+                    } else {
+                        mediaType = functionResult;
                     }
                 } else {
-                    mediaType = functionResult;
+                    mediaType = Format.getFormat(identifier).
+                            getPreferredMediaType().toString();
                 }
-            } else {
-                mediaType = Format.getFormat(identifier).
-                        getPreferredMediaType().toString();
+                sourceFormat = Format.getFormat(mediaType);
+            } catch (ScriptException | SQLException |
+                    DelegateScriptDisabledException e) {
+                throw new IOException(e.getMessage(), e);
             }
-            return Format.getFormat(mediaType);
-        } catch (ScriptException | SQLException e) {
-            throw new IOException(e.getMessage(), e);
         }
+        return sourceFormat;
     }
 
     /**
-     * @param identifier
-     * @return Result of the <code>getDatabaseIdentifier()</code> function.
+     * @return Result of the {@link #GET_DATABASE_IDENTIFIER_DELEGATE_METHOD}
+     *         method.
      * @throws ScriptException
-     * @throws SQLException
+     * @throws DelegateScriptDisabledException
+     * @throws IOException
      */
-    public String executeGetDatabaseIdentifier(Identifier identifier)
-            throws ScriptException {
-        Configuration config = Application.getConfiguration();
-        final String statement = String.format("%s\ngetDatabaseIdentifier(\"%s\")",
-                config.getString(IDENTIFIER_FUNCTION_CONFIG_KEY), identifier);
-        ScriptEngineManager manager = new ScriptEngineManager();
-        ScriptEngine engine = manager.getEngineByName("js");
-        return (String) engine.eval(statement);
+    String getDatabaseIdentifier() throws IOException,
+            ScriptException, DelegateScriptDisabledException {
+        final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
+        final String[] args = { identifier.toString() };
+        final Object result = engine.invoke(
+                GET_DATABASE_IDENTIFIER_DELEGATE_METHOD, args);
+        return (String) result;
     }
 
     /**
-     * @param identifier
-     * @return Result of the <code>getMediaType()</code> function.
+     * @return Result of the {@link #GET_LOOKUP_SQL_DELEGATE_METHOD} method.
      * @throws ScriptException
-     * @throws SQLException
+     * @throws DelegateScriptDisabledException
+     * @throws IOException
      */
-    public String executeGetMediaType(Identifier identifier)
-            throws ScriptException, SQLException {
-        Configuration config = Application.getConfiguration();
-        String function = config.getString(MEDIA_TYPE_FUNCTION_CONFIG_KEY);
-        if (function != null && function.length() > 0) {
-            final String statement = String.format("%s\ngetMediaType(\"%s\")",
-                    function, identifier);
-            ScriptEngineManager manager = new ScriptEngineManager();
-            ScriptEngine engine = manager.getEngineByName("js");
-            return (String) engine.eval(statement);
-        }
-        return null;
+    String getLookupSql() throws IOException, ScriptException,
+            DelegateScriptDisabledException {
+        final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
+        final Object result = engine.invoke(GET_LOOKUP_SQL_DELEGATE_METHOD);
+        return (String) result;
+    }
+
+    /**
+     * @return Result of the {@link #GET_MEDIA_TYPE_DELEGATE_METHOD} method.
+     * @throws ScriptException
+     * @throws DelegateScriptDisabledException
+     * @throws IOException
+     */
+    public String getMediaType() throws IOException, ScriptException,
+            DelegateScriptDisabledException {
+        final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
+        final Object result = engine.invoke(GET_MEDIA_TYPE_DELEGATE_METHOD);
+        return (String) result;
     }
 
 }

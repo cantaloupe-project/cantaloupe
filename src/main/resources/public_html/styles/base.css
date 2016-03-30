@@ -1,0 +1,10 @@
+@import url(bootstrap.min.css);
+
+
+
+/* error page */
+
+body#cl-error p {
+    margin-bottom: 1.4em;
+    margin-top: 0em;
+}

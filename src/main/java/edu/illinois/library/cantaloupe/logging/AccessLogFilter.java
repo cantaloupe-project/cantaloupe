@@ -9,12 +9,10 @@ import ch.qos.logback.core.spi.FilterReply;
  */
 public class AccessLogFilter extends Filter<ILoggingEvent> {
 
-    /**
-     * Rejects Restlet "Processing request to:" messages.
-     */
     public FilterReply decide(ILoggingEvent event) {
-        return event.getMessage().contains("Processing request to") ?
-                FilterReply.DENY : FilterReply.NEUTRAL;
+        // Accept Jetty access log messages; deny everything else.
+        return event.getLoggerName().equals("LogService") ?
+                FilterReply.ACCEPT : FilterReply.DENY;
     }
 
 }

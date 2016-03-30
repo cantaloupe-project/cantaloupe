@@ -1,0 +1,2701 @@
+<!DOCTYPE html>
+<html>
+<head>
+    #if ($baseUri)
+        <base href="$baseUri/">
+    #end
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="static/styles/admin.css">
+
+    <title>Cantaloupe Image Server</title>
+</head>
+
+<body id="cl-landing">
+
+<div class="container-fluid">
+    <div class="clearfix">
+        <header>
+            <img src="$baseUri/static/images/cantaloupe-320.png" alt="Cantaloupe icon"
+                 width="154" height="82" style="float:left">
+            <h1>Cantaloupe Image Server <small>$version</small></h1>
+        </header>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-3 col-md-2">
+            <ul class="nav nav-pills nav-stacked list-group">
+                <li role="presentation" class="list-group-item active" id="cl-status-button">
+                    <a href="#cl-status" aria-controls="cl-status"
+                       role="tab" data-toggle="tab">Status</a>
+                </li>
+                <li role="presentation" class="list-group-item" id="cl-server-button">
+                    <a href="#cl-server" aria-controls="cl-server"
+                       role="tab" data-toggle="tab">Server</a>
+                </li>
+                <li role="presentation" class="list-group-item" id="cl-endpoints-button">
+                    <a href="#cl-endpoints" aria-controls="cl-endpoints"
+                       role="tab" data-toggle="tab">Endpoints</a>
+                </li>
+                <li role="presentation" class="list-group-item" id="cl-resolver-button">
+                    <a href="#cl-resolver" aria-controls="cl-resolver"
+                       role="tab" data-toggle="tab">Resolver</a>
+                </li>
+                <li role="presentation" class="list-group-item" id="cl-processors-button">
+                    <a href="#cl-processors" aria-controls="cl-processors"
+                       role="tab" data-toggle="tab">Processors</a>
+                </li>
+                <li role="presentation" class="list-group-item" id="cl-caches-button">
+                    <a href="#cl-caches" aria-controls="cl-caches"
+                       role="tab" data-toggle="tab">Caches</a>
+                </li>
+                <li role="presentation" class="list-group-item" id="cl-overlays-button">
+                    <a href="#cl-overlays" aria-controls="cl-overlays"
+                       role="tab" data-toggle="tab">Overlays</a>
+                </li>
+                <li role="presentation" class="list-group-item" id="cl-delegate-script-button">
+                    <a href="#cl-delegate-script" aria-controls="cl-delegate-script"
+                       role="tab" data-toggle="tab">Delegate Script</a>
+                </li>
+                <li role="presentation" class="list-group-item" id="cl-logging-button">
+                    <a href="#cl-logging" aria-controls="cl-logging"
+                       role="tab" data-toggle="tab">Logging</a>
+                </li>
+            </ul>
+        </div>
+        <div class="col-sm-9 col-md-10">
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="cl-status">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <section>
+                                <h2>Memory</h2>
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>Used Heap</td>
+                                        <td>$usedHeap MB</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Available Heap</td>
+                                        <td>$freeHeap MB</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Total Heap</td>
+                                        <td>$totalHeap MB</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Max Heap</td>
+                                        <td>$maxHeap MB</td>
+                                    </tr>
+                                </table>
+
+                                <div class="progress">
+                                    <div class="progress-bar $memoryBarClass"
+                                         aria-valuenow="$memoryBarValue"
+                                         aria-valuemin="0" aria-valuemax="100"
+                                         style="width: $memoryBarValue%">
+                                        <span class="sr-only">$memoryBarValue% memory used</span>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                        <div class="col-sm-6">
+                            <section>
+                                <h2>Proxy Headers</h2>
+                                (These will not appear if this page is not accessed
+                                via a reverse proxy server.)
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>X-Forwarded-Proto</td>
+                                        <td>$xForwardedProtoHeader</td>
+                                    </tr>
+                                    <tr>
+                                        <td>X-Forwarded-Host</td>
+                                        <td>$xForwardedHostHeader</td>
+                                    </tr>
+                                    <tr>
+                                        <td>X-Forwarded-Port</td>
+                                        <td>$xForwardedPortHeader</td>
+                                    </tr>
+                                    <tr>
+                                        <td>X-Forwarded-Path</td>
+                                        <td>$xForwardedPathHeader</td>
+                                    </tr>
+                                    <tr>
+                                        <td>X-Forwarded-For</td>
+                                        <td>$xForwardedForHeader</td>
+                                    </tr>
+                                </table>
+                            </section>
+                        </div>
+                    </div>
+
+                    <section>
+                        <h2>VM Arguments</h2>
+                        <pre>#foreach ($arg in $vmArguments)$arg<br>#end</pre>
+                    </section>
+
+                    <section>
+                        <h2>Configuration File</h2>
+                        <pre>$configFilePath</pre>
+                    </section>
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="cl-server">
+                    <form method="post">
+                        <section>
+                            <h2>HTTP <small>(Standalone)</small></h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Whether to enable the built-in HTTP server.
+                                           &lt;br&gt;&lt;br&gt;(This has no effect in a
+                                           Servlet container.)">?</a>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="http.enabled"
+                                                       data-requires-restart="true">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Port
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="TCP port to bind the built-in HTTP
+                                           server to.">?</a>
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="number"
+                                               name="http.port" min="1" max="65536"
+                                               data-requires-restart="true">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
+                        <section>
+                            <h2>HTTPS <small>(Standalone)</small></h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Whether to enable the built-in HTTPS server.
+                                           &lt;br&gt;&lt;br&gt;(This has no effect in a
+                                           Servlet container.)">?</a>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="https.enabled"
+                                                       data-requires-restart="true">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Port
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="TCP port to bind the built-in
+                                           HTTPS server to.">?</a>
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="number"
+                                               name="https.port" min="1" max="65536"
+                                               data-requires-restart="true">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Key Store Type</td>
+                                    <td>
+                                        <select class="form-control" name="https.key_store_type">
+                                            <option>JKS</option>
+                                            <option>PKCS12</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Key Store Path</td>
+                                    <td>
+                                        <input class="form-control" type="text"
+                                               name="https.key_store_path" maxlength="4096"
+                                               data-requires-restart="true">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Key Store Password</td>
+                                    <td>
+                                        <input class="form-control" type="password"
+                                               name="https.key_store_password"
+                                               data-requires-restart="true">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
+                        <section>
+                            <h2>HTTP Basic Authentication</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="auth.basic.enabled"
+                                                       data-requires-restart="true">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Username</td>
+                                    <td>
+                                        <input class="form-control" type="text"
+                                               name="auth.basic.username"
+                                               data-requires-restart="true">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Secret</td>
+                                    <td>
+                                        <input class="form-control" type="password"
+                                               name="auth.basic.secret"
+                                               data-requires-restart="true">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
+                        <section>
+                            <h2>Other Settings</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Base URI
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Base URI to use for internal links, such as
+                                           Link headers and JSON-LD &lt;code&gt;@id&lt;/code&gt; values,
+                                           in a reverse-proxy context. This should only be used when
+                                           &lt;code&gt;X-Forwarded-*&lt;/code&gt; headers cannot be used
+                                           instead (see the user manual).">?</a>
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="text"
+                                               name="base_uri" maxlength="4096"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>URI Slash Substitute
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Normally, slashes in a URI path component must be
+                                           percent-encoded as &lt;code&gt;%2F&lt;/code&gt;. If your proxy is
+                                           incapable of passing these through without decoding them, you can
+                                           define an alternate character or character sequence to substitute
+                                           for a slash. Supply the non-percent-encoded version here, and use
+                                           the percent-encoded version in URLs.">?</a>
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="text"
+                                               name="slash_substitute"
+                                               size="4" maxlength="4"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="print_stack_trace_on_error_pages"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Print stack trace on error pages
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
+                        <input type="submit" class="btn btn-primary" value="Save">
+                    </form>
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="cl-endpoints">
+                    <form method="post">
+                        <section>
+                            <h2>All Endpoints</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Max Pixels
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Maximum number of pixels to return in a response,
+                                           to prevent overloading the server. Requests for more pixels than
+                                           this will receive an HTTP 403 response. Set to 0
+                                           for no maximum.&lt;br&gt;&lt;br&gt;
+                                           This is ignored when requesting an
+                                           unmodified source image.">?</a>
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="number"
+                                               name="max_pixels" min="0"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
+                        <section>
+                            <h3>IIIF Image API Endpoints</h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Content Disposition
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Controls the response
+                                           Content-Disposition header for images.
+                                           &lt;br&gt;&lt;br&gt;
+                                           &quot;Attachment&quot; will generally
+                                           cause web browsers to download images
+                                           rather than display them.">?</a>
+                                    </td>
+                                    <td>
+                                        <select class="form-control"
+                                                name="endpoint.iiif.content_disposition"
+                                                data-requires-restart="false">
+                                            <option value="none">None</option>
+                                            <option value="inline">Inline</option>
+                                            <option value="attachment">Attachment</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Minimum Tile Size
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Minimum size that will be used in info.json
+                                           &lt;code&gt;tiles&lt;/code&gt; keys.
+                                           &lt;br&gt;&lt;br&gt;
+                                           See the user manual for
+                                           an explanation of how these are calculated.">?</a>
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="number"
+                                               name="endpoint.iiif.min_tile_size" min="0"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
+                        <section>
+                            <h4>IIIF Image API 1.x</h4>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="endpoint.iiif.1.enabled"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
+                        <section>
+                            <h4>IIIF Image API 2.x</h4>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="endpoint.iiif.2.enabled"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="When enabled, requests for sizes other than those
+                                           specified in an info.json response will be denied with HTTP
+                                           403 Forbidden.">?</a>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="endpoint.iiif.2.restrict_to_sizes"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Restrict to sizes in info.json
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+                        <input type="submit" class="btn btn-primary" value="Save">
+                    </form>
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="cl-resolver">
+                    <form method="post">
+                        <section>
+                            <h2>Resolver</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Strategy
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="When set to &quot;Static,&quot; the
+                                           static resolver (below) will be used. When set to
+                                           &quot;Delegate Script,&quot; a delegate script
+                                           method will be used to select a resolver per-request;
+                                           see the User Manual for more information.">?</a>
+                                    </td>
+                                    <td>
+                                        <select class="form-control"
+                                                name="resolver.delegate">
+                                            #if ($resolverSelectionStrategy.toString().equals("STATIC"))
+                                                <option value="false" selected>Static</option>
+                                                <option value="true">Delegate Script</option>
+                                            #else
+                                                <option value="false">Static</option>
+                                                <option value="true" selected>Delegate Script</option>
+                                            #end
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Static Resolver
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="The resolver to use to
+                                           translate the identifier in the URL to an image
+                                           source for all requests, when the strategy is
+                                           &quot;Static.&quot;">?</a>
+                                    </td>
+                                    <td>
+                                        <select class="form-control"
+                                                name="resolver.static">
+                                            #foreach ($resolver in $resolvers)
+                                                #if ($resolver.equals($currentResolver))
+                                                    <option selected>$resolver.getName()</option>
+                                                #else
+                                                    <option>$resolver.getName()</option>
+                                                #end
+                                            #end
+                                        </select>
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
+                        <section>
+                            <ul class="nav nav-pills" role="tablist">
+                                <li role="presentation">
+                                    <a href="#AmazonS3Resolver"
+                                       aria-controls="AmazonS3Resolver" role="tab"
+                                       data-toggle="tab">AmazonS3Resolver</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#AzureStorageResolver"
+                                       aria-controls="AzureStorageResolver" role="tab"
+                                       data-toggle="tab">AzureStorageResolver</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#FilesystemResolver"
+                                       aria-controls="FilesystemResolver" role="tab"
+                                       data-toggle="tab">FilesystemResolver</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#HttpResolver"
+                                       aria-controls="HttpResolver" role="tab"
+                                       data-toggle="tab">HttpResolver</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#JdbcResolver"
+                                       aria-controls="JdbcResolver" role="tab"
+                                       data-toggle="tab">JdbcResolver</a>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content">
+                                <div role="tabpanel" class="tab-pane" id="AmazonS3Resolver">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Access Key ID
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Access key ID associated with your AWS
+                                                   account. See: &lt;a href=&quot;http://aws.amazon.com/security-credentials&quot; target=&quot;_blank&quot;&gt;
+                                                   http://aws.amazon.com/security-credentials&lt;/a&gt;">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="AmazonS3Resolver.access_key_id"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Secret Key
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Secret key associated with your AWS
+                                                   account. See: &lt;a href=&quot;http://aws.amazon.com/security-credentials&quot; target=&quot;_blank&quot;&gt;
+                                                   http://aws.amazon.com/security-credentials&lt;/a&gt;">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="AmazonS3Resolver.secret_key"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Bucket Name
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Name of the bucket containing images to
+                                                   be served.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="AmazonS3Resolver.bucket.name"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Bucket Region
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="See: &lt;a href=&quot;http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region&quot;&gt;
+                                                   http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region&lt;/a&gt;
+                                                   for a list of regions.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="AmazonS3Resolver.bucket.region"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Lookup Strategy
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Tells the resolver how to look up images.
+                                                   The delegate script enables dynamic lookups&mdash;see
+                                                   the user manual for details.">?</a>
+                                            </td>
+                                            <td>
+                                                <select class="form-control"
+                                                        name="AmazonS3Resolver.lookup_strategy"
+                                                        data-requires-restart="false">
+                                                    <option value="BasicLookupStrategy">Basic</option>
+                                                    <option value="ScriptLookupStrategy">Delegate Script</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="AzureStorageResolver">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Account Name
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Name of your Azure account.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="AzureStorageResolver.account_name"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Account Key
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Key of your Azure account.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="AzureStorageResolver.account_key"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Container Name
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Name of the container containing images
+                                                   to be served.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="AzureStorageResolver.container_name"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Lookup Strategy
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Tells the resolver how to look up images.
+                                                   The delegate script enables dynamic lookups&mdash;see
+                                                   the user manual for details.">?</a>
+                                            </td>
+                                            <td>
+                                                <select class="form-control"
+                                                        name="AzureStorageResolver.lookup_strategy"
+                                                        data-requires-restart="false">
+                                                    <option value="BasicLookupStrategy">Basic</option>
+                                                    <option value="ScriptLookupStrategy">Delegate Script</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="FilesystemResolver">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Lookup Strategy
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Tells the resolver how to look up images.
+                                                   The delegate script enables dynamic lookups&mdash;see
+                                                   the user manual for details.">?</a>
+                                            </td>
+                                            <td>
+                                                <select class="form-control"
+                                                        name="FilesystemResolver.lookup_strategy"
+                                                        data-requires-restart="false">
+                                                    <option value="BasicLookupStrategy">Basic</option>
+                                                    <option value="ScriptLookupStrategy">Delegate Script</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Path Prefix
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Server-side path that will be prefixed
+                                                   to the identifier in the URL. &lt;strong&gt;Trailing
+                                                   slash is important&lt;/strong&gt;.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="FilesystemResolver.BasicLookupStrategy.path_prefix"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Path Suffix
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Server-side path or extension that will
+                                                   be suffixed to the identifier in the URL.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="FilesystemResolver.BasicLookupStrategy.path_suffix"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="HttpResolver">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Lookup Strategy
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Tells the resolver how to look up images.
+                                                   The delegate script enables dynamic lookups&mdash;see
+                                                   the user manual for details.">?</a>
+                                            </td>
+                                            <td>
+                                                <select class="form-control"
+                                                        name="HttpResolver.lookup_strategy"
+                                                        data-requires-restart="false">
+                                                    <option value="BasicLookupStrategy">Basic</option>
+                                                    <option value="ScriptLookupStrategy">Delegate Script</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>URL Prefix
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="URL that will be prefixed to the
+                                                   identifier in the request URL. &lt;strong&gt;Trailing
+                                                   slash is important&lt;/strong&gt;.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="HttpResolver.BasicLookupStrategy.url_prefix"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>URL Suffix
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Path, extension, query string, etc. that
+                                                   will be suffixed to the identifier in the request URL.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="HttpResolver.BasicLookupStrategy.url_suffix"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Basic Auth Username
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Will be used if the web server requires
+                                                   HTTP Basic authentication.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="HttpResolver.auth.basic.username"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Basic Auth Secret
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Will be used if the web server requires
+                                                   HTTP Basic authentication.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="HttpResolver.auth.basic.secret"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="JdbcResolver">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>JDBC URL</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="JdbcResolver.url"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>User</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="JdbcResolver.user"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Password</td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="JdbcResolver.password"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Max Pool Size
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Maximum number of connections allowed
+                                                   in the connection pool. A good starting point is (number
+                                                   of CPU cores * 2) + 1.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="number"
+                                                       name="JdbcResolver.max_pool_size"
+                                                       min="1" max="200"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Connection Timeout (seconds)</td>
+                                            <td>
+                                                <input class="form-control" type="number"
+                                                       name="JdbcResolver.connection_timeout" min="0"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </section>
+                        <input type="submit" class="btn btn-primary" value="Save">
+                    </form>
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="cl-processors">
+                    <section>
+                        <h2>Supported Source Formats</h2>
+
+                        <ul class="nav nav-pills" role="tablist">
+                            <li role="presentation" class="active">
+                                <a href="#supported-image-formats"
+                                   aria-controls="supported-image-formats" role="tab"
+                                   data-toggle="tab">Image</a>
+                            </li>
+                            <li role="presentation">
+                                <a href="#supported-video-formats"
+                                   aria-controls="supported-video-formats" role="tab"
+                                   data-toggle="tab">Video</a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <div role="tabpanel" class="tab-pane active" id="supported-image-formats">
+                                <table class="table">
+                                    <tr>
+                                        <th></th>
+                                        #foreach ($format in $imageSourceFormats)
+                                            <th class="text-center">$format.getName()</th>
+                                        #end
+                                    </tr>
+
+                                    #foreach ($processor in $processors)
+                                        <tr>
+                                            <td>$processor.getName()</td>
+                                            #foreach ($format in $imageSourceFormats)
+                                                #if ($processor.supports($format))
+                                                    <td class="text-center success">
+                                                        <span class="text-success">&check;</span>
+                                                    </td>
+                                                #else
+                                                    <td class="text-center danger">
+                                                    </td>
+                                                #end
+                                            #end
+                                        </tr>
+                                    #end
+                                </table>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane" id="supported-video-formats">
+                                <table class="table">
+                                    <tr>
+                                        <th></th>
+                                        #foreach ($format in $videoSourceFormats)
+                                            <th class="text-center">$format.getName()</th>
+                                        #end
+                                    </tr>
+
+                                    #foreach ($processor in $processors)
+                                        <tr>
+                                            <td>$processor.getName()</td>
+                                            #foreach ($format in $videoSourceFormats)
+                                                #if ($processor.supports($format))
+                                                    <td class="text-center success">
+                                                        <span class="text-success">&check;</span>
+                                                    </td>
+                                                #else
+                                                    <td class="text-center danger">
+                                                    </td>
+                                                #end
+                                            #end
+                                        </tr>
+                                    #end
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
+                    <form method="post">
+                        <section>
+                            <h2>Source Format Assignments</h2>
+
+                            <ul class="nav nav-pills" role="tablist">
+                                <li role="presentation" class="active">
+                                    <a href="#cl-image-assignments"
+                                       aria-controls="cl-image-assignments" role="tab"
+                                       data-toggle="tab">Image</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#cl-video-assignments"
+                                       aria-controls="cl-video-assignments" role="tab"
+                                       data-toggle="tab">Video</a>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content">
+                                <div role="tabpanel" class="tab-pane active" id="cl-image-assignments">
+                                    <table class="table table-striped cl-source-format-assignments">
+                                        #foreach ($format in $sourceFormats)
+                                            #if ($format.isImage())
+                                                <tr>
+                                                    <td style="width:30%">$format.getName()</td>
+                                                    <td>
+                                                        <select class="form-control"
+                                                                name="processor.$format.toString()"
+                                                                data-restart-required="false">
+                                                            #if ($currentProcessors.get($format))
+                                                                <option value="">Use Fallback</option>
+                                                            #else
+                                                                <option value="" selected>Use Fallback</option>
+                                                            #end
+                                                            #foreach ($processor in $processors)
+                                                                #if ($processor.supports($format))
+                                                                    #if ($currentProcessors.get($format).equals($processor))
+                                                                        <option selected>$processor.getName()</option>
+                                                                    #else
+                                                                        <option>$processor.getName()</option>
+                                                                    #end
+                                                                #end
+                                                            #end
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                            #end
+                                        #end
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="cl-video-assignments">
+                                    <table class="table table-striped cl-source-format-assignments">
+                                        #foreach ($format in $sourceFormats)
+                                            #if ($format.isVideo())
+                                                <tr>
+                                                    <td style="width:30%">$format.getName()</td>
+                                                    <td>
+                                                        <select class="form-control"
+                                                                name="processor.$format.toString()"
+                                                                data-restart-required="false">
+                                                            #if ($currentProcessors.get($format))
+                                                                <option value="">Use Fallback</option>
+                                                            #else
+                                                                <option value="" selected>Use Fallback</option>
+                                                            #end
+                                                            #foreach ($processor in $processors)
+                                                                #if ($processor.supports($format))
+                                                                    #if ($currentProcessors.get($format).equals($processor))
+                                                                        <option selected>$processor.getName()</option>
+                                                                    #else
+                                                                        <option>$processor.getName()</option>
+                                                                    #end
+                                                                #end
+                                                            #end
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                            #end
+                                        #end
+                                    </table>
+                                </div>
+
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>
+                                            Fallback Processor
+                                            <a tabindex="0" class="btn btn-sm cl-help"
+                                               role="button" data-toggle="popover"
+                                               data-trigger="focus"
+                                               data-content="This processor will be used
+                                               for any formats not assigned above.">?</a>
+                                        </td>
+                                        <td>
+                                            <select class="form-control"
+                                                    name="processor.fallback"
+                                                    data-restart-required="false">
+                                                #foreach ($processor in $processors)
+                                                    #if ($currentFallbackProcessor.equals($processor))
+                                                        <option selected>$processor.getName()</option>
+                                                    #else
+                                                        <option>$processor.getName()</option>
+                                                    #end
+                                                #end
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>StreamProcessor Retrieval Strategy
+                                            <a tabindex="0" class="btn btn-sm cl-help"
+                                               role="button" data-toggle="popover"
+                                               data-trigger="focus"
+                                               data-content="When a processor is reading
+                                               from streams, rather than the filesystem,
+                                               this option configures how it loads source images.
+                                               With &quot;stream,&quot; it will read them from
+                                               a stream per-request. With &quot;cache,&quot; it
+                                               will read them from a stream, cache
+                                               them in the source cache, and read from that
+                                               thereafter.<br><br>
+                                               With &quot;cache,&quot; FilesystemCache must be
+                                               configured.">?</a>
+                                        </td>
+                                        <td>
+                                            <select class="form-control"
+                                                    name="StreamProcessor.retrieval_strategy"
+                                                    data-restart-required="false">
+                                                <option value="StreamStrategy">Stream Each Request (StreamStrategy)</option>
+                                                <option value="CacheStrategy">Cache in Source Cache (CacheStrategy)</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </section>
+
+                        <section>
+                            <h2>Processors</h2>
+
+                            <ul class="nav nav-pills" role="tablist">
+                                <li role="presentation">
+                                    <a href="#FfmpegProcessor"
+                                       aria-controls="FfmpegProcessor" role="tab"
+                                       data-toggle="tab">FfmpegProcessor</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#GraphicsMagickProcessor"
+                                       aria-controls="GraphicsMagickProcessor" role="tab"
+                                       data-toggle="tab">GraphicsMagickProcessor</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#ImageMagickProcessor"
+                                       aria-controls="ImageMagickProcessor" role="tab"
+                                       data-toggle="tab">ImageMagickProcessor</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#JaiProcessor"
+                                       aria-controls="JaiProcessor" role="tab"
+                                       data-toggle="tab">JaiProcessor</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#Java2dProcessor"
+                                       aria-controls="Java2dProcessor" role="tab"
+                                       data-toggle="tab">Java2dProcessor</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#KakaduProcessor"
+                                       aria-controls="KakaduProcessor" role="tab"
+                                       data-toggle="tab">KakaduProcessor</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#OpenJpegProcessor"
+                                       aria-controls="OpenJpegProcessor" role="tab"
+                                       data-toggle="tab">OpenJpegProcessor</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#PdfBoxProcessor"
+                                       aria-controls="PdfBoxProcessor" role="tab"
+                                       data-toggle="tab">PdfBoxProcessor</a>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content">
+                                <div role="tabpanel" class="tab-pane" id="FfmpegProcessor">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Path to binaries
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Optional; overrides the
+                                                   &lt;code&gt;PATH&lt;/code&gt;.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="FfmpegProcessor.path_to_binaries"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="GraphicsMagickProcessor">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Path to binaries
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Optional; overrides the
+                                                   &lt;code&gt;PATH&lt;/code&gt;.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="GraphicsMagickProcessor.path_to_binaries"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Background color
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Color of the background when an image
+                                                   is rotated. Only affects output formats that do not
+                                                   support transparency.">?</a>
+                                            </td>
+                                            <td>
+                                                <select class="form-control"
+                                                        name="GraphicsMagickProcessor.background_color"
+                                                        data-requires-restart="false">
+                                                    <option value="black">Black</option>
+                                                    <option value="white">White</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="ImageMagickProcessor">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Path to binaries
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Optional; overrides the
+                                                   &lt;code&gt;PATH&lt;/code&gt;.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="ImageMagickProcessor.path_to_binaries"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Background color
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Color of the background when an image
+                                                   is rotated. Only affects output formats that do not
+                                                   support transparency.">?</a>
+                                            </td>
+                                            <td>
+                                                <select class="form-control"
+                                                        name="ImageMagickProcessor.background_color"
+                                                        data-requires-restart="false">
+                                                    <option value="black">Black</option>
+                                                    <option value="white">White</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="JaiProcessor">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>JPEG quality
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="JPEG output quality. Should be a number
+                                                   between 0 and 1.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="JaiProcessor.jpg.quality"
+                                                       min="0" max="1"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>TIFF compression
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="TIFF output compression type.">?</a>
+                                            </td>
+                                            <td>
+                                                <select class="form-control"
+                                                        name="JaiProcessor.tif.compression"
+                                                        data-requires-restart="false">
+                                                    <option value="">No Compression</option>
+                                                    <option value="LZW">LZW</option>
+                                                    <option value="Deflate">Deflate</option>
+                                                    <option value="ZLib">ZLib</option>
+                                                    <option value="JPEG">JPEG</option>
+                                                    <option value="PackBits">PackBits</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="Java2dProcessor">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Scale mode
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Speed is 10-20% faster at the expense of
+                                                   visible aliasing at small scales.">?</a>
+                                            </td>
+                                            <td>
+                                                <select class="form-control"
+                                                        name="Java2dProcessor.scale_mode"
+                                                        data-requires-restart="false">
+                                                    <option value="speed">Speed</option>
+                                                    <option value="quality">Quality</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>JPEG quality
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="JPEG output quality. Should be a number
+                                                   between 0 and 1.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="Java2dProcessor.jpg.quality"
+                                                       min="1" max="100"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>TIFF compression
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="TIFF output compression type.">?</a>
+                                            </td>
+                                            <td>
+                                                <select class="form-control"
+                                                        name="Java2dProcessor.tif.compression"
+                                                        data-requires-restart="false">
+                                                    <option>LZW</option>
+                                                    <option>Deflate</option>
+                                                    <option>ZLib</option>
+                                                    <option>JPEG</option>
+                                                    <option>PackBits</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="KakaduProcessor">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Path to binaries
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Optional; overrides the
+                                                   &lt;code&gt;PATH&lt;/code&gt;.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="KakaduProcessor.path_to_binaries"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Post-processor</td>
+                                            <td>
+                                                <select class="form-control"
+                                                        name="KakaduProcessor.post_processor"
+                                                        data-requires-restart="false">
+                                                    <option value="java2d">Java 2D</option>
+                                                    <option value="jai">JAI</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Java 2D scale mode
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Speed is 10-20% faster at the expense of
+                                                   visible aliasing at small scales.">?</a>
+                                            </td>
+                                            <td>
+                                                <select class="form-control"
+                                                        name="KakaduProcessor.post_processor.java2d.scale_mode"
+                                                        data-requires-restart="false">
+                                                    <option value="speed">Speed</option>
+                                                    <option value="quality">Quality</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="OpenJpegProcessor">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Path to binaries
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Optional; overrides the
+                                                   &lt;code&gt;PATH&lt;/code&gt;.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="OpenJpegProcessor.path_to_binaries"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Post-processor</td>
+                                            <td>
+                                                <select class="form-control"
+                                                        name="OpenJpegProcessor.post_processor"
+                                                        data-requires-restart="false">
+                                                    <option value="java2d">Java 2D</option>
+                                                    <option value="jai">JAI</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Java 2D scale mode
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Speed is 10-20% faster at the expense of
+                                                   visible aliasing at small scales.">?</a>
+                                            </td>
+                                            <td>
+                                                <select class="form-control"
+                                                        name="OpenJpegProcessor.post_processor.java2d.scale_mode"
+                                                        data-requires-restart="false">
+                                                    <option value="speed">Speed</option>
+                                                    <option value="quality">Quality</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="PdfBoxProcessor">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>DPI
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Controls the resolution of the PDF
+                                                   rasterization at a scale factor of 1. Requests for
+                                                   scales less than 0.5 or larger than 2 will
+                                                   automatically use a lower or higher factor of
+                                                   this.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="number"
+                                                       name="PdfBoxProcessor.dpi"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Java 2D scale mode
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Speed is 10-20% faster at the expense of
+                                                   visible aliasing at small scales.">?</a>
+                                            </td>
+                                            <td>
+                                                <select class="form-control"
+                                                        name="PdfBoxProcessor.post_processor.java2d.scale_mode"
+                                                        data-requires-restart="false">
+                                                    <option value="speed">Speed</option>
+                                                    <option value="quality">Quality</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </section>
+                        <input type="submit" class="btn btn-primary" value="Save">
+                    </form>
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="cl-caches">
+                    <form method="post">
+                        <section>
+                            <h2>Cache-Control Header</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="The Cache-Control header
+                                           provides a hint to clients as to how they
+                                           should cache content.">?</a>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.client.enabled"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Max Age</td>
+                                    <td>
+                                        <input class="form-control" type="number"
+                                               name="cache.client.max_age" min="0"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Shared Max Age</td>
+                                    <td>
+                                        <input class="form-control" type="number"
+                                               name="cache.client.shared_max_age" min="0"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.client.public"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Public
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.client.private"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Private
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.client.no_cache"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                No Cache
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.client.no_store"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                No Store
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.client.must_revalidate"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Must Revalidate
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.client.proxy_revalidate"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Proxy Revalidate
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.client.no_transform"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                No Transform
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+                        <section>
+                            <h2>Server-Side Caches</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Source Cache
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="The source cache caches
+                                           source images before any processing.
+                                           Note that source images will only be
+                                           cached when a FileProcessor is used
+                                           with a StreamResolver, or when a
+                                           StreamProcessor is used with a retrieval
+                                           strategy of &lt;code&gt;CacheStrategy&lt;/code&gt;.">?</a>
+                                    </td>
+                                    <td>
+                                        <select class="form-control"
+                                                name="cache.source">
+                                            #if (!$currentSourceCache)
+                                                <option value="" selected>Disabled</option>
+                                            #else
+                                                <option value="">Disabled</option>
+                                            #end
+                                            #foreach ($cache in $sourceCaches)
+                                                #if ($cache.equals($currentSourceCache))
+                                                    <option selected>$cache.getName()</option>
+                                                #else
+                                                    <option>$cache.getName()</option>
+                                                #end
+                                            #end
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Derivative Cache
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Specifies a cache to use
+                                           for post-processed images.">?</a>
+                                    </td>
+                                    <td>
+                                        <select class="form-control"
+                                                name="cache.derivative">
+                                            #if (!$currentDerivativeCache)
+                                                <option value="" selected>Disabled</option>
+                                            #else
+                                                <option value="">Disabled</option>
+                                            #end
+                                            #foreach ($cache in $derivativeCaches)
+                                                #if ($cache.equals($currentDerivativeCache))
+                                                    <option selected>$cache.getName()</option>
+                                                #else
+                                                    <option>$cache.getName()</option>
+                                                #end
+                                            #end
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="If enabled, when a resolver reports that the
+                                           requested source image has gone missing, all cached
+                                           information relating to it (if any) will be deleted. (This
+                                           is effectively always enabled when &quot;Resolve First&quot;
+                                           is also enabled.)">?</a>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.server.purge_missing"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Purge Missing
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="When enabled, a source image will be confirmed
+                                           to exist before a cached copy is returned. Otherwise, a cached
+                                           copy will be returned without any checking. Resolving first
+                                           is slower, but safer.">?</a>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.server.resolve_first"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Resolve First
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
+                        <section>
+                            <h2>Caches</h2>
+
+                            <ul class="nav nav-pills" role="tablist">
+                                <li role="presentation">
+                                    <a href="#AmazonS3Cache"
+                                       aria-controls="AmazonS3Cache" role="tab"
+                                       data-toggle="tab">AmazonS3Cache</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#AzureStorageCache"
+                                       aria-controls="AzureStorageCache" role="tab"
+                                       data-toggle="tab">AzureStorageCache</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#FilesystemCache"
+                                       aria-controls="FilesystemCache" role="tab"
+                                       data-toggle="tab">FilesystemCache</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#JdbcCache"
+                                       aria-controls="JdbcCache" role="tab"
+                                       data-toggle="tab">JdbcCache</a>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content">
+                                <div role="tabpanel" class="tab-pane" id="AmazonS3Cache">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Access Key ID
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Access key ID associated with your AWS
+                                                   account. See: &lt;a href=&quot;http://aws.amazon.com/security-credentials&quot; target=&quot;_blank&quot;&gt;
+                                                   http://aws.amazon.com/security-credentials&lt;/a&gt;">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="AmazonS3Cache.access_key_id"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Secret Key
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Secret key associated with your AWS
+                                                   account. See: &lt;a href=&quot;http://aws.amazon.com/security-credentials&quot; target=&quot;_blank&quot;&gt;
+                                                   http://aws.amazon.com/security-credentials&lt;/a&gt;">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="AmazonS3Cache.secret_key"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Bucket Name
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Name of the bucket to use to store
+                                                   cached data.">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="AmazonS3Cache.bucket.name"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Bucket Region
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="See: &lt;a href=&quot;http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region&quot;&gt;
+                                                   http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region&lt;/a&gt;
+                                                   for a list of regions.">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="AmazonS3Cache.bucket.region"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Object Key Prefix
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="String that will be prefixed to object
+                                                   keys.">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="AmazonS3Cache.object_key_prefix"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Time-To-Live
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Time before a cached image becomes
+                                                   stale and needs to be reloaded. Set to 0 for
+                                                   &quot;never.&quot;">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control"
+                                                       name="AmazonS3Cache.ttl_seconds"
+                                                       min="0"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="AzureStorageCache">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Account Name
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Name of your Azure account.">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="AzureStorageCache.account_name"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Account Key
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Key of your Azure account.">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="AzureStorageCache.account_key"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Container Name
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Name of the container containing cached
+                                                   images.">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="AzureStorageCache.container_name"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Object Key Prefix
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="String that will be prefixed to object
+                                                   keys.">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="AzureStorageCache.object_key_prefix"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Time-To-Live
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Time before a cached image becomes
+                                                   stale and needs to be reloaded. Set to 0 for
+                                                   &quot;never.&quot;">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control"
+                                                       name="AzureStorageCache.ttl_seconds"
+                                                       min="0"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="FilesystemCache">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Pathname
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="If this directory does not exist, it
+                                                   will be created automatically.">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="FilesystemCache.pathname"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Directory Depth
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Levels of folder hierarchy in which to
+                                                   store cached items. Deeper depth results in fewer
+                                                   files per directory. Set to 0 to disable subfolders.
+                                                   Purge the cache after changing this.">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control"
+                                                       name="FilesystemCache.dir.depth"
+                                                       min="0" max="6"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Directory Name Length
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Number of characters in hierarchy
+                                                   directory names. Should be set to
+                                                   16&lt;sup&gt;n&lt;/sup&gt; < {max number
+                                                   of directory entries your filesystem can deal with}.
+                                                   Purge the cache after changing this.">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control"
+                                                       name="FilesystemCache.dir.name_length"
+                                                       min="1" max="6"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Time-To-Live
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Time before a cached image becomes
+                                                   stale and needs to be reloaded. Set to 0 for
+                                                   &quot;never.&quot;">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control"
+                                                       name="FilesystemCache.ttl_seconds"
+                                                       min="0"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="JdbcCache">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>JDBC URL</td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="JdbcCache.url"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>User</td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="JdbcCache.user"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Password</td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="JdbcCache.password"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Max Pool Size
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Maximum number of connections allowed
+                                                   in the connection pool. A good starting point is (number
+                                                   of CPU cores * 2) + 1.">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control"
+                                                       name="JdbcCache.max_pool_size"
+                                                       min="1" max="200"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Connection Timeout</td>
+                                            <td>
+                                                <input type="number" class="form-control"
+                                                       name="JdbcCache.connection_timeout"
+                                                       min="0"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Derivative Image Table
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="This must be created manually; see the
+                                                   user manual.">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="JdbcCache.derivative_image_table"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Info Table
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="This must be created manually; see the
+                                                   user manual.">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="JdbcCache.info_table"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Time-To-Live
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Time before a cached image becomes
+                                                   stale and needs to be reloaded. Set to 0 for
+                                                   &quot;never.&quot;">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control"
+                                                       name="JdbcCache.ttl_seconds"
+                                                       min="0"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section>
+                            <h2>Cache Worker</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="The cache worker periodically purges expired
+                                           cache items in the background.">?</a>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.server.worker.enabled"
+                                                       value="true"
+                                                       data-requires-restart="true">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Interval
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="The cache worker will wait this many
+                                           seconds before starting work again.">?</a>
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="number"
+                                               name="cache.server.worker.interval"
+                                               value="true" min="0"
+                                               data-requires-restart="true">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+                        <input type="submit" class="btn btn-primary" value="Save">
+                    </form>
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="cl-overlays">
+                    <form method="post">
+                        <section>
+                            <h2>Watermarking</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="watermark.enabled"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Strategy
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Configures how watermarking works.
+                                           &quot;Basic&quot;will use the other configuration options in
+                                           this section. &quot;Delegate Script&quot; will use the
+                                           &lt;code&gt;watermark&lt;/code&gt; delegate script method.
+                                           See the user manual for more information.">?</a>
+                                    </td>
+                                    <td>
+                                        <select class="form-control"
+                                                name="watermark.strategy"
+                                                data-requires-restart="false">
+                                            <option value="BasicStrategy">Basic</option>
+                                            <option value="DelegateScript">Delegate Script</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Image
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Absolute path of the watermark image. Must be a
+                                           .png file.">?</a>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                               name="watermark.BasicStrategy.image"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Position</td>
+                                    <td>
+                                        <select class="form-control"
+                                                name="watermark.BasicStrategy.position"
+                                                data-requires-restart="false">
+                                            <option value="top left">Top Left</option>
+                                            <option value="top center">Top Center</option>
+                                            <option value="top right">Top Right</option>
+                                            <option value="left center">Left Center</option>
+                                            <option value="center">Center</option>
+                                            <option value="right center">Right Center</option>
+                                            <option value="bottom left">Bottom Left</option>
+                                            <option value="bottom center">Bottom Center</option>
+                                            <option value="bottom right">Bottom Right</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Inset
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Pixel margin between the watermark and the
+                                           image edge.">?</a>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control"
+                                               name="watermark.BasicStrategy.inset"
+                                               min="0"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Output Width Threshold
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Output images less than this many pixels wide
+                                           will not receive a watermark. Set to 0 to add the watermark
+                                           regardless.">?</a>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control"
+                                               name="watermark.BasicStrategy.output_width_threshold"
+                                               min="0"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Output Height Threshold
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Output images less than this many pixels tall
+                                           will not receive a watermark. Set to 0 to add the watermark
+                                           regardless.">?</a>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control"
+                                               name="watermark.BasicStrategy.output_height_threshold"
+                                               min="0"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
+                        <section>
+                            <h2>Redaction</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Redaction works via the
+                                           delegate script. See the user manual for
+                                           more information.">?</a>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="redaction.enabled"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+                        <input type="submit" class="btn btn-primary" value="Save">
+                    </form>
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="cl-delegate-script">
+                    <form method="post">
+                        <section>
+                            <h2>Delegate Script</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="delegate_script.enabled"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Script File
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Location of the delegate script. This can be an
+                                           absolute path, or a filename; if only a filename is specified,
+                                           it will be searched for in the same folder as the config file,
+                                           and then the current working directory.">?</a>
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="text"
+                                               name="delegate_script.pathname" maxlength="4096"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
+                        <input type="submit" class="btn btn-primary" value="Save">
+                    </form>
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="cl-logging">
+                    <form method="post">
+                        <section>
+                            <h2>Application Log</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Log Level</td>
+                                    <td>
+                                        <select class="form-control"
+                                                name="log.application.level"
+                                                data-requires-restart="false">
+                                            <option value="trace">Trace</option>
+                                            <option value="debug">Debug</option>
+                                            <option value="info">Info</option>
+                                            <option value="warn">Warning</option>
+                                            <option value="error">Error</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <h3>Console Appender
+                                <a tabindex="0" class="btn btn-sm cl-help"
+                                   role="button" data-toggle="popover"
+                                   data-trigger="focus"
+                                   data-content="Logs to the console.">?</a>
+                            </h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="log.application.ConsoleAppender.enabled"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <h3>File Appender
+                                <a tabindex="0" class="btn btn-sm cl-help"
+                                   role="button" data-toggle="popover"
+                                   data-trigger="focus"
+                                   data-content="Logs to a single file.">?</a>
+                            </h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="log.application.FileAppender.enabled"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Pathname</td>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                               name="log.application.FileAppender.pathname"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <h3>Rolling File Appender
+                                <a tabindex="0" class="btn btn-sm cl-help"
+                                   role="button" data-toggle="popover"
+                                   data-trigger="focus"
+                                   data-content="Logs to a file which gets
+                                   rotated daily.">?</a>
+                            </h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="log.application.RollingFileAppender.enabled"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Pathname</td>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                               name="log.application.RollingFileAppender.pathname"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Filename Pattern</td>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                               name="log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Max History</td>
+                                    <td>
+                                        <input type="number" class="form-control"
+                                               name="log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <h3>Syslog Appender
+                                <a tabindex="0" class="btn btn-sm cl-help"
+                                   role="button" data-toggle="popover"
+                                   data-trigger="focus"
+                                   data-content="Sends log messages to syslogd.">?</a>
+                            </h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="log.application.SyslogAppender.enabled"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Host</td>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                               name="log.application.SyslogAppender.host"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Port</td>
+                                    <td>
+                                        <input type="number" class="form-control"
+                                               name="log.application.SyslogAppender.port"
+                                               min="1" max="65536"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Facility
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="See the &lt;a
+                                           href=&quot;http://logback.qos.ch/manual/appenders.html&quot;
+                                           target=&quot;_blank&quot;&gt;SyslogAppender&lt;/a&gt;
+                                           section for a list of facilities.">?</a>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                               name="log.application.SyslogAppender.facility"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
+                        <section>
+                            <h2>Access Log</h2>
+
+                            <h3>Console Appender
+                                <a tabindex="0" class="btn btn-sm cl-help"
+                                   role="button" data-toggle="popover"
+                                   data-trigger="focus"
+                                   data-content="Logs to the console.">?</a>
+                            </h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="log.access.ConsoleAppender.enabled"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <h3>File Appender
+                                <a tabindex="0" class="btn btn-sm cl-help"
+                                   role="button" data-toggle="popover"
+                                   data-trigger="focus"
+                                   data-content="Logs to a single file.">?</a>
+                            </h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="log.access.FileAppender.enabled"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Pathname</td>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                               name="log.access.FileAppender.pathname"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <h3>Rolling File Appender
+                                <a tabindex="0" class="btn btn-sm cl-help"
+                                   role="button" data-toggle="popover"
+                                   data-trigger="focus"
+                                   data-content="Logs to a file which gets rotated
+                                   daily.">?</a>
+                            </h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="log.access.RollingFileAppender.enabled"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Pathname</td>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                               name="log.access.RollingFileAppender.pathname"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Filename Pattern</td>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                               name="log.access.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Max History</td>
+                                    <td>
+                                        <input type="number" class="form-control"
+                                               name="log.access.RollingFileAppender.TimeBasedRollingPolicy.max_history"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <h3>Syslog Appender
+                                <a tabindex="0" class="btn btn-sm cl-help"
+                                   role="button" data-toggle="popover"
+                                   data-trigger="focus"
+                                   data-content="Sends log messages to syslogd.">?</a>
+                            </h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="log.access.SyslogAppender.enabled"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Host</td>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                               name="log.access.SyslogAppender.host"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Port</td>
+                                    <td>
+                                        <input type="number" class="form-control"
+                                               name="log.access.SyslogAppender.port"
+                                               min="1" max="65536"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Facility
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="See the &lt;a
+                                           href=&quot;http://logback.qos.ch/manual/appenders.html&quot;
+                                           target=&quot;_blank&quot;&gt;SyslogAppender&lt;/a&gt;
+                                           section for a list of facilities.">?</a>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                               name="log.access.SyslogAppender.facility"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+                        <input type="submit" class="btn btn-primary" value="Save">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <a href="https://medusa-project.github.io/cantaloupe/"
+           target="_blank">Home (GitHub)</a> |
+        <a href="https://medusa-project.github.io/cantaloupe/manual/$version/"
+           target="_blank">User Manual</a>
+    </footer>
+
+</div>
+
+<script type="text/javascript" src="static/scripts/jquery.min.js"></script>
+<script type="text/javascript" src="static/scripts/bootstrap.min.js"></script>
+<script type="text/javascript" src="static/scripts/admin.js"></script>
+
+</body>
+</html>

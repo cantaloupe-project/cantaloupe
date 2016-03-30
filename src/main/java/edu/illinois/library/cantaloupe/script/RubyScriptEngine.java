@@ -28,7 +28,9 @@ class RubyScriptEngine implements ScriptEngine {
     @Override
     public Object invoke(String methodName) throws ScriptException {
         final long msec = System.currentTimeMillis();
-        final Object returnValue = scriptEngine.eval(methodName);
+        final String invocationString = String.format("%s::%s",
+                MODULE, methodName);
+        final Object returnValue = scriptEngine.eval(invocationString);
         logger.debug("invoke({}::{}): exec time: {} msec",
                 MODULE, methodName, System.currentTimeMillis() - msec);
         return returnValue;
