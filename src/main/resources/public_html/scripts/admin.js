@@ -79,7 +79,7 @@ var Form = function(config) {
         // When a form element that represents a property that requires
         // a restart is changed, save that fact.
         $('[data-requires-restart="true"], [data-requires-restart="1"]').
-        on('change', function() {
+        on('click', function() {
             self.setRestartRequired(true);
         });
 
