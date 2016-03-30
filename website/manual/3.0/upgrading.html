@@ -48,7 +48,7 @@ title: Upgrading
       <li><code>Cantaloupe::JdbcResolver::get_lookup_sql</code></li>
     </ul>
   </li>
-  <li>Move/rename the following delegate script methods:
+  <li>Rename the following delegate script methods:
     <ul>
       <li><code>Cantaloupe::get_pathname</code> to <code>Cantaloupe::FilesystemResolver::get_pathname</code></li>
       <li><code>Cantaloupe::get_url</code> to <code>Cantaloupe::HttpResolver::get_url</code></li>
@@ -63,7 +63,7 @@ ALTER TABLE {JdbcCache.derivative_image_table} CHANGE COLUMN last_modified last_
   </li>
 </ul>
 
-<div class="alert alert-info">Note that the content that used to be available on the landing page (<span class="filename">/</span>) has moved to the Control Panel (<span class="filename">/admin</span>). Log in with a username of "admin" and the password defined in the <code>admin.password</code> configuration option.</div>
+<div class="alert alert-info">Note that the information that used to be available on the landing page (<span class="filename">/</span>) has moved to the Control Panel (<span class="filename">/admin</span>). Log in with a username of "admin" and the password defined in the <code>admin.password</code> configuration option.</div>
 
 <h2>From 2.1.1 to 2.2</h2>
 
