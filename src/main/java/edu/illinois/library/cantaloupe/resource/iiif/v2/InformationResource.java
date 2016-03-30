@@ -103,7 +103,8 @@ public class InformationResource extends Iiif2Resource {
                 identifier, getImageUri(identifier), processor,
                 getOrReadInfo(identifier, processor));
 
-        this.addHeader("Link", "<http://iiif.io/api/image/2/context.json>; " +
+        getResponse().getHeaders().add("Link",
+                "<http://iiif.io/api/image/2/context.json>; " +
                 "rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"");
 
         JacksonRepresentation rep = new JacksonRepresentation<>(imageInfo);

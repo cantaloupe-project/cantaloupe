@@ -155,7 +155,8 @@ public class ImageResource extends Iiif2Resource {
     }
 
     private void addLinkHeader(Parameters params) {
-        this.addHeader("Link", String.format("<%s%s/%s>;rel=\"canonical\"",
+        getResponse().getHeaders().add("Link",
+                String.format("<%s%s/%s>;rel=\"canonical\"",
                 getPublicRootRef(getRequest()).toString(),
                 WebApplication.IIIF_2_PATH, params.toString()));
     }

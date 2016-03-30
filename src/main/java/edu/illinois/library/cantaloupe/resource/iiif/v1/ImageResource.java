@@ -139,8 +139,8 @@ public class ImageResource extends Iiif1Resource {
                 processor.getSupportedFeatures(),
                 processor.getSupportedIiif1_1Qualities(),
                 processor.getAvailableOutputFormats());
-        this.addHeader("Link", String.format("<%s>;rel=\"profile\";",
-                complianceLevel.getUri()));
+        getResponse().getHeaders().add("Link",
+                String.format("<%s>;rel=\"profile\";", complianceLevel.getUri()));
 
         final Dimension fullSize = getOrReadInfo(identifier, processor).getSize();
 

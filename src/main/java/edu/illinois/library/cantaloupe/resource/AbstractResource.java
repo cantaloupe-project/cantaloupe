@@ -172,25 +172,8 @@ public abstract class AbstractResource extends ServerResource {
     @Override
     protected void doInit() throws ResourceException {
         super.doInit();
-        addHeader("X-Powered-By", "Cantaloupe/" + Application.getVersion());
-    }
-
-    /**
-     * Convenience method that adds a response header.
-     *
-     * @param key Header key
-     * @param value Header value
-     */
-    @SuppressWarnings({"unchecked"})
-    protected final void addHeader(String key, String value) {
-        Series<Header> responseHeaders = (Series<Header>) getResponse().
-                getAttributes().get("org.restlet.http.headers");
-        if (responseHeaders == null) {
-            responseHeaders = new Series(Header.class);
-            getResponse().getAttributes().
-                    put("org.restlet.http.headers", responseHeaders);
-        }
-        responseHeaders.add(new Header(key, value));
+        getResponse().getHeaders().add("X-Powered-By",
+                "Cantaloupe/" + Application.getVersion());
     }
 
     /**

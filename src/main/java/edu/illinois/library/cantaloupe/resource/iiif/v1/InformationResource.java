@@ -105,8 +105,8 @@ public class InformationResource extends Iiif1Resource {
                 getImageUri(identifier), processor,
                 getOrReadInfo(identifier, processor));
 
-        this.addHeader("Link", String.format("<%s>;rel=\"profile\";",
-                imageInfo.profile));
+        getResponse().getHeaders().add("Link",
+                String.format("<%s>;rel=\"profile\";", imageInfo.profile));
 
         JacksonRepresentation rep = new JacksonRepresentation<>(imageInfo);
 
