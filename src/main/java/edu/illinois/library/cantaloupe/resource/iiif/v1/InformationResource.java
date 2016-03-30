@@ -15,7 +15,6 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
-import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
 import org.restlet.data.CharacterSet;
 import org.restlet.data.MediaType;
@@ -26,9 +25,6 @@ import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
-import org.restlet.resource.ServerResource;
-
-import static edu.illinois.library.cantaloupe.WebApplication.IIIF_1_PATH;
 
 /**
  * Handles IIIF Image API 1.1 information requests.
@@ -42,7 +38,7 @@ public class InformationResource extends Iiif1Resource {
      * Redirects /{identifier} to /{identifier}/info.json, respecting the
      * Servlet context root.
      */
-    public static class RedirectingResource extends AbstractResource {
+    public static class RedirectingResource extends Iiif1Resource {
         @Get
         public Representation doGet() {
             final String identifier = (String) this.getRequest().

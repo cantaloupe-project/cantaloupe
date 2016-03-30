@@ -712,7 +712,7 @@ public class Version1_1ConformanceTest {
      */
     @Test
     public void testUriTooLong() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json?bogus=");
         Reference uri = client.getReference();
         String uriStr = StringUtils.rightPad(uri.toString(), 1025, "a");
         client.setReference(new Reference(uriStr));
@@ -725,7 +725,7 @@ public class Version1_1ConformanceTest {
                     client.getStatus());
         }
 
-        client = getClientForUriPath("/" + IMAGE + "/full/full/0/native.jpg");
+        client = getClientForUriPath("/" + IMAGE + "/full/full/0/native.jpg?bogus=");
         uri = client.getReference();
         uriStr = StringUtils.rightPad(uri.toString(), 1025, "a");
         client.setReference(new Reference(uriStr));
