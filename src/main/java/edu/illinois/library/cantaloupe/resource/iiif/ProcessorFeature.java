@@ -8,6 +8,7 @@ public enum ProcessorFeature implements Feature {
     MIRRORING("mirroring"),
     REGION_BY_PERCENT("regionByPct"),
     REGION_BY_PIXELS("regionByPx"),
+    REGION_SQUARE("regionSquare"),
     ROTATION_ARBITRARY("rotationArbitrary"),
     ROTATION_BY_90S("rotationBy90s"),
     SIZE_ABOVE_FULL("sizeAboveFull"),
