@@ -13,7 +13,7 @@ public class Application {
     private static Logger logger = LoggerFactory.getLogger(Application.class);
 
     /**
-     * @return The application version from manifest.mf, or a string like
+     * @return The application version from MANIFEST.MF, or a string like
      *         "SNAPSHOT" if not running from a jar.
      */
     public static String getVersion() {
@@ -38,6 +38,7 @@ public class Application {
                 }
             }
         } else {
+            versionStr = "Unknown";
             logger.error("Unable to get the {} resource", className);
         }
         return versionStr;
