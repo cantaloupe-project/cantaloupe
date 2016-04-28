@@ -27,9 +27,9 @@ import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
 
 /**
- * Handles IIIF Image API 2.0 information requests.
+ * Handles IIIF Image API 2.x information requests.
  *
- * @see <a href="http://iiif.io/api/image/2.0/#information-request">Information
+ * @see <a href="http://iiif.io/api/image/2.1/#information-request">Information
  * Requests</a>
  */
 public class InformationResource extends Iiif2Resource {
@@ -101,10 +101,6 @@ public class InformationResource extends Iiif2Resource {
         ImageInfo imageInfo = ImageInfoFactory.newImageInfo(
                 identifier, getImageUri(identifier), processor,
                 getOrReadInfo(identifier, processor));
-
-        getResponse().getHeaders().add("Link",
-                "<http://iiif.io/api/image/2/context.json>; " +
-                "rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"");
 
         JacksonRepresentation rep = new JacksonRepresentation<>(imageInfo);
 
