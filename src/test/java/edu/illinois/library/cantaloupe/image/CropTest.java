@@ -36,34 +36,53 @@ public class CropTest {
     }
 
     @Test
-    public void testGetRectangle() {
-        Dimension fullSize = new Dimension(200, 200);
-        // full
+    public void testGetRectangleWithFull() {
+        final Dimension fullSize = new Dimension(300, 200);
         Crop crop = new Crop();
         crop.setFull(true);
-        assertEquals(new Rectangle(0, 0, 200, 200), crop.getRectangle(fullSize));
-        // pixels
-        crop = new Crop();
+        assertEquals(new Rectangle(0, 0, 300, 200), crop.getRectangle(fullSize));
+    }
+
+    @Test
+    public void testGetRectangleWithSquare() {
+        final Dimension fullSize = new Dimension(300, 200);
+        Crop crop = new Crop();
+        crop.setShape(Crop.Shape.SQUARE);
+        assertEquals(new Rectangle(50, 0, 200, 200), crop.getRectangle(fullSize));
+    }
+
+    @Test
+    public void testGetRectangleWithPixels() {
+        final Dimension fullSize = new Dimension(300, 200);
+        Crop crop = new Crop();
         crop.setX(20f);
         crop.setY(20f);
         crop.setWidth(50f);
         crop.setHeight(50f);
         assertEquals(new Rectangle(20, 20, 50, 50), crop.getRectangle(fullSize));
-        // percentage
-        crop = new Crop();
+    }
+
+    @Test
+    public void testGetRectangleWithPercentage() {
+        final Dimension fullSize = new Dimension(300, 200);
+        Crop crop = new Crop();
         crop.setUnit(Crop.Unit.PERCENT);
         crop.setX(0.2f);
         crop.setY(0.2f);
         crop.setWidth(0.5f);
         crop.setHeight(0.5f);
-        assertEquals(new Rectangle(40, 40, 100, 100), crop.getRectangle(fullSize));
-        // test that the resulting rectangle does not clip the full-size bounds
-        crop = new Crop();
-        crop.setX(150f);
+        assertEquals(new Rectangle(60, 40, 150, 100), crop.getRectangle(fullSize));
+    }
+
+    @Test
+    public void testGetRectangleDoesNotExceedFullSizeBounds() {
+        final Dimension fullSize = new Dimension(300, 200);
+        Crop crop = new Crop();
+        crop.setX(200f);
         crop.setY(150f);
         crop.setWidth(100f);
         crop.setHeight(100f);
-        assertEquals(new Rectangle(150, 150, 50, 50), crop.getRectangle(fullSize));
+        assertEquals(new Rectangle(200, 150, 100, 50), crop.getRectangle(fullSize));
     }
 
     @Test
@@ -268,15 +287,23 @@ public class CropTest {
 
     @Test
     public void testToString() {
+        // full
         Crop crop = new Crop();
         crop.setFull(true);
         assertEquals("none", crop.toString());
 
+        // square
+        crop = new Crop();
+        crop.setShape(Crop.Shape.SQUARE);
+        assertEquals("square", crop.toString());
+
+        // pixels
         crop = new Crop();
         crop.setWidth(50f);
         crop.setHeight(40f);
         assertEquals("0,0,50,40", crop.toString());
 
+        // percent
         crop = new Crop();
         crop.setUnit(Crop.Unit.PERCENT);
         crop.setWidth(0.5f);

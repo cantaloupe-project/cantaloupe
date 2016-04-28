@@ -15,7 +15,7 @@ public class RegionTest {
     @Before
     public void setUp() {
         region = new Region();
-        region.setPercent(true);
+        region.setType(Region.Type.PERCENT);
         region.setX(20f);
         region.setY(20f);
         region.setWidth(20f);
@@ -30,8 +30,16 @@ public class RegionTest {
     @Test
     public void testFromUriFull() {
         Region r = Region.fromUri("full");
-        assertTrue(r.isFull());
-        assertFalse(r.isPercent());
+        assertEquals(Region.Type.FULL, r.getType());
+    }
+
+    /**
+     * Tests fromUri(String) with a value of "square".
+     */
+    @Test
+    public void testFromUriSquare() {
+        Region r = Region.fromUri("square");
+        assertEquals(Region.Type.SQUARE, r.getType());
     }
 
     /**
@@ -44,8 +52,7 @@ public class RegionTest {
         assertEquals(0f, r.getY(), FUDGE);
         assertEquals(50f, r.getWidth(), FUDGE);
         assertEquals(40f, r.getHeight(), FUDGE);
-        assertFalse(r.isPercent());
-        assertFalse(r.isFull());
+        assertEquals(Region.Type.PIXELS, r.getType());
     }
 
     /**
@@ -58,8 +65,7 @@ public class RegionTest {
         assertEquals(0f, r.getY(), FUDGE);
         assertEquals(50f, r.getWidth(), FUDGE);
         assertEquals(40f, r.getHeight(), FUDGE);
-        assertTrue(r.isPercent());
-        assertFalse(r.isFull());
+        assertEquals(Region.Type.PERCENT, r.getType());
     }
 
     @Test
@@ -89,9 +95,9 @@ public class RegionTest {
     /* equals */
 
     @Test
-    public void testEqualsWithEqualRegion() {
+    public void testEqualsWithEqualRegion1() {
         Region region2 = new Region();
-        region2.setPercent(true);
+        region2.setType(Region.Type.PERCENT);
         region2.setX(20f);
         region2.setY(20f);
         region2.setWidth(20f);
@@ -100,9 +106,18 @@ public class RegionTest {
     }
 
     @Test
+    public void testEqualsWithEqualRegion2() {
+        region.setType(Region.Type.SQUARE);
+
+        Region region2 = new Region();
+        region2.setType(Region.Type.SQUARE);
+        assertTrue(region.equals(region2));
+    }
+
+    @Test
     public void testEqualsWithUnequalRegion1() {
         Region region2 = new Region();
-        region2.setPercent(true);
+        region2.setType(Region.Type.PERCENT);
         region2.setX(50f);
         region2.setY(20f);
         region2.setWidth(20f);
@@ -113,7 +128,7 @@ public class RegionTest {
     @Test
     public void testEqualsWithUnequalRegion2() {
         Region region2 = new Region();
-        region2.setPercent(true);
+        region2.setType(Region.Type.PERCENT);
         region2.setX(20f);
         region2.setY(50f);
         region2.setWidth(20f);
@@ -124,7 +139,7 @@ public class RegionTest {
     @Test
     public void testEqualsWithUnequalRegion3() {
         Region region2 = new Region();
-        region2.setPercent(true);
+        region2.setType(Region.Type.PERCENT);
         region2.setX(20f);
         region2.setY(20f);
         region2.setWidth(50f);
@@ -135,7 +150,7 @@ public class RegionTest {
     @Test
     public void testEqualsWithUnequalRegion4() {
         Region region2 = new Region();
-        region2.setPercent(true);
+        region2.setType(Region.Type.PERCENT);
         region2.setX(20f);
         region2.setY(20f);
         region2.setWidth(20f);
@@ -144,13 +159,32 @@ public class RegionTest {
     }
 
     @Test
-    public void testEqualsWithEqualCrop() {
+    public void testEqualsWithUnequalRegion5() {
+        Region region2 = new Region();
+        region2.setType(Region.Type.SQUARE);
+        region.setX(20f);
+        region.setY(20f);
+        region.setWidth(20f);
+        region.setHeight(20f);
+        assertFalse(region.equals(region2));
+    }
+
+    @Test
+    public void testEqualsWithEqualCrop1() {
         Crop crop = new Crop();
         crop.setUnit(Crop.Unit.PERCENT);
         crop.setX(0.2f);
         crop.setY(0.2f);
         crop.setWidth(0.2f);
         crop.setHeight(0.2f);
+        assertTrue(region.equals(crop));
+    }
+
+    @Test
+    public void testEqualsWithEqualCrop2() {
+        region.setType(Region.Type.SQUARE);
+        Crop crop = new Crop();
+        crop.setShape(Crop.Shape.SQUARE);
         assertTrue(region.equals(crop));
     }
 
@@ -195,6 +229,13 @@ public class RegionTest {
         crop.setY(0.2f);
         crop.setWidth(0.2f);
         crop.setHeight(0.5f);
+        assertFalse(region.equals(crop));
+    }
+
+    @Test
+    public void testEqualsWithUnequalCrop5() {
+        Crop crop = new Crop();
+        crop.setShape(Crop.Shape.SQUARE);
         assertFalse(region.equals(crop));
     }
 
@@ -301,8 +342,11 @@ public class RegionTest {
         region.setY(40f);
         region.setWidth(50f);
         region.setHeight(50f);
-        region.setPercent(true);
-        region.setFull(false);
+        region.setType(Region.Type.PERCENT);
+        assertTrue(region.equals(region.toCrop()));
+
+        region = new Region();
+        region.setType(Region.Type.SQUARE);
         assertTrue(region.equals(region.toCrop()));
     }
 
@@ -310,6 +354,9 @@ public class RegionTest {
     public void testToString() {
         Region r = Region.fromUri("full");
         assertEquals("full", r.toString());
+
+        r = Region.fromUri("square");
+        assertEquals("square", r.toString());
 
         r = Region.fromUri("0,0,50,40");
         assertEquals("0,0,50,40", r.toString());

@@ -5,13 +5,16 @@ import edu.illinois.library.cantaloupe.image.Crop;
 /**
  * Encapsulates the "region" component of an IIIF request URI.
  *
- * @see <a href="http://iiif.io/api/image/2.0/#region">IIIF Image API 2.0</a>
+ * @see <a href="http://iiif.io/api/image/2.1/#region">IIIF Image API 2.1</a>
  */
 class Region {
 
+    enum Type {
+        FULL, PERCENT, PIXELS, SQUARE
+    }
+
     private Float height;
-    private boolean isFull = false;
-    private boolean isPercent = false;
+    private Type type;
     private Float width;
     private Float x;
     private Float y;
@@ -25,28 +28,33 @@ class Region {
             throws IllegalArgumentException {
         Region region = new Region();
 
-        if (uriRegion.equals("full")) {
-            region.setFull(true);
-        } else {
-            region.setFull(false);
-            String csv;
-            if (uriRegion.startsWith("pct:")) {
-                region.setPercent(true);
-                String[] tmp = uriRegion.split(":");
-                csv = tmp[1];
-            } else {
-                region.setPercent(false);
-                csv = uriRegion;
-            }
-            String[] parts = csv.split(",");
-            if (parts.length == 4) {
-                region.setX(Float.parseFloat(parts[0]));
-                region.setY(Float.parseFloat(parts[1]));
-                region.setWidth(Float.parseFloat(parts[2]));
-                region.setHeight(Float.parseFloat(parts[3]));
-            } else {
-                throw new IllegalArgumentException("Invalid region");
-            }
+        switch (uriRegion) {
+            case "full":
+                region.setType(Type.FULL);
+                break;
+            case "square":
+                region.setType(Type.SQUARE);
+                break;
+            default:
+                String csv;
+                if (uriRegion.startsWith("pct:")) {
+                    region.setType(Type.PERCENT);
+                    String[] tmp = uriRegion.split(":");
+                    csv = tmp[1];
+                } else {
+                    region.setType(Type.PIXELS);
+                    csv = uriRegion;
+                }
+                String[] parts = csv.split(",");
+                if (parts.length == 4) {
+                    region.setX(Float.parseFloat(parts[0]));
+                    region.setY(Float.parseFloat(parts[1]));
+                    region.setWidth(Float.parseFloat(parts[2]));
+                    region.setHeight(Float.parseFloat(parts[3]));
+                } else {
+                    throw new IllegalArgumentException("Invalid region");
+                }
+                break;
         }
         return region;
     }
@@ -56,8 +64,11 @@ class Region {
         final float fudge = 0.0001f;
         if (obj instanceof Region) {
             final Region region = (Region) obj;
-            return isFull() == region.isFull() &&
-                    isPercent() == region.isPercent() &&
+            if (getType().equals(Type.SQUARE) &&
+                    region.getType().equals(Type.SQUARE)) {
+                return true;
+            }
+            return getType().equals(region.getType()) &&
                     Math.abs(getX() - region.getX()) < fudge &&
                     Math.abs(getY() - region.getY()) < fudge &&
                     Math.abs(getWidth() - region.getWidth()) < fudge &&
@@ -65,16 +76,20 @@ class Region {
         }
         if (obj instanceof Crop) {
             final Crop crop = (Crop) obj;
-            if (this.isPercent()) {
-                return isFull() == crop.isFull() &&
-                        isPercent() == crop.getUnit().equals(Crop.Unit.PERCENT) &&
+            if (getType().equals(Type.FULL) && crop.isFull()) {
+                return true;
+            } else if (getType().equals(Type.SQUARE) &&
+                    crop.getShape().equals(Crop.Shape.SQUARE)) {
+                return true;
+            } else if (getType().equals(Type.PERCENT)) {
+                return crop.getUnit().equals(Crop.Unit.PERCENT) &&
                         Math.abs(getX() - crop.getX() * 100) < fudge &&
                         Math.abs(getY() - crop.getY() * 100) < fudge &&
                         Math.abs(getWidth() - crop.getWidth() * 100) < fudge &&
                         Math.abs(getHeight() - crop.getHeight() * 100) < fudge;
             }
-            return isFull() == crop.isFull() &&
-                    isPercent() == crop.getUnit().equals(Crop.Unit.PERCENT) &&
+            return getType().equals(Type.PERCENT) ==
+                    crop.getUnit().equals(Crop.Unit.PERCENT) &&
                     Math.abs(getX() - crop.getX()) < fudge &&
                     Math.abs(getY() - crop.getY()) < fudge &&
                     Math.abs(getWidth() - crop.getWidth()) < fudge &&
@@ -85,6 +100,10 @@ class Region {
 
     public Float getHeight() {
         return height;
+    }
+
+    public Type getType() {
+        return type;
     }
 
     public Float getWidth() {
@@ -99,18 +118,6 @@ class Region {
         return y;
     }
 
-    public boolean isFull() {
-        return this.isFull;
-    }
-
-    public boolean isPercent() {
-        return this.isPercent;
-    }
-
-    public void setFull(boolean isFull) {
-        this.isFull = isFull;
-    }
-
     public void setHeight(Float height) throws IllegalArgumentException {
         if (height <= 0) {
             throw new IllegalArgumentException("Height must be a positive integer");
@@ -118,8 +125,8 @@ class Region {
         this.height = height;
     }
 
-    public void setPercent(boolean isPercent) {
-        this.isPercent = isPercent;
+    public void setType(Type type) {
+        this.type = type;
     }
 
     public void setWidth(Float width) throws IllegalArgumentException {
@@ -143,22 +150,27 @@ class Region {
         this.y = y;
     }
 
-    public Crop toCrop() {
+    Crop toCrop() {
         Crop crop = new Crop();
-        crop.setFull(this.isFull());
-        crop.setUnit(this.isPercent() ? Crop.Unit.PERCENT : Crop.Unit.PIXELS);
+        crop.setFull(this.getType().equals(Type.FULL));
+        crop.setShape(this.getType().equals(Type.SQUARE) ?
+                Crop.Shape.SQUARE : Crop.Shape.ARBITRARY);
+        crop.setUnit(this.getType().equals(Type.PERCENT) ?
+                Crop.Unit.PERCENT : Crop.Unit.PIXELS);
         if (this.getX() != null) {
-            crop.setX(this.isPercent() ? this.getX() / 100f : this.getX());
+            crop.setX(this.getType().equals(Type.PERCENT) ?
+                    this.getX() / 100f : this.getX());
         }
         if (this.getY() != null) {
-            crop.setY(this.isPercent() ? this.getY() / 100f : this.getY());
+            crop.setY(this.getType().equals(Type.PERCENT) ?
+                    this.getY() / 100f : this.getY());
         }
         if (this.getWidth() != null) {
-            crop.setWidth(this.isPercent() ?
+            crop.setWidth(this.getType().equals(Type.PERCENT) ?
                     this.getWidth() / 100f : this.getWidth());
         }
         if (this.getHeight() != null) {
-            crop.setHeight(this.isPercent() ?
+            crop.setHeight(this.getType().equals(Type.PERCENT) ?
                     this.getHeight() / 100f : this.getHeight());
         }
         return crop;
@@ -169,21 +181,27 @@ class Region {
      */
     public String toString() {
         String str = "";
-        if (this.isFull()) {
-            str += "full";
-        } else {
-            String x, y;
-            if (this.isPercent()) {
-                x = NumberUtil.formatForUrl(this.getX());
-                y = NumberUtil.formatForUrl(this.getY());
-                str += "pct:";
-            } else {
-                x = Integer.toString(Math.round(this.getX()));
-                y = Integer.toString(Math.round(this.getY()));
-            }
-            str += String.format("%s,%s,%s,%s", x, y,
-                    NumberUtil.formatForUrl(this.getWidth()),
-                    NumberUtil.formatForUrl(this.getHeight()));
+        switch (getType()) {
+            case FULL:
+                str += "full";
+                break;
+            case SQUARE:
+                str += "square";
+                break;
+            default:
+                String x, y;
+                if (getType().equals(Type.PERCENT)) {
+                    x = NumberUtil.formatForUrl(this.getX());
+                    y = NumberUtil.formatForUrl(this.getY());
+                    str += "pct:";
+                } else {
+                    x = Integer.toString(Math.round(this.getX()));
+                    y = Integer.toString(Math.round(this.getY()));
+                }
+                str += String.format("%s,%s,%s,%s", x, y,
+                        NumberUtil.formatForUrl(this.getWidth()),
+                        NumberUtil.formatForUrl(this.getHeight()));
+                break;
         }
         return str;
     }
