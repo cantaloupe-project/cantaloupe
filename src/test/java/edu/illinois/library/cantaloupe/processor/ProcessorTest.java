@@ -161,12 +161,18 @@ public abstract class ProcessorTest {
         Crop crop = new Crop();
         crop.setFull(true);
         crops.add(crop);
+
+        crop = new Crop();
+        crop.setShape(Crop.Shape.SQUARE);
+        crops.add(crop);
+
         crop = new Crop();
         crop.setX(10f);
         crop.setY(10f);
         crop.setWidth(50f);
         crop.setHeight(50f);
         crops.add(crop);
+
         crop = new Crop();
         crop.setUnit(Crop.Unit.PERCENT);
         crop.setX(0.2f);
@@ -174,6 +180,7 @@ public abstract class ProcessorTest {
         crop.setWidth(0.2f);
         crop.setHeight(0.2f);
         crops.add(crop);
+
         for (Crop crop_ : crops) {
             OperationList ops = TestUtil.newOperationList();
             ops.add(crop_);
