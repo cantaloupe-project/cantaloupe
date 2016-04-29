@@ -49,9 +49,9 @@ class ImageIoImageWriter {
                 // JPEG doesn't support alpha, so convert to RGB or else the
                 // client will interpret as CMYK
                 image = Java2dUtil.removeAlpha(image);
-                Iterator iter = ImageIO.getImageWritersByFormatName("jpeg");
-                ImageWriter writer = (ImageWriter) iter.next();
-                try {
+                Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpeg");
+                if (writers.hasNext()) {
+                    ImageWriter writer = writers.next();
                     ImageWriteParam param = writer.getDefaultWriteParam();
                     param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
                     param.setCompressionQuality(Configuration.getInstance().
@@ -59,31 +59,41 @@ class ImageIoImageWriter {
                     param.setCompressionType("JPEG");
                     ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
                     writer.setOutput(os);
-                    IIOImage iioImage = new IIOImage(image, null, null);
-                    writer.write(null, iioImage, param);
-                } finally {
-                    writer.dispose();
+                    IIOImage iioImage = new IIOImage(image, null, metadata);
+                    try {
+                        writer.write(null, iioImage, param);
+                    } finally {
+                        writer.dispose();
+                    }
                 }
                 break;
-            /*case PNG: // an alternative in case ImageIO.write() ever causes problems
-                writer = ImageIO.getImageWritersByFormatName("png").next();
-                ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
-                writer.setOutput(os);
-                writer.write(image);
-                break;*/
-            case TIF:
-                Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("TIFF");
+            case PNG:
+                writers = ImageIO.getImageWritersByFormatName("png");
                 if (writers.hasNext()) {
-                    writer = writers.next();
+                    final ImageWriter writer = writers.next();
+                    ImageWriteParam param = writer.getDefaultWriteParam();
+                    ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
+                    writer.setOutput(os);
+                    IIOImage iioImage = new IIOImage(image, null, metadata);
+                    try {
+                        writer.write(null, iioImage, param);
+                    } finally {
+                        writer.dispose();
+                    }
+                }
+                break;
+            case TIF:
+                writers = ImageIO.getImageWritersByFormatName("tiff");
+                if (writers.hasNext()) {
+                    final ImageWriter writer = writers.next();
+                    final ImageWriteParam param = writer.getDefaultWriteParam();
                     final String compressionType = Configuration.getInstance().
                             getString(Java2dProcessor.TIF_COMPRESSION_CONFIG_KEY);
-                    final ImageWriteParam param = writer.getDefaultWriteParam();
                     if (compressionType != null) {
                         param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
                         param.setCompressionType(compressionType);
                     }
-
-                    final IIOImage iioImage = new IIOImage(image, null, null);
+                    IIOImage iioImage = new IIOImage(image, null, metadata);
                     ImageOutputStream ios =
                             ImageIO.createImageOutputStream(outputStream);
                     writer.setOutput(ios);
@@ -110,7 +120,7 @@ class ImageIoImageWriter {
      * @param outputStream Stream to write the image to
      * @throws IOException
      */
-    @SuppressWarnings({ "deprecation" })
+    @SuppressWarnings({"deprecation"})
     public void write(PlanarImage image,
                       Format outputFormat,
                       OutputStream outputStream) throws IOException {
@@ -138,32 +148,6 @@ class ImageIoImageWriter {
                         writer.dispose();
                     }
                 }
-                break;
-            case JP2:
-                /*
-                TODO: this doesn't write anything
-                ImageIO.write(image, outputFormat.getExtension(),
-                        ImageIO.createImageOutputStream(outputStream));
-                // and this causes an error
-                writers = ImageIO.getImageWritersByFormatName("JPEG2000");
-                if (writers.hasNext()) {
-                    ImageWriter writer = writers.next();
-                    J2KImageWriteParam j2Param = new J2KImageWriteParam();
-                    j2Param.setLossless(false);
-                    j2Param.setEncodingRate(Double.MAX_VALUE);
-                    j2Param.setCodeBlockSize(new int[]{128, 8});
-                    j2Param.setTilingMode(ImageWriteParam.MODE_DISABLED);
-                    j2Param.setProgressionType("res");
-                    ImageOutputStream os = ImageIO.
-                            createImageOutputStream(outputStream);
-                    writer.setOutput(os);
-                    IIOImage iioImage = new IIOImage(image, null, null);
-                    try {
-                        writer.write(null, iioImage, j2Param);
-                    } finally {
-                        writer.dispose();
-                    }
-                } */
                 break;
             case JPG:
                 Iterator iter = ImageIO.getImageWritersByFormatName("JPEG");
