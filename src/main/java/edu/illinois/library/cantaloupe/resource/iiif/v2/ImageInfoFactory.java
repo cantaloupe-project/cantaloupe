@@ -26,7 +26,7 @@ abstract class ImageInfoFactory {
     private static Logger logger = LoggerFactory.
             getLogger(ImageInfoFactory.class);
 
-    public static final String MIN_TILE_SIZE_CONFIG_KEY =
+    static final String MIN_TILE_SIZE_CONFIG_KEY =
             "endpoint.iiif.min_tile_size";
 
     /** Minimum size that will be used in info.json "sizes" keys. */
@@ -42,6 +42,7 @@ abstract class ImageInfoFactory {
 
     static {
         SUPPORTED_SERVICE_FEATURES.addAll(Arrays.asList(
+                ServiceFeature.SIZE_BY_CONFINED_WIDTH_HEIGHT,
                 ServiceFeature.SIZE_BY_WHITELISTED,
                 ServiceFeature.BASE_URI_REDIRECT,
                 ServiceFeature.CANONICAL_LINK_HEADER,
@@ -50,10 +51,10 @@ abstract class ImageInfoFactory {
                 ServiceFeature.PROFILE_LINK_HEADER));
     }
 
-    public static ImageInfo newImageInfo(final Identifier identifier,
-                                         final String imageUri,
-                                         final Processor processor,
-                                         final edu.illinois.library.cantaloupe.processor.ImageInfo cacheInfo)
+    static ImageInfo newImageInfo(final Identifier identifier,
+                                  final String imageUri,
+                                  final Processor processor,
+                                  final edu.illinois.library.cantaloupe.processor.ImageInfo cacheInfo)
             throws ProcessorException {
         final Dimension fullSize = cacheInfo.getSize();
         // Create an ImageInfo instance, which will eventually be serialized

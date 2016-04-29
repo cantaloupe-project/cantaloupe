@@ -107,11 +107,20 @@ public class ImageInfoFactoryTest {
         assertEquals("http://iiif.io/api/image/2/level2.json",
                 info.profile.get(0));
 
-        // If one is present, we will assume the rest are. (This is not a
+        // If some are present, we will assume the rest are. (The exact
+        // contents of the sets are processor-dependent and this is not a
         // processor test.)
         ((Set) ((Map) info.profile.get(1)).get("formats")).contains("gif");
         ((Set) ((Map) info.profile.get(1)).get("qualities")).contains("color");
-        ((Set) ((Map) info.profile.get(1)).get("supports")).contains("profileLinkHeader");
+
+        final Set supportsSet = (Set) ((Map) info.profile.get(1)).get("supports");
+        assertTrue(supportsSet.contains("baseUriRedirect"));
+        assertTrue(supportsSet.contains("canonicalLinkHeader"));
+        assertTrue(supportsSet.contains("cors"));
+        assertTrue(supportsSet.contains("jsonldMediaType"));
+        assertTrue(supportsSet.contains("profileLinkHeader"));
+        assertTrue(supportsSet.contains("sizeByConfinedWh"));
+        assertTrue(supportsSet.contains("sizeByWhListed"));
     }
 
     // the service key will be tested in InformationResourceTest

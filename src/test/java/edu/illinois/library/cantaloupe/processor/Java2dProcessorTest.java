@@ -82,6 +82,7 @@ public class Java2dProcessorTest extends ProcessorTest {
         expectedFeatures.add(ProcessorFeature.ROTATION_ARBITRARY);
         expectedFeatures.add(ProcessorFeature.ROTATION_BY_90S);
         expectedFeatures.add(ProcessorFeature.SIZE_ABOVE_FULL);
+        expectedFeatures.add(ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT);
         expectedFeatures.add(ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
         expectedFeatures.add(ProcessorFeature.SIZE_BY_HEIGHT);
         expectedFeatures.add(ProcessorFeature.SIZE_BY_PERCENT);

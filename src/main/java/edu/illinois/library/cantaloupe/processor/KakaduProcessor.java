@@ -115,6 +115,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
                 ProcessorFeature.ROTATION_ARBITRARY,
                 ProcessorFeature.ROTATION_BY_90S,
                 ProcessorFeature.SIZE_ABOVE_FULL,
+                ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
                 ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
                 ProcessorFeature.SIZE_BY_HEIGHT,
                 ProcessorFeature.SIZE_BY_PERCENT,
