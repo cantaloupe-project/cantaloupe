@@ -23,9 +23,9 @@
                     <li>$baseUri/iiif/1/{identifier}/full/full/0/native.jpg</li>
                 </ul>
             </li>
-            <li>Also available:
+            <li>Also Available:
                 <ul>
-                    <li><a href="$baseUri/iiif/2">IIIF Image API 2.0 endpoint</a></li>
+                    <li><a href="$baseUri/iiif/2">IIIF Image API 2.x endpoint</a></li>
                 </ul>
             </li>
         </ul>
