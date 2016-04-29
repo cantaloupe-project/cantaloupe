@@ -216,19 +216,6 @@ public class InformationResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testService() throws Exception {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
-        client.get();
-        String json = client.getResponse().getEntityAsText();
-        assertTrue(json.contains("\"service\":"));
-
-        client = getClientForUriPath("/jpg-rgb-64x56x8-line.jpg/info.json");
-        client.get();
-        json = client.getResponse().getEntityAsText();
-        assertFalse(json.contains("\"service\":"));
-    }
-
-    @Test
     public void testSlashSubstitution() throws Exception {
         WebServer server = new WebServer();
         Configuration.getInstance().setProperty("slash_substitute", "CATS");

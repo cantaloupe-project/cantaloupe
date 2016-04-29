@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
+import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -117,18 +118,30 @@ public class ImageInfoFactoryTest {
     public void testNewImageInfoProfile() throws Exception {
         List profile = (List) imageInfo.get("profile");
         assertEquals("http://iiif.io/api/image/2/level2.json", profile.get(0));
+    }
 
+    @Test
+    public void testNewImageInfoFormats() throws Exception {
+        List profile = (List) imageInfo.get("profile");
         // If some are present, we will assume the rest are. (The exact
         // contents of the sets are processor-dependent and this is not a
         // processor test.)
-
-        // formats
         assertTrue(((Set) ((Map) profile.get(1)).get("formats")).contains("gif"));
+    }
 
-        // qualities
+    @Test
+    public void testNewImageInfoQualities() throws Exception {
+        List profile = (List) imageInfo.get("profile");
+        // If some are present, we will assume the rest are. (The exact
+        // contents of the sets are processor-dependent and this is not a
+        // processor test.)
         assertTrue(((Set) ((Map) profile.get(1)).get("qualities")).contains("color"));
+    }
 
-        // maxArea
+    @Test
+    public void testNewImageInfoMaxArea() throws Exception {
+        List profile = (List) imageInfo.get("profile");
+
         // with max_pixels > 0
         assertTrue(((Map) profile.get(1)).get("maxArea").
                 equals(Configuration.getInstance().
@@ -141,8 +154,12 @@ public class ImageInfoFactoryTest {
                 processor, processor.getImageInfo());
         profile = (List) imageInfo.get("profile");
         assertFalse(((Map) profile.get(1)).containsKey("maxArea"));
+    }
 
-        // supports
+    @Test
+    public void testNewImageInfoSupports() throws Exception {
+        List profile = (List) imageInfo.get("profile");
+
         final Set supportsSet = (Set) ((Map) profile.get(1)).get("supports");
         assertTrue(supportsSet.contains("baseUriRedirect"));
         assertTrue(supportsSet.contains("canonicalLinkHeader"));
@@ -153,6 +170,21 @@ public class ImageInfoFactoryTest {
         assertTrue(supportsSet.contains("sizeByWhListed"));
     }
 
-    // the service key will be tested in InformationResourceTest
+    @Test
+    public void testNewImageInfoDelegateScriptKeys() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(
+                ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY, true);
+        config.setProperty(
+                ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
+                TestUtil.getFixture("delegates.rb").getAbsolutePath());
+        imageInfo = ImageInfoFactory.newImageInfo(identifier, imageUri,
+                processor, processor.getImageInfo());
+
+        assertEquals("Copyright My Great Organization. All rights reserved.",
+                imageInfo.get("attribution"));
+        assertEquals("http://example.org/license.html",
+                imageInfo.get("license"));
+    }
 
 }
