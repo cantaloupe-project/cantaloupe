@@ -42,14 +42,34 @@ module Cantaloupe
   end
 
   ##
-  # Used to define a service in the IIIF Image API 2.0 information endpoint.
-  # Return nil to avoid.
+  # Used to add additional keys to the information JSON response. including
+  # `attribution`, `license`, `logo`, `service`, and custom keys. See
+  # {http://iiif.io/api/image/2.1/#image-information the Image API
+  # specification}.
+  #
+  # Return an empty hash to add nothing.
   #
   # @param identifier [String] Image identifier
-  # @return [Hash,nil] Hash that will be appended to the `service` key in
-  #                    IIIF Image API 2.x information responses, or nil.
+  # @return [Hash,nil] Hash that will be merged into IIIF Image API 2.x
+  #                    information responses.
   #
-  def self.get_iiif2_service(identifier)
+  def self.extra_iiif2_information_response_keys(identifier)
+=begin
+    Example:
+    {
+        'attribution' =>  'Copyright My Great Organization. All rights '\
+                          'reserved.',
+        'license' =>  'http://example.org/license.html',
+        'logo' =>  'http://example.org/logo.png',
+        'service' => {
+            '@context' => 'http://iiif.io/api/annex/services/physdim/1/context.json',
+            'profile' => 'http://iiif.io/api/annex/services/physdim',
+            'physicalScale' => 0.0025,
+            'physicalUnits' => 'in'
+        }
+    }
+=end
+    {}
   end
 
   ##

@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,7 +21,7 @@ public class ImageInfoFactoryTest {
 
     private Identifier identifier;
     private String imageUri;
-    private ImageInfo info;
+    private ImageInfo imageInfo;
     private Processor processor;
 
     @Before
@@ -36,57 +37,62 @@ public class ImageInfoFactoryTest {
         processor = ProcessorFactory.getProcessor(Format.JPG);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
-        info = ImageInfoFactory.newImageInfo(identifier, imageUri, processor,
+        imageInfo = ImageInfoFactory.newImageInfo(identifier, imageUri, processor,
                 processor.getImageInfo());
     }
 
     @Test
     public void testNewImageInfoContext() {
-        assertEquals("http://iiif.io/api/image/2/context.json", info.context);
+        assertEquals("http://iiif.io/api/image/2/context.json",
+                imageInfo.get("@context"));
     }
 
     @Test
     public void testNewImageInfoId() {
-        assertEquals("http://example.org/bla", info.id);
+        assertEquals("http://example.org/bla", imageInfo.get("@id"));
     }
 
     @Test
     public void testNewImageInfoProtocol() {
-        assertEquals("http://iiif.io/api/image", info.protocol);
+        assertEquals("http://iiif.io/api/image", imageInfo.get("protocol"));
     }
 
     @Test
     public void testNewImageInfoWidth() {
-        assertEquals(594, (long) info.width);
+        assertEquals(594, (int) imageInfo.get("width"));
     }
 
     @Test
     public void testNewImageInfoHeight() {
-        assertEquals(522, (long) info.height);
+        assertEquals(522, (int) imageInfo.get("height"));
     }
 
     @Test
     public void testNewImageInfoSizes() {
-        assertEquals(3, info.sizes.size());
-        assertEquals(74, (long) info.sizes.get(0).width);
-        assertEquals(65, (long) info.sizes.get(0).height);
-        assertEquals(149, (long) info.sizes.get(1).width);
-        assertEquals(131, (long) info.sizes.get(1).height);
-        assertEquals(297, (long) info.sizes.get(2).width);
-        assertEquals(261, (long) info.sizes.get(2).height);
+        List<ImageInfo.Size> sizes =
+                (List<ImageInfo.Size>) imageInfo.get("sizes");
+        assertEquals(3, sizes.size());
+        assertEquals(74, (long) sizes.get(0).width);
+        assertEquals(65, (long) sizes.get(0).height);
+        assertEquals(149, (long) sizes.get(1).width);
+        assertEquals(131, (long) sizes.get(1).height);
+        assertEquals(297, (long) sizes.get(2).width);
+        assertEquals(261, (long) sizes.get(2).height);
     }
 
     @Test
     public void testNewImageInfoTilesWithUntiledImage() {
-        assertEquals(1, info.tiles.size());
-        assertEquals(594, (long) info.tiles.get(0).width);
-        assertEquals(522, (long) info.tiles.get(0).height);
+        List<ImageInfo.Tile> tiles =
+                (List<ImageInfo.Tile>) imageInfo.get("tiles");
+        assertEquals(1, tiles.size());
+        assertEquals(594, (long) tiles.get(0).width);
+        assertEquals(522, (long) tiles.get(0).height);
 
-        assertEquals(4, (long) info.tiles.get(0).scaleFactors.size());
-        assertEquals(1, (long) info.tiles.get(0).scaleFactors.get(0));
-        assertEquals(2, (long) info.tiles.get(0).scaleFactors.get(1));
-        assertEquals(4, (long) info.tiles.get(0).scaleFactors.get(2));
-        assertEquals(8, (long) info.tiles.get(0).scaleFactors.get(3));
+        assertEquals(4, (long) tiles.get(0).scaleFactors.size());
+        assertEquals(1, (long) tiles.get(0).scaleFactors.get(0));
+        assertEquals(2, (long) tiles.get(0).scaleFactors.get(1));
+        assertEquals(4, (long) tiles.get(0).scaleFactors.get(2));
+        assertEquals(8, (long) tiles.get(0).scaleFactors.get(3));
     }
 
     @Test
@@ -94,46 +100,50 @@ public class ImageInfoFactoryTest {
         processor.setSourceFormat(Format.TIF);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif"));
-        info = ImageInfoFactory.newImageInfo(identifier, imageUri, processor,
+        imageInfo = ImageInfoFactory.newImageInfo(identifier, imageUri, processor,
                 processor.getImageInfo());
 
-        assertEquals(1, info.tiles.size());
-        assertEquals(64, (long) info.tiles.get(0).width);
-        assertEquals(56, (long) info.tiles.get(0).height);
+        List<ImageInfo.Tile> tiles =
+                (List<ImageInfo.Tile>) imageInfo.get("tiles");
+        assertEquals(1, tiles.size());
+        assertEquals(64, (long) tiles.get(0).width);
+        assertEquals(56, (long) tiles.get(0).height);
 
-        assertEquals(1, (long) info.tiles.get(0).scaleFactors.size());
-        assertEquals(1, (long) info.tiles.get(0).scaleFactors.get(0));
+        assertEquals(1, (long) tiles.get(0).scaleFactors.size());
+        assertEquals(1, (long) tiles.get(0).scaleFactors.get(0));
     }
 
     @Test
     public void testNewImageInfoProfile() throws Exception {
-        assertEquals("http://iiif.io/api/image/2/level2.json",
-                info.profile.get(0));
+        List profile = (List) imageInfo.get("profile");
+        assertEquals("http://iiif.io/api/image/2/level2.json", profile.get(0));
 
         // If some are present, we will assume the rest are. (The exact
         // contents of the sets are processor-dependent and this is not a
         // processor test.)
 
         // formats
-        assertTrue(((Set) ((Map) info.profile.get(1)).get("formats")).contains("gif"));
+        assertTrue(((Set) ((Map) profile.get(1)).get("formats")).contains("gif"));
 
         // qualities
-        assertTrue(((Set) ((Map) info.profile.get(1)).get("qualities")).contains("color"));
+        assertTrue(((Set) ((Map) profile.get(1)).get("qualities")).contains("color"));
 
         // maxArea
         // with max_pixels > 0
-        assertTrue(((Map) info.profile.get(1)).get("maxArea").
-                equals(Configuration.getInstance().getInt(AbstractResource.MAX_PIXELS_CONFIG_KEY)));
+        assertTrue(((Map) profile.get(1)).get("maxArea").
+                equals(Configuration.getInstance().
+                        getInt(AbstractResource.MAX_PIXELS_CONFIG_KEY)));
 
         // with max_pixels == 0
         Configuration.getInstance().
                 setProperty(AbstractResource.MAX_PIXELS_CONFIG_KEY, 0);
-        info = ImageInfoFactory.newImageInfo(identifier, imageUri, processor,
-                processor.getImageInfo());
-        assertFalse(((Map) info.profile.get(1)).containsKey("maxArea"));
+        imageInfo = ImageInfoFactory.newImageInfo(identifier, imageUri,
+                processor, processor.getImageInfo());
+        profile = (List) imageInfo.get("profile");
+        assertFalse(((Map) profile.get(1)).containsKey("maxArea"));
 
         // supports
-        final Set supportsSet = (Set) ((Map) info.profile.get(1)).get("supports");
+        final Set supportsSet = (Set) ((Map) profile.get(1)).get("supports");
         assertTrue(supportsSet.contains("baseUriRedirect"));
         assertTrue(supportsSet.contains("canonicalLinkHeader"));
         assertTrue(supportsSet.contains("cors"));

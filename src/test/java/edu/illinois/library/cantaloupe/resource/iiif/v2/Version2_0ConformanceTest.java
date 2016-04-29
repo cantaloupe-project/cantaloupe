@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -771,8 +772,9 @@ public class Version2_0ConformanceTest {
         String json = client.get().getText();
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        List profile = (List) info.get("profile");
         assertEquals("http://iiif.io/api/image/2/level2.json",
-                info.profile.get(0));
+                profile.get(0));
     }
 
 }

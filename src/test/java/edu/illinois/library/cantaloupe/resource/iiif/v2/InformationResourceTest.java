@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import static org.junit.Assert.*;
 
@@ -258,9 +259,10 @@ public class InformationResourceTest extends ResourceTest {
         client.get();
         String json = client.getResponse().getEntityAsText();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        Map<String,Object> info =
+                (Map<String,Object>) mapper.readValue(json, TreeMap.class);
         assertEquals("http://localhost:" + PORT +
-                WebApplication.IIIF_2_PATH + "/" + IMAGE, info.id);
+                WebApplication.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
     }
 
     @Test
@@ -273,9 +275,10 @@ public class InformationResourceTest extends ResourceTest {
         client.get();
         String json = client.getResponse().getEntityAsText();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        Map<String,Object> info =
+                (Map<String,Object>) mapper.readValue(json, TreeMap.class);
         assertEquals("http://example.org" +
-                WebApplication.IIIF_2_PATH + "/" + IMAGE, info.id);
+                WebApplication.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
     }
 
     @Test
@@ -288,9 +291,10 @@ public class InformationResourceTest extends ResourceTest {
         client.get();
         String json = client.getResponse().getEntityAsText();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        Map<String,Object> info =
+                (Map<String,Object>) mapper.readValue(json, TreeMap.class);
         assertEquals("http://example.org:8080/cats" +
-                WebApplication.IIIF_2_PATH + "/" + IMAGE, info.id);
+                WebApplication.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
     }
 
     @Test
@@ -307,9 +311,10 @@ public class InformationResourceTest extends ResourceTest {
         client.get();
         String json = client.getResponse().getEntityAsText();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        Map<String,Object> info =
+                (Map<String,Object>) mapper.readValue(json, TreeMap.class);
         assertEquals("https://example.net" +
-                WebApplication.IIIF_2_PATH + "/" + IMAGE, info.id);
+                WebApplication.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
     }
 
 }
