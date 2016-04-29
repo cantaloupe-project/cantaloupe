@@ -19,12 +19,21 @@ public class SizeTest {
     /* fromUri(String) */
 
     /**
+     * Tests fromUri(String) with a value of "max".
+     */
+    @Test
+    public void testFromUriMax() {
+        Size s = Size.fromUri("max");
+        assertEquals(Size.ScaleMode.MAX, s.getScaleMode());
+    }
+
+    /**
      * Tests fromUri(String) with a value of "full".
      */
     @Test
     public void testFromUriFull() {
         Size s = Size.fromUri("full");
-        assertEquals(Size.ScaleMode.FULL, s.getScaleMode());
+        assertEquals(Size.ScaleMode.MAX, s.getScaleMode());
     }
 
     /**
