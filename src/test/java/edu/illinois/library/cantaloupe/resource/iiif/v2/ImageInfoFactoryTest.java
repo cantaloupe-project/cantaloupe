@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +27,9 @@ public class ImageInfoFactoryTest {
     public void setUp() throws Exception {
         Configuration config = Configuration.getInstance();
         config.clear();
-        config.setProperty("processor.fallback", "Java2dProcessor");
+        config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
+                "Java2dProcessor");
+        config.setProperty(AbstractResource.MAX_PIXELS_CONFIG_KEY, 100);
 
         identifier = new Identifier("bla");
         imageUri = "http://example.org/bla";
@@ -110,9 +113,26 @@ public class ImageInfoFactoryTest {
         // If some are present, we will assume the rest are. (The exact
         // contents of the sets are processor-dependent and this is not a
         // processor test.)
-        ((Set) ((Map) info.profile.get(1)).get("formats")).contains("gif");
-        ((Set) ((Map) info.profile.get(1)).get("qualities")).contains("color");
 
+        // formats
+        assertTrue(((Set) ((Map) info.profile.get(1)).get("formats")).contains("gif"));
+
+        // qualities
+        assertTrue(((Set) ((Map) info.profile.get(1)).get("qualities")).contains("color"));
+
+        // maxArea
+        // with max_pixels > 0
+        assertTrue(((Map) info.profile.get(1)).get("maxArea").
+                equals(Configuration.getInstance().getInt(AbstractResource.MAX_PIXELS_CONFIG_KEY)));
+
+        // with max_pixels == 0
+        Configuration.getInstance().
+                setProperty(AbstractResource.MAX_PIXELS_CONFIG_KEY, 0);
+        info = ImageInfoFactory.newImageInfo(identifier, imageUri, processor,
+                processor.getImageInfo());
+        assertFalse(((Map) info.profile.get(1)).containsKey("maxArea"));
+
+        // supports
         final Set supportsSet = (Set) ((Map) info.profile.get(1)).get("supports");
         assertTrue(supportsSet.contains("baseUriRedirect"));
         assertTrue(supportsSet.contains("canonicalLinkHeader"));
