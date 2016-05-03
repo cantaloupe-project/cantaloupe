@@ -59,7 +59,7 @@ class ImageIoImageWriter {
                     param.setCompressionType("JPEG");
                     ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
                     writer.setOutput(os);
-                    IIOImage iioImage = new IIOImage(image, null, metadata);
+                    IIOImage iioImage = new IIOImage(image, null, null);
                     try {
                         writer.write(null, iioImage, param);
                     } finally {
@@ -74,7 +74,7 @@ class ImageIoImageWriter {
                     ImageWriteParam param = writer.getDefaultWriteParam();
                     ImageOutputStream os = ImageIO.createImageOutputStream(outputStream);
                     writer.setOutput(os);
-                    IIOImage iioImage = new IIOImage(image, null, metadata);
+                    IIOImage iioImage = new IIOImage(image, null, null);
                     try {
                         writer.write(null, iioImage, param);
                     } finally {
@@ -93,7 +93,7 @@ class ImageIoImageWriter {
                         param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
                         param.setCompressionType(compressionType);
                     }
-                    IIOImage iioImage = new IIOImage(image, null, metadata);
+                    IIOImage iioImage = new IIOImage(image, null, null);
                     ImageOutputStream ios =
                             ImageIO.createImageOutputStream(outputStream);
                     writer.setOutput(ios);
