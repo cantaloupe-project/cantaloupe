@@ -49,7 +49,7 @@ base_uri =
 slash_substitute =
 
 # Maximum number of pixels to return in a response, to prevent overloading
-# the server. Requests for more pixels than this will receive an HTTP 403
+# the server. Requests for more pixels than this will receive an error
 # response. Set to 0 for no maximum.
 # Note: this is ignored when requesting an unmodified source image.
 max_pixels = 400000000
@@ -515,6 +515,27 @@ watermark.BasicStrategy.output_height_threshold = 300
 # Whether to enable redactions. See the user manual for information about
 # how these work.
 redaction.enabled = false
+
+###########################################################################
+# COLOR PROFILES
+###########################################################################
+
+# Embeds ICC profiles in derivative images. Not recommended for general
+# Internet delivery.
+icc.enabled = false
+
+# Set to `BasicStrategy` to embed one profile in all derivative
+# images. Set to `ScriptStrategy` to control, via the delegate script,
+# which profile(s) should be embedded in which images.
+icc.strategy = BasicStrategy
+
+# Pathname or filename of an ICC profile to embed. If a filename, it will
+# be searched for in the same folder as this file, and then the current
+# working directory.
+icc.BasicStrategy.profile = sRGB.icc
+
+# Name of the embedded ICC profile.
+icc.BasicStrategy.profile_name = sRGB
 
 ###########################################################################
 # LOGGING
