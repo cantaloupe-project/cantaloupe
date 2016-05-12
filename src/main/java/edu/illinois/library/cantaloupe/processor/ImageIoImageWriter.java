@@ -59,11 +59,13 @@ class ImageIoImageWriter {
     }
 
     /**
+     * Applies Deflate compression to the given bytes.
+     *
      * @param data Data to compress.
      * @return Deflate-compressed data.
      * @throws IOException
      */
-    private byte[] deflate(byte[] data) throws IOException {
+    private byte[] deflate(final byte[] data) throws IOException {
         ByteArrayOutputStream deflated = new ByteArrayOutputStream();
         DeflaterOutputStream deflater = new DeflaterOutputStream(deflated);
         deflater.write(data);
@@ -76,31 +78,29 @@ class ImageIoImageWriter {
      * @param writer Writer from which to obtain default metadata.
      * @param writeParam Image writer parameters, already populated for writing.
      * @param image Image to apply the metadata to.
+     * @param outputFormat Format of the output image.
      * @return Metadata with optional embedded color profile according to the
      *         configuration.
      * @throws IOException
      */
     private IIOMetadata getMetadata(ImageWriter writer,
                                     ImageWriteParam writeParam,
-                                    RenderedImage image) throws IOException {
+                                    RenderedImage image,
+                                    Format outputFormat) throws IOException {
         final Configuration config = Configuration.getInstance();
 
         if (config.getBoolean(ICC_ENABLED_CONFIG_KEY, false)) {
-            logger.debug("ICC profiles enabled ({} = true)",
+            logger.debug("getMetadata(): ICC profiles enabled ({} = true)",
                     ICC_ENABLED_CONFIG_KEY);
             final IIOMetadata metadata = writer.getDefaultImageMetadata(
                     ImageTypeSpecifier.createFromRenderedImage(image),
                     writeParam);
-
-            final IIOMetadataNode iccNode = new IIOMetadataNode("iCCP");
-            iccNode.setAttribute("compressionMethod", "deflate");
-
-            switch (config.getString(ICC_STRATEGY_CONFIG_KEY)) {
+            switch (config.getString(ICC_STRATEGY_CONFIG_KEY, "")) {
                 case "BasicStrategy":
-                    addMetadataUsingBasicStrategy(metadata, iccNode);
+                    addMetadataUsingBasicStrategy(metadata, outputFormat);
                     return metadata;
                 case "ScriptStrategy":
-                    addMetadataUsingScriptStrategy(metadata, iccNode);
+                    addMetadataUsingScriptStrategy(metadata, outputFormat);
                     return metadata;
             }
         }
@@ -109,40 +109,84 @@ class ImageIoImageWriter {
         return null;
     }
 
-    private void addMetadataUsingBasicStrategy(IIOMetadata metadata,
-                                               IIOMetadataNode iccNode)
+    /**
+     * @param metadata Metadata to populate.
+     * @param outputFormat Format of the output image.
+     * @throws IOException
+     */
+    private void addMetadataUsingBasicStrategy(final IIOMetadata metadata,
+                                               final Format outputFormat)
             throws IOException {
         final String profileName = Configuration.getInstance().
                 getString(ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY);
         if (profileName != null) {
-            logger.debug("Embedding {} ICC profile", profileName);
-
             final String profileFilename = Configuration.getInstance().
                     getString(ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY);
             if (profileFilename != null) {
-                final ICC_ColorSpace colorSpace = getColorSpace(profileFilename);
-                final byte[] compressedProfile =
-                        deflate(colorSpace.getProfile().getData());
-                iccNode.setUserObject(compressedProfile);
-                iccNode.setAttribute("profileName", profileName);
-
-                final Node nativeTree =
-                        metadata.getAsTree(metadata.getNativeMetadataFormatName());
-                nativeTree.appendChild(iccNode);
-                metadata.mergeTree(metadata.getNativeMetadataFormatName(),
-                        nativeTree);
-            } else {
-                logger.warn("Skipping ICC profile ({} is not set)",
-                        ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY);
+                embedIccProfile(metadata, profileName, profileFilename,
+                        outputFormat);
             }
         }
     }
 
-    private void addMetadataUsingScriptStrategy(IIOMetadata metadata,
-                                                IIOMetadataNode iccNode)
+    /**
+     * @param metadata Metadata to populate.
+     * @param outputFormat Format of the output image.
+     * @throws IOException
+     */
+    private void addMetadataUsingScriptStrategy(final IIOMetadata metadata,
+                                                final Format outputFormat)
             throws IOException {
         // TODO: write this
     }
+
+    /**
+     * @param metadata Metadata to embed the profile into.
+     * @param profileName Name of the profile.
+     * @param profileFilename Pathname or filename of the profile.
+     * @param outputFormat Format of the output image.
+     * @throws IOException
+     */
+    private void embedIccProfile(final IIOMetadata metadata,
+                                 final String profileName,
+                                 final String profileFilename,
+                                 final Format outputFormat) throws IOException {
+        logger.debug("embedIccProfile(): using {} profile ({})",
+                profileName, profileFilename);
+        switch (outputFormat) {
+            case GIF:
+                // See Appendix B.5: http://www.color.org/specification/ICC1v43_2010-12.pdf
+                // TODO: write this
+                break;
+            case JPG:
+                // See: http://docs.oracle.com/javase/7/docs/api/javax/imageio/metadata/doc-files/jpeg_metadata.html
+                // See Appendix B.4: http://www.color.org/specification/ICC1v43_2010-12.pdf
+                // TODO: write this
+                break;
+            case PNG:
+                final ICC_ColorSpace colorSpace =
+                        getColorSpace(profileFilename);
+                final byte[] compressedProfile =
+                        deflate(colorSpace.getProfile().getData());
+                final IIOMetadataNode iccNode =
+                        new IIOMetadataNode("iCCP");
+                iccNode.setAttribute("compressionMethod", "deflate");
+                iccNode.setAttribute("profileName", profileName);
+                iccNode.setUserObject(compressedProfile);
+
+                final Node nativeTree = metadata.
+                        getAsTree(metadata.getNativeMetadataFormatName());
+                nativeTree.appendChild(iccNode);
+                metadata.mergeTree(metadata.getNativeMetadataFormatName(),
+                        nativeTree);
+                break;
+            case TIF:
+                // See Appendix B.3: http://www.color.org/specification/ICC1v43_2010-12.pdf
+                // TODO: write this
+                break;
+        }
+    }
+
 
     /**
      * Writes a Java 2D {@link BufferedImage} to the given output stream.
@@ -173,7 +217,7 @@ class ImageIoImageWriter {
                     ImageOutputStream os =
                             ImageIO.createImageOutputStream(outputStream);
                     writer.setOutput(os);
-                    IIOMetadata metadata = getMetadata(writer, writeParam, image);
+                    IIOMetadata metadata = getMetadata(writer, writeParam, image, outputFormat);
                     IIOImage iioImage = new IIOImage(image, null, metadata);
                     try {
                         writer.write(null, iioImage, writeParam);
@@ -186,7 +230,7 @@ class ImageIoImageWriter {
                     os = ImageIO.createImageOutputStream(outputStream);
                     writer.setOutput(os);
                     metadata = getMetadata(
-                            writer, writer.getDefaultWriteParam(), image);
+                            writer, writer.getDefaultWriteParam(), image, outputFormat);
                     iioImage = new IIOImage(image, null, metadata);
                     try {
                         writer.write(iioImage);
@@ -203,7 +247,7 @@ class ImageIoImageWriter {
                         writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
                         writeParam.setCompressionType(compressionType);
                     }
-                    metadata = getMetadata(writer, writeParam, image);
+                    metadata = getMetadata(writer, writeParam, image, outputFormat);
                     iioImage = new IIOImage(image, null, metadata);
                     ImageOutputStream ios =
                             ImageIO.createImageOutputStream(outputStream);
@@ -218,7 +262,7 @@ class ImageIoImageWriter {
                 default:
                     writer = writers.next();
                     metadata = getMetadata(writer,
-                            writer.getDefaultWriteParam(), image);
+                            writer.getDefaultWriteParam(), image, outputFormat);
                     iioImage = new IIOImage(image, null, metadata);
                     ios = ImageIO.createImageOutputStream(outputStream);
                     writer.setOutput(ios);
@@ -304,7 +348,7 @@ class ImageIoImageWriter {
                     os = ImageIO.createImageOutputStream(outputStream);
                     writer.setOutput(os);
                     IIOMetadata metadata = getMetadata(
-                            writer, writer.getDefaultWriteParam(), image);
+                            writer, writer.getDefaultWriteParam(), image, outputFormat);
                     IIOImage iioImage = new IIOImage(image, null, metadata);
                     try {
                         writer.write(iioImage);
@@ -321,7 +365,7 @@ class ImageIoImageWriter {
                         writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
                         writeParam.setCompressionType(compressionType);
                     }
-                    metadata = getMetadata(writer, writeParam, image);
+                    metadata = getMetadata(writer, writeParam, image, outputFormat);
                     iioImage = new IIOImage(image, null, metadata);
                     ImageOutputStream ios =
                             ImageIO.createImageOutputStream(outputStream);
@@ -336,7 +380,7 @@ class ImageIoImageWriter {
                 default:
                     writer = writers.next();
                     metadata = getMetadata(
-                            writer, writer.getDefaultWriteParam(), image);
+                            writer, writer.getDefaultWriteParam(), image, outputFormat);
                     iioImage = new IIOImage(image, null, metadata);
                     ios = ImageIO.createImageOutputStream(outputStream);
                     writer.setOutput(ios);
