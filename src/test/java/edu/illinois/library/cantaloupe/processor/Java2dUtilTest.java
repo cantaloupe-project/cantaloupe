@@ -177,13 +177,22 @@ public class Java2dUtilTest {
 
     @Test
     public void testCropImage() {
-        BufferedImage inImage = new BufferedImage(100, 100,
+        BufferedImage inImage = new BufferedImage(200, 100,
                 BufferedImage.TYPE_INT_RGB);
         // full
         Crop crop = new Crop();
         crop.setFull(true);
         BufferedImage outImage = Java2dUtil.cropImage(inImage, crop);
         assertSame(inImage, outImage);
+
+        // square
+        crop = new Crop();
+        crop.setShape(Crop.Shape.SQUARE);
+        crop.setWidth(50f);
+        crop.setHeight(50f);
+        outImage = Java2dUtil.cropImage(inImage, crop);
+        assertEquals(100, outImage.getWidth());
+        assertEquals(100, outImage.getHeight());
 
         // pixel crop
         crop = new Crop();
@@ -201,7 +210,7 @@ public class Java2dUtilTest {
         crop.setWidth(0.5f);
         crop.setHeight(0.5f);
         outImage = Java2dUtil.cropImage(inImage, crop);
-        assertEquals(50, outImage.getWidth());
+        assertEquals(100, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
     }
 

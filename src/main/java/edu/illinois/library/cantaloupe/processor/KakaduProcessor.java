@@ -111,9 +111,11 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
                 ProcessorFeature.MIRRORING,
                 ProcessorFeature.REGION_BY_PERCENT,
                 ProcessorFeature.REGION_BY_PIXELS,
+                ProcessorFeature.REGION_SQUARE,
                 ProcessorFeature.ROTATION_ARBITRARY,
                 ProcessorFeature.ROTATION_BY_90S,
                 ProcessorFeature.SIZE_ABOVE_FULL,
+                ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
                 ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
                 ProcessorFeature.SIZE_BY_HEIGHT,
                 ProcessorFeature.SIZE_BY_PERCENT,
@@ -405,28 +407,37 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
                             Integer.toString(imageSize.width).length() + 1;
                     final int yDecimalPlaces =
                             Integer.toString(imageSize.height).length() + 1;
-
                     final String xFormat = "#." + StringUtils.repeat("#",
                             xDecimalPlaces);
                     final String yFormat = "#." + StringUtils.repeat("#",
                             yDecimalPlaces);
-
                     final DecimalFormat xDecFormat = new DecimalFormat(xFormat);
                     xDecFormat.setRoundingMode(RoundingMode.DOWN);
                     final DecimalFormat yDecFormat = new DecimalFormat(yFormat);
                     yDecFormat.setRoundingMode(RoundingMode.DOWN);
 
-                    double x = crop.getX();
-                    double y = crop.getY();
-                    double width = crop.getWidth();
-                    double height = crop.getHeight();
-                    if (crop.getUnit().equals(Crop.Unit.PIXELS)) {
-                        x /= imageSize.width;
-                        y /= imageSize.height;
-                        width /= imageSize.width;
-                        height /= imageSize.height;
+                    double x, y, width, height; // These are all percentages.
+                    if (crop.getShape().equals(Crop.Shape.SQUARE)) {
+                        final int shortestSide =
+                                Math.min(imageSize.width, imageSize.height);
+                        x = (imageSize.width - shortestSide) /
+                                (double) imageSize.width / 2f;
+                        y = (imageSize.height - shortestSide) /
+                                (double) imageSize.height / 2f;
+                        width = shortestSide / (double) imageSize.width;
+                        height = shortestSide / (double) imageSize.height;
+                    } else {
+                        x = crop.getX();
+                        y = crop.getY();
+                        width = crop.getWidth();
+                        height = crop.getHeight();
+                        if (crop.getUnit().equals(Crop.Unit.PIXELS)) {
+                            x /= imageSize.width;
+                            y /= imageSize.height;
+                            width /= imageSize.width;
+                            height /= imageSize.height;
+                        }
                     }
-
                     command.add("-region");
                     command.add(String.format("{%s,%s},{%s,%s}",
                             yDecFormat.format(y),

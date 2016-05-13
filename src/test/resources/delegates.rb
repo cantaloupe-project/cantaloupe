@@ -7,16 +7,17 @@ module Cantaloupe
     identifier != 'forbidden.jpg'
   end
 
-  def self.get_iiif2_service(identifier)
-    if identifier == 'jpg-rgb-64x56x8-baseline.jpg'
-      return {
-        '@context' => 'http://iiif.io/api/image/2/context.json',
-        '@id' => 'bla',
-        'profile' => 'bla',
-        'cats' => 0.85
-      }
-    end
-    nil
+  def self.extra_iiif2_information_response_keys(identifier)
+    {
+        'attribution' =>  'Copyright My Great Organization. All rights reserved.',
+        'license' =>  'http://example.org/license.html',
+        'service' => {
+            '@context' => 'http://iiif.io/api/annex/services/physdim/1/context.json',
+            'profile' => 'http://iiif.io/api/annex/services/physdim',
+            'physicalScale' => 0.0025,
+            'physicalUnits' => 'in'
+        }
+    }
   end
 
   def self.get_resolver(identifier)

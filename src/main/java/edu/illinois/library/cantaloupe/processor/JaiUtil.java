@@ -97,7 +97,13 @@ abstract class JaiUtil {
 
             float x, y, requestedWidth, requestedHeight, croppedWidth,
                     croppedHeight;
-            if (crop.getUnit().equals(Crop.Unit.PERCENT)) {
+            if (crop.getShape().equals(Crop.Shape.SQUARE)) {
+                final int shortestSide =
+                        Math.min(inImage.getWidth(), inImage.getHeight());
+                x = (inImage.getWidth() - shortestSide) / 2;
+                y = (inImage.getHeight() - shortestSide) / 2;
+                requestedWidth = requestedHeight = shortestSide;
+            } else if (crop.getUnit().equals(Crop.Unit.PERCENT)) {
                 x = (int) Math.round(regionX * inImage.getWidth());
                 y = (int) Math.round(regionY * inImage.getHeight());
                 requestedWidth = (int) Math.round(regionWidth *

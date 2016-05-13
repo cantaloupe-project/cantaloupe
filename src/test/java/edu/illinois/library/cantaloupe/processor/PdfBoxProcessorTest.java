@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -49,9 +48,11 @@ public class PdfBoxProcessorTest extends ProcessorTest {
         expectedFeatures.add(ProcessorFeature.MIRRORING);
         expectedFeatures.add(ProcessorFeature.REGION_BY_PERCENT);
         expectedFeatures.add(ProcessorFeature.REGION_BY_PIXELS);
+        expectedFeatures.add(ProcessorFeature.REGION_SQUARE);
         expectedFeatures.add(ProcessorFeature.ROTATION_ARBITRARY);
         expectedFeatures.add(ProcessorFeature.ROTATION_BY_90S);
         expectedFeatures.add(ProcessorFeature.SIZE_ABOVE_FULL);
+        expectedFeatures.add(ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT);
         expectedFeatures.add(ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
         expectedFeatures.add(ProcessorFeature.SIZE_BY_HEIGHT);
         expectedFeatures.add(ProcessorFeature.SIZE_BY_PERCENT);

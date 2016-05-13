@@ -25,6 +25,7 @@ import org.restlet.resource.ResourceException;
 import java.awt.Dimension;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -124,7 +125,9 @@ public class ImageResource extends Iiif2Resource {
                     getOrReadInfo(identifier, processor));
             final Dimension resultingSize = ops.getResultingSize(fullSize);
             boolean ok = false;
-            for (ImageInfo.Size size : imageInfo.sizes) {
+            List<ImageInfo.Size> sizes =
+                    (List<ImageInfo.Size>) imageInfo.get("sizes");
+            for (ImageInfo.Size size : sizes) {
                 if (size.width == resultingSize.width &&
                         size.height == resultingSize.height) {
                     ok = true;

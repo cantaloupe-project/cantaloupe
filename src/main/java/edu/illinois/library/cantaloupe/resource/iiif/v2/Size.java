@@ -10,26 +10,31 @@ import org.apache.commons.lang3.StringUtils;
  */
 class Size {
 
-    public enum ScaleMode {
+    enum ScaleMode {
 
         /** <code>,h</code> in an IIIF request URI */
-        ASPECT_FIT_HEIGHT,
+        ASPECT_FIT_HEIGHT(Scale.Mode.ASPECT_FIT_HEIGHT),
 
         /** <code>w,</code> in an IIIF request URI */
-        ASPECT_FIT_WIDTH,
+        ASPECT_FIT_WIDTH(Scale.Mode.ASPECT_FIT_WIDTH),
 
         /** <code>!w,h</code> in an IIIF request URI */
-        ASPECT_FIT_INSIDE,
+        ASPECT_FIT_INSIDE(Scale.Mode.ASPECT_FIT_INSIDE),
+
+        /** <code>max</code> or <code>full</code> in an IIIF request URI */
+        MAX(Scale.Mode.FULL),
 
         /** <code>w,h</code> in an IIIF request URI */
-        NON_ASPECT_FILL,
+        NON_ASPECT_FILL(Scale.Mode.NON_ASPECT_FILL);
 
-        /** <code>full</code> in an IIIF request URI */
-        FULL;
+        private Scale.Mode equivalentScaleMode;
+
+        ScaleMode(Scale.Mode equivalentScaleMode) {
+            this.equivalentScaleMode = equivalentScaleMode;
+        }
 
         public edu.illinois.library.cantaloupe.image.Scale.Mode toMode() {
-            return edu.illinois.library.cantaloupe.image.Scale.Mode.
-                    valueOf(this.toString());
+            return this.equivalentScaleMode;
         }
 
     }
@@ -41,14 +46,14 @@ class Size {
 
     /**
      * @param uriSize The "size" component of an IIIF URI.
-     * @return
+     * @return Size corresponding to the given URI size component.
      * @throws IllegalArgumentException
      */
     public static Size fromUri(String uriSize) throws IllegalArgumentException {
         Size size = new Size();
         try {
-            if (uriSize.equals("full")) {
-                size.setScaleMode(ScaleMode.FULL);
+            if (uriSize.equals("max") || uriSize.equals("full")) {
+                size.setScaleMode(ScaleMode.MAX);
             } else {
                 if (uriSize.endsWith(",")) {
                     size.setScaleMode(ScaleMode.ASPECT_FIT_WIDTH);
@@ -150,7 +155,9 @@ class Size {
      */
     public String toString() {
         String str = "";
-        if (this.getScaleMode() == ScaleMode.FULL) {
+        if (this.getScaleMode() != null &&
+                this.getScaleMode().equals(ScaleMode.MAX)) {
+            // Use "full" because "max" is not available in Image API 2.0.
             str += "full";
         } else if (this.getPercent() != null) {
             str += "pct:" + NumberUtil.formatForUrl(this.getPercent());

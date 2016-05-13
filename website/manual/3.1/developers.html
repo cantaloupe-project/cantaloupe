@@ -1,0 +1,78 @@
+---
+layout: manual_3.1
+title: For Developers
+---
+
+<ol class="breadcrumb">
+  <li><a href="{{ site.baseurl }}/">Home</a></li>
+  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
+  <li><a href="{{ site.baseurl }}/manual/3.1/">3.1</a></li>
+  <li class="active">For Developers</li>
+</ol>
+
+<h1>For Developers</h1>
+
+<ul>
+  <li><a href="#Javadoc">Javadoc</a></li>
+  <li><a href="#Contributing">Contributing</a></li>
+  <li><a href="#Administrative%20Info">Administrative Info</a>
+    <ul>
+      <li><a href="#Website">Website</a></li>
+      <li><a href="#Versioning">Versioning</a></li>
+      <li><a href="#Releasing">Releasing</a></li>
+    </ul>
+  </li>
+</ul>
+
+<p>Cantaloupe is a standard Maven project that should open right up in any Java IDE. Simply use the same configuration file and VM options (e.g. <code>-Dcantaloupe.config=...</code>) as you would when running from a JAR.</p>
+
+<hr>
+
+<h2 id="Javadoc">Javadoc</h2>
+
+<a href="{{ site.baseurl }}/javadoc/3.1/">Javadoc</a>
+
+<hr>
+
+<h2 id="Contributing">Contributing</h2>
+
+<p>This project uses the <a href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow/">Gitflow</a> branching model. All changes should take place in feature branches ("feature/xxxx") that branch off from the main branch, "develop," from which they can be integrated into a particular release by the release manager.</p>
+
+<p>The general process for contributing code changes is:</p>
+
+<ol>
+  <li><a href="https://github.com/medusa-project/cantaloupe/fork">Create a fork</a></li>
+  <li>Create a feature branch (<code>git checkout -b feature/my-new-feature</code>)</li>
+  <li>Commit your changes (<code>`git commit -am 'Add some feature'</code>)</li>
+  <li>Push to the branch (<code>git push origin feature/my-new-feature</code>)</li>
+  <li>Create a pull request</li>
+</ol>
+
+<hr>
+
+<h2 id="Administrative Info">Administrative Info</h2>
+
+<p>(This section is for release managers only.)</p>
+
+<h3 id="Versioning">Versioning</h3>
+
+<p>Cantaloupe roughly uses semantic versioning. Major releases (n) involve major reengineering that breaks backwards compatibility in a significant way. Minor releases (n.n) either do not break compatibility, or only in a minor way. Patch releases (n.n.n) are for bugfixes only.</p>
+
+<h3 id="Releasing">Releasing</h3>
+
+<p>Currently, the release process is mostly manual, consisting of the following steps:</p>
+
+<ol>
+  <li>Finalize the code to be released, addressing any relevant milestone issues, TODOs, etc.</li>
+  <li>Ensure that the tests are current, comprehensive, and passing</li>
+  <li>Finalize the documentation, including the website, user manual, change log, and Javadoc</li>
+  <li>Merge into "release/vX.X"</li>
+  <li>Update the version in <span class="filename">pom.xml</span> and commit this change</li>
+  <li>Merge into "master"</li>
+  <li>Create the release .zip archive with <code>mvn package</code></li>
+  <li>Check that the .zip archive is as expected</li>
+  <li>Tag the release: <code>git tag -a v{version} -m 'Tag v{version}'</code></li>
+  <li>Push the code: <code>git push origin master; git push origin release/x.x; git push --tags</code></li>
+  <li>Add the .zip archive and change log info to the release tag on GitHub</li>
+  <li>Deploy the updated website.</li>
+</ol>

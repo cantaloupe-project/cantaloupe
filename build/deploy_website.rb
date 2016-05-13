@@ -22,7 +22,6 @@ end
 Dir.mktmpdir('website') do |tmp_dir|
   puts "Building site in #{tmp_dir}"
   `jekyll build -s website -d #{tmp_dir}`
-  `build/build_javadoc.rb #{tmp_dir}/javadoc`
 
   # switch to the gh-pages branch
   if orphan_exists
@@ -34,12 +33,17 @@ Dir.mktmpdir('website') do |tmp_dir|
   end
 
   # wipe it clean and copy the new website into the place of the old one
+  puts 'Removing current website'
   `git rm -rf .`
+  puts 'Copying new website into place'
   `cp -r #{File.join(tmp_dir, '*')} .`
 
   # commit and push
+  puts 'Adding files'
   `git add *.html */*`
+  puts 'Committing changes'
   `git commit -m 'Update website'`
+  puts 'Pushing website'
   `git push origin gh-pages`
 end
 

@@ -1,0 +1,610 @@
+---
+layout: manual_3.1
+title: Processors
+---
+
+<ol class="breadcrumb">
+  <li><a href="{{ site.baseurl }}/">Home</a></li>
+  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
+  <li><a href="{{ site.baseurl }}/manual/3.1/">3.1</a></li>
+  <li class="active">Processors</li>
+</ol>
+
+<h1>Processors</h1>
+
+<ul>
+  <li><a href="#Operating%20System%20Compatibility">Operating System Compatibility</a></li>
+  <li><a href="#Resolver%20Compatibility">Resolver Compatiblity</a></li>
+  <li><a href="#Supported%20Features">Supported Features</a></li>
+  <li><a href="#Supported%20Source%20Formats">Supported Source Formats</a></li>
+  <li><a href="#Implementations">Implementations</a>
+    <ul>
+      <li><a href="#Java2dProcessor">Java2dProcessor</a></li>
+      <li><a href="#JaiProcessor">JaiProcessor</a></li>
+      <li><a href="#GraphicsMagickProcessor">GraphicsMagickProcessor</a></li>
+      <li><a href="#ImageMagickProcessor">ImageMagickProcessor</a></li>
+      <li><a href="#KakaduProcessor">KakaduProcessor</a></li>
+      <li><a href="#OpenJpegProcessor">OpenJpegProcessor</a></li>
+      <li><a href="#FfmpegProcessor">FfmpegProcessor</a></li>
+      <li><a href="#PdfBoxProcessor">PdfBoxProcessor</a></li>
+    </ul>
+  </li>
+</ul>
+
+<p>Processors are responsible for reading source images from <a href="resolvers.html">resolvers</a> and transforming them according to request parameters. Processors are modular and pluggable. Particular processors can be assigned to handle particular source formats, and a fallback processor can be assigned to all others.</p>
+
+<p>Different processors have different quality, compatibility, dependency, and performance characteristics. The ability to choose among different processors is intended to make it easy to add support for new image formats; improve support for existing image formats via the substitution of better codecs; and decouple the image server implementation from any one codec.</p>
+
+<p>In terms of format support, a distinction is made between the concepts of source format and output format. Available output formats may differ on a per-platform or per-instance basis depending on the source format.</p>
+
+<p>Supported source formats depend on the processor, and possibly installed
+libraries/delegates, etc., as well. Lists of these are displayed on the
+landing page, as well as in one of the tables below. A list of output formats supported <em>for a given source format</em> is contained within the response to an information request (such as <span class="filename">/iiif/2/{identifier}/info.json</span>).</p>
+
+<hr>
+
+<h2 id="Operating System Compatibility">Operating System Compatibility</h2>
+
+<table class="table table-bordered">
+  <tr>
+    <th></th>
+    <th>Linux</th>
+    <th>OS X</th>
+    <th>Windows</th>
+  </tr>
+  <tr>
+    <td><a href="processors.html#FfmpegProcessor">FfmpegProcessor</a></td>
+    <td class="bg-success text-center">&check;</td>
+    <td class="bg-success text-center">&check;</td>
+    <td class="bg-success text-center">&check;</td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a></td>
+    <td class="bg-success text-center">&check;</td>
+    <td class="bg-success text-center">&check;</td>
+    <td class="bg-success text-center">&check;</td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a></td>
+    <td class="bg-success text-center">&check;</td>
+    <td class="bg-success text-center">&check;</td>
+    <td class="bg-success text-center">&check;</td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#JaiProcessor">JaiProcessor</a></td>
+    <td class="bg-success text-center">&check;</td>
+    <td class="bg-success text-center">&check;</td>
+    <td class="bg-success text-center">&check;</td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#Java2dProcessor">Java2dProcessor</a></td>
+    <td class="bg-success text-center">&check;</td>
+    <td class="bg-success text-center">&check;</td>
+    <td class="bg-success text-center">&check;</td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#KakaduProcessor">KakaduProcessor</a></td>
+    <td class="bg-success text-center">&check;</td>
+    <td class="bg-success text-center">&check;</td>
+    <td class="bg-danger text-center"></td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a></td>
+    <td class="bg-success text-center">&check;</td>
+    <td class="bg-success text-center">&check;</td>
+    <td class="bg-danger text-center"></td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#PdfBoxProcessor">PdfBoxProcessor</a></td>
+    <td class="bg-success text-center">&check;</td>
+    <td class="bg-success text-center">&check;</td>
+    <td class="bg-success text-center">&check;</td>
+  </tr>
+</table>
+
+<hr>
+
+
+<h2 id="Resolver Compatibility">Resolver Compatibility</h2>
+
+<table class="table table-bordered">
+  <tr>
+    <th></th>
+    <th><a href="resolvers.html#AmazonS3Resolver">Amazon S3</a></th>
+    <th><a href="resolvers.html#AzureStorageResolver">Azure Storage</a></th>
+    <th><a href="resolvers.html#FilesystemResolver">Filesystem</a></th>
+    <th><a href="resolvers.html#HttpResolver">HTTP</a></th>
+    <th><a href="resolvers.html#JdbcResolver">JDBC</a></th>
+  </tr>
+  <tr>
+    <td><a href="processors.html#FfmpegProcessor">FfmpegProcessor</a></td>
+    <td class="text-center bg-warning">&check;*</td>
+    <td class="text-center bg-warning">&check;*</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-warning">&check;*</td>
+    <td class="text-center bg-warning">&check;*</td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a></td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a></td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#JaiProcessor">JaiProcessor</a></td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#Java2dProcessor">Java2dProcessor</a></td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#KakaduProcessor">KakaduProcessor</a></td>
+    <td class="text-center bg-warning">&check;*</td>
+    <td class="text-center bg-warning">&check;*</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-warning">&check;*</td>
+    <td class="text-center bg-warning">&check;*</td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a></td>
+    <td class="text-center bg-warning">&check;*</td>
+    <td class="text-center bg-warning">&check;*</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-warning">&check;*</td>
+    <td class="text-center bg-warning">&check;*</td>
+  </tr>
+  <tr>
+    <td><a href="processors.html#PdfBoxProcessor">PdfBoxProcessor</a></td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+</table>
+
+<p>&check;*: Not natively compatible, but will work if the <a href="caching.html#Source%20Cache">source cache</a> is enabled</p>
+
+<hr>
+
+<h2 id="Supported Features">Supported Features</h2>
+
+<table class="table table-bordered">
+  <tr>
+    <th></th>
+    <th><a href="#GraphicsMagickProcessor">GraphicsMagick</a></th>
+    <th><a href="#ImageMagickProcessor">ImageMagick</a></th>
+    <th><a href="#Java2dProcessor">Java 2D</a></th>
+    <th><a href="#JaiProcessor">JAI</a></th>
+    <th><a href="#KakaduProcessor">Kakadu</a></th>
+    <th><a href="#OpenJpegProcessor">OpenJPEG</a></th>
+    <th><a href="#FfmpegProcessor">FFmpeg</a></th>
+    <th><a href="#PdfBoxProcessor">PDFBox</a></th>
+  </tr>
+  <tr>
+    <td>Mirroring</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Region By Percent</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Region By Pixels</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Square Region</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Arbitrary Rotation</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-danger"></td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Rotation By 90&deg;s</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Size Above Full</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Size By Whitelisted/Confined Width/Height</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Size By Forced/Distorted Width/Height</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Size By Height</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Size By Width</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Size By Percent</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Size By Width/Height</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Grayscale Output</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Bitonal Output</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-danger"></td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Watermarking</td>
+    <td class="text-center bg-danger"></td>
+    <td class="text-center bg-danger"></td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Redaction</td>
+    <td class="text-center bg-danger"></td>
+    <td class="text-center bg-danger"></td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-danger"></td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-danger"></td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Tiled Reading</td>
+    <td class="text-center bg-danger"></td>
+    <td class="text-center bg-danger"></td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center">N/A</td>
+    <td class="text-center">N/A</td>
+  </tr>
+  <tr>
+    <td>Multiresolution Reading</td>
+    <td class="text-center bg-danger"></td>
+    <td class="text-center bg-danger"></td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center">N/A</td>
+    <td class="text-center">N/A</td>
+  </tr>
+</table>
+
+<hr>
+
+<h2 id="Supported Source Formats">Supported Source Formats</h2>
+
+<table class="table table-bordered">
+  <tr>
+    <th></th>
+    <th>BMP</th>
+    <th>GIF</th>
+    <th>JPEG</th>
+    <th>JPEG2000</th>
+    <th>PDF</th>
+    <th>PNG</th>
+    <th>TIFF</th>
+    <th>WebP</th>
+  </tr>
+  <tr>
+    <td><a href="#GraphicsMagickProcessor">GraphicsMagickProcessor</a></td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-warning">Uses JasPer (requires plugin). No level-reduction or region decoding.</td>
+    <td class="bg-warning">Requires plugin; no source DPI control</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-warning">All aspects, but no multi-resolution or ROI decoding</td>
+    <td class="bg-success">Requires plugin</td>
+  </tr>
+  <tr>
+    <td><a href="#ImageMagickProcessor">ImageMagickProcessor</a></td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-warning">Uses OpenJPEG (requires delegate). No level-reduction or region decoding.</td>
+    <td class="bg-warning">Requires delegate; no source DPI control</td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-warning">All aspects, but no multi-resolution or ROI decoding</td>
+    <td class="bg-success">Requires delegate</td>
+  </tr>
+  <tr>
+    <td><a href="#JaiProcessor">JaiProcessor</a></td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="bg-success">RGB, 8-bit, baseline, line-interlaced, plane-interlaced</td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="bg-success">RGB, RGBA, 8-bit</td>
+    <td class="bg-success">RGB, RGBA; 8-bit; uncompressed, PackBits, LZW, ZIP, JPEG; striped, tiled, and multi-resolution reading; BigTIFF</td>
+    <td class="bg-danger"></td>
+  </tr>
+  <tr>
+    <td><a href="#Java2dProcessor">Java2dProcessor</a></td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="bg-success">RGB, 8-bit, baseline, line-interlaced, plane-interlaced</td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="bg-success">RGB, RGBA, 8-bit</td>
+    <td class="bg-success">RGB, RGBA; 8-bit, 16-bit; uncompressed, PackBits, LZW (8-bit only), ZIP (8-bit only), JPEG (8-bit only); striped, tiled, and multi-resolution reading; BigTIFF</td>
+    <td class="bg-danger"></td>
+  </tr>
+  <tr>
+    <td><a href="#KakaduProcessor">KakaduProcessor</a></td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+  </tr>
+  <tr>
+    <td><a href="#OpenJpegProcessor">OpenJpegProcessor</a></td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+  </tr>
+  <tr>
+    <td><a href="#PdfBoxProcessor">PdfBoxProcessor</a></td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+    <td class="bg-danger"></td>
+  </tr>
+</table>
+
+<hr>
+
+<h2 id="Implementations">Implementations</h2>
+
+<h3 id="Java2dProcessor">Java2dProcessor</h3>
+
+<p>Java2dProcessor uses the Java ImageIO framework and Java 2D API to read and process images in a native-Java way. This is a good processor to get started with as it has no external dependencies and works out-of-the-JAR.</p>
+
+<p>Java2dProcessor has been written to exploit the ImageIO image readers as efficiently as possible. Special attention has been paid to its handling of tiled images, such as tile-encoded TIFFs, for which it reads only the necessary tiles for a given request. It is also capable of reading the sub-images contained within multi-resolution (pyramidal) TIFF images, and applying scale-appropriate subsampling for faster reading.</p>
+
+<p>Because Java2dProcessor does all its work in Java, it places a burden on the JVM heap. Although it tries to be efficient at reading images, it does have to create derivative images at every processing step (scaling, rotating, etc.), which have to be temporarily buffered in RAM. (See the section on <a href="deployment.html#HardwareMemory">memory considerations</a>.)</p>
+
+<hr>
+
+<h3 id="JaiProcessor">JaiProcessor</h3>
+
+<p>Java Advanced Imaging (JAI) is a sophisticated image processing library developed by Sun Microsystems from the late 1990s to the mid-2000s. It offers several advantages over Java 2D: a pull-based rendering pipeline that can reduce memory usage, and efficient region-of-interest decoding with some formats.</p>
+
+<p>As JaiProcessor and Java2dProcessor use the same ImageIO readers and writers, they can read and write the same formats.</p>
+
+<p>Years ago, Sun published <a href="http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-java-client-419417.html">platform-native accelerator JARs</a> called <a href="http://www.oracle.com/technetwork/java/install-1-1-2-135866.html">mediaLib</a> for Windows, Linux, and Solaris, which improved JAI's performance. It is unknown whether these still work on modern platforms.</p>
+
+<hr>
+
+<h3 id="GraphicsMagickProcessor">GraphicsMagickProcessor</h3>
+
+<p>GraphicsMagickProcessor uses <a href="http://im4java.sourceforge.net">im4java</a> to invoke the <a href="http://www.graphicsmagick.org">GraphicsMagick</a> executable
+(<span class="filename">gm</span>). As such, GraphicsMagick must be installed.</p>
+
+<p>GraphicsMagick produces high-quality output and supports all of the IIIF transforms and most IIIF output formats (assuming the necessary libraries are installed; see <a href="http://www.graphicsmagick.org/formats.html">Supported Formats</a>).</p>
+
+<p>GraphicsMagickProcessor is typically faster than <a href="#ImageMagickProcessor">ImageMagickProcessor</a>. However, like ImageMagickProcessor, it is neither tile- nor multi-resolution-aware and thus fares poorly with large images.</p>
+
+<div class="alert alert-info">It is recommended to find or compile a "Q8" version of GraphicsMagick, as its memory use will be halved.</div>
+
+<hr>
+
+<h3 id="ImageMagickProcessor">ImageMagickProcessor</h3>
+
+<p>ImageMagickProcessor, like <a href="#GraphicsMagickProcessor">GraphicsMagickProcessor</a>, uses
+<a href="http://im4java.sourceforge.net">im4java</a> to wrap <a href="http://www.imagemagick.org/">ImageMagick</a> commands. As such, ImageMagick must be installed.</p>
+
+<p>ImageMagick produces high-quality output and supports all of the IIIF
+transforms and all IIIF output formats, assuming the necessary delegates are installed. It also supports a wide array of source formats.</p>
+
+<div class="alert alert-warning">ImageMagick is not known for being particularly fast or efficient. Because it runs in an external process, it is not constrained by the JVM's memory limits, so using it with very large images can cause memory consumption to spiral out of control and effectively hang the server.</div>
+
+<div class="alert alert-info">It is recommended to find or compile a "Q8" version of ImageMagick, as its memory use will be halved.</div>
+
+<hr>
+
+<h3 id="KakaduProcessor">KakaduProcessor</h3>
+
+<p>KakaduProcessor uses the <span class="filename">kdu_expand</span> and <span class="filename">kdu_jp2info</span> binaries from the
+<a href="http://www.kakadusoftware.com">Kakadu</a> SDK to efficiently decode JPEG2000 source images. This processor is capable of performing well even with large JP2s. Kakadu is extensively hardware-optimized and will make full use of all available CPU cores.</p>
+
+<p>Although it does support some other operations, <span class="filename">kdu_expand</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. All other operations (differential scaling, rotation, etc.) are performed using either the Java 2D or JAI APIs (configurable).</p>
+
+<div class="alert alert-info">Note: Kakadu is not free and the SDK is not included with Cantaloupe. As of this writing, the necessary binaries can be downloaded from the Kakadu website and used for demonstration purposes.</div>
+
+<hr>
+
+<h3 id="OpenJpegProcessor">OpenJpegProcessor</h3>
+
+<p>OpenJpegProcessor uses the <span class="filename">opj_decompress</span> and <span class="filename">opj_dump</span> tools from the open-source
+<a href="http://www.openjpeg.org">OpenJPEG</a> project to decode JPEG2000 source images.</p>
+
+<p>Although it does support some other operations, <span class="filename">opj_decompress</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. The rest of the IIIF operations (differential scaling, rotation, etc.) are performed using either the Java 2D or JAI APIs (configurable).</p>
+
+<hr>
+
+<h3 id="FfmpegProcessor">FfmpegProcessor</h3>
+
+<p>FfmpegProcessor uses the <a href="http://www.ffmpeg.org">FFmpeg</a> tool to extract still frames from video files. It can be used for thumbnail generation á la YouTube, as well as deep zooming of high-resolution still frames.</p>
+
+<p>FfmpegProcessor has been tested with FFmpeg version 2.8. Other versions may or may not work.</p>
+
+<h4>Optional Parameters</h4>
+
+<p>FFmpegProcessor supports a <code>time</code> URL query parameter (which is nonstandard and Cantaloupe-specific) which can be used to return a frame at a particular second in the source video. The value of this parameter should be in <code>hh:mm:ss</code> format, like:</p>
+
+<pre>http://example.org/iiif/2/video.mp4/full/full/0/default.jpg?time=00:02:15</pre>
+
+<p>If the <code>time</code> parameter is missing, the first frame will be returned.</p>
+
+<hr>
+
+<h3 id="PdfBoxProcessor">PdfBoxProcessor</h3>
+
+<p>PdfBoxProcessor uses the <a href="https://pdfbox.apache.org">Apache PDFBox</a> library to read and rasterize PDF files. This is a pure-Java library that is bundled in and has no dependencies.</p>
+
+<p>As PDF is a vector format, PdfBoxProcessor will convert to a raster (pixel) image and use a Java 2D pipeline to transform it according to the request parameters.</p>
+
+<p>The size of the default raster image, corresponding to a scale of one, is configurable with the <code>PdfBoxProcessor.dpi</code> configuration option. When a request asks for a scale of &le; 50% or &ge; 200%, a fraction or multiple of this will be used, respectively, in order to improve efficiency at small scales, and detail at large scales.</p>
+
+<h4>Optional Parameters</h4>
+
+<p>PdfBoxProcessor supports a <code>page</code> URL query parameter (which is nonstandard and Cantaloupe-specific) which can be used to return a particular page of a PDF. For example:</p>
+
+<pre>http://example.org/iiif/2/document.pdf/full/full/0/default.jpg?page=2</pre>
+
+<p>If the <code>page</code> parameter is missing, the first page will be returned. If the given page number is invalid or greater than the number of pages in the PDF, the first page will be returned.</p>

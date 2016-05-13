@@ -78,9 +78,11 @@ class GraphicsMagickProcessor extends AbstractProcessor
                 ProcessorFeature.MIRRORING,
                 ProcessorFeature.REGION_BY_PERCENT,
                 ProcessorFeature.REGION_BY_PIXELS,
+                ProcessorFeature.REGION_SQUARE,
                 ProcessorFeature.ROTATION_ARBITRARY,
                 ProcessorFeature.ROTATION_BY_90S,
                 ProcessorFeature.SIZE_ABOVE_FULL,
+                ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
                 ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
                 ProcessorFeature.SIZE_BY_HEIGHT,
                 ProcessorFeature.SIZE_BY_PERCENT,
@@ -291,7 +293,13 @@ class GraphicsMagickProcessor extends AbstractProcessor
             if (op instanceof Crop) {
                 Crop crop = (Crop) op;
                 if (!crop.isNoOp()) {
-                    if (crop.getUnit().equals(Crop.Unit.PERCENT)) {
+                    if (crop.getShape().equals(Crop.Shape.SQUARE)) {
+                        final int shortestSide =
+                                Math.min(fullSize.width, fullSize.height);
+                        int x = (fullSize.width - shortestSide) / 2;
+                        int y = (fullSize.height - shortestSide) / 2;
+                        imOp.crop(shortestSide, shortestSide, x, y);
+                    } else if (crop.getUnit().equals(Crop.Unit.PERCENT)) {
                         // im4java doesn't support cropping x/y by percentage
                         // (only width/height), so we have to calculate them.
                         int x = Math.round(crop.getX() * fullSize.width);

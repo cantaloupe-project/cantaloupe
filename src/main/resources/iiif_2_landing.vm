@@ -8,12 +8,13 @@
 
 <body id="cl-landing">
     <div class="container-fluid">
-        <h1>IIIF Image API 2.0 Endpoint</h1>
+        <h1>IIIF Image API 2.x Endpoint</h1>
 
         <ul>
             <li>Documentation
                 <ul>
                     <li><a href="http://iiif.io/api/image/2.0/">2.0</a></li>
+                    <li><a href="http://iiif.io/api/image/2.1/">2.1</a></li>
                 </ul>
             </li>
             <li>Sample Requests
@@ -22,7 +23,7 @@
                     <li>$baseUri/iiif/2/{identifier}/full/full/0/default.jpg</li>
                 </ul>
             </li>
-            <li>Also available:
+            <li>Also Available:
                 <ul>
                     <li><a href="$baseUri/iiif/1">IIIF Image API 1.x endpoint</a></li>
                 </ul>

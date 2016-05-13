@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -719,25 +720,6 @@ public class Version2_0ConformanceTest {
     }
 
     /**
-     * 5. "If the regular JSON content-type is returned, then it is
-     * recommended that the server provide a link header to the context
-     * document. The syntax for the link header is below, and further
-     * described in section 6.8 of the JSON-LD specification. If the client
-     * requests “application/ld+json”, the link header may still be included."
-     *
-     * @throws IOException
-     */
-    @Test
-    public void testInformationRequestLinkHeaderToContextDocument()
-            throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
-        client.get();
-        assertEquals("<http://iiif.io/api/image/2/context.json>; " +
-                        "rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"",
-                client.getResponse().getHeaders().getFirst("Link").getValue());
-    }
-
-    /**
      * 5. "Servers should send the Access-Control-Allow-Origin header with the
      * value * in response to information requests."
      *
@@ -790,8 +772,9 @@ public class Version2_0ConformanceTest {
         String json = client.get().getText();
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        List profile = (List) info.get("profile");
         assertEquals("http://iiif.io/api/image/2/level2.json",
-                info.profile.get(0));
+                profile.get(0));
     }
 
 }

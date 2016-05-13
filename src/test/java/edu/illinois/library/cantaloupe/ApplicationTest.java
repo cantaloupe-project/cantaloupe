@@ -12,7 +12,7 @@ public class ApplicationTest {
      */
     @Test
     public void testGetVersion() {
-        assertEquals("Non-Release", Application.getVersion());
+        assertEquals("SNAPSHOT", Application.getVersion());
     }
 
 }

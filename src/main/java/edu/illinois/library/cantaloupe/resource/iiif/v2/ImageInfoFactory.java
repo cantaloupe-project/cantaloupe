@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
+import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.iiif.Feature;
 import edu.illinois.library.cantaloupe.resource.iiif.ImageInfoUtil;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
@@ -15,9 +16,11 @@ import org.slf4j.LoggerFactory;
 import javax.script.ScriptException;
 import java.awt.Dimension;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -26,15 +29,16 @@ abstract class ImageInfoFactory {
     private static Logger logger = LoggerFactory.
             getLogger(ImageInfoFactory.class);
 
-    public static final String MIN_TILE_SIZE_CONFIG_KEY =
+    static final String MIN_TILE_SIZE_CONFIG_KEY =
             "endpoint.iiif.min_tile_size";
 
     /** Minimum size that will be used in info.json "sizes" keys. */
     private static final int MIN_SIZE = 64;
 
-    /** Delegate script method that returns the JSON object (actually Ruby
-     * hash) corresponding to the "service" key. */
-    private static final String SERVICE_DELEGATE_METHOD = "get_iiif2_service";
+    /** Delegate script method that returns a JSON object (Ruby hash)
+     * containing additional keys to add to the information response. */
+    private static final String SERVICE_DELEGATE_METHOD =
+            "extra_iiif2_information_response_keys";
 
     /** Will be populated in the static initializer. */
     private static final Set<ServiceFeature> SUPPORTED_SERVICE_FEATURES =
@@ -42,6 +46,7 @@ abstract class ImageInfoFactory {
 
     static {
         SUPPORTED_SERVICE_FEATURES.addAll(Arrays.asList(
+                ServiceFeature.SIZE_BY_CONFINED_WIDTH_HEIGHT,
                 ServiceFeature.SIZE_BY_WHITELISTED,
                 ServiceFeature.BASE_URI_REDIRECT,
                 ServiceFeature.CANONICAL_LINK_HEADER,
@@ -50,28 +55,27 @@ abstract class ImageInfoFactory {
                 ServiceFeature.PROFILE_LINK_HEADER));
     }
 
-    public static ImageInfo newImageInfo(final Identifier identifier,
-                                         final String imageUri,
-                                         final Processor processor,
-                                         final edu.illinois.library.cantaloupe.processor.ImageInfo cacheInfo)
+    static ImageInfo<String,Object> newImageInfo(
+            final Identifier identifier,
+            final String imageUri,
+            final Processor processor,
+            final edu.illinois.library.cantaloupe.processor.ImageInfo cacheInfo)
             throws ProcessorException {
         final Dimension fullSize = cacheInfo.getSize();
-        // Create an ImageInfo instance, which will eventually be serialized
-        // to JSON and sent as the response body.
-        final ImageInfo imageInfo = new ImageInfo();
-        imageInfo.id = imageUri;
-        imageInfo.width = fullSize.width;
-        imageInfo.height = fullSize.height;
-
-        final String complianceUri = ComplianceLevel.getLevel(
-                SUPPORTED_SERVICE_FEATURES,
-                processor.getSupportedFeatures(),
-                processor.getSupportedIiif2_0Qualities(),
-                processor.getAvailableOutputFormats()).getUri();
-        imageInfo.profile.add(complianceUri);
+        // Create a Map instance, which will eventually be serialized to JSON
+        // and returned in the response body.
+        final ImageInfo<String,Object> imageInfo = new ImageInfo<>();
+        imageInfo.put("@context", "http://iiif.io/api/image/2/context.json");
+        imageInfo.put("@id", imageUri);
+        imageInfo.put("protocol", "http://iiif.io/api/image");
+        imageInfo.put("width", fullSize.width);
+        imageInfo.put("height", fullSize.height);
 
         // sizes -- this will be a 2^n series that will work for both multi-
         // and monoresolution images.
+        final List<ImageInfo.Size> sizes = new ArrayList<>();
+        imageInfo.put("sizes", sizes);
+
         final int maxReductionFactor =
                 ImageInfoUtil.maxReductionFactor(fullSize, MIN_SIZE);
         for (double i = 2; i <= Math.pow(2, maxReductionFactor); i *= 2) {
@@ -81,7 +85,7 @@ abstract class ImageInfoFactory {
                 break;
             }
             ImageInfo.Size size = new ImageInfo.Size(width, height);
-            imageInfo.sizes.add(0, size);
+            sizes.add(0, size);
         }
 
         // tiles -- this is not a canonical listing of tiles that are
@@ -96,6 +100,9 @@ abstract class ImageInfoFactory {
         // calculate a tile size close to MIN_TILE_SIZE_CONFIG_KEY pixels.
         // Otherwise, use the smallest multiple of the tile size above that
         // of image resolution 0.
+        final List<ImageInfo.Tile> tiles = new ArrayList<>();
+        imageInfo.put("tiles", tiles);
+
         if (cacheInfo.getImages().size() == 1 &&
                 cacheInfo.getImages().get(0).tileWidth == fullSize.width &&
                 cacheInfo.getImages().get(0).tileHeight == fullSize.height) {
@@ -116,17 +123,34 @@ abstract class ImageInfoFactory {
             for (int i = 0; i <= maxReductionFactor; i++) {
                 tile.scaleFactors.add((int) Math.pow(2, i));
             }
-            imageInfo.tiles.add(tile);
+            tiles.add(tile);
         }
 
+        final List<Object> profile = new ArrayList<>();
+        imageInfo.put("profile", profile);
+
+        final String complianceUri = ComplianceLevel.getLevel(
+                SUPPORTED_SERVICE_FEATURES,
+                processor.getSupportedFeatures(),
+                processor.getSupportedIiif2_0Qualities(),
+                processor.getAvailableOutputFormats()).getUri();
+        profile.add(complianceUri);
+
         // formats
-        Map<String, Set<String>> profileMap = new HashMap<>();
+        Map<String, Object> profileMap = new HashMap<>();
         Set<String> formatStrings = new HashSet<>();
         for (Format format : processor.getAvailableOutputFormats()) {
             formatStrings.add(format.getPreferredExtension());
         }
         profileMap.put("formats", formatStrings);
-        imageInfo.profile.add(profileMap);
+        profile.add(profileMap);
+
+        // maxArea (maxWidth and maxHeight are currently not supported)
+        final int maxPixels = Configuration.getInstance().
+                getInt(AbstractResource.MAX_PIXELS_CONFIG_KEY, 0);
+        if (maxPixels > 0) {
+            profileMap.put("maxArea", maxPixels);
+        }
 
         // qualities
         Set<String> qualityStrings = new HashSet<>();
@@ -145,11 +169,12 @@ abstract class ImageInfoFactory {
         }
         profileMap.put("supports", featureStrings);
 
-        // service
+        // additional keys
         try {
             final String[] args = { identifier.toString() };
-            imageInfo.service = (Map) ScriptEngineFactory.getScriptEngine().
+            final Map keyMap = (Map) ScriptEngineFactory.getScriptEngine().
                     invoke(SERVICE_DELEGATE_METHOD, args);
+            imageInfo.putAll(keyMap);
         } catch (DelegateScriptDisabledException e) {
             logger.info("Delegate script disabled; skipping service " +
                     "information.");

@@ -13,12 +13,17 @@ import java.util.Map;
  */
 public class Crop implements Operation {
 
+    public enum Shape {
+        ARBITRARY, SQUARE
+    }
+
     public enum Unit {
-        PERCENT, PIXELS;
+        PERCENT, PIXELS
     }
 
     private float height = 0.0f;
     private boolean isFull = false;
+    private Shape shape = Shape.ARBITRARY;
     private Unit unit = Unit.PIXELS;
     private float width = 0.0f;
     private float x = 0.0f;
@@ -70,6 +75,11 @@ public class Crop implements Operation {
             y = 0;
             width = fullSize.width;
             height = fullSize.height;
+        } else if (this.getShape().equals(Shape.SQUARE)) {
+            final int shortestSide = Math.min(fullSize.width, fullSize.height);
+            x = (fullSize.width - shortestSide) / 2;
+            y = (fullSize.height - shortestSide) / 2;
+            width = height = shortestSide;
         } else if (this.getUnit().equals(Unit.PERCENT)) {
             x = Math.round(this.getX() * fullSize.width);
             y = Math.round(this.getY() * fullSize.height);
@@ -90,6 +100,10 @@ public class Crop implements Operation {
     @Override
     public Dimension getResultingSize(Dimension fullSize) {
         return getRectangle(fullSize).getSize();
+    }
+
+    public Shape getShape() {
+        return shape;
     }
 
     public Unit getUnit() {
@@ -159,6 +173,10 @@ public class Crop implements Operation {
         this.height = height;
     }
 
+    public void setShape(Shape shape) {
+        this.shape = shape;
+    }
+
     public void setUnit(Unit unit) {
         this.unit = unit;
     }
@@ -193,9 +211,9 @@ public class Crop implements Operation {
     /**
      * @param fullSize Full size of the source image on which the operation
      *                 is being applied.
-     * @return Map with <code>x</code>, <code>y</code>, <code>width</code>, and
-     *         <code>height</code> keys and integer values corresponding to the
-     *         absolute crop coordinates.
+     * @return Map with <code>operation</code>, <code>x</code>, <code>y</code>,
+     *         <code>width</code>, and <code>height</code> keys and integer
+     *         values corresponding to the absolute crop coordinates.
      */
     @Override
     public Map<String,Object> toMap(Dimension fullSize) {
@@ -216,6 +234,8 @@ public class Crop implements Operation {
      * <dl>
      *     <dt>No-op</dt>
      *     <dd>none</dd>
+     *     <dt>Square</dt>
+     *     <dd>square</dd>
      *     <dt>Percent</dt>
      *     <dd>x%,y%,w%,h%</dd>
      *     <dt>Pixels</dt>
@@ -231,18 +251,22 @@ public class Crop implements Operation {
             str += "none";
         } else {
             String x, y, width, height;
-            if (this.getUnit().equals(Unit.PERCENT)) {
-                x = NumberUtil.removeTrailingZeroes(this.getX() * 100) + "%";
-                y = NumberUtil.removeTrailingZeroes(this.getY() * 100) + "%";
-                width = NumberUtil.removeTrailingZeroes(this.getWidth() * 100) + "%";
-                height = NumberUtil.removeTrailingZeroes(this.getHeight() * 100) + "%";
+            if (this.getShape().equals(Shape.SQUARE)) {
+                str+= "square";
             } else {
-                x = Integer.toString(Math.round(this.getX()));
-                y = Integer.toString(Math.round(this.getY()));
-                width = NumberUtil.removeTrailingZeroes(this.getWidth());
-                height = NumberUtil.removeTrailingZeroes(this.getHeight());
+                if (this.getUnit().equals(Unit.PERCENT)) {
+                    x = NumberUtil.removeTrailingZeroes(this.getX() * 100) + "%";
+                    y = NumberUtil.removeTrailingZeroes(this.getY() * 100) + "%";
+                    width = NumberUtil.removeTrailingZeroes(this.getWidth() * 100) + "%";
+                    height = NumberUtil.removeTrailingZeroes(this.getHeight() * 100) + "%";
+                } else {
+                    x = Integer.toString(Math.round(this.getX()));
+                    y = Integer.toString(Math.round(this.getY()));
+                    width = NumberUtil.removeTrailingZeroes(this.getWidth());
+                    height = NumberUtil.removeTrailingZeroes(this.getHeight());
+                }
+                str += String.format("%s,%s,%s,%s", x, y, width, height);
             }
-            str += String.format("%s,%s,%s,%s", x, y, width, height);
         }
         return str;
     }

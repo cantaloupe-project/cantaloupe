@@ -22,23 +22,39 @@ public class JaiUtilTest {
 
     @Test
     public void testCropImage() throws Exception {
-        RenderedOp image = getFixture(IMAGE);
+        RenderedOp inImage = getFixture(IMAGE);
 
-        // test with no-op crop
+        // full
         Crop crop = new Crop();
         crop.setFull(true);
-        RenderedOp croppedImage = JaiUtil.cropImage(image, crop);
-        assertSame(image, croppedImage);
+        RenderedOp outImage = JaiUtil.cropImage(inImage, crop);
+        assertSame(inImage, outImage);
 
-        // test with non-no-op crop
+        // square
         crop = new Crop();
-        crop.setX(0f);
-        crop.setY(0f);
+        crop.setShape(Crop.Shape.SQUARE);
+        outImage = JaiUtil.cropImage(inImage, crop);
+        assertEquals(56, outImage.getWidth());
+        assertEquals(56, outImage.getHeight());
+
+        // pixel crop
+        crop = new Crop();
         crop.setWidth(50f);
         crop.setHeight(50f);
-        croppedImage = JaiUtil.cropImage(image, crop);
-        assertEquals(50, croppedImage.getWidth());
-        assertEquals(50, croppedImage.getHeight());
+        outImage = JaiUtil.cropImage(inImage, crop);
+        assertEquals(50, outImage.getWidth());
+        assertEquals(50, outImage.getHeight());
+
+        // percentage crop
+        crop = new Crop();
+        crop.setUnit(Crop.Unit.PERCENT);
+        crop.setX(0.5f);
+        crop.setY(0.5f);
+        crop.setWidth(0.5f);
+        crop.setHeight(0.5f);
+        outImage = JaiUtil.cropImage(inImage, crop);
+        assertEquals(32, outImage.getWidth());
+        assertEquals(28, outImage.getHeight());
     }
 
     @Test
