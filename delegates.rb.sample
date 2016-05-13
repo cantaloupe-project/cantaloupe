@@ -47,11 +47,9 @@ module Cantaloupe
   # {http://iiif.io/api/image/2.1/#image-information the Image API
   # specification}.
   #
-  # Return an empty hash to add nothing.
-  #
   # @param identifier [String] Image identifier
-  # @return [Hash,nil] Hash that will be merged into IIIF Image API 2.x
-  #                    information responses.
+  # @return [Hash] Hash that will be merged into IIIF Image API 2.x
+  #                information responses. Return an empty hash to add nothing.
   #
   def self.extra_iiif2_information_response_keys(identifier)
 =begin
