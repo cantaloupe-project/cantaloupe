@@ -69,7 +69,7 @@ title: For Developers
   <li>Merge into "release/vX.X"</li>
   <li>Update the version in <span class="filename">pom.xml</span> and commit this change</li>
   <li>Merge into "master"</li>
-  <li>Create the release .zip archive with <code>mvn package</code></li>
+  <li>Create the release .zip archive with <code>mvn clean; mvn package</code></li>
   <li>Check that the .zip archive is as expected</li>
   <li>Tag the release: <code>git tag -a v{version} -m 'Tag v{version}'</code></li>
   <li>Push the code: <code>git push origin master; git push origin release/x.x; git push --tags</code></li>
