@@ -22,9 +22,9 @@ public class Application {
         String className = clazz.getSimpleName() + ".class";
         URL classUrl = clazz.getResource(className);
         if (classUrl != null) {
-            String classPath = clazz.getResource(className).toString();
-            if (classPath.startsWith("jar")) {
-                String manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1) +
+            String classPath = classUrl.toString();
+            if (classPath.startsWith("file")) {
+                String manifestPath = classPath.substring(0, classPath.lastIndexOf("/WEB-INF")) +
                         "/META-INF/MANIFEST.MF";
                 try {
                     Manifest manifest = new Manifest(new URL(manifestPath).openStream());
