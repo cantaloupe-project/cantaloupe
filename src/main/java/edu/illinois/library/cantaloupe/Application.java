@@ -18,23 +18,26 @@ public class Application {
      */
     public static String getVersion() {
         String versionStr = "SNAPSHOT";
-        Class clazz = Application.class;
-        String className = clazz.getSimpleName() + ".class";
-        URL classUrl = clazz.getResource(className);
+        final Class clazz = Application.class;
+        final String className = clazz.getSimpleName() + ".class";
+        final URL classUrl = clazz.getResource(className);
         if (classUrl != null) {
-            String classPath = classUrl.toString();
+            final String classPath = classUrl.toString();
             if (classPath.startsWith("file")) {
-                String manifestPath = classPath.substring(0, classPath.lastIndexOf("/WEB-INF")) +
-                        "/META-INF/MANIFEST.MF";
-                try {
-                    Manifest manifest = new Manifest(new URL(manifestPath).openStream());
-                    Attributes attr = manifest.getMainAttributes();
-                    String version = attr.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
-                    if (version != null) {
-                        versionStr = version;
+                final int webInfIndex = classPath.lastIndexOf("/WEB-INF");
+                if (webInfIndex > -1) {
+                    String manifestPath = classPath.substring(0, webInfIndex) +
+                            "/META-INF/MANIFEST.MF";
+                    try {
+                        Manifest manifest = new Manifest(new URL(manifestPath).openStream());
+                        Attributes attr = manifest.getMainAttributes();
+                        String version = attr.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
+                        if (version != null) {
+                            versionStr = version;
+                        }
+                    } catch (IOException e) {
+                        logger.error(e.getMessage(), e);
                     }
-                } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
                 }
             }
         } else {

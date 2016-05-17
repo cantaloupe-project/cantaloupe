@@ -15,14 +15,16 @@ admin.enabled = false
 # Password to access the Control Panel. (The username is always "admin".)
 admin.password =
 
-# !! Whether to enable HTTP access (http://), and on what TCP port.
-# (Standalone mode only.)
+# !! Whether to enable HTTP access (http://), and on what host interface
+# and TCP port. (Applies in standalone mode only.)
 http.enabled = true
+http.host = 0.0.0.0
 http.port = 8182
 
-# !! Whether to enable HTTPS access (https://), and on what TCP port.
-# (Standalone mode only.)
+# !! Whether to enable HTTPS access (https://), and on what host interface
+# and TCP port. (Applies in standalone mode only.)
 https.enabled = false
+https.host = 0.0.0.0
 https.port = 8183
 
 # !! Available values are `JKS` and `PKCS12`. (Standalone mode only.)
