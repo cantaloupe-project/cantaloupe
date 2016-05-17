@@ -77,8 +77,10 @@ public class ControlPanelTest {
 
         // Fill in the form
         css("[name=\"http.enabled\"]").click();
+        css("[name=\"http.host\"]").sendKeys("1.2.3.4");
         css("[name=\"http.port\"]").sendKeys("8989");
         css("[name=\"https.enabled\"]").click();
+        css("[name=\"https.host\"]").sendKeys("2.3.4.5");
         css("[name=\"https.port\"]").sendKeys("8990");
         css("[name=\"https.key_store_type\"]").sendKeys("PKCS12");
         css("[name=\"https.key_store_path\"]").sendKeys("/something");
@@ -98,8 +100,10 @@ public class ControlPanelTest {
         // Assert that the application configuration has been updated correctly
         final Configuration config = Configuration.getInstance();
         assertTrue(config.getBoolean("http.enabled"));
+        assertEquals("1.2.3.4", config.getString("http.host"));
         assertEquals(8989, config.getInt("http.port"));
         assertTrue(config.getBoolean("https.enabled"));
+        assertEquals("2.3.4.5", config.getString("https.host"));
         assertEquals(8990, config.getInt("https.port"));
         assertEquals("PKCS12", config.getString("https.key_store_type"));
         assertEquals("/something", config.getString("https.key_store_path"));
