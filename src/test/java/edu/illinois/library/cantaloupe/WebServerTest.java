@@ -19,12 +19,30 @@ public class WebServerTest {
     }
 
     @Test
+    public void testGetHttpHost() {
+        // default
+        assertEquals("0.0.0.0", instance.getHttpHost());
+        // explicitly set
+        instance.setHttpHost("127.0.0.1");
+        assertEquals("127.0.0.1", instance.getHttpHost());
+    }
+
+    @Test
     public void testGetHttpPort() {
         // default
         assertEquals(8182, instance.getHttpPort());
         // explicitly set
         instance.setHttpPort(5000);
         assertEquals(5000, instance.getHttpPort());
+    }
+
+    @Test
+    public void testGetHttpsHost() {
+        // default
+        assertEquals("0.0.0.0", instance.getHttpsHost());
+        // explicitly set
+        instance.setHttpsHost("127.0.0.1");
+        assertEquals("127.0.0.1", instance.getHttpsHost());
     }
 
     @Test

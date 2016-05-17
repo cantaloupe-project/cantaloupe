@@ -16,14 +16,15 @@ import java.util.Arrays;
 /**
  * <p>Provides the web server in standalone mode.</p>
  *
- * <p>This class is not used (and may not even be available) when running in
- * a Servlet container.</p>
+ * <p>This class is not used when running in a Servlet container.</p>
  */
 public class WebServer {
 
     static final String HTTP_ENABLED_CONFIG_KEY = "http.enabled";
+    static final String HTTP_HOST_CONFIG_KEY = "http.host";
     static final String HTTP_PORT_CONFIG_KEY = "http.port";
     static final String HTTPS_ENABLED_CONFIG_KEY = "https.enabled";
+    static final String HTTPS_HOST_CONFIG_KEY = "https.host";
     static final String HTTPS_KEY_PASSWORD_CONFIG_KEY = "https.key_password";
     static final String HTTPS_KEY_STORE_PASSWORD_CONFIG_KEY =
             "https.key_store_password";
@@ -36,8 +37,10 @@ public class WebServer {
     private static final int IDLE_TIMEOUT = 30000;
 
     private boolean httpEnabled;
+    private String httpHost;
     private int httpPort;
     private boolean httpsEnabled;
+    private String httpsHost;
     private String httpsKeyPassword;
     private String httpsKeyStorePassword;
     private String httpsKeyStorePath;
@@ -60,8 +63,10 @@ public class WebServer {
         final Configuration config = Configuration.getInstance();
         if (config != null) {
             httpEnabled = config.getBoolean(HTTP_ENABLED_CONFIG_KEY, false);
+            httpHost = config.getString(HTTP_HOST_CONFIG_KEY, "0.0.0.0");
             httpPort = config.getInt(HTTP_PORT_CONFIG_KEY, 8182);
             httpsEnabled = config.getBoolean(HTTPS_ENABLED_CONFIG_KEY, false);
+            httpsHost = config.getString(HTTPS_HOST_CONFIG_KEY, "0.0.0.0");
             httpsKeyPassword = config.getString(HTTPS_KEY_PASSWORD_CONFIG_KEY);
             httpsKeyStorePassword =
                     config.getString(HTTPS_KEY_STORE_PASSWORD_CONFIG_KEY);
@@ -73,8 +78,16 @@ public class WebServer {
         }
     }
 
+    public String getHttpHost() {
+        return httpHost;
+    }
+
     public int getHttpPort() {
         return httpPort;
+    }
+
+    public String getHttpsHost() {
+        return httpsHost;
     }
 
     public String getHttpsKeyPassword() {
@@ -109,12 +122,20 @@ public class WebServer {
         this.httpEnabled = enabled;
     }
 
+    public void setHttpHost(String host) {
+        this.httpHost = host;
+    }
+
     public void setHttpPort(int port) {
         this.httpPort = port;
     }
 
     public void setHttpsEnabled(boolean enabled) {
         this.httpsEnabled = enabled;
+    }
+
+    public void setHttpsHost(String host) {
+        this.httpsHost = host;
     }
 
     public void setHttpsKeyPassword(String password) {
@@ -174,7 +195,7 @@ public class WebServer {
         // Initialize the HTTP server
         if (isHttpEnabled()) {
             ServerConnector connector = new ServerConnector(server);
-            connector.setHost("localhost");
+            connector.setHost(getHttpHost());
             connector.setPort(getHttpPort());
             connector.setIdleTimeout(IDLE_TIMEOUT);
             server.addConnector(connector);
@@ -191,6 +212,7 @@ public class WebServer {
             ServerConnector sslConnector = new ServerConnector(server,
                     new SslConnectionFactory(sslContextFactory, "HTTP/1.1"),
                     new HttpConnectionFactory(httpsConfig));
+            sslConnector.setHost(getHttpsHost());
             sslConnector.setPort(getHttpsPort());
             server.addConnector(sslConnector);
         }
