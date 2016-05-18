@@ -16,6 +16,7 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.PlanarImage;
+import javax.script.ScriptException;
 import java.awt.color.ICC_ColorSpace;
 import java.awt.color.ICC_Profile;
 import java.awt.image.BufferedImage;
@@ -79,8 +80,12 @@ class ImageIoPngImageWriter {
                     addMetadataUsingBasicStrategy(metadata);
                     return metadata;
                 case "ScriptStrategy":
-                    addMetadataUsingScriptStrategy(metadata);
-                    return metadata;
+                    try {
+                        addMetadataUsingScriptStrategy(metadata);
+                        return metadata;
+                    } catch (ScriptException e) {
+                        throw new IOException(e.getMessage(), e);
+                    }
             }
         }
         logger.debug("ICC profile disabled ({} = false)",
@@ -100,7 +105,9 @@ class ImageIoPngImageWriter {
             final String profileFilename = Configuration.getInstance().
                     getString(ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY);
             if (profileFilename != null) {
-                embedIccProfile(metadata, profileName, profileFilename);
+                final ICC_Profile profile = new IccProfileService().
+                        getProfile(profileFilename);
+                embedIccProfile(metadata, profile, profileName);
             }
         }
     }
@@ -110,8 +117,15 @@ class ImageIoPngImageWriter {
      * @throws IOException
      */
     private void addMetadataUsingScriptStrategy(final IIOMetadata metadata)
-            throws IOException {
-        // TODO: write this
+            throws IOException, ScriptException {
+        final ICC_Profile profile = new IccProfileService().
+                getProfileFromDelegateMethod(
+                        requestAttributes.getOperationList().getIdentifier(),
+                        requestAttributes.getHeaders(),
+                        requestAttributes.getClientIp());
+        if (profile != null) {
+            embedIccProfile(metadata, profile, profile.toString());
+        }
     }
 
     /**
@@ -132,19 +146,14 @@ class ImageIoPngImageWriter {
 
     /**
      * @param metadata Metadata to embed the profile into.
+     * @param profile Profile to embed.
      * @param profileName Name of the profile.
-     * @param profileFilename Pathname or filename of the profile.
      * @throws IOException
      */
     private void embedIccProfile(final IIOMetadata metadata,
-                                 final String profileName,
-                                 final String profileFilename)
+                                 final ICC_Profile profile,
+                                 final String profileName)
             throws IOException {
-        logger.debug("embedIccProfile(): using {} profile ({})",
-                profileName, profileFilename);
-
-        final ICC_Profile profile = new IccProfileService().
-                getProfile(profileFilename);
         final ICC_ColorSpace colorSpace = new ICC_ColorSpace(profile);
         final byte[] compressedProfile =
                 deflate(colorSpace.getProfile().getData());

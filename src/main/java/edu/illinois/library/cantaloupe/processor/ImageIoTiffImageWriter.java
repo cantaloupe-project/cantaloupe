@@ -18,6 +18,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.PlanarImage;
+import javax.script.ScriptException;
 import java.awt.color.ICC_ColorSpace;
 import java.awt.color.ICC_Profile;
 import java.awt.image.BufferedImage;
@@ -76,7 +77,11 @@ class ImageIoTiffImageWriter {
                 case "BasicStrategy":
                     return addMetadataUsingBasicStrategy(metadata);
                 case "ScriptStrategy":
-                    return addMetadataUsingScriptStrategy(metadata);
+                    try {
+                        return addMetadataUsingScriptStrategy(metadata);
+                    } catch (ScriptException e) {
+                        throw new IOException(e.getMessage(), e);
+                    }
             }
         }
         logger.debug("ICC profile disabled ({} = false)",
@@ -108,9 +113,17 @@ class ImageIoTiffImageWriter {
      * @throws IOException
      */
     private IIOMetadata addMetadataUsingScriptStrategy(IIOMetadata inMetadata)
-            throws IOException {
-        // TODO: write this
-        return inMetadata;
+            throws IOException, ScriptException {
+        IIOMetadata metadata = inMetadata;
+        final ICC_Profile profile = new IccProfileService().
+                getProfileFromDelegateMethod(
+                        requestAttributes.getOperationList().getIdentifier(),
+                        requestAttributes.getHeaders(),
+                        requestAttributes.getClientIp());
+        if (profile != null) {
+            metadata = embedIccProfile(metadata, profile);
+        }
+        return metadata;
     }
 
     /**

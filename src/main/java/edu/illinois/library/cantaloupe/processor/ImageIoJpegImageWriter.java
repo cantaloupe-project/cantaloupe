@@ -19,6 +19,7 @@ import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.JAI;
 import javax.media.jai.OpImage;
 import javax.media.jai.PlanarImage;
+import javax.script.ScriptException;
 import java.awt.color.ICC_Profile;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
@@ -78,8 +79,12 @@ class ImageIoJpegImageWriter {
                     addMetadataUsingBasicStrategy(metadata);
                     return metadata;
                 case "ScriptStrategy":
-                    addMetadataUsingScriptStrategy(metadata);
-                    return metadata;
+                    try {
+                        addMetadataUsingScriptStrategy(metadata);
+                        return metadata;
+                    } catch (ScriptException e) {
+                        throw new IOException(e.getMessage(), e);
+                    }
             }
         }
         logger.debug("ICC profile disabled ({} = false)",
@@ -96,7 +101,9 @@ class ImageIoJpegImageWriter {
         final String profileFilename = Configuration.getInstance().
                 getString(ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY);
         if (profileFilename != null) {
-            embedIccProfile(metadata, profileFilename);
+            final ICC_Profile profile = new IccProfileService().
+                    getProfile(profileFilename);
+            embedIccProfile(metadata, profile);
         }
     }
 
@@ -105,22 +112,25 @@ class ImageIoJpegImageWriter {
      * @throws IOException
      */
     private void addMetadataUsingScriptStrategy(final IIOMetadata metadata)
-            throws IOException {
-        // TODO: write this
+            throws IOException, ScriptException {
+        final ICC_Profile profile = new IccProfileService().
+                getProfileFromDelegateMethod(
+                        requestAttributes.getOperationList().getIdentifier(),
+                        requestAttributes.getHeaders(),
+                        requestAttributes.getClientIp());
+        if (profile != null) {
+            embedIccProfile(metadata, profile);
+        }
     }
 
     /**
      * @param metadata Metadata to embed the profile into.
-     * @param profileFilename Pathname or filename of the profile.
+     * @param profile Profile to embed.
      * @throws IOException
      */
     private void embedIccProfile(final IIOMetadata metadata,
-                                 final String profileFilename)
+                                 final ICC_Profile profile)
             throws IOException {
-        logger.debug("embedIccProfile(): using {}", profileFilename);
-
-        final ICC_Profile profile = new IccProfileService().
-                getProfile(profileFilename);
         final IIOMetadataNode iccNode = new IIOMetadataNode("app2ICC");
         iccNode.setUserObject(profile);
 
@@ -142,7 +152,6 @@ class ImageIoJpegImageWriter {
                 }
             }
         }
-
         metadata.mergeTree(metadata.getNativeMetadataFormatName(),
                 nativeTree);
     }
