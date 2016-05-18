@@ -2,16 +2,17 @@ package edu.illinois.library.cantaloupe.processor.io;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resource.RequestAttributes;
+import org.w3c.dom.Node;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
-import java.awt.color.ICC_Profile;
 import java.awt.image.BufferedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
@@ -22,6 +23,10 @@ import java.util.Iterator;
  * GIF image writer using ImageIO, capable of taking both Java 2D
  * {@link BufferedImage}s and JAI {@link PlanarImage}s and writing them as
  * GIFs.
+ *
+ * @see <a href="https://docs.oracle.com/javase/7/docs/api/javax/imageio/metadata/doc-files/gif_metadata.html">
+ *     GIF Metadata Format Specification</a>
+ * @see <a href="http://justsolve.archiveteam.org/wiki/GIF">GIF</a>
  */
 class ImageIoGifImageWriter extends AbstractImageIoImageWriter {
 
@@ -37,7 +42,20 @@ class ImageIoGifImageWriter extends AbstractImageIoImageWriter {
     protected IIOMetadata embedIccProfile(final IIOMetadata metadata,
                                           final IccProfile profile)
             throws IOException {
-        // TODO: write this
+        final IIOMetadataNode appExtensions =
+                new IIOMetadataNode("ApplicationExtensions");
+        final IIOMetadataNode appExtension =
+                new IIOMetadataNode("ApplicationExtension");
+        appExtension.setAttribute("applicationID", "ICCRGBG1");
+        appExtension.setAttribute("authenticationCode", "012");
+        appExtension.setUserObject(profile.getProfile().getData());
+
+        final Node nativeTree =
+                metadata.getAsTree(metadata.getNativeMetadataFormatName());
+        nativeTree.appendChild(appExtensions);
+        appExtensions.appendChild(appExtension);
+
+        metadata.mergeTree(metadata.getNativeMetadataFormatName(), nativeTree);
         return metadata;
     }
 
