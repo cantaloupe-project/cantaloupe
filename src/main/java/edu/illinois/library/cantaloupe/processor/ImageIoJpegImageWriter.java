@@ -223,15 +223,15 @@ class ImageIoJpegImageWriter {
                     image = JAI.create("bandselect", pb, null);
                 }
                 final ImageWriteParam writeParam = getWriteParam(writer);
-                final ImageOutputStream os =
-                        ImageIO.createImageOutputStream(outputStream);
-                writer.setOutput(os);
                 final IIOMetadata metadata = getMetadata(writer, writeParam,
                         image);
                 // JPEGImageWriter doesn't like RenderedOps, so give it
                 // a BufferedImage.
                 final IIOImage iioImage = new IIOImage(
                         image.getAsBufferedImage(), null, metadata);
+                final ImageOutputStream os =
+                        ImageIO.createImageOutputStream(outputStream);
+                writer.setOutput(os);
                 writer.write(null, iioImage, writeParam);
             } finally {
                 writer.dispose();

@@ -179,13 +179,13 @@ class ImageIoTiffImageWriter {
                 Format.TIF.getPreferredMediaType().toString());
         if (writers.hasNext()) {
             final ImageWriter writer = writers.next();
-            final ImageWriteParam writeParam = getWriteParam(writer);
-            final IIOMetadata metadata = getMetadata(writer, writeParam, image);
-            final IIOImage iioImage = new IIOImage(image, null, metadata);
-            final ImageOutputStream ios =
-                    ImageIO.createImageOutputStream(outputStream);
-            writer.setOutput(ios);
             try {
+                final ImageWriteParam writeParam = getWriteParam(writer);
+                final IIOMetadata metadata = getMetadata(writer, writeParam, image);
+                final IIOImage iioImage = new IIOImage(image, null, metadata);
+                final ImageOutputStream ios =
+                        ImageIO.createImageOutputStream(outputStream);
+                writer.setOutput(ios);
                 writer.write(metadata, iioImage, writeParam);
                 ios.flush(); // http://stackoverflow.com/a/14489406
             } finally {
@@ -207,13 +207,13 @@ class ImageIoTiffImageWriter {
                 Format.TIF.getPreferredMediaType().toString());
         if (writers.hasNext()) {
             final ImageWriter writer = writers.next();
-            final ImageWriteParam writeParam = getWriteParam(writer);
-            final IIOMetadata metadata = getMetadata(writer, writeParam, image);
-            final IIOImage iioImage = new IIOImage(image, null, metadata);
-            final ImageOutputStream ios =
-                    ImageIO.createImageOutputStream(outputStream);
-            writer.setOutput(ios);
             try {
+                final ImageWriteParam writeParam = getWriteParam(writer);
+                final IIOMetadata metadata = getMetadata(writer, writeParam, image);
+                final IIOImage iioImage = new IIOImage(image, null, metadata);
+                final ImageOutputStream ios =
+                        ImageIO.createImageOutputStream(outputStream);
+                writer.setOutput(ios);
                 writer.write(null, iioImage, writeParam);
                 ios.flush(); // http://stackoverflow.com/a/14489406
             } finally {

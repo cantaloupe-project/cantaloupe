@@ -183,13 +183,13 @@ class ImageIoPngImageWriter {
                 Format.PNG.getPreferredMediaType().toString());
         if (writers.hasNext()) {
             final ImageWriter writer = writers.next();
-            final ImageOutputStream os =
-                    ImageIO.createImageOutputStream(outputStream);
-            writer.setOutput(os);
-            final IIOMetadata metadata = getMetadata(
-                    writer, writer.getDefaultWriteParam(), image);
-            final IIOImage iioImage = new IIOImage(image, null, metadata);
             try {
+                final IIOMetadata metadata = getMetadata(
+                        writer, writer.getDefaultWriteParam(), image);
+                final IIOImage iioImage = new IIOImage(image, null, metadata);
+                final ImageOutputStream os =
+                        ImageIO.createImageOutputStream(outputStream);
+                writer.setOutput(os);
                 writer.write(iioImage);
             } finally {
                 writer.dispose();
@@ -210,13 +210,13 @@ class ImageIoPngImageWriter {
                 Format.PNG.getPreferredMediaType().toString());
         if (writers.hasNext()) {
             final ImageWriter writer = writers.next();
-            final ImageOutputStream os =
-                    ImageIO.createImageOutputStream(outputStream);
-            writer.setOutput(os);
-            final IIOMetadata metadata = getMetadata(
-                    writer, writer.getDefaultWriteParam(), image);
-            final IIOImage iioImage = new IIOImage(image, null, metadata);
             try {
+                final IIOMetadata metadata = getMetadata(
+                        writer, writer.getDefaultWriteParam(), image);
+                final IIOImage iioImage = new IIOImage(image, null, metadata);
+                final ImageOutputStream os =
+                        ImageIO.createImageOutputStream(outputStream);
+                writer.setOutput(os);
                 writer.write(iioImage);
             } finally {
                 writer.dispose();
