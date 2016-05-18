@@ -156,6 +156,16 @@ class ImageIoJpegImageWriter {
                 nativeTree);
     }
 
+    private ImageWriteParam getWriteParam(ImageWriter writer) {
+        final Configuration config = Configuration.getInstance();
+        final ImageWriteParam writeParam = writer.getDefaultWriteParam();
+        writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+        writeParam.setCompressionQuality(config.
+                getFloat(Java2dProcessor.JPG_QUALITY_CONFIG_KEY, 0.7f));
+        writeParam.setCompressionType("JPEG");
+        return writeParam;
+    }
+
     /**
      * Writes a Java 2D {@link BufferedImage} to the given output stream.
      *
@@ -167,23 +177,19 @@ class ImageIoJpegImageWriter {
             throws IOException {
         final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
                 Format.JPG.getPreferredMediaType().toString());
-        final Configuration config = Configuration.getInstance();
         if (writers.hasNext()) {
-            // JPEG doesn't support alpha, so convert to RGB or else the
-            // client will interpret as CMYK
-            image = Java2dUtil.removeAlpha(image);
-            ImageWriter writer = writers.next();
-            ImageWriteParam writeParam = writer.getDefaultWriteParam();
-            writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-            writeParam.setCompressionQuality(config.
-                    getFloat(Java2dProcessor.JPG_QUALITY_CONFIG_KEY, 0.7f));
-            writeParam.setCompressionType("JPEG");
-            ImageOutputStream os =
-                    ImageIO.createImageOutputStream(outputStream);
-            writer.setOutput(os);
-            IIOMetadata metadata = getMetadata(writer, writeParam, image);
-            IIOImage iioImage = new IIOImage(image, null, metadata);
+            final ImageWriter writer = writers.next();
             try {
+                // JPEG doesn't support alpha, so convert to RGB or else the
+                // client will interpret as CMYK
+                image = Java2dUtil.removeAlpha(image);
+                final ImageWriteParam writeParam = getWriteParam(writer);
+                final ImageOutputStream os =
+                        ImageIO.createImageOutputStream(outputStream);
+                writer.setOutput(os);
+                final IIOMetadata metadata = getMetadata(writer, writeParam,
+                        image);
+                final IIOImage iioImage = new IIOImage(image, null, metadata);
                 writer.write(null, iioImage, writeParam);
             } finally {
                 writer.dispose();
@@ -203,9 +209,8 @@ class ImageIoJpegImageWriter {
             throws IOException {
         final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
                 Format.JPG.getPreferredMediaType().toString());
-        final Configuration config = Configuration.getInstance();
         if (writers.hasNext()) {
-            ImageWriter writer = writers.next();
+            final ImageWriter writer = writers.next();
             try {
                 // JPEGImageWriter will interpret a >3-band image as CMYK.
                 // So, select only the first 3 bands.
@@ -217,17 +222,13 @@ class ImageIoJpegImageWriter {
                     pb.add(bands);
                     image = JAI.create("bandselect", pb, null);
                 }
-                ImageWriteParam writeParam = writer.getDefaultWriteParam();
-                writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                writeParam.setCompressionQuality(config.getFloat(
-                        JaiProcessor.JPG_QUALITY_CONFIG_KEY, 0.7f));
-                writeParam.setCompressionType("JPEG");
-                ImageOutputStream os =
+                final ImageWriteParam writeParam = getWriteParam(writer);
+                final ImageOutputStream os =
                         ImageIO.createImageOutputStream(outputStream);
                 writer.setOutput(os);
                 // JPEGImageWriter doesn't like RenderedOps, so give it
                 // a BufferedImage.
-                IIOImage iioImage = new IIOImage(
+                final IIOImage iioImage = new IIOImage(
                         image.getAsBufferedImage(), null, null);
                 writer.write(null, iioImage, writeParam);
             } finally {
