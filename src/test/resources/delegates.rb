@@ -20,6 +20,13 @@ module Cantaloupe
     }
   end
 
+  def self.icc_profile(identifier, request_headers, client_ip)
+    if identifier == 'cats'
+      return '/bogus/AdobeRGB1998.icc' # __FILE__ doesn't work
+    end
+    nil
+  end
+
   def self.get_resolver(identifier)
     if identifier == 'http'
       return 'HttpResolver'
