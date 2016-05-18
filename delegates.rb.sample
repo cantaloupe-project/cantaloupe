@@ -71,6 +71,18 @@ module Cantaloupe
   end
 
   ##
+  # @param identifier [String] Image identifier
+  # @param request_headers [Hash<String,String>]
+  # @param client_ip [String]
+  # @return [String,nil] Absolute pathname of an ICC profile to embed in
+  #                      derivatives of the image with the given identifier,
+  #                      or nil to not embed one.
+  #
+  def self.icc_profile(identifier, request_headers, client_ip)
+    nil
+  end
+
+  ##
   # Tells which resolver to use for the given identifier.
   #
   # @param identifier [String] Image identifier
@@ -207,5 +219,5 @@ module Cantaloupe
 
 end
 
-# Uncomment to test on the command line (`ruby delegates.rb`)
+# Uncomment to test on the command line (`jruby delegates.rb`)
 # puts Cantaloupe::FilesystemResolver::get_pathname('image.jpg')

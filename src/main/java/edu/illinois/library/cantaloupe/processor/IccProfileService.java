@@ -1,14 +1,25 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
+import edu.illinois.library.cantaloupe.script.ScriptEngine;
+import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.script.ScriptException;
 import java.awt.color.ICC_Profile;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Map;
 
 class IccProfileService {
+
+    private static Logger logger = LoggerFactory.
+            getLogger(IccProfileService.class);
 
     static final String ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY =
             "icc.BasicStrategy.profile";
@@ -60,6 +71,39 @@ class IccProfileService {
         } finally {
             IOUtils.closeQuietly(in);
         }
+    }
+
+    /**
+     * Returns a profile corresponding to the given parameters from the
+     * <code>icc_profile()</code> delegate method.
+     *
+     * @param identifier Image identifier to pass to the delegate method.
+     * @param requestHeaders Request headers to pass to the delegate method.
+     * @param clientIp Client IP address to pass to the delegate method.
+     * @return Profile corresponding to the given parameters as returned by
+     *         the delegate method, or null if none was returned.
+     * @throws IOException
+     * @throws ScriptException
+     */
+    ICC_Profile getProfileFromDelegateMethod(Identifier identifier,
+                                             Map<String,String> requestHeaders,
+                                             String clientIp)
+            throws IOException, ScriptException {
+        // delegate method parameters
+        final Object args[] = new Object[] {
+                identifier, requestHeaders, clientIp };
+        try {
+            final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
+            final String method = "icc_profile";
+            final String result = (String) engine.invoke(method, args);
+            if (result != null) {
+                return getProfile(result);
+            }
+        } catch (DelegateScriptDisabledException e) {
+            logger.info("addMetadataUsingScriptStrategy(): delegate script " +
+                    "disabled; aborting.");
+        }
+        return null;
     }
 
 }
