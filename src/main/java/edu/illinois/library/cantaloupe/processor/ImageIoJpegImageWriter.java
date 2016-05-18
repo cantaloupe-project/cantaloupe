@@ -226,10 +226,12 @@ class ImageIoJpegImageWriter {
                 final ImageOutputStream os =
                         ImageIO.createImageOutputStream(outputStream);
                 writer.setOutput(os);
+                final IIOMetadata metadata = getMetadata(writer, writeParam,
+                        image);
                 // JPEGImageWriter doesn't like RenderedOps, so give it
                 // a BufferedImage.
                 final IIOImage iioImage = new IIOImage(
-                        image.getAsBufferedImage(), null, null);
+                        image.getAsBufferedImage(), null, metadata);
                 writer.write(null, iioImage, writeParam);
             } finally {
                 writer.dispose();
