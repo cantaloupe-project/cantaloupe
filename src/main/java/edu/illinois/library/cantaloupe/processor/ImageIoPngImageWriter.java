@@ -3,14 +3,10 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resource.RequestAttributes;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageTypeSpecifier;
-import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
@@ -20,7 +16,6 @@ import javax.script.ScriptException;
 import java.awt.color.ICC_ColorSpace;
 import java.awt.color.ICC_Profile;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -31,10 +26,6 @@ import static edu.illinois.library.cantaloupe.processor.IccProfileService.
         ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY;
 import static edu.illinois.library.cantaloupe.processor.IccProfileService.
         ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY;
-import static edu.illinois.library.cantaloupe.processor.IccProfileService.
-        ICC_ENABLED_CONFIG_KEY;
-import static edu.illinois.library.cantaloupe.processor.IccProfileService.
-        ICC_STRATEGY_CONFIG_KEY;
 
 /**
  * PNG image writer using ImageIO, capable of taking both Java 2D
@@ -45,60 +36,18 @@ import static edu.illinois.library.cantaloupe.processor.IccProfileService.
  * @see <a href="http://libpng.org/pub/png/spec/1.2/PNG-Contents.html">
  *     PNG Specification, Version 1.2</a>
  */
-class ImageIoPngImageWriter {
-
-    private static Logger logger = LoggerFactory.
-            getLogger(ImageIoPngImageWriter.class);
-
-    private RequestAttributes requestAttributes;
+class ImageIoPngImageWriter extends AbstractImageIoImageWriter {
 
     ImageIoPngImageWriter(RequestAttributes attrs) {
-        requestAttributes = attrs;
-    }
-
-    /**
-     * @param writer Writer from which to obtain default metadata.
-     * @param writeParam Image writer parameters, already populated for writing.
-     * @param image Image to apply the metadata to.
-     * @return Metadata with optional embedded color profile according to the
-     *         configuration.
-     * @throws IOException
-     */
-    private IIOMetadata getMetadata(ImageWriter writer,
-                                    ImageWriteParam writeParam,
-                                    RenderedImage image) throws IOException {
-        final Configuration config = Configuration.getInstance();
-
-        if (config.getBoolean(ICC_ENABLED_CONFIG_KEY, false)) {
-            logger.debug("getMetadata(): ICC profiles enabled ({} = true)",
-                    ICC_ENABLED_CONFIG_KEY);
-            final IIOMetadata metadata = writer.getDefaultImageMetadata(
-                    ImageTypeSpecifier.createFromRenderedImage(image),
-                    writeParam);
-            switch (config.getString(ICC_STRATEGY_CONFIG_KEY, "")) {
-                case "BasicStrategy":
-                    addMetadataUsingBasicStrategy(metadata);
-                    return metadata;
-                case "ScriptStrategy":
-                    try {
-                        addMetadataUsingScriptStrategy(metadata);
-                        return metadata;
-                    } catch (ScriptException e) {
-                        throw new IOException(e.getMessage(), e);
-                    }
-            }
-        }
-        logger.debug("ICC profile disabled ({} = false)",
-                ICC_ENABLED_CONFIG_KEY);
-        return null;
+        super(attrs);
     }
 
     /**
      * @param metadata Metadata to populate.
      * @throws IOException
      */
-    private void addMetadataUsingBasicStrategy(final IIOMetadata metadata)
-            throws IOException {
+    protected IIOMetadata addMetadataUsingBasicStrategy(
+            final IIOMetadata metadata) throws IOException {
         final String profileName = Configuration.getInstance().
                 getString(ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY);
         if (profileName != null) {
@@ -110,14 +59,15 @@ class ImageIoPngImageWriter {
                 embedIccProfile(metadata, profile, profileName);
             }
         }
+        return metadata;
     }
 
     /**
      * @param metadata Metadata to populate.
      * @throws IOException
      */
-    private void addMetadataUsingScriptStrategy(final IIOMetadata metadata)
-            throws IOException, ScriptException {
+    protected IIOMetadata addMetadataUsingScriptStrategy(
+            final IIOMetadata metadata) throws IOException, ScriptException {
         final ICC_Profile profile = new IccProfileService().
                 getProfileFromDelegateMethod(
                         requestAttributes.getOperationList().getIdentifier(),
@@ -126,6 +76,7 @@ class ImageIoPngImageWriter {
         if (profile != null) {
             embedIccProfile(metadata, profile, profile.toString());
         }
+        return metadata;
     }
 
     /**

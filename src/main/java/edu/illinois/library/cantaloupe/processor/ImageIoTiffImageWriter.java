@@ -7,12 +7,9 @@ import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import it.geosolutions.imageio.plugins.tiff.TIFFField;
 import it.geosolutions.imageio.plugins.tiff.TIFFTag;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
@@ -22,17 +19,12 @@ import javax.script.ScriptException;
 import java.awt.color.ICC_ColorSpace;
 import java.awt.color.ICC_Profile;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
 
 import static edu.illinois.library.cantaloupe.processor.IccProfileService.
         ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY;
-import static edu.illinois.library.cantaloupe.processor.IccProfileService.
-        ICC_ENABLED_CONFIG_KEY;
-import static edu.illinois.library.cantaloupe.processor.IccProfileService.
-        ICC_STRATEGY_CONFIG_KEY;
 
 /**
  * TIFF image writer using ImageIO, capable of taking both Java 2D
@@ -43,50 +35,10 @@ import static edu.illinois.library.cantaloupe.processor.IccProfileService.
  * @see <a href="http://download.java.net/media/jai-imageio/javadoc/1.1/com/sun/media/imageio/plugins/tiff/package-summary.html">
  *     ImageIO TIFF Plugin Documentation</a>
  */
-class ImageIoTiffImageWriter {
-
-    private static Logger logger = LoggerFactory.
-            getLogger(ImageIoTiffImageWriter.class);
-
-    private RequestAttributes requestAttributes;
+class ImageIoTiffImageWriter extends AbstractImageIoImageWriter {
 
     ImageIoTiffImageWriter(RequestAttributes attrs) {
-        requestAttributes = attrs;
-    }
-
-    /**
-     * @param writer Writer from which to obtain default metadata.
-     * @param writeParam Image writer parameters, already populated for writing.
-     * @param image Image to apply the metadata to.
-     * @return Metadata with optional embedded color profile according to the
-     *         configuration.
-     * @throws IOException
-     */
-    private IIOMetadata getMetadata(ImageWriter writer,
-                                    ImageWriteParam writeParam,
-                                    RenderedImage image) throws IOException {
-        final Configuration config = Configuration.getInstance();
-
-        if (config.getBoolean(ICC_ENABLED_CONFIG_KEY, false)) {
-            logger.debug("getMetadata(): ICC profiles enabled ({} = true)",
-                    ICC_ENABLED_CONFIG_KEY);
-            final IIOMetadata metadata = writer.getDefaultImageMetadata(
-                    ImageTypeSpecifier.createFromRenderedImage(image),
-                    writeParam);
-            switch (config.getString(ICC_STRATEGY_CONFIG_KEY, "")) {
-                case "BasicStrategy":
-                    return addMetadataUsingBasicStrategy(metadata);
-                case "ScriptStrategy":
-                    try {
-                        return addMetadataUsingScriptStrategy(metadata);
-                    } catch (ScriptException e) {
-                        throw new IOException(e.getMessage(), e);
-                    }
-            }
-        }
-        logger.debug("ICC profile disabled ({} = false)",
-                ICC_ENABLED_CONFIG_KEY);
-        return null;
+        super(attrs);
     }
 
     /**
@@ -94,7 +46,7 @@ class ImageIoTiffImageWriter {
      * @return Metadata instance with ICC profile added.
      * @throws IOException
      */
-    private IIOMetadata addMetadataUsingBasicStrategy(IIOMetadata inMetadata)
+    protected IIOMetadata addMetadataUsingBasicStrategy(IIOMetadata inMetadata)
             throws IOException {
         IIOMetadata metadata = inMetadata;
         final String profileFilename = Configuration.getInstance().
@@ -112,7 +64,7 @@ class ImageIoTiffImageWriter {
      * @return Metadata instance with ICC profile added.
      * @throws IOException
      */
-    private IIOMetadata addMetadataUsingScriptStrategy(IIOMetadata inMetadata)
+    protected IIOMetadata addMetadataUsingScriptStrategy(IIOMetadata inMetadata)
             throws IOException, ScriptException {
         IIOMetadata metadata = inMetadata;
         final ICC_Profile profile = new IccProfileService().
