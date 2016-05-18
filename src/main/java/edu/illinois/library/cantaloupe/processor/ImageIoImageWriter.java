@@ -40,26 +40,27 @@ class ImageIoImageWriter {
     void write(final BufferedImage image,
                final Format outputFormat,
                final OutputStream outputStream) throws IOException {
-        final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
-                outputFormat.getPreferredMediaType().toString());
-        if (writers.hasNext()) {
-            switch (outputFormat) {
-                case GIF:
-                    new ImageIoGifImageWriter().write(image, outputStream);
-                    break;
-                case JPG:
-                    new ImageIoJpegImageWriter().write(image, outputStream);
-                    break;
-                case PNG:
-                    new ImageIoPngImageWriter().write(image, outputStream);
-                    break;
-                case TIF:
-                    new ImageIoTiffImageWriter().write(image, outputStream);
-                    break;
-                default:
-                    ImageWriter writer = writers.next();
-                    IIOImage iioImage = new IIOImage(image, null, null);
-                    ImageOutputStream ios =
+        switch (outputFormat) {
+            case GIF:
+                new ImageIoGifImageWriter().write(image, outputStream);
+                break;
+            case JPG:
+                new ImageIoJpegImageWriter().write(image, outputStream);
+                break;
+            case PNG:
+                new ImageIoPngImageWriter().write(image, outputStream);
+                break;
+            case TIF:
+                new ImageIoTiffImageWriter().write(image, outputStream);
+                break;
+            default:
+                final Iterator<ImageWriter> writers =
+                        ImageIO.getImageWritersByMIMEType(
+                                outputFormat.getPreferredMediaType().toString());
+                if (writers.hasNext()) {
+                    final ImageWriter writer = writers.next();
+                    final IIOImage iioImage = new IIOImage(image, null, null);
+                    final ImageOutputStream ios =
                             ImageIO.createImageOutputStream(outputStream);
                     writer.setOutput(ios);
                     try {
@@ -68,8 +69,8 @@ class ImageIoImageWriter {
                     } finally {
                         writer.dispose();
                     }
-                    break;
-            }
+                }
+                break;
         }
     }
 
@@ -84,26 +85,27 @@ class ImageIoImageWriter {
     void write(final PlanarImage image,
                final Format outputFormat,
                final OutputStream outputStream) throws IOException {
-        final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
-                outputFormat.getPreferredMediaType().toString());
-        if (writers.hasNext()) {
-            switch (outputFormat) {
-                case GIF:
-                    new ImageIoGifImageWriter().write(image, outputStream);
-                    break;
-                case JPG:
-                    new ImageIoJpegImageWriter().write(image, outputStream);
-                    break;
-                case PNG:
-                    new ImageIoPngImageWriter().write(image, outputStream);
-                    break;
-                case TIF:
-                    new ImageIoTiffImageWriter().write(image, outputStream);
-                    break;
-                default:
-                    ImageWriter writer = writers.next();
-                    IIOImage iioImage = new IIOImage(image, null, null);
-                    ImageOutputStream ios =
+        switch (outputFormat) {
+            case GIF:
+                new ImageIoGifImageWriter().write(image, outputStream);
+                break;
+            case JPG:
+                new ImageIoJpegImageWriter().write(image, outputStream);
+                break;
+            case PNG:
+                new ImageIoPngImageWriter().write(image, outputStream);
+                break;
+            case TIF:
+                new ImageIoTiffImageWriter().write(image, outputStream);
+                break;
+            default:
+                final Iterator<ImageWriter> writers =
+                        ImageIO.getImageWritersByMIMEType(
+                                outputFormat.getPreferredMediaType().toString());
+                if (writers.hasNext()) {
+                    final ImageWriter writer = writers.next();
+                    final IIOImage iioImage = new IIOImage(image, null, null);
+                    final ImageOutputStream ios =
                             ImageIO.createImageOutputStream(outputStream);
                     writer.setOutput(ios);
                     try {
@@ -112,8 +114,8 @@ class ImageIoImageWriter {
                     } finally {
                         writer.dispose();
                     }
-                    break;
-            }
+                }
+                break;
         }
     }
 
