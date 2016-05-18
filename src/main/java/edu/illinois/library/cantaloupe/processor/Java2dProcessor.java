@@ -166,8 +166,8 @@ class Java2dProcessor extends AbstractImageIoProcessor
                 }
             }
 
-            new ImageIoImageWriter().write(image, ops.getOutputFormat(),
-                    outputStream);
+            new ImageIoImageWriter(requestAttributes).
+                    write(image, ops.getOutputFormat(), outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }

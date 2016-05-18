@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.resource.RequestAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
@@ -47,6 +48,12 @@ class ImageIoPngImageWriter {
 
     private static Logger logger = LoggerFactory.
             getLogger(ImageIoPngImageWriter.class);
+
+    private RequestAttributes requestAttributes;
+
+    ImageIoPngImageWriter(RequestAttributes attrs) {
+        requestAttributes = attrs;
+    }
 
     /**
      * @param writer Writer from which to obtain default metadata.

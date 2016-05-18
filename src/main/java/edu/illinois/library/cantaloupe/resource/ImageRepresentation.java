@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
@@ -35,22 +34,22 @@ public class ImageRepresentation extends OutputRepresentation {
 
     private ImageInfo imageInfo;
     private Processor processor;
-    private OperationList ops;
+    private RequestAttributes requestAttributes;
 
     /**
      * @param imageInfo
-     * @param ops
+     * @param attrs
      * @param disposition
      * @param processor
      */
     public ImageRepresentation(final ImageInfo imageInfo,
                                final Processor processor,
-                               final OperationList ops,
+                               final RequestAttributes attrs,
                                final Disposition disposition) {
-        super(ops.getOutputFormat().getPreferredMediaType());
+        super(attrs.getOperationList().getOutputFormat().getPreferredMediaType());
         this.imageInfo = imageInfo;
         this.processor = processor;
-        this.ops = ops;
+        this.requestAttributes = attrs;
         this.setDisposition(disposition);
     }
 
@@ -65,8 +64,8 @@ public class ImageRepresentation extends OutputRepresentation {
         final DerivativeCache cache = CacheFactory.getDerivativeCache();
         if (cache != null) {
             OutputStream cacheOutputStream = null;
-            try (InputStream inputStream =
-                         cache.getImageInputStream(this.ops)) {
+            try (InputStream inputStream = cache.getImageInputStream(
+                    requestAttributes.getOperationList())) {
                 if (inputStream != null) {
                     // A cached image is available; write it to the response
                     // output stream.
@@ -74,7 +73,8 @@ public class ImageRepresentation extends OutputRepresentation {
                 } else {
                     // Create a TeeOutputStream to write to the response output
                     // output stream and the cache pseudo-simultaneously.
-                    cacheOutputStream = cache.getImageOutputStream(this.ops);
+                    cacheOutputStream = cache.getImageOutputStream(
+                            requestAttributes.getOperationList());
                     OutputStream teeStream = new TeeOutputStream(
                             outputStream, cacheOutputStream);
                     doCacheAwareWrite(teeStream, cache);
@@ -106,34 +106,39 @@ public class ImageRepresentation extends OutputRepresentation {
             doWrite(outputStream);
         } catch (IOException e) {
             logger.info(e.getMessage());
-            cache.purge(this.ops);
+            cache.purge(requestAttributes.getOperationList());
         }
     }
 
     private void doWrite(OutputStream outputStream) throws IOException {
         try {
+            final OperationList opList = requestAttributes.getOperationList();
+            processor.setRequestAttributes(requestAttributes);
+
             final long msec = System.currentTimeMillis();
+
             // If the operations are effectively a no-op, the source image can
             // be streamed right through.
-            if (ops.isNoOp(processor.getSourceFormat())) {
+            if (opList.isNoOp(processor.getSourceFormat())) {
                 if (processor instanceof FileProcessor &&
                         ((FileProcessor) processor).getSourceFile() != null) {
                     final File sourceFile = ((FileProcessor) processor).getSourceFile();
                     final InputStream inputStream = new FileInputStream(sourceFile);
                     IOUtils.copy(inputStream, outputStream);
                 } else {
-                    final StreamSource streamSource = ((StreamProcessor) processor).getStreamSource();
+                    final StreamSource streamSource =
+                            ((StreamProcessor) processor).getStreamSource();
                     final InputStream inputStream = streamSource.newInputStream();
                     IOUtils.copy(inputStream, outputStream);
                 }
                 logger.info("Streamed with no processing in {} msec: {}",
-                        System.currentTimeMillis() - msec, ops);
+                        System.currentTimeMillis() - msec, opList);
             } else {
-                processor.process(ops, imageInfo, outputStream);
+                processor.process(opList, imageInfo, outputStream);
 
                 logger.info("{} processed in {} msec: {}",
                         processor.getClass().getSimpleName(),
-                        System.currentTimeMillis() - msec, ops);
+                        System.currentTimeMillis() - msec, opList);
             }
         } catch (Exception e) {
             throw new IOException(e);

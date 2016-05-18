@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.resource.RequestAttributes;
 import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import it.geosolutions.imageio.plugins.tiff.TIFFField;
@@ -46,6 +47,12 @@ class ImageIoTiffImageWriter {
     private static Logger logger = LoggerFactory.
             getLogger(ImageIoTiffImageWriter.class);
 
+    private RequestAttributes requestAttributes;
+
+    ImageIoTiffImageWriter(RequestAttributes attrs) {
+        requestAttributes = attrs;
+    }
+
     /**
      * @param writer Writer from which to obtain default metadata.
      * @param writeParam Image writer parameters, already populated for writing.
@@ -88,7 +95,9 @@ class ImageIoTiffImageWriter {
         final String profileFilename = Configuration.getInstance().
                 getString(ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY);
         if (profileFilename != null) {
-            metadata = embedIccProfile(metadata, profileFilename);
+            final ICC_Profile profile = new IccProfileService().
+                    getProfile(profileFilename);
+            metadata = embedIccProfile(metadata, profile);
         }
         return metadata;
     }
@@ -106,27 +115,42 @@ class ImageIoTiffImageWriter {
 
     /**
      * @param metadata Metadata to embed the profile into.
-     * @param profileFilename Pathname or filename of the profile.
+     * @param profile Profile to embed.
      * @return Metadata instance with ICC profile added.
      * @throws IOException
      */
     private IIOMetadata embedIccProfile(final IIOMetadata metadata,
-                                        final String profileFilename)
+                                        final ICC_Profile profile)
             throws IOException {
-        logger.debug("embedIccProfile(): using profile: {}", profileFilename);
+        if (profile != null) {
+            final TIFFDirectory dir = TIFFDirectory.createFromMetadata(metadata);
+            final BaselineTIFFTagSet base = BaselineTIFFTagSet.getInstance();
+            final TIFFTag iccTag = base.getTag(BaselineTIFFTagSet.TAG_ICC_PROFILE);
+            final ICC_ColorSpace colorSpace = new ICC_ColorSpace(profile);
 
-        final TIFFDirectory dir = TIFFDirectory.createFromMetadata(metadata);
-        final BaselineTIFFTagSet base = BaselineTIFFTagSet.getInstance();
-        final TIFFTag iccTag = base.getTag(BaselineTIFFTagSet.TAG_ICC_PROFILE);
-        final ICC_Profile profile = new IccProfileService().
-                getProfile(profileFilename);
-        final ICC_ColorSpace colorSpace = new ICC_ColorSpace(profile);
+            final byte[] data = colorSpace.getProfile().getData();
+            final TIFFField iccField = new TIFFField(
+                    iccTag, TIFFTag.TIFF_UNDEFINED, data.length, data);
+            dir.addTIFFField(iccField);
+            return dir.getAsMetadata();
+        }
+        return metadata;
+    }
 
-        final byte[] data = colorSpace.getProfile().getData();
-        final TIFFField iccField = new TIFFField(
-                iccTag, TIFFTag.TIFF_UNDEFINED, data.length, data);
-        dir.addTIFFField(iccField);
-        return dir.getAsMetadata();
+    /**
+     * @param writer Writer to abtain parameters for
+     * @return Write parameters respecting the application configuration.
+     */
+    private ImageWriteParam getWriteParam(ImageWriter writer) {
+        final ImageWriteParam writeParam = writer.getDefaultWriteParam();
+        final Configuration config = Configuration.getInstance();
+        final String compressionType = config.getString(
+                JaiProcessor.TIF_COMPRESSION_CONFIG_KEY);
+        if (compressionType != null) {
+            writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            writeParam.setCompressionType(compressionType);
+        }
+        return writeParam;
     }
 
     /**
@@ -140,23 +164,14 @@ class ImageIoTiffImageWriter {
             throws IOException {
         final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
                 Format.TIF.getPreferredMediaType().toString());
-        final Configuration config = Configuration.getInstance();
         if (writers.hasNext()) {
             final ImageWriter writer = writers.next();
-            final ImageWriteParam writeParam = writer.getDefaultWriteParam();
-            final String compressionType = config.
-                    getString(Java2dProcessor.TIF_COMPRESSION_CONFIG_KEY);
-            if (compressionType != null) {
-                writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                writeParam.setCompressionType(compressionType);
-            }
-
+            final ImageWriteParam writeParam = getWriteParam(writer);
             final IIOMetadata metadata = getMetadata(writer, writeParam, image);
             final IIOImage iioImage = new IIOImage(image, null, metadata);
             final ImageOutputStream ios =
                     ImageIO.createImageOutputStream(outputStream);
             writer.setOutput(ios);
-
             try {
                 writer.write(metadata, iioImage, writeParam);
                 ios.flush(); // http://stackoverflow.com/a/14489406
@@ -177,19 +192,12 @@ class ImageIoTiffImageWriter {
             throws IOException {
         final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
                 Format.TIF.getPreferredMediaType().toString());
-        final Configuration config = Configuration.getInstance();
         if (writers.hasNext()) {
-            ImageWriter writer = writers.next();
-            final String compressionType = config.getString(
-                    JaiProcessor.TIF_COMPRESSION_CONFIG_KEY);
-            ImageWriteParam writeParam = writer.getDefaultWriteParam();
-            if (compressionType != null) {
-                writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                writeParam.setCompressionType(compressionType);
-            }
-            IIOMetadata metadata = getMetadata(writer, writeParam, image);
-            IIOImage iioImage = new IIOImage(image, null, metadata);
-            ImageOutputStream ios =
+            final ImageWriter writer = writers.next();
+            final ImageWriteParam writeParam = getWriteParam(writer);
+            final IIOMetadata metadata = getMetadata(writer, writeParam, image);
+            final IIOImage iioImage = new IIOImage(image, null, metadata);
+            final ImageOutputStream ios =
                     ImageIO.createImageOutputStream(outputStream);
             writer.setOutput(ios);
             try {

@@ -33,7 +33,8 @@ import java.util.Set;
 
 /**
  * Processor using the <a href="https://pdfbox.apache.org">Apache PDFBox</a>
- * library to render source PDFs.
+ * library to render source PDFs, and Java 2D or JAI to perform post-
+ * rasterization processing steps.
  */
 class PdfBoxProcessor extends AbstractProcessor
         implements FileProcessor, StreamProcessor {
@@ -238,8 +239,8 @@ class PdfBoxProcessor extends AbstractProcessor
             }
         }
 
-        new ImageIoImageWriter().write(image, opList.getOutputFormat(),
-                outputStream);
+        new ImageIoImageWriter(requestAttributes).
+                write(image, opList.getOutputFormat(), outputStream);
         image.flush();
     }
 

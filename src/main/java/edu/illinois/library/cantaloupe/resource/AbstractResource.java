@@ -318,7 +318,12 @@ public abstract class AbstractResource extends ServerResource {
             throw new PayloadTooLargeException();
         }
 
-        return new ImageRepresentation(imageInfo, proc, ops, disposition);
+        final RequestAttributes attrs = new RequestAttributes();
+        attrs.setOperationList(ops);
+        attrs.setClientIp(getCanonicalClientIpAddress());
+        attrs.getHeaders().putAll(getRequest().getHeaders().getValuesMap());
+
+        return new ImageRepresentation(imageInfo, proc, attrs, disposition);
     }
 
     /**

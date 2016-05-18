@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.resource.RequestAttributes;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -20,6 +21,12 @@ import java.util.Iterator;
  * GIFs.
  */
 class ImageIoGifImageWriter {
+
+    private RequestAttributes requestAttributes;
+
+    ImageIoGifImageWriter(RequestAttributes attrs) {
+        requestAttributes = attrs;
+    }
 
     /**
      * Writes a Java 2D {@link BufferedImage} to the given output stream.

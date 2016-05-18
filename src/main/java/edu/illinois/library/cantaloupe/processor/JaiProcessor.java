@@ -192,7 +192,8 @@ class JaiProcessor extends AbstractImageIoProcessor
                         }
                     }
                 }
-                ImageIoImageWriter writer = new ImageIoImageWriter();
+                ImageIoImageWriter writer =
+                        new ImageIoImageWriter(requestAttributes);
 
                 if (image != null) {
                     writer.write(image, ops.getOutputFormat(), outputStream);

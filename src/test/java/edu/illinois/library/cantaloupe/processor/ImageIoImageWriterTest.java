@@ -16,7 +16,7 @@ public class ImageIoImageWriterTest {
 
     @Before
     public void setUp() {
-        instance = new ImageIoImageWriter();
+        instance = new ImageIoImageWriter(null);
     }
 
     @Test

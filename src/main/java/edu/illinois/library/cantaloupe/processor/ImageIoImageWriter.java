@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.resource.RequestAttributes;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -21,12 +22,18 @@ import java.util.Set;
  */
 class ImageIoImageWriter {
 
+    private RequestAttributes requestAttributes;
+
     /**
      * @return Set of supported output formats.
      */
-    public static Set<Format> supportedFormats() {
+    static Set<Format> supportedFormats() {
         return new HashSet<>(Arrays.asList(Format.GIF, Format.JPG,
                 Format.PNG, Format.TIF));
+    }
+
+    ImageIoImageWriter(RequestAttributes attrs) {
+        requestAttributes = attrs;
     }
 
     /**
@@ -42,16 +49,20 @@ class ImageIoImageWriter {
                final OutputStream outputStream) throws IOException {
         switch (outputFormat) {
             case GIF:
-                new ImageIoGifImageWriter().write(image, outputStream);
+                new ImageIoGifImageWriter(requestAttributes).
+                        write(image, outputStream);
                 break;
             case JPG:
-                new ImageIoJpegImageWriter().write(image, outputStream);
+                new ImageIoJpegImageWriter(requestAttributes).
+                        write(image, outputStream);
                 break;
             case PNG:
-                new ImageIoPngImageWriter().write(image, outputStream);
+                new ImageIoPngImageWriter(requestAttributes).
+                        write(image, outputStream);
                 break;
             case TIF:
-                new ImageIoTiffImageWriter().write(image, outputStream);
+                new ImageIoTiffImageWriter(requestAttributes).
+                        write(image, outputStream);
                 break;
             default:
                 final Iterator<ImageWriter> writers =
@@ -87,16 +98,20 @@ class ImageIoImageWriter {
                final OutputStream outputStream) throws IOException {
         switch (outputFormat) {
             case GIF:
-                new ImageIoGifImageWriter().write(image, outputStream);
+                new ImageIoGifImageWriter(requestAttributes).
+                        write(image, outputStream);
                 break;
             case JPG:
-                new ImageIoJpegImageWriter().write(image, outputStream);
+                new ImageIoJpegImageWriter(requestAttributes).
+                        write(image, outputStream);
                 break;
             case PNG:
-                new ImageIoPngImageWriter().write(image, outputStream);
+                new ImageIoPngImageWriter(requestAttributes).
+                        write(image, outputStream);
                 break;
             case TIF:
-                new ImageIoTiffImageWriter().write(image, outputStream);
+                new ImageIoTiffImageWriter(requestAttributes).
+                        write(image, outputStream);
                 break;
             default:
                 final Iterator<ImageWriter> writers =
