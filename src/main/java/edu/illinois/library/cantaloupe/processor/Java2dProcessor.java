@@ -11,6 +11,8 @@ import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
+import edu.illinois.library.cantaloupe.processor.io.ImageIoImageReader;
+import edu.illinois.library.cantaloupe.processor.io.ImageIoImageWriter;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +39,6 @@ class Java2dProcessor extends AbstractImageIoProcessor
     private static Logger logger = LoggerFactory.
             getLogger(Java2dProcessor.class);
 
-    static final String JPG_QUALITY_CONFIG_KEY = "Java2dProcessor.jpg.quality";
     static final String SCALE_MODE_CONFIG_KEY = "Java2dProcessor.scale_mode";
     static final String TIF_COMPRESSION_CONFIG_KEY =
             "Java2dProcessor.tif.compression";

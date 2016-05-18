@@ -1,10 +1,14 @@
-package edu.illinois.library.cantaloupe.processor;
+package edu.illinois.library.cantaloupe.processor.io;
 
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Scale;
+import edu.illinois.library.cantaloupe.processor.Java2dUtil;
+import edu.illinois.library.cantaloupe.processor.ProcessorException;
+import edu.illinois.library.cantaloupe.processor.ReductionFactor;
+import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +38,7 @@ import java.util.Set;
  * <p>Clients should remember to call {@link #dispose()} when done with an
  * instance.</p>
  */
-class ImageIoImageReader {
+public class ImageIoImageReader {
 
     // Note: methods that return BufferedImages (for Java 2D) are arranged
     // toward the beginning of the class; methods that return RenderedImages

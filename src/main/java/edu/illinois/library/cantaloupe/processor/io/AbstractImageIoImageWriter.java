@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.processor;
+package edu.illinois.library.cantaloupe.processor.io;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.resource.RequestAttributes;
@@ -12,9 +12,6 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.script.ScriptException;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
-
-import static edu.illinois.library.cantaloupe.processor.IccProfileService.ICC_ENABLED_CONFIG_KEY;
-import static edu.illinois.library.cantaloupe.processor.IccProfileService.ICC_STRATEGY_CONFIG_KEY;
 
 abstract class AbstractImageIoImageWriter {
 
@@ -38,13 +35,13 @@ abstract class AbstractImageIoImageWriter {
                             final RenderedImage image) throws IOException {
         final Configuration config = Configuration.getInstance();
 
-        if (config.getBoolean(ICC_ENABLED_CONFIG_KEY, false)) {
+        if (config.getBoolean(IccProfileService.ICC_ENABLED_CONFIG_KEY, false)) {
             logger.debug("getMetadata(): ICC profiles enabled ({} = true)",
-                    ICC_ENABLED_CONFIG_KEY);
+                    IccProfileService.ICC_ENABLED_CONFIG_KEY);
             final IIOMetadata metadata = writer.getDefaultImageMetadata(
                     ImageTypeSpecifier.createFromRenderedImage(image),
                     writeParam);
-            switch (config.getString(ICC_STRATEGY_CONFIG_KEY, "")) {
+            switch (config.getString(IccProfileService.ICC_STRATEGY_CONFIG_KEY, "")) {
                 case "BasicStrategy":
                     addMetadataUsingBasicStrategy(metadata);
                     return metadata;
@@ -58,7 +55,7 @@ abstract class AbstractImageIoImageWriter {
             }
         }
         logger.debug("ICC profile disabled ({} = false)",
-                ICC_ENABLED_CONFIG_KEY);
+                IccProfileService.ICC_ENABLED_CONFIG_KEY);
         return null;
     }
 

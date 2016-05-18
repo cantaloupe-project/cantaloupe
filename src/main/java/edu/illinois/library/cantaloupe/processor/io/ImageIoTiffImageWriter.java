@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.processor;
+package edu.illinois.library.cantaloupe.processor.io;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
 
-import static edu.illinois.library.cantaloupe.processor.IccProfileService.
+import static edu.illinois.library.cantaloupe.processor.io.IccProfileService.
         ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY;
 
 /**
@@ -36,6 +36,9 @@ import static edu.illinois.library.cantaloupe.processor.IccProfileService.
  *     ImageIO TIFF Plugin Documentation</a>
  */
 class ImageIoTiffImageWriter extends AbstractImageIoImageWriter {
+
+    static final String TIF_COMPRESSION_CONFIG_KEY =
+            "JaiProcessor.tif.compression";
 
     ImageIoTiffImageWriter(RequestAttributes attrs) {
         super(attrs);
@@ -110,7 +113,7 @@ class ImageIoTiffImageWriter extends AbstractImageIoImageWriter {
         final ImageWriteParam writeParam = writer.getDefaultWriteParam();
         final Configuration config = Configuration.getInstance();
         final String compressionType = config.getString(
-                JaiProcessor.TIF_COMPRESSION_CONFIG_KEY);
+                TIF_COMPRESSION_CONFIG_KEY);
         if (compressionType != null) {
             writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
             writeParam.setCompressionType(compressionType);

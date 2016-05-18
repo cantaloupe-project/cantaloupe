@@ -6,7 +6,7 @@ package edu.illinois.library.cantaloupe.processor;
  * For example, a factor of 0 represents full scale; 1 represents 50% reduction;
  * 2 represents 75% reduction; etc.
  */
-class ReductionFactor {
+public class ReductionFactor {
 
     public int factor = 0;
 
@@ -16,7 +16,7 @@ class ReductionFactor {
      * @param scalePercent Scale percentage greater than 0
      * @return Instance corresponding to the given scale.
      */
-    static ReductionFactor forScale(final double scalePercent) {
+    public static ReductionFactor forScale(final double scalePercent) {
         return ReductionFactor.forScale(scalePercent, 0);
     }
 
@@ -26,8 +26,8 @@ class ReductionFactor {
      * @param scalePercent Scale percentage greater than 0
      * @return Instance corresponding to the given scale.
      */
-    static ReductionFactor forScale(final double scalePercent,
-                                    final int maxFactor) {
+    public static ReductionFactor forScale(final double scalePercent,
+                                           final int maxFactor) {
         return ReductionFactor.forScale(scalePercent, maxFactor, 0);
     }
 

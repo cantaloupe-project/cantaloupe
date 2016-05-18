@@ -1,6 +1,7 @@
-package edu.illinois.library.cantaloupe.processor;
+package edu.illinois.library.cantaloupe.processor.io;
 
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.processor.io.ImageIoImageWriter;
 import org.junit.Before;
 import org.junit.Test;
 

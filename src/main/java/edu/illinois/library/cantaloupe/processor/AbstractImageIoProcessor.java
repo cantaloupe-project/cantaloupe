@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.processor.io.ImageIoImageReader;
+import edu.illinois.library.cantaloupe.processor.io.ImageIoImageWriter;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

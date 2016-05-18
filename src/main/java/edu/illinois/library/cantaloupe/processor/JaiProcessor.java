@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
+import edu.illinois.library.cantaloupe.processor.io.ImageIoImageWriter;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,11 +44,6 @@ class JaiProcessor extends AbstractImageIoProcessor
         implements FileProcessor, StreamProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(JaiProcessor.class);
-
-    static final String JPG_QUALITY_CONFIG_KEY =
-            "JaiProcessor.jpg.quality";
-    static final String TIF_COMPRESSION_CONFIG_KEY =
-            "JaiProcessor.tif.compression";
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();

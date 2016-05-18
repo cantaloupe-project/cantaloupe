@@ -1,7 +1,8 @@
-package edu.illinois.library.cantaloupe.processor;
+package edu.illinois.library.cantaloupe.processor.io;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.processor.Java2dUtil;
 import edu.illinois.library.cantaloupe.resource.RequestAttributes;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -14,6 +15,7 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.JAI;
+import javax.media.jai.OpImage;
 import javax.media.jai.PlanarImage;
 import javax.script.ScriptException;
 import java.awt.color.ICC_Profile;
@@ -23,17 +25,26 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
 
-import static edu.illinois.library.cantaloupe.processor.IccProfileService.
+import static edu.illinois.library.cantaloupe.processor.io.IccProfileService.
         ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY;
 
 /**
- * GIF image writer using ImageIO, capable of taking both Java 2D
+ * JPEG image writer using ImageIO, capable of taking both Java 2D
  * {@link BufferedImage}s and JAI {@link PlanarImage}s and writing them as
- * GIFs.
+ * JPEGs.
+ *
+ * @see <a href="http://docs.oracle.com/javase/7/docs/api/javax/imageio/metadata/doc-files/jpeg_metadata.html">
+ *     JPEG Metadata Format Specification and Usage Notes</a>
+ * @see <a href="http://www.color.org/icc_specs2.xalter">ICC Specifications</a>
  */
-class ImageIoGifImageWriter extends AbstractImageIoImageWriter {
+class ImageIoJpegImageWriter extends AbstractImageIoImageWriter {
 
-    ImageIoGifImageWriter(RequestAttributes attrs) {
+    static final String JAVA2D_JPG_QUALITY_CONFIG_KEY =
+            "Java2dProcessor.jpg.quality";
+    static final String JAI_JPG_QUALITY_CONFIG_KEY =
+            "JaiProcessor.jpg.quality";
+
+    ImageIoJpegImageWriter(RequestAttributes attrs) {
         super(attrs);
     }
 
@@ -103,6 +114,26 @@ class ImageIoGifImageWriter extends AbstractImageIoImageWriter {
                 nativeTree);
     }
 
+    private ImageWriteParam getJaiWriteParam(ImageWriter writer) {
+        final Configuration config = Configuration.getInstance();
+        final ImageWriteParam writeParam = writer.getDefaultWriteParam();
+        writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+        writeParam.setCompressionQuality(config.
+                getFloat(JAI_JPG_QUALITY_CONFIG_KEY, 0.7f));
+        writeParam.setCompressionType("JPEG");
+        return writeParam;
+    }
+
+    private ImageWriteParam getJava2dWriteParam(ImageWriter writer) {
+        final Configuration config = Configuration.getInstance();
+        final ImageWriteParam writeParam = writer.getDefaultWriteParam();
+        writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+        writeParam.setCompressionQuality(config.
+                getFloat(JAVA2D_JPG_QUALITY_CONFIG_KEY, 0.7f));
+        writeParam.setCompressionType("JPEG");
+        return writeParam;
+    }
+
     /**
      * Writes a Java 2D {@link BufferedImage} to the given output stream.
      *
@@ -113,20 +144,21 @@ class ImageIoGifImageWriter extends AbstractImageIoImageWriter {
     void write(BufferedImage image, final OutputStream outputStream)
             throws IOException {
         final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
-                Format.GIF.getPreferredMediaType().toString());
+                Format.JPG.getPreferredMediaType().toString());
         if (writers.hasNext()) {
             final ImageWriter writer = writers.next();
             try {
-                final ImageWriteParam writeParam =
-                        writer.getDefaultWriteParam();
+                // JPEG doesn't support alpha, so convert to RGB or else the
+                // client will interpret as CMYK
+                image = Java2dUtil.removeAlpha(image);
+                final ImageWriteParam writeParam = getJava2dWriteParam(writer);
+                final ImageOutputStream os =
+                        ImageIO.createImageOutputStream(outputStream);
+                writer.setOutput(os);
                 final IIOMetadata metadata = getMetadata(writer, writeParam,
                         image);
                 final IIOImage iioImage = new IIOImage(image, null, metadata);
-                final ImageOutputStream ios =
-                        ImageIO.createImageOutputStream(outputStream);
-                writer.setOutput(ios);
-                writer.write(iioImage);
-                ios.flush();
+                writer.write(null, iioImage, writeParam);
             } finally {
                 writer.dispose();
             }
@@ -140,31 +172,35 @@ class ImageIoGifImageWriter extends AbstractImageIoImageWriter {
      * @param outputStream Stream to write the image to
      * @throws IOException
      */
+    @SuppressWarnings({"deprecation"})
     void write(PlanarImage image, OutputStream outputStream)
             throws IOException {
         final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
-                Format.GIF.getPreferredMediaType().toString());
+                Format.JPG.getPreferredMediaType().toString());
         if (writers.hasNext()) {
             final ImageWriter writer = writers.next();
             try {
-                // GIFWriter can't deal with a non-0,0 origin ("coordinate
-                // out of bounds!")
-                final ParameterBlock pb = new ParameterBlock();
-                pb.addSource(image);
-                pb.add((float) -image.getMinX());
-                pb.add((float) -image.getMinY());
-                image = JAI.create("translate", pb);
-
-                final ImageWriteParam writeParam =
-                        writer.getDefaultWriteParam();
+                // JPEGImageWriter will interpret a >3-band image as CMYK.
+                // So, select only the first 3 bands.
+                if (OpImage.getExpandedNumBands(image.getSampleModel(),
+                        image.getColorModel()) == 4) {
+                    ParameterBlock pb = new ParameterBlock();
+                    pb.addSource(image);
+                    final int[] bands = {0, 1, 2};
+                    pb.add(bands);
+                    image = JAI.create("bandselect", pb, null);
+                }
+                final ImageWriteParam writeParam = getJaiWriteParam(writer);
                 final IIOMetadata metadata = getMetadata(writer, writeParam,
                         image);
-                final IIOImage iioImage = new IIOImage(image, null, metadata);
-                final ImageOutputStream os = ImageIO.
-                        createImageOutputStream(outputStream);
+                // JPEGImageWriter doesn't like RenderedOps, so give it
+                // a BufferedImage.
+                final IIOImage iioImage = new IIOImage(
+                        image.getAsBufferedImage(), null, metadata);
+                final ImageOutputStream os =
+                        ImageIO.createImageOutputStream(outputStream);
                 writer.setOutput(os);
-                writer.write(iioImage);
-                os.flush(); // http://stackoverflow.com/a/14489406
+                writer.write(null, iioImage, writeParam);
             } finally {
                 writer.dispose();
             }

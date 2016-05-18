@@ -12,6 +12,8 @@ import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
+import edu.illinois.library.cantaloupe.processor.io.ImageIoImageReader;
+import edu.illinois.library.cantaloupe.processor.io.ImageIoImageWriter;
 import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.apache.commons.io.IOUtils;

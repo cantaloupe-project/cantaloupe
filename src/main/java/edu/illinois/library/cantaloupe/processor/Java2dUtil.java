@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
+import edu.illinois.library.cantaloupe.processor.io.ImageIoImageReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +30,7 @@ import java.util.List;
 /**
  * A collection of methods for operating on {@link BufferedImage}s.
  */
-abstract class Java2dUtil {
+public abstract class Java2dUtil {
 
     private static Logger logger = LoggerFactory.getLogger(Java2dUtil.class);
 
@@ -195,7 +196,8 @@ abstract class Java2dUtil {
      * @return A new BufferedImage of type RGB, or the input image if it
      * is not of custom type.
      */
-    static BufferedImage convertCustomToRgb(final BufferedImage inImage) {
+    public static BufferedImage convertCustomToRgb(
+            final BufferedImage inImage) {
         BufferedImage outImage = inImage;
         if (inImage != null && inImage.getType() == BufferedImage.TYPE_CUSTOM) {
             final long msec = System.currentTimeMillis();
@@ -337,7 +339,7 @@ abstract class Java2dUtil {
         return reader.read();
     }
 
-    static BufferedImage removeAlpha(final BufferedImage inImage) {
+    public static BufferedImage removeAlpha(final BufferedImage inImage) {
         BufferedImage outImage = inImage;
         if (inImage.getColorModel().hasAlpha()) {
             final long msec = System.currentTimeMillis();

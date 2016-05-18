@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.processor;
+package edu.illinois.library.cantaloupe.processor.io;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resource.RequestAttributes;
@@ -20,19 +20,19 @@ import java.util.Set;
  * Image writer using ImageIO, capable of writing both Java 2D
  * {@link BufferedImage}s and JAI {@link PlanarImage}s in several formats.
  */
-class ImageIoImageWriter {
+public class ImageIoImageWriter {
 
     private RequestAttributes requestAttributes;
 
     /**
      * @return Set of supported output formats.
      */
-    static Set<Format> supportedFormats() {
+    public static Set<Format> supportedFormats() {
         return new HashSet<>(Arrays.asList(Format.GIF, Format.JPG,
                 Format.PNG, Format.TIF));
     }
 
-    ImageIoImageWriter(RequestAttributes attrs) {
+    public ImageIoImageWriter(RequestAttributes attrs) {
         requestAttributes = attrs;
     }
 
@@ -44,9 +44,9 @@ class ImageIoImageWriter {
      * @param outputStream Stream to write the image to
      * @throws IOException
      */
-    void write(final BufferedImage image,
-               final Format outputFormat,
-               final OutputStream outputStream) throws IOException {
+    public void write(final BufferedImage image,
+                      final Format outputFormat,
+                      final OutputStream outputStream) throws IOException {
         switch (outputFormat) {
             case GIF:
                 new ImageIoGifImageWriter(requestAttributes).
@@ -93,9 +93,9 @@ class ImageIoImageWriter {
      * @param outputStream Stream to write the image to
      * @throws IOException
      */
-    void write(final PlanarImage image,
-               final Format outputFormat,
-               final OutputStream outputStream) throws IOException {
+    public void write(final PlanarImage image,
+                      final Format outputFormat,
+                      final OutputStream outputStream) throws IOException {
         switch (outputFormat) {
             case GIF:
                 new ImageIoGifImageWriter(requestAttributes).

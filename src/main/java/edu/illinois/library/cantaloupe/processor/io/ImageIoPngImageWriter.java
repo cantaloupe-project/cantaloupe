@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.processor;
+package edu.illinois.library.cantaloupe.processor.io;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -22,9 +22,9 @@ import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.zip.DeflaterOutputStream;
 
-import static edu.illinois.library.cantaloupe.processor.IccProfileService.
+import static edu.illinois.library.cantaloupe.processor.io.IccProfileService.
         ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY;
-import static edu.illinois.library.cantaloupe.processor.IccProfileService.
+import static edu.illinois.library.cantaloupe.processor.io.IccProfileService.
         ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY;
 
 /**
