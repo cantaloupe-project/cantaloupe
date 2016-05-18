@@ -17,16 +17,12 @@ import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.JAI;
 import javax.media.jai.OpImage;
 import javax.media.jai.PlanarImage;
-import javax.script.ScriptException;
 import java.awt.color.ICC_Profile;
 import java.awt.image.BufferedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
-
-import static edu.illinois.library.cantaloupe.processor.io.IccProfileService.
-        ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY;
 
 /**
  * JPEG image writer using ImageIO, capable of taking both Java 2D
@@ -49,48 +45,15 @@ class ImageIoJpegImageWriter extends AbstractImageIoImageWriter {
     }
 
     /**
-     * @param metadata Metadata to populate.
-     * @throws IOException
-     */
-    protected IIOMetadata addMetadataUsingBasicStrategy(
-            final IIOMetadata metadata) throws IOException {
-        final String profileFilename = Configuration.getInstance().
-                getString(ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY);
-        if (profileFilename != null) {
-            final ICC_Profile profile = new IccProfileService().
-                    getProfile(profileFilename);
-            embedIccProfile(metadata, profile);
-        }
-        return metadata;
-    }
-
-    /**
-     * @param metadata Metadata to populate.
-     * @throws IOException
-     */
-    protected IIOMetadata addMetadataUsingScriptStrategy(
-            final IIOMetadata metadata) throws IOException, ScriptException {
-        final ICC_Profile profile = new IccProfileService().
-                getProfileFromDelegateMethod(
-                        requestAttributes.getOperationList().getIdentifier(),
-                        requestAttributes.getHeaders(),
-                        requestAttributes.getClientIp());
-        if (profile != null) {
-            embedIccProfile(metadata, profile);
-        }
-        return metadata;
-    }
-
-    /**
      * @param metadata Metadata to embed the profile into.
      * @param profile Profile to embed.
      * @throws IOException
      */
-    private void embedIccProfile(final IIOMetadata metadata,
-                                 final ICC_Profile profile)
+    protected IIOMetadata embedIccProfile(final IIOMetadata metadata,
+                                          final IccProfile profile)
             throws IOException {
         final IIOMetadataNode iccNode = new IIOMetadataNode("app2ICC");
-        iccNode.setUserObject(profile);
+        iccNode.setUserObject(profile.getProfile());
 
         final Node nativeTree = metadata.
                 getAsTree(metadata.getNativeMetadataFormatName());
@@ -112,6 +75,7 @@ class ImageIoJpegImageWriter extends AbstractImageIoImageWriter {
         }
         metadata.mergeTree(metadata.getNativeMetadataFormatName(),
                 nativeTree);
+        return metadata;
     }
 
     private ImageWriteParam getJaiWriteParam(ImageWriter writer) {

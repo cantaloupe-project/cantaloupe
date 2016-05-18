@@ -15,16 +15,11 @@ import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.PlanarImage;
-import javax.script.ScriptException;
 import java.awt.color.ICC_ColorSpace;
-import java.awt.color.ICC_Profile;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
-
-import static edu.illinois.library.cantaloupe.processor.io.IccProfileService.
-        ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY;
 
 /**
  * TIFF image writer using ImageIO, capable of taking both Java 2D
@@ -37,48 +32,11 @@ import static edu.illinois.library.cantaloupe.processor.io.IccProfileService.
  */
 class ImageIoTiffImageWriter extends AbstractImageIoImageWriter {
 
-    static final String TIF_COMPRESSION_CONFIG_KEY =
+    static final String TIF_COMPRESSION_CONFIG_KEY = // TODO: fix w/ java 2d
             "JaiProcessor.tif.compression";
 
     ImageIoTiffImageWriter(RequestAttributes attrs) {
         super(attrs);
-    }
-
-    /**
-     * @param inMetadata Metadata to populate.
-     * @return Metadata instance with ICC profile added.
-     * @throws IOException
-     */
-    protected IIOMetadata addMetadataUsingBasicStrategy(IIOMetadata inMetadata)
-            throws IOException {
-        IIOMetadata metadata = inMetadata;
-        final String profileFilename = Configuration.getInstance().
-                getString(ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY);
-        if (profileFilename != null) {
-            final ICC_Profile profile = new IccProfileService().
-                    getProfile(profileFilename);
-            metadata = embedIccProfile(metadata, profile);
-        }
-        return metadata;
-    }
-
-    /**
-     * @param inMetadata Metadata to populate.
-     * @return Metadata instance with ICC profile added.
-     * @throws IOException
-     */
-    protected IIOMetadata addMetadataUsingScriptStrategy(IIOMetadata inMetadata)
-            throws IOException, ScriptException {
-        IIOMetadata metadata = inMetadata;
-        final ICC_Profile profile = new IccProfileService().
-                getProfileFromDelegateMethod(
-                        requestAttributes.getOperationList().getIdentifier(),
-                        requestAttributes.getHeaders(),
-                        requestAttributes.getClientIp());
-        if (profile != null) {
-            metadata = embedIccProfile(metadata, profile);
-        }
-        return metadata;
     }
 
     /**
@@ -87,14 +45,15 @@ class ImageIoTiffImageWriter extends AbstractImageIoImageWriter {
      * @return Metadata instance with ICC profile added.
      * @throws IOException
      */
-    private IIOMetadata embedIccProfile(final IIOMetadata metadata,
-                                        final ICC_Profile profile)
+    protected IIOMetadata embedIccProfile(final IIOMetadata metadata,
+                                          final IccProfile profile)
             throws IOException {
         if (profile != null) {
             final TIFFDirectory dir = TIFFDirectory.createFromMetadata(metadata);
             final BaselineTIFFTagSet base = BaselineTIFFTagSet.getInstance();
             final TIFFTag iccTag = base.getTag(BaselineTIFFTagSet.TAG_ICC_PROFILE);
-            final ICC_ColorSpace colorSpace = new ICC_ColorSpace(profile);
+            final ICC_ColorSpace colorSpace =
+                    new ICC_ColorSpace(profile.getProfile());
 
             final byte[] data = colorSpace.getProfile().getData();
             final TIFFField iccField = new TIFFField(

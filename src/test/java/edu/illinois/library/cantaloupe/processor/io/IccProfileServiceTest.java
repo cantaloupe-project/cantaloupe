@@ -8,10 +8,10 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.color.ICC_Profile;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
 
 import static org.junit.Assert.*;
 
@@ -21,7 +21,7 @@ public class IccProfileServiceTest {
 
     @Before
     public void setUp() throws IOException {
-        Configuration config = Configuration.getInstance();
+        final Configuration config = Configuration.getInstance();
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
                 true);
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
@@ -30,24 +30,90 @@ public class IccProfileServiceTest {
         instance = new IccProfileService();
     }
 
-    /* getProfile() */
+    /* getProfile(Identifier, Map, String) */
 
     @Test
-    public void testGetExistingProfileWithFilename() throws Exception {
+    public void testGetExistingProfileWithBasicStrategyAndExistingAbsolutePath()
+            throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(IccProfileService.ICC_STRATEGY_CONFIG_KEY,
+                "BasicStrategy");
+        config.setProperty(IccProfileService.ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY,
+                TestUtil.getFixture("AdobeRGB1998.icc").getAbsolutePath());
+        config.setProperty(IccProfileService.ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY,
+                "cats");
+
+        IccProfile profile = instance.getProfile(new Identifier("dogs"),
+                new HashMap<String, String>(),
+                "127.0.0.1");
+
+        assertEquals("cats", profile.getName());
+        assertNotNull(profile.getProfile());
+    }
+
+    @Test
+    public void testGetExistingProfileWithBasicStrategyAndNonExistingAbsolutePath()
+            throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(IccProfileService.ICC_STRATEGY_CONFIG_KEY,
+                "BasicStrategy");
+        config.setProperty(IccProfileService.ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY,
+                "/bogus/bogus/bogus.icc");
+        config.setProperty(IccProfileService.ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY,
+                "cats");
+
+        try {
+            instance.getProfile(new Identifier("dogs"),
+                    new HashMap<String, String>(),
+                    "127.0.0.1");
+            fail("Expected exception");
+        } catch (FileNotFoundException e) {
+            // pass
+        }
+    }
+
+    @Test
+    public void testGetExistingProfileWithBasicStrategyAndExistingFilename()
+            throws Exception {
+        File profileFile = TestUtil.getFixture("AdobeRGB1998.icc");
         File dest = new File("./test.icc");
         try {
-            FileUtils.copyFile(TestUtil.getFixture("AdobeRGB1998.icc"), dest);
-            assertNotNull(instance.getProfile(dest.getName()));
+            FileUtils.copyFile(profileFile, dest);
+
+            final Configuration config = Configuration.getInstance();
+            config.setProperty(IccProfileService.ICC_STRATEGY_CONFIG_KEY,
+                    "BasicStrategy");
+            config.setProperty(IccProfileService.ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY,
+                    "test.icc");
+            config.setProperty(IccProfileService.ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY,
+                    "cats");
+
+            IccProfile profile = instance.getProfile(new Identifier("dogs"),
+                    new HashMap<String, String>(),
+                    "127.0.0.1");
+
+            assertEquals("cats", profile.getName());
+            assertNotNull(profile.getProfile());
         } finally {
             FileUtils.forceDelete(dest);
         }
     }
 
     @Test
-    public void testGetNonExistingProfileWithFilename() throws Exception {
+    public void testGetExistingProfileWithBasicStrategyAndNonExistingFilename()
+            throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(IccProfileService.ICC_STRATEGY_CONFIG_KEY,
+                "BasicStrategy");
+        config.setProperty(IccProfileService.ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY,
+                "bogus.icc");
+        config.setProperty(IccProfileService.ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY,
+                "cats");
+
         try {
-            File dest = new File("./cats.icc");
-            instance.getProfile(dest.getName());
+            instance.getProfile(new Identifier("dogs"),
+                    new HashMap<String, String>(),
+                    "127.0.0.1");
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
@@ -55,45 +121,32 @@ public class IccProfileServiceTest {
     }
 
     @Test
-    public void testGetExistingProfileWithAbsolutePath() throws Exception {
-        File profile = TestUtil.getFixture("AdobeRGB1998.icc");
-        assertNotNull(instance.getProfile(profile.getAbsolutePath()));
-    }
+    public void testGetExistingProfileWithScriptStrategyAndExistingAbsolutePath()
+            throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(IccProfileService.ICC_STRATEGY_CONFIG_KEY,
+                "ScriptStrategy");
 
-    @Test
-    public void testGetNonExistingProfileWithAbsolutePath() throws Exception {
-        File profile = new File("/tmp/bogus.cats");
         try {
-            instance.getProfile(profile.getAbsolutePath());
+            instance.getProfile(new Identifier("cats"),
+                    new HashMap<String, String>(),
+                    "127.0.0.1");
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
         }
     }
 
-    /* getProfileFromDelegateMethod() */
+    /* isEnabled() */
 
     @Test
-    public void testGetProfileFromDelegateMethodReturningProfile() throws Exception {
-        // The icc_profile() delegate method can't return a valid absolute
-        // pathname (because it is preloaded into jruby as a string and thus
-        // can't orient itself on the filesystem), so it has been rigged to
-        // return a bogus one. Checking for that is the best we can do while
-        // keeping this test portable.
-        try {
-            instance.getProfileFromDelegateMethod(
-                    new Identifier("cats"), null, "127.0.0.1");
-            fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
-        }
-    }
+    public void testIsEnabled() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(IccProfileService.ICC_ENABLED_CONFIG_KEY, true);
+        assertTrue(instance.isEnabled());
 
-    @Test
-    public void testGetProfileFromDelegateMethodReturningNil() throws Exception {
-        ICC_Profile result = instance.getProfileFromDelegateMethod(
-                    new Identifier("bogus"), null, "127.0.0.1");
-        assertNull(result);
+        config.setProperty(IccProfileService.ICC_ENABLED_CONFIG_KEY, false);
+        assertFalse(instance.isEnabled());
     }
 
 }

@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.processor.io;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resource.RequestAttributes;
 import org.w3c.dom.Node;
@@ -12,20 +11,13 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.PlanarImage;
-import javax.script.ScriptException;
 import java.awt.color.ICC_ColorSpace;
-import java.awt.color.ICC_Profile;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.zip.DeflaterOutputStream;
-
-import static edu.illinois.library.cantaloupe.processor.io.IccProfileService.
-        ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY;
-import static edu.illinois.library.cantaloupe.processor.io.IccProfileService.
-        ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY;
 
 /**
  * PNG image writer using ImageIO, capable of taking both Java 2D
@@ -40,43 +32,6 @@ class ImageIoPngImageWriter extends AbstractImageIoImageWriter {
 
     ImageIoPngImageWriter(RequestAttributes attrs) {
         super(attrs);
-    }
-
-    /**
-     * @param metadata Metadata to populate.
-     * @throws IOException
-     */
-    protected IIOMetadata addMetadataUsingBasicStrategy(
-            final IIOMetadata metadata) throws IOException {
-        final String profileName = Configuration.getInstance().
-                getString(ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY);
-        if (profileName != null) {
-            final String profileFilename = Configuration.getInstance().
-                    getString(ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY);
-            if (profileFilename != null) {
-                final ICC_Profile profile = new IccProfileService().
-                        getProfile(profileFilename);
-                embedIccProfile(metadata, profile, profileName);
-            }
-        }
-        return metadata;
-    }
-
-    /**
-     * @param metadata Metadata to populate.
-     * @throws IOException
-     */
-    protected IIOMetadata addMetadataUsingScriptStrategy(
-            final IIOMetadata metadata) throws IOException, ScriptException {
-        final ICC_Profile profile = new IccProfileService().
-                getProfileFromDelegateMethod(
-                        requestAttributes.getOperationList().getIdentifier(),
-                        requestAttributes.getHeaders(),
-                        requestAttributes.getClientIp());
-        if (profile != null) {
-            embedIccProfile(metadata, profile, profile.toString());
-        }
-        return metadata;
     }
 
     /**
@@ -98,20 +53,19 @@ class ImageIoPngImageWriter extends AbstractImageIoImageWriter {
     /**
      * @param metadata Metadata to embed the profile into.
      * @param profile Profile to embed.
-     * @param profileName Name of the profile.
      * @throws IOException
      */
-    private void embedIccProfile(final IIOMetadata metadata,
-                                 final ICC_Profile profile,
-                                 final String profileName)
+    protected IIOMetadata embedIccProfile(final IIOMetadata metadata,
+                                          final IccProfile profile)
             throws IOException {
-        final ICC_ColorSpace colorSpace = new ICC_ColorSpace(profile);
+        final ICC_ColorSpace colorSpace =
+                new ICC_ColorSpace(profile.getProfile());
         final byte[] compressedProfile =
                 deflate(colorSpace.getProfile().getData());
         final IIOMetadataNode iccNode =
                 new IIOMetadataNode("iCCP");
         iccNode.setAttribute("compressionMethod", "deflate");
-        iccNode.setAttribute("profileName", profileName);
+        iccNode.setAttribute("profileName", profile.getName());
         iccNode.setUserObject(compressedProfile);
 
         final Node nativeTree = metadata.
@@ -119,6 +73,7 @@ class ImageIoPngImageWriter extends AbstractImageIoImageWriter {
         nativeTree.appendChild(iccNode);
         metadata.mergeTree(metadata.getNativeMetadataFormatName(),
                 nativeTree);
+        return metadata;
     }
 
     /**

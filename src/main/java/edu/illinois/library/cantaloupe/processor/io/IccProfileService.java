@@ -53,6 +53,43 @@ class IccProfileService {
     }
 
     /**
+     * Returns a profile corresponding to the application configuration and
+     * the given arguments. The arguments will only be used if
+     * {@link #ICC_STRATEGY_CONFIG_KEY} is set to <var>ScriptStrategy</var>.
+     *
+     * @param identifier Image identifier to pass to the delegate method.
+     * @param requestHeaders Request headers to pass to the delegate method.
+     * @param clientIp Client IP address to pass to the delegate method.
+     * @return Profile corresponding to the given parameters as returned by
+     *         the delegate method, or null if none was returned.
+     * @throws IOException
+     */
+    IccProfile getProfile(Identifier identifier,
+                          Map<String,String> requestHeaders,
+                          String clientIp) throws IOException {
+        Configuration config = Configuration.getInstance();
+        switch (config.getString(ICC_STRATEGY_CONFIG_KEY, "")) {
+            case "BasicStrategy":
+                final String profileFilename = Configuration.getInstance().
+                        getString(ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY);
+                if (profileFilename != null) {
+                    final String profileName = Configuration.getInstance().
+                            getString(ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY);
+                    return new IccProfile(profileName,
+                            getProfile(profileFilename));
+                }
+            case "ScriptStrategy":
+                try {
+                    return getProfileFromDelegateMethod(identifier,
+                            requestHeaders, clientIp);
+                } catch (ScriptException e) {
+                    throw new IOException(e.getMessage(), e);
+                }
+        }
+        return null;
+    }
+
+    /**
      * <p>Returns an instance corresponding to the filename or pathname of an
      * ICC profile. If a filename is given, it will be searched for in the
      * same folder as the application config (if available), or the current
@@ -62,7 +99,7 @@ class IccProfileService {
      * @return Instance reflecting a given profile.
      * @throws IOException
      */
-    ICC_Profile getProfile(String profileFilenameOrPathname)
+    private ICC_Profile getProfile(String profileFilenameOrPathname)
             throws IOException {
         final FileInputStream in =
                 new FileInputStream(findProfile(profileFilenameOrPathname));
@@ -85,25 +122,40 @@ class IccProfileService {
      * @throws IOException
      * @throws ScriptException
      */
-    ICC_Profile getProfileFromDelegateMethod(Identifier identifier,
-                                             Map<String,String> requestHeaders,
-                                             String clientIp)
+    private IccProfile getProfileFromDelegateMethod(Identifier identifier,
+                                                    Map<String,String> requestHeaders,
+                                                    String clientIp)
             throws IOException, ScriptException {
-        // delegate method parameters
+        // Delegate method parameters
         final Object args[] = new Object[] {
                 identifier, requestHeaders, clientIp };
         try {
+            // The delegate method is expected to return a hash (Map)
+            // containing `name` and `pathname` keys, or an empty hash if
+            // there is no profile to embed.
             final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
             final String method = "icc_profile";
-            final String result = (String) engine.invoke(method, args);
-            if (result != null) {
-                return getProfile(result);
+            final Map result = (Map) engine.invoke(method, args);
+            if (result != null && result.size() > 0) {
+                return new IccProfile((String) result.get("name"),
+                        getProfile((String) result.get("pathname")));
             }
         } catch (DelegateScriptDisabledException e) {
             logger.info("addMetadataUsingScriptStrategy(): delegate script " +
                     "disabled; aborting.");
         }
         return null;
+    }
+
+    /**
+     * @return Whether ICC profiles should be embedded in derivative images
+     *         under any circumstances according to the
+     *         {@link #ICC_ENABLED_CONFIG_KEY} key in the application
+     *         configuration.
+     */
+    public boolean isEnabled() {
+        return Configuration.getInstance().
+                getBoolean(ICC_ENABLED_CONFIG_KEY, false);
     }
 
 }

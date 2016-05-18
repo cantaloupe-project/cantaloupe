@@ -1,30 +1,22 @@
 package edu.illinois.library.cantaloupe.processor.io;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resource.RequestAttributes;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
-import javax.script.ScriptException;
 import java.awt.color.ICC_Profile;
 import java.awt.image.BufferedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
-
-import static edu.illinois.library.cantaloupe.processor.io.IccProfileService.
-        ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY;
 
 /**
  * GIF image writer using ImageIO, capable of taking both Java 2D
@@ -38,69 +30,15 @@ class ImageIoGifImageWriter extends AbstractImageIoImageWriter {
     }
 
     /**
-     * @param metadata Metadata to populate.
-     * @throws IOException
-     */
-    protected IIOMetadata addMetadataUsingBasicStrategy(
-            final IIOMetadata metadata) throws IOException {
-        final String profileFilename = Configuration.getInstance().
-                getString(ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY);
-        if (profileFilename != null) {
-            final ICC_Profile profile = new IccProfileService().
-                    getProfile(profileFilename);
-            embedIccProfile(metadata, profile);
-        }
-        return metadata;
-    }
-
-    /**
-     * @param metadata Metadata to populate.
-     * @throws IOException
-     */
-    protected IIOMetadata addMetadataUsingScriptStrategy(
-            final IIOMetadata metadata) throws IOException, ScriptException {
-        final ICC_Profile profile = new IccProfileService().
-                getProfileFromDelegateMethod(
-                        requestAttributes.getOperationList().getIdentifier(),
-                        requestAttributes.getHeaders(),
-                        requestAttributes.getClientIp());
-        if (profile != null) {
-            embedIccProfile(metadata, profile);
-        }
-        return metadata;
-    }
-
-    /**
      * @param metadata Metadata to embed the profile into.
      * @param profile Profile to embed.
      * @throws IOException
      */
-    private void embedIccProfile(final IIOMetadata metadata,
-                                 final ICC_Profile profile)
+    protected IIOMetadata embedIccProfile(final IIOMetadata metadata,
+                                          final IccProfile profile)
             throws IOException {
-        final IIOMetadataNode iccNode = new IIOMetadataNode("app2ICC");
-        iccNode.setUserObject(profile);
-
-        final Node nativeTree = metadata.
-                getAsTree(metadata.getNativeMetadataFormatName());
-
-        // Append the app2ICC node we just created to /JPEGvariety/app0JFIF
-        NodeList level1Nodes = nativeTree.getChildNodes();
-        for (int i = 0; i < level1Nodes.getLength(); i++) {
-            Node level1Node = level1Nodes.item(i);
-            if (level1Node.getNodeName().equals("JPEGvariety")) {
-                NodeList level2Nodes = level1Node.getChildNodes();
-                for (int j = 0; j < level2Nodes.getLength(); j++) {
-                    Node level2Node = level2Nodes.item(j);
-                    if (level2Node.getNodeName().equals("app0JFIF")) {
-                        level2Node.appendChild(iccNode);
-                        break;
-                    }
-                }
-            }
-        }
-        metadata.mergeTree(metadata.getNativeMetadataFormatName(),
-                nativeTree);
+        // TODO: write this
+        return metadata;
     }
 
     /**

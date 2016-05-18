@@ -22,7 +22,10 @@ module Cantaloupe
 
   def self.icc_profile(identifier, request_headers, client_ip)
     if identifier == 'cats'
-      return '/bogus/AdobeRGB1998.icc' # __FILE__ doesn't work
+      return {
+          'name' => 'AdobeRGB1998',
+          'pathname' => '/bogus/AdobeRGB1998.icc' # __FILE__ doesn't work with ScriptEngine
+      }
     end
     nil
   end

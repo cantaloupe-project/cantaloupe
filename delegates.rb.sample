@@ -74,12 +74,12 @@ module Cantaloupe
   # @param identifier [String] Image identifier
   # @param request_headers [Hash<String,String>]
   # @param client_ip [String]
-  # @return [String,nil] Absolute pathname of an ICC profile to embed in
-  #                      derivatives of the image with the given identifier,
-  #                      or nil to not embed one.
+  # @return [Hash<String,String>,nil] Hash with `name` and `pathname` keys
+  #         containing the name of the profile and its absolute pathname,
+  #         respectively; or an empty hash to not embed a profile.
   #
   def self.icc_profile(identifier, request_headers, client_ip)
-    nil
+    {}
   end
 
   ##
