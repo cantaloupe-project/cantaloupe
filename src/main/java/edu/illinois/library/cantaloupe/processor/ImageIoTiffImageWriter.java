@@ -18,6 +18,7 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.PlanarImage;
 import java.awt.color.ICC_ColorSpace;
+import java.awt.color.ICC_Profile;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
@@ -117,8 +118,9 @@ class ImageIoTiffImageWriter {
         final TIFFDirectory dir = TIFFDirectory.createFromMetadata(metadata);
         final BaselineTIFFTagSet base = BaselineTIFFTagSet.getInstance();
         final TIFFTag iccTag = base.getTag(BaselineTIFFTagSet.TAG_ICC_PROFILE);
-        final ICC_ColorSpace colorSpace =
-                new IccProfileService().getColorSpace(profileFilename);
+        final ICC_Profile profile = new IccProfileService().
+                getProfile(profileFilename);
+        final ICC_ColorSpace colorSpace = new ICC_ColorSpace(profile);
 
         final byte[] data = colorSpace.getProfile().getData();
         final TIFFField iccField = new TIFFField(

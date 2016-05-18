@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import org.apache.commons.io.IOUtils;
 
-import java.awt.color.ICC_ColorSpace;
 import java.awt.color.ICC_Profile;
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,22 +42,21 @@ class IccProfileService {
     }
 
     /**
-     * Returns an <var>ICC_ColorSpace</var> instance corresponding to the
-     * filename or pathname of an ICC profile. If a filename is given, it will
-     * be searched for in the same folder as the application config (if
-     * available), or the current working directory if not.
+     * <p>Returns an instance corresponding to the filename or pathname of an
+     * ICC profile. If a filename is given, it will be searched for in the
+     * same folder as the application config (if available), or the current
+     * working directory if not.</p>
      *
      * @param profileFilenameOrPathname Profile filename or pathname
      * @return Instance reflecting a given profile.
      * @throws IOException
      */
-    ICC_ColorSpace getColorSpace(String profileFilenameOrPathname)
+    ICC_Profile getProfile(String profileFilenameOrPathname)
             throws IOException {
         final FileInputStream in =
                 new FileInputStream(findProfile(profileFilenameOrPathname));
         try {
-            final ICC_Profile profile = ICC_Profile.getInstance(in);
-            return new ICC_ColorSpace(profile);
+            return ICC_Profile.getInstance(in);
         } finally {
             IOUtils.closeQuietly(in);
         }

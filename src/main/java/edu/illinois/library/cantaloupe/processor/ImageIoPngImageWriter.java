@@ -16,6 +16,7 @@ import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.PlanarImage;
 import java.awt.color.ICC_ColorSpace;
+import java.awt.color.ICC_Profile;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.ByteArrayOutputStream;
@@ -135,8 +136,9 @@ class ImageIoPngImageWriter {
         logger.debug("embedIccProfile(): using {} profile ({})",
                 profileName, profileFilename);
 
-        final ICC_ColorSpace colorSpace =
-                new IccProfileService().getColorSpace(profileFilename);
+        final ICC_Profile profile = new IccProfileService().
+                getProfile(profileFilename);
+        final ICC_ColorSpace colorSpace = new ICC_ColorSpace(profile);
         final byte[] compressedProfile =
                 deflate(colorSpace.getProfile().getData());
         final IIOMetadataNode iccNode =
@@ -151,7 +153,6 @@ class ImageIoPngImageWriter {
         metadata.mergeTree(metadata.getNativeMetadataFormatName(),
                 nativeTree);
     }
-
 
     /**
      * Writes a Java 2D {@link BufferedImage} to the given output stream.
