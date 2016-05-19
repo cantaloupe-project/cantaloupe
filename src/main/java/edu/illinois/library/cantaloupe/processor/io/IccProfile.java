@@ -7,43 +7,59 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-/**
- * Wraps an {@link ICC_Profile} instance, adding a name accessor.
- */
 public class IccProfile {
 
     private File file;
     private String name;
 
+    /**
+     * @param name Name of the profile.
+     * @param profileFile File representing the profile on disk.
+     */
     IccProfile(String name, File profileFile) {
-        this.name = name;
-        this.file = profileFile;
+        setName(name);
+        setFile(profileFile);
     }
 
+    /**
+     * @return File representing the profile on disk.
+     */
     public File getFile() {
         return file;
     }
 
-    String getName() {
+    /**
+     * @return Name of the profile.
+     */
+    public String getName() {
         return name;
     }
 
     /**
-     * <p>Returns an instance corresponding to the filename or pathname of an
-     * ICC profile. If a filename is given, it will be searched for in the
-     * same folder as the application config (if available), or the current
-     * working directory if not.</p>
-     *
-     * @return
+     * @return Instance corresponding to the file returned by {@link #getFile}.
      * @throws IOException
      */
-    ICC_Profile getProfile() throws IOException {
+    public ICC_Profile getProfile() throws IOException {
         final FileInputStream in = new FileInputStream(file);
         try {
             return ICC_Profile.getInstance(in);
         } finally {
             IOUtils.closeQuietly(in);
         }
+    }
+
+    /**
+     * @param name Name of the profile.
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * @param file File representing the profile on disk.
+     */
+    public void setFile(File file) {
+        this.file = file;
     }
 
 }

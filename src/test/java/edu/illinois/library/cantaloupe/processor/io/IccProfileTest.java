@@ -4,6 +4,9 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+
 import static org.junit.Assert.*;
 
 public class IccProfileTest {
@@ -30,6 +33,17 @@ public class IccProfileTest {
     @Test
     public void testGetProfile() throws Exception {
         assertNotNull(instance.getProfile());
+    }
+
+    @Test
+    public void testGetProfileWithNonExistingFile() throws Exception {
+        instance.setFile(new File("/bogus/bogus.icc"));
+        try {
+            assertNotNull(instance.getProfile());
+            fail("Expected exception");
+        } catch (FileNotFoundException e) {
+            // pass
+        }
     }
 
 }
