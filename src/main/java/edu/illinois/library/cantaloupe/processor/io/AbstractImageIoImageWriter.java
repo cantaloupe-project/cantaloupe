@@ -32,18 +32,27 @@ abstract class AbstractImageIoImageWriter {
         if (service.isEnabled()) {
             logger.debug("getMetadata(): ICC profiles enabled ({} = true)",
                     IccProfileService.ICC_ENABLED_CONFIG_KEY);
-            final IIOMetadata metadata = writer.getDefaultImageMetadata(
-                    ImageTypeSpecifier.createFromRenderedImage(image),
-                    writeParam);
-            IccProfile profile = service.getProfile(
-                    requestAttributes.getOperationList().getIdentifier(),
-                    requestAttributes.getHeaders(),
-                    requestAttributes.getClientIp());
-            if (profile != null) {
-                return embedIccProfile(metadata, profile);
+
+            if (requestAttributes.getOperationList() != null &&
+                    requestAttributes.getOperationList().getIdentifier() != null &&
+                    requestAttributes.getHeaders() != null &&
+                    requestAttributes.getClientIp() != null) {
+                IccProfile profile = service.getProfile(
+                        requestAttributes.getOperationList().getIdentifier(),
+                        requestAttributes.getHeaders(),
+                        requestAttributes.getClientIp());
+                if (profile != null) {
+                    final IIOMetadata metadata = writer.getDefaultImageMetadata(
+                            ImageTypeSpecifier.createFromRenderedImage(image),
+                            writeParam);
+                    return embedIccProfile(metadata, profile);
+                }
+            } else {
+                logger.warn("getMetadata(): invalid request attributes. " +
+                        "This is probably a bug.");
             }
         }
-        logger.debug("ICC profile disabled ({} = false)",
+        logger.debug("getMetadata(): ICC profile disabled ({} = false)",
                 IccProfileService.ICC_ENABLED_CONFIG_KEY);
         return null;
     }
