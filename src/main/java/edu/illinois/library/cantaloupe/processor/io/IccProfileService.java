@@ -26,30 +26,6 @@ public class IccProfileService {
     static final String ICC_STRATEGY_CONFIG_KEY = "icc.strategy";
 
     /**
-     * Finds the given profile whether it is given in the form of an absolute
-     * path or a filename. If the latter, it will be searched for in the same
-     * folder as the application config (if available), or the current working
-     * directory if not.
-     *
-     * @param filenameOrPathname Filename or absolute pathname
-     * @return File corresponding to <var>profileFilename</var>
-     */
-    private File findProfile(String filenameOrPathname) {
-        File profileFile = new File(filenameOrPathname);
-        if (!profileFile.isAbsolute()) {
-            final File configFile =
-                    Configuration.getInstance().getConfigurationFile();
-            if (configFile != null) {
-                profileFile = new File(configFile.getParent() + "/" +
-                        profileFile.getName());
-            } else {
-                profileFile = new File("./" + profileFile.getName());
-            }
-        }
-        return profileFile;
-    }
-
-    /**
      * Returns a profile corresponding to the application configuration and
      * the given arguments. The arguments will only be used if
      * {@link #ICC_STRATEGY_CONFIG_KEY} is set to <var>ScriptStrategy</var>.
@@ -92,8 +68,7 @@ public class IccProfileService {
             final String profileName = Configuration.getInstance().
                     getString(ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY, "");
             if (profileName != null) {
-                return new IccProfile(profileName,
-                        findProfile(profileFilename));
+                return new IccProfile(profileName, new File(profileFilename));
             } else {
                 logger.warn("{} is not set; skipping profile embed.",
                         ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY);
@@ -131,7 +106,7 @@ public class IccProfileService {
             final Map result = (Map) engine.invoke(method, args);
             if (result != null && result.size() > 0) {
                 return new IccProfile((String) result.get("name"),
-                        findProfile((String) result.get("pathname")));
+                        new File((String) result.get("pathname")));
             }
         } catch (DelegateScriptDisabledException e) {
             logger.info("addMetadataUsingScriptStrategy(): delegate script " +

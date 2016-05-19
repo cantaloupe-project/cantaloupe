@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.io;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import org.apache.commons.io.IOUtils;
 
 import java.awt.color.ICC_Profile;
@@ -22,6 +23,30 @@ public class IccProfile {
     }
 
     /**
+     * Finds the profile whether {@link #getFile} returns an absolute path or
+     * a filename. If the latter, it will be searched for in the same directory
+     * as the application config (if available), or the current working
+     * directory if not.
+     *
+     * @return File whose {@link File#isAbsolute()} method returns
+     *         <code>true</code>
+     */
+    private File findProfile() {
+        File absoluteFile = file;
+        if (!file.isAbsolute()) {
+            final File configFile =
+                    Configuration.getInstance().getConfigurationFile();
+            if (configFile != null) {
+                absoluteFile = new File(configFile.getParent() + "/" +
+                        file.getName());
+            } else {
+                absoluteFile = new File("./" + file.getName());
+            }
+        }
+        return absoluteFile;
+    }
+
+    /**
      * @return File representing the profile on disk.
      */
     public File getFile() {
@@ -40,7 +65,7 @@ public class IccProfile {
      * @throws IOException
      */
     public ICC_Profile getProfile() throws IOException {
-        final FileInputStream in = new FileInputStream(file);
+        final FileInputStream in = new FileInputStream(findProfile());
         try {
             return ICC_Profile.getInstance(in);
         } finally {
