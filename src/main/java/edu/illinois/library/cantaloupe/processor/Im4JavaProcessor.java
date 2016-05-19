@@ -7,13 +7,17 @@ import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.processor.io.IccProfileService;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.im4java.core.IM4JavaException;
 import org.im4java.core.IMOperation;
 import org.im4java.core.Info;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -21,11 +25,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Base class for processors that use the im4Java library.
+ * Base class for processors that use the im4java library.
  *
- * @see <a href="http://im4java.sourceforge.net">im4Java</a>
+ * @see <a href="http://im4java.sourceforge.net">im4java</a>
  */
 abstract class Im4JavaProcessor extends AbstractProcessor {
+
+    private static Logger logger = LoggerFactory.
+            getLogger(Im4JavaProcessor.class);
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
@@ -139,6 +146,20 @@ abstract class Im4JavaProcessor extends AbstractProcessor {
                         imOp.monochrome();
                         break;
                 }
+            }
+        }
+
+        final IccProfileService profileService = new IccProfileService();
+        if (profileService.isEnabled()) {
+            try {
+                final File profileFile = profileService.getProfile(
+                        requestAttributes.getOperationList().getIdentifier(),
+                        requestAttributes.getHeaders(),
+                        requestAttributes.getClientIp()).getFile();
+                // Skip the "if exists()" check for performance reasons.
+                imOp.profile(profileFile.getAbsolutePath());
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
             }
         }
     }
