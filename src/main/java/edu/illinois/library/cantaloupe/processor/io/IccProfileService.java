@@ -87,12 +87,20 @@ public class IccProfileService {
      */
     private IccProfile getProfileUsingBasicStrategy() {
         final String profileFilename = Configuration.getInstance().
-                getString(ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY);
-        if (profileFilename != null) {
+                getString(ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY, "");
+        if (profileFilename.length() > 0) {
             final String profileName = Configuration.getInstance().
-                    getString(ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY);
-            return new IccProfile(profileName,
-                    findProfile(profileFilename));
+                    getString(ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY, "");
+            if (profileName != null) {
+                return new IccProfile(profileName,
+                        findProfile(profileFilename));
+            } else {
+                logger.warn("{} is not set; skipping profile embed.",
+                        ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY);
+            }
+        } else {
+            logger.warn("{} is not set; skipping profile embed.",
+                    ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY);
         }
         return null;
     }
