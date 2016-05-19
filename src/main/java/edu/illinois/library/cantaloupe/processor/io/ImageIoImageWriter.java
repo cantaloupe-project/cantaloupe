@@ -3,17 +3,12 @@ package edu.illinois.library.cantaloupe.processor.io;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resource.RequestAttributes;
 
-import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.PlanarImage;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -64,24 +59,6 @@ public class ImageIoImageWriter {
                 new ImageIoTiffImageWriter(requestAttributes).
                         write(image, outputStream);
                 break;
-            default:
-                final Iterator<ImageWriter> writers =
-                        ImageIO.getImageWritersByMIMEType(
-                                outputFormat.getPreferredMediaType().toString());
-                if (writers.hasNext()) {
-                    final ImageWriter writer = writers.next();
-                    final IIOImage iioImage = new IIOImage(image, null, null);
-                    final ImageOutputStream ios =
-                            ImageIO.createImageOutputStream(outputStream);
-                    writer.setOutput(ios);
-                    try {
-                        writer.write(iioImage);
-                        ios.flush();
-                    } finally {
-                        writer.dispose();
-                    }
-                }
-                break;
         }
     }
 
@@ -112,24 +89,6 @@ public class ImageIoImageWriter {
             case TIF:
                 new ImageIoTiffImageWriter(requestAttributes).
                         write(image, outputStream);
-                break;
-            default:
-                final Iterator<ImageWriter> writers =
-                        ImageIO.getImageWritersByMIMEType(
-                                outputFormat.getPreferredMediaType().toString());
-                if (writers.hasNext()) {
-                    final ImageWriter writer = writers.next();
-                    final IIOImage iioImage = new IIOImage(image, null, null);
-                    final ImageOutputStream ios =
-                            ImageIO.createImageOutputStream(outputStream);
-                    writer.setOutput(ios);
-                    try {
-                        writer.write(iioImage);
-                        ios.flush();
-                    } finally {
-                        writer.dispose();
-                    }
-                }
                 break;
         }
     }
