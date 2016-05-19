@@ -5,18 +5,15 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
-import java.awt.color.ICC_Profile;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Map;
 
-class IccProfileService {
+public class IccProfileService {
 
     private static Logger logger = LoggerFactory.
             getLogger(IccProfileService.class);
@@ -64,9 +61,9 @@ class IccProfileService {
      *         the delegate method, or null if none was returned.
      * @throws IOException
      */
-    IccProfile getProfile(Identifier identifier,
-                          Map<String,String> requestHeaders,
-                          String clientIp) throws IOException {
+    public IccProfile getProfile(Identifier identifier,
+                                 Map<String,String> requestHeaders,
+                                 String clientIp) throws IOException {
         Configuration config = Configuration.getInstance();
         switch (config.getString(ICC_STRATEGY_CONFIG_KEY, "")) {
             case "BasicStrategy":
@@ -76,7 +73,7 @@ class IccProfileService {
                     final String profileName = Configuration.getInstance().
                             getString(ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY);
                     return new IccProfile(profileName,
-                            getProfile(profileFilename));
+                            findProfile(profileFilename));
                 }
             case "ScriptStrategy":
                 try {
@@ -87,27 +84,6 @@ class IccProfileService {
                 }
         }
         return null;
-    }
-
-    /**
-     * <p>Returns an instance corresponding to the filename or pathname of an
-     * ICC profile. If a filename is given, it will be searched for in the
-     * same folder as the application config (if available), or the current
-     * working directory if not.</p>
-     *
-     * @param profileFilenameOrPathname Profile filename or pathname
-     * @return Instance reflecting a given profile.
-     * @throws IOException
-     */
-    private ICC_Profile getProfile(String profileFilenameOrPathname)
-            throws IOException {
-        final FileInputStream in =
-                new FileInputStream(findProfile(profileFilenameOrPathname));
-        try {
-            return ICC_Profile.getInstance(in);
-        } finally {
-            IOUtils.closeQuietly(in);
-        }
     }
 
     /**
@@ -138,7 +114,7 @@ class IccProfileService {
             final Map result = (Map) engine.invoke(method, args);
             if (result != null && result.size() > 0) {
                 return new IccProfile((String) result.get("name"),
-                        getProfile((String) result.get("pathname")));
+                        findProfile((String) result.get("pathname")));
             }
         } catch (DelegateScriptDisabledException e) {
             logger.info("addMetadataUsingScriptStrategy(): delegate script " +

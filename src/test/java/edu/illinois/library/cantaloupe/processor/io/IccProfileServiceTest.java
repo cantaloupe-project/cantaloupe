@@ -62,14 +62,11 @@ public class IccProfileServiceTest {
         config.setProperty(IccProfileService.ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY,
                 "cats");
 
-        try {
-            instance.getProfile(new Identifier("dogs"),
-                    new HashMap<String, String>(),
-                    "127.0.0.1");
-            fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
-        }
+        IccProfile profile = instance.getProfile(new Identifier("dogs"),
+                new HashMap<String, String>(),
+                "127.0.0.1");
+        assertEquals("cats", profile.getName());
+        assertEquals(new File("/bogus/bogus/bogus.icc"), profile.getFile());
     }
 
     @Test
@@ -110,14 +107,11 @@ public class IccProfileServiceTest {
         config.setProperty(IccProfileService.ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY,
                 "cats");
 
-        try {
-            instance.getProfile(new Identifier("dogs"),
-                    new HashMap<String, String>(),
-                    "127.0.0.1");
-            fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
-        }
+        IccProfile profile = instance.getProfile(new Identifier("dogs"),
+                new HashMap<String, String>(),
+                "127.0.0.1");
+        assertEquals("cats", profile.getName());
+        assertEquals("bogus.icc", profile.getFile().getName());
     }
 
     @Test
@@ -127,14 +121,11 @@ public class IccProfileServiceTest {
         config.setProperty(IccProfileService.ICC_STRATEGY_CONFIG_KEY,
                 "ScriptStrategy");
 
-        try {
-            instance.getProfile(new Identifier("cats"),
-                    new HashMap<String, String>(),
-                    "127.0.0.1");
-            fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
-        }
+        IccProfile profile = instance.getProfile(new Identifier("cats"),
+                new HashMap<String, String>(),
+                "127.0.0.1");
+        assertEquals("AdobeRGB1998", profile.getName());
+        assertEquals(new File("/bogus/AdobeRGB1998.icc"), profile.getFile());
     }
 
     /* isEnabled() */
