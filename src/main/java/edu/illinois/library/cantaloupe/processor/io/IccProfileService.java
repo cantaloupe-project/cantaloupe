@@ -64,20 +64,13 @@ public class IccProfileService {
     public IccProfile getProfile(Identifier identifier,
                                  Map<String,String> requestHeaders,
                                  String clientIp) throws IOException {
-        Configuration config = Configuration.getInstance();
+        final Configuration config = Configuration.getInstance();
         switch (config.getString(ICC_STRATEGY_CONFIG_KEY, "")) {
             case "BasicStrategy":
-                final String profileFilename = Configuration.getInstance().
-                        getString(ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY);
-                if (profileFilename != null) {
-                    final String profileName = Configuration.getInstance().
-                            getString(ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY);
-                    return new IccProfile(profileName,
-                            findProfile(profileFilename));
-                }
+                return getProfileUsingBasicStrategy();
             case "ScriptStrategy":
                 try {
-                    return getProfileFromDelegateMethod(identifier,
+                    return getProfileUsingScriptStrategy(identifier,
                             requestHeaders, clientIp);
                 } catch (ScriptException e) {
                     throw new IOException(e.getMessage(), e);
@@ -87,20 +80,36 @@ public class IccProfileService {
     }
 
     /**
-     * Returns a profile corresponding to the given parameters from the
-     * <code>icc_profile()</code> delegate method.
-     *
+     * @return Profile corresponding to the
+     *         {@link #ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY} and
+     *         {@link #ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY} keys in the
+     *         application configuration.
+     */
+    private IccProfile getProfileUsingBasicStrategy() {
+        final String profileFilename = Configuration.getInstance().
+                getString(ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY);
+        if (profileFilename != null) {
+            final String profileName = Configuration.getInstance().
+                    getString(ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY);
+            return new IccProfile(profileName,
+                    findProfile(profileFilename));
+        }
+        return null;
+    }
+
+    /**
      * @param identifier Image identifier to pass to the delegate method.
      * @param requestHeaders Request headers to pass to the delegate method.
      * @param clientIp Client IP address to pass to the delegate method.
      * @return Profile corresponding to the given parameters as returned by
-     *         the delegate method, or null if none was returned.
+     *         the <code>icc_profile()</code>delegate method, or
+     *         <code>null</code> if none was returned.
      * @throws IOException
      * @throws ScriptException
      */
-    private IccProfile getProfileFromDelegateMethod(Identifier identifier,
-                                                    Map<String,String> requestHeaders,
-                                                    String clientIp)
+    private IccProfile getProfileUsingScriptStrategy(Identifier identifier,
+                                                     Map<String,String> requestHeaders,
+                                                     String clientIp)
             throws IOException, ScriptException {
         // Delegate method parameters
         final Object args[] = new Object[] {
