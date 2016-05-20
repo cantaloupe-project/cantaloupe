@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.image.icc;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import javax.script.ScriptException;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 public class IccProfileService {
@@ -42,6 +44,8 @@ public class IccProfileService {
      * {@link #ICC_STRATEGY_CONFIG_KEY} is set to <var>ScriptStrategy</var>.
      *
      * @param identifier Image identifier to pass to the delegate method.
+     * @param outputFormat Format of the image into which the profile is to
+     *                     be embedded.
      * @param requestHeaders Request headers to pass to the delegate method.
      * @param clientIp Client IP address to pass to the delegate method.
      * @return Profile corresponding to the given parameters as returned by
@@ -49,6 +53,7 @@ public class IccProfileService {
      * @throws IOException
      */
     public IccProfile getProfile(Identifier identifier,
+                                 Format outputFormat,
                                  Map<String,String> requestHeaders,
                                  String clientIp) throws IOException {
         final Configuration config = Configuration.getInstance();
@@ -58,7 +63,7 @@ public class IccProfileService {
             case "ScriptStrategy":
                 try {
                     return getProfileUsingScriptStrategy(identifier,
-                            requestHeaders, clientIp);
+                            outputFormat, requestHeaders, clientIp);
                 } catch (ScriptException e) {
                     throw new IOException(e.getMessage(), e);
                 }
@@ -93,6 +98,8 @@ public class IccProfileService {
 
     /**
      * @param identifier Image identifier to pass to the delegate method.
+     * @param outputFormat Format of the image into which the profile is to
+     *                     be embedded.
      * @param requestHeaders Request headers to pass to the delegate method.
      * @param clientIp Client IP address to pass to the delegate method.
      * @return Profile corresponding to the given parameters as returned by
@@ -102,12 +109,18 @@ public class IccProfileService {
      * @throws ScriptException
      */
     private IccProfile getProfileUsingScriptStrategy(Identifier identifier,
+                                                     Format outputFormat,
                                                      Map<String,String> requestHeaders,
                                                      String clientIp)
             throws IOException, ScriptException {
-        // Delegate method parameters
+        // Assemble delegate method parameters
+        final Map<String,String> formatArg = new HashMap<>();
+        formatArg.put("media_type",
+                outputFormat.getPreferredMediaType().toString());
+        formatArg.put("extension", outputFormat.getPreferredExtension());
+
         final Object args[] = new Object[] {
-                identifier, requestHeaders, clientIp };
+                identifier.toString(), formatArg, requestHeaders, clientIp };
         try {
             // The delegate method is expected to return a hash (Map)
             // containing `name` and `pathname` keys, or an empty hash if

@@ -20,7 +20,7 @@ module Cantaloupe
     }
   end
 
-  def self.icc_profile(identifier, request_headers, client_ip)
+  def self.icc_profile(identifier, output_format, request_headers, client_ip)
     if identifier == 'cats'
       return {
           'name' => 'AdobeRGB1998',

@@ -53,7 +53,7 @@ module Cantaloupe
   ##
   # See the argument & return value documentation in delegates.rb.sample.
   #
-  def self.icc_profile(identifier, request_headers, client_ip)
+  def self.icc_profile(identifier, output_format, request_headers, client_ip)
     # Don't embed a profile into GIF images.
     return {} if output_format['media_type'] == 'image/gif'
 

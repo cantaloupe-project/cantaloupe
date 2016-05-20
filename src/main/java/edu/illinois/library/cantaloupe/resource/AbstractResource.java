@@ -219,6 +219,7 @@ public abstract class AbstractResource extends ServerResource {
             if (IccProfileService.isEnabled()) {
                 IccProfileService service = new IccProfileService();
                 opList.add(service.getProfile(opList.getIdentifier(),
+                        opList.getOutputFormat(),
                         getRequest().getHeaders().getValuesMap(),
                         getCanonicalClientIpAddress()));
             }

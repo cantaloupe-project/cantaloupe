@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.image.icc;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -43,6 +44,7 @@ public class IccProfileServiceTest {
                 "cats");
 
         IccProfile profile = instance.getProfile(new Identifier("dogs"),
+                Format.JPG,
                 new HashMap<String, String>(),
                 "127.0.0.1");
 
@@ -62,6 +64,7 @@ public class IccProfileServiceTest {
                 "cats");
 
         IccProfile profile = instance.getProfile(new Identifier("dogs"),
+                Format.JPG,
                 new HashMap<String, String>(),
                 "127.0.0.1");
         assertEquals("cats", profile.getName());
@@ -85,6 +88,7 @@ public class IccProfileServiceTest {
                     "cats");
 
             IccProfile profile = instance.getProfile(new Identifier("dogs"),
+                    Format.JPG,
                     new HashMap<String, String>(),
                     "127.0.0.1");
 
@@ -107,6 +111,7 @@ public class IccProfileServiceTest {
                 "cats");
 
         IccProfile profile = instance.getProfile(new Identifier("dogs"),
+                Format.JPG,
                 new HashMap<String, String>(),
                 "127.0.0.1");
         assertEquals("cats", profile.getName());
@@ -121,6 +126,7 @@ public class IccProfileServiceTest {
                 "ScriptStrategy");
 
         IccProfile profile = instance.getProfile(new Identifier("cats"),
+                Format.JPG,
                 new HashMap<String, String>(),
                 "127.0.0.1");
         assertEquals("AdobeRGB1998", profile.getName());

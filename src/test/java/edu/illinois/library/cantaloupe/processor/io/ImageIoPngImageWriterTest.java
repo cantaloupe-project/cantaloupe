@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.io;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.icc.IccProfile;
@@ -44,8 +45,8 @@ public class ImageIoPngImageWriterTest {
         planarImage = JAI.create("ImageRead", fixture);
 
         // Instantiate a writer
-        IccProfile profile = new IccProfileService().
-                getProfile(new Identifier("cats"), null, "127.0.0.1");
+        IccProfile profile = new IccProfileService().getProfile(
+                new Identifier("cats"), Format.PNG, null, "127.0.0.1");
         OperationList opList = new OperationList();
         opList.add(profile);
         writer = new ImageIoPngImageWriter(opList);
