@@ -68,6 +68,7 @@ public class ControlPanelTest {
         testProcessorsSection();
         testCachesSection();
         testOverlaysSection();
+        testColorProfilesSection();
         testDelegateScriptSection();
         testLoggingSection();
     }
@@ -490,6 +491,31 @@ public class ControlPanelTest {
         assertEquals("6",
                 config.getString("watermark.BasicStrategy.output_height_threshold"));
         assertTrue(config.getBoolean("redaction.enabled"));
+    }
+
+    private void testColorProfilesSection() throws Exception {
+        css("#cl-color-profiles-button").click();
+
+        // Fill in the form
+        css("[name=\"icc.enabled\"]").click();
+        new Select(css("[name=\"icc.strategy\"]")).
+                selectByValue("BasicStrategy");
+        css("[name=\"icc.BasicStrategy.profile\"]").sendKeys("/path/to/profile.icc");
+        css("[name=\"icc.BasicStrategy.profile_name\"]").sendKeys("Test Profile");
+
+        // Submit the form
+        css("#cl-color-profiles input[type=\"submit\"]").click();
+
+        Thread.sleep(SLEEP_AFTER_SUBMIT);
+
+        // Assert that the application configuration has been updated correctly
+        final Configuration config = Configuration.getInstance();
+        assertTrue(config.getBoolean("icc.enabled"));
+        assertEquals("BasicStrategy", config.getString("icc.strategy"));
+        assertEquals("/path/to/profile.icc",
+                config.getString("icc.BasicStrategy.profile"));
+        assertEquals("Test Profile",
+                config.getString("icc.BasicStrategy.profile_name"));
     }
 
     private void testDelegateScriptSection() throws Exception {

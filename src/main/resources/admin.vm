@@ -56,6 +56,10 @@
                     <a href="#cl-overlays" aria-controls="cl-overlays"
                        role="tab" data-toggle="tab">Overlays</a>
                 </li>
+                <li role="presentation" class="list-group-item" id="cl-color-profiles-button">
+                    <a href="#cl-color-profiles" aria-controls="cl-color-profiles"
+                       role="tab" data-toggle="tab">Color Profiles</a>
+                </li>
                 <li role="presentation" class="list-group-item" id="cl-delegate-script-button">
                     <a href="#cl-delegate-script" aria-controls="cl-delegate-script"
                        role="tab" data-toggle="tab">Delegate Script</a>
@@ -2319,6 +2323,79 @@
                                 </tr>
                             </table>
                         </section>
+                        <input type="submit" class="btn btn-primary" value="Save">
+                    </form>
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="cl-color-profiles">
+                    <form method="post">
+                        <section>
+                            <h2>Color Profiles</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="icc.enabled"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Strategy
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Configures how embedded color profiles
+                                           are chosen. &quot;Basic&quot; will use the other
+                                           configuration options in this section.
+                                           &quot;Delegate Script&quot; will use the
+                                           &lt;code&gt;icc_profile&lt;/code&gt; delegate
+                                           method. See the user manual for more
+                                           information.">?</a>
+                                    </td>
+                                    <td>
+                                        <select class="form-control"
+                                                name="icc.strategy"
+                                                data-requires-restart="false">
+                                            <option value="BasicStrategy">Basic</option>
+                                            <option value="DelegateScript">Delegate Script</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Profile
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Pathname or filename of an ICC
+                                           profile to embed. If a filename, it will
+                                           be searched for in the same folder as the
+                                           configuration file, and then the current working
+                                           directory.">?</a>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                               name="icc.BasicStrategy.profile"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Profile Name</td>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                               name="icc.BasicStrategy.profile_name"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
                         <input type="submit" class="btn btn-primary" value="Save">
                     </form>
                 </div>
