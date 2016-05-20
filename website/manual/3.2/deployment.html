@@ -1,0 +1,151 @@
+---
+layout: manual_3.2
+title: Deployment
+---
+
+<ol class="breadcrumb">
+  <li><a href="{{ site.baseurl }}/">Home</a></li>
+  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
+  <li><a href="{{ site.baseurl }}/manual/3.2/">3.2</a></li>
+  <li class="active">Deployment</li>
+</ol>
+
+<h1>Deployment</h1>
+
+<ul>
+  <li><a href="#Hardware">Hardware</a>
+    <ul>
+      <li><a href="#HardwareCPU">CPU</a></li>
+      <li><a href="#HardwareMemory">Memory</a></li>
+      <li><a href="#HardwareStorage">Storage</a></li>
+    </ul>
+  </li>
+  <li><a href="#Limiting">Limiting</a></li>
+  <li><a href="#Reverse-Proxying">Reverse-Proxying</a>
+    <ul>
+      <li><a href="#Reverse-ProxyingApache">Apache</a></li>
+      <li><a href="#Reverse-ProxyingNginx">nginx</a></li>
+    </ul>
+  </li>
+  <li><a href="#SSL/TLS">SSL/TLS</a></li>
+</ul>
+
+<p>This page gathers some miscellaneous notes on production deployment. It is not intended to be comprehensive, and there is plenty of relevant information in other sections as well.</p>
+
+<hr>
+
+<h2 id="Hardware">Hardware</h2>
+
+<h3 id="HardwareCPU">CPU</h3>
+
+<p>Response times tend to benefit from multiple fast CPU cores. Even if a particular processor doesn't support multithreading, the operating system is at least likely to schedule different processing threads (from simultaneous requests) on different cores.</p>
+
+<p>That said, some source formats are more CPU-intensive than others. JPEG2000 via <a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a>, for example, will put a lot more pressure on the CPU than uncompressed TIFF via <a href="processors.html#Java2dProcessor">Java2dProcessor</a>.</p>
+
+<h3 id="HardwareMemory">Memory</h3>
+
+<p>Memory requirements will vary drastically depending on source format, source image size, request image size, and the number of concurrent requests. Ideally, it is best to serve only source formats that support tiling or that can be selectively decoded (like TIFF or JPEG2000). Images in other formats will have to be fully loaded into memory before being processed, at great cost.</p>
+
+<h3 id="HardwareStorage">Storage</h3>
+
+<p>Most source formats benefit from fast read performance&mdash;in terms of both latency and throughput&mdash;in the underlying storage system. Throughput is more important for less efficient source formats&mdash;like JPEG, PNG, and mono-resolution TIFF&mdash;especially as source image size increases. <a href="resolvers.html#FilesystemResolver">Local filesystem storage</a> is usually fastest, and often by a long shot.</p>
+
+<hr>
+
+<h2 id="Limiting">Limiting</h2>
+
+<p>A <code>max_pixels</code> configuration option is available to limit the maximum returned size of processed images. This is a "safety net" to prevent clients from bogging down the server.</p>
+
+<p>(This does not affect requests for full-sized unmodified images, which do not significantly load the server because they are streamed through with no processing.)</p>
+
+<p>The <code><a href="access-control.html#Authorization">authorized?</a></code> delegate script method can perform the same function as <code>max_pixels</code>, with more options for fine-grained control.</p>
+
+<hr>
+
+<h2 id="Reverse-Proxying">Reverse-Proxying</h2>
+
+<p>Cantaloupe can be set up to run behind a reverse-proxy web server like Apache or nginx. The proxy should be set up to pass-through encoded URI characters without decoding them. It should also be configured to send the following headers:</p>
+
+<table class="table table-striped">
+  <tr>
+    <th>Header</th>
+    <th>Description</th>
+    <th>Required?</th>
+  </tr>
+  <tr>
+    <td style="white-space: nowrap"><code>X-Forwarded-Proto</code></td>
+    <td>Protocol of the client request; either <code>HTTP</code> or <code>HTTPS</code>.  If missing, HTTP will be assumed.</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><code>X-Forwarded-Host</code></td>
+    <td>FQDN of the client-facing reverse proxy.</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><code>X-Forwarded-Port</code></td>
+    <td>TCP port of the client-facing reverse proxy. Will default to 80 if missing.</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><code>X-Forwarded-Path</code></td>
+    <td>Path to use as a base path. Will default to none if missing.</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><code>X-Forwarded-For</code></td>
+    <td>Client IP address. If missing, any features that require a client IP address will either not work (such as IP-based authorization), or be incorrect (such as access logs).</td>
+    <td>No</td>
+  </tr>
+</table>
+
+<p>If it is not possible to configure your reverse proxy to send these headers, the <code>base_uri</code> configuration option can be used instead; set it to the URI of the client-facing reverse proxy including any base path.</p>
+
+<p>In a reverse-proxying scenario, you might want to disable the image server's <a href="logging.html#Access%20Log">access log</a>, if it would be redundant.</p>
+
+<h3 id="Reverse-ProxyingApache">Apache</h3>
+
+<p>The following example will make a Cantaloupe server running at http://image-server:8182/ available at http://apache-server/.
+
+<pre>&lt;VirtualHost *:80&gt;
+  # X-Forwarded-Host will be set automatically by the web server.
+  RequestHeader set X-Forwarded-Proto HTTP
+  RequestHeader set X-Forwarded-Port 80
+  RequestHeader set X-Forwarded-Path /
+
+  ServerName apache-server
+  AllowEncodedSlashes NoDecode
+  ProxyPassReverseCookiePath / /
+  ErrorLog logs/image-error.log
+  CustomLog logs/image-access.log combined
+
+  ProxyPass / http://image-server:8182/ nocanon
+  ProxyPassReverse / http://image-server:8182/
+  ProxyPassReverseCookieDomain image-server:8182 apache-server
+  ProxyPreserveHost on
+&lt;/VirtualHost&gt;
+</pre>
+
+<h3 id="ReverseProxyingNginx">nginx</h3>
+
+<p>The following example will make a Cantaloupe server running at http://image-server:8182/ available at http://nginx-server/.
+
+<pre>location / {
+    if ($request_uri ~* "/(.*)") {
+        proxy_pass http://127.0.0.1:8182/$1;
+    }
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-Host $host;
+    proxy_set_header X-Forwarded-Port $server_port;
+    proxy_set_header X-Forwarded-Path /;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_redirect http://127.0.0.1:8182/ /;
+}</pre>
+
+<hr>
+
+<h2 id="SSL/TLS">SSL/TLS</h2>
+
+<p>SSL/TLS is an involved subject that will not be covered here in any depth. Suffice to say that in standalone mode, Cantaloupe supports TLS connections over HTTPS, configurable via the <code>https.*</code> keys in the configuration file. The general process for getting this working is to add a signed x.509 certificate to either a Java KeyStore (JKS) or PKCS#12 key store, and then refer to the key store file with the <code>https.key_store_path</code> configuration option.</p>
+
+<p>HTTPS can also be enabled on a Servlet container or <a href="#Reverse-Proxying">reverse proxy server</a>, in which case Cantaloupe requires no special configuration.</p>

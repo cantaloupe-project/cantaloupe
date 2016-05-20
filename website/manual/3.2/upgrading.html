@@ -1,0 +1,136 @@
+---
+layout: manual_3.2
+title: Upgrading
+---
+
+<ol class="breadcrumb">
+  <li><a href="{{ site.baseurl }}/">Home</a></li>
+  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
+  <li><a href="{{ site.baseurl }}/manual/3.2/">3.2</a></li>
+  <li class="active">Upgrading</li>
+</ol>
+
+<h1>Upgrading</h1>
+
+<div class="alert alert-info">If you are skipping versions, it will be necessary to work through this list upwards from the version you are currently on.</div>
+
+<h2>From 3.1.1 to 3.2</h2>
+
+<ul>
+  <li>Add the <code>icc.*</code> keys from the sample configuration.</li>
+</ul>
+
+<h2>From 3.0.1 to 3.1</h2>
+
+<ul>
+  <li>Replace the <code>get_iiif2_service</code> delegate script method with <code>extra_iiif2_information_response_keys</code>.</li>
+</ul>
+
+<h2>From 3.0 to 3.0.1</h2>
+
+<p>Nothing to do.</p>
+
+<h2>From 2.2 to 3.0</h2>
+
+<ul>
+  <li>Add the following keys from the sample configuration:
+    <ul>
+      <li><code>admin.*</code></li>
+      <li><code>delegate_script.enabled</code></li>
+      <li><code>endpoint.iiif.2.restrict_to_sizes</code></li>
+      <li><code>StreamProcessor.retrieval_strategy</code></li>
+      <li><code>cache.source</code></li>
+      <li><code>AmazonS3Cache.*</code></li>
+      <li><code>AzureStorageCache.*</code></li>
+      <li><code>redaction.enabled</code></li>
+    </ul>
+  </li>
+  <li>Rename the following keys:
+    <ul>
+      <li><code>delegate_script</code> to <code>delegate_script.pathname</code></li>
+      <li><code>cache.server</code> to <code>cache.derivative</code></li>
+    </ul>
+  </li>
+  <li>Remove the following keys:
+    <ul>
+      <li><code>JdbcResolver.function.*</code></li>
+    </ul>
+  </li>
+  <li>Add the following methods from the sample delegate script:
+    <ul>
+      <li><code>redactions</code></li>
+      <li><code>Cantaloupe::JdbcResolver::get_database_identifier</code></li>
+      <li><code>Cantaloupe::JdbcResolver::get_media_type</code></li>
+      <li><code>Cantaloupe::JdbcResolver::get_lookup_sql</code></li>
+    </ul>
+  </li>
+  <li>Rename the following delegate script methods:
+    <ul>
+      <li><code>Cantaloupe::get_pathname</code> to <code>Cantaloupe::FilesystemResolver::get_pathname</code></li>
+      <li><code>Cantaloupe::get_url</code> to <code>Cantaloupe::HttpResolver::get_url</code></li>
+      <li><code>Cantaloupe::get_azure_storage_blob_key</code> to <code>Cantaloupe::AzureStorageResolver::get_blob_key</code></li>
+      <li><code>Cantaloupe::get_s3_object_key</code> to <code>Cantaloupe::AmazonS3Resolver::get_object_key</code></li>
+    </ul>
+  </li>
+  <li>If you are using JdbcResolver, be aware that the <code>JdbcResolver.function.*</code> configuration keys are now obsolete, and these functions will have to be rewritten as delegate script methods.</li>
+  <li>If you are using JdbcCache, modify your database schema:
+    <pre>ALTER TABLE {JdbcCache.info_table} CHANGE COLUMN last_modified last_accessed;
+ALTER TABLE {JdbcCache.derivative_image_table} CHANGE COLUMN last_modified last_accessed;</pre>
+  </li>
+</ul>
+
+<div class="alert alert-info">Note that the information that used to be available on the landing page (<span class="filename">/</span>) has moved to the Control Panel (<span class="filename">/admin</span>). Log in with a username of "admin" and the password defined in the <code>admin.password</code> configuration option.</div>
+
+<h2>From 2.1.1 to 2.2</h2>
+
+<ul>
+  <li>Add the following keys from the sample configuration:
+    <ul>
+      <li><code>endpoint.iiif.min_tile_size</code></li>
+      <li><code>AzureStorageResolver.*</code></li>
+      <li><code>GraphicsMagickProcessor.background_color</code></li>
+      <li><code>ImageMagickProcessor.background_color</code></li>
+      <li><code>processor.pdf</code></li>
+      <li><code>PdfBoxProcessor.*</code></li>
+      <li><code>cache.server.worker.*</code></li>
+      <li><code>watermark.*</code></li>
+    </ul>
+  </li>
+  <li>If you are using FilesystemCache, purge your info cache by deleting the <span class="filename">{FilesystemCache.pathname}/info</span> directory.</li>
+  <li>If you are using JdbcCache, modify your table schema and purge your info cache:
+    <pre>ALTER TABLE {JdbcCache.info_table} DROP COLUMN width;
+ALTER TABLE {JdbcCache.info_table} DROP COLUMN height;
+ALTER TABLE {JdbcCache.info_table} ADD info VARCHAR(8192) NOT NULL;
+DELETE FROM {JdbcCache.info_table};</pre>
+  </li>
+</ul>
+
+<h2>From 2.1 to 2.1.1</h2>
+
+<p>Nothing to do.</p>
+
+<h2>From 2.0 to 2.1</h2>
+
+<ul>
+  <li>Add the following keys from the sample configuration:
+    <ul>
+      <li><code>JaiProcessor.*</code></li>
+      <li><code>Java2dProcessor.tif.compression</code></li>
+      <li><code>FilesystemCache.dir.*</code></li>
+      <li><code>log.*.SyslogAppender.*</code></li>
+    </ul>
+  </li>
+  <li>Add the <code>authorized?</code> method from the sample delegate script.</li>
+  <li>Purge your cache.</li>
+</ul>
+
+<h2>From 1.x to 2.0</h2>
+
+<p>There are so many new and renamed configuration keys in this version that it is recommended to start over with a new configuration file. The inline comments, which serve as the primary source of configuration documentation, have also been updated.</p>
+
+<p>Also, because the cache naming format has changed, it will be necessary to purge your cache before using this version.</p>
+
+<div class="alert alert-info">
+  <p>Note that the Image API 2.0 endpoint, which used to be located at <span class="filename">/iiif</span>, has moved to <span class="filename">/iiif/2</a>.</p>
+  <p>Also, the landing page has moved to <span class="filename">/</span>.</p>
+</div>
