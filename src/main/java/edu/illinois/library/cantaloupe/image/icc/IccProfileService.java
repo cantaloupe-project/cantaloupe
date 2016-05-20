@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.processor.io;
+package edu.illinois.library.cantaloupe.image.icc;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -18,12 +18,23 @@ public class IccProfileService {
     private static Logger logger = LoggerFactory.
             getLogger(IccProfileService.class);
 
-    static final String ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY =
+    public static final String ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY =
             "icc.BasicStrategy.profile";
-    static final String ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY =
+    public static final String ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY =
             "icc.BasicStrategy.profile_name";
-    static final String ICC_ENABLED_CONFIG_KEY = "icc.enabled";
-    static final String ICC_STRATEGY_CONFIG_KEY = "icc.strategy";
+    public static final String ICC_ENABLED_CONFIG_KEY = "icc.enabled";
+    public static final String ICC_STRATEGY_CONFIG_KEY = "icc.strategy";
+
+    /**
+     * @return Whether ICC profiles should be embedded in derivative images
+     *         under any circumstances according to the
+     *         {@link #ICC_ENABLED_CONFIG_KEY} key in the application
+     *         configuration.
+     */
+    public static boolean isEnabled() {
+        return Configuration.getInstance().
+                getBoolean(ICC_ENABLED_CONFIG_KEY, false);
+    }
 
     /**
      * Returns a profile corresponding to the application configuration and
@@ -113,17 +124,6 @@ public class IccProfileService {
                     "disabled; aborting.");
         }
         return null;
-    }
-
-    /**
-     * @return Whether ICC profiles should be embedded in derivative images
-     *         under any circumstances according to the
-     *         {@link #ICC_ENABLED_CONFIG_KEY} key in the application
-     *         configuration.
-     */
-    public boolean isEnabled() {
-        return Configuration.getInstance().
-                getBoolean(ICC_ENABLED_CONFIG_KEY, false);
     }
 
 }

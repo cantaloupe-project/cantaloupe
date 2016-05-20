@@ -2,8 +2,9 @@ package edu.illinois.library.cantaloupe.processor.io;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.image.icc.IccProfile;
 import edu.illinois.library.cantaloupe.processor.Java2dUtil;
-import edu.illinois.library.cantaloupe.resource.RequestAttributes;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -17,7 +18,6 @@ import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.JAI;
 import javax.media.jai.OpImage;
 import javax.media.jai.PlanarImage;
-import java.awt.color.ICC_Profile;
 import java.awt.image.BufferedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
@@ -40,8 +40,8 @@ class ImageIoJpegImageWriter extends AbstractImageIoImageWriter {
     static final String JAI_JPG_QUALITY_CONFIG_KEY =
             "JaiProcessor.jpg.quality";
 
-    ImageIoJpegImageWriter(RequestAttributes attrs) {
-        super(attrs);
+    ImageIoJpegImageWriter(OperationList opList) {
+        super(opList);
     }
 
     /**

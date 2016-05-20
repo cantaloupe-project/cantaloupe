@@ -1,7 +1,8 @@
 package edu.illinois.library.cantaloupe.processor.io;
 
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.resource.RequestAttributes;
+import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.image.icc.IccProfile;
 import org.w3c.dom.Node;
 
 import javax.imageio.IIOImage;
@@ -30,8 +31,8 @@ import java.util.Iterator;
  */
 class ImageIoGifImageWriter extends AbstractImageIoImageWriter {
 
-    ImageIoGifImageWriter(RequestAttributes attrs) {
-        super(attrs);
+    ImageIoGifImageWriter(OperationList opList) {
+        super(opList);
     }
 
     /**

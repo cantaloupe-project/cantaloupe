@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.io;
 
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.resource.RequestAttributes;
+import edu.illinois.library.cantaloupe.image.OperationList;
 
 import javax.media.jai.PlanarImage;
 import java.awt.image.BufferedImage;
@@ -17,7 +17,7 @@ import java.util.Set;
  */
 public class ImageIoImageWriter {
 
-    private RequestAttributes requestAttributes;
+    private OperationList opList;
 
     /**
      * @return Set of supported output formats.
@@ -27,8 +27,8 @@ public class ImageIoImageWriter {
                 Format.PNG, Format.TIF));
     }
 
-    public ImageIoImageWriter(RequestAttributes attrs) {
-        requestAttributes = attrs;
+    public ImageIoImageWriter(OperationList opList) {
+        this.opList = opList;
     }
 
     /**
@@ -44,20 +44,16 @@ public class ImageIoImageWriter {
                       final OutputStream outputStream) throws IOException {
         switch (outputFormat) {
             case GIF:
-                new ImageIoGifImageWriter(requestAttributes).
-                        write(image, outputStream);
+                new ImageIoGifImageWriter(opList).write(image, outputStream);
                 break;
             case JPG:
-                new ImageIoJpegImageWriter(requestAttributes).
-                        write(image, outputStream);
+                new ImageIoJpegImageWriter(opList).write(image, outputStream);
                 break;
             case PNG:
-                new ImageIoPngImageWriter(requestAttributes).
-                        write(image, outputStream);
+                new ImageIoPngImageWriter(opList).write(image, outputStream);
                 break;
             case TIF:
-                new ImageIoTiffImageWriter(requestAttributes).
-                        write(image, outputStream);
+                new ImageIoTiffImageWriter(opList).write(image, outputStream);
                 break;
         }
     }
@@ -75,20 +71,16 @@ public class ImageIoImageWriter {
                       final OutputStream outputStream) throws IOException {
         switch (outputFormat) {
             case GIF:
-                new ImageIoGifImageWriter(requestAttributes).
-                        write(image, outputStream);
+                new ImageIoGifImageWriter(opList).write(image, outputStream);
                 break;
             case JPG:
-                new ImageIoJpegImageWriter(requestAttributes).
-                        write(image, outputStream);
+                new ImageIoJpegImageWriter(opList).write(image, outputStream);
                 break;
             case PNG:
-                new ImageIoPngImageWriter(requestAttributes).
-                        write(image, outputStream);
+                new ImageIoPngImageWriter(opList).write(image, outputStream);
                 break;
             case TIF:
-                new ImageIoTiffImageWriter(requestAttributes).
-                        write(image, outputStream);
+                new ImageIoTiffImageWriter(opList).write(image, outputStream);
                 break;
         }
     }

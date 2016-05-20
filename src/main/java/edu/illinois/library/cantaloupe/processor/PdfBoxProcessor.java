@@ -240,7 +240,7 @@ class PdfBoxProcessor extends AbstractProcessor
             }
         }
 
-        new ImageIoImageWriter(requestAttributes).
+        new ImageIoImageWriter(opList).
                 write(image, opList.getOutputFormat(), outputStream);
         image.flush();
     }

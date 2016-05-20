@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.processor.io;
+package edu.illinois.library.cantaloupe.image.icc;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -9,7 +9,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 

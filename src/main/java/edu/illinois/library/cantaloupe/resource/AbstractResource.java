@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.icc.IccProfileService;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.redaction.RedactionService;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
@@ -187,6 +188,7 @@ public abstract class AbstractResource extends ServerResource {
     public void addNonEndpointOperations(final OperationList opList,
                                          final Dimension fullSize) {
         try {
+            // Redactions
             if (RedactionService.isEnabled()) {
                 List<Redaction> redactions = RedactionService.redactionsFor(
                         opList.getIdentifier(),
@@ -201,6 +203,7 @@ public abstract class AbstractResource extends ServerResource {
                         RedactionService.REDACTION_ENABLED_CONFIG_KEY);
             }
 
+            // Watermark
             if (WatermarkService.isEnabled()) {
                 opList.add(WatermarkService.newWatermark(
                         opList, fullSize, getReference().toUrl(),
@@ -211,6 +214,14 @@ public abstract class AbstractResource extends ServerResource {
                 logger.info("Watermarking is disabled ({} = false); skipping.",
                         WatermarkService.WATERMARK_ENABLED_CONFIG_KEY);
             }
+
+            // ICC profile
+            if (IccProfileService.isEnabled()) {
+                IccProfileService service = new IccProfileService();
+                opList.add(service.getProfile(opList.getIdentifier(),
+                        getRequest().getHeaders().getValuesMap(),
+                        getCanonicalClientIpAddress()));
+            }
         } catch (DelegateScriptDisabledException e) {
             // no problem
             logger.info("Delegate script disabled; skipping non-endpoint " +
@@ -218,7 +229,6 @@ public abstract class AbstractResource extends ServerResource {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-
     }
 
     /**
@@ -318,12 +328,7 @@ public abstract class AbstractResource extends ServerResource {
             throw new PayloadTooLargeException();
         }
 
-        final RequestAttributes attrs = new RequestAttributes();
-        attrs.setOperationList(ops);
-        attrs.setClientIp(getCanonicalClientIpAddress());
-        attrs.getHeaders().putAll(getRequest().getHeaders().getValuesMap());
-
-        return new ImageRepresentation(imageInfo, proc, attrs, disposition);
+        return new ImageRepresentation(imageInfo, proc, ops, disposition);
     }
 
     /**

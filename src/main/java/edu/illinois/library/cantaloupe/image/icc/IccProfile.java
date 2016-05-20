@@ -1,14 +1,18 @@
-package edu.illinois.library.cantaloupe.processor.io;
+package edu.illinois.library.cantaloupe.image.icc;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.Operation;
 import org.apache.commons.io.IOUtils;
 
+import java.awt.Dimension;
 import java.awt.color.ICC_Profile;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
-public class IccProfile {
+public class IccProfile implements Operation {
 
     private File file;
     private String name;
@@ -73,6 +77,16 @@ public class IccProfile {
         }
     }
 
+    @Override
+    public Dimension getResultingSize(Dimension fullSize) {
+        return fullSize;
+    }
+
+    @Override
+    public boolean isNoOp() {
+        return false;
+    }
+
     /**
      * @param name Name of the profile.
      */
@@ -85,6 +99,25 @@ public class IccProfile {
      */
     public void setFile(File file) {
         this.file = file;
+    }
+
+    @Override
+    public Map<String, Object> toMap(Dimension fullSize) {
+        final HashMap<String,Object> map = new HashMap<>();
+        map.put("operation", "icc_profile");
+        map.put("pathname", (getFile() != null) ?
+                getFile().getAbsolutePath() : null);
+        map.put("name", getName());
+        return map;
+    }
+
+    /**
+     * @return String representation of the instance, in the format
+     * "{profile filename}".
+     */
+    @Override
+    public String toString() {
+        return (getFile() != null) ? getFile().getName() : null;
     }
 
 }

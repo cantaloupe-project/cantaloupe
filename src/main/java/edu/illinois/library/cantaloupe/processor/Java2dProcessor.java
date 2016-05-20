@@ -40,8 +40,6 @@ class Java2dProcessor extends AbstractImageIoProcessor
             getLogger(Java2dProcessor.class);
 
     static final String SCALE_MODE_CONFIG_KEY = "Java2dProcessor.scale_mode";
-    static final String TIF_COMPRESSION_CONFIG_KEY =
-            "Java2dProcessor.tif.compression";
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
@@ -167,7 +165,7 @@ class Java2dProcessor extends AbstractImageIoProcessor
                 }
             }
 
-            new ImageIoImageWriter(requestAttributes).
+            new ImageIoImageWriter(ops).
                     write(image, ops.getOutputFormat(), outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);

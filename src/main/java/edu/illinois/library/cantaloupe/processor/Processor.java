@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.resource.RequestAttributes;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
 import java.io.OutputStream;
@@ -79,14 +78,6 @@ public interface Processor {
      */
     void process(OperationList ops, ImageInfo sourceInfo,
                  OutputStream outputStream) throws ProcessorException;
-
-    /**
-     * Some processors will need to have access to some or all of these for
-     * various reasons such as passing them as arguments to delegate methods.
-     *
-     * @param attrs
-     */
-    void setRequestAttributes(RequestAttributes attrs);
 
     /**
      * @param format Format of the source image. Will never be

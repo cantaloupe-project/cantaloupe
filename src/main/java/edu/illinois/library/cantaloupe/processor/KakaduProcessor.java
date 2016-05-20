@@ -545,7 +545,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
             }
         }
 
-        ImageIoImageWriter writer = new ImageIoImageWriter(requestAttributes);
+        final ImageIoImageWriter writer = new ImageIoImageWriter(opList);
 
         if (image != null) {
             writer.write(image, opList.getOutputFormat(), outputStream);
@@ -609,7 +609,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
             }
         }
 
-        new ImageIoImageWriter(requestAttributes).
+        new ImageIoImageWriter(opList).
                 write(image, opList.getOutputFormat(), outputStream);
         image.flush();
     }

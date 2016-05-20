@@ -3,8 +3,10 @@ package edu.illinois.library.cantaloupe.processor.io;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.resource.RequestAttributes;
+import edu.illinois.library.cantaloupe.image.icc.IccProfile;
+import edu.illinois.library.cantaloupe.image.icc.IccProfileService;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Node;
@@ -12,6 +14,7 @@ import org.w3c.dom.Node;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import java.awt.image.BufferedImage;
@@ -41,18 +44,22 @@ public class ImageIoJpegImageWriterTest {
         planarImage = JAI.create("ImageRead", fixture);
 
         // Instantiate a writer
-        final RequestAttributes attrs = new RequestAttributes();
-        attrs.setClientIp("127.0.0.1");
+        IccProfile profile = new IccProfileService().
+                getProfile(new Identifier("cats"), null, "127.0.0.1");
         OperationList opList = new OperationList();
-        opList.setIdentifier(new Identifier("cats"));
-        attrs.setOperationList(opList);
-        writer = new ImageIoJpegImageWriter(attrs);
+        opList.add(profile);
+        writer = new ImageIoJpegImageWriter(opList);
 
         // Create a temp file to write to
         tempFile = File.createTempFile("test", "tmp");
-        tempFile.deleteOnExit();
 
         outputStream = new FileOutputStream(tempFile);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        outputStream.close();
+        tempFile.delete();
     }
 
     @Test
@@ -97,14 +104,17 @@ public class ImageIoJpegImageWriterTest {
         final Iterator<ImageReader> readers =
                 ImageIO.getImageReadersByFormatName("JPEG");
         final ImageReader reader = readers.next();
-        reader.setInput(ImageIO.createImageInputStream(tempFile));
-
-        // Check for the profile in its metadata
-        final IIOMetadata metadata = reader.getImageMetadata(0);
-        final Node tree = metadata.getAsTree(metadata.getNativeMetadataFormatName());
-        final Node iccNode = tree.getChildNodes().item(0).getChildNodes().
-                item(0).getChildNodes().item(0);
-        assertEquals("app2ICC", iccNode.getNodeName());
+        try (ImageInputStream ios = ImageIO.createImageInputStream(tempFile)) {
+            reader.setInput(ios);
+            // Check for the profile in its metadata
+            final IIOMetadata metadata = reader.getImageMetadata(0);
+            final Node tree = metadata.getAsTree(metadata.getNativeMetadataFormatName());
+            final Node iccNode = tree.getChildNodes().item(0).getChildNodes().
+                    item(0).getChildNodes().item(0);
+            assertEquals("app2ICC", iccNode.getNodeName());
+        } finally {
+            reader.dispose();
+        }
     }
 
 }

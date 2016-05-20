@@ -3,17 +3,20 @@ package edu.illinois.library.cantaloupe.processor.io;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.resource.RequestAttributes;
+import edu.illinois.library.cantaloupe.image.icc.IccProfile;
+import edu.illinois.library.cantaloupe.image.icc.IccProfileService;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import it.geosolutions.imageio.plugins.tiff.TIFFTag;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import java.awt.image.BufferedImage;
@@ -43,18 +46,22 @@ public class ImageIoTiffImageWriterTest {
         planarImage = JAI.create("ImageRead", fixture);
 
         // Instantiate a writer
-        final RequestAttributes attrs = new RequestAttributes();
-        attrs.setClientIp("127.0.0.1");
+        IccProfile profile = new IccProfileService().
+                getProfile(new Identifier("cats"), null, "127.0.0.1");
         OperationList opList = new OperationList();
-        opList.setIdentifier(new Identifier("cats"));
-        attrs.setOperationList(opList);
-        writer = new ImageIoTiffImageWriter(attrs);
+        opList.add(profile);
+        writer = new ImageIoTiffImageWriter(opList);
 
         // Create a temp file to write to
         tempFile = File.createTempFile("test", "tmp");
-        tempFile.deleteOnExit();
 
         outputStream = new FileOutputStream(tempFile);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        outputStream.close();
+        tempFile.delete();
     }
 
     @Test
@@ -99,13 +106,16 @@ public class ImageIoTiffImageWriterTest {
         final Iterator<ImageReader> readers =
                 ImageIO.getImageReadersByFormatName("TIFF");
         final ImageReader reader = readers.next();
-        reader.setInput(ImageIO.createImageInputStream(tempFile));
-
-        // Check for the profile in its metadata
-        final IIOMetadata metadata = reader.getImageMetadata(0);
-        final TIFFDirectory dir = TIFFDirectory.createFromMetadata(metadata);
-        final TIFFTag tag = dir.getTag(BaselineTIFFTagSet.TAG_ICC_PROFILE);
-        assertNotNull(tag);
+        try (ImageInputStream iis = ImageIO.createImageInputStream(tempFile)) {
+            reader.setInput(iis);
+            // Check for the profile in its metadata
+            final IIOMetadata metadata = reader.getImageMetadata(0);
+            final TIFFDirectory dir = TIFFDirectory.createFromMetadata(metadata);
+            final TIFFTag tag = dir.getTag(BaselineTIFFTagSet.TAG_ICC_PROFILE);
+            assertNotNull(tag);
+        } finally {
+            reader.dispose();
+        }
     }
 
 }

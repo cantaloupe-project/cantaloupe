@@ -2,7 +2,8 @@ package edu.illinois.library.cantaloupe.processor.io;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.resource.RequestAttributes;
+import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.image.icc.IccProfile;
 import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import it.geosolutions.imageio.plugins.tiff.TIFFField;
@@ -35,8 +36,8 @@ class ImageIoTiffImageWriter extends AbstractImageIoImageWriter {
     static final String TIF_COMPRESSION_CONFIG_KEY = // TODO: fix w/ java 2d
             "JaiProcessor.tif.compression";
 
-    ImageIoTiffImageWriter(RequestAttributes attrs) {
-        super(attrs);
+    ImageIoTiffImageWriter(OperationList opList) {
+        super(opList);
     }
 
     /**
