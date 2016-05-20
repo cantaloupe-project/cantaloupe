@@ -32,27 +32,3 @@ title: What's New
   </li>
   <li>Replaced the <code>get_iiif2_service</code> delegate method with <code>extra_iiif2_information_response_keys</code>.</li>
 </ul>
-
-<h2>3.0.1</h2>
-
-<ul>
-  <li>Fixed a broken build in standalone mode.</li>
-</ul>
-
-<h2>3.0</h2>
-
-<ul>
-  <li>Added a Control Panel for web-based configuration changes.</li>
-  <li>Changed the distribution archive to a custom <span class="filename">.war</span> file that can be run standalone (as before) or in a Servlet container.</li>
-  <li>Added AmazonS3Cache.</li>
-  <li>Added AzureStorageCache.</li>
-  <li>Added redaction.</li>
-  <li>Added the ability to restrict available sizes to those specified in the <span class="filename">info.json</span> response in the IIIF Image API 2.0 endpoint.</li>
-  <li>Added an optional source image cache, which can improve the performance of StreamProcessors, as well as enable FileProcessors to work with StreamResolvers.</li>
-  <li>Moved JdbcResolver delegate methods to the delegate script.</li>
-  <li>Moved resolver-related delegate methods to submodules to improve organization.</li>
-  <li>Changes to the logging configuration are applied immediately without restarting.</li>
-  <li>Requests for more than <code>max_pixels</code> receive an HTTP 403 response rather than 500.</li>
-  <li>Upgraded the Amazon S3 client to version 1.10.56.</li>
-  <li>Upgraded the Restlet framework to version 2.3.7.</li>
-</ul>
