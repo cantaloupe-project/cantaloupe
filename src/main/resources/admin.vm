@@ -170,6 +170,20 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <td>Host
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Host interface to bind the built-in HTTP
+                                           server to.">?</a>
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="text"
+                                               name="http.host"
+                                               data-requires-restart="true">
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td>Port
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
@@ -207,6 +221,20 @@
                                                 Enabled
                                             </label>
                                         </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Host
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Host interface to bind the built-in HTTPS
+                                           server to.">?</a>
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="text"
+                                               name="https.host"
+                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                                 <tr>
