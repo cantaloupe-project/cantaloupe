@@ -1,0 +1,95 @@
+---
+layout: manual_3.2
+title: Color Profiles
+---
+
+<ol class="breadcrumb">
+  <li><a href="{{ site.baseurl }}/">Home</a></li>
+  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
+  <li><a href="{{ site.baseurl }}/manual/3.2/">3.2</a></li>
+  <li class="active">Color Profiles</li>
+</ol>
+
+<h1>Color Profiles</h1>
+
+<ul>
+  <li><a href="#Overview">Overview</a></li>
+  <li><a href="#Modes of Operation">Modes of Operation</a>
+    <ul>
+        <li><a href="#BasicStrategy">BasicStrategy</a></li>
+        <li><a href="#ScriptStrategy">ScriptStrategy</a></li>
+    </ul>
+  </li>
+  <li><a href="#Processor%20Support">Processor Support</a></li>
+  <li><a href="#Implications">Implications</a>
+    <ul>
+      <li><a href="#Internet Delivery">Internet Delivery</a></li>
+      <li><a href="#Performance">Performance</a></li>
+      <li><a href="#Caching">Caching</a></li>
+    </ul>
+  </li>
+</ul>
+
+<p>ICC color profiles enable accurate color reproduction. ICC profiles can be embedded in many image formats, including all of those supported by Cantaloupe as derivative (output) formats, to tell clients how to render their colors.</p>
+
+<hr>
+
+<h2 id="Modes of Operation">Modes of Operation</h2>
+
+<p>There are two "strategies," or ways of configuring the embedding process: a basic strategy, where the same profile is embedded in all derivative images; and a <a href="#ScriptStrategy">script strategy</a>, where the decision whether or not to embed a profile, and which one to embed, depends on the return value of a delegate script method. The <code>icc.strategy</code> configuration key is used to set the strategy.</p>
+
+<h3 id="BasicStrategy">BasicStrategy</h3>
+
+<p>With BasicStrategy, the <code>icc.BasicStrategy.*</code> keys in the configuration file are used to refer to a profile. This strategy is easy to configure and works well when you intend for the same profile to be embedded in all images.</p>
+
+<h3 id="ScriptStrategy">ScriptStrategy</h3>
+
+<p>Perhaps you only want to embed a profile into some images, and not others; or you want to embed a different profile into different images, based on a client's user agent. Or, perhaps you only want to embed a profile in JPEG output images, and not GIFs. All of this is possible by writing just a few lines of code.</p>
+
+<p>With the <code>Cantaloupe::icc_profile</code> delegate script method, you can tell the image server whether or not to embed a profile, and what profile to embed, in response to a particular request, An example of how this can be accomplished appears below:</p>
+
+{% highlight ruby %}
+module Cantaloupe
+  ##
+  # See the argument & return value documentation in delegates.rb.sample.
+  #
+  def self.icc_profile(identifier, request_headers, client_ip)
+    # Don't embed a profile into GIF images.
+    return {} if output_format['media_type'] == 'image/gif'
+
+    # Don't embed a profile into images of cantaloupes.
+    return false if identifier.downcase.include?('cantaloupe')
+
+    # Embed a different profile for certain clients based on their
+    # User-Agent header.
+    if request_headers.
+        select{ |k,v| k.downcase == 'user-agent' and v.include?('MyUserAgent') }.any?
+      return {
+        'pathname' => '/path/to/AdobeRGB1998.icc',
+        'name' => 'AdobeRGB1998'
+      }
+    end
+
+    # Don't embed a profile for all other requests.
+    {}
+  end
+end
+{% endhighlight %}
+
+<h2 id="Processor Support">Processor Support</h2>
+
+<p>Not all processors support watermarking; see the <a href="processors.html#Supported%20Features">table of processor-supported features</a>.</p>
+
+<h2 id="Implications">Implications</h2>
+
+<h3 id="Internet Delivery">Internet Delivery</h3>
+
+<p>In general, the de facto official profile of the WWW is sRGB, and many operating systems and image viewing libraries automatically expand profile-less images into this color space by default. There is therefore rarely a need to explicitly embed an sRGB profile.</p>
+
+<h3 id="Performance">Performance</h3>
+
+<p>Embedded profiles tend to increase image size by a few KB.</p>
+
+<h3 id="Caching">Caching</h3>
+
+<p>Profile (name and pathname) are encoded in cached-image identifiers. When profile settings change, cached images with profiles will be re-generated automatically, and images with different profile settings (when using <a href="#ScriptStrategy">ScriptStrategy</a>) will be cached separately.</p>
