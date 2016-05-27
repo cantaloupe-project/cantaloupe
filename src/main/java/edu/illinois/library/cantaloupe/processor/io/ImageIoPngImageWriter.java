@@ -35,6 +35,11 @@ class ImageIoPngImageWriter extends AbstractImageIoImageWriter {
         super(opList);
     }
 
+    ImageIoPngImageWriter(OperationList opList,
+                          ImageIoMetadata sourceMetadata) {
+        super(opList, sourceMetadata);
+    }
+
     /**
      * Applies Deflate compression to the given bytes.
      *

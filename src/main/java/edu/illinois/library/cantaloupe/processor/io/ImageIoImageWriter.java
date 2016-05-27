@@ -18,6 +18,7 @@ import java.util.Set;
 public class ImageIoImageWriter {
 
     private OperationList opList;
+    private ImageIoMetadata sourceMetadata;
 
     /**
      * @return Set of supported output formats.
@@ -27,8 +28,14 @@ public class ImageIoImageWriter {
                 Format.PNG, Format.TIF));
     }
 
-    public ImageIoImageWriter(OperationList opList) {
+    public ImageIoImageWriter(final OperationList opList) {
         this.opList = opList;
+    }
+
+    public ImageIoImageWriter(final OperationList opList,
+                              final ImageIoMetadata sourceMetadata) {
+        this.opList = opList;
+        this.sourceMetadata = sourceMetadata;
     }
 
     /**
@@ -44,16 +51,20 @@ public class ImageIoImageWriter {
                       final OutputStream outputStream) throws IOException {
         switch (outputFormat) {
             case GIF:
-                new ImageIoGifImageWriter(opList).write(image, outputStream);
+                new ImageIoGifImageWriter(opList, sourceMetadata).
+                        write(image, outputStream);
                 break;
             case JPG:
-                new ImageIoJpegImageWriter(opList).write(image, outputStream);
+                new ImageIoJpegImageWriter(opList, sourceMetadata).
+                        write(image, outputStream);
                 break;
             case PNG:
-                new ImageIoPngImageWriter(opList).write(image, outputStream);
+                new ImageIoPngImageWriter(opList, sourceMetadata).
+                        write(image, outputStream);
                 break;
             case TIF:
-                new ImageIoTiffImageWriter(opList).write(image, outputStream);
+                new ImageIoTiffImageWriter(opList, sourceMetadata).
+                        write(image, outputStream);
                 break;
         }
     }
@@ -71,16 +82,20 @@ public class ImageIoImageWriter {
                       final OutputStream outputStream) throws IOException {
         switch (outputFormat) {
             case GIF:
-                new ImageIoGifImageWriter(opList).write(image, outputStream);
+                new ImageIoGifImageWriter(opList, sourceMetadata).
+                        write(image, outputStream);
                 break;
             case JPG:
-                new ImageIoJpegImageWriter(opList).write(image, outputStream);
+                new ImageIoJpegImageWriter(opList, sourceMetadata).
+                        write(image, outputStream);
                 break;
             case PNG:
-                new ImageIoPngImageWriter(opList).write(image, outputStream);
+                new ImageIoPngImageWriter(opList, sourceMetadata).
+                        write(image, outputStream);
                 break;
             case TIF:
-                new ImageIoTiffImageWriter(opList).write(image, outputStream);
+                new ImageIoTiffImageWriter(opList, sourceMetadata).
+                        write(image, outputStream);
                 break;
         }
     }

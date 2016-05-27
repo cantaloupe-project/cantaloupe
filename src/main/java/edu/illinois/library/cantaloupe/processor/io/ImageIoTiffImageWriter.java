@@ -40,6 +40,11 @@ class ImageIoTiffImageWriter extends AbstractImageIoImageWriter {
         super(opList);
     }
 
+    ImageIoTiffImageWriter(OperationList opList,
+                           ImageIoMetadata sourceMetadata) {
+        super(opList, sourceMetadata);
+    }
+
     /**
      * @param metadata Metadata to embed the profile into.
      * @param profile Profile to embed.

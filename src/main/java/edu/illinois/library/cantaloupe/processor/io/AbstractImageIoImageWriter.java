@@ -14,14 +14,28 @@ import java.io.IOException;
 abstract class AbstractImageIoImageWriter {
 
     protected OperationList opList;
+    protected ImageIoMetadata sourceMetadata;
 
     /**
      * @param opList Some operations can't be handled by processors and need
      *               to be handled by a writer instead. Any writer operations
      *               present in this list will be applied automatically.
      */
-    AbstractImageIoImageWriter(OperationList opList) {
+    AbstractImageIoImageWriter(final OperationList opList) {
         this.opList = opList;
+    }
+
+    /**
+     * @param opList Some operations can't be handled by processors and need
+     *               to be handled by a writer instead. Any writer operations
+     *               present in this list will be applied automatically.
+     * @param sourceMetadata Metadata for the image being written as returned
+     *                       from {@link ImageIoImageReader}.
+     */
+    AbstractImageIoImageWriter(final OperationList opList,
+                               final ImageIoMetadata sourceMetadata) {
+        this.opList = opList;
+        this.sourceMetadata = sourceMetadata;
     }
 
     abstract protected IIOMetadata embedIccProfile(
@@ -33,7 +47,8 @@ abstract class AbstractImageIoImageWriter {
      * @param image Image to apply the metadata to.
      * @return Image metadata with added metadata corresponding to any
      *         writer-specific operations from
-     *         {@link #AbstractImageIoImageWriter(OperationList)} applied.
+     *         {@link #AbstractImageIoImageWriter(OperationList, ImageIoMetadata)}
+     *         applied.
      * @throws IOException
      */
     IIOMetadata getMetadata(final ImageWriter writer,

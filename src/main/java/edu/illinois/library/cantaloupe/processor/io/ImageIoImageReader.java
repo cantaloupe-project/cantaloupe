@@ -17,6 +17,7 @@ import org.w3c.dom.Node;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
+import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
@@ -184,13 +185,14 @@ public class ImageIoImageReader {
         }
     }
 
-    public Node getMetadata(int imageIndex) throws IOException {
+    public ImageIoMetadata getMetadata(int imageIndex) throws IOException {
         if (reader == null) {
             createReader();
         }
-        String metadataFormat = reader.getImageMetadata(imageIndex).
+        final IIOMetadata metadata = reader.getImageMetadata(imageIndex);
+        final String metadataFormat = reader.getImageMetadata(imageIndex).
                 getNativeMetadataFormatName();
-        return reader.getImageMetadata(imageIndex).getAsTree(metadataFormat);
+        return new ImageIoMetadata(metadata, metadataFormat);
     }
 
     /**

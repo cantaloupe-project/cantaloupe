@@ -147,9 +147,10 @@ class JaiProcessor extends AbstractImageIoProcessor
                         // is horrible, but better than nothing.
                         if (getSourceFormat().equals(Format.TIF)) {
                             try {
-                                Node node = reader.getMetadata(0);
-                                StringWriter writer = new StringWriter();
-                                Transformer t = TransformerFactory.newInstance().newTransformer();
+                                final Node node = reader.getMetadata(0).getAsTree();
+                                final StringWriter writer = new StringWriter();
+                                final Transformer t = TransformerFactory.
+                                        newInstance().newTransformer();
                                 t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
                                 t.setOutputProperty(OutputKeys.INDENT, "no");
                                 t.transform(new DOMSource(node),
@@ -188,7 +189,8 @@ class JaiProcessor extends AbstractImageIoProcessor
                         }
                     }
                 }
-                final ImageIoImageWriter writer = new ImageIoImageWriter(ops);
+                final ImageIoImageWriter writer = new ImageIoImageWriter(ops,
+                        reader.getMetadata(0));
 
                 if (image != null) {
                     writer.write(image, ops.getOutputFormat(), outputStream);

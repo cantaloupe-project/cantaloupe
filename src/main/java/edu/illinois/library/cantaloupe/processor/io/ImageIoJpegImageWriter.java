@@ -44,6 +44,11 @@ class ImageIoJpegImageWriter extends AbstractImageIoImageWriter {
         super(opList);
     }
 
+    ImageIoJpegImageWriter(OperationList opList,
+                           ImageIoMetadata sourceMetadata) {
+        super(opList, sourceMetadata);
+    }
+
     /**
      * @param metadata Metadata to embed the profile into.
      * @param profile Profile to embed.
