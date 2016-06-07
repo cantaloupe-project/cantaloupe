@@ -292,6 +292,26 @@ public class OperationListTest {
         assertTrue(ops.isNoOp());
     }
 
+    @Test
+    public void testIsNoOp10() {
+        // Set up a no-op....
+        Crop crop = new Crop();
+        crop.setFull(true);
+        Scale scale = new Scale();
+        scale.setMode(Scale.Mode.FULL);
+        ops = new OperationList();
+        ops.setIdentifier(new Identifier("identifier.gif"));
+        ops.add(crop);
+        ops.add(scale);
+        ops.add(new Rotate(0));
+        ops.setOutputFormat(Format.GIF);
+
+        // Add a MetadataCopy
+        ops.add(new MetadataCopy());
+
+        assertTrue(ops.isNoOp());
+    }
+
     /* isNoOp(Format) */
 
     @Test
