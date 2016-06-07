@@ -80,28 +80,11 @@ abstract class AbstractImageIoProcessor extends AbstractProcessor {
         this.streamSource = null;
         this.sourceFile = sourceFile;
         if (reader == null) {
-            reader = new ImageIoImageReader();
-        }
-        try {
-            reader.setSource(sourceFile);
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-        }
-        reader.setFormat(format);
-    }
-
-    @Override
-    public void setSourceFormat(Format format)
-            throws UnsupportedSourceFormatException{
-        this.format = format;
-        if (reader == null) {
-            reader = new ImageIoImageReader();
-        }
-        reader.setFormat(format);
-        if (getAvailableOutputFormats().size() < 1) {
-            throw new UnsupportedSourceFormatException(
-                    getClass().getSimpleName() + " does not support the " +
-                            format + " source format");
+            try {
+                reader = new ImageIoImageReader(sourceFile, format);
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
         }
     }
 
@@ -110,14 +93,12 @@ abstract class AbstractImageIoProcessor extends AbstractProcessor {
         this.sourceFile = null;
         this.streamSource = streamSource;
         if (reader == null) {
-            reader = new ImageIoImageReader();
+            try {
+                reader = new ImageIoImageReader(streamSource, format);
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
         }
-        try {
-            reader.setSource(streamSource);
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-        }
-        reader.setFormat(format);
     }
 
     private void disposeReader() {

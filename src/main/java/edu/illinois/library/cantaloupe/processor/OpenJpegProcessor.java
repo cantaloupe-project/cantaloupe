@@ -289,10 +289,9 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                 executorService.submit(new StreamCopier(
                         processErrorStream, errorBucket));
 
-                final ImageIoImageReader reader = new ImageIoImageReader();
-                reader.setFormat(Format.BMP);
-                reader.setSource(
-                        new InputStreamStreamSource(processInputStream));
+                final ImageIoImageReader reader = new ImageIoImageReader(
+                        new InputStreamStreamSource(processInputStream),
+                        Format.BMP);
 
                 Configuration config = Configuration.getInstance();
                 switch (config.getString(POST_PROCESSOR_CONFIG_KEY, "java2d").toLowerCase()) {

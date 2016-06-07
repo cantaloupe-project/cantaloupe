@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.ReductionFactor;
-import edu.illinois.library.cantaloupe.processor.io.ImageIoImageReader;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -26,7 +25,7 @@ public class ImageIoImageReaderTest {
     @Before
     public void setUp() throws Exception {
         reader = new ImageIoImageReader(
-                TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));
+                TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"), Format.JPG);
     }
 
     @After
@@ -59,8 +58,9 @@ public class ImageIoImageReaderTest {
         // monoresolution
         assertEquals(1, reader.getNumResolutions());
         // multiresolution
-        reader.setSource(TestUtil.getImage(
-                "tif-rgb-multires-64x56x16-tiled-uncompressed.tif"));
+        reader = new ImageIoImageReader(
+                TestUtil.getImage("tif-rgb-multires-64x56x16-tiled-uncompressed.tif"),
+                Format.TIF);
         assertEquals(3, reader.getNumResolutions());
     }
 
@@ -73,8 +73,9 @@ public class ImageIoImageReaderTest {
 
     @Test
     public void testGetSizeWithIndex() throws Exception {
-        reader.setSource(TestUtil.getImage(
-                "tif-rgb-multires-64x56x16-tiled-uncompressed.tif"));
+        reader = new ImageIoImageReader(
+                TestUtil.getImage("tif-rgb-multires-64x56x16-tiled-uncompressed.tif"),
+                Format.TIF);
         Dimension expected = new Dimension(16, 14);
         Dimension actual = reader.getSize(2);
         assertEquals(expected, actual);
@@ -82,8 +83,9 @@ public class ImageIoImageReaderTest {
 
     @Test
     public void testGetTileSizeWithTiledSource() throws Exception {
-        reader.setSource(TestUtil.
-                getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif"));
+        reader = new ImageIoImageReader(
+                TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif"),
+                Format.TIF);
         Dimension expected = new Dimension(16, 16);
         Dimension actual = reader.getTileSize(0);
         assertEquals(expected, actual);
@@ -91,8 +93,9 @@ public class ImageIoImageReaderTest {
 
     @Test
     public void testGetTileSizeWithUntiledSource() throws Exception {
-        reader.setSource(TestUtil.
-                getImage("tif-rgb-monores-64x56x8-striped-uncompressed.tif"));
+        reader = new ImageIoImageReader(
+                TestUtil.getImage("tif-rgb-monores-64x56x8-striped-uncompressed.tif"),
+                Format.TIF);
         Dimension expected = new Dimension(64, 42);
         Dimension actual = reader.getTileSize(0);
         assertEquals(expected, actual);
@@ -148,7 +151,9 @@ public class ImageIoImageReaderTest {
 
     @Test
     public void testReadWithMonoResolutionImageAndSubsamplingAndAbsoluteScale() throws Exception {
-        reader.setSource(TestUtil.getImage("tif-rgb-monores-64x56x16-striped-uncompressed.tif"));
+        reader = new ImageIoImageReader(
+                TestUtil.getImage("tif-rgb-monores-64x56x16-striped-uncompressed.tif"),
+                Format.TIF);
 
         OperationList ops = new OperationList();
         Scale scale = new Scale();
@@ -168,7 +173,9 @@ public class ImageIoImageReaderTest {
 
     @Test
     public void testReadWithMonoResolutionImageAndSubsamplingAndPercentScale() throws Exception {
-        reader.setSource(TestUtil.getImage("tif-rgb-monores-64x56x16-striped-uncompressed.tif"));
+        reader = new ImageIoImageReader(
+                TestUtil.getImage("tif-rgb-monores-64x56x16-striped-uncompressed.tif"),
+                Format.TIF);
 
         OperationList ops = new OperationList();
         Scale scale = new Scale();

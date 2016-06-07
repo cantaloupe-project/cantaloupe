@@ -333,9 +333,8 @@ public abstract class Java2dUtil {
      */
     static BufferedImage getWatermarkImage(Watermark watermark)
             throws IOException {
-        final ImageIoImageReader reader = new ImageIoImageReader();
-        reader.setSource(watermark.getImage());
-        reader.setFormat(Format.PNG);
+        final ImageIoImageReader reader =
+                new ImageIoImageReader(watermark.getImage(), Format.PNG);
         return reader.read();
     }
 
