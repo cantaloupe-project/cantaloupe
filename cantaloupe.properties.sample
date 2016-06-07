@@ -519,6 +519,14 @@ watermark.BasicStrategy.output_height_threshold = 300
 redaction.enabled = false
 
 ###########################################################################
+# METADATA
+###########################################################################
+
+# Whether to attempt to copy source image metadata (EXIF, IPTC, XMP) into
+# derivative images. Note that this is not foolproof; see the user manual.
+metadata.preserve = false
+
+###########################################################################
 # COLOR PROFILES
 ###########################################################################
 

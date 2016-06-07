@@ -70,6 +70,8 @@ public abstract class AbstractResource extends ServerResource {
     public static final String CONTENT_DISPOSITION_CONFIG_KEY =
             "endpoint.iiif.content_disposition";
     public static final String MAX_PIXELS_CONFIG_KEY = "max_pixels";
+    public static final String PRESERVE_METADATA_CONFIG_KEY =
+            "metadata.preserve";
     public static final String PURGE_MISSING_CONFIG_KEY =
             "cache.server.purge_missing";
     public static final String RESOLVE_FIRST_CONFIG_KEY =
@@ -226,7 +228,10 @@ public abstract class AbstractResource extends ServerResource {
             }
 
             // Metadata copies
-            opList.add(new MetadataCopy()); // TODO: fix this
+            if (Configuration.getInstance().
+                    getBoolean(PRESERVE_METADATA_CONFIG_KEY, false)) {
+                opList.add(new MetadataCopy());
+            }
         } catch (DelegateScriptDisabledException e) {
             // no problem
             logger.info("Delegate script disabled; skipping non-endpoint " +

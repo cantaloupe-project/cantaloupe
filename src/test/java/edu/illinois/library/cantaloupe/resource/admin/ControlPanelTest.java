@@ -68,6 +68,7 @@ public class ControlPanelTest {
         testProcessorsSection();
         testCachesSection();
         testOverlaysSection();
+        testMetadataSection();
         testColorProfilesSection();
         testDelegateScriptSection();
         testLoggingSection();
@@ -491,6 +492,22 @@ public class ControlPanelTest {
         assertEquals("6",
                 config.getString("watermark.BasicStrategy.output_height_threshold"));
         assertTrue(config.getBoolean("redaction.enabled"));
+    }
+
+    private void testMetadataSection() throws Exception {
+        css("#cl-metadata-button").click();
+
+        // Fill in the form
+        css("[name=\"metadata.preserve\"]").click();
+
+        // Submit the form
+        css("#cl-metadata input[type=\"submit\"]").click();
+
+        Thread.sleep(SLEEP_AFTER_SUBMIT);
+
+        // Assert that the application configuration has been updated correctly
+        final Configuration config = Configuration.getInstance();
+        assertTrue(config.getBoolean("metadata.preserve"));
     }
 
     private void testColorProfilesSection() throws Exception {

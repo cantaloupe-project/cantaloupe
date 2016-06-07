@@ -56,6 +56,10 @@
                     <a href="#cl-overlays" aria-controls="cl-overlays"
                        role="tab" data-toggle="tab">Overlays</a>
                 </li>
+                <li role="presentation" class="list-group-item" id="cl-metadata-button">
+                    <a href="#cl-metadata" aria-controls="cl-metadata"
+                       role="tab" data-toggle="tab">Metadata</a>
+                </li>
                 <li role="presentation" class="list-group-item" id="cl-color-profiles-button">
                     <a href="#cl-color-profiles" aria-controls="cl-color-profiles"
                        role="tab" data-toggle="tab">Color Profiles</a>
@@ -2323,6 +2327,32 @@
                                 </tr>
                             </table>
                         </section>
+                        <input type="submit" class="btn btn-primary" value="Save">
+                    </form>
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="cl-metadata">
+                    <form method="post">
+                        <section>
+                            <h2>Metadata</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="metadata.preserve"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Preserve
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
                         <input type="submit" class="btn btn-primary" value="Save">
                     </form>
                 </div>
