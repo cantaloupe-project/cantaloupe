@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.io;
 
+import edu.illinois.library.cantaloupe.image.MetadataCopy;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.icc.IccProfile;
@@ -8,6 +9,7 @@ import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.metadata.IIOMetadataNode;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 
@@ -38,8 +40,31 @@ abstract class AbstractImageIoImageWriter {
         this.sourceMetadata = sourceMetadata;
     }
 
-    abstract protected IIOMetadata embedIccProfile(
-            IIOMetadata metadata, IccProfile profile) throws IOException;
+    /**
+     * <p>Embeds the given ICC profile into the given tree.</p>
+     *
+     * <p>Writers for formats that don't support ICC profiles may simply do
+     * nothing.</p>
+     *
+     * @param baseTree Tree to embed the profile into.
+     * @param profile Profile to embed.
+     * @throws IOException
+     */
+    abstract protected void addIccProfile(IIOMetadataNode baseTree,
+                                          IccProfile profile)
+            throws IOException;
+
+    /**
+     * <p>Embeds metadata from {@link #sourceMetadata} into the given tree.</p>
+     *
+     * <p>Writers for formats that don't support metadata may simply do
+     * nothing.</p>
+     *
+     * @param baseTree Tree to embed the metadata into.
+     * @throws IOException
+     */
+    abstract protected void addMetadata(IIOMetadataNode baseTree)
+            throws IOException;
 
     /**
      * @param writer Writer to obtain the default metadata from.
@@ -54,15 +79,22 @@ abstract class AbstractImageIoImageWriter {
     IIOMetadata getMetadata(final ImageWriter writer,
                             final ImageWriteParam writeParam,
                             final RenderedImage image) throws IOException {
+        final IIOMetadata derivativeMetadata = writer.getDefaultImageMetadata(
+                ImageTypeSpecifier.createFromRenderedImage(image),
+                writeParam);
+        final String formatName =
+                derivativeMetadata.getNativeMetadataFormatName();
+        final IIOMetadataNode baseTree =
+                (IIOMetadataNode) derivativeMetadata.getAsTree(formatName);
         for (final Operation op : opList) {
             if (op instanceof IccProfile) {
-                final IIOMetadata metadata = writer.getDefaultImageMetadata(
-                        ImageTypeSpecifier.createFromRenderedImage(image),
-                        writeParam);
-                return embedIccProfile(metadata, (IccProfile) op);
+                addIccProfile(baseTree, (IccProfile) op);
+            } else if (op instanceof MetadataCopy && sourceMetadata != null) {
+                addMetadata(baseTree);
             }
         }
-        return null;
+        derivativeMetadata.mergeTree(formatName, baseTree);
+        return derivativeMetadata;
     }
 
 }

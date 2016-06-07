@@ -1,8 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.io;
 
-import org.w3c.dom.Node;
-
 import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.metadata.IIOMetadataNode;
 
 /**
  * Wraps an {@link IIOMetadata} instance for the purposes of ImageIO metadata
@@ -18,8 +17,8 @@ public class ImageIoMetadata {
         setFormatName(formatName);
     }
 
-    public Node getAsTree() {
-        return getIioMetadata().getAsTree(getFormatName());
+    public IIOMetadataNode getAsTree() {
+        return (IIOMetadataNode) getIioMetadata().getAsTree(getFormatName());
     }
 
     public String getFormatName() {

@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.MetadataCopy;
 import edu.illinois.library.cantaloupe.image.icc.IccProfileService;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.redaction.RedactionService;
@@ -199,7 +200,7 @@ public abstract class AbstractResource extends ServerResource {
                     opList.add(redaction);
                 }
             } else {
-                logger.info("Redactions are disabled ({} = false); skipping.",
+                logger.debug("Redactions are disabled ({} = false); skipping.",
                         RedactionService.REDACTION_ENABLED_CONFIG_KEY);
             }
 
@@ -211,7 +212,7 @@ public abstract class AbstractResource extends ServerResource {
                         getCanonicalClientIpAddress(),
                         getRequest().getCookies().getValuesMap()));
             } else {
-                logger.info("Watermarking is disabled ({} = false); skipping.",
+                logger.debug("Watermarking is disabled ({} = false); skipping.",
                         WatermarkService.WATERMARK_ENABLED_CONFIG_KEY);
             }
 
@@ -223,6 +224,9 @@ public abstract class AbstractResource extends ServerResource {
                         getRequest().getHeaders().getValuesMap(),
                         getCanonicalClientIpAddress()));
             }
+
+            // Metadata copies
+            opList.add(new MetadataCopy()); // TODO: fix this
         } catch (DelegateScriptDisabledException e) {
             // no problem
             logger.info("Delegate script disabled; skipping non-endpoint " +

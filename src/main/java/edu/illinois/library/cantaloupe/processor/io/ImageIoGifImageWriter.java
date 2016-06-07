@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.processor.io;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.icc.IccProfile;
-import org.w3c.dom.Node;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -41,12 +40,13 @@ class ImageIoGifImageWriter extends AbstractImageIoImageWriter {
     }
 
     /**
-     * @param metadata Metadata to embed the profile into.
+     * @param baseTree Metadata to embed the profile into.
      * @param profile Profile to embed.
      * @throws IOException
      */
-    protected IIOMetadata embedIccProfile(final IIOMetadata metadata,
-                                          final IccProfile profile)
+    @Override
+    protected void addIccProfile(final IIOMetadataNode baseTree,
+                                 final IccProfile profile)
             throws IOException {
         final IIOMetadataNode appExtensions =
                 new IIOMetadataNode("ApplicationExtensions");
@@ -56,13 +56,14 @@ class ImageIoGifImageWriter extends AbstractImageIoImageWriter {
         appExtension.setAttribute("authenticationCode", "012");
         appExtension.setUserObject(profile.getProfile().getData());
 
-        final Node nativeTree =
-                metadata.getAsTree(metadata.getNativeMetadataFormatName());
-        nativeTree.appendChild(appExtensions);
+        baseTree.appendChild(appExtensions);
         appExtensions.appendChild(appExtension);
+    }
 
-        metadata.mergeTree(metadata.getNativeMetadataFormatName(), nativeTree);
-        return metadata;
+    @Override
+    protected void addMetadata(final IIOMetadataNode baseTree)
+            throws IOException {
+        // TODO: write this
     }
 
     /**

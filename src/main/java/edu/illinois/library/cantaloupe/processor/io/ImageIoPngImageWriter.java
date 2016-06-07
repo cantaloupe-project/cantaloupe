@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.processor.io;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.icc.IccProfile;
-import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -41,6 +41,63 @@ class ImageIoPngImageWriter extends AbstractImageIoImageWriter {
     }
 
     /**
+     * @param baseTree Metadata to embed the profile into.
+     * @param profile Profile to embed.
+     * @throws IOException
+     */
+    @Override
+    protected void addIccProfile(final IIOMetadataNode baseTree,
+                                 final IccProfile profile)
+            throws IOException {
+        final ICC_ColorSpace colorSpace =
+                new ICC_ColorSpace(profile.getProfile());
+        final byte[] compressedProfile =
+                deflate(colorSpace.getProfile().getData());
+        final IIOMetadataNode iccNode =
+                new IIOMetadataNode("iCCP");
+        iccNode.setAttribute("compressionMethod", "deflate");
+        iccNode.setAttribute("profileName", profile.getName());
+        iccNode.setUserObject(compressedProfile);
+
+        baseTree.appendChild(iccNode);
+    }
+
+    /**
+     * PNG doesn't (formally) support EXIF or IPTC, though it does support
+     * EXIF tags in XMP.
+     */
+    @Override
+    protected void addMetadata(final IIOMetadataNode baseTree)
+            throws IOException {
+        NodeList itxtNodes = baseTree.getElementsByTagName("iTXt");
+        IIOMetadataNode xmpNode = null;
+        for (int i = 0; i < itxtNodes.getLength(); i++) {
+            final IIOMetadataNode itxtNode = (IIOMetadataNode) itxtNodes.item(i);
+            final NodeList entries = itxtNode.getElementsByTagName("iTXtEntry");
+            for (int j = 0; j < entries.getLength(); j++) {
+                final String keyword = ((IIOMetadataNode) entries.item(j)).
+                        getAttribute("keyword");
+                if ("XML:com.adobe.xmp".equals(keyword)) {
+                    xmpNode = (IIOMetadataNode) entries.item(j);
+                    break;
+                }
+            }
+        }
+
+        if (xmpNode != null) {
+            itxtNodes = baseTree.getElementsByTagName("iTXt");
+            IIOMetadataNode itxtNode;
+            if (itxtNodes.getLength() > 0) {
+                itxtNode = (IIOMetadataNode) itxtNodes.item(0);
+            } else {
+                itxtNode = new IIOMetadataNode("iTXt");
+                baseTree.appendChild(itxtNode);
+            }
+            itxtNode.appendChild(xmpNode);
+        }
+    }
+
+    /**
      * Applies Deflate compression to the given bytes.
      *
      * @param data Data to compress.
@@ -54,32 +111,6 @@ class ImageIoPngImageWriter extends AbstractImageIoImageWriter {
         deflater.flush();
         deflater.close();
         return deflated.toByteArray();
-    }
-
-    /**
-     * @param metadata Metadata to embed the profile into.
-     * @param profile Profile to embed.
-     * @throws IOException
-     */
-    protected IIOMetadata embedIccProfile(final IIOMetadata metadata,
-                                          final IccProfile profile)
-            throws IOException {
-        final ICC_ColorSpace colorSpace =
-                new ICC_ColorSpace(profile.getProfile());
-        final byte[] compressedProfile =
-                deflate(colorSpace.getProfile().getData());
-        final IIOMetadataNode iccNode =
-                new IIOMetadataNode("iCCP");
-        iccNode.setAttribute("compressionMethod", "deflate");
-        iccNode.setAttribute("profileName", profile.getName());
-        iccNode.setUserObject(compressedProfile);
-
-        final Node nativeTree = metadata.
-                getAsTree(metadata.getNativeMetadataFormatName());
-        nativeTree.appendChild(iccNode);
-        metadata.mergeTree(metadata.getNativeMetadataFormatName(),
-                nativeTree);
-        return metadata;
     }
 
     /**

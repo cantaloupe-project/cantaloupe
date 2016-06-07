@@ -22,7 +22,10 @@ import java.awt.image.BufferedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * JPEG image writer using ImageIO, capable of taking both Java 2D
@@ -50,21 +53,20 @@ class ImageIoJpegImageWriter extends AbstractImageIoImageWriter {
     }
 
     /**
-     * @param metadata Metadata to embed the profile into.
+     * @param baseTree Metadata to embed the profile into.
      * @param profile Profile to embed.
      * @throws IOException
      */
-    protected IIOMetadata embedIccProfile(final IIOMetadata metadata,
-                                          final IccProfile profile)
+    @Override
+    protected void addIccProfile(final IIOMetadataNode baseTree,
+                                 final IccProfile profile)
             throws IOException {
         final IIOMetadataNode iccNode = new IIOMetadataNode("app2ICC");
         iccNode.setUserObject(profile.getProfile());
 
-        final Node nativeTree = metadata.
-                getAsTree(metadata.getNativeMetadataFormatName());
-
         // Append the app2ICC node we just created to /JPEGvariety/app0JFIF
-        NodeList level1Nodes = nativeTree.getChildNodes();
+        // TODO: simplify this
+        NodeList level1Nodes = baseTree.getChildNodes();
         for (int i = 0; i < level1Nodes.getLength(); i++) {
             Node level1Node = level1Nodes.item(i);
             if (level1Node.getNodeName().equals("JPEGvariety")) {
@@ -78,9 +80,79 @@ class ImageIoJpegImageWriter extends AbstractImageIoImageWriter {
                 }
             }
         }
-        metadata.mergeTree(metadata.getNativeMetadataFormatName(),
-                nativeTree);
-        return metadata;
+    }
+
+    /**
+     * @param baseTree Tree to embed the metadata into.
+     * @throws IOException
+     */
+    @Override
+    protected void addMetadata(final IIOMetadataNode baseTree)
+            throws IOException {
+        final byte[] iptc = extractSourceIptc();
+        if (iptc != null) {
+            // Create the IPTC node.
+            final IIOMetadataNode exifNode = new IIOMetadataNode("unknown");
+            exifNode.setAttribute("MarkerTag", "237");
+            exifNode.setUserObject(iptc);
+
+            // Append the node we just created to
+            // /markerSequence/unknown[@MarkerTag=237]
+            final Node markerSequence = baseTree.
+                    getElementsByTagName("markerSequence").item(0);
+            markerSequence.appendChild(exifNode);
+        }
+
+        for (byte[] data : extractSourceExifAndXmp()) {
+            // Create the EXIF node.
+            final IIOMetadataNode metadataNode = new IIOMetadataNode("unknown");
+            metadataNode.setAttribute("MarkerTag", "225");
+            metadataNode.setUserObject(data);
+            // Append it to /markerSequence/unknown[@MarkerTag=225]
+            baseTree.getElementsByTagName("markerSequence").item(0).
+                    appendChild(metadataNode);
+        }
+    }
+
+    /**
+     * EXIF and XMP metadata both appear in the {@link IIOMetadataNode} tree as
+     * identical nodes at <code>/markerSequence/unknown[@MarkerTag=225]</code>
+     * -- so, there is no way to tell them apart, other than by reading and
+     * analyzing the data from both, which is inefficient. This method
+     * therefore adds both EXIF and XMP metadata in one shot.
+     *
+     * @return EXIF and XMP data, or null if none was found in the source
+     *         metadata.
+     */
+    private Collection<byte[]> extractSourceExifAndXmp() {
+        final Set<byte[]> datas = new HashSet<>();
+        final IIOMetadataNode markerSequence = (IIOMetadataNode) sourceMetadata.
+                getAsTree().getElementsByTagName("markerSequence").item(0);
+        final NodeList unknowns = markerSequence.getElementsByTagName("unknown");
+        for (int i = 0; i < unknowns.getLength(); i++) {
+            final IIOMetadataNode marker = (IIOMetadataNode) unknowns.item(i);
+            if ("225".equals(marker.getAttribute("MarkerTag"))) {
+                datas.add((byte[]) marker.getUserObject());
+            }
+        }
+        return datas;
+    }
+
+    /**
+     * @return IPTC data, or null if none was found in the source metadata.
+     */
+    private byte[] extractSourceIptc() {
+        // IPTC metadata is located at /markerSequence/unknown[@MarkerTag=237]
+        final IIOMetadataNode markerSequence = (IIOMetadataNode) sourceMetadata.
+                getAsTree().getElementsByTagName("markerSequence").item(0);
+        NodeList unknowns = markerSequence.getElementsByTagName("unknown");
+        for (int i = 0; i < unknowns.getLength(); i++) {
+            IIOMetadataNode marker = (IIOMetadataNode) unknowns.item(i);
+            if ("237".equals(marker.getAttribute("MarkerTag"))) {
+                return (byte[]) marker.getUserObject();
+            }
+        }
+        return null;
     }
 
     private ImageWriteParam getJaiWriteParam(ImageWriter writer) {
@@ -157,8 +229,7 @@ class ImageIoJpegImageWriter extends AbstractImageIoImageWriter {
                 image = JAI.create("bandselect", pb, null);
             }
             final ImageWriteParam writeParam = getJaiWriteParam(writer);
-            final IIOMetadata metadata = getMetadata(writer, writeParam,
-                    image);
+            final IIOMetadata metadata = getMetadata(writer, writeParam, image);
             // JPEGImageWriter doesn't like RenderedOps, so give it
             // a BufferedImage.
             final IIOImage iioImage = new IIOImage(
