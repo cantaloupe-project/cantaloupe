@@ -1,0 +1,51 @@
+---
+layout: manual_3.2
+title: Metadata
+---
+
+<ol class="breadcrumb">
+  <li><a href="{{ site.baseurl }}/">Home</a></li>
+  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
+  <li><a href="{{ site.baseurl }}/manual/3.2/">3.2</a></li>
+  <li class="active">Metadata</li>
+</ol>
+
+<h1>Metadata</h1>
+
+<ul>
+  <li><a href="#Overview">Overview</a>
+    <ul>
+      <li><a href="#Processor%20Support">Processor Support</a></li>
+    </ul>
+  </li>
+  <li><a href="#Implications">Implications</a>
+    <ul>
+      <li><a href="#Performance">Performance</a></li>
+      <li><a href="#Caching">Caching</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="Overview">Overview</h2>
+
+<p>Many image formats are capable of storing metadata alongside the pixel data in an image file. Metadata is diverse and may include anything from information about the capture device (camera, scanner, etc.) to keywords to copyright information.</p>
+
+<p>When Cantaloupe receives a request for an image&mdash;unless the request is for the full-sized unmodified source image&mdash;it will have to create and return a derivative image based on this source image. The derivative image is a whole new image, distinct from the source image, and may not even be in the same format as the source image. The metadata contained in the source image would ordinarily not be copied over.</p>
+
+<p>When <code>metadata.preserve</code> is set to <code>true</code> in the configuration file, Cantaloupe will make an effort to copy any source metadata it finds into derivative images. This is not foolproof&mdash;some formats don't support all types of metadata, and metadata may be encoded differently in one format than another. Cantaloupe is generally aware of EXIF, IPTC (IIM), and XMP metadata.</p>
+
+<h3 id="Processor Support">Processor Support</h3>
+
+<p>Most processors support metadata preservation to at least some extent.</p>
+
+<hr>
+
+<h2 id="Implications">Implications</h2>
+
+<h3 id="Performance">Performance</h3>
+
+<p>As of this writing, the performance penalty of the metadata preservation feature hasn't been measured. Though it is likely to be small, this feature is disabled by default.</p>
+
+<h3 id="Caching">Caching</h3>
+
+<p>Metadata settings are encoded in cached-image identifiers, so derivative images with and without metadata are cached separately.</p>
