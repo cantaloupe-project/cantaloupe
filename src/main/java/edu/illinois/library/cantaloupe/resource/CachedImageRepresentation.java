@@ -46,7 +46,7 @@ public class CachedImageRepresentation extends OutputRepresentation {
     public void write(OutputStream outputStream) throws IOException {
         final long msec = System.currentTimeMillis();
         IOUtils.copy(inputStream, outputStream);
-        logger.info("Streamed from the cache without resolving in {} msec",
+        logger.debug("Streamed from the cache without resolving in {} msec",
                 System.currentTimeMillis() - msec);
     }
 

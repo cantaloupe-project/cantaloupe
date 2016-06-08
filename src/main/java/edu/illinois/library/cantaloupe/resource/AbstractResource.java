@@ -351,7 +351,7 @@ public abstract class AbstractResource extends ServerResource {
             long msec = System.currentTimeMillis();
             info = cache.getImageInfo(identifier);
             if (info != null) {
-                logger.info("Retrieved dimensions of {} from cache in {} msec",
+                logger.debug("Retrieved dimensions of {} from cache in {} msec",
                         identifier, System.currentTimeMillis() - msec);
             } else {
                 info = readInfo(identifier, proc);
@@ -422,7 +422,7 @@ public abstract class AbstractResource extends ServerResource {
                                final Processor proc) throws ProcessorException {
         final long msec = System.currentTimeMillis();
         final ImageInfo info = proc.getImageInfo();
-        logger.info("Read info of {} in {} msec", identifier,
+        logger.debug("Read info of {} in {} msec", identifier,
                 System.currentTimeMillis() - msec);
         return info;
     }

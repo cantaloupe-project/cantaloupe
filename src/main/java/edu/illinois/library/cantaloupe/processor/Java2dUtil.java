@@ -75,7 +75,7 @@ public abstract class Java2dUtil {
                 }
             }
             g2d.dispose();
-            logger.info("applyRedactions() executed in {} msec",
+            logger.debug("applyRedactions() executed in {} msec",
                     System.currentTimeMillis() - msec);
         }
         return baseImage;
@@ -178,7 +178,7 @@ public abstract class Java2dUtil {
             g2d.drawImage(baseImage, 0, 0, null);
             g2d.drawImage(overlayImage, overlayX, overlayY, null);
             g2d.dispose();
-            logger.info("overlayImage() executed in {} msec",
+            logger.debug("overlayImage() executed in {} msec",
                     System.currentTimeMillis() - msec);
         }
         return baseImage;
@@ -208,7 +208,7 @@ public abstract class Java2dUtil {
             g.drawImage(inImage, 0, 0, null);
             g.dispose();
 
-            logger.info("convertCustomToRgb() executed in {} msec",
+            logger.debug("convertCustomToRgb() executed in {} msec",
                     System.currentTimeMillis() - msec);
         }
         return outImage;
@@ -285,7 +285,7 @@ public abstract class Java2dUtil {
             croppedImage = inImage.getSubimage(x, y, croppedWidth,
                     croppedHeight);
 
-            logger.info("cropImage(): cropped {}x{} image to {} in {} msec",
+            logger.debug("cropImage(): cropped {}x{} image to {} in {} msec",
                     inImage.getWidth(), inImage.getHeight(), crop,
                     System.currentTimeMillis() - msec);
         }
@@ -318,7 +318,7 @@ public abstract class Java2dUtil {
             Graphics2D g2d = filteredImage.createGraphics();
             g2d.drawImage(inImage, 0, 0, null);
 
-            logger.info("filterImage(): filtered {}x{} image in {} msec",
+            logger.debug("filterImage(): filtered {}x{} image in {} msec",
                     inImage.getWidth(), inImage.getHeight(),
                     System.currentTimeMillis() - msec);
         }
@@ -357,7 +357,7 @@ public abstract class Java2dUtil {
             Graphics2D g = outImage.createGraphics();
             g.drawImage(inImage, 0, 0, null);
             g.dispose();
-            logger.info("removeAlpha(): converted BufferedImage type {} to " +
+            logger.debug("removeAlpha(): converted BufferedImage type {} to " +
                     "RGB in {} msec", inImage.getType(),
                     System.currentTimeMillis() - msec);
         }
@@ -402,7 +402,7 @@ public abstract class Java2dUtil {
                     RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             g2d.setRenderingHints(hints);
             g2d.drawImage(inImage, tx, null);
-            logger.info("rotateImage() executed in {} msec",
+            logger.debug("rotateImage() executed in {} msec",
                     System.currentTimeMillis() - msec);
         }
         return rotatedImage;
@@ -486,7 +486,7 @@ public abstract class Java2dUtil {
                     g2d.drawImage(inImage, 0, 0,
                             resultingSize.width, resultingSize.height, null);
                 }
-                logger.info("scaleImage(): scaled {}x{} image to {}x{} in {} msec",
+                logger.debug("scaleImage(): scaled {}x{} image to {}x{} in {} msec",
                         sourceSize.width, sourceSize.height,
                         resultingSize.width, resultingSize.height,
                         System.currentTimeMillis() - startMsec);
@@ -518,7 +518,7 @@ public abstract class Java2dUtil {
                 AffineTransformOp.TYPE_BILINEAR);
         BufferedImage outImage = op.filter(inImage, null);
 
-        logger.info("transposeImage(): transposed image in {} msec",
+        logger.debug("transposeImage(): transposed image in {} msec",
                 System.currentTimeMillis() - msec);
         return outImage;
     }
