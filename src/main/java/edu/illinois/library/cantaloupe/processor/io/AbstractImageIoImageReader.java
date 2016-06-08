@@ -46,7 +46,7 @@ abstract class AbstractImageIoImageReader {
     /** Set in setSource(). */
     protected ImageInputStream inputStream;
 
-    /** Assigned by createReader() if inputStream is not null. */
+    /** Assigned by createReader(). */
     protected ImageReader reader;
 
     /**
@@ -59,6 +59,7 @@ abstract class AbstractImageIoImageReader {
             throws IOException {
         setSource(inputFile);
         setFormat(format);
+        createReader();
     }
 
     /**
@@ -71,6 +72,7 @@ abstract class AbstractImageIoImageReader {
                                Format format) throws IOException {
         setSource(streamSource);
         setFormat(format);
+        createReader();
     }
 
     protected void createReader() throws IOException {

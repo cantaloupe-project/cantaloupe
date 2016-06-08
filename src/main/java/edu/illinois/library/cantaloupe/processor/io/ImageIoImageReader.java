@@ -55,7 +55,6 @@ public class ImageIoImageReader {
      */
     public ImageIoImageReader(File sourceFile, Format format)
             throws IOException {
-        setFormat(format);
         switch (format) {
             case BMP:
                 reader = new ImageIoBmpImageReader(sourceFile);
@@ -82,7 +81,6 @@ public class ImageIoImageReader {
      */
     public ImageIoImageReader(StreamSource streamSource, Format format)
             throws IOException {
-        setFormat(format);
         switch (format) {
             case BMP:
                 reader = new ImageIoBmpImageReader(streamSource);
@@ -199,10 +197,6 @@ public class ImageIoImageReader {
                                       final ReductionFactor reductionFactor)
             throws IOException, ProcessorException {
         return reader.readRendered(opList, reductionFactor);
-    }
-
-    public void setFormat(Format format) {
-        this.format = format;
     }
 
 }

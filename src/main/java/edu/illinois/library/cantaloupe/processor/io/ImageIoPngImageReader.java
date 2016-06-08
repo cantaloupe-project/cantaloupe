@@ -26,9 +26,6 @@ class ImageIoPngImageReader extends AbstractImageIoImageReader {
     }
 
     ImageIoMetadata getMetadata(int imageIndex) throws IOException {
-        if (reader == null) {
-            createReader();
-        }
         final IIOMetadata metadata = reader.getImageMetadata(imageIndex);
         final String metadataFormat = reader.getImageMetadata(imageIndex).
                 getNativeMetadataFormatName();
