@@ -17,6 +17,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.zip.DeflaterOutputStream;
 
@@ -69,23 +71,9 @@ class ImageIoPngImageWriter extends AbstractImageIoImageWriter {
     @Override
     protected void addMetadata(final IIOMetadataNode baseTree)
             throws IOException {
-        NodeList itxtNodes = baseTree.getElementsByTagName("iTXt");
-        IIOMetadataNode xmpNode = null;
-        for (int i = 0; i < itxtNodes.getLength(); i++) {
-            final IIOMetadataNode itxtNode = (IIOMetadataNode) itxtNodes.item(i);
-            final NodeList entries = itxtNode.getElementsByTagName("iTXtEntry");
-            for (int j = 0; j < entries.getLength(); j++) {
-                final String keyword = ((IIOMetadataNode) entries.item(j)).
-                        getAttribute("keyword");
-                if ("XML:com.adobe.xmp".equals(keyword)) {
-                    xmpNode = (IIOMetadataNode) entries.item(j);
-                    break;
-                }
-            }
-        }
-
-        if (xmpNode != null) {
-            itxtNodes = baseTree.getElementsByTagName("iTXt");
+        final Object xmp = sourceMetadata.getXmp();
+        if (xmp instanceof String) {
+            final NodeList itxtNodes = baseTree.getElementsByTagName("iTXt");
             IIOMetadataNode itxtNode;
             if (itxtNodes.getLength() > 0) {
                 itxtNode = (IIOMetadataNode) itxtNodes.item(0);
@@ -93,6 +81,14 @@ class ImageIoPngImageWriter extends AbstractImageIoImageWriter {
                 itxtNode = new IIOMetadataNode("iTXt");
                 baseTree.appendChild(itxtNode);
             }
+
+            final IIOMetadataNode xmpNode = new IIOMetadataNode("iTXtEntry");
+            xmpNode.setAttribute("keyword", "XML:com.adobe.xmp");
+            xmpNode.setAttribute("compressionFlag", "FALSE");
+            xmpNode.setAttribute("compressionMethod", "0");
+            xmpNode.setAttribute("languageTag", "");
+            xmpNode.setAttribute("translatedKeyword", "");
+            xmpNode.setAttribute("text", (String) xmp);
             itxtNode.appendChild(xmpNode);
         }
     }

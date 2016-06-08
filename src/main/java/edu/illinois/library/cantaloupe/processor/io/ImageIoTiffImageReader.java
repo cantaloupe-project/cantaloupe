@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.metadata.IIOMetadata;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.File;
@@ -66,6 +67,17 @@ class ImageIoTiffImageReader extends AbstractImageIoImageReader {
             throw new IOException("Unable to determine the format of the " +
                     "source image.");
         }
+    }
+
+    @Override
+    ImageIoMetadata getMetadata(int imageIndex) throws IOException {
+        if (reader == null) {
+            createReader();
+        }
+        final IIOMetadata metadata = reader.getImageMetadata(imageIndex);
+        final String metadataFormat = reader.getImageMetadata(imageIndex).
+                getNativeMetadataFormatName();
+        return new ImageIoTiffMetadata(metadata, metadataFormat);
     }
 
     ////////////////////////////////////////////////////////////////////////

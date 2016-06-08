@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
-import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
@@ -112,15 +111,7 @@ abstract class AbstractImageIoImageReader {
         }
     }
 
-    ImageIoMetadata getMetadata(int imageIndex) throws IOException {
-        if (reader == null) {
-            createReader();
-        }
-        final IIOMetadata metadata = reader.getImageMetadata(imageIndex);
-        final String metadataFormat = reader.getImageMetadata(imageIndex).
-                getNativeMetadataFormatName();
-        return new ImageIoMetadata(metadata, metadataFormat);
-    }
+    abstract ImageIoMetadata getMetadata(int imageIndex) throws IOException;
 
     /**
      * @return The number of images contained inside the source image.

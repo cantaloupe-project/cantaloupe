@@ -22,10 +22,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 
 /**
  * JPEG image writer using ImageIO, capable of taking both Java 2D
@@ -89,7 +86,7 @@ class ImageIoJpegImageWriter extends AbstractImageIoImageWriter {
     @Override
     protected void addMetadata(final IIOMetadataNode baseTree)
             throws IOException {
-        final byte[] exif = extractSourceExif();
+        final Object exif = sourceMetadata.getExif();
         if (exif != null) {
             // Create the EXIF node.
             final IIOMetadataNode node = new IIOMetadataNode("unknown");
@@ -99,7 +96,7 @@ class ImageIoJpegImageWriter extends AbstractImageIoImageWriter {
             baseTree.getElementsByTagName("markerSequence").item(0).
                     appendChild(node);
         }
-        final byte[] iptc = extractSourceIptc();
+        final Object iptc = sourceMetadata.getIptc();
         if (iptc != null) {
             // Create the IPTC node.
             final IIOMetadataNode node = new IIOMetadataNode("unknown");
@@ -109,7 +106,7 @@ class ImageIoJpegImageWriter extends AbstractImageIoImageWriter {
             baseTree.getElementsByTagName("markerSequence").item(0).
                     appendChild(node);
         }
-        final byte[] xmp = extractSourceXmp();
+        final Object xmp = sourceMetadata.getXmp();
         if (xmp != null) {
             // Create the XMP node.
             final IIOMetadataNode node = new IIOMetadataNode("unknown");
@@ -119,69 +116,6 @@ class ImageIoJpegImageWriter extends AbstractImageIoImageWriter {
             baseTree.getElementsByTagName("markerSequence").item(0).
                     appendChild(node);
         }
-    }
-
-    /**
-     * EXIF and XMP metadata both appear in the {@link IIOMetadataNode} tree as
-     * identical nodes at <code>/markerSequence/unknown[@MarkerTag=225]</code>
-     * -- so, we check the first byte to see what it really is.
-     *
-     * @return EXIF data, or null if none was found in the source metadata.
-     */
-    private byte[] extractSourceExif() {
-        final IIOMetadataNode markerSequence = (IIOMetadataNode) sourceMetadata.
-                getAsTree().getElementsByTagName("markerSequence").item(0);
-        final NodeList unknowns = markerSequence.getElementsByTagName("unknown");
-        for (int i = 0; i < unknowns.getLength(); i++) {
-            final IIOMetadataNode marker = (IIOMetadataNode) unknowns.item(i);
-            if ("225".equals(marker.getAttribute("MarkerTag"))) {
-                byte[] data = (byte[]) marker.getUserObject();
-                if (data[0] == 69) { // 104
-                    return data;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * @return IPTC data, or null if none was found in the source metadata.
-     */
-    private byte[] extractSourceIptc() {
-        // IPTC metadata is located at /markerSequence/unknown[@MarkerTag=237]
-        final IIOMetadataNode markerSequence = (IIOMetadataNode) sourceMetadata.
-                getAsTree().getElementsByTagName("markerSequence").item(0);
-        NodeList unknowns = markerSequence.getElementsByTagName("unknown");
-        for (int i = 0; i < unknowns.getLength(); i++) {
-            IIOMetadataNode marker = (IIOMetadataNode) unknowns.item(i);
-            if ("237".equals(marker.getAttribute("MarkerTag"))) {
-                return (byte[]) marker.getUserObject();
-            }
-        }
-        return null;
-    }
-
-    /**
-     * EXIF and XMP metadata both appear in the {@link IIOMetadataNode} tree as
-     * identical nodes at <code>/markerSequence/unknown[@MarkerTag=225]</code>
-     * -- so, we check the first byte to see what it really is.
-     *
-     * @return XMP data, or null if none was found in the source metadata.
-     */
-    private byte[] extractSourceXmp() {
-        final IIOMetadataNode markerSequence = (IIOMetadataNode) sourceMetadata.
-                getAsTree().getElementsByTagName("markerSequence").item(0);
-        final NodeList unknowns = markerSequence.getElementsByTagName("unknown");
-        for (int i = 0; i < unknowns.getLength(); i++) {
-            final IIOMetadataNode marker = (IIOMetadataNode) unknowns.item(i);
-            if ("225".equals(marker.getAttribute("MarkerTag"))) {
-                byte[] data = (byte[]) marker.getUserObject();
-                if (data[0] == 104) {
-                    return data;
-                }
-            }
-        }
-        return null;
     }
 
     private ImageWriteParam getJaiWriteParam(ImageWriter writer) {

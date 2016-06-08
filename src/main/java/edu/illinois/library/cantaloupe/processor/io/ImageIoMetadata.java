@@ -5,36 +5,46 @@ import javax.imageio.metadata.IIOMetadataNode;
 
 /**
  * Wraps an {@link IIOMetadata} instance for the purposes of ImageIO metadata
- * exchange.
+ * exchange, adding some convenient accessors to access specific metadata
+ * types.
  */
-public class ImageIoMetadata {
+public interface ImageIoMetadata {
 
-    private String formatName;
-    private IIOMetadata iioMetadata;
+    IIOMetadataNode getAsTree();
 
-    public ImageIoMetadata(IIOMetadata metadata, String formatName) {
-        setIioMetadata(metadata);
-        setFormatName(formatName);
-    }
+    /**
+     * @return EXIF data, or null if none was found in the source metadata.
+     */
+    Object getExif();
 
-    public IIOMetadataNode getAsTree() {
-        return (IIOMetadataNode) getIioMetadata().getAsTree(getFormatName());
-    }
+    /**
+     * @return TODO: what is this?
+     */
+    String getFormatName();
 
-    public String getFormatName() {
-        return formatName;
-    }
+    /**
+     * @return ImageIO metadata object.
+     */
+    IIOMetadata getIioMetadata();
 
-    public IIOMetadata getIioMetadata() {
-        return iioMetadata;
-    }
+    /**
+     * @return IPTC data, or null if none was found in the source metadata.
+     */
+    Object getIptc();
 
-    public void setIioMetadata(IIOMetadata metadata) {
-        iioMetadata = metadata;
-    }
+    /**
+     * @param metadata ImageIO metadata object.
+     */
+    void setIioMetadata(IIOMetadata metadata);
 
-    public void setFormatName(String name) {
-        formatName = name;
-    }
+    /**
+     * @param name TODO: what is this?
+     */
+    void setFormatName(String name);
+
+    /**
+     * @return XMP data, or null if none was found in the source metadata.
+     */
+    Object getXmp();
 
 }

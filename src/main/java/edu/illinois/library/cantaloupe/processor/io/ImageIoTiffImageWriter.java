@@ -7,7 +7,6 @@ import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.icc.IccProfile;
 import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;
-import it.geosolutions.imageio.plugins.tiff.EXIFParentTIFFTagSet;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import it.geosolutions.imageio.plugins.tiff.TIFFField;
 import it.geosolutions.imageio.plugins.tiff.TIFFTag;
@@ -26,10 +25,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 
 /**
  * TIFF image writer using ImageIO, capable of taking both Java 2D
@@ -94,7 +90,7 @@ class ImageIoTiffImageWriter extends AbstractImageIoImageWriter {
     /**
      * No-op.
      *
-     * @see {@link #addMetadata(IIOMetadata, IIOMetadata)}
+     * @see {@link #addMetadata(ImageIoMetadata, IIOMetadata)}
      */
     @Override
     protected void addMetadata(final IIOMetadataNode baseNode) {}
@@ -105,45 +101,29 @@ class ImageIoTiffImageWriter extends AbstractImageIoImageWriter {
      * @return
      * @throws IOException
      */
-    private IIOMetadata addMetadata(final IIOMetadata sourceMetadata,
+    private IIOMetadata addMetadata(final ImageIoMetadata sourceMetadata,
                                     final IIOMetadata derivativeMetadata)
             throws IOException {
-        final TIFFDirectory srcDir =
-                TIFFDirectory.createFromMetadata(sourceMetadata);
         final TIFFDirectory destDir =
                 TIFFDirectory.createFromMetadata(derivativeMetadata);
 
-        // Tags to preserve from the baseline IFD. EXIF metadata resides in a
-        // separate IFD, so this does not include any EXIF tags.
-        final Set<Integer> baselineTagsToPreserve = new HashSet<>(Arrays.asList(
-                BaselineTIFFTagSet.TAG_ARTIST,
-                BaselineTIFFTagSet.TAG_COPYRIGHT,
-                BaselineTIFFTagSet.TAG_DATE_TIME,
-                BaselineTIFFTagSet.TAG_IMAGE_DESCRIPTION,
-                BaselineTIFFTagSet.TAG_MAKE,
-                BaselineTIFFTagSet.TAG_MODEL,
-                BaselineTIFFTagSet.TAG_SOFTWARE,
-                700, // XMP
-                33723 // IPTC
-        ));
-
-        // Copy the baseline tags from above from the source metadata into the
-        // derivative metadata.
-        for (Object tagNumber : baselineTagsToPreserve) {
-            final TIFFField srcField = srcDir.getTIFFField((Integer) tagNumber);
-            if (srcField != null) {
-                destDir.addTIFFField(srcField);
-            }
+        for (TIFFField field : ((ImageIoTiffMetadata) sourceMetadata).getMetadata()) {
+            destDir.addTIFFField(field);
         }
 
-        // Copy the EXIF IFD from the source metadata, if present.
-        final TIFFField srcExifField =
-                srcDir.getTIFFField(EXIFParentTIFFTagSet.TAG_EXIF_IFD_POINTER);
-        if (srcExifField != null) {
-            final TIFFDirectory srcExifDir = (TIFFDirectory) srcExifField.getData();
-            if (srcExifDir != null) {
-                destDir.addTIFFField(srcExifField);
-            }
+        final TIFFField iptcField = (TIFFField) sourceMetadata.getIptc();
+        if (iptcField != null) {
+            destDir.addTIFFField(iptcField);
+        }
+
+        final TIFFField xmpField = (TIFFField) sourceMetadata.getXmp();
+        if (xmpField != null) {
+            destDir.addTIFFField(xmpField);
+        }
+
+        final TIFFField exifField = (TIFFField) sourceMetadata.getExif();
+        if (exifField != null) {
+            destDir.addTIFFField(exifField);
         }
 
         return destDir.getAsMetadata();
@@ -170,8 +150,7 @@ class ImageIoTiffImageWriter extends AbstractImageIoImageWriter {
                         addIccProfile(derivativeMetadata, (IccProfile) op);
             } else if (op instanceof MetadataCopy && sourceMetadata != null) {
                 derivativeMetadata = addMetadata(
-                        sourceMetadata.getIioMetadata(),
-                        derivativeMetadata);
+                        sourceMetadata, derivativeMetadata);
             }
         }
         return derivativeMetadata;

@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.processor.io;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 
+import javax.imageio.metadata.IIOMetadata;
 import java.io.File;
 import java.io.IOException;
 
@@ -22,6 +23,16 @@ class ImageIoJpegImageReader extends AbstractImageIoImageReader {
      */
     ImageIoJpegImageReader(StreamSource streamSource) throws IOException {
         super(streamSource, Format.JPG);
+    }
+
+    ImageIoMetadata getMetadata(int imageIndex) throws IOException {
+        if (reader == null) {
+            createReader();
+        }
+        final IIOMetadata metadata = reader.getImageMetadata(imageIndex);
+        final String metadataFormat = reader.getImageMetadata(imageIndex).
+                getNativeMetadataFormatName();
+        return new ImageIoJpegMetadata(metadata, metadataFormat);
     }
 
 }
