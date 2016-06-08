@@ -116,6 +116,7 @@ class Java2dProcessor extends AbstractImageIoProcessor
         }
 
         try {
+            final ImageIoImageReader reader = getReader();
             final ReductionFactor rf = new ReductionFactor();
             final Set<ImageIoImageReader.ReaderHint> hints = new HashSet<>();
             BufferedImage image = reader.read(ops, rf, hints);

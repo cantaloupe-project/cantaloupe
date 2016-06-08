@@ -25,9 +25,13 @@ abstract class AbstractImageIoProcessor extends AbstractProcessor {
     private static final HashMap<Format,Set<Format>> FORMATS =
             availableOutputFormats();
 
-    protected ImageIoImageReader reader;
     protected File sourceFile;
     protected StreamSource streamSource;
+
+    /**
+     * Access via {@link #getReader()}.
+     */
+    private ImageIoImageReader reader;
 
     /**
      * @return Map of available output formats for all known source formats,
@@ -54,6 +58,7 @@ abstract class AbstractImageIoProcessor extends AbstractProcessor {
             final ImageInfo info = new ImageInfo();
             info.setSourceFormat(getSourceFormat());
 
+            final ImageIoImageReader reader = getReader();
             for (int i = 0, numResolutions = reader.getNumResolutions();
                  i < numResolutions; i++) {
                 ImageInfo.Image image = new ImageInfo.Image();
@@ -65,6 +70,25 @@ abstract class AbstractImageIoProcessor extends AbstractProcessor {
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
+    }
+
+    /**
+     * {@link #setSourceFile(File)} and {@link #setSourceFormat(Format)} must
+     * be invoked first.
+     */
+    protected ImageIoImageReader getReader() {
+        if (reader == null) {
+            try {
+                if (streamSource != null) {
+                    reader = new ImageIoImageReader(streamSource, format);
+                } else {
+                    reader = new ImageIoImageReader(sourceFile, format);
+                }
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+        return reader;
     }
 
     public File getSourceFile() {
@@ -79,26 +103,12 @@ abstract class AbstractImageIoProcessor extends AbstractProcessor {
         disposeReader();
         this.streamSource = null;
         this.sourceFile = sourceFile;
-        if (reader == null) {
-            try {
-                reader = new ImageIoImageReader(sourceFile, format);
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
     }
 
     public void setStreamSource(StreamSource streamSource) {
         disposeReader();
         this.sourceFile = null;
         this.streamSource = streamSource;
-        if (reader == null) {
-            try {
-                reader = new ImageIoImageReader(streamSource, format);
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
     }
 
     private void disposeReader() {
