@@ -274,7 +274,7 @@ ImageMagickProcessor.background_color = black
 #----------------------------------------
 
 # JPEG output quality. Should be a number between 0-1.
-JaiProcessor.jpg.quality = 0.7
+JaiProcessor.jpg.quality = 0.8
 
 # TIFF output compression type. Available values are `LZW`, `Deflate`,
 # `ZLib`, `JPEG`, and `PackBits`. Leave blank for no compression.
@@ -289,7 +289,7 @@ JaiProcessor.tif.compression = LZW
 Java2dProcessor.scale_mode = speed
 
 # JPEG output quality. Should be a number between 0-1.
-Java2dProcessor.jpg.quality = 0.7
+Java2dProcessor.jpg.quality = 0.8
 
 # TIFF output compression type. Available values are `LZW`, `Deflate`,
 # `ZLib`, `JPEG`, and `PackBits`. Leave blank for no compression.
