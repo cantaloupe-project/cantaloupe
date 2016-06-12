@@ -76,6 +76,12 @@
       <version>1.4.190</version>
       <scope>test</scope>
     </dependency>
+    <!-- Used by com.mortennobel.imagescaling -->
+    <dependency>
+      <groupId>com.jhlabs</groupId>
+      <artifactId>filters</artifactId>
+      <version>2.0.235</version>
+    </dependency>
     <!-- Used by AzureStorageResolver and AzureStorageCache-->
     <dependency>
       <groupId>com.microsoft.azure</groupId>

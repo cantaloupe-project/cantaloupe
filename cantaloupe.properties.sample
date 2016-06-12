@@ -284,10 +284,6 @@ JaiProcessor.tif.compression = LZW
 # Java2dProcessor
 #----------------------------------------
 
-# Available values are `quality` and `speed`. `speed` is ~10-20% faster at
-# the expense of visible aliasing at small scales.
-Java2dProcessor.scale_mode = speed
-
 # JPEG output quality. Should be a number between 0-1.
 Java2dProcessor.jpg.quality = 0.8
 
@@ -306,10 +302,6 @@ KakaduProcessor.path_to_binaries =
 # Available values are `jai` and `java2d`.
 KakaduProcessor.post_processor = java2d
 
-# Available values are `quality` and `speed`. `speed` is ~10-20% faster at
-# the expense of visible aliasing at small scales.
-KakaduProcessor.post_processor.java2d.scale_mode = speed
-
 #----------------------------------------
 # OpenJpegProcessor
 #----------------------------------------
@@ -321,10 +313,6 @@ OpenJpegProcessor.path_to_binaries =
 # Available values are `jai` and `java2d`.
 OpenJpegProcessor.post_processor = java2d
 
-# Available values are `quality` and `speed`. `speed` is ~10-20% faster at
-# the expense of visible aliasing at small scales.
-OpenJpegProcessor.post_processor.java2d.scale_mode = speed
-
 #----------------------------------------
 # PdfBoxProcessor
 #----------------------------------------
@@ -333,10 +321,6 @@ OpenJpegProcessor.post_processor.java2d.scale_mode = speed
 # Requests for scales less than 0.5 or larger than 2 will automatically
 # use a lower or higher factor of this.
 PdfBoxProcessor.dpi = 150
-
-# Available values are `quality` and `speed`. `speed` is ~10-20% faster at
-# the expense of visible aliasing at small scales.
-PdfBoxProcessor.post_processor.java2d.scale_mode = speed
 
 ###########################################################################
 # CLIENT-SIDE CACHING

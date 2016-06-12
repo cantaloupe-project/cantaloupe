@@ -39,8 +39,6 @@ class Java2dProcessor extends AbstractImageIoProcessor
     private static Logger logger = LoggerFactory.
             getLogger(Java2dProcessor.class);
 
-    static final String SCALE_MODE_CONFIG_KEY = "Java2dProcessor.scale_mode";
-
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
@@ -144,11 +142,7 @@ class Java2dProcessor extends AbstractImageIoProcessor
             // Apply all other operations.
             for (Operation op : ops) {
                 if (op instanceof Scale) {
-                    final boolean highQuality = Configuration.getInstance().
-                            getString(SCALE_MODE_CONFIG_KEY, "speed").
-                            equals("quality");
-                    image = Java2dUtil.scaleImage(image, (Scale) op, rf,
-                            highQuality);
+                    image = Java2dUtil.scaleImage(image, (Scale) op, rf);
                 } else if (op instanceof Transpose) {
                     image = Java2dUtil.transposeImage(image, (Transpose) op);
                 } else if (op instanceof Rotate) {

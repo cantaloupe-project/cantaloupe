@@ -1325,23 +1325,6 @@
                                 <div role="tabpanel" class="tab-pane" id="Java2dProcessor">
                                     <table class="table table-striped">
                                         <tr>
-                                            <td>Scale mode
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Speed is 10-20% faster at the expense of
-                                                   visible aliasing at small scales.">?</a>
-                                            </td>
-                                            <td>
-                                                <select class="form-control"
-                                                        name="Java2dProcessor.scale_mode"
-                                                        data-requires-restart="false">
-                                                    <option value="speed">Speed</option>
-                                                    <option value="quality">Quality</option>
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
                                             <td>JPEG quality
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
@@ -1405,23 +1388,6 @@
                                                 </select>
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td>Java 2D scale mode
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Speed is 10-20% faster at the expense of
-                                                   visible aliasing at small scales.">?</a>
-                                            </td>
-                                            <td>
-                                                <select class="form-control"
-                                                        name="KakaduProcessor.post_processor.java2d.scale_mode"
-                                                        data-requires-restart="false">
-                                                    <option value="speed">Speed</option>
-                                                    <option value="quality">Quality</option>
-                                                </select>
-                                            </td>
-                                        </tr>
                                     </table>
                                 </div>
 
@@ -1452,23 +1418,6 @@
                                                 </select>
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td>Java 2D scale mode
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Speed is 10-20% faster at the expense of
-                                                   visible aliasing at small scales.">?</a>
-                                            </td>
-                                            <td>
-                                                <select class="form-control"
-                                                        name="OpenJpegProcessor.post_processor.java2d.scale_mode"
-                                                        data-requires-restart="false">
-                                                    <option value="speed">Speed</option>
-                                                    <option value="quality">Quality</option>
-                                                </select>
-                                            </td>
-                                        </tr>
                                     </table>
                                 </div>
 
@@ -1489,23 +1438,6 @@
                                                 <input class="form-control" type="number"
                                                        name="PdfBoxProcessor.dpi"
                                                        data-requires-restart="false">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Java 2D scale mode
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Speed is 10-20% faster at the expense of
-                                                   visible aliasing at small scales.">?</a>
-                                            </td>
-                                            <td>
-                                                <select class="form-control"
-                                                        name="PdfBoxProcessor.post_processor.java2d.scale_mode"
-                                                        data-requires-restart="false">
-                                                    <option value="speed">Speed</option>
-                                                    <option value="quality">Quality</option>
-                                                </select>
                                             </td>
                                         </tr>
                                     </table>

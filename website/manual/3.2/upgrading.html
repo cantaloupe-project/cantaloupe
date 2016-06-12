@@ -18,6 +18,14 @@ title: Upgrading
 
 <ul>
   <li>Add the <code>icc.*</code> keys from the sample configuration.</li>
+  <li>Remove the following keys from the configuration:
+    <ul>
+      <li>Java2dProcessor.scale_mode</li>
+      <li>KakaduProcessor.post_processor.java2d.scale_mode</li>
+      <li>OpenJpegProcessor.post_processor.java2d.scale_mode</li>
+      <li>PdfBoxProcessor.post_processor.java2d.scale_mode</li>
+    </ul>
+  </li>
 </ul>
 
 <h2>From 3.0.1 to 3.1</h2>

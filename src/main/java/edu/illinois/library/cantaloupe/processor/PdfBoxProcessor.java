@@ -44,8 +44,6 @@ class PdfBoxProcessor extends AbstractProcessor
             getLogger(PdfBoxProcessor.class);
 
     static final String DPI_CONFIG_KEY = "PdfBoxProcessor.dpi";
-    static final String JAVA2D_SCALE_MODE_CONFIG_KEY =
-            "PdfBoxProcessor.post_processor.java2d.scale_mode";
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
@@ -220,11 +218,8 @@ class PdfBoxProcessor extends AbstractProcessor
         // Apply all other operations.
         for (Operation op : opList) {
             if (op instanceof Scale) {
-                final boolean highQuality = Configuration.getInstance().
-                        getString(JAVA2D_SCALE_MODE_CONFIG_KEY, "speed").
-                        equals("quality");
-                image = Java2dUtil.scaleImage(image,
-                        (Scale) op, reductionFactor, highQuality);
+                image = Java2dUtil.scaleImage(image, (Scale) op,
+                        reductionFactor);
             } else if (op instanceof Transpose) {
                 image = Java2dUtil.transposeImage(image, (Transpose) op);
             } else if (op instanceof Rotate) {
