@@ -525,7 +525,7 @@ landing page, as well as in one of the tables below. A list of output formats su
 
 <p>Java2dProcessor uses the Java ImageIO framework and Java 2D API to read and process images in a native-Java way. This is a good processor to get started with as it has no external dependencies and works out-of-the-JAR.</p>
 
-<p>Java2dProcessor has been written to exploit the ImageIO image readers as efficiently as possible. Special attention has been paid to its handling of tiled images, such as tile-encoded TIFFs, for which it reads only the necessary tiles for a given request. It is also capable of reading the sub-images contained within multi-resolution (pyramidal) TIFF images, and applying scale-appropriate subsampling for faster reading.</p>
+<p>Java2dProcessor has been written to exploit the ImageIO image readers as efficiently as possible. Special attention has been paid to its handling of tiled images, such as tile-encoded TIFFs, for which it reads only the necessary tiles for a given request. It is also capable of reading the sub-images contained within multi-resolution (pyramidal) TIFF images.</p>
 
 <p>Because Java2dProcessor does all its work in Java, it places a burden on the JVM heap. Although it tries to be efficient at reading images, it does have to create derivative images at every processing step (scaling, rotating, etc.), which have to be temporarily buffered in RAM. (See the section on <a href="deployment.html#HardwareMemory">memory considerations</a>.)</p>
 
