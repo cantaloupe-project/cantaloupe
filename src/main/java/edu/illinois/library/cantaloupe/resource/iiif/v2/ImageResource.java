@@ -10,7 +10,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
+import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AccessDeniedException;
@@ -149,7 +149,7 @@ public class ImageResource extends Iiif2Resource {
                     processor.getClass().getSimpleName(),
                     ops.getOutputFormat().getPreferredExtension());
             getLogger().warning(msg + ": " + this.getReference());
-            throw new UnsupportedSourceFormatException(msg);
+            throw new UnsupportedOutputFormatException(msg);
         }
 
         this.addLinkHeader(params);

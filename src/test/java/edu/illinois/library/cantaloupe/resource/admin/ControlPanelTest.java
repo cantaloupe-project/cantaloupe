@@ -274,8 +274,6 @@ public class ControlPanelTest {
                 selectByVisibleText("PackBits");
         // Java2dProcessor
         css("#cl-processors li > a[href=\"#Java2dProcessor\"]").click();
-        new Select(css("[name=\"Java2dProcessor.scale_mode\"]")).
-                selectByValue("quality");
         css("[name=\"Java2dProcessor.jpg.quality\"]").sendKeys("0.55");
         new Select(css("[name=\"Java2dProcessor.tif.compression\"]")).
                 selectByVisibleText("PackBits");
@@ -284,20 +282,14 @@ public class ControlPanelTest {
         css("[name=\"KakaduProcessor.path_to_binaries\"]").sendKeys("/kpath");
         new Select(css("[name=\"KakaduProcessor.post_processor\"]")).
                 selectByValue("jai");
-        new Select(css("[name=\"KakaduProcessor.post_processor.java2d.scale_mode\"]")).
-                selectByValue("quality");
         // OpenJpegProcessor
         css("#cl-processors li > a[href=\"#OpenJpegProcessor\"]").click();
         css("[name=\"OpenJpegProcessor.path_to_binaries\"]").sendKeys("/ojpath");
         new Select(css("[name=\"OpenJpegProcessor.post_processor\"]")).
                 selectByValue("java2d");
-        new Select(css("[name=\"OpenJpegProcessor.post_processor.java2d.scale_mode\"]")).
-                selectByValue("speed");
         // PdfBoxProcessor
         css("#cl-processors li > a[href=\"#PdfBoxProcessor\"]").click();
         css("[name=\"PdfBoxProcessor.dpi\"]").sendKeys("300");
-        new Select(css("[name=\"PdfBoxProcessor.post_processor.java2d.scale_mode\"]")).
-                selectByValue("quality");
 
         // Submit the form
         css("#cl-processors input[type=\"submit\"]").click();
@@ -328,7 +320,6 @@ public class ControlPanelTest {
         assertEquals("PackBits",
                 config.getString("JaiProcessor.tif.compression"));
         // Java2dProcessor
-        assertEquals("quality", config.getString("Java2dProcessor.scale_mode"));
         assertEquals("0.55",
                 config.getString("Java2dProcessor.jpg.quality"));
         assertEquals("PackBits",
@@ -337,19 +328,13 @@ public class ControlPanelTest {
         assertEquals("/kpath",
                 config.getString("KakaduProcessor.path_to_binaries"));
         assertEquals("jai", config.getString("KakaduProcessor.post_processor"));
-        assertEquals("quality",
-                config.getString("KakaduProcessor.post_processor.java2d.scale_mode"));
         // OpenJpegProcessor
         assertEquals("/ojpath",
                 config.getString("OpenJpegProcessor.path_to_binaries"));
         assertEquals("java2d",
                 config.getString("OpenJpegProcessor.post_processor"));
-        assertEquals("speed",
-                config.getString("OpenJpegProcessor.post_processor.java2d.scale_mode"));
         // PdfBoxProcessor
         assertEquals(300, config.getInt("PdfBoxProcessor.dpi"));
-        assertEquals("quality",
-                config.getString("PdfBoxProcessor.post_processor.java2d.scale_mode"));
     }
 
     private void testCachesSection() throws Exception {

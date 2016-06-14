@@ -58,8 +58,6 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
     private static Logger logger = LoggerFactory.
             getLogger(OpenJpegProcessor.class);
 
-    static final String JAVA2D_SCALE_MODE_CONFIG_KEY =
-            "OpenJpegProcessor.post_processor.java2d.scale_mode";
     static final String PATH_TO_BINARIES_CONFIG_KEY =
             "OpenJpegProcessor.path_to_binaries";
     static final String POST_PROCESSOR_CONFIG_KEY =
@@ -508,11 +506,8 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
         // Perform all remaining operations.
         for (Operation op : opList) {
             if (op instanceof Scale) {
-                final boolean highQuality = Configuration.getInstance().
-                        getString(JAVA2D_SCALE_MODE_CONFIG_KEY, "speed").
-                        equals("quality");
-                image = Java2dUtil.scaleImage(image,
-                        (Scale) op, reductionFactor, highQuality);
+                image = Java2dUtil.scaleImage(image, (Scale) op,
+                        reductionFactor);
             } else if (op instanceof Transpose) {
                 image = Java2dUtil.transposeImage(image, (Transpose) op);
             } else if (op instanceof Rotate) {

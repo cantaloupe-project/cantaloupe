@@ -1,6 +1,6 @@
 # Site settings
 title: Cantaloupe
-email: alexd@illinois.edu
+email: alexd@n-ary.net
 description: > # this means to ignore newlines until "baseurl:"
   High-performance dynamic image server in Java
 baseurl: "/cantaloupe" # the subpath of your site, e.g. /blog

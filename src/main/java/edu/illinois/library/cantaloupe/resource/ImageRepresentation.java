@@ -125,12 +125,12 @@ public class ImageRepresentation extends OutputRepresentation {
                     final InputStream inputStream = streamSource.newInputStream();
                     IOUtils.copy(inputStream, outputStream);
                 }
-                logger.info("Streamed with no processing in {} msec: {}",
+                logger.debug("Streamed with no processing in {} msec: {}",
                         System.currentTimeMillis() - msec, ops);
             } else {
                 processor.process(ops, imageInfo, outputStream);
 
-                logger.info("{} processed in {} msec: {}",
+                logger.debug("{} processed in {} msec: {}",
                         processor.getClass().getSimpleName(),
                         System.currentTimeMillis() - msec, ops);
             }

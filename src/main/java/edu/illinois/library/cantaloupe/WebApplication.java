@@ -90,9 +90,10 @@ public class WebApplication extends Application {
             if (t instanceof ResourceException) {
                 status = ((ResourceException) t).getStatus();
             } else if (t instanceof IllegalArgumentException ||
-                    t instanceof UnsupportedEncodingException ||
-                    t instanceof UnsupportedOutputFormatException) {
+                    t instanceof UnsupportedEncodingException) {
                 status = new Status(Status.CLIENT_ERROR_BAD_REQUEST, t);
+            } else if (t instanceof UnsupportedOutputFormatException) {
+                status = new Status(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE, t);
             } else if (t instanceof FileNotFoundException) {
                 status = new Status(Status.CLIENT_ERROR_NOT_FOUND, t);
             } else if (t instanceof AccessDeniedException) {

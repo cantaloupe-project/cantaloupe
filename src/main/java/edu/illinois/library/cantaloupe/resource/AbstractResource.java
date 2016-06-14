@@ -202,8 +202,8 @@ public abstract class AbstractResource extends ServerResource {
                     opList.add(redaction);
                 }
             } else {
-                logger.debug("Redactions are disabled ({} = false); skipping.",
-                        RedactionService.REDACTION_ENABLED_CONFIG_KEY);
+                logger.debug("addNonEndpointOperations(): redactions are " +
+                        "disabled; skipping.");
             }
 
             // Watermark
@@ -214,8 +214,8 @@ public abstract class AbstractResource extends ServerResource {
                         getCanonicalClientIpAddress(),
                         getRequest().getCookies().getValuesMap()));
             } else {
-                logger.debug("Watermarking is disabled ({} = false); skipping.",
-                        WatermarkService.WATERMARK_ENABLED_CONFIG_KEY);
+                logger.debug("addNonEndpointOperations(): watermarking is " +
+                        "disabled; skipping.");
             }
 
             // ICC profile
@@ -234,8 +234,8 @@ public abstract class AbstractResource extends ServerResource {
             }
         } catch (DelegateScriptDisabledException e) {
             // no problem
-            logger.info("Delegate script disabled; skipping non-endpoint " +
-                    "operations.");
+            logger.debug("addNonEndpointOperations(): delegate script is " +
+                    "disabled; skipping.");
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
@@ -360,7 +360,7 @@ public abstract class AbstractResource extends ServerResource {
             long msec = System.currentTimeMillis();
             info = cache.getImageInfo(identifier);
             if (info != null) {
-                logger.info("Retrieved dimensions of {} from cache in {} msec",
+                logger.debug("Retrieved dimensions of {} from cache in {} msec",
                         identifier, System.currentTimeMillis() - msec);
             } else {
                 info = readInfo(identifier, proc);
@@ -414,7 +414,7 @@ public abstract class AbstractResource extends ServerResource {
             final String method = "authorized?";
             return (boolean) engine.invoke(method, args);
         } catch (DelegateScriptDisabledException e) {
-            logger.info("isAuthorized(): delegate script disabled; allowing.");
+            logger.debug("isAuthorized(): delegate script is disabled; allowing.");
             return true;
         }
     }
@@ -431,7 +431,7 @@ public abstract class AbstractResource extends ServerResource {
                                final Processor proc) throws ProcessorException {
         final long msec = System.currentTimeMillis();
         final ImageInfo info = proc.getImageInfo();
-        logger.info("Read info of {} in {} msec", identifier,
+        logger.debug("Read info of {} in {} msec", identifier,
                 System.currentTimeMillis() - msec);
         return info;
     }

@@ -15,6 +15,9 @@ title: What's New
 <h2>3.2</h2>
 
 <ul>
+  <li>All processors that use the Java 2D pipeline (Java2dProcessor, KakaduProcessor, OpenJpegProcessor, PdfBoxProcessor, FfmpegProcessor) use a custom box filter for downscaling and a bicubic filter for upscaling, resulting in much better quality and 100-400% faster scaling performance.</li>
   <li>Added the ability to pass through EXIF, IPTC, and/or XMP metadata from source images to derivative images for some formats.</li>
   <li>Added the ability to embed ICC color profiles in derivative images.</li>
+  <li>Increased the default Java2dProcessor/JaiProcessor JPEG output quality to 0.8 (80).</li>
+  <li>When an output format is requested that is valid but unsupported by the current processor, HTTP 415 is returned instead of HTTP 400.</li>
 </ul>

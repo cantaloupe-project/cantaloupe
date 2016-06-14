@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import com.mortennobel.imagescaling.ResampleFilters;
+import com.mortennobel.imagescaling.ResampleOp;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
@@ -75,7 +77,7 @@ public abstract class Java2dUtil {
                 }
             }
             g2d.dispose();
-            logger.info("applyRedactions() executed in {} msec",
+            logger.debug("applyRedactions() executed in {} msec",
                     System.currentTimeMillis() - msec);
         }
         return baseImage;
@@ -178,7 +180,7 @@ public abstract class Java2dUtil {
             g2d.drawImage(baseImage, 0, 0, null);
             g2d.drawImage(overlayImage, overlayX, overlayY, null);
             g2d.dispose();
-            logger.info("overlayImage() executed in {} msec",
+            logger.debug("overlayImage() executed in {} msec",
                     System.currentTimeMillis() - msec);
         }
         return baseImage;
@@ -208,7 +210,7 @@ public abstract class Java2dUtil {
             g.drawImage(inImage, 0, 0, null);
             g.dispose();
 
-            logger.info("convertCustomToRgb() executed in {} msec",
+            logger.debug("convertCustomToRgb() executed in {} msec",
                     System.currentTimeMillis() - msec);
         }
         return outImage;
@@ -285,7 +287,7 @@ public abstract class Java2dUtil {
             croppedImage = inImage.getSubimage(x, y, croppedWidth,
                     croppedHeight);
 
-            logger.info("cropImage(): cropped {}x{} image to {} in {} msec",
+            logger.debug("cropImage(): cropped {}x{} image to {} in {} msec",
                     inImage.getWidth(), inImage.getHeight(), crop,
                     System.currentTimeMillis() - msec);
         }
@@ -318,7 +320,7 @@ public abstract class Java2dUtil {
             Graphics2D g2d = filteredImage.createGraphics();
             g2d.drawImage(inImage, 0, 0, null);
 
-            logger.info("filterImage(): filtered {}x{} image in {} msec",
+            logger.debug("filterImage(): filtered {}x{} image in {} msec",
                     inImage.getWidth(), inImage.getHeight(),
                     System.currentTimeMillis() - msec);
         }
@@ -356,7 +358,7 @@ public abstract class Java2dUtil {
             Graphics2D g = outImage.createGraphics();
             g.drawImage(inImage, 0, 0, null);
             g.dispose();
-            logger.info("removeAlpha(): converted BufferedImage type {} to " +
+            logger.debug("removeAlpha(): converted BufferedImage type {} to " +
                     "RGB in {} msec", inImage.getType(),
                     System.currentTimeMillis() - msec);
         }
@@ -401,7 +403,7 @@ public abstract class Java2dUtil {
                     RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             g2d.setRenderingHints(hints);
             g2d.drawImage(inImage, tx, null);
-            logger.info("rotateImage() executed in {} msec",
+            logger.debug("rotateImage() executed in {} msec",
                     System.currentTimeMillis() - msec);
         }
         return rotatedImage;
@@ -417,81 +419,106 @@ public abstract class Java2dUtil {
      */
     static BufferedImage scaleImage(final BufferedImage inImage,
                                     final Scale scale) {
-        return scaleImage(inImage, scale, new ReductionFactor(0), false);
+        return scaleImage(inImage, scale, new ReductionFactor(0));
     }
 
     /**
-     * Scales an image using Graphics2D, taking an already-applied reduction
-     * factor into account. In other words, the dimensions of the input image
-     * have already been halved <code>rf</code> times but the given size is
-     * relative to the full-sized image.
+     * Scales an image, taking an already-applied reduction factor into
+     * account. In other words, the dimensions of the input image have already
+     * been halved <code>rf</code> times but the given size is relative to the
+     * full-sized image.
      *
      * @param inImage Image to scale
      * @param scale Requested size ignoring any reduction factor
      * @param rf Reduction factor that has already been applied to
      *           <code>inImage</code>
-     * @param highQuality Whether to use a high-quality but more expensive
-     *                    scaling method.
      * @return Downscaled image, or the input image if the given scale is a
      *         no-op.
      */
     static BufferedImage scaleImage(final BufferedImage inImage,
                                     final Scale scale,
-                                    final ReductionFactor rf,
-                                    final boolean highQuality) {
+                                    final ReductionFactor rf) {
         final Dimension sourceSize = new Dimension(
                 inImage.getWidth(), inImage.getHeight());
 
         // Calculate the size that the image will need to be scaled to based
         // on the source image size, scale, and already-applied reduction
         // factor.
-        Dimension resultingSize;
+        Dimension targetSize;
         if (scale.getPercent() != null) {
-            resultingSize = new Dimension();
-            resultingSize.width = (int) Math.round(sourceSize.width *
+            targetSize = new Dimension();
+            targetSize.width = (int) Math.round(sourceSize.width *
                     (scale.getPercent() / rf.getScale()));
-            resultingSize.height = (int) Math.round(sourceSize.height *
+            targetSize.height = (int) Math.round(sourceSize.height *
                     (scale.getPercent() / rf.getScale()));
         } else {
-            resultingSize = scale.getResultingSize(sourceSize);
+            targetSize = scale.getResultingSize(sourceSize);
         }
 
         BufferedImage scaledImage = inImage;
-        if (!scale.isNoOp() && (resultingSize.width != sourceSize.width &&
-                resultingSize.height != sourceSize.height)) {
+        if (!scale.isNoOp() && (targetSize.width != sourceSize.width &&
+                targetSize.height != sourceSize.height)) {
+            /*
+            This method uses the image scaling code in
+            com.mortennobel.imagescaling (see
+            https://blog.nobel-joergensen.com/2008/12/20/downscaling-images-in-java/)
+            as an alternative to the scaling available in the Java 2D APIs.
+            Problem is, while the performance of Graphics2D.drawImage() is OK,
+            the quality, even using RenderingHints.VALUE_INTERPOLATION_BILINEAR,
+            is utter crap for downscaling. BufferedImage.getScaledInstance()
+            is somewhat the opposite: great quality but very slow. There may be
+            ways to mitigate the former (like multi-step downscaling) but not
+            without cost.
+
+            Subjective quality of downscale from 2288x1520 to 200x200:
+
+            Lanczos3 > Box > Bicubic > Mitchell > Triangle > Bell > Hermite >
+                BSpline > Graphics2D
+
+            Approximate time-to-complete of same (milliseconds, 2.3GHz i7):
+            Triangle: 19
+            Box: 20
+            Hermite: 24
+            Bicubic: 25
+            Mitchell: 30
+            BSpline: 53
+            Graphics2D: 70
+            Bell: 145
+            Lanczos3: 238
+
+            Subjective quality of upscale from 2288x1520 to 3000x3000:
+            Lanczos3 > Bicubic > Mitchell > Graphics2D = Triangle = Hermite >
+                Bell > BSpline > Box
+
+            Approximate time-to-complete of same (milliseconds, 2.3GHz i7):
+            Triangle: 123
+            Hermite: 142
+            Box: 162
+            Bicubic: 206
+            Mitchell: 224
+            BSpline: 230
+            Graphics2D: 268
+            Lanczos3: 355
+            Bell: 468
+            */
             final long startMsec = System.currentTimeMillis();
 
-            scaledImage = new BufferedImage(
-                    resultingSize.width, resultingSize.height,
-                    inImage.getType());
+            final ResampleOp resampleOp = new ResampleOp(
+                    targetSize.width, targetSize.height);
 
-            final Graphics2D g2d = scaledImage.createGraphics();
-            try {
-                // The "non-high-quality" technique results in images with
-                // noticeable aliasing at small scales.
-                // See: https://community.oracle.com/docs/DOC-983611
-                // http://stackoverflow.com/a/34266703/177529
-                if (highQuality) {
-                    g2d.drawImage(
-                            inImage.getScaledInstance(
-                                    resultingSize.width, resultingSize.height,
-                                    Image.SCALE_SMOOTH),
-                            0, 0, resultingSize.width, resultingSize.height, null);
-                } else {
-                    final RenderingHints hints = new RenderingHints(
-                            RenderingHints.KEY_INTERPOLATION,
-                            RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-                    g2d.setRenderingHints(hints);
-                    g2d.drawImage(inImage, 0, 0,
-                            resultingSize.width, resultingSize.height, null);
-                }
-                logger.info("scaleImage(): scaled {}x{} image to {}x{} in {} msec",
-                        sourceSize.width, sourceSize.height,
-                        resultingSize.width, resultingSize.height,
-                        System.currentTimeMillis() - startMsec);
-            } finally {
-                g2d.dispose();
+            if (targetSize.width < sourceSize.width ||
+                    targetSize.height < sourceSize.height) {
+                resampleOp.setFilter(ResampleFilters.getBoxFilter());
+            } else {
+                resampleOp.setFilter(ResampleFilters.getBiCubicFilter());
             }
+
+            scaledImage = resampleOp.filter(inImage, null);
+
+            logger.debug("scaleImage(): scaled {}x{} image to {}x{} in {} msec",
+                    sourceSize.width, sourceSize.height,
+                    targetSize.width, targetSize.height,
+                    System.currentTimeMillis() - startMsec);
         }
         return scaledImage;
     }
@@ -517,7 +544,7 @@ public abstract class Java2dUtil {
                 AffineTransformOp.TYPE_BILINEAR);
         BufferedImage outImage = op.filter(inImage, null);
 
-        logger.info("transposeImage(): transposed image in {} msec",
+        logger.debug("transposeImage(): transposed image in {} msec",
                 System.currentTimeMillis() - msec);
         return outImage;
     }
