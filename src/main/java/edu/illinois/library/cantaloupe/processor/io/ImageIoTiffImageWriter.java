@@ -33,8 +33,10 @@ import java.util.Iterator;
  */
 class ImageIoTiffImageWriter extends AbstractImageIoImageWriter {
 
-    static final String TIF_COMPRESSION_CONFIG_KEY = // TODO: fix w/ java 2d
+    static final String JAI_TIF_COMPRESSION_CONFIG_KEY =
             "JaiProcessor.tif.compression";
+    static final String JAVA2D_TIF_COMPRESSION_CONFIG_KEY =
+            "Java2dProcessor.tif.compression";
 
     ImageIoTiffImageWriter(OperationList opList) {
         super(opList);
@@ -69,11 +71,27 @@ class ImageIoTiffImageWriter extends AbstractImageIoImageWriter {
      * @param writer Writer to abtain parameters for
      * @return Write parameters respecting the application configuration.
      */
-    private ImageWriteParam getWriteParam(ImageWriter writer) {
+    private ImageWriteParam getJaiWriteParam(ImageWriter writer) {
         final ImageWriteParam writeParam = writer.getDefaultWriteParam();
         final Configuration config = Configuration.getInstance();
         final String compressionType = config.getString(
-                TIF_COMPRESSION_CONFIG_KEY);
+                JAI_TIF_COMPRESSION_CONFIG_KEY);
+        if (compressionType != null) {
+            writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            writeParam.setCompressionType(compressionType);
+        }
+        return writeParam;
+    }
+
+    /**
+     * @param writer Writer to abtain parameters for
+     * @return Write parameters respecting the application configuration.
+     */
+    private ImageWriteParam getJava2dWriteParam(ImageWriter writer) {
+        final ImageWriteParam writeParam = writer.getDefaultWriteParam();
+        final Configuration config = Configuration.getInstance();
+        final String compressionType = config.getString(
+                JAVA2D_TIF_COMPRESSION_CONFIG_KEY);
         if (compressionType != null) {
             writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
             writeParam.setCompressionType(compressionType);
@@ -94,7 +112,7 @@ class ImageIoTiffImageWriter extends AbstractImageIoImageWriter {
                 Format.TIF.getPreferredMediaType().toString());
         final ImageWriter writer = writers.next();
         try {
-            final ImageWriteParam writeParam = getWriteParam(writer);
+            final ImageWriteParam writeParam = getJava2dWriteParam(writer);
             final IIOMetadata metadata = getMetadata(writer, writeParam, image);
             final IIOImage iioImage = new IIOImage(image, null, metadata);
             final ImageOutputStream ios =
@@ -120,7 +138,7 @@ class ImageIoTiffImageWriter extends AbstractImageIoImageWriter {
                 Format.TIF.getPreferredMediaType().toString());
         final ImageWriter writer = writers.next();
         try {
-            final ImageWriteParam writeParam = getWriteParam(writer);
+            final ImageWriteParam writeParam = getJaiWriteParam(writer);
             final IIOMetadata metadata = getMetadata(writer, writeParam, image);
             final IIOImage iioImage = new IIOImage(image, null, metadata);
             final ImageOutputStream ios =
