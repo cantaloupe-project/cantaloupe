@@ -158,10 +158,16 @@ public class ImageResource extends Iiif2Resource {
     }
 
     private void addLinkHeader(Parameters params) {
+        final Identifier identifier = params.getIdentifier();
+        final String canonicalIdentifierStr = getRequest().getHeaders().
+                getFirstValue("X-IIIF-ID", true, identifier.toString());
+        final String paramsStr = params.toString().replaceFirst(
+                identifier.toString(), canonicalIdentifierStr);
+
         getResponse().getHeaders().add("Link",
                 String.format("<%s%s/%s>;rel=\"canonical\"",
                 getPublicRootRef(getRequest()).toString(),
-                WebApplication.IIIF_2_PATH, params.toString()));
+                WebApplication.IIIF_2_PATH, paramsStr));
     }
 
 }

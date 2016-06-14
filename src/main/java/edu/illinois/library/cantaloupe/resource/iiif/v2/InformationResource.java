@@ -122,9 +122,16 @@ public class InformationResource extends Iiif2Resource {
         return rep;
     }
 
+    /**
+     * @param identifier
+     * @return Full image URI corresponding to the given identifier, respecting
+     *         the X-Forwarded-* and X-IIIF-ID reverse proxy headers.
+     */
     private String getImageUri(Identifier identifier) {
+        final String identifierStr = getRequest().getHeaders().
+                getFirstValue("X-IIIF-ID", true, identifier.toString());
         return getPublicRootRef(getRequest()) + WebApplication.IIIF_2_PATH +
-                "/" + Reference.encode(identifier.toString());
+                "/" + Reference.encode(identifierStr);
     }
 
 }
