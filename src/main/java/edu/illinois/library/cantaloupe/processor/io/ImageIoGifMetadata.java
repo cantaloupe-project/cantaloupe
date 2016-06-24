@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.io;
 
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -59,7 +60,18 @@ class ImageIoGifMetadata extends AbstractImageIoMetadata
                     final String appId = appIdAttr.getNodeValue();
                     if (appId != null) {
                         if ("xmp data".equals(appId.toLowerCase())) {
-                            return (byte[]) appExtension.getUserObject();
+                            byte[] xmp = (byte[]) appExtension.getUserObject();
+                            // Ideally we would just be able to return the byte
+                            // array here, but testing indicates that the XMP
+                            // data is corrupt in some/all(?) cases, even when
+                            // it is valid in the source file. Maybe an ImageIO
+                            // bug?
+                            // These are probably not the only fixes that will
+                            // need to be made.
+                            String xmpStr = new String(xmp);
+                            xmpStr = StringUtils.replace(xmpStr, "xmpmta", "xmpmeta");
+                            xmpStr = StringUtils.replace(xmpStr, "\n/", "\n</");
+                            return xmpStr.getBytes();
                         }
                     }
                 }
