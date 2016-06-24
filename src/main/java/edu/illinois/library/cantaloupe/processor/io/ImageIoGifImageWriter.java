@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.processor.io;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.icc.IccProfile;
+import org.w3c.dom.NodeList;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -26,6 +27,10 @@ import java.util.Iterator;
  *
  * @see <a href="https://docs.oracle.com/javase/7/docs/api/javax/imageio/metadata/doc-files/gif_metadata.html">
  *     GIF Metadata Format Specification</a>
+ * @see <a href="http://docs.oracle.com/javase/7/docs/api/javax/imageio/package-summary.html#gif_plugin_notes">
+ *     Writing GIF Images</a>
+ * @see <a href="https://www.adobe.com/content/dam/Adobe/en/devnet/xmp/pdfs/XMPSpecificationPart3.pdf">
+ *     XMP Specification Part 3</a>
  * @see <a href="http://justsolve.archiveteam.org/wiki/GIF">GIF</a>
  */
 class ImageIoGifImageWriter extends AbstractImageIoImageWriter {
@@ -46,24 +51,53 @@ class ImageIoGifImageWriter extends AbstractImageIoImageWriter {
      */
     @Override
     protected void addIccProfile(final IIOMetadataNode baseTree,
-                                 final IccProfile profile)
-            throws IOException {
-        final IIOMetadataNode appExtensions =
-                new IIOMetadataNode("ApplicationExtensions");
+                                 final IccProfile profile) throws IOException {
+        // Obtain or create /ApplicationExtensions
+        final NodeList appExtensionsList =
+                baseTree.getElementsByTagName("ApplicationExtensions");
+        IIOMetadataNode appExtensions;
+        if (appExtensionsList.getLength() > 0) {
+            appExtensions = (IIOMetadataNode) appExtensionsList.item(0);
+        } else {
+            appExtensions = new IIOMetadataNode("ApplicationExtensions");
+            baseTree.appendChild(appExtensions);
+        }
+
+        // Create /ApplicationExtensions/ApplicationExtension
         final IIOMetadataNode appExtension =
                 new IIOMetadataNode("ApplicationExtension");
         appExtension.setAttribute("applicationID", "ICCRGBG1");
         appExtension.setAttribute("authenticationCode", "012");
         appExtension.setUserObject(profile.getProfile().getData());
-
-        baseTree.appendChild(appExtensions);
         appExtensions.appendChild(appExtension);
     }
 
     @Override
     protected void addMetadata(final IIOMetadataNode baseTree)
             throws IOException {
-        // TODO: write this
+        // GIF doesn't support EXIF or IPTC metadata -- XMP only.
+        // The XMP node will be located at /ApplicationExtensions/
+        // ApplicationExtension[@applicationID="XMP Data" @authenticationCode="XMP"]
+        final Object xmp = sourceMetadata.getXmp();
+        if (xmp instanceof byte[]) {
+            final NodeList appExtensionsList =
+                    baseTree.getElementsByTagName("ApplicationExtensions");
+            IIOMetadataNode appExtensions;
+            if (appExtensionsList.getLength() > 0) {
+                appExtensions = (IIOMetadataNode) appExtensionsList.item(0);
+            } else {
+                appExtensions = new IIOMetadataNode("ApplicationExtensions");
+                baseTree.appendChild(appExtensions);
+            }
+
+            // Create /ApplicationExtensions/ApplicationExtension
+            final IIOMetadataNode appExtensionNode =
+                    new IIOMetadataNode("ApplicationExtension");
+            appExtensionNode.setAttribute("applicationID", "XMP Data");
+            appExtensionNode.setAttribute("authenticationCode", "XMP");
+            appExtensionNode.setUserObject(xmp);
+            appExtensions.appendChild(appExtensionNode);
+        }
     }
 
     /**
