@@ -97,6 +97,11 @@ title: Deployment
     <td>Client IP address. If missing, any features that require a client IP address will either not work (such as IP-based authorization), or be incorrect (such as access logs).</td>
     <td>No</td>
   </tr>
+  <tr>
+    <td><code>X-IIIF-ID</code></td>
+    <td>Originally-requested image identifier. Should be set only when the proxy server will change the value of the identifier in the forwarded request; i.e. when the client is asking for a different identifier than the image server ends up seeing.</td>
+    <td>No</td>
+  </tr>
 </table>
 
 <p>If it is not possible to configure your reverse proxy to send these headers, the <code>base_uri</code> configuration option can be used instead; set it to the URI of the client-facing reverse proxy including any base path.</p>
