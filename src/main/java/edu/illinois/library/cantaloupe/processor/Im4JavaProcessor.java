@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
@@ -9,12 +10,11 @@ import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.icc.IccProfile;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.im4java.core.IM4JavaException;
 import org.im4java.core.IMOperation;
 import org.im4java.core.Info;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.io.IOException;
@@ -29,9 +29,6 @@ import java.util.Set;
  * @see <a href="http://im4java.sourceforge.net">im4java</a>
  */
 abstract class Im4JavaProcessor extends AbstractProcessor {
-
-    private static Logger logger = LoggerFactory.
-            getLogger(Im4JavaProcessor.class);
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
@@ -148,6 +145,11 @@ abstract class Im4JavaProcessor extends AbstractProcessor {
             } else if (op instanceof IccProfile) {
                 imOp.profile(((IccProfile) op).getFile().getAbsolutePath());
             }
+        }
+
+        if (!Configuration.getInstance().
+                getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false)) {
+            imOp.strip();
         }
     }
 
