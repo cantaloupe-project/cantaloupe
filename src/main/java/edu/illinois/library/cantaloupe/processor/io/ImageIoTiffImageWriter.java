@@ -109,23 +109,25 @@ class ImageIoTiffImageWriter extends AbstractImageIoImageWriter {
         final TIFFDirectory destDir =
                 TIFFDirectory.createFromMetadata(derivativeMetadata);
 
-        for (TIFFField field : ((ImageIoTiffMetadata) sourceMetadata).getMetadata()) {
-            destDir.addTIFFField(field);
-        }
+        if (sourceMetadata instanceof ImageIoTiffMetadata) {
+            for (TIFFField field : ((ImageIoTiffMetadata) sourceMetadata).getMetadata()) {
+                destDir.addTIFFField(field);
+            }
 
-        final TIFFField iptcField = (TIFFField) sourceMetadata.getIptc();
-        if (iptcField != null) {
-            destDir.addTIFFField(iptcField);
-        }
+            final TIFFField iptcField = (TIFFField) sourceMetadata.getIptc();
+            if (iptcField != null) {
+                destDir.addTIFFField(iptcField);
+            }
 
-        final TIFFField xmpField = (TIFFField) sourceMetadata.getXmp();
-        if (xmpField != null) {
-            destDir.addTIFFField(xmpField);
-        }
+            final TIFFField xmpField = (TIFFField) sourceMetadata.getXmp();
+            if (xmpField != null) {
+                destDir.addTIFFField(xmpField);
+            }
 
-        final TIFFField exifField = (TIFFField) sourceMetadata.getExif();
-        if (exifField != null) {
-            destDir.addTIFFField(exifField);
+            final TIFFField exifField = (TIFFField) sourceMetadata.getExif();
+            if (exifField != null) {
+                destDir.addTIFFField(exifField);
+            }
         }
 
         return destDir.getAsMetadata();
