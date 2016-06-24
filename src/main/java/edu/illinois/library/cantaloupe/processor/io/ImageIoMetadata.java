@@ -18,29 +18,9 @@ public interface ImageIoMetadata {
     Object getExif();
 
     /**
-     * @return TODO: what is this?
-     */
-    String getFormatName();
-
-    /**
-     * @return ImageIO metadata object.
-     */
-    IIOMetadata getIioMetadata();
-
-    /**
      * @return IPTC data, or null if none was found in the source metadata.
      */
     Object getIptc();
-
-    /**
-     * @param metadata ImageIO metadata object.
-     */
-    void setIioMetadata(IIOMetadata metadata);
-
-    /**
-     * @param name TODO: what is this?
-     */
-    void setFormatName(String name);
 
     /**
      * @return XMP data, or null if none was found in the source metadata.
