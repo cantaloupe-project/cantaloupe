@@ -25,9 +25,8 @@ import java.io.OutputStream;
 import java.util.Iterator;
 
 /**
- * JPEG image writer using ImageIO, capable of taking both Java 2D
- * {@link BufferedImage}s and JAI {@link PlanarImage}s and writing them as
- * JPEGs.
+ * JPEG image writer using ImageIO, capable of writing both Java 2D
+ * {@link BufferedImage}s and JAI {@link PlanarImage}s as JPEGs.
  *
  * @see <a href="http://docs.oracle.com/javase/7/docs/api/javax/imageio/metadata/doc-files/jpeg_metadata.html">
  *     JPEG Metadata Format Specification and Usage Notes</a>
@@ -62,7 +61,6 @@ class ImageIoJpegImageWriter extends AbstractImageIoImageWriter {
         iccNode.setUserObject(profile.getProfile());
 
         // Append the app2ICC node we just created to /JPEGvariety/app0JFIF
-        // TODO: simplify this
         NodeList level1Nodes = baseTree.getChildNodes();
         for (int i = 0; i < level1Nodes.getLength(); i++) {
             Node level1Node = level1Nodes.item(i);

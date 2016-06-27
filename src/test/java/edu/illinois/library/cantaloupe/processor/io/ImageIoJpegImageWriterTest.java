@@ -3,24 +3,28 @@ package edu.illinois.library.cantaloupe.processor.io;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.MetadataCopy;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.icc.IccProfile;
 import edu.illinois.library.cantaloupe.image.icc.IccProfileService;
+import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageInputStream;
-import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Iterator;
 
 import static org.junit.Assert.*;
@@ -28,32 +32,28 @@ import static org.junit.Assert.*;
 public class ImageIoJpegImageWriterTest {
 
     private BufferedImage bufferedImage;
+    private ImageIoMetadata metadata;
     private FileOutputStream outputStream;
     private PlanarImage planarImage;
     private File tempFile;
-    private ImageIoJpegImageWriter writer;
 
     @Before
     public void setUp() throws Exception {
-        // Disable ICC profiles (will be re-enabled in certain tests)
         final Configuration config = Configuration.getInstance();
+        // Disable ICC profiles (will be re-enabled in certain tests)
         config.setProperty(IccProfileService.ICC_ENABLED_CONFIG_KEY, false);
+        // Disable metadata preservation (will be re-enabled in certain tests)
+        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false);
 
         // Read an image fixture into memory
-        final File fixture = TestUtil.getImage("jpg");
-        bufferedImage = ImageIO.read(fixture);
-        planarImage = JAI.create("ImageRead", fixture);
+        final File fixture = TestUtil.getImage("jpg-xmp.jpg");
+        metadata = new ImageIoJpegImageReader(fixture).getMetadata(0);
+        bufferedImage = new ImageIoJpegImageReader(fixture).read();
+        planarImage =  PlanarImage.wrapRenderedImage(
+                new ImageIoJpegImageReader(fixture).readRendered());
 
-        // Instantiate a writer
-        IccProfile profile = new IccProfileService().getProfile(
-                new Identifier("cats"), Format.JPG, null, "127.0.0.1");
-        OperationList opList = new OperationList();
-        opList.add(profile);
-        writer = new ImageIoJpegImageWriter(opList);
-
-        // Create a temp file to write to
+        // Create a temp file and output stream to write to
         tempFile = File.createTempFile("test", "tmp");
-
         outputStream = new FileOutputStream(tempFile);
     }
 
@@ -65,30 +65,96 @@ public class ImageIoJpegImageWriterTest {
 
     @Test
     public void testWriteWithBufferedImage() throws Exception {
-        writer.write(bufferedImage, outputStream);
+        getWriter().write(bufferedImage, outputStream);
         ImageIO.read(tempFile);
     }
-    /* TODO: why does this fail?
+
     @Test
-    public void testWriteWithBufferedImageAndIccProfile()  throws Exception {
+    public void testWriteWithBufferedImageAndIccProfile() throws Exception {
         configureIccProfile();
-        writer.write(bufferedImage, outputStream);
+        getWriter().write(bufferedImage, outputStream);
         checkForIccProfile();
     }
-    */
-        @Test
-        public void testWriteWithPlanarImage() throws Exception {
-            writer.write(planarImage, outputStream);
-            ImageIO.read(tempFile);
-        }
-    /* TODO: why does this fail?
+/* TODO: why do these fail?
+    @Test
+    public void testWriteWithBufferedImageAndExifMetadata() throws Exception {
+        final File fixture = TestUtil.getImage("jpg-exif.jpg");
+        metadata = new ImageIoJpegImageReader(fixture).getMetadata(0);
+        bufferedImage = new ImageIoJpegImageReader(fixture).read();
+
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        getWriter().write(bufferedImage, outputStream);
+        checkForExifMetadata();
+    }
+
+    @Test
+    public void testWriteWithBufferedImageAndIptcMetadata() throws Exception {
+        final File fixture = TestUtil.getImage("jpg-iptc.jpg");
+        metadata = new ImageIoJpegImageReader(fixture).getMetadata(0);
+        bufferedImage = new ImageIoJpegImageReader(fixture).read();
+
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        getWriter().write(bufferedImage, outputStream);
+        checkForIptcMetadata();
+    }
+
+    @Test
+    public void testWriteWithBufferedImageAndXmpMetadata() throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        getWriter().write(bufferedImage, outputStream);
+        checkForXmpMetadata();
+    }
+*/
+    @Test
+    public void testWriteWithPlanarImage() throws Exception {
+        getWriter().write(planarImage, outputStream);
+        ImageIO.read(tempFile);
+    }
+
     @Test
     public void testWriteWithPlanarImageAndIccProfile() throws Exception {
         configureIccProfile();
-        writer.write(planarImage, outputStream);
+        getWriter().write(planarImage, outputStream);
         checkForIccProfile();
     }
-    */
+/* TODO: why do these fail?
+    @Test
+    public void testWriteWithPlanarImageAndExifMetadata() throws Exception {
+        final File fixture = TestUtil.getImage("jpg-exif.jpg");
+        metadata = new ImageIoJpegImageReader(fixture).getMetadata(0);
+        planarImage =  PlanarImage.wrapRenderedImage(
+                new ImageIoJpegImageReader(fixture).readRendered());
+
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        getWriter().write(planarImage, outputStream);
+        checkForExifMetadata();
+    }
+
+    @Test
+    public void testWriteWithPlanarImageAndIptcMetadata() throws Exception {
+        final File fixture = TestUtil.getImage("jpg-iptc.jpg");
+        metadata = new ImageIoJpegImageReader(fixture).getMetadata(0);
+        planarImage =  PlanarImage.wrapRenderedImage(
+                new ImageIoJpegImageReader(fixture).readRendered());
+
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        getWriter().write(planarImage, outputStream);
+        checkForIptcMetadata();
+    }
+
+    @Test
+    public void testWriteWithPlanarImageAndXmpMetadata() throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        getWriter().write(planarImage, outputStream);
+        checkForXmpMetadata();
+    }
+*/
     private void configureIccProfile() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(IccProfileService.ICC_ENABLED_CONFIG_KEY, true);
@@ -116,6 +182,89 @@ public class ImageIoJpegImageWriterTest {
         } finally {
             reader.dispose();
         }
+    }
+
+    private void checkForExifMetadata() throws Exception {
+        final Iterator<ImageReader> readers =
+                ImageIO.getImageReadersByFormatName("JPEG");
+        final ImageReader reader = readers.next();
+        try (ImageInputStream iis = ImageIO.createImageInputStream(tempFile)) {
+            reader.setInput(iis);
+            final IIOMetadata metadata = reader.getImageMetadata(0);
+            final IIOMetadataNode tree = (IIOMetadataNode)
+                    metadata.getAsTree(metadata.getNativeMetadataFormatName());
+
+            boolean found = false;
+            final NodeList unknowns = tree.getElementsByTagName("unknown");
+            for (int i = 0; i < unknowns.getLength(); i++) {
+                if ("225".equals(unknowns.item(i).getAttributes().getNamedItem("MarkerTag").getNodeValue())) {
+                    found = true;
+                }
+            }
+            assertTrue(found);
+        } finally {
+            reader.dispose();
+        }
+    }
+
+    private void checkForIptcMetadata() throws Exception {
+        final Iterator<ImageReader> readers =
+                ImageIO.getImageReadersByFormatName("JPEG");
+        final ImageReader reader = readers.next();
+        try (ImageInputStream iis = ImageIO.createImageInputStream(tempFile)) {
+            reader.setInput(iis);
+            final IIOMetadata metadata = reader.getImageMetadata(0);
+            final IIOMetadataNode tree = (IIOMetadataNode)
+                    metadata.getAsTree(metadata.getNativeMetadataFormatName());
+
+            boolean found = false;
+            final NodeList unknowns = tree.getElementsByTagName("unknown");
+            for (int i = 0; i < unknowns.getLength(); i++) {
+                if ("237".equals(unknowns.item(i).getAttributes().getNamedItem("MarkerTag").getNodeValue())) {
+                    found = true;
+                }
+            }
+            assertTrue(found);
+        } finally {
+            reader.dispose();
+        }
+    }
+
+    private void checkForXmpMetadata() throws Exception {
+        final Iterator<ImageReader> readers =
+                ImageIO.getImageReadersByFormatName("JPEG");
+        final ImageReader reader = readers.next();
+        try (ImageInputStream iis = ImageIO.createImageInputStream(tempFile)) {
+            reader.setInput(iis);
+            final IIOMetadata metadata = reader.getImageMetadata(0);
+            final IIOMetadataNode tree = (IIOMetadataNode)
+                    metadata.getAsTree(metadata.getNativeMetadataFormatName());
+
+            boolean found = false;
+            final NodeList unknowns = tree.getElementsByTagName("unknown");
+            for (int i = 0; i < unknowns.getLength(); i++) {
+                if ("225".equals(unknowns.item(i).getAttributes().getNamedItem("MarkerTag").getNodeValue())) {
+                    found = true;
+                }
+            }
+            assertTrue(found);
+        } finally {
+            reader.dispose();
+        }
+    }
+
+    private ImageIoJpegImageWriter getWriter() throws IOException {
+        OperationList opList = new OperationList();
+        if (IccProfileService.isEnabled()) {
+            IccProfile profile = new IccProfileService().getProfile(
+                    new Identifier("cats"), Format.GIF, null, "127.0.0.1");
+            opList.add(profile);
+        }
+        if (Configuration.getInstance().
+                getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false)) {
+            opList.add(new MetadataCopy());
+        }
+        return new ImageIoJpegImageWriter(opList, metadata);
     }
 
 }

@@ -3,22 +3,23 @@ package edu.illinois.library.cantaloupe.processor.io;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.MetadataCopy;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.icc.IccProfile;
 import edu.illinois.library.cantaloupe.image.icc.IccProfileService;
+import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageInputStream;
-import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -31,20 +32,25 @@ import static org.junit.Assert.*;
 public class ImageIoGifImageWriterTest {
 
     private BufferedImage bufferedImage;
+    private ImageIoMetadata metadata;
     private FileOutputStream outputStream;
     private PlanarImage planarImage;
     private File tempFile;
 
     @Before
     public void setUp() throws Exception {
-        // Disable ICC profiles (will be re-enabled in certain tests)
         final Configuration config = Configuration.getInstance();
+        // Disable ICC profiles (will be re-enabled in certain tests)
         config.setProperty(IccProfileService.ICC_ENABLED_CONFIG_KEY, false);
+        // Disable metadata preservation (will be re-enabled in certain tests)
+        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false);
 
         // Read an image fixture into memory
-        final File fixture = TestUtil.getImage("jpg");
-        bufferedImage = ImageIO.read(fixture);
-        planarImage = JAI.create("ImageRead", fixture);
+        final File fixture = TestUtil.getImage("gif-xmp.gif");
+        metadata = new ImageIoGifImageReader(fixture).getMetadata(0);
+        bufferedImage = new ImageIoGifImageReader(fixture).read();
+        planarImage =  PlanarImage.wrapRenderedImage(
+                new ImageIoGifImageReader(fixture).readRendered());
 
         // Create a temp file and output stream to write to
         tempFile = File.createTempFile("test", "tmp");
@@ -71,6 +77,14 @@ public class ImageIoGifImageWriterTest {
     }
 
     @Test
+    public void testWriteWithBufferedImageAndMetadata()  throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        getWriter().write(bufferedImage, outputStream);
+        checkForMetadata();
+    }
+
+    @Test
     public void testWriteWithPlanarImage() throws Exception {
         getWriter().write(planarImage, outputStream);
         ImageIO.read(tempFile);
@@ -81,6 +95,14 @@ public class ImageIoGifImageWriterTest {
         configureIccProfile();
         getWriter().write(planarImage, outputStream);
         checkForIccProfile();
+    }
+
+    @Test
+    public void testWriteWithPlanarImageAndMetadata() throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        getWriter().write(planarImage, outputStream);
+        checkForMetadata();
     }
 
     private void configureIccProfile() throws Exception {
@@ -114,28 +136,38 @@ public class ImageIoGifImageWriterTest {
         }
     }
 
-    private ImageIoGifImageWriter getWriter() throws IOException {
-        IccProfile profile = new IccProfileService().getProfile(
-                new Identifier("cats"), Format.GIF, null, "127.0.0.1");
-        OperationList opList = new OperationList();
-        opList.add(profile);
-        return new ImageIoGifImageWriter(opList);
+    private void checkForMetadata() throws Exception {
+        final Iterator<ImageReader> readers =
+                ImageIO.getImageReadersByFormatName("GIF");
+        final ImageReader reader = readers.next();
+        try (ImageInputStream iis = ImageIO.createImageInputStream(tempFile)) {
+            reader.setInput(iis);
+            final IIOMetadata metadata = reader.getImageMetadata(0);
+            final IIOMetadataNode tree = (IIOMetadataNode)
+                    metadata.getAsTree(metadata.getNativeMetadataFormatName());
+
+            final NamedNodeMap attrs =
+                    tree.getElementsByTagName("ApplicationExtensions").item(0).
+                            getChildNodes().item(0).getAttributes();
+            assertEquals("XMP Data", attrs.getNamedItem("applicationID").getNodeValue());
+            assertEquals("XMP", attrs.getNamedItem("authenticationCode").getNodeValue());
+        } finally {
+            reader.dispose();
+        }
     }
 
-    private void prettyPrint(Node node, String tab) {
-        if (node.getNodeType() == Node.TEXT_NODE) {
-            System.out.print(tab);
-            System.out.println(node.getNodeValue());
-        } else if (node.getNodeType() == Node.ELEMENT_NODE) {
-            System.out.print(tab);
-            System.out.println("<" + node.getNodeName() + ">");
-            NodeList kids = node.getChildNodes();
-            for (int i = 0; i < kids.getLength(); i++) {
-                prettyPrint(kids.item(i), tab + "  ");
-            }
-            System.out.print(tab);
-            System.out.println("</" + node.getNodeName() + ">");
+    private ImageIoGifImageWriter getWriter() throws IOException {
+        OperationList opList = new OperationList();
+        if (IccProfileService.isEnabled()) {
+            IccProfile profile = new IccProfileService().getProfile(
+                    new Identifier("cats"), Format.GIF, null, "127.0.0.1");
+            opList.add(profile);
         }
+        if (Configuration.getInstance().
+                getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false)) {
+            opList.add(new MetadataCopy());
+        }
+        return new ImageIoGifImageWriter(opList, metadata);
     }
 
 }
