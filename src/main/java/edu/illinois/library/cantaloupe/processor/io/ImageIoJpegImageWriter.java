@@ -86,35 +86,37 @@ class ImageIoJpegImageWriter extends AbstractImageIoImageWriter {
     @Override
     protected void addMetadata(final IIOMetadataNode baseTree)
             throws IOException {
-        final Object exif = sourceMetadata.getExif();
-        if (exif != null) {
-            // Create the EXIF node.
-            final IIOMetadataNode node = new IIOMetadataNode("unknown");
-            node.setAttribute("MarkerTag", "225");
-            node.setUserObject(exif);
-            // Append it to /markerSequence/unknown[@MarkerTag=225]
-            baseTree.getElementsByTagName("markerSequence").item(0).
-                    appendChild(node);
-        }
-        final Object iptc = sourceMetadata.getIptc();
-        if (iptc != null) {
-            // Create the IPTC node.
-            final IIOMetadataNode node = new IIOMetadataNode("unknown");
-            node.setAttribute("MarkerTag", "237");
-            node.setUserObject(iptc);
-            // Append it to /markerSequence/unknown[@MarkerTag=237]
-            baseTree.getElementsByTagName("markerSequence").item(0).
-                    appendChild(node);
-        }
-        final Object xmp = sourceMetadata.getXmp();
-        if (xmp != null) {
-            // Create the XMP node.
-            final IIOMetadataNode node = new IIOMetadataNode("unknown");
-            node.setAttribute("MarkerTag", "225");
-            node.setUserObject(xmp);
-            // Append it to /markerSequence/unknown[@MarkerTag=225]
-            baseTree.getElementsByTagName("markerSequence").item(0).
-                    appendChild(node);
+        if (sourceMetadata instanceof ImageIoJpegMetadata) {
+            final Object exif = sourceMetadata.getExif();
+            if (exif != null) {
+                // Create the EXIF node.
+                final IIOMetadataNode node = new IIOMetadataNode("unknown");
+                node.setAttribute("MarkerTag", "225");
+                node.setUserObject(exif);
+                // Append it to /markerSequence/unknown[@MarkerTag=225]
+                baseTree.getElementsByTagName("markerSequence").item(0).
+                        appendChild(node);
+            }
+            final Object iptc = sourceMetadata.getIptc();
+            if (iptc != null) {
+                // Create the IPTC node.
+                final IIOMetadataNode node = new IIOMetadataNode("unknown");
+                node.setAttribute("MarkerTag", "237");
+                node.setUserObject(iptc);
+                // Append it to /markerSequence/unknown[@MarkerTag=237]
+                baseTree.getElementsByTagName("markerSequence").item(0).
+                        appendChild(node);
+            }
+            final Object xmp = sourceMetadata.getXmp();
+            if (xmp != null) {
+                // Create the XMP node.
+                final IIOMetadataNode node = new IIOMetadataNode("unknown");
+                node.setAttribute("MarkerTag", "225");
+                node.setUserObject(xmp);
+                // Append it to /markerSequence/unknown[@MarkerTag=225]
+                baseTree.getElementsByTagName("markerSequence").item(0).
+                        appendChild(node);
+            }
         }
     }
 

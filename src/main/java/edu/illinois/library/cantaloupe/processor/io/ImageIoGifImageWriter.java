@@ -75,11 +75,14 @@ class ImageIoGifImageWriter extends AbstractImageIoImageWriter {
     @Override
     protected void addMetadata(final IIOMetadataNode baseTree)
             throws IOException {
-        // GIF doesn't support EXIF or IPTC metadata -- XMP only.
-        // The XMP node will be located at /ApplicationExtensions/
-        // ApplicationExtension[@applicationID="XMP Data" @authenticationCode="XMP"]
-        final Object xmp = sourceMetadata.getXmp();
-        if (xmp instanceof byte[]) {
+        if (sourceMetadata instanceof ImageIoGifMetadata) {
+            // GIF doesn't support EXIF or IPTC metadata -- only XMP.
+            // The XMP node will be located at /ApplicationExtensions/
+            // ApplicationExtension[@applicationID="XMP Data" @authenticationCode="XMP"]
+            final Object xmp = sourceMetadata.getXmp();
+
+            // Get the /ApplicationExtensions node, creating it if it does
+            // not exist.
             final NodeList appExtensionsList =
                     baseTree.getElementsByTagName("ApplicationExtensions");
             IIOMetadataNode appExtensions;

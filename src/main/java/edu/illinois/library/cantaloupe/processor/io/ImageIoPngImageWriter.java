@@ -71,8 +71,10 @@ class ImageIoPngImageWriter extends AbstractImageIoImageWriter {
     @Override
     protected void addMetadata(final IIOMetadataNode baseTree)
             throws IOException {
-        final Object xmp = sourceMetadata.getXmp();
-        if (xmp instanceof String) {
+        if (sourceMetadata instanceof ImageIoPngMetadata) {
+            final Object xmp = sourceMetadata.getXmp();
+
+            // Get the /iTXt node, creating it if it does not already exist.
             final NodeList itxtNodes = baseTree.getElementsByTagName("iTXt");
             IIOMetadataNode itxtNode;
             if (itxtNodes.getLength() > 0) {
@@ -82,6 +84,7 @@ class ImageIoPngImageWriter extends AbstractImageIoImageWriter {
                 baseTree.appendChild(itxtNode);
             }
 
+            // Create /iTXt/iTXtEntry
             final IIOMetadataNode xmpNode = new IIOMetadataNode("iTXtEntry");
             xmpNode.setAttribute("keyword", "XML:com.adobe.xmp");
             xmpNode.setAttribute("compressionFlag", "FALSE");

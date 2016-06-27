@@ -104,12 +104,12 @@ class ImageIoTiffImageWriter extends AbstractImageIoImageWriter {
      * @throws IOException
      */
     private IIOMetadata addMetadata(final ImageIoMetadata sourceMetadata,
-                                    final IIOMetadata derivativeMetadata)
+                                    IIOMetadata derivativeMetadata)
             throws IOException {
-        final TIFFDirectory destDir =
-                TIFFDirectory.createFromMetadata(derivativeMetadata);
-
         if (sourceMetadata instanceof ImageIoTiffMetadata) {
+            final TIFFDirectory destDir =
+                    TIFFDirectory.createFromMetadata(derivativeMetadata);
+
             for (TIFFField field : ((ImageIoTiffMetadata) sourceMetadata).getMetadata()) {
                 destDir.addTIFFField(field);
             }
@@ -128,9 +128,10 @@ class ImageIoTiffImageWriter extends AbstractImageIoImageWriter {
             if (exifField != null) {
                 destDir.addTIFFField(exifField);
             }
-        }
 
-        return destDir.getAsMetadata();
+            derivativeMetadata = destDir.getAsMetadata();
+        }
+        return derivativeMetadata;
     }
 
     /**
