@@ -23,6 +23,7 @@ import javax.media.jai.PlanarImage;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Iterator;
 
 import static org.junit.Assert.*;
@@ -33,7 +34,6 @@ public class ImageIoGifImageWriterTest {
     private FileOutputStream outputStream;
     private PlanarImage planarImage;
     private File tempFile;
-    private ImageIoGifImageWriter writer;
 
     @Before
     public void setUp() throws Exception {
@@ -45,13 +45,6 @@ public class ImageIoGifImageWriterTest {
         final File fixture = TestUtil.getImage("jpg");
         bufferedImage = ImageIO.read(fixture);
         planarImage = JAI.create("ImageRead", fixture);
-
-        // Instantiate a writer
-        IccProfile profile = new IccProfileService().getProfile(
-                new Identifier("cats"), Format.GIF, null, "127.0.0.1");
-        OperationList opList = new OperationList();
-        opList.add(profile);
-        writer = new ImageIoGifImageWriter(opList);
 
         // Create a temp file and output stream to write to
         tempFile = File.createTempFile("test", "tmp");
@@ -66,30 +59,30 @@ public class ImageIoGifImageWriterTest {
 
     @Test
     public void testWriteWithBufferedImage() throws Exception {
-        writer.write(bufferedImage, outputStream);
+        getWriter().write(bufferedImage, outputStream);
         ImageIO.read(tempFile);
     }
-/* TODO: why does this fail?
+
     @Test
     public void testWriteWithBufferedImageAndIccProfile()  throws Exception {
         configureIccProfile();
-        writer.write(bufferedImage, outputStream);
+        getWriter().write(bufferedImage, outputStream);
         checkForIccProfile();
     }
-*/
+
     @Test
     public void testWriteWithPlanarImage() throws Exception {
-        writer.write(planarImage, outputStream);
+        getWriter().write(planarImage, outputStream);
         ImageIO.read(tempFile);
     }
-/* TODO: why does this fail?
+
     @Test
     public void testWriteWithPlanarImageAndIccProfile() throws Exception {
         configureIccProfile();
-        writer.write(planarImage, outputStream);
+        getWriter().write(planarImage, outputStream);
         checkForIccProfile();
     }
-*/
+
     private void configureIccProfile() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(IccProfileService.ICC_ENABLED_CONFIG_KEY, true);
@@ -112,8 +105,6 @@ public class ImageIoGifImageWriterTest {
             final IIOMetadata metadata = reader.getImageMetadata(0);
             final Node tree = metadata.getAsTree(metadata.getNativeMetadataFormatName());
 
-            prettyPrint(tree, "");
-
             final NamedNodeMap attrs = tree.getChildNodes().item(3).
                     getChildNodes().item(0).getAttributes();
             assertEquals("ICCRGBG1", attrs.getNamedItem("applicationID").getNodeValue());
@@ -121,6 +112,14 @@ public class ImageIoGifImageWriterTest {
         } finally {
             reader.dispose();
         }
+    }
+
+    private ImageIoGifImageWriter getWriter() throws IOException {
+        IccProfile profile = new IccProfileService().getProfile(
+                new Identifier("cats"), Format.GIF, null, "127.0.0.1");
+        OperationList opList = new OperationList();
+        opList.add(profile);
+        return new ImageIoGifImageWriter(opList);
     }
 
     private void prettyPrint(Node node, String tab) {
