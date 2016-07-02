@@ -17,9 +17,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.zip.DeflaterOutputStream;
 
 /**
@@ -27,9 +26,10 @@ import java.util.zip.DeflaterOutputStream;
  * {@link BufferedImage}s and JAI {@link PlanarImage}s and writing them as
  * PNGs.
  *
- * @see <a href="http://www.color.org/icc_specs2.xalter">ICC Specifications</a>
  * @see <a href="http://libpng.org/pub/png/spec/1.2/PNG-Contents.html">
  *     PNG Specification, Version 1.2</a>
+ * @see <a href="http://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/PNG.html">PNG Tags</a>
+ * @see <a href="http://www.color.org/icc_specs2.xalter">ICC Specifications</a>
  */
 class ImageIoPngImageWriter extends AbstractImageIoImageWriter {
 
@@ -72,27 +72,47 @@ class ImageIoPngImageWriter extends AbstractImageIoImageWriter {
     protected void addMetadata(final IIOMetadataNode baseTree)
             throws IOException {
         if (sourceMetadata instanceof ImageIoPngMetadata) {
-            final Object xmp = sourceMetadata.getXmp();
-
-            // Get the /iTXt node, creating it if it does not already exist.
-            final NodeList itxtNodes = baseTree.getElementsByTagName("iTXt");
-            IIOMetadataNode itxtNode;
-            if (itxtNodes.getLength() > 0) {
-                itxtNode = (IIOMetadataNode) itxtNodes.item(0);
-            } else {
-                itxtNode = new IIOMetadataNode("iTXt");
-                baseTree.appendChild(itxtNode);
+            // Add native metadata.
+            final List<IIOMetadataNode> nativeMetadata =
+                    ((ImageIoPngMetadata) sourceMetadata).getNativeMetadata();
+            if (nativeMetadata.size() > 0) {
+                // Get the /tEXt node, creating it if it does not already exist.
+                final NodeList textNodes = baseTree.getElementsByTagName("tEXt");
+                IIOMetadataNode textNode;
+                if (textNodes.getLength() > 0) {
+                    textNode = (IIOMetadataNode) textNodes.item(0);
+                } else {
+                    textNode = new IIOMetadataNode("tEXt");
+                    baseTree.appendChild(textNode);
+                }
+                // Append the metadata.
+                for (IIOMetadataNode node : nativeMetadata) {
+                    textNode.appendChild(node);
+                }
             }
 
-            // Create /iTXt/iTXtEntry
-            final IIOMetadataNode xmpNode = new IIOMetadataNode("iTXtEntry");
-            xmpNode.setAttribute("keyword", "XML:com.adobe.xmp");
-            xmpNode.setAttribute("compressionFlag", "FALSE");
-            xmpNode.setAttribute("compressionMethod", "0");
-            xmpNode.setAttribute("languageTag", "");
-            xmpNode.setAttribute("translatedKeyword", "");
-            xmpNode.setAttribute("text", (String) xmp);
-            itxtNode.appendChild(xmpNode);
+            // Add XMP metadata.
+            final Object xmp = sourceMetadata.getXmp();
+            if (xmp != null) {
+                // Get the /iTXt node, creating it if it does not already exist.
+                final NodeList itxtNodes = baseTree.getElementsByTagName("iTXt");
+                IIOMetadataNode itxtNode;
+                if (itxtNodes.getLength() > 0) {
+                    itxtNode = (IIOMetadataNode) itxtNodes.item(0);
+                } else {
+                    itxtNode = new IIOMetadataNode("iTXt");
+                    baseTree.appendChild(itxtNode);
+                }
+                // Append the XMP.
+                final IIOMetadataNode xmpNode = new IIOMetadataNode("iTXtEntry");
+                xmpNode.setAttribute("keyword", "XML:com.adobe.xmp");
+                xmpNode.setAttribute("compressionFlag", "FALSE");
+                xmpNode.setAttribute("compressionMethod", "0");
+                xmpNode.setAttribute("languageTag", "");
+                xmpNode.setAttribute("translatedKeyword", "");
+                xmpNode.setAttribute("text", (String) xmp);
+                itxtNode.appendChild(xmpNode);
+            }
         }
     }
 

@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -77,11 +78,23 @@ public class ImageIoPngImageWriterTest {
     }
 
     @Test
-    public void testWriteWithBufferedImageAndMetadata()  throws Exception {
+    public void testWriteWithBufferedImageAndNativeMetadata()  throws Exception {
+        final File fixture = TestUtil.getImage("png-nativemetadata.png");
+        metadata = new ImageIoPngImageReader(fixture).getMetadata(0);
+        bufferedImage = new ImageIoPngImageReader(fixture).read();
+
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
         getWriter().write(bufferedImage, outputStream);
-        checkForMetadata();
+        checkForNativeMetadata();
+    }
+
+    @Test
+    public void testWriteWithBufferedImageAndXmpMetadata()  throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        getWriter().write(bufferedImage, outputStream);
+        checkForXmpMetadata();
     }
 
     @Test
@@ -98,11 +111,24 @@ public class ImageIoPngImageWriterTest {
     }
 
     @Test
-    public void testWriteWithPlanarImageAndMetadata() throws Exception {
+    public void testWriteWithPlanarImageAndNativeMetadata() throws Exception {
+        final File fixture = TestUtil.getImage("png-nativemetadata.png");
+        metadata = new ImageIoPngImageReader(fixture).getMetadata(0);
+        planarImage =  PlanarImage.wrapRenderedImage(
+                new ImageIoPngImageReader(fixture).readRendered());
+
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
         getWriter().write(planarImage, outputStream);
-        checkForMetadata();
+        checkForNativeMetadata();
+    }
+
+    @Test
+    public void testWriteWithPlanarImageAndXmpMetadata() throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        getWriter().write(planarImage, outputStream);
+        checkForXmpMetadata();
     }
 
     private void configureIccProfile() throws Exception {
@@ -131,7 +157,7 @@ public class ImageIoPngImageWriterTest {
         }
     }
 
-    private void checkForMetadata() throws Exception {
+    private void checkForNativeMetadata() throws Exception {
         final Iterator<ImageReader> readers =
                 ImageIO.getImageReadersByFormatName("PNG");
         final ImageReader reader = readers.next();
@@ -141,11 +167,49 @@ public class ImageIoPngImageWriterTest {
             final IIOMetadataNode tree = (IIOMetadataNode)
                     metadata.getAsTree(metadata.getNativeMetadataFormatName());
 
-            final NamedNodeMap attrs =
-                    tree.getElementsByTagName("iTXt").item(0).
-                            getChildNodes().item(0).getAttributes();
-            assertEquals("XML:com.adobe.xmp",
-                    attrs.getNamedItem("keyword").getNodeValue());
+            boolean found = false;
+            final NodeList textNodes = tree.getElementsByTagName("tEXt").
+                    item(0).getChildNodes();
+            for (int i = 0; i < textNodes.getLength(); i++) {
+                final Node keywordAttr = textNodes.item(i).getAttributes().
+                        getNamedItem("keyword");
+                if (keywordAttr != null) {
+                    if ("Title".equals(keywordAttr.getNodeValue())) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            assertTrue(found);
+        } finally {
+            reader.dispose();
+        }
+    }
+
+    private void checkForXmpMetadata() throws Exception {
+        final Iterator<ImageReader> readers =
+                ImageIO.getImageReadersByFormatName("PNG");
+        final ImageReader reader = readers.next();
+        try (ImageInputStream iis = ImageIO.createImageInputStream(tempFile)) {
+            reader.setInput(iis);
+            final IIOMetadata metadata = reader.getImageMetadata(0);
+            final IIOMetadataNode tree = (IIOMetadataNode)
+                    metadata.getAsTree(metadata.getNativeMetadataFormatName());
+
+            boolean found = false;
+            final NodeList textNodes = tree.getElementsByTagName("iTXt").
+                    item(0).getChildNodes();
+            for (int i = 0; i < textNodes.getLength(); i++) {
+                final Node keywordAttr = textNodes.item(i).getAttributes().
+                        getNamedItem("keyword");
+                if (keywordAttr != null) {
+                    if ("XML:com.adobe.xmp".equals(keywordAttr.getNodeValue())) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            assertTrue(found);
         } finally {
             reader.dispose();
         }
