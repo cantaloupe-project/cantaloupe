@@ -57,7 +57,7 @@ class ImageIoTiffMetadata extends AbstractImageIoMetadata
     /**
      * @return Native TIFF metadata.
      */
-    public List<TIFFField> getMetadata() {
+    public List<TIFFField> getNativeMetadata() {
         final List<TIFFField> fields = new ArrayList<>();
 
         // Tags to preserve from the baseline IFD. EXIF metadata resides in

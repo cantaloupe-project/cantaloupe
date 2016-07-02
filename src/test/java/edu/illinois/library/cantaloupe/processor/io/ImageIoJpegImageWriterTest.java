@@ -79,7 +79,7 @@ public class ImageIoJpegImageWriterTest {
     @Test
     public void testWriteWithBufferedImageAndExifMetadata() throws Exception {
         final File fixture = TestUtil.getImage("jpg-exif.jpg");
-        metadata = new ImageIoJpegImageReader(fixture).getMetadata(0);
+        metadata = new ImageIoJpegImageReader(fixture).getNativeMetadata(0);
         bufferedImage = new ImageIoJpegImageReader(fixture).read();
 
         final Configuration config = Configuration.getInstance();
@@ -91,7 +91,7 @@ public class ImageIoJpegImageWriterTest {
     @Test
     public void testWriteWithBufferedImageAndIptcMetadata() throws Exception {
         final File fixture = TestUtil.getImage("jpg-iptc.jpg");
-        metadata = new ImageIoJpegImageReader(fixture).getMetadata(0);
+        metadata = new ImageIoJpegImageReader(fixture).getNativeMetadata(0);
         bufferedImage = new ImageIoJpegImageReader(fixture).read();
 
         final Configuration config = Configuration.getInstance();
@@ -124,7 +124,7 @@ public class ImageIoJpegImageWriterTest {
     @Test
     public void testWriteWithPlanarImageAndExifMetadata() throws Exception {
         final File fixture = TestUtil.getImage("jpg-exif.jpg");
-        metadata = new ImageIoJpegImageReader(fixture).getMetadata(0);
+        metadata = new ImageIoJpegImageReader(fixture).getNativeMetadata(0);
         planarImage =  PlanarImage.wrapRenderedImage(
                 new ImageIoJpegImageReader(fixture).readRendered());
 
@@ -137,7 +137,7 @@ public class ImageIoJpegImageWriterTest {
     @Test
     public void testWriteWithPlanarImageAndIptcMetadata() throws Exception {
         final File fixture = TestUtil.getImage("jpg-iptc.jpg");
-        metadata = new ImageIoJpegImageReader(fixture).getMetadata(0);
+        metadata = new ImageIoJpegImageReader(fixture).getNativeMetadata(0);
         planarImage =  PlanarImage.wrapRenderedImage(
                 new ImageIoJpegImageReader(fixture).readRendered());
 

@@ -110,7 +110,7 @@ class ImageIoTiffImageWriter extends AbstractImageIoImageWriter {
             final TIFFDirectory destDir =
                     TIFFDirectory.createFromMetadata(derivativeMetadata);
 
-            for (TIFFField field : ((ImageIoTiffMetadata) sourceMetadata).getMetadata()) {
+            for (TIFFField field : ((ImageIoTiffMetadata) sourceMetadata).getNativeMetadata()) {
                 destDir.addTIFFField(field);
             }
 
