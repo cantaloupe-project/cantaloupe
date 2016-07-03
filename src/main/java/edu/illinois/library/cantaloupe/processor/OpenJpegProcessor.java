@@ -295,13 +295,13 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                 Configuration config = Configuration.getInstance();
                 switch (config.getString(POST_PROCESSOR_CONFIG_KEY, "java2d").toLowerCase()) {
                     case "jai":
-                        logger.info("Post-processing using JAI ({} = jai)",
+                        logger.debug("Post-processing using JAI ({} = jai)",
                                 POST_PROCESSOR_CONFIG_KEY);
                         postProcessUsingJai(reader, ops, reductionFactor,
                                 outputStream);
                         break;
                     default:
-                        logger.info("Post-processing using Java 2D ({} = java2d)",
+                        logger.debug("Post-processing using Java 2D ({} = java2d)",
                                 POST_PROCESSOR_CONFIG_KEY);
                         postProcessUsingJava2d(reader, ops, reductionFactor,
                                 outputStream);
