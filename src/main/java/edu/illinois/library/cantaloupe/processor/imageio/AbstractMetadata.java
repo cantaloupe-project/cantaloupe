@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Iterator;
 
-class AbstractMetadata {
+abstract class AbstractMetadata {
 
     private static Logger logger = LoggerFactory.
             getLogger(AbstractMetadata.class);
