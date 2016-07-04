@@ -2,14 +2,13 @@ package edu.illinois.library.cantaloupe.processor.imageio;
 
 import javax.imageio.metadata.IIOMetadata;
 
-class BmpMetadata extends AbstractMetadata
-        implements Metadata {
+class BmpMetadata extends AbstractMetadata implements Metadata {
 
     /**
      * @param metadata
      * @param formatName
      */
-    public BmpMetadata(IIOMetadata metadata, String formatName) {
+    BmpMetadata(IIOMetadata metadata, String formatName) {
         super(metadata, formatName);
     }
 
