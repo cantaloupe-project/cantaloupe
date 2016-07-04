@@ -510,6 +510,11 @@ redaction.enabled = false
 # derivative images. Note that this is not foolproof; see the user manual.
 metadata.preserve = false
 
+# Whether to respect the EXIF "Orientation" property to auto-rotate images.
+# This can impair performance slightly, so should only be used for images
+# that come from digital cameras.
+metadata.respect_orientation = false
+
 ###########################################################################
 # COLOR PROFILES
 ###########################################################################

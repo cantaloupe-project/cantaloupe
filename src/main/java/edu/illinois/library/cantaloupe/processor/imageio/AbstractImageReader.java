@@ -40,9 +40,6 @@ abstract class AbstractImageReader {
     private static Logger logger = LoggerFactory.
             getLogger(AbstractImageReader.class);
 
-    private static final String RESPECT_ORIENTATION_CONFIG_KEY =
-            "metadata.respect_orientation";
-
     private Format format;
 
     /** Set in setSource(). */
