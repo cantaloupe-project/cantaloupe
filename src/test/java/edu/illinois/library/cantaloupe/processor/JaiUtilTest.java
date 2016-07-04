@@ -6,7 +6,7 @@ import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
-import edu.illinois.library.cantaloupe.processor.io.ImageIoImageReader;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageIoImageReader;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 
