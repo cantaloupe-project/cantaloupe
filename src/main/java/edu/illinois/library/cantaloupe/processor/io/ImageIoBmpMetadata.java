@@ -30,6 +30,14 @@ class ImageIoBmpMetadata extends AbstractImageIoMetadata
     }
 
     /**
+     * @return {@link Orientation#ROTATE_0}
+     */
+    @Override
+    public Orientation getOrientation() {
+        return Orientation.ROTATE_0;
+    }
+
+    /**
      * @return Null, as BMP does not support XMP.
      */
     @Override

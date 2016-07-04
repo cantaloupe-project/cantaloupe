@@ -29,6 +29,13 @@ public class ImageIoGifMetadataTest {
         }
     }
 
+    /* TODO: this test is disabled because ImageIoGifMetadata.getXmp() returns a malformed XMP string.
+    @Test
+    public void testGetOrientation() throws IOException {
+        assertEquals(ImageIoMetadata.Orientation.ROTATE_90,
+                getInstance("gif-rotated.gif").getOrientation());
+    }
+    */
     @Test
     public void testGetXmp() throws IOException {
         assertNotNull(getInstance("gif-xmp.gif").getXmp());

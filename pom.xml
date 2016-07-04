@@ -154,6 +154,13 @@
       <version>4.12</version>
       <scope>test</scope>
     </dependency>
+    <!-- Assists in parsing XMP metadata in RDF/XML -->
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>apache-jena-libs</artifactId>
+      <type>pom</type>
+      <version>3.1.0</version>
+    </dependency>
     <!-- Supports <if> expressions in logback.xml -->
     <dependency>
       <groupId>org.codehaus.janino</groupId>

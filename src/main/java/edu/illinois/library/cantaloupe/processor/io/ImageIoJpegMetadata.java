@@ -12,7 +12,7 @@ class ImageIoJpegMetadata extends AbstractImageIoMetadata
      * @param metadata
      * @param formatName
      */
-    public ImageIoJpegMetadata(IIOMetadata metadata, String formatName) {
+    ImageIoJpegMetadata(IIOMetadata metadata, String formatName) {
         super(metadata, formatName);
     }
 
@@ -59,6 +59,33 @@ class ImageIoJpegMetadata extends AbstractImageIoMetadata
     }
 
     /**
+     * @return Orientation from the metadata. EXIF is checked first, then XMP.
+     */
+    @Override
+    public Orientation getOrientation() {
+        // Check EXIF.
+        Orientation orientation = readOrientation(getExif());
+        if (orientation != null) {
+            return orientation;
+        }
+
+        // Check XMP.
+        final byte[] xmp = getXmp();
+        if (xmp != null) {
+            final String xmpData = new String(xmp);
+            // Trim off the junk
+            final int start = xmpData.indexOf("<rdf:RDF");
+            final int end = xmpData.indexOf("</rdf:RDF");
+            final String xmpStr = xmpData.substring(start, end + 10);
+            orientation = readOrientation(xmpStr);
+            if (orientation != null) {
+                return orientation;
+            }
+        }
+        return Orientation.ROTATE_0;
+    }
+
+    /**
      * @return XMP data, or null if none was found in the source metadata.
      */
     @Override
@@ -80,6 +107,5 @@ class ImageIoJpegMetadata extends AbstractImageIoMetadata
         }
         return null;
     }
-
 
 }

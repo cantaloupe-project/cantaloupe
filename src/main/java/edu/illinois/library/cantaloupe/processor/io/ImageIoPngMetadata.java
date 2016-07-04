@@ -83,6 +83,21 @@ class ImageIoPngMetadata extends AbstractImageIoMetadata
     }
 
     @Override
+    public Orientation getOrientation() {
+        final String xmpData = (String) getXmp();
+        // Trim off the junk
+        final int start = xmpData.indexOf("<rdf:RDF");
+        final int end = xmpData.indexOf("</rdf:RDF");
+        final String xmp = xmpData.substring(start, end + 10);
+
+        final Orientation orientation = readOrientation(xmp);
+        if (orientation != null) {
+            return orientation;
+        }
+        return Orientation.ROTATE_0;
+    }
+
+    @Override
     public Object getXmp() {
         final NodeList itxtNodes = getAsTree().getElementsByTagName("iTXt");
         for (int i = 0; i < itxtNodes.getLength(); i++) {

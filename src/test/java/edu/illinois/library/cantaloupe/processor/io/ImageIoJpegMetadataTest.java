@@ -26,6 +26,8 @@ public class ImageIoJpegMetadataTest {
             final IIOMetadata metadata = reader.getImageMetadata(0);
             return new ImageIoJpegMetadata(metadata,
                     metadata.getNativeMetadataFormatName());
+        } finally {
+            reader.dispose();
         }
     }
 
@@ -37,6 +39,12 @@ public class ImageIoJpegMetadataTest {
     @Test
     public void testGetIptc() throws IOException {
         assertNotNull(getInstance("jpg-iptc.jpg").getXmp());
+    }
+
+    @Test
+    public void testGetOrientation() throws IOException {
+        assertEquals(ImageIoMetadata.Orientation.ROTATE_90,
+                getInstance("jpg-rotated.jpg").getOrientation());
     }
 
     @Test

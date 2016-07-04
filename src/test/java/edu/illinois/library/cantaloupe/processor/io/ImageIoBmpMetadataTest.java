@@ -14,30 +14,40 @@ import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
-public class ImageIoPngMetadataTest {
+public class ImageIoBmpMetadataTest {
 
-    private ImageIoPngMetadata getInstance(String fixtureName)
+    private ImageIoBmpMetadata getInstance(String fixtureName)
             throws IOException {
-        final Iterator<ImageReader> it = ImageIO.getImageReadersByFormatName("PNG");
+        final Iterator<ImageReader> it = ImageIO.getImageReadersByFormatName("BMP");
         final ImageReader reader = it.next();
         final File srcFile = TestUtil.getImage(fixtureName);
         try (ImageInputStream is = ImageIO.createImageInputStream(srcFile)) {
             reader.setInput(is);
             final IIOMetadata metadata = reader.getImageMetadata(0);
-            return new ImageIoPngMetadata(metadata,
+            return new ImageIoBmpMetadata(metadata,
                     metadata.getNativeMetadataFormatName());
         }
     }
 
     @Test
+    public void testGetExif() throws IOException {
+        assertNull(getInstance("bmp-rgb-64x56x8.bmp").getXmp());
+    }
+
+    @Test
+    public void testGetIptc() throws IOException {
+        assertNull(getInstance("bmp-rgb-64x56x8.bmp").getIptc());
+    }
+
+    @Test
     public void testGetOrientation() throws IOException {
-        assertEquals(ImageIoMetadata.Orientation.ROTATE_90,
-                getInstance("png-rotated.png").getOrientation());
+        assertEquals(ImageIoMetadata.Orientation.ROTATE_0,
+                getInstance("bmp-rgb-64x56x8.bmp").getOrientation());
     }
 
     @Test
     public void testGetXmp() throws IOException {
-        assertNotNull(getInstance("png-xmp.png").getXmp());
+        assertNull(getInstance("bmp-rgb-64x56x8.bmp").getXmp());
     }
 
 }

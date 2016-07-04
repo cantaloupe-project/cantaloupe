@@ -35,10 +35,25 @@ class ImageIoGifMetadata extends AbstractImageIoMetadata
         return null;
     }
 
+    @Override
+    public Orientation getOrientation() {
+        final String xmpData = new String(getXmp());
+        // Trim off the junk
+        final int start = xmpData.indexOf("<rdf:RDF");
+        final int end = xmpData.indexOf("</rdf:RDF");
+        final String xmp = xmpData.substring(start, end + 10);
+
+        final Orientation orientation = readOrientation(xmp);
+        if (orientation != null) {
+            return orientation;
+        }
+        return Orientation.ROTATE_0;
+    }
+
     /**
      * @return
-     * @see <a href="http://xml.coverpages.org/XMP-Embedding.pdf">Embedding
-     *      XMP Metadata in Application Files</a>
+     * @see <a href="http://partners.adobe.com/public/developer/en/xmp/sdk/XMPspecification.pdf">
+     *      Embedding XMP Metadata in Application Files</a>
      */
     @Override
     public byte[] getXmp() {
@@ -64,10 +79,8 @@ class ImageIoGifMetadata extends AbstractImageIoMetadata
                             // Ideally we would just be able to return the byte
                             // array here, but testing indicates that the XMP
                             // data is corrupt in some/all(?) cases, even when
-                            // it is valid in the source file. Maybe an ImageIO
-                            // bug?
-                            // These are probably not the only fixes that will
-                            // need to be made.
+                            // it is valid in the source file. (?)
+                            // TODO: this is horrible
                             String xmpStr = new String(xmp);
                             xmpStr = StringUtils.replace(xmpStr, "xmpmta", "xmpmeta");
                             xmpStr = StringUtils.replace(xmpStr, "\n/", "\n</");

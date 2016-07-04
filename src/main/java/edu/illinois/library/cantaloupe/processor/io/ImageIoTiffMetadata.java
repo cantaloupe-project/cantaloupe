@@ -82,6 +82,19 @@ class ImageIoTiffMetadata extends AbstractImageIoMetadata
         return fields;
     }
 
+    /**
+     * @return Orientation from the metadata.
+     */
+    @Override
+    public Orientation getOrientation() {
+        // Check EXIF.
+        final TIFFField orientationField = ifd.getTIFFField(274);
+        if (orientationField != null) {
+            return orientationForExifValue(orientationField.getAsInt(0));
+        }
+        return Orientation.ROTATE_0;
+    }
+
     @Override
     public TIFFField getXmp() {
         return ifd.getTIFFField(700);

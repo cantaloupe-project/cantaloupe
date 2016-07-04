@@ -10,6 +10,10 @@ import javax.imageio.metadata.IIOMetadataNode;
  */
 public interface ImageIoMetadata {
 
+    enum Orientation {
+        ROTATE_0, ROTATE_90, ROTATE_180, ROTATE_270
+    }
+
     IIOMetadataNode getAsTree();
 
     /**
@@ -21,6 +25,11 @@ public interface ImageIoMetadata {
      * @return IPTC data, or null if none was found in the source metadata.
      */
     Object getIptc();
+
+    /**
+     * @return Orientation of the image based on the EXIF "Orientation" tag.
+     */
+    Orientation getOrientation();
 
     /**
      * @return XMP data, or null if none was found in the source metadata.

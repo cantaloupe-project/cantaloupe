@@ -26,6 +26,8 @@ public class ImageIoTiffMetadataTest {
             final IIOMetadata metadata = reader.getImageMetadata(0);
             return new ImageIoTiffMetadata(metadata,
                     metadata.getNativeMetadataFormatName());
+        } finally {
+            reader.dispose();
         }
     }
 
@@ -37,6 +39,12 @@ public class ImageIoTiffMetadataTest {
     @Test
     public void testGetIptc() throws IOException {
         assertNotNull(getInstance("tif-iptc.tif").getXmp());
+    }
+
+    @Test
+    public void testGetOrientation() throws IOException {
+        assertEquals(ImageIoMetadata.Orientation.ROTATE_90,
+                getInstance("tif-rotated.tif").getOrientation());
     }
 
     @Test
