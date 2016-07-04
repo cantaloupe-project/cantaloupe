@@ -14,9 +14,9 @@ import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
-public class ImageIoJpegMetadataTest {
+public class JpegMetadataTest {
 
-    private ImageIoJpegMetadata getInstance(String fixtureName)
+    private JpegMetadata getInstance(String fixtureName)
             throws IOException {
         final Iterator<ImageReader> it = ImageIO.getImageReadersByFormatName("JPEG");
         final ImageReader reader = it.next();
@@ -24,7 +24,7 @@ public class ImageIoJpegMetadataTest {
         try (ImageInputStream is = ImageIO.createImageInputStream(srcFile)) {
             reader.setInput(is);
             final IIOMetadata metadata = reader.getImageMetadata(0);
-            return new ImageIoJpegMetadata(metadata,
+            return new JpegMetadata(metadata,
                     metadata.getNativeMetadataFormatName());
         } finally {
             reader.dispose();
@@ -43,7 +43,7 @@ public class ImageIoJpegMetadataTest {
 
     @Test
     public void testGetOrientation() throws IOException {
-        assertEquals(ImageIoMetadata.Orientation.ROTATE_90,
+        assertEquals(Metadata.Orientation.ROTATE_90,
                 getInstance("jpg-rotated.jpg").getOrientation());
     }
 

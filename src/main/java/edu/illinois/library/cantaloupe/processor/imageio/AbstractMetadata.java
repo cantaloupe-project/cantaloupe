@@ -20,15 +20,15 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Iterator;
 
-class AbstractImageIoMetadata {
+class AbstractMetadata {
 
     private static Logger logger = LoggerFactory.
-            getLogger(AbstractImageIoMetadata.class);
+            getLogger(AbstractMetadata.class);
 
     private String formatName;
     private IIOMetadata iioMetadata;
 
-    AbstractImageIoMetadata(IIOMetadata metadata, String format) {
+    AbstractMetadata(IIOMetadata metadata, String format) {
         iioMetadata = metadata;
         formatName = format;
     }
@@ -45,14 +45,14 @@ class AbstractImageIoMetadata {
         return iioMetadata;
     }
 
-    protected ImageIoMetadata.Orientation orientationForExifValue(int value) {
+    protected Metadata.Orientation orientationForExifValue(int value) {
         switch (value) {
             case 6:
-                return ImageIoMetadata.Orientation.ROTATE_90;
+                return Metadata.Orientation.ROTATE_90;
             case 3:
-                return ImageIoMetadata.Orientation.ROTATE_180;
+                return Metadata.Orientation.ROTATE_180;
             case 8:
-                return ImageIoMetadata.Orientation.ROTATE_270;
+                return Metadata.Orientation.ROTATE_270;
         }
         return null;
     }
@@ -63,7 +63,7 @@ class AbstractImageIoMetadata {
      * @param exif EXIF data.
      * @return Orientation, or null if unspecified.
      */
-    protected ImageIoMetadata.Orientation readOrientation(byte[] exif) {
+    protected Metadata.Orientation readOrientation(byte[] exif) {
         // See https://community.oracle.com/thread/1264022?start=0&tstart=0
         // for an explanation of the technique used here.
         if (exif != null) {
@@ -97,7 +97,7 @@ class AbstractImageIoMetadata {
      * @param xmp XMP string.
      * @return Orientation, or null if unspecified.
      */
-    protected ImageIoMetadata.Orientation readOrientation(String xmp) {
+    protected Metadata.Orientation readOrientation(String xmp) {
         RIOT.init();
 
         final Model model = ModelFactory.createDefaultModel();

@@ -9,8 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class ImageIoPngMetadata extends AbstractImageIoMetadata
-        implements ImageIoMetadata {
+class PngMetadata extends AbstractMetadata
+        implements Metadata {
 
     private static final Map<String,String> recognizedTags = new HashMap<>();
 
@@ -42,7 +42,7 @@ class ImageIoPngMetadata extends AbstractImageIoMetadata
      * @param metadata
      * @param formatName
      */
-    public ImageIoPngMetadata(IIOMetadata metadata, String formatName) {
+    public PngMetadata(IIOMetadata metadata, String formatName) {
         super(metadata, formatName);
     }
 

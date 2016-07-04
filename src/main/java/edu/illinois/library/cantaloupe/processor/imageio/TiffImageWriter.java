@@ -38,19 +38,19 @@ import java.util.Iterator;
  *     Tags for TIFF, DNG, and Related Specifications</a>
  * @see <a href="http://www.color.org/icc_specs2.xalter">ICC Specifications</a>
  */
-class ImageIoTiffImageWriter extends AbstractImageIoImageWriter {
+class TiffImageWriter extends AbstractImageWriter {
 
     static final String JAI_TIF_COMPRESSION_CONFIG_KEY =
             "JaiProcessor.tif.compression";
     static final String JAVA2D_TIF_COMPRESSION_CONFIG_KEY =
             "Java2dProcessor.tif.compression";
 
-    ImageIoTiffImageWriter(OperationList opList) {
+    TiffImageWriter(OperationList opList) {
         super(opList);
     }
 
-    ImageIoTiffImageWriter(OperationList opList,
-                           ImageIoMetadata sourceMetadata) {
+    TiffImageWriter(OperationList opList,
+                    Metadata sourceMetadata) {
         super(opList, sourceMetadata);
     }
 
@@ -92,7 +92,7 @@ class ImageIoTiffImageWriter extends AbstractImageIoImageWriter {
     /**
      * No-op.
      *
-     * @see {@link #addMetadata(ImageIoMetadata, IIOMetadata)}
+     * @see {@link #addMetadata(Metadata, IIOMetadata)}
      */
     @Override
     protected void addMetadata(final IIOMetadataNode baseNode) {}
@@ -103,14 +103,14 @@ class ImageIoTiffImageWriter extends AbstractImageIoImageWriter {
      * @return
      * @throws IOException
      */
-    private IIOMetadata addMetadata(final ImageIoMetadata sourceMetadata,
+    private IIOMetadata addMetadata(final Metadata sourceMetadata,
                                     IIOMetadata derivativeMetadata)
             throws IOException {
-        if (sourceMetadata instanceof ImageIoTiffMetadata) {
+        if (sourceMetadata instanceof TiffMetadata) {
             final TIFFDirectory destDir =
                     TIFFDirectory.createFromMetadata(derivativeMetadata);
 
-            for (TIFFField field : ((ImageIoTiffMetadata) sourceMetadata).getNativeMetadata()) {
+            for (TIFFField field : ((TiffMetadata) sourceMetadata).getNativeMetadata()) {
                 destDir.addTIFFField(field);
             }
 

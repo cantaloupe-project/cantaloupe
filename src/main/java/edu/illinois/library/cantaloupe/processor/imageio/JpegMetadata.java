@@ -5,14 +5,14 @@ import org.w3c.dom.NodeList;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 
-class ImageIoJpegMetadata extends AbstractImageIoMetadata
-        implements ImageIoMetadata {
+class JpegMetadata extends AbstractMetadata
+        implements Metadata {
 
     /**
      * @param metadata
      * @param formatName
      */
-    ImageIoJpegMetadata(IIOMetadata metadata, String formatName) {
+    JpegMetadata(IIOMetadata metadata, String formatName) {
         super(metadata, formatName);
     }
 

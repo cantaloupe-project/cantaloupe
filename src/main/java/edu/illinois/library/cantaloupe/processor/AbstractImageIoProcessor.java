@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageIoImageReader;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageIoImageWriter;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +31,7 @@ abstract class AbstractImageIoProcessor extends AbstractProcessor {
     /**
      * Access via {@link #getReader()}.
      */
-    private ImageIoImageReader reader;
+    private ImageReader reader;
 
     /**
      * @return Map of available output formats for all known source formats,
@@ -39,8 +39,8 @@ abstract class AbstractImageIoProcessor extends AbstractProcessor {
      */
     private static HashMap<Format, Set<Format>> availableOutputFormats() {
         final HashMap<Format,Set<Format>> map = new HashMap<>();
-        for (Format format : ImageIoImageReader.supportedFormats()) {
-            map.put(format, ImageIoImageWriter.supportedFormats());
+        for (Format format : ImageReader.supportedFormats()) {
+            map.put(format, ImageWriter.supportedFormats());
         }
         return map;
     }
@@ -58,7 +58,7 @@ abstract class AbstractImageIoProcessor extends AbstractProcessor {
             final ImageInfo info = new ImageInfo();
             info.setSourceFormat(getSourceFormat());
 
-            final ImageIoImageReader reader = getReader();
+            final ImageReader reader = getReader();
             for (int i = 0, numResolutions = reader.getNumResolutions();
                  i < numResolutions; i++) {
                 ImageInfo.Image image = new ImageInfo.Image();
@@ -76,13 +76,13 @@ abstract class AbstractImageIoProcessor extends AbstractProcessor {
      * {@link #setSourceFile(File)} and {@link #setSourceFormat(Format)} must
      * be invoked first.
      */
-    protected ImageIoImageReader getReader() {
+    protected ImageReader getReader() {
         if (reader == null) {
             try {
                 if (streamSource != null) {
-                    reader = new ImageIoImageReader(streamSource, format);
+                    reader = new ImageReader(streamSource, format);
                 } else {
-                    reader = new ImageIoImageReader(sourceFile, format);
+                    reader = new ImageReader(sourceFile, format);
                 }
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);

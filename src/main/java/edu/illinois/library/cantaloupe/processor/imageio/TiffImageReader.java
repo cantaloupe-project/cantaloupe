@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
 import javax.imageio.metadata.IIOMetadata;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
@@ -23,16 +22,16 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 
-class ImageIoTiffImageReader extends AbstractImageIoImageReader {
+class TiffImageReader extends AbstractImageIoImageReader {
 
     private static Logger logger = LoggerFactory.
-            getLogger(ImageIoTiffImageReader.class);
+            getLogger(TiffImageReader.class);
 
     /**
      * @param sourceFile Source file to read.
      * @throws IOException
      */
-    ImageIoTiffImageReader(File sourceFile) throws IOException {
+    TiffImageReader(File sourceFile) throws IOException {
         super(sourceFile, Format.TIF);
     }
 
@@ -40,7 +39,7 @@ class ImageIoTiffImageReader extends AbstractImageIoImageReader {
      * @param streamSource Source of streams to read.
      * @throws IOException
      */
-    ImageIoTiffImageReader(StreamSource streamSource) throws IOException {
+    TiffImageReader(StreamSource streamSource) throws IOException {
         super(streamSource, Format.TIF);
     }
 
@@ -50,7 +49,7 @@ class ImageIoTiffImageReader extends AbstractImageIoImageReader {
             throw new IOException("No source set.");
         }
 
-        Iterator<ImageReader> it = ImageIO.getImageReadersByMIMEType(
+        Iterator<javax.imageio.ImageReader> it = ImageIO.getImageReadersByMIMEType(
                 Format.TIF.getPreferredMediaType().toString());
         while (it.hasNext()) {
             reader = it.next();
@@ -70,14 +69,14 @@ class ImageIoTiffImageReader extends AbstractImageIoImageReader {
     }
 
     @Override
-    ImageIoMetadata getMetadata(int imageIndex) throws IOException {
+    Metadata getMetadata(int imageIndex) throws IOException {
         if (reader == null) {
             createReader();
         }
         final IIOMetadata metadata = reader.getImageMetadata(imageIndex);
         final String metadataFormat = reader.getImageMetadata(imageIndex).
                 getNativeMetadataFormatName();
-        return new ImageIoTiffMetadata(metadata, metadataFormat);
+        return new TiffMetadata(metadata, metadataFormat);
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -106,7 +105,7 @@ class ImageIoTiffImageReader extends AbstractImageIoImageReader {
      */
     public BufferedImage read(final OperationList ops,
                               final ReductionFactor reductionFactor,
-                              final Set<ImageIoImageReader.ReaderHint> hints)
+                              final Set<ImageReader.ReaderHint> hints)
             throws IOException, ProcessorException {
         if (reader == null) {
             createReader();

@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
 public class ImageIoPngImageWriterTest {
 
     private BufferedImage bufferedImage;
-    private ImageIoMetadata metadata;
+    private Metadata metadata;
     private FileOutputStream outputStream;
     private PlanarImage planarImage;
     private File tempFile;
@@ -47,10 +47,10 @@ public class ImageIoPngImageWriterTest {
 
         // Read an image fixture into memory
         final File fixture = TestUtil.getImage("png-xmp.png");
-        metadata = new ImageIoPngImageReader(fixture).getMetadata(0);
-        bufferedImage = new ImageIoPngImageReader(fixture).read();
+        metadata = new PngImageReader(fixture).getMetadata(0);
+        bufferedImage = new PngImageReader(fixture).read();
         planarImage =  PlanarImage.wrapRenderedImage(
-                new ImageIoPngImageReader(fixture).readRendered());
+                new PngImageReader(fixture).readRendered());
 
         // Create a temp file to write to
         tempFile = File.createTempFile("test", "tmp");
@@ -79,8 +79,8 @@ public class ImageIoPngImageWriterTest {
     @Test
     public void testWriteWithBufferedImageAndNativeMetadata()  throws Exception {
         final File fixture = TestUtil.getImage("png-nativemetadata.png");
-        metadata = new ImageIoPngImageReader(fixture).getMetadata(0);
-        bufferedImage = new ImageIoPngImageReader(fixture).read();
+        metadata = new PngImageReader(fixture).getMetadata(0);
+        bufferedImage = new PngImageReader(fixture).read();
 
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
@@ -112,9 +112,9 @@ public class ImageIoPngImageWriterTest {
     @Test
     public void testWriteWithPlanarImageAndNativeMetadata() throws Exception {
         final File fixture = TestUtil.getImage("png-nativemetadata.png");
-        metadata = new ImageIoPngImageReader(fixture).getMetadata(0);
+        metadata = new PngImageReader(fixture).getMetadata(0);
         planarImage =  PlanarImage.wrapRenderedImage(
-                new ImageIoPngImageReader(fixture).readRendered());
+                new PngImageReader(fixture).readRendered());
 
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
@@ -214,7 +214,7 @@ public class ImageIoPngImageWriterTest {
         }
     }
 
-    private ImageIoPngImageWriter getWriter() throws IOException {
+    private PngImageWriter getWriter() throws IOException {
         OperationList opList = new OperationList();
         if (IccProfileService.isEnabled()) {
             IccProfile profile = new IccProfileService().getProfile(
@@ -225,7 +225,7 @@ public class ImageIoPngImageWriterTest {
                 getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false)) {
             opList.add(new MetadataCopy());
         }
-        return new ImageIoPngImageWriter(opList, metadata);
+        return new PngImageWriter(opList, metadata);
     }
 
 }

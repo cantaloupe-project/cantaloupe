@@ -10,8 +10,8 @@ import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageIoImageReader;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageIoImageWriter;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,9 +113,9 @@ class Java2dProcessor extends AbstractImageIoProcessor
         }
 
         try {
-            final ImageIoImageReader reader = getReader();
+            final ImageReader reader = getReader();
             final ReductionFactor rf = new ReductionFactor();
-            final Set<ImageIoImageReader.ReaderHint> hints = new HashSet<>();
+            final Set<ImageReader.ReaderHint> hints = new HashSet<>();
             BufferedImage image = reader.read(ops, rf, hints);
 
             // Apply the crop operation, if present, and maintain a reference
@@ -124,7 +124,7 @@ class Java2dProcessor extends AbstractImageIoProcessor
             for (Operation op : ops) {
                 if (op instanceof Crop) {
                     crop = (Crop) op;
-                    if (!hints.contains(ImageIoImageReader.ReaderHint.ALREADY_CROPPED)) {
+                    if (!hints.contains(ImageReader.ReaderHint.ALREADY_CROPPED)) {
                         image = Java2dUtil.cropImage(image, crop, rf);
                     }
                 }
@@ -159,7 +159,7 @@ class Java2dProcessor extends AbstractImageIoProcessor
                 }
             }
 
-            new ImageIoImageWriter(ops, reader.getMetadata(0)).
+            new ImageWriter(ops, reader.getMetadata(0)).
                     write(image, ops.getOutputFormat(), outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);

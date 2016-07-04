@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
 public class ImageIoGifImageWriterTest {
 
     private BufferedImage bufferedImage;
-    private ImageIoMetadata metadata;
+    private Metadata metadata;
     private FileOutputStream outputStream;
     private PlanarImage planarImage;
     private File tempFile;
@@ -47,10 +47,10 @@ public class ImageIoGifImageWriterTest {
 
         // Read an image fixture into memory
         final File fixture = TestUtil.getImage("gif-xmp.gif");
-        metadata = new ImageIoGifImageReader(fixture).getMetadata(0);
-        bufferedImage = new ImageIoGifImageReader(fixture).read();
+        metadata = new GifImageReader(fixture).getMetadata(0);
+        bufferedImage = new GifImageReader(fixture).read();
         planarImage =  PlanarImage.wrapRenderedImage(
-                new ImageIoGifImageReader(fixture).readRendered());
+                new GifImageReader(fixture).readRendered());
 
         // Create a temp file and output stream to write to
         tempFile = File.createTempFile("test", "tmp");
@@ -156,7 +156,7 @@ public class ImageIoGifImageWriterTest {
         }
     }
 
-    private ImageIoGifImageWriter getWriter() throws IOException {
+    private GifImageWriter getWriter() throws IOException {
         OperationList opList = new OperationList();
         if (IccProfileService.isEnabled()) {
             IccProfile profile = new IccProfileService().getProfile(
@@ -167,7 +167,7 @@ public class ImageIoGifImageWriterTest {
                 getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false)) {
             opList.add(new MetadataCopy());
         }
-        return new ImageIoGifImageWriter(opList, metadata);
+        return new GifImageWriter(opList, metadata);
     }
 
 }

@@ -13,7 +13,7 @@ import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageIoImageReader;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -334,8 +334,8 @@ public abstract class Java2dUtil {
      */
     static BufferedImage getWatermarkImage(Watermark watermark)
             throws IOException {
-        final ImageIoImageReader reader =
-                new ImageIoImageReader(watermark.getImage(), Format.PNG);
+        final ImageReader reader =
+                new ImageReader(watermark.getImage(), Format.PNG);
         return reader.read();
     }
 

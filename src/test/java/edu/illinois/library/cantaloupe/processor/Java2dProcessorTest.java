@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageIoImageReader;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageIoImageWriter;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -26,8 +26,8 @@ public class Java2dProcessorTest extends ProcessorTest {
     @Test
     public void testGetAvailableOutputFormats() throws Exception {
         final HashMap<Format,Set<Format>> formats = new HashMap<>();
-        for (Format format : ImageIoImageReader.supportedFormats()) {
-            formats.put(format, ImageIoImageWriter.supportedFormats());
+        for (Format format : ImageReader.supportedFormats()) {
+            formats.put(format, ImageWriter.supportedFormats());
         }
 
         instance.setSourceFormat(Format.JPG);

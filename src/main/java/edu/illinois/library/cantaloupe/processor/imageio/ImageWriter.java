@@ -15,10 +15,10 @@ import java.util.Set;
  * Image writer using ImageIO, capable of writing both Java 2D
  * {@link BufferedImage}s and JAI {@link PlanarImage}s in several formats.
  */
-public class ImageIoImageWriter {
+public class ImageWriter {
 
     private OperationList opList;
-    private ImageIoMetadata sourceMetadata;
+    private Metadata sourceMetadata;
 
     /**
      * @return Set of supported output formats.
@@ -28,12 +28,12 @@ public class ImageIoImageWriter {
                 Format.PNG, Format.TIF));
     }
 
-    public ImageIoImageWriter(final OperationList opList) {
+    public ImageWriter(final OperationList opList) {
         this.opList = opList;
     }
 
-    public ImageIoImageWriter(final OperationList opList,
-                              final ImageIoMetadata sourceMetadata) {
+    public ImageWriter(final OperationList opList,
+                       final Metadata sourceMetadata) {
         this.opList = opList;
         this.sourceMetadata = sourceMetadata;
     }
@@ -51,19 +51,19 @@ public class ImageIoImageWriter {
                       final OutputStream outputStream) throws IOException {
         switch (outputFormat) {
             case GIF:
-                new ImageIoGifImageWriter(opList, sourceMetadata).
+                new GifImageWriter(opList, sourceMetadata).
                         write(image, outputStream);
                 break;
             case JPG:
-                new ImageIoJpegImageWriter(opList, sourceMetadata).
+                new JpegImageWriter(opList, sourceMetadata).
                         write(image, outputStream);
                 break;
             case PNG:
-                new ImageIoPngImageWriter(opList, sourceMetadata).
+                new PngImageWriter(opList, sourceMetadata).
                         write(image, outputStream);
                 break;
             case TIF:
-                new ImageIoTiffImageWriter(opList, sourceMetadata).
+                new TiffImageWriter(opList, sourceMetadata).
                         write(image, outputStream);
                 break;
         }
@@ -82,19 +82,19 @@ public class ImageIoImageWriter {
                       final OutputStream outputStream) throws IOException {
         switch (outputFormat) {
             case GIF:
-                new ImageIoGifImageWriter(opList, sourceMetadata).
+                new GifImageWriter(opList, sourceMetadata).
                         write(image, outputStream);
                 break;
             case JPG:
-                new ImageIoJpegImageWriter(opList, sourceMetadata).
+                new JpegImageWriter(opList, sourceMetadata).
                         write(image, outputStream);
                 break;
             case PNG:
-                new ImageIoPngImageWriter(opList, sourceMetadata).
+                new PngImageWriter(opList, sourceMetadata).
                         write(image, outputStream);
                 break;
             case TIF:
-                new ImageIoTiffImageWriter(opList, sourceMetadata).
+                new TiffImageWriter(opList, sourceMetadata).
                         write(image, outputStream);
                 break;
         }

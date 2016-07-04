@@ -32,19 +32,19 @@ import java.util.Iterator;
  *     JPEG Metadata Format Specification and Usage Notes</a>
  * @see <a href="http://www.color.org/icc_specs2.xalter">ICC Specifications</a>
  */
-class ImageIoJpegImageWriter extends AbstractImageIoImageWriter {
+class JpegImageWriter extends AbstractImageWriter {
 
     static final String JAVA2D_JPG_QUALITY_CONFIG_KEY =
             "Java2dProcessor.jpg.quality";
     static final String JAI_JPG_QUALITY_CONFIG_KEY =
             "JaiProcessor.jpg.quality";
 
-    ImageIoJpegImageWriter(OperationList opList) {
+    JpegImageWriter(OperationList opList) {
         super(opList);
     }
 
-    ImageIoJpegImageWriter(OperationList opList,
-                           ImageIoMetadata sourceMetadata) {
+    JpegImageWriter(OperationList opList,
+                    Metadata sourceMetadata) {
         super(opList, sourceMetadata);
     }
 
@@ -84,7 +84,7 @@ class ImageIoJpegImageWriter extends AbstractImageIoImageWriter {
     @Override
     protected void addMetadata(final IIOMetadataNode baseTree)
             throws IOException {
-        if (sourceMetadata instanceof ImageIoJpegMetadata) {
+        if (sourceMetadata instanceof JpegMetadata) {
             final Object exif = sourceMetadata.getExif();
             if (exif != null) {
                 // Create the EXIF node.

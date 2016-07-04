@@ -18,13 +18,13 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
-public class ImageIoImageReaderTest {
+public class ImageReaderTest {
 
-    private ImageIoImageReader reader;
+    private ImageReader reader;
 
     @Before
     public void setUp() throws Exception {
-        reader = new ImageIoImageReader(
+        reader = new ImageReader(
                 TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"), Format.JPG);
     }
 
@@ -45,7 +45,7 @@ public class ImageIoImageReaderTest {
                 formats.add(format);
             }
         }
-        assertEquals(formats, ImageIoImageReader.supportedFormats());
+        assertEquals(formats, ImageReader.supportedFormats());
     }
 
     @Test
@@ -58,7 +58,7 @@ public class ImageIoImageReaderTest {
         // monoresolution
         assertEquals(1, reader.getNumResolutions());
         // multiresolution
-        reader = new ImageIoImageReader(
+        reader = new ImageReader(
                 TestUtil.getImage("tif-rgb-multires-64x56x16-tiled-uncompressed.tif"),
                 Format.TIF);
         assertEquals(3, reader.getNumResolutions());
@@ -73,7 +73,7 @@ public class ImageIoImageReaderTest {
 
     @Test
     public void testGetSizeWithIndex() throws Exception {
-        reader = new ImageIoImageReader(
+        reader = new ImageReader(
                 TestUtil.getImage("tif-rgb-multires-64x56x16-tiled-uncompressed.tif"),
                 Format.TIF);
         Dimension expected = new Dimension(16, 14);
@@ -83,7 +83,7 @@ public class ImageIoImageReaderTest {
 
     @Test
     public void testGetTileSizeWithTiledSource() throws Exception {
-        reader = new ImageIoImageReader(
+        reader = new ImageReader(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif"),
                 Format.TIF);
         Dimension expected = new Dimension(16, 16);
@@ -93,7 +93,7 @@ public class ImageIoImageReaderTest {
 
     @Test
     public void testGetTileSizeWithUntiledSource() throws Exception {
-        reader = new ImageIoImageReader(
+        reader = new ImageReader(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-striped-uncompressed.tif"),
                 Format.TIF);
         Dimension expected = new Dimension(64, 42);
@@ -115,14 +115,14 @@ public class ImageIoImageReaderTest {
         scale.setHeight(35);
         ops.add(scale);
         ReductionFactor rf = new ReductionFactor();
-        Set<ImageIoImageReader.ReaderHint> hints = new HashSet<>();
+        Set<ImageReader.ReaderHint> hints = new HashSet<>();
 
         BufferedImage image = reader.read(ops, rf, hints);
 
         assertEquals(40, image.getWidth());
         assertEquals(40, image.getHeight());
         assertEquals(0, rf.factor);
-        assertTrue(hints.contains(ImageIoImageReader.ReaderHint.ALREADY_CROPPED));
+        assertTrue(hints.contains(ImageReader.ReaderHint.ALREADY_CROPPED));
     }
 
     @Test
@@ -139,19 +139,19 @@ public class ImageIoImageReaderTest {
         scale.setHeight(10);
         ops.add(scale);
         ReductionFactor rf = new ReductionFactor();
-        Set<ImageIoImageReader.ReaderHint> hints = new HashSet<>();
+        Set<ImageReader.ReaderHint> hints = new HashSet<>();
 
         BufferedImage image = reader.read(ops, rf, hints);
 
         assertEquals(10, image.getWidth());
         assertEquals(10, image.getHeight());
         assertEquals(2, rf.factor);
-        assertTrue(hints.contains(ImageIoImageReader.ReaderHint.ALREADY_CROPPED));
+        assertTrue(hints.contains(ImageReader.ReaderHint.ALREADY_CROPPED));
     }
 
     @Test
     public void testReadWithMonoResolutionImageAndSubsamplingAndAbsoluteScale() throws Exception {
-        reader = new ImageIoImageReader(
+        reader = new ImageReader(
                 TestUtil.getImage("tif-rgb-monores-64x56x16-striped-uncompressed.tif"),
                 Format.TIF);
 
@@ -161,19 +161,19 @@ public class ImageIoImageReaderTest {
         scale.setHeight(14);
         ops.add(scale);
         ReductionFactor rf = new ReductionFactor();
-        Set<ImageIoImageReader.ReaderHint> hints = new HashSet<>();
+        Set<ImageReader.ReaderHint> hints = new HashSet<>();
 
         BufferedImage image = reader.read(ops, rf, hints);
 
         assertEquals(16, image.getWidth());
         assertEquals(14, image.getHeight());
         assertEquals(2, rf.factor);
-        assertTrue(hints.contains(ImageIoImageReader.ReaderHint.ALREADY_CROPPED));
+        assertTrue(hints.contains(ImageReader.ReaderHint.ALREADY_CROPPED));
     }
 
     @Test
     public void testReadWithMonoResolutionImageAndSubsamplingAndPercentScale() throws Exception {
-        reader = new ImageIoImageReader(
+        reader = new ImageReader(
                 TestUtil.getImage("tif-rgb-monores-64x56x16-striped-uncompressed.tif"),
                 Format.TIF);
 
@@ -182,14 +182,14 @@ public class ImageIoImageReaderTest {
         scale.setPercent(0.25f);
         ops.add(scale);
         ReductionFactor rf = new ReductionFactor();
-        Set<ImageIoImageReader.ReaderHint> hints = new HashSet<>();
+        Set<ImageReader.ReaderHint> hints = new HashSet<>();
 
         BufferedImage image = reader.read(ops, rf, hints);
 
         assertEquals(16, image.getWidth());
         assertEquals(14, image.getHeight());
         assertEquals(2, rf.factor);
-        assertTrue(hints.contains(ImageIoImageReader.ReaderHint.ALREADY_CROPPED));
+        assertTrue(hints.contains(ImageReader.ReaderHint.ALREADY_CROPPED));
     }
 
     @Test

@@ -10,8 +10,8 @@ import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageIoImageReader;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageIoImageWriter;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,7 +121,7 @@ class JaiProcessor extends AbstractImageIoProcessor
         }
 
         try {
-            final ImageIoImageReader reader = getReader();
+            final ImageReader reader = getReader();
             final ReductionFactor rf = new ReductionFactor();
             RenderedImage renderedImage = reader.readRendered(ops, rf);
 
@@ -191,7 +191,7 @@ class JaiProcessor extends AbstractImageIoProcessor
                         }
                     }
                 }
-                final ImageIoImageWriter writer = new ImageIoImageWriter(ops,
+                final ImageWriter writer = new ImageWriter(ops,
                         reader.getMetadata(0));
 
                 if (image != null) {

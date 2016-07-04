@@ -12,8 +12,8 @@ import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageIoImageReader;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageIoImageWriter;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.apache.commons.io.IOUtils;
@@ -161,7 +161,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
     public Set<Format> getAvailableOutputFormats() {
         final Set<Format> outputFormats = new HashSet<>();
         if (format == Format.JP2) {
-            outputFormats.addAll(ImageIoImageWriter.supportedFormats());
+            outputFormats.addAll(ImageWriter.supportedFormats());
         }
         return outputFormats;
     }
@@ -287,7 +287,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                 executorService.submit(new StreamCopier(
                         processErrorStream, errorBucket));
 
-                final ImageIoImageReader reader = new ImageIoImageReader(
+                final ImageReader reader = new ImageReader(
                         new InputStreamStreamSource(processInputStream),
                         Format.BMP);
 
@@ -431,7 +431,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
         return tileSize;
     }
 
-    private void postProcessUsingJai(final ImageIoImageReader reader,
+    private void postProcessUsingJai(final ImageReader reader,
                                      final OperationList opList,
                                      final ReductionFactor reductionFactor,
                                      final OutputStream outputStream)
@@ -465,7 +465,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
             }
         }
 
-        final ImageIoImageWriter writer = new ImageIoImageWriter(opList);
+        final ImageWriter writer = new ImageWriter(opList);
 
         if (image != null) {
             writer.write(image, opList.getOutputFormat(), outputStream);
@@ -476,7 +476,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
         }
     }
 
-    private void postProcessUsingJava2d(final ImageIoImageReader reader,
+    private void postProcessUsingJava2d(final ImageReader reader,
                                         final OperationList opList,
                                         final ReductionFactor reductionFactor,
                                         final OutputStream outputStream)
@@ -523,7 +523,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
             }
         }
 
-        new ImageIoImageWriter(opList).
+        new ImageWriter(opList).
                 write(image, opList.getOutputFormat(), outputStream);
         image.flush();
     }

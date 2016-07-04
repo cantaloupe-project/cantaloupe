@@ -8,7 +8,6 @@ import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatExceptio
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
@@ -19,14 +18,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * <p>Image reader wrapping an ImageIO {@link ImageReader} instance, with
+ * <p>Image reader wrapping an ImageIO {@link javax.imageio.ImageReader} instance, with
  * enhancements to support efficient reading of multi-resolution and/or tiled
  * source images with scale-appropriate subsampling.</p>
  *
  * <p>Clients should remember to call {@link #dispose()} when done with an
  * instance.</p>
  */
-public class ImageIoImageReader {
+public class ImageReader {
 
     public enum ReaderHint {
         ALREADY_CROPPED
@@ -53,23 +52,23 @@ public class ImageIoImageReader {
      * @param format Format of the source image.
      * @throws IOException
      */
-    public ImageIoImageReader(File sourceFile, Format format)
+    public ImageReader(File sourceFile, Format format)
             throws IOException {
         switch (format) {
             case BMP:
-                reader = new ImageIoBmpImageReader(sourceFile);
+                reader = new BmpImageReader(sourceFile);
                 break;
             case GIF:
-                reader = new ImageIoGifImageReader(sourceFile);
+                reader = new GifImageReader(sourceFile);
                 break;
             case JPG:
-                reader = new ImageIoJpegImageReader(sourceFile);
+                reader = new JpegImageReader(sourceFile);
                 break;
             case PNG:
-                reader = new ImageIoPngImageReader(sourceFile);
+                reader = new PngImageReader(sourceFile);
                 break;
             case TIF:
-                reader = new ImageIoTiffImageReader(sourceFile);
+                reader = new TiffImageReader(sourceFile);
                 break;
         }
     }
@@ -79,23 +78,23 @@ public class ImageIoImageReader {
      * @param format Format of the source image.
      * @throws IOException
      */
-    public ImageIoImageReader(StreamSource streamSource, Format format)
+    public ImageReader(StreamSource streamSource, Format format)
             throws IOException {
         switch (format) {
             case BMP:
-                reader = new ImageIoBmpImageReader(streamSource);
+                reader = new BmpImageReader(streamSource);
                 break;
             case GIF:
-                reader = new ImageIoGifImageReader(streamSource);
+                reader = new GifImageReader(streamSource);
                 break;
             case JPG:
-                reader = new ImageIoJpegImageReader(streamSource);
+                reader = new JpegImageReader(streamSource);
                 break;
             case PNG:
-                reader = new ImageIoPngImageReader(streamSource);
+                reader = new PngImageReader(streamSource);
                 break;
             case TIF:
-                reader = new ImageIoTiffImageReader(streamSource);
+                reader = new TiffImageReader(streamSource);
                 break;
         }
     }
@@ -114,7 +113,7 @@ public class ImageIoImageReader {
      * @return
      * @throws IOException
      */
-    public ImageIoMetadata getMetadata(int imageIndex) throws IOException {
+    public Metadata getMetadata(int imageIndex) throws IOException {
         return reader.getMetadata(imageIndex);
     }
 

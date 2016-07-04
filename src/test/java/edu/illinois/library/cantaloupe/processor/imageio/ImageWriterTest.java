@@ -10,20 +10,20 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
-public class ImageIoImageWriterTest {
+public class ImageWriterTest {
 
-    ImageIoImageWriter instance;
+    ImageWriter instance;
 
     @Before
     public void setUp() {
-        instance = new ImageIoImageWriter(null);
+        instance = new ImageWriter(null);
     }
 
     @Test
     public void testSupportedFormats() {
         Set<Format> outputFormats = new HashSet<>(Arrays.asList(
                 Format.GIF, Format.JPG, Format.PNG, Format.TIF));
-        assertEquals(outputFormats, ImageIoImageWriter.supportedFormats());
+        assertEquals(outputFormats, ImageWriter.supportedFormats());
     }
 
     @Test

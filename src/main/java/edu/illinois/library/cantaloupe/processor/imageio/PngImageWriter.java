@@ -31,14 +31,14 @@ import java.util.zip.DeflaterOutputStream;
  * @see <a href="http://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/PNG.html">PNG Tags</a>
  * @see <a href="http://www.color.org/icc_specs2.xalter">ICC Specifications</a>
  */
-class ImageIoPngImageWriter extends AbstractImageIoImageWriter {
+class PngImageWriter extends AbstractImageWriter {
 
-    ImageIoPngImageWriter(OperationList opList) {
+    PngImageWriter(OperationList opList) {
         super(opList);
     }
 
-    ImageIoPngImageWriter(OperationList opList,
-                          ImageIoMetadata sourceMetadata) {
+    PngImageWriter(OperationList opList,
+                   Metadata sourceMetadata) {
         super(opList, sourceMetadata);
     }
 
@@ -71,10 +71,10 @@ class ImageIoPngImageWriter extends AbstractImageIoImageWriter {
     @Override
     protected void addMetadata(final IIOMetadataNode baseTree)
             throws IOException {
-        if (sourceMetadata instanceof ImageIoPngMetadata) {
+        if (sourceMetadata instanceof PngMetadata) {
             // Add native metadata.
             final List<IIOMetadataNode> nativeMetadata =
-                    ((ImageIoPngMetadata) sourceMetadata).getNativeMetadata();
+                    ((PngMetadata) sourceMetadata).getNativeMetadata();
             if (nativeMetadata.size() > 0) {
                 // Get the /tEXt node, creating it if it does not already exist.
                 final NodeList textNodes = baseTree.getElementsByTagName("tEXt");

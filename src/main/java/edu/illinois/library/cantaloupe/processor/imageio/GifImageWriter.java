@@ -33,14 +33,14 @@ import java.util.Iterator;
  *     XMP Specification Part 3</a>
  * @see <a href="http://justsolve.archiveteam.org/wiki/GIF">GIF</a>
  */
-class ImageIoGifImageWriter extends AbstractImageIoImageWriter {
+class GifImageWriter extends AbstractImageWriter {
 
-    ImageIoGifImageWriter(OperationList opList) {
+    GifImageWriter(OperationList opList) {
         super(opList);
     }
 
-    ImageIoGifImageWriter(OperationList opList,
-                          ImageIoMetadata sourceMetadata) {
+    GifImageWriter(OperationList opList,
+                   Metadata sourceMetadata) {
         super(opList, sourceMetadata);
     }
 
@@ -75,7 +75,7 @@ class ImageIoGifImageWriter extends AbstractImageIoImageWriter {
     @Override
     protected void addMetadata(final IIOMetadataNode baseTree)
             throws IOException {
-        if (sourceMetadata instanceof ImageIoGifMetadata) {
+        if (sourceMetadata instanceof GifMetadata) {
             // GIF doesn't support EXIF or IPTC metadata -- only XMP.
             // The XMP node will be located at /ApplicationExtensions/
             // ApplicationExtension[@applicationID="XMP Data" @authenticationCode="XMP"]

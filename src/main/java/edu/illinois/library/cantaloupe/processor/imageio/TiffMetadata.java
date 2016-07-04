@@ -15,11 +15,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-class ImageIoTiffMetadata extends AbstractImageIoMetadata
-        implements ImageIoMetadata {
+class TiffMetadata extends AbstractMetadata
+        implements Metadata {
 
     private static Logger logger = LoggerFactory.
-            getLogger(ImageIoTiffMetadata.class);
+            getLogger(TiffMetadata.class);
 
     private TIFFDirectory ifd;
 
@@ -27,7 +27,7 @@ class ImageIoTiffMetadata extends AbstractImageIoMetadata
      * @param metadata
      * @param formatName
      */
-    ImageIoTiffMetadata(IIOMetadata metadata, String formatName) {
+    TiffMetadata(IIOMetadata metadata, String formatName) {
         super(metadata, formatName);
         try {
             ifd = TIFFDirectory.createFromMetadata(getIioMetadata());

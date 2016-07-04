@@ -7,29 +7,29 @@ import javax.imageio.metadata.IIOMetadata;
 import java.io.File;
 import java.io.IOException;
 
-class ImageIoPngImageReader extends AbstractImageIoImageReader {
+class BmpImageReader extends AbstractImageIoImageReader {
 
     /**
      * @param sourceFile Source file to read.
      * @throws IOException
      */
-    ImageIoPngImageReader(File sourceFile) throws IOException {
-        super(sourceFile, Format.PNG);
+    BmpImageReader(File sourceFile) throws IOException {
+        super(sourceFile, Format.BMP);
     }
 
     /**
      * @param streamSource Source of streams to read.
      * @throws IOException
      */
-    ImageIoPngImageReader(StreamSource streamSource) throws IOException {
-        super(streamSource, Format.PNG);
+    BmpImageReader(StreamSource streamSource) throws IOException {
+        super(streamSource, Format.BMP);
     }
 
-    ImageIoMetadata getMetadata(int imageIndex) throws IOException {
+    Metadata getMetadata(int imageIndex) throws IOException {
         final IIOMetadata metadata = reader.getImageMetadata(imageIndex);
         final String metadataFormat = reader.getImageMetadata(imageIndex).
                 getNativeMetadataFormatName();
-        return new ImageIoPngMetadata(metadata, metadataFormat);
+        return new BmpMetadata(metadata, metadataFormat);
     }
 
 }

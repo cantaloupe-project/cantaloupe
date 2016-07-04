@@ -6,7 +6,7 @@ import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageIoImageReader;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 
@@ -72,7 +72,7 @@ public class JaiUtilTest {
     public void testReformatImage() throws Exception {
         final OperationList ops = new OperationList();
         final ReductionFactor reductionFactor = new ReductionFactor();
-        ImageIoImageReader reader = new ImageIoImageReader(
+        ImageReader reader = new ImageReader(
                 TestUtil.getFixture(IMAGE), Format.JPG);
         RenderedImage image = reader.readRendered(ops, reductionFactor);
         PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
@@ -154,7 +154,7 @@ public class JaiUtilTest {
     private RenderedOp getFixture(final String name) throws Exception {
         final OperationList ops = new OperationList();
         final ReductionFactor reductionFactor = new ReductionFactor();
-        ImageIoImageReader reader = new ImageIoImageReader(
+        ImageReader reader = new ImageReader(
                 TestUtil.getFixture(name), Format.JPG);
         RenderedImage image = reader.readRendered(ops, reductionFactor);
         PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);

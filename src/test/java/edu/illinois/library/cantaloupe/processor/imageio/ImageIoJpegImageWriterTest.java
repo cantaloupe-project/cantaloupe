@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
 public class ImageIoJpegImageWriterTest {
 
     private BufferedImage bufferedImage;
-    private ImageIoMetadata metadata;
+    private Metadata metadata;
     private FileOutputStream outputStream;
     private PlanarImage planarImage;
     private File tempFile;
@@ -47,10 +47,10 @@ public class ImageIoJpegImageWriterTest {
 
         // Read an image fixture into memory
         final File fixture = TestUtil.getImage("jpg-xmp.jpg");
-        metadata = new ImageIoJpegImageReader(fixture).getMetadata(0);
-        bufferedImage = new ImageIoJpegImageReader(fixture).read();
+        metadata = new JpegImageReader(fixture).getMetadata(0);
+        bufferedImage = new JpegImageReader(fixture).read();
         planarImage =  PlanarImage.wrapRenderedImage(
-                new ImageIoJpegImageReader(fixture).readRendered());
+                new JpegImageReader(fixture).readRendered());
 
         // Create a temp file and output stream to write to
         tempFile = File.createTempFile("test", "tmp");
@@ -79,8 +79,8 @@ public class ImageIoJpegImageWriterTest {
     @Test
     public void testWriteWithBufferedImageAndExifMetadata() throws Exception {
         final File fixture = TestUtil.getImage("jpg-exif.jpg");
-        metadata = new ImageIoJpegImageReader(fixture).getNativeMetadata(0);
-        bufferedImage = new ImageIoJpegImageReader(fixture).read();
+        metadata = new JpegImageReader(fixture).getNativeMetadata(0);
+        bufferedImage = new JpegImageReader(fixture).read();
 
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
@@ -91,8 +91,8 @@ public class ImageIoJpegImageWriterTest {
     @Test
     public void testWriteWithBufferedImageAndIptcMetadata() throws Exception {
         final File fixture = TestUtil.getImage("jpg-iptc.jpg");
-        metadata = new ImageIoJpegImageReader(fixture).getNativeMetadata(0);
-        bufferedImage = new ImageIoJpegImageReader(fixture).read();
+        metadata = new JpegImageReader(fixture).getNativeMetadata(0);
+        bufferedImage = new JpegImageReader(fixture).read();
 
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
@@ -124,9 +124,9 @@ public class ImageIoJpegImageWriterTest {
     @Test
     public void testWriteWithPlanarImageAndExifMetadata() throws Exception {
         final File fixture = TestUtil.getImage("jpg-exif.jpg");
-        metadata = new ImageIoJpegImageReader(fixture).getNativeMetadata(0);
+        metadata = new JpegImageReader(fixture).getNativeMetadata(0);
         planarImage =  PlanarImage.wrapRenderedImage(
-                new ImageIoJpegImageReader(fixture).readRendered());
+                new JpegImageReader(fixture).readRendered());
 
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
@@ -137,9 +137,9 @@ public class ImageIoJpegImageWriterTest {
     @Test
     public void testWriteWithPlanarImageAndIptcMetadata() throws Exception {
         final File fixture = TestUtil.getImage("jpg-iptc.jpg");
-        metadata = new ImageIoJpegImageReader(fixture).getNativeMetadata(0);
+        metadata = new JpegImageReader(fixture).getNativeMetadata(0);
         planarImage =  PlanarImage.wrapRenderedImage(
-                new ImageIoJpegImageReader(fixture).readRendered());
+                new JpegImageReader(fixture).readRendered());
 
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
@@ -253,7 +253,7 @@ public class ImageIoJpegImageWriterTest {
         }
     }
 
-    private ImageIoJpegImageWriter getWriter() throws IOException {
+    private JpegImageWriter getWriter() throws IOException {
         OperationList opList = new OperationList();
         if (IccProfileService.isEnabled()) {
             IccProfile profile = new IccProfileService().getProfile(
@@ -264,7 +264,7 @@ public class ImageIoJpegImageWriterTest {
                 getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false)) {
             opList.add(new MetadataCopy());
         }
-        return new ImageIoJpegImageWriter(opList, metadata);
+        return new JpegImageWriter(opList, metadata);
     }
 
 }

@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
-import javax.imageio.ImageReader;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
@@ -50,7 +49,7 @@ abstract class AbstractImageIoImageReader {
     protected ImageInputStream inputStream;
 
     /** Assigned by createReader(). */
-    protected ImageReader reader;
+    protected javax.imageio.ImageReader reader;
 
     /**
      * Initializes an instance.
@@ -79,7 +78,7 @@ abstract class AbstractImageIoImageReader {
     }
 
     protected void createReader() throws IOException {
-        Iterator<ImageReader> it;
+        Iterator<javax.imageio.ImageReader> it;
         if (format != null) {
             it = ImageIO.getImageReadersByMIMEType(
                     format.getPreferredMediaType().toString());
@@ -116,7 +115,7 @@ abstract class AbstractImageIoImageReader {
         }
     }
 
-    abstract ImageIoMetadata getMetadata(int imageIndex) throws IOException;
+    abstract Metadata getMetadata(int imageIndex) throws IOException;
 
     /**
      * @return The number of images contained inside the source image.
@@ -237,7 +236,7 @@ abstract class AbstractImageIoImageReader {
      */
     BufferedImage read(final OperationList ops,
                        final ReductionFactor reductionFactor,
-                       final Set<ImageIoImageReader.ReaderHint> hints)
+                       final Set<ImageReader.ReaderHint> hints)
             throws IOException, ProcessorException {
         if (reader == null) {
             createReader();
@@ -293,7 +292,7 @@ abstract class AbstractImageIoImageReader {
             final Crop crop,
             final Scale scale,
             final ReductionFactor rf,
-            final Set<ImageIoImageReader.ReaderHint> hints)
+            final Set<ImageReader.ReaderHint> hints)
             throws IOException {
         final Dimension fullSize = new Dimension(
                 reader.getWidth(0), reader.getHeight(0));
@@ -387,7 +386,7 @@ abstract class AbstractImageIoImageReader {
      * matter the data layout (tiled, striped, etc.).</p>
      *
      * <p>This method may populate <code>hints</code> with
-     * {@link ImageIoImageReader.ReaderHint#ALREADY_CROPPED}, in which case
+     * {@link ImageReader.ReaderHint#ALREADY_CROPPED}, in which case
      * cropping will have already been performed according to the
      * <code>requestedSourceArea</code> parameter.</p>
      *
@@ -410,7 +409,7 @@ abstract class AbstractImageIoImageReader {
                                         final Rectangle region,
                                         final Scale scale,
                                         final ReductionFactor subimageRf,
-                                        final Set<ImageIoImageReader.ReaderHint> hints)
+                                        final Set<ImageReader.ReaderHint> hints)
             throws IOException {
         final Dimension imageSize = new Dimension(
                 reader.getWidth(imageIndex),
@@ -464,7 +463,7 @@ abstract class AbstractImageIoImageReader {
             }
             param.setSourceSubsampling(subsample, subsample, 0, 0);
         }
-        hints.add(ImageIoImageReader.ReaderHint.ALREADY_CROPPED);
+        hints.add(ImageReader.ReaderHint.ALREADY_CROPPED);
         return reader.read(imageIndex, param);
     }
 

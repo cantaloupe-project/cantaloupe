@@ -12,7 +12,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageIoImageWriter;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.resource.iiif.v1.Quality;
@@ -87,7 +87,7 @@ class PdfBoxProcessor extends AbstractProcessor
     public Set<Format> getAvailableOutputFormats() {
         final Set<Format> outputFormats = new HashSet<>();
         if (format == Format.PDF) {
-            outputFormats.addAll(ImageIoImageWriter.supportedFormats());
+            outputFormats.addAll(ImageWriter.supportedFormats());
         }
         return outputFormats;
     }
@@ -235,7 +235,7 @@ class PdfBoxProcessor extends AbstractProcessor
             }
         }
 
-        new ImageIoImageWriter(opList).
+        new ImageWriter(opList).
                 write(image, opList.getOutputFormat(), outputStream);
         image.flush();
     }

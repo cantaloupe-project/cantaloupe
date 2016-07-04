@@ -8,7 +8,7 @@ import javax.imageio.metadata.IIOMetadataNode;
  * exchange, adding some convenient accessors to access specific metadata
  * types.
  */
-public interface ImageIoMetadata {
+public interface Metadata {
 
     enum Orientation {
         ROTATE_0, ROTATE_90, ROTATE_180, ROTATE_270

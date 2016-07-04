@@ -13,17 +13,17 @@ import javax.imageio.metadata.IIOMetadataNode;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 
-abstract class AbstractImageIoImageWriter {
+abstract class AbstractImageWriter {
 
     protected OperationList opList;
-    protected ImageIoMetadata sourceMetadata;
+    protected Metadata sourceMetadata;
 
     /**
      * @param opList Some operations can't be handled by processors and need
      *               to be handled by a writer instead. Any writer operations
      *               present in this list will be applied automatically.
      */
-    AbstractImageIoImageWriter(final OperationList opList) {
+    AbstractImageWriter(final OperationList opList) {
         this.opList = opList;
     }
 
@@ -32,10 +32,10 @@ abstract class AbstractImageIoImageWriter {
      *               to be handled by a writer instead. Any writer operations
      *               present in this list will be applied automatically.
      * @param sourceMetadata Metadata for the image being written as returned
-     *                       from {@link ImageIoImageReader}.
+     *                       from {@link ImageReader}.
      */
-    AbstractImageIoImageWriter(final OperationList opList,
-                               final ImageIoMetadata sourceMetadata) {
+    AbstractImageWriter(final OperationList opList,
+                        final Metadata sourceMetadata) {
         this.opList = opList;
         this.sourceMetadata = sourceMetadata;
     }
@@ -72,7 +72,7 @@ abstract class AbstractImageIoImageWriter {
      * @param image Image to apply the metadata to.
      * @return Image metadata with added metadata corresponding to any
      *         writer-specific operations from
-     *         {@link #AbstractImageIoImageWriter(OperationList, ImageIoMetadata)}
+     *         {@link #AbstractImageWriter(OperationList, Metadata)}
      *         applied.
      * @throws IOException
      */

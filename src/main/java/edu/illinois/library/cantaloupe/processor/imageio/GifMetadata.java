@@ -8,14 +8,14 @@ import org.w3c.dom.NodeList;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 
-class ImageIoGifMetadata extends AbstractImageIoMetadata
-        implements ImageIoMetadata {
+class GifMetadata extends AbstractMetadata
+        implements Metadata {
 
     /**
      * @param metadata
      * @param formatName
      */
-    public ImageIoGifMetadata(IIOMetadata metadata, String formatName) {
+    public GifMetadata(IIOMetadata metadata, String formatName) {
         super(metadata, formatName);
     }
 

@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
 public class ImageIoTiffImageWriterTest {
 
     private BufferedImage bufferedImage;
-    private ImageIoMetadata metadata;
+    private Metadata metadata;
     private FileOutputStream outputStream;
     private PlanarImage planarImage;
     private File tempFile;
@@ -47,10 +47,10 @@ public class ImageIoTiffImageWriterTest {
 
         // Read an image fixture into memory
         final File fixture = TestUtil.getImage("tif-xmp.tif");
-        metadata = new ImageIoTiffImageReader(fixture).getMetadata(0);
-        bufferedImage = new ImageIoTiffImageReader(fixture).read();
+        metadata = new TiffImageReader(fixture).getMetadata(0);
+        bufferedImage = new TiffImageReader(fixture).read();
         planarImage =  PlanarImage.wrapRenderedImage(
-                new ImageIoTiffImageReader(fixture).readRendered());
+                new TiffImageReader(fixture).readRendered());
 
         // Create a temp file to write to
         tempFile = File.createTempFile("test", "tmp");
@@ -87,8 +87,8 @@ public class ImageIoTiffImageWriterTest {
     @Test
     public void testWriteWithBufferedImageAndIptcMetadata() throws Exception {
         final File fixture = TestUtil.getImage("tif-iptc.tif");
-        metadata = new ImageIoTiffImageReader(fixture).getMetadata(0);
-        bufferedImage = new ImageIoTiffImageReader(fixture).read();
+        metadata = new TiffImageReader(fixture).getMetadata(0);
+        bufferedImage = new TiffImageReader(fixture).read();
 
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
@@ -128,9 +128,9 @@ public class ImageIoTiffImageWriterTest {
     @Test
     public void testWriteWithPlanarImageAndIptcMetadata() throws Exception {
         final File fixture = TestUtil.getImage("tif-iptc.tif");
-        metadata = new ImageIoTiffImageReader(fixture).getMetadata(0);
+        metadata = new TiffImageReader(fixture).getMetadata(0);
         planarImage =  PlanarImage.wrapRenderedImage(
-                new ImageIoTiffImageReader(fixture).readRendered());
+                new TiffImageReader(fixture).readRendered());
 
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
@@ -215,7 +215,7 @@ public class ImageIoTiffImageWriterTest {
         }
     }
 
-    private ImageIoTiffImageWriter getWriter() throws IOException {
+    private TiffImageWriter getWriter() throws IOException {
         OperationList opList = new OperationList();
         if (IccProfileService.isEnabled()) {
             IccProfile profile = new IccProfileService().getProfile(
@@ -226,7 +226,7 @@ public class ImageIoTiffImageWriterTest {
                 getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false)) {
             opList.add(new MetadataCopy());
         }
-        return new ImageIoTiffImageWriter(opList, metadata);
+        return new TiffImageWriter(opList, metadata);
     }
 
 }
