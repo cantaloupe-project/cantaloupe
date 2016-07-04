@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
+import edu.illinois.library.cantaloupe.processor.Orientation;
+
 import javax.imageio.metadata.IIOMetadata;
 
 class BmpMetadata extends AbstractMetadata implements Metadata {

@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
+import edu.illinois.library.cantaloupe.processor.Orientation;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 
@@ -41,7 +42,7 @@ public class BmpMetadataTest {
 
     @Test
     public void testGetOrientation() throws IOException {
-        assertEquals(Metadata.Orientation.ROTATE_0,
+        assertEquals(Orientation.ROTATE_0,
                 getInstance("bmp-rgb-64x56x8.bmp").getOrientation());
     }
 

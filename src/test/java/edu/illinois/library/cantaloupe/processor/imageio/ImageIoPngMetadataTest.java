@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
+import edu.illinois.library.cantaloupe.processor.Orientation;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 
@@ -31,7 +32,7 @@ public class ImageIoPngMetadataTest {
 
     @Test
     public void testGetOrientation() throws IOException {
-        assertEquals(Metadata.Orientation.ROTATE_90,
+        assertEquals(Orientation.ROTATE_90,
                 getInstance("png-rotated.png").getOrientation());
     }
 

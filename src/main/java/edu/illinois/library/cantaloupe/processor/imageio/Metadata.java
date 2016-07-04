@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
+import edu.illinois.library.cantaloupe.processor.Orientation;
+
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 
@@ -9,10 +11,6 @@ import javax.imageio.metadata.IIOMetadataNode;
  * types and properties.
  */
 public interface Metadata {
-
-    enum Orientation {
-        ROTATE_0, ROTATE_90, ROTATE_180, ROTATE_270
-    }
 
     /**
      * @return Metadata as an ImageIO DOM tree.

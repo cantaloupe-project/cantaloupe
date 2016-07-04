@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor.imageio;
 
 import com.sun.media.imageio.plugins.tiff.TIFFDirectory;
 import com.sun.media.imageio.plugins.tiff.TIFFField;
+import edu.illinois.library.cantaloupe.processor.Orientation;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
@@ -45,14 +46,14 @@ abstract class AbstractMetadata {
         return iioMetadata;
     }
 
-    protected Metadata.Orientation orientationForExifValue(int value) {
+    protected Orientation orientationForExifValue(int value) {
         switch (value) {
             case 6:
-                return Metadata.Orientation.ROTATE_90;
+                return Orientation.ROTATE_90;
             case 3:
-                return Metadata.Orientation.ROTATE_180;
+                return Orientation.ROTATE_180;
             case 8:
-                return Metadata.Orientation.ROTATE_270;
+                return Orientation.ROTATE_270;
         }
         return null;
     }
@@ -63,7 +64,7 @@ abstract class AbstractMetadata {
      * @param exif EXIF data.
      * @return Orientation, or null if unspecified.
      */
-    protected Metadata.Orientation readOrientation(byte[] exif) {
+    protected Orientation readOrientation(byte[] exif) {
         // See https://community.oracle.com/thread/1264022?start=0&tstart=0
         // for an explanation of the technique used here.
         if (exif != null) {
@@ -97,7 +98,7 @@ abstract class AbstractMetadata {
      * @param xmp XMP string.
      * @return Orientation, or null if unspecified.
      */
-    protected Metadata.Orientation readOrientation(String xmp) {
+    protected Orientation readOrientation(String xmp) {
         RIOT.init();
 
         final Model model = ModelFactory.createDefaultModel();
