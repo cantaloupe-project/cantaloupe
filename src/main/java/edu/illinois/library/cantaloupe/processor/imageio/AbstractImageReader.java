@@ -31,14 +31,14 @@ import java.util.Set;
  * efficient with most formats. Format-specific readers may override what they
  * need to.
  */
-abstract class AbstractImageIoImageReader {
+abstract class AbstractImageReader {
 
     // Note: methods that return BufferedImages (for Java 2D) are arranged
     // toward the beginning of the class; methods that return RenderedImages
     // (for JAI) are toward the end.
 
     private static Logger logger = LoggerFactory.
-            getLogger(AbstractImageIoImageReader.class);
+            getLogger(AbstractImageReader.class);
 
     private static final String RESPECT_ORIENTATION_CONFIG_KEY =
             "metadata.respect_orientation";
@@ -57,7 +57,7 @@ abstract class AbstractImageIoImageReader {
      * @param inputFile Image file to read.
      * @throws IOException
      */
-    AbstractImageIoImageReader(File inputFile, Format format)
+    AbstractImageReader(File inputFile, Format format)
             throws IOException {
         setSource(inputFile);
         setFormat(format);
@@ -70,8 +70,8 @@ abstract class AbstractImageIoImageReader {
      * @param streamSource Source of streams to read.
      * @throws IOException
      */
-    AbstractImageIoImageReader(StreamSource streamSource,
-                               Format format) throws IOException {
+    AbstractImageReader(StreamSource streamSource,
+                        Format format) throws IOException {
         setSource(streamSource);
         setFormat(format);
         createReader();

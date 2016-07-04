@@ -7,7 +7,7 @@ import javax.imageio.metadata.IIOMetadata;
 import java.io.File;
 import java.io.IOException;
 
-class GifImageReader extends AbstractImageIoImageReader {
+class GifImageReader extends AbstractImageReader {
 
     /**
      * @param sourceFile Source file to read.

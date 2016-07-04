@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 
-class TiffImageReader extends AbstractImageIoImageReader {
+class TiffImageReader extends AbstractImageReader {
 
     private static Logger logger = LoggerFactory.
             getLogger(TiffImageReader.class);

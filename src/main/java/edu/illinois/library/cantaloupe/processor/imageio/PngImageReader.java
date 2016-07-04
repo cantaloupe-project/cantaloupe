@@ -7,7 +7,7 @@ import javax.imageio.metadata.IIOMetadata;
 import java.io.File;
 import java.io.IOException;
 
-class PngImageReader extends AbstractImageIoImageReader {
+class PngImageReader extends AbstractImageReader {
 
     /**
      * @param sourceFile Source file to read.

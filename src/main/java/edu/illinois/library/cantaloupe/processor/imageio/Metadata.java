@@ -6,7 +6,7 @@ import javax.imageio.metadata.IIOMetadataNode;
 /**
  * Wraps an {@link IIOMetadata} instance for the purposes of ImageIO metadata
  * exchange, adding some convenient accessors to access specific metadata
- * types.
+ * types and properties.
  */
 public interface Metadata {
 
@@ -14,6 +14,9 @@ public interface Metadata {
         ROTATE_0, ROTATE_90, ROTATE_180, ROTATE_270
     }
 
+    /**
+     * @return Metadata as an ImageIO DOM tree.
+     */
     IIOMetadataNode getAsTree();
 
     /**
@@ -28,6 +31,8 @@ public interface Metadata {
 
     /**
      * @return Orientation of the image based on the EXIF "Orientation" tag.
+     *         If unknown or not specified, implementations should return
+     *         {@link Orientation#ROTATE_0}.
      */
     Orientation getOrientation();
 

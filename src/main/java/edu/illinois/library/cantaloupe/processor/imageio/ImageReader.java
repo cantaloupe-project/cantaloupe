@@ -32,7 +32,7 @@ public class ImageReader {
     }
 
     private Format format;
-    private AbstractImageIoImageReader reader;
+    private AbstractImageReader reader;
 
     static {
         ImageIO.setUseCache(false);
