@@ -105,7 +105,7 @@ class TiffImageReader extends AbstractImageReader {
      */
     public BufferedImage read(final OperationList ops,
                               final ReductionFactor reductionFactor,
-                              final Set<ImageReader.ReaderHint> hints)
+                              final Set<ImageReader.Hint> hints)
             throws IOException, ProcessorException {
         if (reader == null) {
             createReader();

@@ -115,14 +115,14 @@ public class ImageReaderTest {
         scale.setHeight(35);
         ops.add(scale);
         ReductionFactor rf = new ReductionFactor();
-        Set<ImageReader.ReaderHint> hints = new HashSet<>();
+        Set<ImageReader.Hint> hints = new HashSet<>();
 
         BufferedImage image = reader.read(ops, rf, hints);
 
         assertEquals(40, image.getWidth());
         assertEquals(40, image.getHeight());
         assertEquals(0, rf.factor);
-        assertTrue(hints.contains(ImageReader.ReaderHint.ALREADY_CROPPED));
+        assertTrue(hints.contains(ImageReader.Hint.ALREADY_CROPPED));
     }
 
     @Test
@@ -139,14 +139,14 @@ public class ImageReaderTest {
         scale.setHeight(10);
         ops.add(scale);
         ReductionFactor rf = new ReductionFactor();
-        Set<ImageReader.ReaderHint> hints = new HashSet<>();
+        Set<ImageReader.Hint> hints = new HashSet<>();
 
         BufferedImage image = reader.read(ops, rf, hints);
 
         assertEquals(10, image.getWidth());
         assertEquals(10, image.getHeight());
         assertEquals(2, rf.factor);
-        assertTrue(hints.contains(ImageReader.ReaderHint.ALREADY_CROPPED));
+        assertTrue(hints.contains(ImageReader.Hint.ALREADY_CROPPED));
     }
 
     @Test
@@ -161,14 +161,14 @@ public class ImageReaderTest {
         scale.setHeight(14);
         ops.add(scale);
         ReductionFactor rf = new ReductionFactor();
-        Set<ImageReader.ReaderHint> hints = new HashSet<>();
+        Set<ImageReader.Hint> hints = new HashSet<>();
 
         BufferedImage image = reader.read(ops, rf, hints);
 
         assertEquals(16, image.getWidth());
         assertEquals(14, image.getHeight());
         assertEquals(2, rf.factor);
-        assertTrue(hints.contains(ImageReader.ReaderHint.ALREADY_CROPPED));
+        assertTrue(hints.contains(ImageReader.Hint.ALREADY_CROPPED));
     }
 
     @Test
@@ -182,14 +182,14 @@ public class ImageReaderTest {
         scale.setPercent(0.25f);
         ops.add(scale);
         ReductionFactor rf = new ReductionFactor();
-        Set<ImageReader.ReaderHint> hints = new HashSet<>();
+        Set<ImageReader.Hint> hints = new HashSet<>();
 
         BufferedImage image = reader.read(ops, rf, hints);
 
         assertEquals(16, image.getWidth());
         assertEquals(14, image.getHeight());
         assertEquals(2, rf.factor);
-        assertTrue(hints.contains(ImageReader.ReaderHint.ALREADY_CROPPED));
+        assertTrue(hints.contains(ImageReader.Hint.ALREADY_CROPPED));
     }
 
     @Test

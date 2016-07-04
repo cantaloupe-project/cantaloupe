@@ -236,7 +236,7 @@ abstract class AbstractImageReader {
      */
     BufferedImage read(final OperationList ops,
                        final ReductionFactor reductionFactor,
-                       final Set<ImageReader.ReaderHint> hints)
+                       final Set<ImageReader.Hint> hints)
             throws IOException, ProcessorException {
         if (reader == null) {
             createReader();
@@ -292,7 +292,7 @@ abstract class AbstractImageReader {
             final Crop crop,
             final Scale scale,
             final ReductionFactor rf,
-            final Set<ImageReader.ReaderHint> hints)
+            final Set<ImageReader.Hint> hints)
             throws IOException {
         final Dimension fullSize = new Dimension(
                 reader.getWidth(0), reader.getHeight(0));
@@ -386,7 +386,7 @@ abstract class AbstractImageReader {
      * matter the data layout (tiled, striped, etc.).</p>
      *
      * <p>This method may populate <code>hints</code> with
-     * {@link ImageReader.ReaderHint#ALREADY_CROPPED}, in which case
+     * {@link ImageReader.Hint#ALREADY_CROPPED}, in which case
      * cropping will have already been performed according to the
      * <code>requestedSourceArea</code> parameter.</p>
      *
@@ -409,7 +409,7 @@ abstract class AbstractImageReader {
                                         final Rectangle region,
                                         final Scale scale,
                                         final ReductionFactor subimageRf,
-                                        final Set<ImageReader.ReaderHint> hints)
+                                        final Set<ImageReader.Hint> hints)
             throws IOException {
         final Dimension imageSize = new Dimension(
                 reader.getWidth(imageIndex),
@@ -463,7 +463,7 @@ abstract class AbstractImageReader {
             }
             param.setSourceSubsampling(subsample, subsample, 0, 0);
         }
-        hints.add(ImageReader.ReaderHint.ALREADY_CROPPED);
+        hints.add(ImageReader.Hint.ALREADY_CROPPED);
         return reader.read(imageIndex, param);
     }
 

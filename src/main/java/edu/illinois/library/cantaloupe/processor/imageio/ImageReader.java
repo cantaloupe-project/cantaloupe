@@ -27,7 +27,7 @@ import java.util.Set;
  */
 public class ImageReader {
 
-    public enum ReaderHint {
+    public enum Hint {
         ALREADY_CROPPED
     }
 
@@ -170,7 +170,7 @@ public class ImageReader {
      */
     public BufferedImage read(final OperationList opList,
                               final ReductionFactor reductionFactor,
-                              final Set<ReaderHint> hints)
+                              final Set<Hint> hints)
             throws IOException, ProcessorException {
         return reader.read(opList, reductionFactor, hints);
     }

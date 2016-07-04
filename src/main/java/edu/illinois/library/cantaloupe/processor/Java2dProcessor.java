@@ -115,7 +115,7 @@ class Java2dProcessor extends AbstractImageIoProcessor
         try {
             final ImageReader reader = getReader();
             final ReductionFactor rf = new ReductionFactor();
-            final Set<ImageReader.ReaderHint> hints = new HashSet<>();
+            final Set<ImageReader.Hint> hints = new HashSet<>();
             BufferedImage image = reader.read(ops, rf, hints);
 
             // Apply the crop operation, if present, and maintain a reference
@@ -124,7 +124,7 @@ class Java2dProcessor extends AbstractImageIoProcessor
             for (Operation op : ops) {
                 if (op instanceof Crop) {
                     crop = (Crop) op;
-                    if (!hints.contains(ImageReader.ReaderHint.ALREADY_CROPPED)) {
+                    if (!hints.contains(ImageReader.Hint.ALREADY_CROPPED)) {
                         image = Java2dUtil.cropImage(image, crop, rf);
                     }
                 }
