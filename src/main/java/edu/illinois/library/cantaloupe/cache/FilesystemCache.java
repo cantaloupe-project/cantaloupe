@@ -150,9 +150,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             try {
                 logger.debug("Moving {} to {}",
                         tempFile, destinationFile.getName());
-                if (tempFile.exists()) {
-                    FileUtils.moveFile(tempFile, destinationFile);
-                }
+                FileUtils.moveFile(tempFile, destinationFile);
             } catch (IOException e) {
                 logger.warn(e.getMessage(), e);
             } finally {
