@@ -155,11 +155,12 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 logger.warn(e.getMessage(), e);
             } finally {
                 logger.debug("Closing stream for {}", toRemove);
-                imagesBeingWritten.remove(toRemove);
                 try {
                     super.close();
                 } catch (IOException e) {
                     logger.warn(e.getMessage(), e);
+                } finally {
+                    imagesBeingWritten.remove(toRemove);
                 }
             }
         }
@@ -356,6 +357,13 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         return getRootPathname() + File.separator + SOURCE_IMAGE_FOLDER;
     }
 
+    /**
+     * @param file File to check.
+     * @return Whether the given file is expired based on
+     *         {@link #TTL_CONFIG_KEY} and its last-accessed time. If
+     *         {@link #TTL_CONFIG_KEY} is 0, <code>false</code> will be
+     *         returned.
+     */
     private static boolean isExpired(File file) {
         final long ttlMsec = 1000 * Configuration.getInstance().
                 getLong(TTL_CONFIG_KEY, 0);
@@ -822,7 +830,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             final File imageDir = new File(imagePathname);
             Iterator<File> it = FileUtils.iterateFiles(imageDir, null, true);
             while (it.hasNext()) {
-                File file = it.next();
+                final File file = it.next();
                 if (isExpired(file)) {
                     try {
                         FileUtils.forceDelete(file);
@@ -837,7 +845,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             final File infoDir = new File(infoPathname);
             it = FileUtils.iterateFiles(infoDir, null, true);
             while (it.hasNext()) {
-                File file = it.next();
+                final File file = it.next();
                 if (isExpired(file)) {
                     try {
                         FileUtils.forceDelete(file);
