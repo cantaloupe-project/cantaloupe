@@ -38,15 +38,18 @@ class GifMetadata extends AbstractMetadata
 
     @Override
     public Orientation getOrientation() {
-        final String xmpData = new String(getXmp());
-        // Trim off the junk
-        final int start = xmpData.indexOf("<rdf:RDF");
-        final int end = xmpData.indexOf("</rdf:RDF");
-        final String xmp = xmpData.substring(start, end + 10);
+        byte[] xmpData = getXmp();
+        if (xmpData != null) {
+            final String xmpStr = new String(getXmp());
+            // Trim off the junk
+            final int start = xmpStr.indexOf("<rdf:RDF");
+            final int end = xmpStr.indexOf("</rdf:RDF");
+            final String xmp = xmpStr.substring(start, end + 10);
 
-        final Orientation orientation = readOrientation(xmp);
-        if (orientation != null) {
-            return orientation;
+            final Orientation orientation = readOrientation(xmp);
+            if (orientation != null) {
+                return orientation;
+            }
         }
         return Orientation.ROTATE_0;
     }
