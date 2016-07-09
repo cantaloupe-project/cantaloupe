@@ -224,6 +224,8 @@ public class AdminResource extends AbstractResource {
                 headers.getFirstValue("X-Forwarded-Path", true, ""));
         vars.put("xForwardedForHeader",
                 headers.getFirstValue("X-Forwarded-For", true, ""));
+        vars.put("xIiifIdHeader",
+                headers.getFirstValue("X-IIIF-ID", true, ""));
 
         ////////////////////////////////////////////////////////////////////
         /////////////////////// resolver section ///////////////////////////

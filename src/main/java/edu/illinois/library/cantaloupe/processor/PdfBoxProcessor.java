@@ -179,7 +179,8 @@ class PdfBoxProcessor extends AbstractProcessor
                 try {
                     page = Integer.parseInt(pageStr);
                 } catch (NumberFormatException e) {
-                    logger.info("Page number is not an integer.");
+                    logger.info("Page number from URI query string is not " +
+                            "an integer; using page 1.");
                 }
             }
             page = Math.max(page, 1);

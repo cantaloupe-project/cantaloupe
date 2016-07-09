@@ -63,6 +63,13 @@ class JpegMetadata extends AbstractMetadata implements Metadata {
     }
 
     /**
+     * @return Orientation from the non-XMP EXIF metadata. May be null.
+     */
+    Orientation getExifOrientation() {
+        return readOrientation(getExif());
+    }
+
+    /**
      * @return IPTC data, or null if none was found in the source metadata.
      */
     @Override
@@ -86,17 +93,18 @@ class JpegMetadata extends AbstractMetadata implements Metadata {
 
     /**
      * @return Orientation from the metadata. EXIF is checked first, then XMP.
+     *         If not found, {@link Orientation#ROTATE_0} will be returned.
      */
     @Override
     public Orientation getOrientation() {
         if (orientation == null) {
             // Check EXIF.
-            orientation = readOrientation(getExif());
+            orientation = getExifOrientation();
             if (orientation == null) {
                 // Check XMP.
                 final String xmp = getXmp();
                 if (xmp != null) {
-                    orientation = readOrientation(xmp);
+                    orientation = getXmpOrientation();
                 }
             }
             if (orientation == null) {
@@ -134,6 +142,18 @@ class JpegMetadata extends AbstractMetadata implements Metadata {
             }
         }
         return xmp;
+    }
+
+    /**
+     * @return Orientation from the XMP metadata. May be null.
+     */
+    Orientation getXmpOrientation() {
+        Orientation orientation = null;
+        final String xmp = getXmp();
+        if (xmp != null) {
+            orientation = readOrientation(xmp);
+        }
+        return orientation;
     }
 
 }

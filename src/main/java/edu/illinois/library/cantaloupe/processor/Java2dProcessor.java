@@ -29,8 +29,8 @@ import java.util.Set;
  * <p>Processor using the Java 2D and ImageIO frameworks.</p>
  *
  * <p>Because they both use ImageIO, this processor has a lot in common with
- * {@link JaiProcessor} and so a lot of functionality in both has been
- * extracted into a base class.</p>
+ * {@link JaiProcessor} and so common functionality has been extracted into a
+ * base class.</p>
  */
 class Java2dProcessor extends AbstractImageIoProcessor
         implements StreamProcessor, FileProcessor {
@@ -114,13 +114,16 @@ class Java2dProcessor extends AbstractImageIoProcessor
 
         try {
             final ImageReader reader = getReader();
+            final Orientation orientation = getEffectiveOrientation();
+
             final ReductionFactor rf = new ReductionFactor();
             final Set<ImageReader.Hint> hints = new HashSet<>();
-            BufferedImage image = reader.read(ops, rf, hints);
+            BufferedImage image = reader.read(ops, orientation, rf, hints);
 
             // Apply the crop operation, if present, and maintain a reference
             // to it for subsequent operations to refer to.
-            Crop crop = new Crop(0, 0, image.getWidth(), image.getHeight());
+            Crop crop = new Crop(0, 0, image.getWidth(), image.getHeight(),
+                    orientation, imageInfo.getSize());
             for (Operation op : ops) {
                 if (op instanceof Crop) {
                     crop = (Crop) op;
@@ -146,7 +149,9 @@ class Java2dProcessor extends AbstractImageIoProcessor
                 } else if (op instanceof Transpose) {
                     image = Java2dUtil.transposeImage(image, (Transpose) op);
                 } else if (op instanceof Rotate) {
-                    image = Java2dUtil.rotateImage(image, (Rotate) op);
+                    Rotate rotation = (Rotate) op;
+                    rotation.addDegrees(orientation.getDegrees());
+                    image = Java2dUtil.rotateImage(image, rotation);
                 } else if (op instanceof Filter) {
                     image = Java2dUtil.filterImage(image, (Filter) op);
                 } else if (op instanceof Watermark) {

@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.processor.Java2dUtil;
+import edu.illinois.library.cantaloupe.processor.Orientation;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.processor.ReductionFactor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
@@ -219,6 +220,8 @@ abstract class AbstractImageReader {
      * the returned image will require cropping.</p>
      *
      * @param ops
+     * @param orientation     Orientation of the source image data as reported
+     *                        by e.g. embedded metadata.
      * @param reductionFactor {@link ReductionFactor#factor} property will be
      *                        modified to reflect the reduction factor of the
      *                        returned image.
@@ -232,6 +235,7 @@ abstract class AbstractImageReader {
      * @throws ProcessorException
      */
     BufferedImage read(final OperationList ops,
+                       final Orientation orientation,
                        final ReductionFactor reductionFactor,
                        final Set<ImageReader.Hint> hints)
             throws IOException, ProcessorException {
@@ -246,6 +250,7 @@ abstract class AbstractImageReader {
             for (Operation op : ops) {
                 if (op instanceof Crop) {
                     crop = (Crop) op;
+                    crop.applyOrientation(orientation, getSize());
                 } else if (op instanceof Scale) {
                     scale = (Scale) op;
                 }
@@ -282,7 +287,7 @@ abstract class AbstractImageReader {
      *               factor of the returned image.
      * @param hints  Will be populated by information returned by the reader.
      * @return The smallest image fitting the requested crop and scale
-     * operations from the given reader.
+     *         operations from the given reader.
      * @throws IOException
      */
     protected BufferedImage readSmallestUsableSubimage(
@@ -488,6 +493,8 @@ abstract class AbstractImageReader {
      * tile layout and/or subimages, if possible.</p>
      *
      * @param ops
+     * @param orientation     Orientation of the source image data, e.g. as
+     *                        reported by embedded metadata.
      * @param reductionFactor {@link ReductionFactor#factor} property will be
      *                        modified to reflect the reduction factor of the
      *                        returned image.
@@ -496,6 +503,7 @@ abstract class AbstractImageReader {
      * @throws ProcessorException
      */
     RenderedImage readRendered(final OperationList ops,
+                               final Orientation orientation,
                                final ReductionFactor reductionFactor)
             throws IOException, ProcessorException {
         if (reader == null) {
@@ -507,6 +515,7 @@ abstract class AbstractImageReader {
             for (Operation op : ops) {
                 if (op instanceof Crop) {
                     crop = (Crop) op;
+                    crop.applyOrientation(orientation, getSize());
                     break;
                 }
             }

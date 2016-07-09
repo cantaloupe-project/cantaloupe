@@ -7,6 +7,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.riot.RIOT;
+import org.apache.jena.riot.RiotException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,15 +102,20 @@ abstract class AbstractMetadata {
     protected Orientation readOrientation(String xmp) {
         RIOT.init();
 
-        final Model model = ModelFactory.createDefaultModel();
-        model.read(new StringReader(xmp), null, "RDF/XML");
+        try {
+            final Model model = ModelFactory.createDefaultModel();
+            model.read(new StringReader(xmp), null, "RDF/XML");
 
-        final NodeIterator it = model.listObjectsOfProperty(
-                model.createProperty("http://ns.adobe.com/tiff/1.0/Orientation"));
-        if (it.hasNext()) {
-            final int orientationValue =
-                    Integer.parseInt(it.next().asLiteral().getString());
-            return orientationForExifValue(orientationValue);
+            final NodeIterator it = model.listObjectsOfProperty(
+                    model.createProperty("http://ns.adobe.com/tiff/1.0/Orientation"));
+            if (it.hasNext()) {
+                final int orientationValue =
+                        Integer.parseInt(it.next().asLiteral().getString());
+                return orientationForExifValue(orientationValue);
+            }
+        } catch (RiotException e) {
+            // The XMP string is invalid RDF/XML. Not much we can do.
+            logger.info(e.getMessage());
         }
         return null;
     }

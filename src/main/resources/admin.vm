@@ -136,6 +136,10 @@
                                         <td>X-Forwarded-For</td>
                                         <td>$xForwardedForHeader</td>
                                     </tr>
+                                    <tr>
+                                        <td>X-IIIF-ID</td>
+                                        <td>$xIiifIdHeader</td>
+                                    </tr>
                                 </table>
                             </section>
                         </div>

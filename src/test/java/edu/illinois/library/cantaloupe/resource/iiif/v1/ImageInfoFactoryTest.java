@@ -21,12 +21,25 @@ public class ImageInfoFactoryTest {
     public void setUp() throws Exception {
         Configuration config = Configuration.getInstance();
         config.clear();
-        config.setProperty("processor.fallback", "Java2dProcessor");
+        config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
+                "Java2dProcessor");
 
         imageUri = "http://example.org/bla";
         processor = ProcessorFactory.getProcessor(Format.JPG);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
+
+        info = ImageInfoFactory.newImageInfo(imageUri, processor,
+                processor.getImageInfo());
+    }
+
+    private void setUpForRotatedImage() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty("metadata.respect_orientation", true);
+
+        processor = ProcessorFactory.getProcessor(Format.JPG);
+        ((FileProcessor) processor).setSourceFile(
+                TestUtil.getImage("jpg-rotated.jpg"));
 
         info = ImageInfoFactory.newImageInfo(imageUri, processor,
                 processor.getImageInfo());
@@ -48,8 +61,20 @@ public class ImageInfoFactoryTest {
     }
 
     @Test
+    public void testNewImageInfoWidthWithRotatedImage() throws Exception {
+        setUpForRotatedImage();
+        assertEquals(64, (long) info.width);
+    }
+
+    @Test
     public void testNewImageInfoHeight() {
         assertEquals(522, (long) info.height);
+    }
+
+    @Test
+    public void testNewImageInfoHeightWithRotatedImage() throws Exception {
+        setUpForRotatedImage();
+        assertEquals(56, (long) info.height);
     }
 
     @Test
@@ -67,6 +92,12 @@ public class ImageInfoFactoryTest {
     }
 
     @Test
+    public void testNewImageInfoTileWidthWithRotatedImage() throws Exception {
+        setUpForRotatedImage();
+        assertEquals(64, (long) info.tileWidth);
+    }
+
+    @Test
     public void testNewImageInfoTileWidthWithTiledImage() throws Exception {
         processor.setSourceFormat(Format.TIF);
         ((FileProcessor) processor).setSourceFile(
@@ -80,6 +111,12 @@ public class ImageInfoFactoryTest {
     @Test
     public void testNewImageInfoTileHeightWithUntiledImage() {
         assertEquals(522, (long) info.tileHeight);
+    }
+
+    @Test
+    public void testNewImageInfoTileHeightWithRotatedImage() throws Exception {
+        setUpForRotatedImage();
+        assertEquals(56, (long) info.tileHeight);
     }
 
     @Test

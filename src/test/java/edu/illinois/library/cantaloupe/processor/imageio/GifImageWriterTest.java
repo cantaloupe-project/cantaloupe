@@ -29,7 +29,7 @@ import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
-public class ImageIoGifImageWriterTest {
+public class GifImageWriterTest {
 
     private BufferedImage bufferedImage;
     private Metadata metadata;

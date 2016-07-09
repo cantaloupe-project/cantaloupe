@@ -38,6 +38,13 @@ public class JpegMetadataTest {
     }
 
     @Test
+    public void testGetExifOrientation() throws IOException {
+        assertNull(getInstance("jpg-iptc.jpg").getExifOrientation());
+        assertEquals(Orientation.ROTATE_90,
+                getInstance("jpg-rotated.jpg").getExifOrientation());
+    }
+
+    @Test
     public void testGetIptc() throws IOException {
         assertNotNull(getInstance("jpg-iptc.jpg").getXmp());
     }
@@ -51,6 +58,11 @@ public class JpegMetadataTest {
     @Test
     public void testGetXmp() throws IOException {
         assertNotNull(getInstance("jpg-xmp.jpg").getXmp());
+    }
+
+    @Test
+    public void testGetXmpOrientation() throws IOException {
+        assertNull(getInstance("jpg-rotated.jpg").getXmpOrientation());
     }
 
 }

@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operation;
@@ -88,7 +87,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                         FileUtils.forceDelete(file);
                         numDeleted++;
                     } catch (IOException e) {
-                        logger.error(e.getMessage());
+                        logger.warn(e.getMessage(), e);
                     }
                 }
             }
@@ -151,18 +150,17 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             try {
                 logger.debug("Moving {} to {}",
                         tempFile, destinationFile.getName());
-                if (tempFile.exists()) {
-                    FileUtils.moveFile(tempFile, destinationFile);
-                }
+                FileUtils.moveFile(tempFile, destinationFile);
             } catch (IOException e) {
-                logger.info(e.getMessage(), e);
+                logger.warn(e.getMessage(), e);
             } finally {
                 logger.debug("Closing stream for {}", toRemove);
-                imagesBeingWritten.remove(toRemove);
                 try {
                     super.close();
                 } catch (IOException e) {
-                    logger.info(e.getMessage(), e);
+                    logger.warn(e.getMessage(), e);
+                } finally {
+                    imagesBeingWritten.remove(toRemove);
                 }
             }
         }
@@ -359,6 +357,13 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         return getRootPathname() + File.separator + SOURCE_IMAGE_FOLDER;
     }
 
+    /**
+     * @param file File to check.
+     * @return Whether the given file is expired based on
+     *         {@link #TTL_CONFIG_KEY} and its last-accessed time. If
+     *         {@link #TTL_CONFIG_KEY} is 0, <code>false</code> will be
+     *         returned.
+     */
     private static boolean isExpired(File file) {
         final long ttlMsec = 1000 * Configuration.getInstance().
                 getLong(TTL_CONFIG_KEY, 0);
@@ -389,9 +394,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     getRootSourceImagePathname(),
                     getRootDerivativeImagePathname(),
                     getRootInfoPathname() };
-
             for (String pathname : pathnamesToClean) {
-                logger.info("Cleaning directory: {}", pathname);
+                logger.info("cleanUp(): cleaning directory: {}", pathname);
                 CacheCleaner cleaner = new CacheCleaner();
                 Files.walkFileTree(Paths.get(pathname), cleaner);
                 cleaner.done();
@@ -484,13 +488,14 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         final File cacheFile = getSourceImageFile(identifier);
         if (cacheFile != null && cacheFile.exists()) {
             if (!isExpired(cacheFile)) {
-                logger.info("Hit for image: {}", identifier);
+                logger.info("getImageFile(): hit: {}", identifier);
                 file = cacheFile;
             } else {
-                logger.info("Deleting stale cache file: {}",
+                logger.info("getImageFile(): deleting stale file: {}",
                         cacheFile.getName());
                 if (!cacheFile.delete()) {
-                    logger.warn("Unable to delete {}", cacheFile);
+                    logger.warn("getImageFile(): unable to delete {}",
+                            cacheFile);
                 }
             }
         }
@@ -514,13 +519,15 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             final File cacheFile = getInfoFile(identifier);
             if (cacheFile != null && cacheFile.exists()) {
                 if (!isExpired(cacheFile)) {
-                    logger.info("Hit for image info: {}", cacheFile.getName());
+                    logger.info("getImageInfo(Identifier): hit: {}",
+                            cacheFile.getName());
                     return ImageInfo.fromJson(cacheFile);
                 } else {
-                    logger.info("Deleting stale cache file: {}",
-                            cacheFile.getName());
+                    logger.info("getImageInfo(Identifier): deleting stale " +
+                            "cache file: {}", cacheFile.getName());
                     if (!cacheFile.delete()) {
-                        logger.warn("Unable to delete {}", cacheFile);
+                        logger.warn("getImageInfo(Identifier): unable to " +
+                                "delete {}", cacheFile);
                     }
                 }
             }
@@ -542,16 +549,17 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         if (cacheFile != null && cacheFile.exists()) {
             if (!isExpired(cacheFile)) {
                 try {
-                    logger.info("Hit for image: {}", ops);
+                    logger.info("getImageInputStream(): hit: {}", ops);
                     inputStream = new FileInputStream(cacheFile);
                 } catch (FileNotFoundException e) {
                     logger.error(e.getMessage(), e);
                 }
             } else {
-                logger.info("Deleting stale cache file: {}",
+                logger.info("getImageInputStream(): deleting stale file: {}",
                         cacheFile.getName());
                 if (!cacheFile.delete()) {
-                    logger.warn("Unable to delete {}", cacheFile);
+                    logger.warn("getImageInputStream(): unable to delete {}",
+                            cacheFile);
                 }
             }
         }
@@ -565,8 +573,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         // exist in the sourceImagesBeingWritten set. If so, return a dummy
         // output stream to avoid interfering.
         if (sourceImagesBeingWritten.contains(identifier)) {
-            logger.info("Miss, but cache file for {} is being written in " +
-                    "another thread, so not caching", identifier);
+            logger.info("getImageOutputStream(Identifier): miss, but a cache " +
+                    "file for {} is being written in another thread, so not " +
+                    "caching", identifier);
             return new NullOutputStream();
         }
 
@@ -577,12 +586,13 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         // to avoid interfering.
         final File tempFile = getSourceImageTempFile(identifier);
         if (tempFile.exists()) {
-            logger.info("Miss, but a temp file for {} already exists, " +
-                    "so not caching", identifier);
+            logger.info("getImageOutputStream(Identifier): miss, but a temp " +
+                    "file for {} already exists, so not caching", identifier);
             return new NullOutputStream();
         }
 
-        logger.info("Miss; caching {}", identifier);
+        logger.info("getImageOutputStream(Identifier): miss; caching {}",
+                identifier);
 
         try {
             if (!tempFile.getParentFile().exists()) {
@@ -606,8 +616,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         // exist in the derivativeImagesBeingWritten set. If so, return a dummy output
         // stream to avoid interfering.
         if (derivativeImagesBeingWritten.contains(ops)) {
-            logger.info("Miss, but cache file for {} is being written in " +
-                    "another thread, so not caching", ops);
+            logger.info("getImageOutputStream(OperationList): miss, but " +
+                    "cache file for {} is being written in another thread, " +
+                    "so not caching", ops);
             return new NullOutputStream();
         }
 
@@ -618,12 +629,13 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         // output stream to avoid interfering.
         final File tempFile = getDerivativeImageTempFile(ops);
         if (tempFile.exists()) {
-            logger.info("Miss, but a temp file for {} already exists, " +
-                    "so not caching", ops);
+            logger.info("getImageOutputStream(OperationList): miss, but a " +
+                    "temp file for {} already exists, so not caching", ops);
             return new NullOutputStream();
         }
 
-        logger.info("Miss; caching {}", ops);
+        logger.info("getImageOutputStream(OperationList): miss; caching {}",
+                ops);
 
         try {
             if (!tempFile.getParentFile().exists()) {
@@ -724,7 +736,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     getRootInfoPathname() };
             for (String pathname : pathnamesToPurge) {
                 try {
-                    logger.info("Purging {}", pathname);
+                    logger.info("purge(): purging {}...", pathname);
                     FileUtils.cleanDirectory(new File(pathname));
                 } catch (IllegalArgumentException e) {
                     logger.info(e.getMessage());
@@ -766,14 +778,15 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         }
         try {
             imagesBeingPurged.add(opList);
-            logger.info("Purging {}...", opList);
+            logger.info("purge(OperationList): purging {}...", opList);
 
             File file = getDerivativeImageFile(opList);
             if (file != null && file.exists()) {
                 try {
                     FileUtils.forceDelete(file);
                 } catch (IOException e) {
-                    logger.warn("Unable to delete {}", file);
+                    logger.warn("purge(OperationList(): unable to delete {}",
+                            file);
                 }
             }
         } finally {
@@ -806,7 +819,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 }
             }
         }
-        logger.info("Purging expired items...");
+        logger.info("purgeExpired(): purging...");
 
         try {
             globalPurgeInProgress.set(true);
@@ -817,7 +830,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             final File imageDir = new File(imagePathname);
             Iterator<File> it = FileUtils.iterateFiles(imageDir, null, true);
             while (it.hasNext()) {
-                File file = it.next();
+                final File file = it.next();
                 if (isExpired(file)) {
                     try {
                         FileUtils.forceDelete(file);
@@ -832,7 +845,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             final File infoDir = new File(infoPathname);
             it = FileUtils.iterateFiles(infoDir, null, true);
             while (it.hasNext()) {
-                File file = it.next();
+                final File file = it.next();
                 if (isExpired(file)) {
                     try {
                         FileUtils.forceDelete(file);
@@ -842,8 +855,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     }
                 }
             }
-            logger.info("Purged {} expired image(s) and {} expired infos(s)",
-                    imageCount, infoCount);
+            logger.info("purgeExpired(): purged {} expired image(s) and {} " +
+                    "expired infos(s)", imageCount, infoCount);
         } finally {
             globalPurgeInProgress.set(false);
         }
@@ -875,12 +888,12 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         }
         try {
             infosBeingPurged.add(identifier);
-            logger.info("Purging {}...", identifier);
+            logger.info("purgeImage(): purging {}...", identifier);
 
             // Delete the source image
             final File sourceFile = getSourceImageFile(identifier);
             try {
-                logger.info("Deleting {}", sourceFile);
+                logger.info("purgeImage(): deleting {}", sourceFile);
                 FileUtils.forceDelete(sourceFile);
             } catch (IOException e) {
                 logger.warn(e.getMessage());
@@ -888,7 +901,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             // Delete derivative images
             for (File imageFile : getDerivativeImageFiles(identifier)) {
                 try {
-                    logger.info("Deleting {}", imageFile);
+                    logger.info("purgeImage(): deleting {}", imageFile);
                     FileUtils.forceDelete(imageFile);
                 } catch (IOException e) {
                     logger.warn(e.getMessage());
@@ -898,7 +911,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             final File infoFile = getInfoFile(identifier);
             if (infoFile.exists()) {
                 try {
-                    logger.info("Deleting {}", infoFile);
+                    logger.info("purgeImage(): deleting {}", infoFile);
                     FileUtils.forceDelete(infoFile);
                 } catch (IOException e) {
                     logger.warn(e.getMessage());
@@ -932,7 +945,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 FileUtils.forceDelete(destFile);
             }
 
-            logger.info("Caching image info: {}", identifier);
+            logger.info("putImageInfo(): caching: {}", identifier);
             if (!tempFile.getParentFile().exists() &&
                     !tempFile.getParentFile().mkdirs()) {
                 throw new IOException("Unable to create directory: " +
@@ -942,7 +955,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             try {
                 FileUtils.writeStringToFile(tempFile, imageInfo.toJson());
 
-                logger.debug("Moving {} to {}", tempFile, destFile.getName());
+                logger.debug("putImageInfo(): moving {} to {}",
+                        tempFile, destFile.getName());
                 FileUtils.moveFile(tempFile, destFile);
             } catch (IOException e) {
                 tempFile.delete();

@@ -9,16 +9,16 @@ import edu.illinois.library.cantaloupe.image.icc.IccProfile;
 import edu.illinois.library.cantaloupe.image.icc.IccProfileService;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;
+import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
+import it.geosolutions.imageio.plugins.tiff.TIFFTag;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.PlanarImage;
 import java.awt.image.BufferedImage;
@@ -29,7 +29,7 @@ import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
-public class ImageIoPngImageWriterTest {
+public class TiffImageWriterTest {
 
     private BufferedImage bufferedImage;
     private Metadata metadata;
@@ -46,11 +46,11 @@ public class ImageIoPngImageWriterTest {
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false);
 
         // Read an image fixture into memory
-        final File fixture = TestUtil.getImage("png-xmp.png");
-        metadata = new PngImageReader(fixture).getMetadata(0);
-        bufferedImage = new PngImageReader(fixture).read();
+        final File fixture = TestUtil.getImage("tif-xmp.tif");
+        metadata = new TiffImageReader(fixture).getMetadata(0);
+        bufferedImage = new TiffImageReader(fixture).read();
         planarImage =  PlanarImage.wrapRenderedImage(
-                new PngImageReader(fixture).readRendered());
+                new TiffImageReader(fixture).readRendered());
 
         // Create a temp file to write to
         tempFile = File.createTempFile("test", "tmp");
@@ -70,26 +70,34 @@ public class ImageIoPngImageWriterTest {
     }
 
     @Test
-    public void testWriteWithBufferedImageAndIccProfile()  throws Exception {
+    public void testWriteWithBufferedImageAndIccProfile() throws Exception {
         configureIccProfile();
         getWriter().write(bufferedImage, outputStream);
         checkForIccProfile();
     }
 
     @Test
-    public void testWriteWithBufferedImageAndNativeMetadata()  throws Exception {
-        final File fixture = TestUtil.getImage("png-nativemetadata.png");
-        metadata = new PngImageReader(fixture).getMetadata(0);
-        bufferedImage = new PngImageReader(fixture).read();
+    public void testWriteWithBufferedImageAndExifMetadata() throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        getWriter().write(bufferedImage, outputStream);
+        checkForExifMetadata();
+    }
+
+    @Test
+    public void testWriteWithBufferedImageAndIptcMetadata() throws Exception {
+        final File fixture = TestUtil.getImage("tif-iptc.tif");
+        metadata = new TiffImageReader(fixture).getMetadata(0);
+        bufferedImage = new TiffImageReader(fixture).read();
 
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
         getWriter().write(bufferedImage, outputStream);
-        checkForNativeMetadata();
+        checkForIptcMetadata();
     }
 
     @Test
-    public void testWriteWithBufferedImageAndXmpMetadata()  throws Exception {
+    public void testWriteWithBufferedImageAndXmpMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
         getWriter().write(bufferedImage, outputStream);
@@ -110,16 +118,24 @@ public class ImageIoPngImageWriterTest {
     }
 
     @Test
-    public void testWriteWithPlanarImageAndNativeMetadata() throws Exception {
-        final File fixture = TestUtil.getImage("png-nativemetadata.png");
-        metadata = new PngImageReader(fixture).getMetadata(0);
+    public void testWriteWithPlanarImageAndExifMetadata() throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        getWriter().write(planarImage, outputStream);
+        checkForExifMetadata();
+    }
+
+    @Test
+    public void testWriteWithPlanarImageAndIptcMetadata() throws Exception {
+        final File fixture = TestUtil.getImage("tif-iptc.tif");
+        metadata = new TiffImageReader(fixture).getMetadata(0);
         planarImage =  PlanarImage.wrapRenderedImage(
-                new PngImageReader(fixture).readRendered());
+                new TiffImageReader(fixture).readRendered());
 
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
         getWriter().write(planarImage, outputStream);
-        checkForNativeMetadata();
+        checkForIptcMetadata();
     }
 
     @Test
@@ -143,43 +159,43 @@ public class ImageIoPngImageWriterTest {
 
     private void checkForIccProfile() throws Exception {
         final Iterator<ImageReader> readers =
-                ImageIO.getImageReadersByFormatName("PNG");
+                ImageIO.getImageReadersByFormatName("TIFF");
         final ImageReader reader = readers.next();
         try (ImageInputStream iis = ImageIO.createImageInputStream(tempFile)) {
             reader.setInput(iis);
             final IIOMetadata metadata = reader.getImageMetadata(0);
-            final Node tree = metadata.getAsTree(metadata.getNativeMetadataFormatName());
-            final Node iccNode = tree.getChildNodes().item(1);
-            assertEquals("iCCP", iccNode.getNodeName());
+            final TIFFDirectory dir = TIFFDirectory.createFromMetadata(metadata);
+            final TIFFTag tag = dir.getTag(BaselineTIFFTagSet.TAG_ICC_PROFILE);
+            assertNotNull(tag);
         } finally {
             reader.dispose();
         }
     }
 
-    private void checkForNativeMetadata() throws Exception {
+    private void checkForExifMetadata() throws Exception {
         final Iterator<ImageReader> readers =
-                ImageIO.getImageReadersByFormatName("PNG");
+                ImageIO.getImageReadersByFormatName("TIFF");
         final ImageReader reader = readers.next();
         try (ImageInputStream iis = ImageIO.createImageInputStream(tempFile)) {
             reader.setInput(iis);
             final IIOMetadata metadata = reader.getImageMetadata(0);
-            final IIOMetadataNode tree = (IIOMetadataNode)
-                    metadata.getAsTree(metadata.getNativeMetadataFormatName());
+            final TIFFDirectory dir = TIFFDirectory.createFromMetadata(metadata);
+            final TIFFTag tag = dir.getTag(BaselineTIFFTagSet.TAG_ICC_PROFILE);
+            assertNotNull(tag);
+        } finally {
+            reader.dispose();
+        }
+    }
 
-            boolean found = false;
-            final NodeList textNodes = tree.getElementsByTagName("tEXt").
-                    item(0).getChildNodes();
-            for (int i = 0; i < textNodes.getLength(); i++) {
-                final Node keywordAttr = textNodes.item(i).getAttributes().
-                        getNamedItem("keyword");
-                if (keywordAttr != null) {
-                    if ("Title".equals(keywordAttr.getNodeValue())) {
-                        found = true;
-                        break;
-                    }
-                }
-            }
-            assertTrue(found);
+    private void checkForIptcMetadata() throws Exception {
+        final Iterator<ImageReader> readers =
+                ImageIO.getImageReadersByFormatName("TIFF");
+        final ImageReader reader = readers.next();
+        try (ImageInputStream iis = ImageIO.createImageInputStream(tempFile)) {
+            reader.setInput(iis);
+            final IIOMetadata metadata = reader.getImageMetadata(0);
+            final TIFFDirectory dir = TIFFDirectory.createFromMetadata(metadata);
+            assertNotNull(dir.getTIFFField(33723));
         } finally {
             reader.dispose();
         }
@@ -187,45 +203,30 @@ public class ImageIoPngImageWriterTest {
 
     private void checkForXmpMetadata() throws Exception {
         final Iterator<ImageReader> readers =
-                ImageIO.getImageReadersByFormatName("PNG");
+                ImageIO.getImageReadersByFormatName("TIFF");
         final ImageReader reader = readers.next();
         try (ImageInputStream iis = ImageIO.createImageInputStream(tempFile)) {
             reader.setInput(iis);
             final IIOMetadata metadata = reader.getImageMetadata(0);
-            final IIOMetadataNode tree = (IIOMetadataNode)
-                    metadata.getAsTree(metadata.getNativeMetadataFormatName());
-
-            boolean found = false;
-            final NodeList textNodes = tree.getElementsByTagName("iTXt").
-                    item(0).getChildNodes();
-            for (int i = 0; i < textNodes.getLength(); i++) {
-                final Node keywordAttr = textNodes.item(i).getAttributes().
-                        getNamedItem("keyword");
-                if (keywordAttr != null) {
-                    if ("XML:com.adobe.xmp".equals(keywordAttr.getNodeValue())) {
-                        found = true;
-                        break;
-                    }
-                }
-            }
-            assertTrue(found);
+            final TIFFDirectory dir = TIFFDirectory.createFromMetadata(metadata);
+            assertNotNull(dir.getTIFFField(700));
         } finally {
             reader.dispose();
         }
     }
 
-    private PngImageWriter getWriter() throws IOException {
+    private TiffImageWriter getWriter() throws IOException {
         OperationList opList = new OperationList();
         if (IccProfileService.isEnabled()) {
             IccProfile profile = new IccProfileService().getProfile(
-                    new Identifier("cats"), Format.PNG, null, "127.0.0.1");
+                    new Identifier("cats"), Format.TIF, null, "127.0.0.1");
             opList.add(profile);
         }
         if (Configuration.getInstance().
                 getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false)) {
             opList.add(new MetadataCopy());
         }
-        return new PngImageWriter(opList, metadata);
+        return new TiffImageWriter(opList, metadata);
     }
 
 }

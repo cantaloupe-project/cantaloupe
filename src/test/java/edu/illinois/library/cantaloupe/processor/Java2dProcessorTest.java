@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import static edu.illinois.library.cantaloupe.processor.AbstractProcessor.RESPECT_ORIENTATION_CONFIG_KEY;
 import static org.junit.Assert.*;
 
 public class Java2dProcessorTest extends ProcessorTest {
@@ -71,6 +73,21 @@ public class Java2dProcessorTest extends ProcessorTest {
         } catch (UnsupportedSourceFormatException e) {
             // pass
         }
+    }
+
+    @Test
+    public void testGetImageInfoWithOrientation() throws Exception {
+        Configuration.getInstance().
+                setProperty(RESPECT_ORIENTATION_CONFIG_KEY, true);
+
+        final File fixture = TestUtil.getImage("jpg-rotated.jpg");
+
+        final FileProcessor fproc = (FileProcessor) getProcessor();
+        fproc.setSourceFile(fixture);
+        fproc.setSourceFormat(Format.JPG);
+
+        final ImageInfo info = fproc.getImageInfo();
+        assertEquals(Orientation.ROTATE_90, info.getOrientation());
     }
 
     @Test

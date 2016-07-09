@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.processor.Orientation;
 import edu.illinois.library.cantaloupe.processor.ReductionFactor;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
@@ -114,10 +115,11 @@ public class ImageReaderTest {
         scale.setWidth(35);
         scale.setHeight(35);
         ops.add(scale);
+        Orientation orientation = Orientation.ROTATE_0;
         ReductionFactor rf = new ReductionFactor();
         Set<ImageReader.Hint> hints = new HashSet<>();
 
-        BufferedImage image = reader.read(ops, rf, hints);
+        BufferedImage image = reader.read(ops, orientation, rf, hints);
 
         assertEquals(40, image.getWidth());
         assertEquals(40, image.getHeight());
@@ -139,9 +141,10 @@ public class ImageReaderTest {
         scale.setHeight(10);
         ops.add(scale);
         ReductionFactor rf = new ReductionFactor();
+        Orientation orientation = Orientation.ROTATE_0;
         Set<ImageReader.Hint> hints = new HashSet<>();
 
-        BufferedImage image = reader.read(ops, rf, hints);
+        BufferedImage image = reader.read(ops, orientation, rf, hints);
 
         assertEquals(10, image.getWidth());
         assertEquals(10, image.getHeight());
@@ -161,9 +164,10 @@ public class ImageReaderTest {
         scale.setHeight(14);
         ops.add(scale);
         ReductionFactor rf = new ReductionFactor();
+        Orientation orientation = Orientation.ROTATE_0;
         Set<ImageReader.Hint> hints = new HashSet<>();
 
-        BufferedImage image = reader.read(ops, rf, hints);
+        BufferedImage image = reader.read(ops, orientation, rf, hints);
 
         assertEquals(16, image.getWidth());
         assertEquals(14, image.getHeight());
@@ -181,10 +185,11 @@ public class ImageReaderTest {
         Scale scale = new Scale();
         scale.setPercent(0.25f);
         ops.add(scale);
+        Orientation orientation = Orientation.ROTATE_0;
         ReductionFactor rf = new ReductionFactor();
         Set<ImageReader.Hint> hints = new HashSet<>();
 
-        BufferedImage image = reader.read(ops, rf, hints);
+        BufferedImage image = reader.read(ops, orientation, rf, hints);
 
         assertEquals(16, image.getWidth());
         assertEquals(14, image.getHeight());

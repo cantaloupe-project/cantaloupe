@@ -36,7 +36,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Processor using the Java Advanced Imaging (JAI) framework.
+ * <p>Processor using the Java Advanced Imaging (JAI) framework.</p>
+ *
+ * <p>Because they both use ImageIO, this processor has a lot in common with
+ * {@link Java2dProcessor} and so common functionality has been extracted into
+ * a base class.</p>
  *
  * @see <a href="http://docs.oracle.com/cd/E19957-01/806-5413-10/806-5413-10.pdf">
  *     Programming in Java Advanced Imaging</a>
@@ -122,8 +126,10 @@ class JaiProcessor extends AbstractImageIoProcessor
 
         try {
             final ImageReader reader = getReader();
+            final Orientation orientation = getEffectiveOrientation();
             final ReductionFactor rf = new ReductionFactor();
-            RenderedImage renderedImage = reader.readRendered(ops, rf);
+            RenderedImage renderedImage = reader.readRendered(ops,
+                    orientation, rf);
 
             if (renderedImage != null) {
                 BufferedImage image = null;
@@ -173,8 +179,9 @@ class JaiProcessor extends AbstractImageIoProcessor
                         renderedOp = JaiUtil.
                                 transposeImage(renderedOp, (Transpose) op);
                     } else if (op instanceof Rotate) {
-                        renderedOp = JaiUtil.
-                                rotateImage(renderedOp, (Rotate) op);
+                        Rotate rotate = (Rotate) op;
+                        rotate.addDegrees(orientation.getDegrees());
+                        renderedOp = JaiUtil.rotateImage(renderedOp, rotate);
                     } else if (op instanceof Filter) {
                         renderedOp = JaiUtil.
                                 filterImage(renderedOp, (Filter) op);

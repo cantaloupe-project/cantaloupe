@@ -23,6 +23,16 @@ public class Rotate implements Operation {
         this.setDegrees(degrees);
     }
 
+    /**
+     * @param degrees Degrees to add.
+     */
+    public void addDegrees(float degrees) {
+        this.degrees = (this.degrees + degrees) % 360;
+    }
+
+    /**
+     * @return Degrees.
+     */
     public float getDegrees() {
         return degrees;
     }

@@ -61,15 +61,18 @@ abstract class ImageInfoFactory {
             final Processor processor,
             final edu.illinois.library.cantaloupe.processor.ImageInfo cacheInfo)
             throws ProcessorException {
-        final Dimension fullSize = cacheInfo.getSize();
+        // We want to use the orientation-aware full size, which takes the
+        // embedded orientation into account.
+        final Dimension virtualSize = cacheInfo.getOrientationSize();
+
         // Create a Map instance, which will eventually be serialized to JSON
         // and returned in the response body.
         final ImageInfo<String,Object> imageInfo = new ImageInfo<>();
         imageInfo.put("@context", "http://iiif.io/api/image/2/context.json");
         imageInfo.put("@id", imageUri);
         imageInfo.put("protocol", "http://iiif.io/api/image");
-        imageInfo.put("width", fullSize.width);
-        imageInfo.put("height", fullSize.height);
+        imageInfo.put("width", virtualSize.width);
+        imageInfo.put("height", virtualSize.height);
 
         // sizes -- this will be a 2^n series that will work for both multi-
         // and monoresolution images.
@@ -77,10 +80,10 @@ abstract class ImageInfoFactory {
         imageInfo.put("sizes", sizes);
 
         final int maxReductionFactor =
-                ImageInfoUtil.maxReductionFactor(fullSize, MIN_SIZE);
+                ImageInfoUtil.maxReductionFactor(virtualSize, MIN_SIZE);
         for (double i = 2; i <= Math.pow(2, maxReductionFactor); i *= 2) {
-            final int width = (int) Math.round(fullSize.width / i);
-            final int height = (int) Math.round(fullSize.height / i);
+            final int width = (int) Math.round(virtualSize.width / i);
+            final int height = (int) Math.round(virtualSize.height / i);
             if (width < MIN_SIZE || height < MIN_SIZE) {
                 break;
             }
@@ -103,16 +106,21 @@ abstract class ImageInfoFactory {
         final List<ImageInfo.Tile> tiles = new ArrayList<>();
         imageInfo.put("tiles", tiles);
 
+        final edu.illinois.library.cantaloupe.processor.ImageInfo.Image firstImage =
+                cacheInfo.getImages().get(0);
+
+        // Find the virtual tile size based on the virtual full image size.
+        final Dimension virtualTileSize = firstImage.getOrientationTileSize();
+
         if (cacheInfo.getImages().size() == 1 &&
-                cacheInfo.getImages().get(0).tileWidth == fullSize.width &&
-                cacheInfo.getImages().get(0).tileHeight == fullSize.height) {
+                virtualTileSize.equals(virtualSize)) {
             uniqueTileSizes.add(
-                    ImageInfoUtil.smallestTileSize(fullSize, minTileSize));
+                    ImageInfoUtil.smallestTileSize(virtualSize, minTileSize));
         } else {
             for (edu.illinois.library.cantaloupe.processor.ImageInfo.Image image : cacheInfo.getImages()) {
                 uniqueTileSizes.add(
-                        ImageInfoUtil.smallestTileSize(fullSize,
-                                image.getTileSize(), minTileSize));
+                        ImageInfoUtil.smallestTileSize(virtualSize,
+                                image.getOrientationTileSize(), minTileSize));
             }
         }
         for (Dimension uniqueTileSize : uniqueTileSizes) {

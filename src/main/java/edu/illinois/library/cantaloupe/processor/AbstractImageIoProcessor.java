@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
@@ -59,17 +60,35 @@ abstract class AbstractImageIoProcessor extends AbstractProcessor {
             info.setSourceFormat(getSourceFormat());
 
             final ImageReader reader = getReader();
+            final Orientation orientation = getEffectiveOrientation();
             for (int i = 0, numResolutions = reader.getNumResolutions();
                  i < numResolutions; i++) {
                 ImageInfo.Image image = new ImageInfo.Image();
                 image.setSize(reader.getSize(i));
                 image.setTileSize(reader.getTileSize(i));
+                image.setOrientation(orientation);
                 info.getImages().add(image);
             }
             return info;
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
+    }
+
+    /**
+     * @return Effective orientation of the image, respecting the setting of
+     *         {@link #RESPECT_ORIENTATION_CONFIG_KEY}. Never null.
+     */
+    protected Orientation getEffectiveOrientation() throws IOException {
+        Orientation orientation = null;
+        if (Configuration.getInstance().
+                getBoolean(RESPECT_ORIENTATION_CONFIG_KEY, false)) {
+            orientation = reader.getMetadata(0).getOrientation();
+        }
+        if (orientation == null) {
+            orientation = Orientation.ROTATE_0;
+        }
+        return orientation;
     }
 
     /**

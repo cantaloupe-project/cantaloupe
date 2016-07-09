@@ -19,6 +19,16 @@ public class RotateTest {
     }
 
     @Test
+    public void testAddDegrees() {
+        rotate.addDegrees(45f);
+        assertEquals(45f, rotate.getDegrees(), 0.00000001f);
+        rotate.addDegrees(340.5f);
+        assertEquals(25.5f, rotate.getDegrees(), 0.00000001f);
+        rotate.addDegrees(720f);
+        assertEquals(25.5f, rotate.getDegrees(), 0.00000001f);
+    }
+
+    @Test
     public void testGetEffectiveSize() {
         Dimension fullSize = new Dimension(300, 200);
         assertEquals(fullSize, rotate.getResultingSize(fullSize));

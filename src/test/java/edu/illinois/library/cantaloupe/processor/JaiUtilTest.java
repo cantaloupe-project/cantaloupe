@@ -74,7 +74,8 @@ public class JaiUtilTest {
         final ReductionFactor reductionFactor = new ReductionFactor();
         ImageReader reader = new ImageReader(
                 TestUtil.getFixture(IMAGE), Format.JPG);
-        RenderedImage image = reader.readRendered(ops, reductionFactor);
+        RenderedImage image = reader.readRendered(ops, Orientation.ROTATE_0,
+                reductionFactor);
         PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
         RenderedOp renderedOp = JaiUtil.reformatImage(planarImage,
                 new Dimension(512, 512));
@@ -156,7 +157,8 @@ public class JaiUtilTest {
         final ReductionFactor reductionFactor = new ReductionFactor();
         ImageReader reader = new ImageReader(
                 TestUtil.getFixture(name), Format.JPG);
-        RenderedImage image = reader.readRendered(ops, reductionFactor);
+        RenderedImage image = reader.readRendered(ops, Orientation.ROTATE_0,
+                reductionFactor);
         PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
         return JaiUtil.reformatImage(planarImage, new Dimension(512, 512));
     }
