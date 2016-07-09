@@ -9,6 +9,10 @@ import org.w3c.dom.NodeList;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 
+/**
+ * @see <a href="https://docs.oracle.com/javase/7/docs/api/javax/imageio/metadata/doc-files/gif_metadata.html">
+ *      GIF Metadata Format Specification</a>
+ */
 class GifMetadata extends AbstractMetadata implements Metadata {
 
     private boolean checkedForXmp = false;
@@ -61,7 +65,9 @@ class GifMetadata extends AbstractMetadata implements Metadata {
     }
 
     /**
-     * @return
+     * @return XMP RDF/XML string.
+     * @see <a href="https://www.adobe.com/content/dam/Adobe/en/devnet/xmp/pdfs/XMPSpecificationPart3.pdf">
+     *      XMP Specification Part 3</a>
      * @see <a href="http://partners.adobe.com/public/developer/en/xmp/sdk/XMPspecification.pdf">
      *      Embedding XMP Metadata in Application Files</a>
      */

@@ -16,6 +16,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * @see <a href="http://www.digitalpreservation.gov/formats/content/tiff_tags.shtml">
+ *      Tags for TIFF, DNG, and Related Specifications</a>
+ */
 class TiffMetadata extends AbstractMetadata implements Metadata {
 
     private static Logger logger = LoggerFactory.getLogger(TiffMetadata.class);

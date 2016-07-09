@@ -34,9 +34,6 @@ import java.util.Iterator;
  *
  * @see <a href="http://download.java.net/media/jai-imageio/javadoc/1.1/com/sun/media/imageio/plugins/tiff/package-summary.html">
  *     ImageIO TIFF Plugin Documentation</a>
- * @see <a href="http://www.digitalpreservation.gov/formats/content/tiff_tags.shtml">
- *     Tags for TIFF, DNG, and Related Specifications</a>
- * @see <a href="http://www.color.org/icc_specs2.xalter">ICC Specifications</a>
  */
 class TiffImageWriter extends AbstractImageWriter {
 

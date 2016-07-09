@@ -25,12 +25,8 @@ import java.util.Iterator;
  * {@link BufferedImage}s and JAI {@link PlanarImage}s and writing them as
  * GIFs.
  *
- * @see <a href="https://docs.oracle.com/javase/7/docs/api/javax/imageio/metadata/doc-files/gif_metadata.html">
- *     GIF Metadata Format Specification</a>
  * @see <a href="http://docs.oracle.com/javase/7/docs/api/javax/imageio/package-summary.html#gif_plugin_notes">
  *     Writing GIF Images</a>
- * @see <a href="https://www.adobe.com/content/dam/Adobe/en/devnet/xmp/pdfs/XMPSpecificationPart3.pdf">
- *     XMP Specification Part 3</a>
  * @see <a href="http://justsolve.archiveteam.org/wiki/GIF">GIF</a>
  */
 class GifImageWriter extends AbstractImageWriter {

@@ -10,6 +10,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @see <a href="http://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/PNG.html">
+ *      PNG Tags</a>
+ */
 class PngMetadata extends AbstractMetadata implements Metadata {
 
     private static final Map<String,String> recognizedTags = new HashMap<>();

@@ -28,8 +28,6 @@ import java.util.zip.DeflaterOutputStream;
  *
  * @see <a href="http://libpng.org/pub/png/spec/1.2/PNG-Contents.html">
  *     PNG Specification, Version 1.2</a>
- * @see <a href="http://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/PNG.html">PNG Tags</a>
- * @see <a href="http://www.color.org/icc_specs2.xalter">ICC Specifications</a>
  */
 class PngImageWriter extends AbstractImageWriter {
 

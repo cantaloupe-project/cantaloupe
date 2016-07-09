@@ -27,10 +27,6 @@ import java.util.Iterator;
 /**
  * JPEG image writer using ImageIO, capable of writing both Java 2D
  * {@link BufferedImage}s and JAI {@link PlanarImage}s as JPEGs.
- *
- * @see <a href="http://docs.oracle.com/javase/7/docs/api/javax/imageio/metadata/doc-files/jpeg_metadata.html">
- *     JPEG Metadata Format Specification and Usage Notes</a>
- * @see <a href="http://www.color.org/icc_specs2.xalter">ICC Specifications</a>
  */
 class JpegImageWriter extends AbstractImageWriter {
 
