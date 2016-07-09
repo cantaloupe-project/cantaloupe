@@ -258,8 +258,7 @@ abstract class AbstractImageReader {
             if (crop != null) {
                 final Dimension fullSize = new Dimension(
                         reader.getWidth(0), reader.getHeight(0));
-                image = tileAwareRead(0, crop.getRectangle(fullSize),
-                        scale, reductionFactor, hints);
+                image = tileAwareRead(0, crop.getRectangle(fullSize), hints);
             } else {
                 image = reader.read(0);
             }
@@ -299,10 +298,9 @@ abstract class AbstractImageReader {
         final Dimension fullSize = new Dimension(
                 reader.getWidth(0), reader.getHeight(0));
         final Rectangle regionRect = crop.getRectangle(fullSize);
-        final ImageReadParam param = reader.getDefaultReadParam();
         BufferedImage bestImage = null;
         if (scale.isNoOp()) {
-            bestImage = tileAwareRead(0, regionRect, scale, rf, hints);
+            bestImage = tileAwareRead(0, regionRect, hints);
             logger.debug("readSmallestUsableSubimage(): using a {}x{} source " +
                             "image (0x reduction factor)",
                     bestImage.getWidth(), bestImage.getHeight());
@@ -325,7 +323,7 @@ abstract class AbstractImageReader {
             }
             // At this point, we know how many images are available.
             if (numImages == 1) {
-                bestImage = tileAwareRead(0, regionRect, scale, rf, hints);
+                bestImage = tileAwareRead(0, regionRect, hints);
                 logger.debug("readSmallestUsableSubimage(): using a {}x{} " +
                                 "source image (0x reduction factor)",
                         bestImage.getWidth(), bestImage.getHeight());
@@ -365,8 +363,7 @@ abstract class AbstractImageReader {
                                 (int) Math.round(regionRect.y * reducedScale),
                                 (int) Math.round(regionRect.width * reducedScale),
                                 (int) Math.round(regionRect.height * reducedScale));
-                        bestImage = tileAwareRead(i, reducedRect, scale, rf,
-                                hints);
+                        bestImage = tileAwareRead(i, reducedRect, hints);
                         break;
                     } else {
                         logger.debug("readSmallestUsableSubimage(): " +
@@ -381,8 +378,7 @@ abstract class AbstractImageReader {
 
     /**
      * <p>Returns an image for the requested source area by reading the tiles
-     * (or strips) of the source image and joining them into a single image.
-     * Subsampling will be used if possible.</p>
+     * (or strips) of the source image and joining them into a single image.</p>
      *
      * <p>This method is intended to be compatible with all source images, no
      * matter the data layout (tiled, striped, etc.).</p>
@@ -396,12 +392,6 @@ abstract class AbstractImageReader {
      * @param region       Image region to retrieve. The returned image will be
      *                     this size or smaller if it would overlap the right
      *                     or bottom edge of the source image.
-     * @param scale        Scale that is to be applied to the returned
-     *                     image. Will be used to calculate a subsampling
-     *                     rate.
-     * @param subimageRf   Already-applied reduction factor from reading a
-     *                     subimage, to which a subsampling-related reduction
-     *                     factor may be added.
      * @param hints        Will be populated with information returned from the
      *                     reader.
      * @return Image
@@ -409,63 +399,19 @@ abstract class AbstractImageReader {
      */
     private BufferedImage tileAwareRead(final int imageIndex,
                                         final Rectangle region,
-                                        final Scale scale,
-                                        final ReductionFactor subimageRf,
                                         final Set<ImageReader.Hint> hints)
             throws IOException {
         final Dimension imageSize = new Dimension(
                 reader.getWidth(imageIndex),
                 reader.getHeight(imageIndex));
-        // xScale and yScale are the percentages of the image axes needed
-        // based on the given region and scale. If either are less than 0.5,
-        // subsampling can be used for better efficiency.
-        double xScale, yScale;
-        if (scale.getPercent() != null) {
-            xScale = (scale.getPercent() / subimageRf.getScale()) *
-                    (region.width / (double) imageSize.width);
-            yScale = (scale.getPercent() / subimageRf.getScale()) *
-                    (region.height / (double) imageSize.height);
-        } else {
-            switch (scale.getMode()) {
-                case FULL:
-                    xScale = yScale = 1f;
-                    break;
-                case ASPECT_FIT_WIDTH:
-                    xScale = yScale = scale.getWidth() / (double) region.width;
-                    break;
-                case ASPECT_FIT_HEIGHT:
-                    xScale = yScale = scale.getHeight() / (double) region.height;
-                    break;
-                default:
-                    xScale = scale.getWidth() / (double) region.width;
-                    yScale = scale.getHeight() / (double) region.height;
-                    break;
-            }
-        }
-
         logger.debug("tileAwareRead(): acquiring region {},{}/{}x{} from {}x{} image",
                 region.x, region.y, region.width, region.height,
                 imageSize.width, imageSize.height);
 
+        hints.add(ImageReader.Hint.ALREADY_CROPPED);
         final ImageReadParam param = reader.getDefaultReadParam();
         param.setSourceRegion(region);
 
-        final int subsampleReductionFactor = ReductionFactor.
-                forScale(Math.max(xScale, yScale), 0).factor;
-
-        logger.debug("tileAwareRead(): using a subsampling factor of {}",
-                subsampleReductionFactor);
-
-        subimageRf.factor += subsampleReductionFactor;
-        if (subsampleReductionFactor > 0) {
-            // Determine the number of rows/columns to skip between pixels.
-            int subsample = 0;
-            for (int i = 0; i <= subsampleReductionFactor; i++) {
-                subsample = (subsample == 0) ? subsample + 1 : subsample * 2;
-            }
-            param.setSourceSubsampling(subsample, subsample, 0, 0);
-        }
-        hints.add(ImageReader.Hint.ALREADY_CROPPED);
         return reader.read(imageIndex, param);
     }
 
