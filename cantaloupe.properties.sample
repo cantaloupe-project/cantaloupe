@@ -521,20 +521,20 @@ metadata.respect_orientation = false
 
 # Embeds ICC profiles in derivative images. Not recommended for general
 # Internet delivery.
-icc.enabled = false
+metadata.icc.enabled = false
 
 # Set to `BasicStrategy` to embed one profile in all derivative
 # images. Set to `ScriptStrategy` to control, via the delegate script,
 # which profile(s) should be embedded in which images.
-icc.strategy = BasicStrategy
+metadata.icc.strategy = BasicStrategy
 
 # Pathname or filename of an ICC profile to embed. If a filename, it will
 # be searched for in the same folder as this file, and then the current
 # working directory.
-icc.BasicStrategy.profile = sRGB.icc
+metadata.icc.BasicStrategy.profile = sRGB.icc
 
 # Name of the embedded ICC profile.
-icc.BasicStrategy.profile_name = sRGB
+metadata.icc.BasicStrategy.profile_name = sRGB
 
 ###########################################################################
 # LOGGING

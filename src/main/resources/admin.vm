@@ -2304,7 +2304,7 @@
                                         <div class="checkbox">
                                             <label>
                                                 <input type="checkbox"
-                                                       name="icc.enabled"
+                                                       name="metadata.icc.enabled"
                                                        value="true"
                                                        data-requires-restart="false">
                                                 Enabled
@@ -2327,7 +2327,7 @@
                                     </td>
                                     <td>
                                         <select class="form-control"
-                                                name="icc.strategy"
+                                                name="metadata.icc.strategy"
                                                 data-requires-restart="false">
                                             <option value="BasicStrategy">Basic</option>
                                             <option value="DelegateScript">Delegate Script</option>
@@ -2347,7 +2347,7 @@
                                     </td>
                                     <td>
                                         <input type="text" class="form-control"
-                                               name="icc.BasicStrategy.profile"
+                                               name="metadata.icc.BasicStrategy.profile"
                                                data-requires-restart="false">
                                     </td>
                                 </tr>
@@ -2355,7 +2355,7 @@
                                     <td>Profile Name</td>
                                     <td>
                                         <input type="text" class="form-control"
-                                               name="icc.BasicStrategy.profile_name"
+                                               name="metadata.icc.BasicStrategy.profile_name"
                                                data-requires-restart="false">
                                     </td>
                                 </tr>

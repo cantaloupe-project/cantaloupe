@@ -21,11 +21,11 @@ public class IccProfileService {
             getLogger(IccProfileService.class);
 
     public static final String ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY =
-            "icc.BasicStrategy.profile";
+            "metadata.icc.BasicStrategy.profile";
     public static final String ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY =
-            "icc.BasicStrategy.profile_name";
-    public static final String ICC_ENABLED_CONFIG_KEY = "icc.enabled";
-    public static final String ICC_STRATEGY_CONFIG_KEY = "icc.strategy";
+            "metadata.icc.BasicStrategy.profile_name";
+    public static final String ICC_ENABLED_CONFIG_KEY = "metadata.icc.enabled";
+    public static final String ICC_STRATEGY_CONFIG_KEY = "metadata.icc.strategy";
 
     /**
      * @return Whether ICC profiles should be embedded in derivative images

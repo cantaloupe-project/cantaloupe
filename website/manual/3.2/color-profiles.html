@@ -56,11 +56,11 @@ title: Color Profiles
 
 <h3 id="Modes of Operation">Modes of Operation</h3>
 
-<p>There are two "strategies," or ways of configuring the embedding process: a basic strategy, where the same profile is embedded in all derivative images; and a <a href="#ScriptStrategy">script strategy</a>, where the decision whether or not to embed a profile, and which one to embed, depends on the return value of a delegate script method. The <code>icc.strategy</code> configuration key is used to set the strategy.</p>
+<p>There are two "strategies," or ways of configuring the embedding process: a basic strategy, where the same profile is embedded in all derivative images; and a <a href="#ScriptStrategy">script strategy</a>, where the decision whether or not to embed a profile, and which one to embed, depends on the return value of a delegate script method. The <code>metadata.icc.strategy</code> configuration key is used to set the strategy.</p>
 
 <h4 id="BasicStrategy">BasicStrategy</h4>
 
-<p>With BasicStrategy, the <code>icc.BasicStrategy.*</code> keys in the configuration file are used to refer to a profile. This strategy is easy to configure and works well when you intend for the same profile to be embedded in all images.</p>
+<p>With BasicStrategy, the <code>metadata.icc.BasicStrategy.*</code> keys in the configuration file are used to refer to a profile. This strategy is easy to configure and works well when you intend for the same profile to be embedded in all images.</p>
 
 <h4 id="ScriptStrategy">ScriptStrategy</h4>
 
