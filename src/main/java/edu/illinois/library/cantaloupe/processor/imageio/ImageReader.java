@@ -31,6 +31,7 @@ public class ImageReader {
         ALREADY_CROPPED
     }
 
+    private Metadata cachedMetadata;
     private Format format;
     private AbstractImageReader reader;
 
@@ -114,7 +115,10 @@ public class ImageReader {
      * @throws IOException
      */
     public Metadata getMetadata(int imageIndex) throws IOException {
-        return reader.getMetadata(imageIndex);
+        if (cachedMetadata == null) {
+            cachedMetadata = reader.getMetadata(imageIndex);
+        }
+        return cachedMetadata;
     }
 
     /**
