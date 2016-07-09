@@ -232,9 +232,10 @@ processor.webp = ImageMagickProcessor
 # Fall back to this processor for any formats not assigned above.
 processor.fallback = Java2dProcessor
 
-# This option is kind of hard to explain; see the user manual.
-# Available values are `StreamStrategy` and `CacheStrategy` If CacheStrategy
-# is selected, FilesystemCache will also need to be configured, below.
+# Available values are `StreamStrategy` and `CacheStrategy`. StreamStrategy
+# will try to stream source images from stream-based resolvers; CacheStrategy
+# will cache them locally first. If CacheStrategy is selected, FilesystemCache
+# will also need to be configured, below.
 StreamProcessor.retrieval_strategy = StreamStrategy
 
 #----------------------------------------
