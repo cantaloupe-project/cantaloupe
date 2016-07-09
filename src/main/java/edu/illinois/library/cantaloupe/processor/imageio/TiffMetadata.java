@@ -16,13 +16,41 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-class TiffMetadata extends AbstractMetadata
-        implements Metadata {
+class TiffMetadata extends AbstractMetadata implements Metadata {
 
-    private static Logger logger = LoggerFactory.
-            getLogger(TiffMetadata.class);
+    private static Logger logger = LoggerFactory.getLogger(TiffMetadata.class);
 
+    /**
+     * Native TIFF tags to preserve from the baseline IFD by
+     * getNativeMetadata().
+     */
+    private static final Set<Integer> baselineNativeTagsToPreserve =
+            new HashSet<>(Arrays.asList(
+                    BaselineTIFFTagSet.TAG_ARTIST,
+                    BaselineTIFFTagSet.TAG_COPYRIGHT,
+                    BaselineTIFFTagSet.TAG_DATE_TIME,
+                    BaselineTIFFTagSet.TAG_IMAGE_DESCRIPTION,
+                    BaselineTIFFTagSet.TAG_MAKE,
+                    BaselineTIFFTagSet.TAG_MODEL,
+                    BaselineTIFFTagSet.TAG_SOFTWARE));
+
+    private boolean checkedForExif = false;
+    private boolean checkedForNativeMetadata = false;
+    private boolean checkedForXmp = false;
+
+    /** Cached by getExif() */
+    private TIFFField exif;
+
+    /** Set by constructor. */
     private TIFFDirectory ifd;
+
+    private List<TIFFField> nativeMetadata = new ArrayList<>();
+
+    /** Cached by getOrientation() */
+    private Orientation orientation;
+
+    /** Cached by getXmp() */
+    private String xmp;
 
     /**
      * @param metadata
@@ -39,15 +67,18 @@ class TiffMetadata extends AbstractMetadata
 
     @Override
     public TIFFField getExif() {
-        final TIFFField srcExifField =
-                ifd.getTIFFField(EXIFParentTIFFTagSet.TAG_EXIF_IFD_POINTER);
-        if (srcExifField != null) {
-            final TIFFDirectory srcExifDir = (TIFFDirectory) srcExifField.getData();
-            if (srcExifDir != null) {
-                return srcExifField;
+        if (!checkedForExif) {
+            checkedForExif = true;
+            final TIFFField srcExifField =
+                    ifd.getTIFFField(EXIFParentTIFFTagSet.TAG_EXIF_IFD_POINTER);
+            if (srcExifField != null) {
+                final TIFFDirectory srcExifDir = (TIFFDirectory) srcExifField.getData();
+                if (srcExifDir != null) {
+                    exif = srcExifField;
+                }
             }
         }
-        return null;
+        return exif;
     }
 
     @Override
@@ -58,29 +89,19 @@ class TiffMetadata extends AbstractMetadata
     /**
      * @return Native TIFF metadata.
      */
-    public List<TIFFField> getNativeMetadata() {
-        final List<TIFFField> fields = new ArrayList<>();
-
-        // Tags to preserve from the baseline IFD. EXIF metadata resides in
-        // a separate IFD, so this does not include any EXIF tags.
-        final Set<Integer> baselineTagsToPreserve = new HashSet<>(Arrays.asList(
-                BaselineTIFFTagSet.TAG_ARTIST,
-                BaselineTIFFTagSet.TAG_COPYRIGHT,
-                BaselineTIFFTagSet.TAG_DATE_TIME,
-                BaselineTIFFTagSet.TAG_IMAGE_DESCRIPTION,
-                BaselineTIFFTagSet.TAG_MAKE,
-                BaselineTIFFTagSet.TAG_MODEL,
-                BaselineTIFFTagSet.TAG_SOFTWARE));
-
-        // Copy the baseline tags from above from the source base IFD into
-        // the derivative base IFD.
-        for (Object tagNumber : baselineTagsToPreserve) {
-            final TIFFField srcField = ifd.getTIFFField((Integer) tagNumber);
-            if (srcField != null) {
-                fields.add(srcField);
+    List<TIFFField> getNativeMetadata() {
+        if (!checkedForNativeMetadata) {
+            checkedForNativeMetadata = true;
+            // Copy the baseline tags from the source base IFD into the
+            // derivative base IFD.
+            for (Integer tagNumber : baselineNativeTagsToPreserve) {
+                final TIFFField srcField = ifd.getTIFFField(tagNumber);
+                if (srcField != null) {
+                    nativeMetadata.add(srcField);
+                }
             }
         }
-        return fields;
+        return nativeMetadata;
     }
 
     /**
@@ -88,16 +109,38 @@ class TiffMetadata extends AbstractMetadata
      */
     @Override
     public Orientation getOrientation() {
-        // Check EXIF.
-        final TIFFField orientationField = ifd.getTIFFField(274);
-        if (orientationField != null) {
-            return orientationForExifValue(orientationField.getAsInt(0));
+        if (orientation == null) {
+            final TIFFField orientationField = ifd.getTIFFField(274);
+            if (orientationField != null) {
+                orientation = orientationForExifValue(orientationField.getAsInt(0));
+            }
+            if (orientation == null) {
+                orientation = Orientation.ROTATE_0;
+            }
         }
-        return Orientation.ROTATE_0;
+        return orientation;
     }
 
     @Override
-    public TIFFField getXmp() {
+    public String getXmp() {
+        if (!checkedForXmp) {
+            checkedForXmp = true;
+            final TIFFField xmpField = getXmpField();
+            if (xmpField != null) {
+                byte[] xmpData = (byte[]) xmpField.getData();
+                if (xmpData != null) {
+                    xmp = new String(xmpData);
+                    // Trim off the junk
+                    final int start = xmp.indexOf("<rdf:RDF");
+                    final int end = xmp.indexOf("</rdf:RDF");
+                    xmp = xmp.substring(start, end + 10);
+                }
+            }
+        }
+        return xmp;
+    }
+
+    TIFFField getXmpField() {
         return ifd.getTIFFField(700);
     }
 

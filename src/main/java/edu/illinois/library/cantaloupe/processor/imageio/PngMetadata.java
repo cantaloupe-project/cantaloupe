@@ -10,10 +10,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class PngMetadata extends AbstractMetadata
-        implements Metadata {
+class PngMetadata extends AbstractMetadata implements Metadata {
 
     private static final Map<String,String> recognizedTags = new HashMap<>();
+
+    private boolean checkedForNativeMetadata = false;
+    private boolean checkedForXmp = false;
+
+    /** Cached by getNativeMetadata() */
+    private List<IIOMetadataNode> nativeMetadata = new ArrayList<>();
+
+    /** Cached by getOrientation() */
+    private Orientation orientation;
+
+    /** Cached by getXmp() */
+    private String xmp;
 
     static {
         // These were generally taken from
@@ -43,7 +54,7 @@ class PngMetadata extends AbstractMetadata
      * @param metadata
      * @param formatName
      */
-    public PngMetadata(IIOMetadata metadata, String formatName) {
+    PngMetadata(IIOMetadata metadata, String formatName) {
         super(metadata, formatName);
     }
 
@@ -66,56 +77,65 @@ class PngMetadata extends AbstractMetadata
     /**
      * @return Native PNG metadata.
      */
-    public List<IIOMetadataNode> getNativeMetadata() {
-        final List<IIOMetadataNode> foundNodes = new ArrayList<>();
-        final NodeList itxtNodes = getAsTree().getElementsByTagName("tEXt");
-        for (int i = 0; i < itxtNodes.getLength(); i++) {
-            final IIOMetadataNode itxtNode = (IIOMetadataNode) itxtNodes.item(i);
-            final NodeList entries = itxtNode.getElementsByTagName("tEXtEntry");
-            for (int j = 0; j < entries.getLength(); j++) {
-                final String keyword = ((IIOMetadataNode) entries.item(j)).
-                        getAttribute("keyword");
-                if (recognizedTags.containsKey(keyword)) {
-                    foundNodes.add((IIOMetadataNode) entries.item(j));
+    List<IIOMetadataNode> getNativeMetadata() {
+        if (!checkedForNativeMetadata) {
+            checkedForNativeMetadata = true;
+            final NodeList itxtNodes = getAsTree().getElementsByTagName("tEXt");
+            for (int i = 0; i < itxtNodes.getLength(); i++) {
+                final IIOMetadataNode itxtNode = (IIOMetadataNode) itxtNodes.item(i);
+                final NodeList entries = itxtNode.getElementsByTagName("tEXtEntry");
+                for (int j = 0; j < entries.getLength(); j++) {
+                    final String keyword = ((IIOMetadataNode) entries.item(j)).
+                            getAttribute("keyword");
+                    if (recognizedTags.containsKey(keyword)) {
+                        nativeMetadata.add((IIOMetadataNode) entries.item(j));
+                    }
                 }
             }
         }
-        return foundNodes;
+        return nativeMetadata;
     }
 
     @Override
     public Orientation getOrientation() {
-        final String xmpStr = (String) getXmp();
-        if (xmpStr != null) {
-            // Trim off the junk
-            final int start = xmpStr.indexOf("<rdf:RDF");
-            final int end = xmpStr.indexOf("</rdf:RDF");
-            final String xmp = xmpStr.substring(start, end + 10);
-
-            final Orientation orientation = readOrientation(xmp);
-            if (orientation != null) {
-                return orientation;
+        if (orientation == null) {
+            final String xmp = getXmp();
+            if (xmp != null) {
+                final Orientation readOrientation = readOrientation(xmp);
+                if (readOrientation != null) {
+                    orientation = readOrientation;
+                }
+            }
+            if (orientation == null) {
+                orientation = Orientation.ROTATE_0;
             }
         }
-        return Orientation.ROTATE_0;
+        return orientation;
     }
 
     @Override
-    public Object getXmp() {
-        final NodeList itxtNodes = getAsTree().getElementsByTagName("iTXt");
-        for (int i = 0; i < itxtNodes.getLength(); i++) {
-            final IIOMetadataNode itxtNode = (IIOMetadataNode) itxtNodes.item(i);
-            final NodeList entries = itxtNode.getElementsByTagName("iTXtEntry");
-            for (int j = 0; j < entries.getLength(); j++) {
-                final String keyword = ((IIOMetadataNode) entries.item(j)).
-                        getAttribute("keyword");
-                if ("XML:com.adobe.xmp".equals(keyword)) {
-                    return ((IIOMetadataNode) entries.item(j)).
-                            getAttribute("text");
+    public String getXmp() {
+        if (!checkedForXmp) {
+            checkedForXmp = true;
+            final NodeList itxtNodes = getAsTree().getElementsByTagName("iTXt");
+            for (int i = 0; i < itxtNodes.getLength(); i++) {
+                final IIOMetadataNode itxtNode = (IIOMetadataNode) itxtNodes.item(i);
+                final NodeList entries = itxtNode.getElementsByTagName("iTXtEntry");
+                for (int j = 0; j < entries.getLength(); j++) {
+                    final String keyword = ((IIOMetadataNode) entries.item(j)).
+                            getAttribute("keyword");
+                    if ("XML:com.adobe.xmp".equals(keyword)) {
+                        xmp = ((IIOMetadataNode) entries.item(j)).
+                                getAttribute("text");
+                        // Trim off the junk
+                        final int start = xmp.indexOf("<rdf:RDF");
+                        final int end = xmp.indexOf("</rdf:RDF");
+                        xmp = xmp.substring(start, end + 10);
+                    }
                 }
             }
         }
-        return null;
+        return xmp;
     }
 
 }

@@ -6,8 +6,23 @@ import org.w3c.dom.NodeList;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 
-class JpegMetadata extends AbstractMetadata
-        implements Metadata {
+class JpegMetadata extends AbstractMetadata implements Metadata {
+
+    private boolean checkedForExif = false;
+    private boolean checkedForIptc = false;
+    private boolean checkedForXmp = false;
+
+    /** Cached by getExif() */
+    private byte[] exif;
+
+    /** Cached by getIptc() */
+    private byte[] iptc;
+
+    /** Cached by getOrientation() */
+    private Orientation orientation;
+
+    /** Cached by getXmp() */
+    private String xmp;
 
     /**
      * @param metadata
@@ -22,22 +37,25 @@ class JpegMetadata extends AbstractMetadata
      */
     @Override
     public byte[] getExif() {
-        // EXIF and XMP metadata both appear in the IIOMetadataNode tree as
-        // identical nodes at /markerSequence/unknown[@MarkerTag=225]
-        final IIOMetadataNode markerSequence = (IIOMetadataNode) getAsTree().
-                getElementsByTagName("markerSequence").item(0);
-        final NodeList unknowns = markerSequence.getElementsByTagName("unknown");
-        for (int i = 0; i < unknowns.getLength(); i++) {
-            final IIOMetadataNode marker = (IIOMetadataNode) unknowns.item(i);
-            if ("225".equals(marker.getAttribute("MarkerTag"))) {
-                byte[] data = (byte[]) marker.getUserObject();
-                // Check the first byte to see whether it's EXIF or XMP.
-                if (data[0] == 69) {
-                    return data;
+        if (!checkedForExif) {
+            checkedForExif = true;
+            // EXIF and XMP metadata both appear in the IIOMetadataNode tree as
+            // identical nodes at /markerSequence/unknown[@MarkerTag=225]
+            final IIOMetadataNode markerSequence = (IIOMetadataNode) getAsTree().
+                    getElementsByTagName("markerSequence").item(0);
+            final NodeList unknowns = markerSequence.getElementsByTagName("unknown");
+            for (int i = 0; i < unknowns.getLength(); i++) {
+                final IIOMetadataNode marker = (IIOMetadataNode) unknowns.item(i);
+                if ("225".equals(marker.getAttribute("MarkerTag"))) {
+                    byte[] data = (byte[]) marker.getUserObject();
+                    // Check the first byte to see whether it's EXIF or XMP.
+                    if (data[0] == 69) {
+                        exif = data;
+                    }
                 }
             }
         }
-        return null;
+        return exif;
     }
 
     /**
@@ -45,18 +63,21 @@ class JpegMetadata extends AbstractMetadata
      */
     @Override
     public byte[] getIptc() {
-        // IPTC metadata appears in the IIOMetadataNode tree at
-        // /markerSequence/unknown[@MarkerTag=237]
-        final IIOMetadataNode markerSequence = (IIOMetadataNode) getAsTree().
-                getElementsByTagName("markerSequence").item(0);
-        final NodeList unknowns = markerSequence.getElementsByTagName("unknown");
-        for (int i = 0; i < unknowns.getLength(); i++) {
-            IIOMetadataNode marker = (IIOMetadataNode) unknowns.item(i);
-            if ("237".equals(marker.getAttribute("MarkerTag"))) {
-                return (byte[]) marker.getUserObject();
+        if (!checkedForIptc) {
+            checkedForIptc = true;
+            // IPTC metadata appears in the IIOMetadataNode tree at
+            // /markerSequence/unknown[@MarkerTag=237]
+            final IIOMetadataNode markerSequence = (IIOMetadataNode) getAsTree().
+                    getElementsByTagName("markerSequence").item(0);
+            final NodeList unknowns = markerSequence.getElementsByTagName("unknown");
+            for (int i = 0; i < unknowns.getLength(); i++) {
+                IIOMetadataNode marker = (IIOMetadataNode) unknowns.item(i);
+                if ("237".equals(marker.getAttribute("MarkerTag"))) {
+                    iptc = (byte[]) marker.getUserObject();
+                }
             }
         }
-        return null;
+        return iptc;
     }
 
     /**
@@ -64,49 +85,51 @@ class JpegMetadata extends AbstractMetadata
      */
     @Override
     public Orientation getOrientation() {
-        // Check EXIF.
-        Orientation orientation = readOrientation(getExif());
-        if (orientation != null) {
-            return orientation;
-        }
-
-        // Check XMP.
-        final byte[] xmp = getXmp();
-        if (xmp != null) {
-            final String xmpData = new String(xmp);
-            // Trim off the junk
-            final int start = xmpData.indexOf("<rdf:RDF");
-            final int end = xmpData.indexOf("</rdf:RDF");
-            final String xmpStr = xmpData.substring(start, end + 10);
-            orientation = readOrientation(xmpStr);
-            if (orientation != null) {
-                return orientation;
+        if (orientation == null) {
+            // Check EXIF.
+            orientation = readOrientation(getExif());
+            if (orientation == null) {
+                // Check XMP.
+                final String xmp = getXmp();
+                if (xmp != null) {
+                    orientation = readOrientation(xmp);
+                }
+            }
+            if (orientation == null) {
+                orientation = Orientation.ROTATE_0;
             }
         }
-        return Orientation.ROTATE_0;
+        return orientation;
     }
 
     /**
      * @return XMP data, or null if none was found in the source metadata.
      */
     @Override
-    public byte[] getXmp() {
-        // EXIF and XMP metadata both appear in the IIOMetadataNode tree as
-        // identical nodes at /markerSequence/unknown[@MarkerTag=225]
-        final IIOMetadataNode markerSequence = (IIOMetadataNode) getAsTree().
-                getElementsByTagName("markerSequence").item(0);
-        final NodeList unknowns = markerSequence.getElementsByTagName("unknown");
-        for (int i = 0; i < unknowns.getLength(); i++) {
-            final IIOMetadataNode marker = (IIOMetadataNode) unknowns.item(i);
-            if ("225".equals(marker.getAttribute("MarkerTag"))) {
-                byte[] data = (byte[]) marker.getUserObject();
-                // Check the first byte to see whether it's EXIF or XMP.
-                if (data[0] == 104) {
-                    return data;
+    public String getXmp() {
+        if (!checkedForXmp) {
+            checkedForXmp = true;
+            // EXIF and XMP metadata both appear in the IIOMetadataNode tree as
+            // identical nodes at /markerSequence/unknown[@MarkerTag=225]
+            final IIOMetadataNode markerSequence = (IIOMetadataNode) getAsTree().
+                    getElementsByTagName("markerSequence").item(0);
+            final NodeList unknowns = markerSequence.getElementsByTagName("unknown");
+            for (int i = 0; i < unknowns.getLength(); i++) {
+                final IIOMetadataNode marker = (IIOMetadataNode) unknowns.item(i);
+                if ("225".equals(marker.getAttribute("MarkerTag"))) {
+                    byte[] data = (byte[]) marker.getUserObject();
+                    // Check the first byte to see whether it's EXIF or XMP.
+                    if (data[0] == 104) {
+                        xmp = new String(data);
+                        // Trim off the junk
+                        final int start = xmp.indexOf("<rdf:RDF");
+                        final int end = xmp.indexOf("</rdf:RDF");
+                        xmp = xmp.substring(start, end + 10);
+                    }
                 }
             }
         }
-        return null;
+        return xmp;
     }
 
 }

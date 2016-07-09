@@ -37,6 +37,6 @@ public interface Metadata {
     /**
      * @return XMP data, or null if none was found in the source metadata.
      */
-    Object getXmp();
+    String getXmp();
 
 }

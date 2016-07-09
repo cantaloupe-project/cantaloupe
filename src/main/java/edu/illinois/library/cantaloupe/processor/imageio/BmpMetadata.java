@@ -42,7 +42,7 @@ class BmpMetadata extends AbstractMetadata implements Metadata {
      * @return Null, as BMP does not support XMP.
      */
     @Override
-    public Object getXmp() {
+    public String getXmp() {
         return null;
     }
 

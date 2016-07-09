@@ -119,7 +119,8 @@ class TiffImageWriter extends AbstractImageWriter {
                 destDir.addTIFFField(iptcField);
             }
 
-            final TIFFField xmpField = (TIFFField) sourceMetadata.getXmp();
+            final TIFFField xmpField =
+                    ((TiffMetadata) sourceMetadata).getXmpField();
             if (xmpField != null) {
                 destDir.addTIFFField(xmpField);
             }

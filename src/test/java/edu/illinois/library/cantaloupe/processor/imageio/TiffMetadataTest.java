@@ -17,7 +17,7 @@ import static org.junit.Assert.*;
 
 public class TiffMetadataTest {
 
-    private TiffMetadata getInstance(String fixtureName)
+    private TiffMetadata newInstance(final String fixtureName)
             throws IOException {
         final Iterator<ImageReader> it = ImageIO.getImageReadersByFormatName("TIFF");
         final ImageReader reader = it.next();
@@ -34,23 +34,23 @@ public class TiffMetadataTest {
 
     @Test
     public void testGetExif() throws IOException {
-        assertNotNull(getInstance("tif-exif.tif").getXmp());
+        assertNotNull(newInstance("tif-exif.tif").getExif());
     }
 
     @Test
     public void testGetIptc() throws IOException {
-        assertNotNull(getInstance("tif-iptc.tif").getXmp());
+        assertNotNull(newInstance("tif-iptc.tif").getIptc());
     }
 
     @Test
     public void testGetOrientation() throws IOException {
         assertEquals(Orientation.ROTATE_90,
-                getInstance("tif-rotated.tif").getOrientation());
+                newInstance("tif-rotated.tif").getOrientation());
     }
 
     @Test
     public void testGetXmp() throws IOException {
-        assertNotNull(getInstance("tif-xmp.tif").getXmp());
+        assertNotNull(newInstance("tif-xmp.tif").getXmp());
     }
 
 }
