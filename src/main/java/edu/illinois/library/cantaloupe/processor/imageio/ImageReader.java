@@ -32,7 +32,6 @@ public class ImageReader {
     }
 
     private Metadata cachedMetadata;
-    private Format format;
     private AbstractImageReader reader;
 
     static {
