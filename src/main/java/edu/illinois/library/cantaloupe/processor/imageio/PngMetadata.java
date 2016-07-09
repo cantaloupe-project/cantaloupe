@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
-import edu.illinois.library.cantaloupe.processor.Orientation;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import org.w3c.dom.NodeList;
 
 import javax.imageio.metadata.IIOMetadata;

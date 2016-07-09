@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.Orientation;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
