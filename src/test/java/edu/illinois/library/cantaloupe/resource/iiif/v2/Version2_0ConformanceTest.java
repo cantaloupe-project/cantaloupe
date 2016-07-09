@@ -634,7 +634,8 @@ public class Version2_0ConformanceTest {
                 client.get();
                 fail("Expected exception");
             } catch (ResourceException e) {
-                assertEquals(Status.SERVER_ERROR_INTERNAL, client.getStatus());
+                assertEquals(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE,
+                        client.getStatus());
             }
         }
     }
