@@ -39,7 +39,7 @@ public class SourceImageWranglerTest {
 
     private Identifier identifier = new Identifier("jpg-rgb-64x56x8-baseline.jpg");
 
-    public static void recursiveDeleteOnExit(File dir) throws IOException {
+    private static void recursiveDeleteOnExit(File dir) throws IOException {
         Path path = dir.toPath();
         Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
             @Override
@@ -174,7 +174,11 @@ public class SourceImageWranglerTest {
                     ((FileProcessor) processor).getSourceFile());
         } finally {
             server.stop();
-            recursiveDeleteOnExit(cacheFolder);
+            try {
+                recursiveDeleteOnExit(cacheFolder);
+            } catch (IOException e) {
+                System.out.println(e);
+            }
         }
     }
 
@@ -243,7 +247,11 @@ public class SourceImageWranglerTest {
                     ((StreamProcessor) processor).getStreamSource());
         } finally {
             server.stop();
-            recursiveDeleteOnExit(cacheFolder);
+            try {
+                recursiveDeleteOnExit(cacheFolder);
+            } catch (IOException e) {
+                System.out.println(e);
+            }
         }
     }
 
@@ -280,7 +288,11 @@ public class SourceImageWranglerTest {
             }
         } finally {
             server.stop();
-            recursiveDeleteOnExit(cacheFolder);
+            try {
+                recursiveDeleteOnExit(cacheFolder);
+            } catch (IOException e) {
+                System.out.println(e);
+            }
         }
     }
 
