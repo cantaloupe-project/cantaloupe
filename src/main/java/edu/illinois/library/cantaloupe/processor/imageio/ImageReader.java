@@ -237,18 +237,14 @@ public class ImageReader {
      *                        argument.
      * @param orientation     Orientation of the source image data, e.g. as
      *                        reported by embedded metadata.
-     * @param reductionFactor {@link ReductionFactor#factor} property will be
-     *                        modified to reflect the reduction factor of the
-     *                        returned image.
      * @return RenderedImage best matching the given parameters.
      * @throws IOException
      * @throws ProcessorException
      */
     public RenderedImage readRendered(final OperationList opList,
-                                      final Orientation orientation,
-                                      final ReductionFactor reductionFactor)
+                                      final Orientation orientation)
             throws IOException, ProcessorException {
-        return reader.readRendered(opList, orientation, reductionFactor);
+        return reader.readRendered(opList, orientation);
     }
 
 }
