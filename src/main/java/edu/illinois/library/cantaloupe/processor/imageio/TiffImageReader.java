@@ -74,8 +74,7 @@ class TiffImageReader extends AbstractImageReader {
             createReader();
         }
         final IIOMetadata metadata = reader.getImageMetadata(imageIndex);
-        final String metadataFormat = reader.getImageMetadata(imageIndex).
-                getNativeMetadataFormatName();
+        final String metadataFormat = metadata.getNativeMetadataFormatName();
         return new TiffMetadata(metadata, metadataFormat);
     }
 
