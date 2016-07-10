@@ -1385,17 +1385,6 @@
                                                        data-requires-restart="false">
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td>Post-processor</td>
-                                            <td>
-                                                <select class="form-control"
-                                                        name="KakaduProcessor.post_processor"
-                                                        data-requires-restart="false">
-                                                    <option value="java2d">Java 2D</option>
-                                                    <option value="jai">JAI</option>
-                                                </select>
-                                            </td>
-                                        </tr>
                                     </table>
                                 </div>
 
@@ -1413,17 +1402,6 @@
                                                 <input class="form-control" type="text"
                                                        name="OpenJpegProcessor.path_to_binaries"
                                                        data-requires-restart="false">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Post-processor</td>
-                                            <td>
-                                                <select class="form-control"
-                                                        name="OpenJpegProcessor.post_processor"
-                                                        data-requires-restart="false">
-                                                    <option value="java2d">Java 2D</option>
-                                                    <option value="jai">JAI</option>
-                                                </select>
                                             </td>
                                         </tr>
                                     </table>

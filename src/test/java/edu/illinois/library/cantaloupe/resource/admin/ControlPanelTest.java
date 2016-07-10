@@ -280,13 +280,9 @@ public class ControlPanelTest {
         // KakaduProcessor
         css("#cl-processors li > a[href=\"#KakaduProcessor\"]").click();
         css("[name=\"KakaduProcessor.path_to_binaries\"]").sendKeys("/kpath");
-        new Select(css("[name=\"KakaduProcessor.post_processor\"]")).
-                selectByValue("jai");
         // OpenJpegProcessor
         css("#cl-processors li > a[href=\"#OpenJpegProcessor\"]").click();
         css("[name=\"OpenJpegProcessor.path_to_binaries\"]").sendKeys("/ojpath");
-        new Select(css("[name=\"OpenJpegProcessor.post_processor\"]")).
-                selectByValue("java2d");
         // PdfBoxProcessor
         css("#cl-processors li > a[href=\"#PdfBoxProcessor\"]").click();
         css("[name=\"PdfBoxProcessor.dpi\"]").sendKeys("300");
@@ -327,12 +323,9 @@ public class ControlPanelTest {
         // KakaduProcessor
         assertEquals("/kpath",
                 config.getString("KakaduProcessor.path_to_binaries"));
-        assertEquals("jai", config.getString("KakaduProcessor.post_processor"));
         // OpenJpegProcessor
         assertEquals("/ojpath",
                 config.getString("OpenJpegProcessor.path_to_binaries"));
-        assertEquals("java2d",
-                config.getString("OpenJpegProcessor.post_processor"));
         // PdfBoxProcessor
         assertEquals(300, config.getInt("PdfBoxProcessor.dpi"));
     }

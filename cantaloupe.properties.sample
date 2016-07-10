@@ -300,8 +300,6 @@ Java2dProcessor.tif.compression = LZW
 # Overrides the PATH.
 KakaduProcessor.path_to_binaries =
 
-# Available values are `jai` and `java2d`.
-KakaduProcessor.post_processor = java2d
 
 #----------------------------------------
 # OpenJpegProcessor
@@ -311,8 +309,6 @@ KakaduProcessor.post_processor = java2d
 # Overrides the PATH.
 OpenJpegProcessor.path_to_binaries =
 
-# Available values are `jai` and `java2d`.
-OpenJpegProcessor.post_processor = java2d
 
 #----------------------------------------
 # PdfBoxProcessor

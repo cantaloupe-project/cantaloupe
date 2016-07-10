@@ -24,7 +24,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.media.jai.RenderedOp;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -34,7 +33,6 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
@@ -76,8 +74,6 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
 
     static final String PATH_TO_BINARIES_CONFIG_KEY =
             "KakaduProcessor.path_to_binaries";
-    static final String POST_PROCESSOR_CONFIG_KEY =
-            "KakaduProcessor.post_processor";
 
     private static final short MAX_REDUCTION_FACTOR = 5;
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
@@ -331,21 +327,11 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
                         new InputStreamStreamSource(processInputStream),
                         Format.BMP);
 
-                final Configuration config = Configuration.getInstance();
-                switch (config.getString(POST_PROCESSOR_CONFIG_KEY, "java2d").toLowerCase()) {
-                    case "jai":
-                        logger.debug("Post-processing using JAI ({} = jai)",
-                                POST_PROCESSOR_CONFIG_KEY);
-                        postProcessUsingJai(reader, ops, reductionFactor,
-                                outputStream);
-                        break;
-                    default:
-                        logger.debug("Post-processing using Java 2D ({} = java2d)",
-                                POST_PROCESSOR_CONFIG_KEY);
-                        postProcessUsingJava2d(reader, ops, reductionFactor,
-                                outputStream);
-                        break;
-                }
+
+
+                postProcessUsingJava2d(reader, ops, reductionFactor,
+                        outputStream);
+
 
                 final int code = process.waitFor();
                 if (code != 0) {
@@ -508,50 +494,6 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
             }
         }
         return tileSize;
-    }
-
-    private void postProcessUsingJai(final ImageReader reader,
-                                     final OperationList opList,
-                                     final ReductionFactor reductionFactor,
-                                     final OutputStream outputStream)
-            throws IOException, ProcessorException {
-        BufferedImage image = null;
-        RenderedImage renderedImage = reader.readRendered();
-        RenderedOp renderedOp = JaiUtil.reformatImage(
-                RenderedOp.wrapRenderedImage(renderedImage),
-                new Dimension(512, 512));
-        for (Operation op : opList) {
-            if (op instanceof Scale) {
-                renderedOp = JaiUtil.scaleImage(renderedOp, (Scale) op,
-                        reductionFactor);
-            } else if (op instanceof Transpose) {
-                renderedOp = JaiUtil.transposeImage(renderedOp, (Transpose) op);
-            } else if (op instanceof Rotate) {
-                renderedOp = JaiUtil.rotateImage(renderedOp, (Rotate) op);
-            } else if (op instanceof Filter) {
-                renderedOp = JaiUtil.filterImage(renderedOp, (Filter) op);
-            } else if (op instanceof Watermark) {
-                // Let's cheat and apply the watermark using Java 2D.
-                // There seems to be minimal performance penalty in doing
-                // this, and doing it in JAI is harder.
-                image = renderedOp.getAsBufferedImage();
-                try {
-                    image = Java2dUtil.applyWatermark(image, (Watermark) op);
-                } catch (ConfigurationException e) {
-                    logger.error(e.getMessage());
-                }
-            }
-        }
-
-        final ImageWriter writer = new ImageWriter(opList);
-
-        if (image != null) {
-            writer.write(image, opList.getOutputFormat(), outputStream);
-            image.flush();
-        } else {
-            writer.write(renderedOp, opList.getOutputFormat(),
-                    outputStream);
-        }
     }
 
     private void postProcessUsingJava2d(final ImageReader reader,
