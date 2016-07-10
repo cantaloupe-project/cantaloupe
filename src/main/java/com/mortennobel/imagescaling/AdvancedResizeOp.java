@@ -21,32 +21,22 @@ import java.util.List;
  * @author Morten Nobel-Joergensen
  */
 public abstract class AdvancedResizeOp implements BufferedImageOp {
-	public static enum UnsharpenMask{
-		None(0),
-		Soft(0.15f),
-		Normal(0.3f),
-		VerySharp(0.45f),
-		Oversharpened(0.60f);
-		private final float factor;
 
-		UnsharpenMask(float factor) {
-			this.factor = factor;
-		}
-	}
 	private List<ProgressListener> listeners = new ArrayList<ProgressListener>();
 
     private final DimensionConstrain dimensionConstrain;
-	private UnsharpenMask unsharpenMask = UnsharpenMask.None;
+	/** Generally, usable values will be in the range of 0-0.5. */
+	private float unsharpenMask = 0f;
 
 	public AdvancedResizeOp(DimensionConstrain dimensionConstrain) {
 		this.dimensionConstrain = dimensionConstrain;
 	}
 
-	public UnsharpenMask getUnsharpenMask() {
+	public float getUnsharpenMask() {
 		return unsharpenMask;
 	}
 
-	public void setUnsharpenMask(UnsharpenMask unsharpenMask) {
+	public void setUnsharpenMask(float unsharpenMask) {
 		this.unsharpenMask = unsharpenMask;
 	}
 
@@ -70,10 +60,10 @@ public abstract class AdvancedResizeOp implements BufferedImageOp {
 		int dstHeight = dstDimension.height;
 		BufferedImage bufferedImage = doFilter(src, dest, dstWidth, dstHeight);
 
-		if (unsharpenMask!= UnsharpenMask.None){
+		if (Math.abs(unsharpenMask) > 0.0001f) {
 			UnsharpFilter unsharpFilter= new UnsharpFilter();
 			unsharpFilter.setRadius(2f);
-			unsharpFilter.setAmount(unsharpenMask.factor);
+			unsharpFilter.setAmount(unsharpenMask);
 			unsharpFilter.setThreshold(10);
 			return  unsharpFilter.filter(bufferedImage, null);
 		}
