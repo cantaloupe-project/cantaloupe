@@ -101,12 +101,12 @@ class JpegImageWriter extends AbstractImageWriter {
                 baseTree.getElementsByTagName("markerSequence").item(0).
                         appendChild(node);
             }
-            final Object xmp = sourceMetadata.getXmp();
+            final String xmp = sourceMetadata.getXmp();
             if (xmp != null) {
                 // Create the XMP node.
                 final IIOMetadataNode node = new IIOMetadataNode("unknown");
                 node.setAttribute("MarkerTag", "225");
-                node.setUserObject(xmp);
+                node.setUserObject(xmp.getBytes());
                 // Append it to /markerSequence/unknown[@MarkerTag=225]
                 baseTree.getElementsByTagName("markerSequence").item(0).
                         appendChild(node);
