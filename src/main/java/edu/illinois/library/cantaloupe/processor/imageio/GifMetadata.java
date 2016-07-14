@@ -75,6 +75,15 @@ class GifMetadata extends AbstractMetadata implements Metadata {
     public byte[] getXmp() {
         if (!checkedForXmp) {
             checkedForXmp = true;
+            /*
+            Testing indicates that the XMP data, as returned by the reader, is
+            corrupt in pretty much all cases, even when it appears to be
+            valid in the source file. It could be an ImageIO GIF plugin bug
+            (it wouldn't be the only one) or something I'm doing wrong. In any
+            case, the effort/reward ratio doesn't justify looking into it any
+            further at this time, as probably no one is serving GIF source
+            images anyway.
+
             // The XMP node will be located at /ApplicationExtensions/
             // ApplicationExtension[@applicationID="XMP Data" @authenticationCode="XMP"]
             final NodeList appExtensionsList = getAsTree().
@@ -93,21 +102,13 @@ class GifMetadata extends AbstractMetadata implements Metadata {
                         final String appId = appIdAttr.getNodeValue();
                         if (appId != null) {
                             if ("xmp data".equals(appId.toLowerCase())) {
+                                // TODO: this data is corrupt
                                 xmp = (byte[]) appExtension.getUserObject();
-                                String xmpStr = new String(xmp);
-
-                                // Testing indicates that the XMP data is
-                                // corrupt in some/all(?) cases, even when it
-                                // is valid in the source file. (?)
-                                // TODO: this is horrible and probably insufficient
-                                xmpStr = StringUtils.replace(xmpStr, "xmpmta", "xmpmeta");
-                                xmpStr = StringUtils.replace(xmpStr, "\n/", "\n</");
-                                xmp = xmpStr.getBytes();
                             }
                         }
                     }
                 }
-            }
+            } */
         }
         return xmp;
     }

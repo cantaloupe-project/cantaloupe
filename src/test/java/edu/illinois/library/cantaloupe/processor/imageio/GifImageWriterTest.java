@@ -75,7 +75,7 @@ public class GifImageWriterTest {
         getWriter().write(bufferedImage, outputStream);
         checkForIccProfile();
     }
-
+    /* Disabled, as GifMetadata.getXmp() is disabled.
     @Test
     public void testWriteWithBufferedImageAndMetadata()  throws Exception {
         final Configuration config = Configuration.getInstance();
@@ -83,7 +83,7 @@ public class GifImageWriterTest {
         getWriter().write(bufferedImage, outputStream);
         checkForMetadata();
     }
-
+    */
     @Test
     public void testWriteWithPlanarImage() throws Exception {
         getWriter().write(planarImage, outputStream);
@@ -96,7 +96,7 @@ public class GifImageWriterTest {
         getWriter().write(planarImage, outputStream);
         checkForIccProfile();
     }
-
+    /* Disabled, as GifMetadata.getXmp() is disabled.
     @Test
     public void testWriteWithPlanarImageAndMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
@@ -104,7 +104,7 @@ public class GifImageWriterTest {
         getWriter().write(planarImage, outputStream);
         checkForMetadata();
     }
-
+    */
     private void configureIccProfile() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(IccProfileService.ICC_ENABLED_CONFIG_KEY, true);

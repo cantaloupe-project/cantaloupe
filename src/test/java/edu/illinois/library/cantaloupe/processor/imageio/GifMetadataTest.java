@@ -33,13 +33,14 @@ public class GifMetadataTest {
         }
     }
 
-    /* TODO: this test is disabled because GifMetadata.getXmp() returns a malformed XMP string.
+    /* These tests are disabled because GifMetadata.getXmp() and getXmpRdf()
+    are disabled.
     @Test
     public void testGetOrientation() throws IOException {
         assertEquals(Metadata.Orientation.ROTATE_90,
                 newInstance("gif-rotated.gif").getOrientation());
     }
-    */
+
     @Test
     public void testGetXmp() throws IOException {
         assertNotNull(newInstance("gif-xmp.gif").getXmp());
@@ -53,5 +54,5 @@ public class GifMetadataTest {
         final Model model = ModelFactory.createDefaultModel();
         model.read(new StringReader(rdf), null, "RDF/XML");
     }
-
+    */
 }
