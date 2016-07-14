@@ -90,7 +90,7 @@ class PngImageWriter extends AbstractImageWriter {
             }
 
             // Add XMP metadata.
-            final Object xmp = sourceMetadata.getXmpRdf();
+            final byte[] xmp = sourceMetadata.getXmp();
             if (xmp != null) {
                 // Get the /iTXt node, creating it if it does not already exist.
                 final NodeList itxtNodes = baseTree.getElementsByTagName("iTXt");
@@ -108,7 +108,7 @@ class PngImageWriter extends AbstractImageWriter {
                 xmpNode.setAttribute("compressionMethod", "0");
                 xmpNode.setAttribute("languageTag", "");
                 xmpNode.setAttribute("translatedKeyword", "");
-                xmpNode.setAttribute("text", (String) xmp);
+                xmpNode.setAttribute("text", new String(xmp));
                 itxtNode.appendChild(xmpNode);
             }
         }
