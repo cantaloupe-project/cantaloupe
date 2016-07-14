@@ -35,8 +35,15 @@ public interface Metadata {
     Orientation getOrientation();
 
     /**
-     * @return XMP data, or null if none was found in the source metadata.
+     * @return XMP data packet, or null if none was found in the source
+     *         metadata.
      */
-    String getXmp();
+    byte[] getXmp();
+
+    /**
+     * @return XMP RDF/XML string, or null if none was found in the source
+     *         metadata.
+     */
+    String getXmpRdf();
 
 }

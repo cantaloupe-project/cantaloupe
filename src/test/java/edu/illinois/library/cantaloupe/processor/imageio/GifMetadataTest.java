@@ -1,6 +1,9 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.RIOT;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
@@ -10,13 +13,14 @@ import javax.imageio.stream.ImageInputStream;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
 public class GifMetadataTest {
 
-    private GifMetadata getInstance(String fixtureName)
+    private GifMetadata newInstance(String fixtureName)
             throws IOException {
         final Iterator<ImageReader> it = ImageIO.getImageReadersByFormatName("GIF");
         final ImageReader reader = it.next();
@@ -33,12 +37,21 @@ public class GifMetadataTest {
     @Test
     public void testGetOrientation() throws IOException {
         assertEquals(Metadata.Orientation.ROTATE_90,
-                getInstance("gif-rotated.gif").getOrientation());
+                newInstance("gif-rotated.gif").getOrientation());
     }
     */
     @Test
     public void testGetXmp() throws IOException {
-        assertNotNull(getInstance("gif-xmp.gif").getXmp());
+        assertNotNull(newInstance("gif-xmp.gif").getXmp());
+    }
+
+    @Test
+    public void testGetXmpRdf() throws IOException {
+        RIOT.init();
+        final String rdf = newInstance("gif-xmp.gif").getXmpRdf();
+        System.out.println(rdf);
+        final Model model = ModelFactory.createDefaultModel();
+        model.read(new StringReader(rdf), null, "RDF/XML");
     }
 
 }

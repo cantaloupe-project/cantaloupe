@@ -75,9 +75,8 @@ class GifImageWriter extends AbstractImageWriter {
             // GIF doesn't support EXIF or IPTC metadata -- only XMP.
             // The XMP node will be located at /ApplicationExtensions/
             // ApplicationExtension[@applicationID="XMP Data" @authenticationCode="XMP"]
-            final String xmp = sourceMetadata.getXmp();
+            final byte[] xmp = sourceMetadata.getXmp();
             if (xmp != null) {
-                final byte[] xmpBytes = xmp.getBytes();
                 // Get the /ApplicationExtensions node, creating it if it does
                 // not exist.
                 final NodeList appExtensionsList =
@@ -95,7 +94,7 @@ class GifImageWriter extends AbstractImageWriter {
                         new IIOMetadataNode("ApplicationExtension");
                 appExtensionNode.setAttribute("applicationID", "XMP Data");
                 appExtensionNode.setAttribute("authenticationCode", "XMP");
-                appExtensionNode.setUserObject(xmpBytes);
+                appExtensionNode.setUserObject(xmp);
                 appExtensions.appendChild(appExtensionNode);
             }
         }

@@ -26,7 +26,7 @@ class JpegMetadata extends AbstractMetadata implements Metadata {
     private Orientation orientation;
 
     /** Cached by getXmp() */
-    private String xmp;
+    private byte[] xmp;
 
     /**
      * @param metadata
@@ -102,7 +102,7 @@ class JpegMetadata extends AbstractMetadata implements Metadata {
             orientation = getExifOrientation();
             if (orientation == null) {
                 // Check XMP.
-                final String xmp = getXmp();
+                final String xmp = getXmpRdf();
                 if (xmp != null) {
                     orientation = getXmpOrientation();
                 }
@@ -114,11 +114,8 @@ class JpegMetadata extends AbstractMetadata implements Metadata {
         return orientation;
     }
 
-    /**
-     * @return XMP data, or null if none was found in the source metadata.
-     */
     @Override
-    public String getXmp() {
+    public byte[] getXmp() {
         if (!checkedForXmp) {
             checkedForXmp = true;
             // EXIF and XMP metadata both appear in the IIOMetadataNode tree as
@@ -132,11 +129,7 @@ class JpegMetadata extends AbstractMetadata implements Metadata {
                     byte[] data = (byte[]) marker.getUserObject();
                     // Check the first byte to see whether it's EXIF or XMP.
                     if (data[0] == 104) {
-                        xmp = new String(data);
-                        // Trim off the junk
-                        final int start = xmp.indexOf("<rdf:RDF");
-                        final int end = xmp.indexOf("</rdf:RDF");
-                        xmp = xmp.substring(start, end + 10);
+                        xmp = data;
                     }
                 }
             }
@@ -149,11 +142,24 @@ class JpegMetadata extends AbstractMetadata implements Metadata {
      */
     Orientation getXmpOrientation() {
         Orientation orientation = null;
-        final String xmp = getXmp();
+        final String xmp = getXmpRdf();
         if (xmp != null) {
             orientation = readOrientation(xmp);
         }
         return orientation;
+    }
+
+    @Override
+    public String getXmpRdf() {
+        final byte[] xmpData = getXmp();
+        if (xmpData != null) {
+            final String xmp = new String(xmpData);
+            // Trim off the junk
+            final int start = xmp.indexOf("<rdf:RDF");
+            final int end = xmp.indexOf("</rdf:RDF");
+            return xmp.substring(start, end + 10);
+        }
+        return null;
     }
 
 }

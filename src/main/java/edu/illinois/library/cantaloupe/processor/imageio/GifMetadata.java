@@ -21,7 +21,7 @@ class GifMetadata extends AbstractMetadata implements Metadata {
     private Orientation orientation;
 
     /** Cached by getXmp() */
-    private String xmp;
+    private byte[] xmp;
 
     /**
      * @param metadata
@@ -53,7 +53,7 @@ class GifMetadata extends AbstractMetadata implements Metadata {
     @Override
     public Orientation getOrientation() {
         if (orientation == null) {
-            String xmp = getXmp();
+            String xmp = getXmpRdf();
             if (xmp != null) {
                 orientation = readOrientation(xmp);
             }
@@ -72,7 +72,7 @@ class GifMetadata extends AbstractMetadata implements Metadata {
      *      Embedding XMP Metadata in Application Files</a>
      */
     @Override
-    public String getXmp() {
+    public byte[] getXmp() {
         if (!checkedForXmp) {
             checkedForXmp = true;
             // The XMP node will be located at /ApplicationExtensions/
@@ -93,20 +93,16 @@ class GifMetadata extends AbstractMetadata implements Metadata {
                         final String appId = appIdAttr.getNodeValue();
                         if (appId != null) {
                             if ("xmp data".equals(appId.toLowerCase())) {
-                                byte[] xmpData = (byte[]) appExtension.getUserObject();
-                                xmp = new String(xmpData);
+                                xmp = (byte[]) appExtension.getUserObject();
+                                String xmpStr = new String(xmp);
 
                                 // Testing indicates that the XMP data is
                                 // corrupt in some/all(?) cases, even when it
                                 // is valid in the source file. (?)
                                 // TODO: this is horrible and probably insufficient
-                                xmp = StringUtils.replace(xmp, "xmpmta", "xmpmeta");
-                                xmp = StringUtils.replace(xmp, "\n/", "\n</");
-
-                                // Trim off the junk
-                                final int start = xmp.indexOf("<rdf:RDF");
-                                final int end = xmp.indexOf("</rdf:RDF");
-                                xmp = xmp.substring(start, end + 10);
+                                xmpStr = StringUtils.replace(xmpStr, "xmpmta", "xmpmeta");
+                                xmpStr = StringUtils.replace(xmpStr, "\n/", "\n</");
+                                xmp = xmpStr.getBytes();
                             }
                         }
                     }
@@ -114,6 +110,19 @@ class GifMetadata extends AbstractMetadata implements Metadata {
             }
         }
         return xmp;
+    }
+
+    @Override
+    public String getXmpRdf() {
+        final byte[] xmpData = getXmp();
+        if (xmpData != null) {
+            final String xmp = new String(xmpData);
+            // Trim off the junk
+            final int start = xmp.indexOf("<rdf:RDF");
+            final int end = xmp.indexOf("</rdf:RDF");
+            return xmp.substring(start, end + 10);
+        }
+        return null;
     }
 
 }

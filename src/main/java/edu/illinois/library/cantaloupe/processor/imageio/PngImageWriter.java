@@ -90,7 +90,7 @@ class PngImageWriter extends AbstractImageWriter {
             }
 
             // Add XMP metadata.
-            final Object xmp = sourceMetadata.getXmp();
+            final Object xmp = sourceMetadata.getXmpRdf();
             if (xmp != null) {
                 // Get the /iTXt node, creating it if it does not already exist.
                 final NodeList itxtNodes = baseTree.getElementsByTagName("iTXt");

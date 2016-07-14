@@ -2,6 +2,9 @@ package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.RIOT;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
@@ -11,6 +14,7 @@ import javax.imageio.stream.ImageInputStream;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.Iterator;
 
 import static org.junit.Assert.*;
@@ -39,6 +43,14 @@ public class PngMetadataTest {
     @Test
     public void testGetXmp() throws IOException {
         assertNotNull(getInstance("png-xmp.png").getXmp());
+    }
+
+    @Test
+    public void testGetXmpRdf() throws IOException {
+        RIOT.init();
+        final String rdf = getInstance("png-xmp.png").getXmpRdf();
+        final Model model = ModelFactory.createDefaultModel();
+        model.read(new StringReader(rdf), null, "RDF/XML");
     }
 
 }

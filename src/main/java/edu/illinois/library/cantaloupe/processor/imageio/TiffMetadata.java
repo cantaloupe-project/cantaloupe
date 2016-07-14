@@ -54,7 +54,7 @@ class TiffMetadata extends AbstractMetadata implements Metadata {
     private Orientation orientation;
 
     /** Cached by getXmp() */
-    private String xmp;
+    private byte[] xmp;
 
     /**
      * @param metadata
@@ -126,19 +126,12 @@ class TiffMetadata extends AbstractMetadata implements Metadata {
     }
 
     @Override
-    public String getXmp() {
+    public byte[] getXmp() {
         if (!checkedForXmp) {
             checkedForXmp = true;
             final TIFFField xmpField = getXmpField();
             if (xmpField != null) {
-                byte[] xmpData = (byte[]) xmpField.getData();
-                if (xmpData != null) {
-                    xmp = new String(xmpData);
-                    // Trim off the junk
-                    final int start = xmp.indexOf("<rdf:RDF");
-                    final int end = xmp.indexOf("</rdf:RDF");
-                    xmp = xmp.substring(start, end + 10);
-                }
+                xmp = (byte[]) xmpField.getData();
             }
         }
         return xmp;
@@ -146,6 +139,19 @@ class TiffMetadata extends AbstractMetadata implements Metadata {
 
     TIFFField getXmpField() {
         return ifd.getTIFFField(700);
+    }
+
+    @Override
+    public String getXmpRdf() {
+        final byte[] xmpData = getXmp();
+        if (xmpData != null) {
+            final String xmp = new String(xmpData);
+            // Trim off the junk
+            final int start = xmp.indexOf("<rdf:RDF");
+            final int end = xmp.indexOf("</rdf:RDF");
+            return xmp.substring(start, end + 10);
+        }
+        return null;
     }
 
 }

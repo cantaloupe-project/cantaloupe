@@ -28,7 +28,7 @@ class PngMetadata extends AbstractMetadata implements Metadata {
     private Orientation orientation;
 
     /** Cached by getXmp() */
-    private String xmp;
+    private byte[] xmp;
 
     static {
         // These were generally taken from
@@ -103,7 +103,7 @@ class PngMetadata extends AbstractMetadata implements Metadata {
     @Override
     public Orientation getOrientation() {
         if (orientation == null) {
-            final String xmp = getXmp();
+            final String xmp = getXmpRdf();
             if (xmp != null) {
                 final Orientation readOrientation = readOrientation(xmp);
                 if (readOrientation != null) {
@@ -118,7 +118,7 @@ class PngMetadata extends AbstractMetadata implements Metadata {
     }
 
     @Override
-    public String getXmp() {
+    public byte[] getXmp() {
         if (!checkedForXmp) {
             checkedForXmp = true;
             final NodeList itxtNodes = getAsTree().getElementsByTagName("iTXt");
@@ -130,16 +130,25 @@ class PngMetadata extends AbstractMetadata implements Metadata {
                             getAttribute("keyword");
                     if ("XML:com.adobe.xmp".equals(keyword)) {
                         xmp = ((IIOMetadataNode) entries.item(j)).
-                                getAttribute("text");
-                        // Trim off the junk
-                        final int start = xmp.indexOf("<rdf:RDF");
-                        final int end = xmp.indexOf("</rdf:RDF");
-                        xmp = xmp.substring(start, end + 10);
+                                getAttribute("text").getBytes();
                     }
                 }
             }
         }
         return xmp;
+    }
+
+    @Override
+    public String getXmpRdf() {
+        final byte[] xmpData = getXmp();
+        if (xmpData != null) {
+            final String xmp = new String(xmpData);
+            // Trim off the junk
+            final int start = xmp.indexOf("<rdf:RDF");
+            final int end = xmp.indexOf("</rdf:RDF");
+            return xmp.substring(start, end + 10);
+        }
+        return null;
     }
 
 }
