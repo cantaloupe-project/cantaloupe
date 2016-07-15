@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.image;
 
+import com.mortennobel.imagescaling.ResampleFilters;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -15,14 +16,30 @@ public class ScaleTest {
     @Before
     public void setUp() {
         this.scale = new Scale();
-    }
-
-    @Test
-    public void testInitialization() {
         assertEquals(Scale.Mode.ASPECT_FIT_INSIDE, scale.getMode());
         assertNull(scale.getPercent());
         assertNull(scale.getHeight());
         assertNull(scale.getWidth());
+    }
+
+    @Test
+    public void testFilterGetResampleFilter() {
+        assertSame(ResampleFilters.getBellFilter(),
+                Scale.Filter.BELL.getResampleFilter());
+        assertSame(ResampleFilters.getBiCubicFilter(),
+                Scale.Filter.BICUBIC.getResampleFilter());
+        assertSame(ResampleFilters.getBoxFilter(),
+                Scale.Filter.BOX.getResampleFilter());
+        assertSame(ResampleFilters.getBSplineFilter(),
+                Scale.Filter.BSPLINE.getResampleFilter());
+        assertSame(ResampleFilters.getHermiteFilter(),
+                Scale.Filter.HERMITE.getResampleFilter());
+        assertSame(ResampleFilters.getLanczos3Filter(),
+                Scale.Filter.LANCZOS3.getResampleFilter());
+        assertSame(ResampleFilters.getMitchellFilter(),
+                Scale.Filter.MITCHELL.getResampleFilter());
+        assertSame(ResampleFilters.getTriangleFilter(),
+                Scale.Filter.TRIANGLE.getResampleFilter());
     }
 
     @Test

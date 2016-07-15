@@ -1,5 +1,8 @@
 package edu.illinois.library.cantaloupe.image;
 
+import com.mortennobel.imagescaling.ResampleFilter;
+import com.mortennobel.imagescaling.ResampleFilters;
+
 import java.awt.Dimension;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +14,48 @@ import java.util.Map;
  * instances will have a non-null percent and a null width and height.</p>
  */
 public class Scale implements Operation {
+
+    /**
+     * Represents a resample algorithm.
+     */
+    public enum Filter {
+        BELL, BICUBIC, BOX, BSPLINE, HERMITE, LANCZOS3, MITCHELL, TRIANGLE;
+
+        /**
+         * @return Equivalent ResampleFilter instance.
+         */
+        public ResampleFilter getResampleFilter() {
+            ResampleFilter filter = null;
+            switch (this) {
+                case BELL:
+                    filter = ResampleFilters.getBellFilter();
+                    break;
+                case BICUBIC:
+                    filter = ResampleFilters.getBiCubicFilter();
+                    break;
+                case BOX:
+                    filter = ResampleFilters.getBoxFilter();
+                    break;
+                case BSPLINE:
+                    filter = ResampleFilters.getBSplineFilter();
+                    break;
+                case HERMITE:
+                    filter = ResampleFilters.getHermiteFilter();
+                    break;
+                case LANCZOS3:
+                    filter = ResampleFilters.getLanczos3Filter();
+                    break;
+                case MITCHELL:
+                    filter = ResampleFilters.getMitchellFilter();
+                    break;
+                case TRIANGLE:
+                    filter = ResampleFilters.getTriangleFilter();
+                    break;
+            }
+            return filter;
+        }
+
+    }
 
     public enum Mode {
         ASPECT_FIT_HEIGHT, ASPECT_FIT_WIDTH, ASPECT_FIT_INSIDE,
