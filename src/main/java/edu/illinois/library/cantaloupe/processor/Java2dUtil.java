@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import com.mortennobel.imagescaling.ResampleFilters;
+import com.mortennobel.imagescaling.ResampleFilter;
 import com.mortennobel.imagescaling.ResampleOp;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Crop;
@@ -34,6 +34,20 @@ import java.util.List;
 public abstract class Java2dUtil {
 
     private static Logger logger = LoggerFactory.getLogger(Java2dUtil.class);
+
+    /**
+     * See the inline documentation in scaleImage() for a rationale for
+     * choosing this.
+     */
+    private static final Scale.Filter DEFAULT_DOWNSCALE_FILTER =
+            Scale.Filter.BOX;
+
+    /**
+     * See the inline documentation in scaleImage() for a rationale for
+     * choosing this.
+     */
+    private static final Scale.Filter DEFAULT_UPSCALE_FILTER =
+            Scale.Filter.BICUBIC;
 
     /**
      * Redacts regions from the given image.
@@ -428,7 +442,8 @@ public abstract class Java2dUtil {
      * full-sized image.
      *
      * @param inImage Image to scale
-     * @param scale Requested size ignoring any reduction factor
+     * @param scale Requested size ignoring any reduction factor. If no
+     *              resample filter is set, a reasonable default will be used.
      * @param rf Reduction factor that has already been applied to
      *           <code>inImage</code>
      * @return Downscaled image, or the input image if the given scale is a
@@ -461,10 +476,10 @@ public abstract class Java2dUtil {
             This method uses the image scaling code in
             com.mortennobel.imagescaling (see
             https://blog.nobel-joergensen.com/2008/12/20/downscaling-images-in-java/)
-            as an alternative to the scaling available in the Java 2D APIs.
+            as an alternative to the scaling available in Graphics2D.
             Problem is, while the performance of Graphics2D.drawImage() is OK,
             the quality, even using RenderingHints.VALUE_INTERPOLATION_BILINEAR,
-            is utter crap for downscaling. BufferedImage.getScaledInstance()
+            is horrible for downscaling. BufferedImage.getScaledInstance()
             is somewhat the opposite: great quality but very slow. There may be
             ways to mitigate the former (like multi-step downscaling) but not
             without cost.
@@ -505,18 +520,29 @@ public abstract class Java2dUtil {
             final ResampleOp resampleOp = new ResampleOp(
                     targetSize.width, targetSize.height);
 
-            if (targetSize.width < sourceSize.width ||
-                    targetSize.height < sourceSize.height) {
-                resampleOp.setFilter(ResampleFilters.getBoxFilter());
-            } else {
-                resampleOp.setFilter(ResampleFilters.getBiCubicFilter());
+            // Try to use the requested resample filter.
+            ResampleFilter filter = null;
+            if (scale.getFilter() != null) {
+                filter = scale.getFilter().getResampleFilter();
             }
+            // No particular filter requested, so select a default.
+            if (filter == null) {
+                if (targetSize.width < sourceSize.width ||
+                        targetSize.height < sourceSize.height) {
+                    filter = DEFAULT_DOWNSCALE_FILTER.getResampleFilter();
+                } else {
+                    filter = DEFAULT_UPSCALE_FILTER.getResampleFilter();
+                }
+            }
+            resampleOp.setFilter(filter);
 
             scaledImage = resampleOp.filter(inImage, null);
 
-            logger.debug("scaleImage(): scaled {}x{} image to {}x{} in {} msec",
+            logger.debug("scaleImage(): scaled {}x{} image to {}x{} using " +
+                    "the {} filter in {} msec",
                     sourceSize.width, sourceSize.height,
                     targetSize.width, targetSize.height,
+                    filter.getName(),
                     System.currentTimeMillis() - startMsec);
         }
         return scaledImage;
