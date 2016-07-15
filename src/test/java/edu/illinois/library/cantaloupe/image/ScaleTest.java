@@ -247,6 +247,13 @@ public class ScaleTest {
         scale.setHeight(40);
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         assertEquals("!50,40", scale.toString());
+
+        scale = new Scale();
+        scale.setWidth(50);
+        scale.setHeight(40);
+        scale.setFilter(Scale.Filter.LANCZOS3);
+        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        assertEquals("!50,40,lanczos3", scale.toString());
     }
 
 }

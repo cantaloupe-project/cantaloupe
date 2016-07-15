@@ -62,10 +62,18 @@ public class Scale implements Operation {
         NON_ASPECT_FILL, FULL
     }
 
+    private Filter filter;
     private Integer height;
     private Mode scaleMode = Mode.ASPECT_FIT_INSIDE;
     private Float percent;
     private Integer width;
+
+    /**
+     * @return Resample filter to prefer. May be null.
+     */
+    public Filter getFilter() {
+        return filter;
+    }
 
     /**
      * @return Absolute pixel height. May be null.
@@ -186,6 +194,13 @@ public class Scale implements Operation {
     }
 
     /**
+     * @param filter Resample filter to prefer.
+     */
+    public void setFilter(Filter filter) {
+        this.filter = filter;
+    }
+
+    /**
      * @param height Integer greater than 0
      * @throws IllegalArgumentException
      */
@@ -247,11 +262,11 @@ public class Scale implements Operation {
      *     <dt>No-op</dt>
      *     <dd><code>none</code></dd>
      *     <dt>Percent</dt>
-     *     <dd><code>nnn%</code></dd>
+     *     <dd><code>nnn%(,filter)</code></dd>
      *     <dt>Aspect-fit-inside</dt>
-     *     <dd><code>!w,h</code></dd>
+     *     <dd><code>!w,h(,filter)</code></dd>
      *     <dt>Other</dt>
-     *     <dd><code>w,h</code></dd>
+     *     <dd><code>w,h(,filter)</code></dd>
      * </dl>
      *
      * @return String representation of the instance.
@@ -260,7 +275,7 @@ public class Scale implements Operation {
     public String toString() {
         String str = "";
         if (this.isNoOp()) {
-            str += "none";
+            return "none";
         } else if (this.getPercent() != null) {
             str += NumberUtil.removeTrailingZeroes(this.getPercent() * 100) + "%";
         } else {
@@ -274,6 +289,9 @@ public class Scale implements Operation {
             if (this.getHeight() != null && this.getHeight() > 0) {
                 str += this.getHeight();
             }
+        }
+        if (getFilter() != null) {
+            str += "," + getFilter().toString().toLowerCase();
         }
         return str;
     }
