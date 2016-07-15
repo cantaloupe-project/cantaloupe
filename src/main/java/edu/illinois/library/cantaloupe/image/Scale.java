@@ -140,6 +140,10 @@ public class Scale implements Operation {
                 (this.getPercent() == null && this.getHeight() == null && this.getWidth() == null);
     }
 
+    /**
+     * @param height Integer greater than 0
+     * @throws IllegalArgumentException
+     */
     public void setHeight(Integer height) throws IllegalArgumentException {
         if (height <= 0) {
             throw new IllegalArgumentException("Height must be a positive integer");
@@ -162,6 +166,10 @@ public class Scale implements Operation {
         this.scaleMode = scaleMode;
     }
 
+    /**
+     * @param width Integer greater than 0
+     * @throws IllegalArgumentException
+     */
     public void setWidth(Integer width) throws IllegalArgumentException {
         if (width <= 0) {
             throw new IllegalArgumentException("Width must be a positive integer");
@@ -187,8 +195,21 @@ public class Scale implements Operation {
     }
 
     /**
-     * @return String representation of the instance, guaranteed to uniquely
-     * represent the instance.
+     * <p>Returns a string representation of the instance, guaranteed to
+     * uniquely represent the instance. The format is:</p>
+     *
+     * <dl>
+     *     <dt>No-op</dt>
+     *     <dd><code>none</code></dd>
+     *     <dt>Percent</dt>
+     *     <dd><code>nnn%</code></dd>
+     *     <dt>Aspect-fit-inside</dt>
+     *     <dd><code>!w,h</code></dd>
+     *     <dt>Other</dt>
+     *     <dd><code>w,h</code></dd>
+     * </dl>
+     *
+     * @return String representation of the instance.
      */
     @Override
     public String toString() {
