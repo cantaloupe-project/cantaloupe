@@ -52,16 +52,16 @@ class TiffImageReader extends AbstractImageReader {
         Iterator<javax.imageio.ImageReader> it = ImageIO.getImageReadersByMIMEType(
                 Format.TIF.getPreferredMediaType().toString());
         while (it.hasNext()) {
-            reader = it.next();
+            iioReader = it.next();
             // This version contains improvements over the Sun version,
             // namely support for BigTIFF.
-            if (reader instanceof it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader) {
+            if (iioReader instanceof it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader) {
                 break;
             }
         }
-        if (reader != null) {
-            reader.setInput(inputStream);
-            logger.info("createReader(): using {}", reader.getClass().getName());
+        if (iioReader != null) {
+            iioReader.setInput(inputStream);
+            logger.info("createReader(): using {}", iioReader.getClass().getName());
         } else {
             throw new IOException("Unable to determine the format of the " +
                     "source image.");
@@ -70,10 +70,10 @@ class TiffImageReader extends AbstractImageReader {
 
     @Override
     Metadata getMetadata(int imageIndex) throws IOException {
-        if (reader == null) {
+        if (iioReader == null) {
             createReader();
         }
-        final IIOMetadata metadata = reader.getImageMetadata(imageIndex);
+        final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
         final String metadataFormat = metadata.getNativeMetadataFormatName();
         return new TiffMetadata(metadata, metadataFormat);
     }
@@ -106,7 +106,7 @@ class TiffImageReader extends AbstractImageReader {
                               final ReductionFactor reductionFactor,
                               final Set<ImageReader.Hint> hints)
             throws IOException, ProcessorException {
-        if (reader == null) {
+        if (iioReader == null) {
             createReader();
         }
         BufferedImage image = null;
@@ -128,7 +128,7 @@ class TiffImageReader extends AbstractImageReader {
             dispose();
         }
         if (image == null) {
-            throw new UnsupportedSourceFormatException(reader.getFormatName());
+            throw new UnsupportedSourceFormatException(iioReader.getFormatName());
         }
         BufferedImage rgbImage = Java2dUtil.convertCustomToRgb(image);
         if (rgbImage != image) {
@@ -157,7 +157,7 @@ class TiffImageReader extends AbstractImageReader {
     public RenderedImage readRendered(final OperationList ops,
                                       final ReductionFactor reductionFactor)
             throws IOException, ProcessorException {
-        if (reader == null) {
+        if (iioReader == null) {
             createReader();
         }
         RenderedImage image;
@@ -177,7 +177,7 @@ class TiffImageReader extends AbstractImageReader {
                 reductionFactor);
 
         if (image == null) {
-            throw new UnsupportedSourceFormatException(reader.getFormatName());
+            throw new UnsupportedSourceFormatException(iioReader.getFormatName());
         }
         return image;
     }
