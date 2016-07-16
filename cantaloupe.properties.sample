@@ -246,6 +246,9 @@ StreamProcessor.retrieval_strategy = StreamStrategy
 # Overrides the PATH.
 FfmpegProcessor.path_to_binaries =
 
+# Intensity of an unsharp mask from 0 to 1.
+FfmpegProcessor.sharpen = 0
+
 #----------------------------------------
 # GraphicsMagickProcessor
 #----------------------------------------

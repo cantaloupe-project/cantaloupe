@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
@@ -62,6 +63,21 @@ public class FfmpegProcessorTest extends ProcessorTest {
         ImageInfo expectedInfo = new ImageInfo(640, 360, 640, 360, Format.MPG);
         assertEquals(expectedInfo.toString(),
                 instance.getImageInfo().toString());
+    }
+
+    @Test
+    public void testGetSharpenAmount() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(FfmpegProcessor.SHARPEN_CONFIG_KEY, "0");
+        assertEquals(0, instance.getSharpenAmount());
+        config.setProperty(FfmpegProcessor.SHARPEN_CONFIG_KEY, "0.1");
+        assertEquals(3, instance.getSharpenAmount());
+        config.setProperty(FfmpegProcessor.SHARPEN_CONFIG_KEY, "0.2");
+        assertEquals(3, instance.getSharpenAmount());
+        config.setProperty(FfmpegProcessor.SHARPEN_CONFIG_KEY, "0.3");
+        assertEquals(3, instance.getSharpenAmount());
+        config.setProperty(FfmpegProcessor.SHARPEN_CONFIG_KEY, "1");
+        assertEquals(13, instance.getSharpenAmount());
     }
 
     @Test

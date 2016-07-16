@@ -51,6 +51,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
 
     static final String PATH_TO_BINARIES_CONFIG_KEY =
             "FfmpegProcessor.path_to_binaries";
+    static final String SHARPEN_CONFIG_KEY = "FfmpegProcessor.sharpen";
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
@@ -171,7 +172,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.redirectErrorStream(true);
 
-            logger.info("Executing {}", StringUtils.join(pb.command(), " "));
+            logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
             Process process = pb.start();
 
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -252,7 +253,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
         try {
             final ProcessBuilder pb = getProcessBuilder(ops,
                     imageInfo.getSize());
-            logger.info("Executing {}", StringUtils.join(pb.command(), " "));
+            logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
             try (final InputStream processInputStream = process.getInputStream();
@@ -408,7 +409,19 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
                             filterId));
                     filterId = "filter";
                 }
-            } else if (op instanceof Watermark) {
+            }
+        }
+
+        // Apply the sharpen operation, if present.
+        final int sharpenAmount = getSharpenAmount();
+        if (sharpenAmount > 0) {
+            filters.add(String.format("[%s] unsharp=luma_msize_x=%d:luma_msize_y=%d:luma_amount=2.5 [unsharp]",
+                    filterId, sharpenAmount, sharpenAmount));
+            filterId = "unsharp";
+        }
+
+        for (Operation op : ops) {
+            if (op instanceof Watermark) {
                 final Watermark watermark = (Watermark) op;
                 final File watermarkFile = watermark.getImage();
                 filters.add(0, String.format("movie=%s [wm]",
@@ -428,6 +441,31 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
         command.add("pipe:1");
 
         return new ProcessBuilder(command);
+    }
+
+    /**
+     * Translates a sharpen amount from 0-1 from the configuration to an amount
+     * for ffmpeg.
+     *
+     * @see <a href="https://ffmpeg.org/ffmpeg-filters.html#unsharp-1">
+     *      unsharp</a>
+     * @return Normalized sharpen amount for ffmpeg.
+     */
+    int getSharpenAmount() {
+        // The docs mention a max of 63, but the image falls apart way before
+        // that.
+        final float MAX_AMOUNT = 13f;
+        final Configuration config = Configuration.getInstance();
+        int amount = Math.round(MAX_AMOUNT *
+                config.getFloat(SHARPEN_CONFIG_KEY, 0));
+
+        // ffmpeg requires an odd amount.
+        if (amount > 1 && amount % 2 == 0) {
+            amount -= 1;
+        }
+        // ffmpeg won't accept an amount of 1.
+        amount = (amount == 1) ? 3 : amount;
+        return amount;
     }
 
 }
