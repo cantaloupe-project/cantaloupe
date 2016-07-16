@@ -125,7 +125,7 @@ class TiffImageReader extends AbstractImageReader {
             image = readSmallestUsableSubimage(crop, scale,
                     reductionFactor, hints);
         } finally {
-            reader.dispose();
+            dispose();
         }
         if (image == null) {
             throw new UnsupportedSourceFormatException(reader.getFormatName());
@@ -160,24 +160,22 @@ class TiffImageReader extends AbstractImageReader {
         if (reader == null) {
             createReader();
         }
-        RenderedImage image = null;
-        try {
-            Crop crop = new Crop();
-            crop.setFull(true);
-            Scale scale = new Scale();
-            scale.setMode(Scale.Mode.FULL);
-            for (Operation op : ops) {
-                if (op instanceof Crop) {
-                    crop = (Crop) op;
-                } else if (op instanceof Scale) {
-                    scale = (Scale) op;
-                }
+        RenderedImage image;
+
+        Crop crop = new Crop();
+        crop.setFull(true);
+        Scale scale = new Scale();
+        scale.setMode(Scale.Mode.FULL);
+        for (Operation op : ops) {
+            if (op instanceof Crop) {
+                crop = (Crop) op;
+            } else if (op instanceof Scale) {
+                scale = (Scale) op;
             }
-            image = readSmallestUsableSubimage(crop, scale,
-                    reductionFactor);
-        } finally {
-            reader.dispose();
         }
+        image = readSmallestUsableSubimage(crop, scale,
+                reductionFactor);
+
         if (image == null) {
             throw new UnsupportedSourceFormatException(reader.getFormatName());
         }

@@ -314,17 +314,19 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                 final ImageReader reader = new ImageReader(
                         new InputStreamStreamSource(processInputStream),
                         Format.BMP);
-
-                postProcessUsingJava2d(reader, ops, imageInfo, reductionFactor,
-                        outputStream);
-
-                final int code = process.waitFor();
-                if (code != 0) {
-                    logger.warn("opj_decompress returned with code {}", code);
-                    final String errorStr = errorBucket.toString();
-                    if (errorStr != null && errorStr.length() > 0) {
-                        throw new ProcessorException(errorStr);
+                try {
+                    postProcessUsingJava2d(reader, ops, imageInfo, reductionFactor,
+                            outputStream);
+                    final int code = process.waitFor();
+                    if (code != 0) {
+                        logger.warn("opj_decompress returned with code {}", code);
+                        final String errorStr = errorBucket.toString();
+                        if (errorStr != null && errorStr.length() > 0) {
+                            throw new ProcessorException(errorStr);
+                        }
                     }
+                } finally {
+                    reader.dispose();
                 }
             } finally {
                 process.destroy();

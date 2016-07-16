@@ -111,10 +111,8 @@ public class ImageReader {
 
     /**
      * Should be called when the reader is no longer needed.
-     *
-     * @throws IOException
      */
-    public void dispose() throws IOException {
+    public void dispose() {
         reader.dispose();
     }
 

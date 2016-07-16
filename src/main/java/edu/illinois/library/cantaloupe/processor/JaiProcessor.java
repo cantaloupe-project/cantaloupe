@@ -129,8 +129,8 @@ class JaiProcessor extends AbstractImageIoProcessor
             throw new UnsupportedOutputFormatException();
         }
 
+        final ImageReader reader = getReader();
         try {
-            final ImageReader reader = getReader();
             final Orientation orientation = getEffectiveOrientation();
             final ReductionFactor rf = new ReductionFactor();
             RenderedImage renderedImage = reader.readRendered(ops, orientation);
@@ -225,6 +225,8 @@ class JaiProcessor extends AbstractImageIoProcessor
             }
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
+        } finally {
+            reader.dispose();
         }
     }
 

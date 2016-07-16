@@ -93,16 +93,16 @@ abstract class AbstractImageIoProcessor extends AbstractProcessor {
     }
 
     /**
-     * {@link #setSourceFile(File)} and {@link #setSourceFormat(Format)} must
-     * be invoked first.
+     * ({@link #setSourceFile(File)} or {@link #setStreamSource(StreamSource)})
+     * and {@link #setSourceFormat(Format)} must be invoked first.
      */
     protected ImageReader getReader() {
         if (reader == null) {
             try {
                 if (streamSource != null) {
-                    reader = new ImageReader(streamSource, format);
+                    reader = new ImageReader(streamSource, getSourceFormat());
                 } else {
-                    reader = new ImageReader(sourceFile, format);
+                    reader = new ImageReader(sourceFile, getSourceFormat());
                 }
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
@@ -133,11 +133,7 @@ abstract class AbstractImageIoProcessor extends AbstractProcessor {
 
     private void disposeReader() {
         if (reader != null) {
-            try {
-                reader.dispose();
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
+            reader.dispose();
         }
         reader = null;
     }

@@ -143,8 +143,8 @@ class Java2dProcessor extends AbstractImageIoProcessor
             throw new UnsupportedOutputFormatException();
         }
 
+        final ImageReader reader = getReader();
         try {
-            final ImageReader reader = getReader();
             final Orientation orientation = getEffectiveOrientation();
 
             final ReductionFactor rf = new ReductionFactor();
@@ -220,6 +220,8 @@ class Java2dProcessor extends AbstractImageIoProcessor
                     write(image, ops.getOutputFormat(), outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
+        } finally {
+            reader.dispose();
         }
     }
 

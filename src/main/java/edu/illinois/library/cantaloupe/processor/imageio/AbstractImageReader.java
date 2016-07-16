@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.processor.ReductionFactor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,14 +98,10 @@ abstract class AbstractImageReader {
 
     /**
      * Should be called when the reader is no longer needed.
-     *
-     * @throws IOException
      */
-    void dispose() throws IOException {
+    void dispose() {
         try {
-            if (inputStream != null) {
-                inputStream.close();
-            }
+            IOUtils.closeQuietly(inputStream);
         } finally {
             if (reader != null) {
                 reader.dispose();
@@ -242,29 +239,25 @@ abstract class AbstractImageReader {
         if (reader == null) {
             createReader();
         }
-        BufferedImage image = null;
-        try {
-            Crop crop = null;
-            Scale scale = new Scale();
-            scale.setMode(Scale.Mode.FULL);
-            for (Operation op : ops) {
-                if (op instanceof Crop) {
-                    crop = (Crop) op;
-                    crop.applyOrientation(orientation, getSize());
-                } else if (op instanceof Scale) {
-                    scale = (Scale) op;
-                }
+        BufferedImage image;
+
+        Crop crop = null;
+        Scale scale = new Scale();
+        scale.setMode(Scale.Mode.FULL);
+        for (Operation op : ops) {
+            if (op instanceof Crop) {
+                crop = (Crop) op;
+                crop.applyOrientation(orientation, getSize());
             }
-            if (crop != null) {
-                final Dimension fullSize = new Dimension(
-                        reader.getWidth(0), reader.getHeight(0));
-                image = tileAwareRead(0, crop.getRectangle(fullSize), hints);
-            } else {
-                image = reader.read(0);
-            }
-        } finally {
-            reader.dispose();
         }
+        if (crop != null) {
+            final Dimension fullSize = new Dimension(
+                    reader.getWidth(0), reader.getHeight(0));
+            image = tileAwareRead(0, crop.getRectangle(fullSize), hints);
+        } else {
+            image = reader.read(0);
+        }
+
         if (image == null) {
             throw new UnsupportedSourceFormatException(reader.getFormatName());
         }
@@ -468,7 +461,7 @@ abstract class AbstractImageReader {
                 image = reader.read(0);
             }
         } finally {
-            reader.dispose();
+            dispose();
         }
         if (image == null) {
             throw new UnsupportedSourceFormatException(reader.getFormatName());
