@@ -242,8 +242,16 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
                 if (line.startsWith("Stiles=")) {
                     String[] parts = StringUtils.split(line, ",");
                     if (parts.length == 2) {
-                        final int tileWidth = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
-                        final int tileHeight = Integer.parseInt(parts[1].replaceAll("[^0-9]", ""));
+                        final int dim1 = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
+                        final int dim2 = Integer.parseInt(parts[1].replaceAll("[^0-9]", ""));
+                        int tileWidth, tileHeight;
+                        if (width > height) {
+                            tileWidth = Math.max(dim1, dim2);
+                            tileHeight = Math.min(dim1, dim2);
+                        } else {
+                            tileWidth = Math.min(dim1, dim2);
+                            tileHeight = Math.max(dim1, dim2);
+                        }
                         info.getImages().get(0).tileWidth = tileWidth;
                         info.getImages().get(0).tileHeight = tileHeight;
                     }
