@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
+import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -133,6 +134,23 @@ public class JaiUtilTest {
     @Test
     public void testScaleImageWithReductionFactor() {
         // TODO: write this
+    }
+
+    @Test
+    public void testSharpenImage() throws Exception {
+        RenderedOp image = getFixture(IMAGE);
+
+        // test with no-op sharpen
+        Sharpen sharpen = new Sharpen();
+        sharpen.setAmount(0);
+        RenderedOp sharpenedImage = JaiUtil.sharpenImage(image, sharpen);
+        assertSame(image, sharpenedImage);
+
+        // test with non-no-op sharpen
+        sharpen = new Sharpen();
+        sharpen.setAmount(0.5f);
+        sharpenedImage = JaiUtil.sharpenImage(image, sharpen);
+        assertNotSame(image, sharpenedImage);
     }
 
     @Test

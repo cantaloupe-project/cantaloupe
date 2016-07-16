@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
+import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.watermark.Position;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
@@ -436,6 +437,25 @@ abstract class JaiUtil {
             }
         }
         return scaledImage;
+    }
+
+    /**
+     * @param inImage Image to sharpen.
+     * @param sharpen The sharpen operation.
+     * @return Sharpened image.
+     */
+    static RenderedOp sharpenImage(final RenderedOp inImage,
+                                   final Sharpen sharpen) {
+        RenderedOp sharpenedImage = inImage;
+        if (!sharpen.isNoOp()) {
+            // http://docs.oracle.com/cd/E17802_01/products/products/java-media/jai/forDevelopers/jai-apidocs/javax/media/jai/operator/UnsharpMaskDescriptor.html
+            ParameterBlock pb = new ParameterBlock();
+            pb.addSource(inImage);
+            pb.add(null);
+            pb.add(sharpen.getAmount());
+            sharpenedImage = JAI.create("UnsharpMask", pb);
+        }
+        return sharpenedImage;
     }
 
     /**
