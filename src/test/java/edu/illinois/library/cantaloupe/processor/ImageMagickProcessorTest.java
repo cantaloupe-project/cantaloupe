@@ -30,8 +30,6 @@ public class ImageMagickProcessorTest extends Im4JavaProcessorTest {
 
     private static HashMap<Format, Set<Format>> supportedFormats;
 
-    ImageMagickProcessor instance = new ImageMagickProcessor();
-
     /**
      * @return Map of available output formats for all known source formats,
      * based on information reported by <code>identify -list format</code>.
@@ -48,12 +46,12 @@ public class ImageMagickProcessorTest extends Im4JavaProcessorTest {
             Runtime runtime = Runtime.getRuntime();
             Configuration config = Configuration.getInstance();
             config.clear();
-            if (config != null) {
-                String pathPrefix = config.getString("ImageMagickProcessor.path_to_binaries");
-                if (pathPrefix != null) {
-                    cmdPath = pathPrefix + File.separator + cmdPath;
-                }
+
+            String pathPrefix = config.getString("ImageMagickProcessor.path_to_binaries");
+            if (pathPrefix != null) {
+                cmdPath = pathPrefix + File.separator + cmdPath;
             }
+
             String[] commands = {cmdPath, "-list", "format"};
             Process proc = runtime.exec(commands);
             BufferedReader stdInput = new BufferedReader(
@@ -108,12 +106,8 @@ public class ImageMagickProcessorTest extends Im4JavaProcessorTest {
         return supportedFormats;
     }
 
-    protected StreamProcessor getInstance() {
-        return instance;
-    }
-
-    protected Processor getProcessor() {
-        return instance;
+    protected ImageMagickProcessor newInstance() {
+        return new ImageMagickProcessor();
     }
 
     @Test
@@ -131,7 +125,7 @@ public class ImageMagickProcessorTest extends Im4JavaProcessorTest {
 
         ImageInfo imageInfo = new ImageInfo(64, 58);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        final StreamProcessor instance = getInstance();
+        final StreamProcessor instance = newInstance();
         instance.setSourceFormat(Format.JPG);
         StreamSource streamSource = new TestStreamSource(
                 TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));

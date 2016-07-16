@@ -29,8 +29,6 @@ public class GraphicsMagickProcessorTest extends Im4JavaProcessorTest {
 
     private static HashMap<Format, Set<Format>> supportedFormats;
 
-    GraphicsMagickProcessor instance = new GraphicsMagickProcessor();
-
     protected HashMap<Format, Set<Format>> getAvailableOutputFormats()
             throws IOException {
         if (supportedFormats == null) {
@@ -96,12 +94,8 @@ public class GraphicsMagickProcessorTest extends Im4JavaProcessorTest {
         return supportedFormats;
     }
 
-    protected StreamProcessor getInstance() {
-        return instance;
-    }
-
-    protected Processor getProcessor() {
-        return instance;
+    protected GraphicsMagickProcessor newInstance() {
+        return new GraphicsMagickProcessor();
     }
 
     @Test
@@ -119,7 +113,7 @@ public class GraphicsMagickProcessorTest extends Im4JavaProcessorTest {
 
         ImageInfo imageInfo = new ImageInfo(64, 58);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        final StreamProcessor instance = getInstance();
+        final StreamProcessor instance = newInstance();
         instance.setSourceFormat(Format.JPG);
         StreamSource streamSource = new TestStreamSource(
                 TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));

@@ -23,10 +23,14 @@ import static org.junit.Assert.*;
 
 public class Java2dProcessorTest extends ProcessorTest {
 
-    Java2dProcessor instance = new Java2dProcessor();
+    private Java2dProcessor instance;
 
-    protected Processor getProcessor() {
-        return instance;
+    public void setUp() {
+        instance = newInstance();
+    }
+
+    protected Java2dProcessor newInstance() {
+        return new Java2dProcessor();
     }
 
     @Test
@@ -103,14 +107,14 @@ public class Java2dProcessorTest extends ProcessorTest {
                 getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif");
 
         // test as a StreamProcessor
-        StreamProcessor sproc = (StreamProcessor) getProcessor();
+        StreamProcessor sproc = newInstance();
         StreamSource streamSource = new TestStreamSource(fixture);
         sproc.setStreamSource(streamSource);
         sproc.setSourceFormat(Format.TIF);
         assertEquals(expectedInfo, sproc.getImageInfo());
 
         // test as a FileProcessor
-        FileProcessor fproc = (FileProcessor) getProcessor();
+        FileProcessor fproc = newInstance();
         fproc.setSourceFile(fixture);
         fproc.setSourceFormat(Format.TIF);
         assertEquals(expectedInfo, fproc.getImageInfo());
@@ -132,7 +136,7 @@ public class Java2dProcessorTest extends ProcessorTest {
 
         final File fixture = TestUtil.getImage("jpg-rotated.jpg");
 
-        final FileProcessor fproc = (FileProcessor) getProcessor();
+        final FileProcessor fproc = newInstance();
         fproc.setSourceFile(fixture);
         fproc.setSourceFormat(Format.JPG);
 
@@ -143,6 +147,7 @@ public class Java2dProcessorTest extends ProcessorTest {
     @Test
     public void testGetSupportedFeatures() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
+
         Set<ProcessorFeature> expectedFeatures = new HashSet<>();
         expectedFeatures.add(ProcessorFeature.MIRRORING);
         expectedFeatures.add(ProcessorFeature.REGION_BY_PERCENT);

@@ -17,19 +17,21 @@ import static org.junit.Assert.*;
 
 public class KakaduProcessorTest extends ProcessorTest {
 
-    KakaduProcessor instance;
+    private KakaduProcessor instance;
 
     @Before
-    public void setUp() throws Exception {
-        Configuration.getInstance().setProperty(
-                KakaduProcessor.PATH_TO_BINARIES_CONFIG_KEY, "/usr/local/bin");
-
-        instance = new KakaduProcessor();
-        instance.setSourceFormat(Format.JP2);
+    public void setUp() {
+        instance = newInstance();
     }
 
-    protected Processor getProcessor() {
-        return instance;
+    protected KakaduProcessor newInstance() {
+        KakaduProcessor proc = new KakaduProcessor();
+        try {
+            proc.setSourceFormat(Format.JP2);
+        } catch (UnsupportedSourceFormatException e) {
+            fail("Huge bug");
+        }
+        return proc;
     }
 
     @Test
@@ -82,6 +84,7 @@ public class KakaduProcessorTest extends ProcessorTest {
     @Override
     public void testGetImageInfo() throws Exception {
         ImageInfo expectedInfo = new ImageInfo(100, 88, 100, 88, Format.JP2);
+
         instance.setSourceFile(TestUtil.getImage("jp2"));
         assertEquals(expectedInfo, instance.getImageInfo());
 

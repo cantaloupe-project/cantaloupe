@@ -25,15 +25,15 @@ public class JaiProcessorTest extends ProcessorTest {
         System.setProperty("com.sun.media.jai.disableMediaLib", "true");
     }
 
-    JaiProcessor instance;
+    private JaiProcessor instance;
 
     @Before
     public void setUp() {
-        instance = new JaiProcessor();
+        instance = newInstance();
     }
 
-    protected Processor getProcessor() {
-        return instance;
+    protected JaiProcessor newInstance() {
+        return new JaiProcessor();
     }
 
     @Test
@@ -64,14 +64,14 @@ public class JaiProcessorTest extends ProcessorTest {
                 getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif");
 
         // test as a StreamProcessor
-        StreamProcessor sproc = (StreamProcessor) getProcessor();
+        StreamProcessor sproc = (StreamProcessor) newInstance();
         StreamSource streamSource = new TestStreamSource(fixture);
         sproc.setStreamSource(streamSource);
         sproc.setSourceFormat(Format.TIF);
         assertEquals(expectedInfo, sproc.getImageInfo());
 
         // test as a FileProcessor
-        FileProcessor fproc = (FileProcessor) getProcessor();
+        FileProcessor fproc = (FileProcessor) newInstance();
         fproc.setSourceFile(fixture);
         fproc.setSourceFormat(Format.TIF);
         assertEquals(expectedInfo, fproc.getImageInfo());
@@ -93,7 +93,7 @@ public class JaiProcessorTest extends ProcessorTest {
 
         final File fixture = TestUtil.getImage("jpg-rotated.jpg");
 
-        final FileProcessor fproc = (FileProcessor) getProcessor();
+        final FileProcessor fproc = (FileProcessor) newInstance();
         fproc.setSourceFile(fixture);
         fproc.setSourceFormat(Format.JPG);
 

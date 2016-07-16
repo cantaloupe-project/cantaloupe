@@ -28,12 +28,17 @@ public class PdfBoxProcessorTest extends ProcessorTest {
         config.clear();
         config.setProperty(PdfBoxProcessor.DPI_CONFIG_KEY, 72);
 
-        instance = new PdfBoxProcessor();
-        instance.setSourceFormat(Format.PDF);
+        instance = newInstance();
     }
 
-    protected Processor getProcessor() {
-        return instance;
+    protected PdfBoxProcessor newInstance() {
+        PdfBoxProcessor proc = new PdfBoxProcessor();
+        try {
+            proc.setSourceFormat(Format.PDF);
+        } catch (UnsupportedSourceFormatException e) {
+            fail("Huge bug");
+        }
+        return proc;
     }
 
     @Test

@@ -35,13 +35,11 @@ abstract class Im4JavaProcessorTest extends ProcessorTest {
     abstract protected HashMap<Format, Set<Format>> getAvailableOutputFormats()
             throws IOException;
 
-    abstract protected StreamProcessor getInstance();
-
     @Test
     public void testGetAvailableOutputFormats() throws Exception {
         for (Format format : Format.values()) {
             try {
-                StreamProcessor instance = getInstance();
+                StreamProcessor instance = (StreamProcessor) newInstance();
                 instance.setSourceFormat(format);
                 Set<Format> expectedFormats = getAvailableOutputFormats().
                         get(format);
@@ -54,7 +52,7 @@ abstract class Im4JavaProcessorTest extends ProcessorTest {
 
     @Test
     public void testGetSupportedFeatures() throws Exception {
-        StreamProcessor instance = getInstance();
+        StreamProcessor instance = (StreamProcessor) newInstance();
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
         Set<ProcessorFeature> expectedFeatures = new HashSet<>();
         expectedFeatures.add(ProcessorFeature.MIRRORING);
@@ -102,7 +100,7 @@ abstract class Im4JavaProcessorTest extends ProcessorTest {
 
         ImageInfo imageInfo = new ImageInfo(64, 58);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        final StreamProcessor instance = getInstance();
+        final StreamProcessor instance = (StreamProcessor) newInstance();
         instance.setSourceFormat(Format.JPG);
         StreamSource streamSource = new TestStreamSource(
                 TestUtil.getImage("jpg-xmp.jpg"));
@@ -151,7 +149,7 @@ abstract class Im4JavaProcessorTest extends ProcessorTest {
 
         ImageInfo imageInfo = new ImageInfo(64, 58);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        final StreamProcessor instance = getInstance();
+        final StreamProcessor instance = (StreamProcessor) newInstance();
         instance.setSourceFormat(Format.JPG);
         StreamSource streamSource = new TestStreamSource(
                 TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));

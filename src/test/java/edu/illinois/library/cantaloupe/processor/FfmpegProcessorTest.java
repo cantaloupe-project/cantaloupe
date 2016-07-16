@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -22,26 +23,32 @@ import static org.junit.Assert.*;
  */
 public class FfmpegProcessorTest extends ProcessorTest {
 
-    FfmpegProcessor instance;
-
-    protected Processor getProcessor() {
-        return instance;
-    }
+    private FfmpegProcessor instance;
 
     @Before
-    public void setUp() throws Exception {
-        instance = new FfmpegProcessor();
-        final Format format = Format.MPG;
-        final File fixture = TestUtil.
-                getFixture("images/" + format.getPreferredExtension());
-        instance.setSourceFile(fixture);
-        instance.setSourceFormat(format);
+    public void setUp() {
+        instance = newInstance();
+    }
+
+    protected FfmpegProcessor newInstance() {
+        FfmpegProcessor instance = new FfmpegProcessor();
+        try {
+            final Format format = Format.MPG;
+            final File fixture = TestUtil.
+                    getFixture("images/" + format.getPreferredExtension());
+            instance.setSourceFile(fixture);
+            instance.setSourceFormat(format);
+        } catch (IOException | UnsupportedSourceFormatException e) {
+            fail("Huge bug");
+        }
+        return instance;
     }
 
     @Test
     public void testGetAvailableOutputFormats() throws Exception {
         for (Format format : Format.values()) {
             try {
+                instance = newInstance();
                 Set<Format> expectedFormats = new HashSet<>();
                 if (format.getType() != null &&
                         format.getType().equals(Format.Type.VIDEO)) {
@@ -121,7 +128,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
     @Test
     @Override
     public void testGetSupportedIiif11Qualities() throws Exception {
-        instance.setSourceFormat(getAnySupportedSourceFormat(getProcessor()));
+        instance.setSourceFormat(getAnySupportedSourceFormat(instance));
         Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
                 expectedQualities = new HashSet<>();
         expectedQualities.add(
@@ -137,7 +144,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
     @Test
     @Override
     public void testGetSupportedIiif20Qualities() throws Exception {
-        instance.setSourceFormat(getAnySupportedSourceFormat(getProcessor()));
+        instance.setSourceFormat(getAnySupportedSourceFormat(instance));
         Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
                 expectedQualities = new HashSet<>();
         expectedQualities.add(

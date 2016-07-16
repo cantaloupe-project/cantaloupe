@@ -16,19 +16,21 @@ import static org.junit.Assert.*;
 
 public class OpenJpegProcessorTest extends ProcessorTest {
 
-    OpenJpegProcessor instance;
+    private OpenJpegProcessor instance;
 
     @Before
-    public void setUp() throws Exception {
-        Configuration.getInstance().setProperty(
-                OpenJpegProcessor.PATH_TO_BINARIES_CONFIG_KEY, "/usr/local/bin");
-
-        instance = new OpenJpegProcessor();
-        instance.setSourceFormat(Format.JP2);
+    public void setUp() {
+        instance = newInstance();
     }
 
-    protected Processor getProcessor() {
-        return instance;
+    protected OpenJpegProcessor newInstance() {
+        OpenJpegProcessor proc = new OpenJpegProcessor();
+        try {
+            proc.setSourceFormat(Format.JP2);
+        } catch (UnsupportedSourceFormatException e) {
+            fail("Huge bug");
+        }
+        return proc;
     }
 
     @Test
