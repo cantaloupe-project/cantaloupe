@@ -1,6 +1,7 @@
 # OS junk
 .DS_Store
 Thumbs.db
+.chkbit
 
 # IDE/Maven junk
 .idea/*
