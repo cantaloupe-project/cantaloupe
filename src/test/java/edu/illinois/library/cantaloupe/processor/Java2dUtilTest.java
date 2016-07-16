@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
+import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Position;
@@ -331,6 +332,17 @@ public class Java2dUtilTest {
         outImage = Java2dUtil.scaleImage(inImage, scale);
         assertEquals(25, outImage.getWidth());
         assertEquals(25, outImage.getHeight());
+    }
+
+    @Test
+    public void testSharpenImage() {
+        BufferedImage inImage = new BufferedImage(200, 100,
+                BufferedImage.TYPE_INT_RGB);
+        Sharpen sharpen = new Sharpen(0.1f);
+        BufferedImage outImage = Java2dUtil.sharpenImage(inImage, sharpen);
+
+        assertEquals(200, outImage.getWidth());
+        assertEquals(100, outImage.getHeight());
     }
 
     @Test

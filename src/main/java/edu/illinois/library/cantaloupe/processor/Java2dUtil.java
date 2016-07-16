@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Position;
 import edu.illinois.library.cantaloupe.image.Rotate;
@@ -546,6 +547,30 @@ public abstract class Java2dUtil {
                     System.currentTimeMillis() - startMsec);
         }
         return scaledImage;
+    }
+
+    /**
+     * @param inImage Image to sharpen.
+     * @param sharpen The sharpen operation.
+     * @return Sharpened image.
+     */
+    static BufferedImage sharpenImage(final BufferedImage inImage,
+                                      final Sharpen sharpen) {
+        BufferedImage sharpenedImage = inImage;
+        if (!sharpen.isNoOp()) {
+            final long startMsec = System.currentTimeMillis();
+
+            final ResampleOp resampleOp = new ResampleOp(
+                    inImage.getWidth(), inImage.getHeight());
+            resampleOp.setUnsharpenMask(sharpen.getAmount());
+
+            sharpenedImage = resampleOp.filter(inImage, null);
+
+            logger.debug("sharpenImage(): sharpened by {} in {} msec",
+                    sharpen.getAmount(),
+                    System.currentTimeMillis() - startMsec);
+        }
+        return sharpenedImage;
     }
 
     /**
