@@ -283,6 +283,9 @@ ImageMagickProcessor.background_color = black
 # JaiProcessor
 #----------------------------------------
 
+# Intensity of an unsharp mask from 0 to 1.
+JaiProcessor.sharpen = 0
+
 # JPEG output quality. Should be a number between 0-1.
 JaiProcessor.jpg.quality = 0.8
 
@@ -294,13 +297,6 @@ JaiProcessor.tif.compression = LZW
 # Java2dProcessor
 #----------------------------------------
 
-# JPEG output quality. Should be a number between 0-1.
-Java2dProcessor.jpg.quality = 0.8
-
-# TIFF output compression type. Available values are `LZW`, `Deflate`,
-# `ZLib`, `JPEG`, and `PackBits`. Leave blank for no compression.
-Java2dProcessor.tif.compression = LZW
-
 # Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
 # `lanczos3`, `mitchell`, `triangle`.
 Java2dProcessor.upscale_filter = bicubic
@@ -308,6 +304,13 @@ Java2dProcessor.downscale_filter = bicubic
 
 # Intensity of an unsharp mask from 0 to 1.
 Java2dProcessor.sharpen = 0
+
+# JPEG output quality. Should be a number between 0-1.
+Java2dProcessor.jpg.quality = 0.8
+
+# TIFF output compression type. Available values are `LZW`, `Deflate`,
+# `ZLib`, `JPEG`, and `PackBits`. Leave blank for no compression.
+Java2dProcessor.tif.compression = LZW
 
 #----------------------------------------
 # KakaduProcessor
@@ -345,9 +348,9 @@ OpenJpegProcessor.sharpen = 0
 # PdfBoxProcessor
 #----------------------------------------
 
-# Controls the resolution of the PDF rasterization at a scale factor of 1.
-# Requests for scales less than 0.5 or larger than 2 will automatically
-# use a lower or higher factor of this.
+# Resolution of the PDF rasterization at a scale of 1. Requests for
+# scales less than 0.5 or larger than 2 will automatically use a lower or
+# higher factor of this.
 PdfBoxProcessor.dpi = 150
 
 # Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,

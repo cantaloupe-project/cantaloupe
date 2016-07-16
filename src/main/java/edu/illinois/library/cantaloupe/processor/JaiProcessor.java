@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -9,6 +10,7 @@ import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
@@ -50,6 +52,8 @@ class JaiProcessor extends AbstractImageIoProcessor
         implements FileProcessor, StreamProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(JaiProcessor.class);
+
+    static final String SHARPEN_CONFIG_KEY = "JaiProcessor.sharpen";
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
@@ -185,7 +189,18 @@ class JaiProcessor extends AbstractImageIoProcessor
                     } else if (op instanceof Filter) {
                         renderedOp = JaiUtil.
                                 filterImage(renderedOp, (Filter) op);
-                    } else if (op instanceof Watermark) {
+                    }
+                }
+
+                // Apply the sharpen operation, if present.
+                final Configuration config = Configuration.getInstance();
+                final float sharpenValue = config.getFloat(SHARPEN_CONFIG_KEY, 0);
+                final Sharpen sharpen = new Sharpen(sharpenValue);
+                renderedOp = JaiUtil.sharpenImage(renderedOp, sharpen);
+
+                // Apply remaining operations.
+                for (Operation op : ops) {
+                    if (op instanceof Watermark) {
                         // Let's cheat and apply the watermark using Java 2D.
                         // There seems to be minimal performance penalty in doing
                         // this, and doing it in JAI is harder.
