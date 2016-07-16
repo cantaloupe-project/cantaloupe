@@ -17,7 +17,25 @@ title: Upgrading
 <h2>From 3.1.1 to 3.2</h2>
 
 <ul>
-  <li>Add the <code>metadata.*</code> keys from the sample configuration.</li>
+  <li>Add the following keys from the sample configuration:
+    <ul>
+      <li><code>GraphicsMagickProcessor.sharpen</code></li>
+      <li><code>ImageMagickProcessor.sharpen</code></li>
+      <li><code>Java2dProcessor.upscale_filter</code></li>
+      <li><code>Java2dProcessor.downscale_filter</code></li>
+      <li><code>Java2dProcessor.sharpen</code></li>
+      <li><code>KakaduProcessor.upscale_filter</code></li>
+      <li><code>KakaduProcessor.downscale_filter</code></li>
+      <li><code>KakaduProcessor.sharpen</code></li>
+      <li><code>OpenJpegProcessor.upscale_filter</code></li>
+      <li><code>OpenJpegProcessor.downscale_filter</code></li>
+      <li><code>OpenJpegProcessor.sharpen</code></li>
+      <li><code>PdfBoxProcessor.upscale_filter</code></li>
+      <li><code>PdfBoxProcessor.downscale_filter</code></li>
+      <li><code>PdfBoxProcessor.sharpen</code></li>
+      <li><code>metadata.*</code></li>
+    </ul>
+  </li>
   <li>Remove the following keys from the configuration:
     <ul>
       <li><code>Java2dProcessor.scale_mode</code></li>

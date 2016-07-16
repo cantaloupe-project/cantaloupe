@@ -254,6 +254,9 @@ FfmpegProcessor.path_to_binaries =
 # Overrides the PATH.
 GraphicsMagickProcessor.path_to_binaries =
 
+# Intensity of an unsharp mask from 0 to 1.
+GraphicsMagickProcessor.sharpen = 0
+
 # Color of the background when an image is rotated. Only affects output
 # formats that do not support transparency.
 GraphicsMagickProcessor.background_color = black
@@ -265,6 +268,9 @@ GraphicsMagickProcessor.background_color = black
 # Optional absolute path of the directory containing the ImageMagick binaries.
 # Overrides the PATH.
 ImageMagickProcessor.path_to_binaries = /usr/local/bin
+
+# Intensity of an unsharp mask from 0 to 1.
+ImageMagickProcessor.sharpen = 0
 
 # Color of the background when an image is rotated. Only affects output
 # formats that do not support transparency.

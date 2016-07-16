@@ -1,8 +1,16 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.image.Filter;
+import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Rotate;
+import edu.illinois.library.cantaloupe.image.Scale;
+import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.image.icc.IccProfile;
+import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import org.apache.commons.lang3.StringUtils;
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
@@ -11,6 +19,7 @@ import org.im4java.process.Pipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -38,6 +47,7 @@ class GraphicsMagickProcessor extends Im4JavaProcessor
 
     static final String BACKGROUND_COLOR_CONFIG_KEY =
             "GraphicsMagickProcessor.background_color";
+    static final String SHARPEN_CONFIG_KEY = "GraphicsMagickProcessor.sharpen";
     static final String PATH_TO_BINARIES_CONFIG_KEY =
             "GraphicsMagickProcessor.path_to_binaries";
 
@@ -137,6 +147,98 @@ class GraphicsMagickProcessor extends Im4JavaProcessor
             }
         }
         return supportedFormats;
+    }
+
+    void assembleOperation(final IMOperation imOp,
+                           final OperationList ops,
+                           final Dimension fullSize,
+                           final String backgroundColor) {
+        for (Operation op : ops) {
+            if (op instanceof Crop) {
+                Crop crop = (Crop) op;
+                if (!crop.isNoOp()) {
+                    if (crop.getShape().equals(Crop.Shape.SQUARE)) {
+                        final int shortestSide =
+                                Math.min(fullSize.width, fullSize.height);
+                        int x = (fullSize.width - shortestSide) / 2;
+                        int y = (fullSize.height - shortestSide) / 2;
+                        imOp.crop(shortestSide, shortestSide, x, y);
+                    } else if (crop.getUnit().equals(Crop.Unit.PERCENT)) {
+                        // im4java doesn't support cropping x/y by percentage
+                        // (only width/height), so we have to calculate them.
+                        int x = Math.round(crop.getX() * fullSize.width);
+                        int y = Math.round(crop.getY() * fullSize.height);
+                        int width = Math.round(crop.getWidth() * 100);
+                        int height = Math.round(crop.getHeight() * 100);
+                        imOp.crop(width, height, x, y, "%");
+                    } else {
+                        imOp.crop(Math.round(crop.getWidth()),
+                                Math.round(crop.getHeight()),
+                                Math.round(crop.getX()),
+                                Math.round(crop.getY()));
+                    }
+                }
+            } else if (op instanceof Scale) {
+                Scale scale = (Scale) op;
+                if (!scale.isNoOp()) {
+                    if (scale.getPercent() != null) {
+                        imOp.resize(Math.round(scale.getPercent() * 100),
+                                Math.round(scale.getPercent() * 100), "%");
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
+                        imOp.resize(scale.getWidth());
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
+                        imOp.resize(null, scale.getHeight());
+                    } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
+                        imOp.resize(scale.getWidth(), scale.getHeight(), "!");
+                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
+                        imOp.resize(scale.getWidth(), scale.getHeight());
+                    }
+                }
+            } else if (op instanceof Transpose) {
+                switch ((Transpose) op) {
+                    case HORIZONTAL:
+                        imOp.flop();
+                        break;
+                    case VERTICAL:
+                        imOp.flip();
+                        break;
+                }
+            } else if (op instanceof Rotate) {
+                final Rotate rotate = (Rotate) op;
+                if (!rotate.isNoOp()) {
+                    // If the output format supports transparency, make the
+                    // background transparent. Otherwise, use a
+                    // user-configurable background color.
+                    if (ops.getOutputFormat().supportsTransparency()) {
+                        imOp.background("none");
+                    } else {
+                        imOp.background(backgroundColor);
+                    }
+                    imOp.rotate((double) rotate.getDegrees());
+                }
+            } else if (op instanceof Filter) {
+                switch ((Filter) op) {
+                    case GRAY:
+                        imOp.colorspace("Gray");
+                        break;
+                    case BITONAL:
+                        imOp.monochrome();
+                        break;
+                }
+            } else if (op instanceof IccProfile) {
+                imOp.profile(((IccProfile) op).getFile().getAbsolutePath());
+            }
+        }
+
+        // Apply the sharpen operation, if present.
+        final Configuration config = Configuration.getInstance();
+        final double sharpenValue = config.getDouble(SHARPEN_CONFIG_KEY, 0);
+        imOp.unsharp(sharpenValue);
+
+        if (!Configuration.getInstance().
+                getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false)) {
+            imOp.strip();
+        }
     }
 
     @Override
