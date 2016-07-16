@@ -21,6 +21,7 @@ import org.apache.pdfbox.rendering.PDFRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +44,11 @@ class PdfBoxProcessor extends AbstractProcessor
     private static Logger logger = LoggerFactory.
             getLogger(PdfBoxProcessor.class);
 
+    static final String DOWNSCALE_FILTER_CONFIG_KEY =
+            "PdfBoxProcessor.downscale_filter";
     static final String DPI_CONFIG_KEY = "PdfBoxProcessor.dpi";
+    static final String UPSCALE_FILTER_CONFIG_KEY =
+            "PdfBoxProcessor.upscale_filter";
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
@@ -90,6 +95,28 @@ class PdfBoxProcessor extends AbstractProcessor
             outputFormats.addAll(ImageWriter.supportedFormats());
         }
         return outputFormats;
+    }
+
+    Scale.Filter getDownscaleFilter() {
+        final String upscaleFilterStr = Configuration.getInstance().
+                getString(DOWNSCALE_FILTER_CONFIG_KEY);
+        try {
+            return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
+        } catch (Exception e) {
+            logger.warn("Invalid value for {}", DOWNSCALE_FILTER_CONFIG_KEY);
+        }
+        return null;
+    }
+
+    Scale.Filter getUpscaleFilter() {
+        final String upscaleFilterStr = Configuration.getInstance().
+                getString(UPSCALE_FILTER_CONFIG_KEY);
+        try {
+            return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
+        } catch (Exception e) {
+            logger.warn("Invalid value for {}", UPSCALE_FILTER_CONFIG_KEY);
+        }
+        return null;
     }
 
     @Override
@@ -186,7 +213,7 @@ class PdfBoxProcessor extends AbstractProcessor
             page = Math.max(page, 1);
 
             final BufferedImage image = readImage(page - 1, rf.factor);
-            postProcessUsingJava2d(image, opList, rf, outputStream);
+            postProcessUsingJava2d(image, opList, imageInfo, rf, outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
@@ -194,6 +221,7 @@ class PdfBoxProcessor extends AbstractProcessor
 
     private void postProcessUsingJava2d(BufferedImage image,
                                         final OperationList opList,
+                                        final ImageInfo imageInfo,
                                         final ReductionFactor reductionFactor,
                                         final OutputStream outputStream)
             throws IOException, ProcessorException {
@@ -219,6 +247,16 @@ class PdfBoxProcessor extends AbstractProcessor
         // Apply all other operations.
         for (Operation op : opList) {
             if (op instanceof Scale) {
+                final Scale scale = (Scale) op;
+                final Float upOrDown =
+                        scale.getResultingScale(imageInfo.getSize());
+                if (upOrDown != null) {
+                    final Scale.Filter filter =
+                            (upOrDown > 1) ?
+                                    getUpscaleFilter() : getDownscaleFilter();
+                    scale.setFilter(filter);
+                }
+
                 image = Java2dUtil.scaleImage(image, (Scale) op,
                         reductionFactor);
             } else if (op instanceof Transpose) {

@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Filter;
@@ -39,6 +40,11 @@ class Java2dProcessor extends AbstractImageIoProcessor
     private static Logger logger = LoggerFactory.
             getLogger(Java2dProcessor.class);
 
+    static final String DOWNSCALE_FILTER_CONFIG_KEY =
+            "Java2dProcessor.downscale_filter";
+    static final String UPSCALE_FILTER_CONFIG_KEY =
+            "Java2dProcessor.upscale_filter";
+
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
@@ -71,6 +77,28 @@ class Java2dProcessor extends AbstractImageIoProcessor
                 ProcessorFeature.SIZE_BY_PERCENT,
                 ProcessorFeature.SIZE_BY_WIDTH,
                 ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
+    }
+
+    Scale.Filter getDownscaleFilter() {
+        final String upscaleFilterStr = Configuration.getInstance().
+                getString(DOWNSCALE_FILTER_CONFIG_KEY);
+        try {
+            return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
+        } catch (Exception e) {
+            logger.warn("Invalid value for {}", DOWNSCALE_FILTER_CONFIG_KEY);
+        }
+        return null;
+    }
+
+    Scale.Filter getUpscaleFilter() {
+        final String upscaleFilterStr = Configuration.getInstance().
+                getString(UPSCALE_FILTER_CONFIG_KEY);
+        try {
+            return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
+        } catch (Exception e) {
+            logger.warn("Invalid value for {}", UPSCALE_FILTER_CONFIG_KEY);
+        }
+        return null;
     }
 
     @Override
@@ -146,7 +174,17 @@ class Java2dProcessor extends AbstractImageIoProcessor
             // Apply all other operations.
             for (Operation op : ops) {
                 if (op instanceof Scale) {
-                    image = Java2dUtil.scaleImage(image, (Scale) op, rf);
+                    final Scale scale = (Scale) op;
+                    final Float upOrDown =
+                            scale.getResultingScale(imageInfo.getSize());
+                    if (upOrDown != null) {
+                        final Scale.Filter filter =
+                                (upOrDown > 1) ?
+                                        getUpscaleFilter() : getDownscaleFilter();
+                        scale.setFilter(filter);
+                    }
+
+                    image = Java2dUtil.scaleImage(image, scale, rf);
                 } else if (op instanceof Transpose) {
                     image = Java2dUtil.transposeImage(image, (Transpose) op);
                 } else if (op instanceof Rotate) {

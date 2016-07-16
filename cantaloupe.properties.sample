@@ -292,6 +292,11 @@ Java2dProcessor.jpg.quality = 0.8
 # `ZLib`, `JPEG`, and `PackBits`. Leave blank for no compression.
 Java2dProcessor.tif.compression = LZW
 
+# Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
+# `lanczos3`, `mitchell`, `triangle`.
+Java2dProcessor.upscale_filter = bicubic
+Java2dProcessor.downscale_filter = box
+
 #----------------------------------------
 # KakaduProcessor
 #----------------------------------------
@@ -299,6 +304,11 @@ Java2dProcessor.tif.compression = LZW
 # Optional absolute path of the directory containing the Kakadu binaries.
 # Overrides the PATH.
 KakaduProcessor.path_to_binaries =
+
+# Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
+# `lanczos3`, `mitchell`, `triangle`.
+KakaduProcessor.upscale_filter = bicubic
+KakaduProcessor.downscale_filter = bicubic
 
 
 #----------------------------------------
@@ -309,6 +319,11 @@ KakaduProcessor.path_to_binaries =
 # Overrides the PATH.
 OpenJpegProcessor.path_to_binaries =
 
+# Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
+# `lanczos3`, `mitchell`, `triangle`.
+OpenJpegProcessor.upscale_filter = bicubic
+OpenJpegProcessor.downscale_filter = bicubic
+
 
 #----------------------------------------
 # PdfBoxProcessor
@@ -318,6 +333,11 @@ OpenJpegProcessor.path_to_binaries =
 # Requests for scales less than 0.5 or larger than 2 will automatically
 # use a lower or higher factor of this.
 PdfBoxProcessor.dpi = 150
+
+# Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
+# `lanczos3`, `mitchell`, `triangle`.
+PdfBoxProcessor.upscale_filter = bicubic
+PdfBoxProcessor.downscale_filter = box
 
 ###########################################################################
 # CLIENT-SIDE CACHING

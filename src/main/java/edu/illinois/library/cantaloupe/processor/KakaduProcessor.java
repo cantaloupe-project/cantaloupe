@@ -72,8 +72,12 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
     private static Logger logger = LoggerFactory.
             getLogger(KakaduProcessor.class);
 
+    static final String DOWNSCALE_FILTER_CONFIG_KEY =
+            "KakaduProcessor.downscale_filter";
     static final String PATH_TO_BINARIES_CONFIG_KEY =
             "KakaduProcessor.path_to_binaries";
+    static final String UPSCALE_FILTER_CONFIG_KEY =
+            "KakaduProcessor.upscale_filter";
 
     private static final short MAX_REDUCTION_FACTOR = 5;
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
@@ -176,6 +180,28 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
             outputFormats.addAll(ImageWriter.supportedFormats());
         }
         return outputFormats;
+    }
+
+    Scale.Filter getDownscaleFilter() {
+        final String upscaleFilterStr = Configuration.getInstance().
+                getString(DOWNSCALE_FILTER_CONFIG_KEY);
+        try {
+            return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
+        } catch (Exception e) {
+            logger.warn("Invalid value for {}", DOWNSCALE_FILTER_CONFIG_KEY);
+        }
+        return null;
+    }
+
+    Scale.Filter getUpscaleFilter() {
+        final String upscaleFilterStr = Configuration.getInstance().
+                getString(UPSCALE_FILTER_CONFIG_KEY);
+        try {
+            return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
+        } catch (Exception e) {
+            logger.warn("Invalid value for {}", UPSCALE_FILTER_CONFIG_KEY);
+        }
+        return null;
     }
 
     /**
@@ -327,11 +353,8 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
                         new InputStreamStreamSource(processInputStream),
                         Format.BMP);
 
-
-
-                postProcessUsingJava2d(reader, ops, reductionFactor,
+                postProcessUsingJava2d(reader, ops, imageInfo, reductionFactor,
                         outputStream);
-
 
                 final int code = process.waitFor();
                 if (code != 0) {
@@ -498,6 +521,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
 
     private void postProcessUsingJava2d(final ImageReader reader,
                                         final OperationList opList,
+                                        final ImageInfo imageInfo,
                                         final ReductionFactor reductionFactor,
                                         final OutputStream outputStream)
             throws IOException, ProcessorException {
@@ -526,8 +550,17 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
         // Perform all remaining operations.
         for (Operation op : opList) {
             if (op instanceof Scale) {
-                image = Java2dUtil.scaleImage(image, (Scale) op,
-                        reductionFactor);
+                final Scale scale = (Scale) op;
+                final Float upOrDown =
+                        scale.getResultingScale(imageInfo.getSize());
+                if (upOrDown != null) {
+                    final Scale.Filter filter =
+                            (upOrDown > 1) ?
+                                    getUpscaleFilter() : getDownscaleFilter();
+                    scale.setFilter(filter);
+                }
+
+                image = Java2dUtil.scaleImage(image, scale, reductionFactor);
             } else if (op instanceof Transpose) {
                 image = Java2dUtil.transposeImage(image,
                         (Transpose) op);
