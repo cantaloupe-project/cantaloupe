@@ -192,10 +192,6 @@ var Form = function(config) {
             url: window.location,
             data: config.toString(),
             success: function() {
-                // Disable the submit button
-                var submit = $(formElem).find('input[type="submit"]');
-                submit.prop('disabled', true);
-
                 // Set the success message, make it appear, and fade it out on
                 // a delay.
                 var msg = '&check; Configuration saved.';
@@ -204,9 +200,8 @@ var Form = function(config) {
                         'take effect.';
                 }
                 var alert = $('<div class="alert alert-success">' + msg + '</div>');
-                submit.before(alert);
+                $(formElem).find('input[type="submit"]').before(alert);
                 alert.delay(4000).fadeOut(800, function () {
-                    submit.prop('disabled', false);
                     restart_required = false;
                     alert.remove();
                 });
