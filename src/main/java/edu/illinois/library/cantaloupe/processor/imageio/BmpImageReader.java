@@ -26,6 +26,9 @@ class BmpImageReader extends AbstractImageReader {
     }
 
     Metadata getMetadata(int imageIndex) throws IOException {
+        if (iioReader == null) {
+            createReader();
+        }
         final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
         final String metadataFormat = metadata.getNativeMetadataFormatName();
         return new BmpMetadata(metadata, metadataFormat);

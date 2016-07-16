@@ -60,7 +60,6 @@ abstract class AbstractImageReader {
             throws IOException {
         setSource(inputFile);
         setFormat(format);
-        createReader();
     }
 
     /**
@@ -73,7 +72,6 @@ abstract class AbstractImageReader {
                         Format format) throws IOException {
         setSource(streamSource);
         setFormat(format);
-        createReader();
     }
 
     protected void createReader() throws IOException {
