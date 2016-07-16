@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
@@ -42,6 +43,7 @@ class Java2dProcessor extends AbstractImageIoProcessor
 
     static final String DOWNSCALE_FILTER_CONFIG_KEY =
             "Java2dProcessor.downscale_filter";
+    static final String SHARPEN_CONFIG_KEY = "Java2dProcessor.sharpen";
     static final String UPSCALE_FILTER_CONFIG_KEY =
             "Java2dProcessor.upscale_filter";
 
@@ -171,7 +173,7 @@ class Java2dProcessor extends AbstractImageIoProcessor
             }
             image = Java2dUtil.applyRedactions(image, crop, rf, redactions);
 
-            // Apply all other operations.
+            // Apply most other operations.
             for (Operation op : ops) {
                 if (op instanceof Scale) {
                     final Scale scale = (Scale) op;
@@ -193,7 +195,18 @@ class Java2dProcessor extends AbstractImageIoProcessor
                     image = Java2dUtil.rotateImage(image, rotation);
                 } else if (op instanceof Filter) {
                     image = Java2dUtil.filterImage(image, (Filter) op);
-                } else if (op instanceof Watermark) {
+                }
+            }
+
+            // Apply the sharpen operation, if present.
+            final Configuration config = Configuration.getInstance();
+            final float sharpenValue = config.getFloat(SHARPEN_CONFIG_KEY, 0);
+            final Sharpen sharpen = new Sharpen(sharpenValue);
+            image = Java2dUtil.sharpenImage(image, sharpen);
+
+            // Apply remaining operations.
+            for (Operation op : ops) {
+                if (op instanceof Watermark) {
                     try {
                         image = Java2dUtil.applyWatermark(image,
                                 (Watermark) op);

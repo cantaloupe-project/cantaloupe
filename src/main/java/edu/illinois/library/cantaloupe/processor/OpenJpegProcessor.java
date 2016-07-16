@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
@@ -60,6 +61,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
             "OpenJpegProcessor.downscale_filter";
     static final String PATH_TO_BINARIES_CONFIG_KEY =
             "OpenJpegProcessor.path_to_binaries";
+    static final String SHARPEN_CONFIG_KEY = "OpenJpegProcessor.sharpen";
     static final String UPSCALE_FILTER_CONFIG_KEY =
             "OpenJpegProcessor.upscale_filter";
 
@@ -468,7 +470,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
         image = Java2dUtil.applyRedactions(image, crop, reductionFactor,
                 redactions);
 
-        // Perform all remaining operations.
+        // Apply most remaining operations.
         for (Operation op : opList) {
             if (op instanceof Scale) {
                 final Scale scale = (Scale) op;
@@ -488,7 +490,17 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                 image = Java2dUtil.rotateImage(image, (Rotate) op);
             } else if (op instanceof Filter) {
                 image = Java2dUtil.filterImage(image, (Filter) op);
-            } else if (op instanceof Watermark) {
+            }
+        }
+
+        // Apply the sharpen operation, if present.
+        final Configuration config = Configuration.getInstance();
+        final float sharpenValue = config.getFloat(SHARPEN_CONFIG_KEY, 0);
+        final Sharpen sharpen = new Sharpen(sharpenValue);
+        image = Java2dUtil.sharpenImage(image, sharpen);
+
+        for (Operation op : opList) {
+            if (op instanceof Watermark) {
                 try {
                     image = Java2dUtil.applyWatermark(image, (Watermark) op);
                 } catch (ConfigurationException e) {

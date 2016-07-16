@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
@@ -21,7 +22,6 @@ import org.apache.pdfbox.rendering.PDFRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -47,6 +47,7 @@ class PdfBoxProcessor extends AbstractProcessor
     static final String DOWNSCALE_FILTER_CONFIG_KEY =
             "PdfBoxProcessor.downscale_filter";
     static final String DPI_CONFIG_KEY = "PdfBoxProcessor.dpi";
+    static final String SHARPEN_CONFIG_KEY = "PdfBoxProcessor.sharpen";
     static final String UPSCALE_FILTER_CONFIG_KEY =
             "PdfBoxProcessor.upscale_filter";
 
@@ -244,7 +245,7 @@ class PdfBoxProcessor extends AbstractProcessor
         image = Java2dUtil.applyRedactions(image, crop, reductionFactor,
                 redactions);
 
-        // Apply all other operations.
+        // Apply most remaining operations.
         for (Operation op : opList) {
             if (op instanceof Scale) {
                 final Scale scale = (Scale) op;
@@ -265,7 +266,18 @@ class PdfBoxProcessor extends AbstractProcessor
                 image = Java2dUtil.rotateImage(image, (Rotate) op);
             } else if (op instanceof Filter) {
                 image = Java2dUtil.filterImage(image, (Filter) op);
-            } else if (op instanceof Watermark) {
+            }
+        }
+
+        // Apply the sharpen operation, if present.
+        final Configuration config = Configuration.getInstance();
+        final float sharpenValue = config.getFloat(SHARPEN_CONFIG_KEY, 0);
+        final Sharpen sharpen = new Sharpen(sharpenValue);
+        image = Java2dUtil.sharpenImage(image, sharpen);
+
+        // Apply remaining operations.
+        for (Operation op : opList) {
+            if (op instanceof Watermark) {
                 try {
                     image = Java2dUtil.applyWatermark(image, (Watermark) op);
                 } catch (ConfigurationException e) {

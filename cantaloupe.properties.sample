@@ -295,7 +295,10 @@ Java2dProcessor.tif.compression = LZW
 # Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
 # `lanczos3`, `mitchell`, `triangle`.
 Java2dProcessor.upscale_filter = bicubic
-Java2dProcessor.downscale_filter = box
+Java2dProcessor.downscale_filter = bicubic
+
+# Intensity of an unsharp mask from 0 to 1.
+Java2dProcessor.sharpen = 0
 
 #----------------------------------------
 # KakaduProcessor
@@ -310,6 +313,8 @@ KakaduProcessor.path_to_binaries =
 KakaduProcessor.upscale_filter = bicubic
 KakaduProcessor.downscale_filter = bicubic
 
+# Intensity of an unsharp mask from 0 to 1.
+KakaduProcessor.sharpen = 0
 
 #----------------------------------------
 # OpenJpegProcessor
@@ -324,6 +329,8 @@ OpenJpegProcessor.path_to_binaries =
 OpenJpegProcessor.upscale_filter = bicubic
 OpenJpegProcessor.downscale_filter = bicubic
 
+# Intensity of an unsharp mask from 0 to 1.
+OpenJpegProcessor.sharpen = 0
 
 #----------------------------------------
 # PdfBoxProcessor
@@ -337,7 +344,10 @@ PdfBoxProcessor.dpi = 150
 # Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
 # `lanczos3`, `mitchell`, `triangle`.
 PdfBoxProcessor.upscale_filter = bicubic
-PdfBoxProcessor.downscale_filter = box
+PdfBoxProcessor.downscale_filter = bicubic
+
+# Intensity of an unsharp mask from 0 to 1.
+PdfBoxProcessor.sharpen = 0
 
 ###########################################################################
 # CLIENT-SIDE CACHING
@@ -527,9 +537,8 @@ redaction.enabled = false
 # derivative images. Note that this is not foolproof; see the user manual.
 metadata.preserve = false
 
-# Whether to respect the EXIF "Orientation" property to auto-rotate images.
-# This can impair performance slightly, so should only be used for images
-# that come from digital cameras.
+# Whether to respect the EXIF "Orientation" field to auto-rotate images.
+# The check for this field can impair performance slightly.
 metadata.respect_orientation = false
 
 ###########################################################################
