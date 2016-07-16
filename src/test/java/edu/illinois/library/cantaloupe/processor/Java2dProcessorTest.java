@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -25,6 +26,7 @@ public class Java2dProcessorTest extends ProcessorTest {
 
     private Java2dProcessor instance;
 
+    @Before
     public void setUp() {
         instance = newInstance();
     }
