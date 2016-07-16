@@ -88,9 +88,11 @@ class JpegImageWriter extends AbstractImageWriter {
                 node.setAttribute("MarkerTag", "225");
                 node.setUserObject(exif);
                 // Append it to /markerSequence/unknown[@MarkerTag=225]
-                baseTree.getElementsByTagName("markerSequence").item(0).
-                        appendChild(node);
+                final Node markerSequence =
+                        baseTree.getElementsByTagName("markerSequence").item(0);
+                markerSequence.insertBefore(node, markerSequence.getFirstChild());
             }
+
             final Object iptc = sourceMetadata.getIptc();
             if (iptc != null) {
                 // Create the IPTC node.
@@ -98,9 +100,11 @@ class JpegImageWriter extends AbstractImageWriter {
                 node.setAttribute("MarkerTag", "237");
                 node.setUserObject(iptc);
                 // Append it to /markerSequence/unknown[@MarkerTag=237]
-                baseTree.getElementsByTagName("markerSequence").item(0).
-                        appendChild(node);
+                final Node markerSequence =
+                        baseTree.getElementsByTagName("markerSequence").item(0);
+                markerSequence.insertBefore(node, markerSequence.getFirstChild());
             }
+
             final byte[] xmp = sourceMetadata.getXmp();
             if (xmp != null) {
                 // Create the XMP node.
@@ -108,8 +112,9 @@ class JpegImageWriter extends AbstractImageWriter {
                 node.setAttribute("MarkerTag", "225");
                 node.setUserObject(xmp);
                 // Append it to /markerSequence/unknown[@MarkerTag=225]
-                baseTree.getElementsByTagName("markerSequence").item(0).
-                        appendChild(node);
+                final Node markerSequence =
+                        baseTree.getElementsByTagName("markerSequence").item(0);
+                markerSequence.insertBefore(node, markerSequence.getFirstChild());
             }
         }
     }
