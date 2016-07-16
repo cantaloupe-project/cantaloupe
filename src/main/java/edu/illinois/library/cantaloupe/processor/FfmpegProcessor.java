@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Crop;
-import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -401,13 +401,13 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
                             break;
                     }
                 }
-            } else if (op instanceof Filter) {
-                final Filter filter = (Filter) op;
-                if (filter.equals(Filter.GRAY)) {
+            } else if (op instanceof Color) {
+                final Color color = (Color) op;
+                if (color.equals(Color.GRAY)) {
                     filters.add(String.format(
-                            "[%s] colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3 [filter]",
+                            "[%s] colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3 [color]",
                             filterId));
-                    filterId = "filter";
+                    filterId = "color";
                 }
             }
         }

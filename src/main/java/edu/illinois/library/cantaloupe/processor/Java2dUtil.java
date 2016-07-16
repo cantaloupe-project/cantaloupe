@@ -3,8 +3,8 @@ package edu.illinois.library.cantaloupe.processor;
 import com.mortennobel.imagescaling.ResampleFilter;
 import com.mortennobel.imagescaling.ResampleOp;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Crop;
-import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
@@ -18,7 +18,6 @@ import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -70,7 +69,7 @@ public abstract class Java2dUtil {
                     baseImage.getWidth(), baseImage.getHeight());
 
             final Graphics2D g2d = baseImage.createGraphics();
-            g2d.setColor(Color.black);
+            g2d.setColor(java.awt.Color.BLACK);
 
             for (final Redaction redaction : redactions) {
                 final Rectangle redactionRegion =
@@ -309,39 +308,6 @@ public abstract class Java2dUtil {
     }
 
     /**
-     * @param inImage Image to filter
-     * @param filter Filter operation
-     * @return Filtered image, or the input image if the given filter operation
-     * is a no-op.
-     */
-    static BufferedImage filterImage(final BufferedImage inImage,
-                                     final Filter filter) {
-        BufferedImage filteredImage = inImage;
-        final long msec = System.currentTimeMillis();
-        switch (filter) {
-            case GRAY:
-                filteredImage = new BufferedImage(inImage.getWidth(),
-                        inImage.getHeight(),
-                        BufferedImage.TYPE_BYTE_GRAY);
-                break;
-            case BITONAL:
-                filteredImage = new BufferedImage(inImage.getWidth(),
-                        inImage.getHeight(),
-                        BufferedImage.TYPE_BYTE_BINARY);
-                break;
-        }
-        if (filteredImage != inImage) {
-            Graphics2D g2d = filteredImage.createGraphics();
-            g2d.drawImage(inImage, 0, 0, null);
-
-            logger.debug("filterImage(): filtered {}x{} image in {} msec",
-                    inImage.getWidth(), inImage.getHeight(),
-                    System.currentTimeMillis() - msec);
-        }
-        return filteredImage;
-    }
-
-    /**
      * @param watermark
      * @return Watermark image, or null if
      *         {@link WatermarkService#WATERMARK_FILE_CONFIG_KEY} is not set.
@@ -571,6 +537,39 @@ public abstract class Java2dUtil {
                     System.currentTimeMillis() - startMsec);
         }
         return sharpenedImage;
+    }
+
+    /**
+     * @param inImage Image to filter
+     * @param color   Color operation
+     * @return Filtered image, or the input image if the given color operation
+     *         is a no-op.
+     */
+    static BufferedImage transformColor(final BufferedImage inImage,
+                                        final Color color) {
+        BufferedImage filteredImage = inImage;
+        final long msec = System.currentTimeMillis();
+        switch (color) {
+            case GRAY:
+                filteredImage = new BufferedImage(inImage.getWidth(),
+                        inImage.getHeight(),
+                        BufferedImage.TYPE_BYTE_GRAY);
+                break;
+            case BITONAL:
+                filteredImage = new BufferedImage(inImage.getWidth(),
+                        inImage.getHeight(),
+                        BufferedImage.TYPE_BYTE_BINARY);
+                break;
+        }
+        if (filteredImage != inImage) {
+            Graphics2D g2d = filteredImage.createGraphics();
+            g2d.drawImage(inImage, 0, 0, null);
+
+            logger.debug("transformColor(): filtered {}x{} image in {} msec",
+                    inImage.getWidth(), inImage.getHeight(),
+                    System.currentTimeMillis() - msec);
+        }
+        return filteredImage;
     }
 
     /**

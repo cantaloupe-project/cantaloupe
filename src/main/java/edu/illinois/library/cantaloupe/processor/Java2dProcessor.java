@@ -2,8 +2,8 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Crop;
-import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Orientation;
@@ -193,8 +193,8 @@ class Java2dProcessor extends AbstractImageIoProcessor
                     Rotate rotation = (Rotate) op;
                     rotation.addDegrees(orientation.getDegrees());
                     image = Java2dUtil.rotateImage(image, rotation);
-                } else if (op instanceof Filter) {
-                    image = Java2dUtil.filterImage(image, (Filter) op);
+                } else if (op instanceof Color) {
+                    image = Java2dUtil.transformColor(image, (Color) op);
                 }
             }
 

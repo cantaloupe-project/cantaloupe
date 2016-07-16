@@ -98,7 +98,7 @@ public class OperationListTest {
     @Test
     public void testContains() {
         assertTrue(ops.contains(Scale.class));
-        assertFalse(ops.contains(Filter.class));
+        assertFalse(ops.contains(Color.class));
     }
 
     /* equals(Object) */
@@ -397,7 +397,7 @@ public class OperationListTest {
         scale.setPercent(0.4f);
         ops.add(scale);
         ops.add(new Rotate(15));
-        ops.add(Filter.BITONAL);
+        ops.add(Color.BITONAL);
         ops.setOutputFormat(Format.JPG);
         ops.getOptions().put("animal", "cat");
 

@@ -137,7 +137,7 @@ public class GraphicsMagickProcessorTest extends Im4JavaProcessorTest {
         int blue = (pixel) & 0xff;
         // "GraphicsMagick blue"
         assertEquals(255, alpha);
-        assertEquals(3, red);
+        assertEquals(4, red);
         assertEquals(0, green);
         assertEquals(0, blue);
     }

@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.image.Filter;
+import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -488,8 +488,8 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                 image = Java2dUtil.transposeImage(image, (Transpose) op);
             } else if (op instanceof Rotate) {
                 image = Java2dUtil.rotateImage(image, (Rotate) op);
-            } else if (op instanceof Filter) {
-                image = Java2dUtil.filterImage(image, (Filter) op);
+            } else if (op instanceof Color) {
+                image = Java2dUtil.transformColor(image, (Color) op);
             }
         }
 

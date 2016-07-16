@@ -2,8 +2,8 @@ package edu.illinois.library.cantaloupe.cache;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Crop;
-import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
@@ -151,7 +151,7 @@ public class FilesystemCacheTest {
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setPercent(0.905f);
         Rotate rotate = new Rotate(10);
-        Filter filter = Filter.BITONAL;
+        Color color = Color.BITONAL;
         Format format = Format.TIF;
 
         OperationList ops = new OperationList();
@@ -159,7 +159,7 @@ public class FilesystemCacheTest {
         ops.add(crop);
         ops.add(scale);
         ops.add(rotate);
-        ops.add(filter);
+        ops.add(color);
         ops.setOutputFormat(format);
 
         final String expected = String.format("%s%simage%s%s%s_%s_%s_%s_%s.%s",
@@ -171,7 +171,7 @@ public class FilesystemCacheTest {
                 FilesystemCache.filenameSafe(crop.toString()),
                 FilesystemCache.filenameSafe(scale.toString()),
                 FilesystemCache.filenameSafe(rotate.toString()),
-                FilesystemCache.filenameSafe(filter.toString()),
+                FilesystemCache.filenameSafe(color.toString()),
                 format);
         assertEquals(new File(expected), instance.getDerivativeImageFile(ops));
     }
@@ -223,7 +223,7 @@ public class FilesystemCacheTest {
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
 
-        ops.add(Filter.GRAY);
+        ops.add(Color.GRAY);
         imageFile = instance.getDerivativeImageFile(ops);
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();

@@ -4,7 +4,10 @@ import java.awt.Dimension;
 import java.util.HashMap;
 import java.util.Map;
 
-public enum Filter implements Operation {
+/**
+ * Encapsulates a color transform operation.
+ */
+public enum Color implements Operation {
 
     BITONAL, GRAY;
 
@@ -26,7 +29,7 @@ public enum Filter implements Operation {
     @Override
     public Map<String,Object> toMap(Dimension fullSize) {
         final Map<String,Object> map = new HashMap<>();
-        map.put("operation", "filter");
+        map.put("operation", "color");
         map.put("type", this.name().toLowerCase());
         return map;
     }

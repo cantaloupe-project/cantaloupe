@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Crop;
-import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.watermark.Position;
 import edu.illinois.library.cantaloupe.image.Rotate;
@@ -18,7 +18,6 @@ import javax.media.jai.OpImage;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.TileCache;
-import javax.media.jai.operator.ColorQuantizerDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TransposeDescriptor;
 import java.awt.Dimension;
@@ -62,9 +61,9 @@ abstract class JaiUtil {
 
     /**
      * @param inImage Image to crop
-     * @param crop Crop operation
+     * @param crop    Crop operation
      * @return Cropped image, or the input image if the given operation is a
-     * no-op.
+     *         no-op.
      */
     static RenderedOp cropImage(RenderedOp inImage, Crop crop) {
         return cropImage(inImage, crop, new ReductionFactor(0));
@@ -77,12 +76,12 @@ abstract class JaiUtil {
      * but the given region is relative to the full-sized image.
      *
      * @param inImage Image to crop
-     * @param crop Crop operation
-     * @param rf Number of times the dimensions of
-     *           <code>inImage</code> have already been halved
-     *           relative to the full-sized version
+     * @param crop    Crop operation
+     * @param rf      Number of times the dimensions of
+     *                <code>inImage</code> have already been halved
+     *                relative to the full-sized version
      * @return Cropped image, or the input image if the given operation is a
-     * no-op.
+     *         no-op.
      */
     static RenderedOp cropImage(RenderedOp inImage,
                                 Crop crop,
@@ -175,45 +174,11 @@ abstract class JaiUtil {
     }*/
 
     /**
-     * @param inImage Image to filter
-     * @param filter Filter operation
-     * @return Filtered image, or the input image if the given filter operation
-     * is a no-op.
-     */
-    @SuppressWarnings({"deprecation"}) // really, JAI itself is basically deprecated
-    static RenderedOp filterImage(RenderedOp inImage, Filter filter) {
-        RenderedOp filteredImage = inImage;
-        if (!filter.isNoOp()) {
-            // convert to grayscale
-            ParameterBlock pb = new ParameterBlock();
-            pb.addSource(inImage);
-            final int numBands = OpImage.getExpandedNumBands(
-                    inImage.getSampleModel(), inImage.getColorModel());
-            double[][] matrix = new double[1][numBands + 1];
-            matrix[0][0] = 0.114;
-            matrix[0][1] = 0.587;
-            matrix[0][2] = 0.299;
-            for (int i = 3; i <= numBands; i++) {
-                matrix[0][i] = 0;
-            }
-            pb.add(matrix);
-            filteredImage = JAI.create("bandcombine", pb, null);
-            if (filter == Filter.BITONAL) {
-                pb = new ParameterBlock();
-                pb.addSource(filteredImage);
-                pb.add(1.0 * 128);
-                filteredImage = JAI.create("binarize", pb);
-            }
-        }
-        return filteredImage;
-    }
-
-    /**
-     * @param baseImage Base image over which to draw the overlay.
+     * @param baseImage    Base image over which to draw the overlay.
      * @param overlayImage Image to overlay on top of the base image.
-     * @param position Position in which to render the overlay image.
-     * @param inset Minimum distance between the edges of the overlay image and
-     *              the edge of the base image, in pixels.
+     * @param position     Position in which to render the overlay image.
+     * @param inset        Minimum distance between the edges of the overlay
+     *                     image and the edge of the base image, in pixels.
      * @return The base image with the overlay image overlaid on top of it.
      */
     private static RenderedOp overlayImage(RenderedOp baseImage,
@@ -333,7 +298,7 @@ abstract class JaiUtil {
     }
 
     /**
-     * @param inImage Image to reformat
+     * @param inImage  Image to reformat
      * @param tileSize JAI tile size
      * @return Reformatted image
      */
@@ -345,9 +310,9 @@ abstract class JaiUtil {
 
     /**
      * @param inImage Image to rotate
-     * @param rotate Rotate operation
+     * @param rotate  Rotate operation
      * @return Rotated image, or the input image if the given rotate operation
-     * is a no-op.
+     *         is a no-op.
      */
     static RenderedOp rotateImage(RenderedOp inImage, Rotate rotate) {
         RenderedOp rotatedImage = inImage;
@@ -368,7 +333,7 @@ abstract class JaiUtil {
 
     /**
      * @param inImage Image to scale
-     * @param scale Scale operation
+     * @param scale   Scale operation
      * @return Scaled image, or the input image if the given scale is a no-op.
      */
     static RenderedOp scaleImage(RenderedOp inImage, Scale scale) {
@@ -379,9 +344,9 @@ abstract class JaiUtil {
 
     /**
      * @param inImage Image to scale
-     * @param scale Scale operation
-     * @param rf Reduction factor that has already been applied to
-     *                        <code>inImage</code>
+     * @param scale   Scale operation
+     * @param rf      Reduction factor that has already been applied to
+     *                <code>inImage</code>
      * @return Scaled image, or the input image if the given scale is a no-op.
      */
     static RenderedOp scaleImage(RenderedOp inImage, Scale scale,
@@ -397,10 +362,10 @@ abstract class JaiUtil {
      * already been halved <code>reductionFactor</code> times but the given
      * size is relative to the full-sized image.)
      *
-     * @param inImage Image to scale
-     * @param scale Requested size ignoring any reduction factor
+     * @param inImage       Image to scale
+     * @param scale         Requested size ignoring any reduction factor
      * @param interpolation Interpolation
-     * @param rf Reduction factor that has already been applied to
+     * @param rf            Reduction factor that has already been applied to
      *                        <code>inImage</code>
      * @return Scaled image, or the input image if the given scale is a no-op.
      */
@@ -459,10 +424,44 @@ abstract class JaiUtil {
     }
 
     /**
-     * @param inImage Image to transpose.
+     * @param inImage Image to filter
+     * @param color   Color transform operation
+     * @return Transformed image, or the input image if the given operation
+     *         is a no-op.
+     */
+    @SuppressWarnings({"deprecation"}) // really, JAI itself is basically deprecated
+    static RenderedOp transformColor(RenderedOp inImage, Color color) {
+        RenderedOp filteredImage = inImage;
+        if (!color.isNoOp()) {
+            // convert to grayscale
+            ParameterBlock pb = new ParameterBlock();
+            pb.addSource(inImage);
+            final int numBands = OpImage.getExpandedNumBands(
+                    inImage.getSampleModel(), inImage.getColorModel());
+            double[][] matrix = new double[1][numBands + 1];
+            matrix[0][0] = 0.114;
+            matrix[0][1] = 0.587;
+            matrix[0][2] = 0.299;
+            for (int i = 3; i <= numBands; i++) {
+                matrix[0][i] = 0;
+            }
+            pb.add(matrix);
+            filteredImage = JAI.create("bandcombine", pb, null);
+            if (color == Color.BITONAL) {
+                pb = new ParameterBlock();
+                pb.addSource(filteredImage);
+                pb.add(1.0 * 128);
+                filteredImage = JAI.create("binarize", pb);
+            }
+        }
+        return filteredImage;
+    }
+
+    /**
+     * @param inImage   Image to transpose.
      * @param transpose The transpose operation.
      * @return Transposed image, or the input image if the given transpose
-     * operation is a no-op.
+     *         operation is a no-op.
      */
     static RenderedOp transposeImage(RenderedOp inImage, Transpose transpose) {
         ParameterBlock pb = new ParameterBlock();

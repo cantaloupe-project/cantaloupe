@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Crop;
-import edu.illinois.library.cantaloupe.image.Filter;
+import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -116,8 +116,8 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
                     }
                     imOp.rotate((double) rotate.getDegrees());
                 }
-            } else if (op instanceof Filter) {
-                switch ((Filter) op) {
+            } else if (op instanceof Color) {
+                switch ((Color) op) {
                     case GRAY:
                         imOp.colorspace("Gray");
                         break;
