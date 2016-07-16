@@ -274,18 +274,35 @@ public class ControlPanelTest {
                 selectByVisibleText("PackBits");
         // Java2dProcessor
         css("#cl-processors li > a[href=\"#Java2dProcessor\"]").click();
+        new Select(css("[name=\"Java2dProcessor.downscale_filter\"]")).
+                selectByVisibleText("Mitchell");
+        new Select(css("[name=\"Java2dProcessor.upscale_filter\"]")).
+                selectByVisibleText("Triangle");
         css("[name=\"Java2dProcessor.jpg.quality\"]").sendKeys("0.55");
         new Select(css("[name=\"Java2dProcessor.tif.compression\"]")).
                 selectByVisibleText("PackBits");
+
         // KakaduProcessor
         css("#cl-processors li > a[href=\"#KakaduProcessor\"]").click();
         css("[name=\"KakaduProcessor.path_to_binaries\"]").sendKeys("/kpath");
+        new Select(css("[name=\"KakaduProcessor.downscale_filter\"]")).
+                selectByVisibleText("Mitchell");
+        new Select(css("[name=\"KakaduProcessor.upscale_filter\"]")).
+                selectByVisibleText("Triangle");
         // OpenJpegProcessor
         css("#cl-processors li > a[href=\"#OpenJpegProcessor\"]").click();
         css("[name=\"OpenJpegProcessor.path_to_binaries\"]").sendKeys("/ojpath");
+        new Select(css("[name=\"OpenJpegProcessor.downscale_filter\"]")).
+                selectByVisibleText("Mitchell");
+        new Select(css("[name=\"OpenJpegProcessor.upscale_filter\"]")).
+                selectByVisibleText("Triangle");
         // PdfBoxProcessor
         css("#cl-processors li > a[href=\"#PdfBoxProcessor\"]").click();
         css("[name=\"PdfBoxProcessor.dpi\"]").sendKeys("300");
+        new Select(css("[name=\"PdfBoxProcessor.downscale_filter\"]")).
+                selectByVisibleText("Mitchell");
+        new Select(css("[name=\"PdfBoxProcessor.upscale_filter\"]")).
+                selectByVisibleText("Triangle");
 
         // Submit the form
         css("#cl-processors input[type=\"submit\"]").click();

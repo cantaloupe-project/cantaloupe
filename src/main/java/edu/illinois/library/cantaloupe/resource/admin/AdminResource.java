@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
@@ -305,6 +306,9 @@ public class AdminResource extends AbstractResource {
 
         vars.put("streamProcessorRetrievalStrategy",
                 SourceImageWrangler.getStreamProcessorRetrievalStrategy());
+
+        // source formats
+        vars.put("scaleFilters", Scale.Filter.values());
 
         ////////////////////////////////////////////////////////////////////
         //////////////////////// caches section ////////////////////////////
