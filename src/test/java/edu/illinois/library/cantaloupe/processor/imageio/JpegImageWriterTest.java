@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.image.icc.IccProfile;
 import edu.illinois.library.cantaloupe.image.icc.IccProfileService;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Node;
@@ -22,8 +21,9 @@ import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.PlanarImage;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -33,9 +33,7 @@ public class JpegImageWriterTest {
 
     private BufferedImage bufferedImage;
     private Metadata metadata;
-    private FileOutputStream outputStream;
     private PlanarImage planarImage;
-    private File tempFile;
 
     @Before
     public void setUp() throws Exception {
@@ -51,110 +49,112 @@ public class JpegImageWriterTest {
         bufferedImage = new JpegImageReader(fixture).read();
         planarImage =  PlanarImage.wrapRenderedImage(
                 new JpegImageReader(fixture).readRendered());
-
-        // Create a temp file and output stream to write to
-        tempFile = File.createTempFile("test", "tmp");
-        outputStream = new FileOutputStream(tempFile);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        outputStream.close();
-        tempFile.delete();
     }
 
     @Test
     public void testWriteWithBufferedImage() throws Exception {
-        getWriter().write(bufferedImage, outputStream);
-        ImageIO.read(tempFile);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        getWriter().write(bufferedImage, os);
+        ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
     }
 
     @Test
     public void testWriteWithBufferedImageAndIccProfile() throws Exception {
         configureIccProfile();
-        getWriter().write(bufferedImage, outputStream);
-        checkForIccProfile();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        getWriter().write(bufferedImage, os);
+        checkForIccProfile(os.toByteArray());
     }
-/* TODO: why do these fail?
+
     @Test
     public void testWriteWithBufferedImageAndExifMetadata() throws Exception {
         final File fixture = TestUtil.getImage("jpg-exif.jpg");
-        metadata = new JpegImageReader(fixture).getNativeMetadata(0);
+        metadata = new JpegImageReader(fixture).getMetadata(0);
         bufferedImage = new JpegImageReader(fixture).read();
 
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
-        getWriter().write(bufferedImage, outputStream);
-        checkForExifMetadata();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        getWriter().write(bufferedImage, os);
+        checkForExifMetadata(os.toByteArray());
     }
 
     @Test
     public void testWriteWithBufferedImageAndIptcMetadata() throws Exception {
         final File fixture = TestUtil.getImage("jpg-iptc.jpg");
-        metadata = new JpegImageReader(fixture).getNativeMetadata(0);
+        metadata = new JpegImageReader(fixture).getMetadata(0);
         bufferedImage = new JpegImageReader(fixture).read();
 
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
-        getWriter().write(bufferedImage, outputStream);
-        checkForIptcMetadata();
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        getWriter().write(bufferedImage, os);
+        checkForIptcMetadata(os.toByteArray());
     }
 
     @Test
     public void testWriteWithBufferedImageAndXmpMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
-        getWriter().write(bufferedImage, outputStream);
-        checkForXmpMetadata();
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        getWriter().write(bufferedImage, os);
+        checkForXmpMetadata(os.toByteArray());
     }
-*/
+
     @Test
     public void testWriteWithPlanarImage() throws Exception {
-        getWriter().write(planarImage, outputStream);
-        ImageIO.read(tempFile);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        getWriter().write(planarImage, os);
+        ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
     }
 
     @Test
     public void testWriteWithPlanarImageAndIccProfile() throws Exception {
         configureIccProfile();
-        getWriter().write(planarImage, outputStream);
-        checkForIccProfile();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        getWriter().write(planarImage, os);
+        checkForIccProfile(os.toByteArray());
     }
-/* TODO: why do these fail?
+
     @Test
     public void testWriteWithPlanarImageAndExifMetadata() throws Exception {
         final File fixture = TestUtil.getImage("jpg-exif.jpg");
-        metadata = new JpegImageReader(fixture).getNativeMetadata(0);
+        metadata = new JpegImageReader(fixture).getMetadata(0);
         planarImage =  PlanarImage.wrapRenderedImage(
                 new JpegImageReader(fixture).readRendered());
 
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
-        getWriter().write(planarImage, outputStream);
-        checkForExifMetadata();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        getWriter().write(planarImage, os);
+        checkForExifMetadata(os.toByteArray());
     }
 
     @Test
     public void testWriteWithPlanarImageAndIptcMetadata() throws Exception {
         final File fixture = TestUtil.getImage("jpg-iptc.jpg");
-        metadata = new JpegImageReader(fixture).getNativeMetadata(0);
+        metadata = new JpegImageReader(fixture).getMetadata(0);
         planarImage =  PlanarImage.wrapRenderedImage(
                 new JpegImageReader(fixture).readRendered());
 
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
-        getWriter().write(planarImage, outputStream);
-        checkForIptcMetadata();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        getWriter().write(planarImage, os);
+        checkForIptcMetadata(os.toByteArray());
     }
 
     @Test
     public void testWriteWithPlanarImageAndXmpMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
-        getWriter().write(planarImage, outputStream);
-        checkForXmpMetadata();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        getWriter().write(planarImage, os);
+        checkForXmpMetadata(os.toByteArray());
     }
-*/
+
     private void configureIccProfile() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(IccProfileService.ICC_ENABLED_CONFIG_KEY, true);
@@ -166,13 +166,13 @@ public class JpegImageWriterTest {
                 TestUtil.getFixture("AdobeRGB1998.icc").getAbsolutePath());
     }
 
-    private void checkForIccProfile() throws Exception {
+    private void checkForIccProfile(byte[] imageData) throws Exception {
         // Read it back in
         final Iterator<ImageReader> readers =
                 ImageIO.getImageReadersByFormatName("JPEG");
         final ImageReader reader = readers.next();
-        try (ImageInputStream ios = ImageIO.createImageInputStream(tempFile)) {
-            reader.setInput(ios);
+        try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
+            reader.setInput(iis);
             // Check for the profile in its metadata
             final IIOMetadata metadata = reader.getImageMetadata(0);
             final Node tree = metadata.getAsTree(metadata.getNativeMetadataFormatName());
@@ -184,11 +184,11 @@ public class JpegImageWriterTest {
         }
     }
 
-    private void checkForExifMetadata() throws Exception {
+    private void checkForExifMetadata(byte[] imageData) throws Exception {
         final Iterator<ImageReader> readers =
                 ImageIO.getImageReadersByFormatName("JPEG");
         final ImageReader reader = readers.next();
-        try (ImageInputStream iis = ImageIO.createImageInputStream(tempFile)) {
+        try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             reader.setInput(iis);
             final IIOMetadata metadata = reader.getImageMetadata(0);
             final IIOMetadataNode tree = (IIOMetadataNode)
@@ -207,11 +207,11 @@ public class JpegImageWriterTest {
         }
     }
 
-    private void checkForIptcMetadata() throws Exception {
+    private void checkForIptcMetadata(byte[] imageData) throws Exception {
         final Iterator<ImageReader> readers =
                 ImageIO.getImageReadersByFormatName("JPEG");
         final ImageReader reader = readers.next();
-        try (ImageInputStream iis = ImageIO.createImageInputStream(tempFile)) {
+        try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             reader.setInput(iis);
             final IIOMetadata metadata = reader.getImageMetadata(0);
             final IIOMetadataNode tree = (IIOMetadataNode)
@@ -230,11 +230,11 @@ public class JpegImageWriterTest {
         }
     }
 
-    private void checkForXmpMetadata() throws Exception {
+    private void checkForXmpMetadata(byte[] imageData) throws Exception {
         final Iterator<ImageReader> readers =
                 ImageIO.getImageReadersByFormatName("JPEG");
         final ImageReader reader = readers.next();
-        try (ImageInputStream iis = ImageIO.createImageInputStream(tempFile)) {
+        try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             reader.setInput(iis);
             final IIOMetadata metadata = reader.getImageMetadata(0);
             final IIOMetadataNode tree = (IIOMetadataNode)
@@ -243,7 +243,8 @@ public class JpegImageWriterTest {
             boolean found = false;
             final NodeList unknowns = tree.getElementsByTagName("unknown");
             for (int i = 0; i < unknowns.getLength(); i++) {
-                if ("225".equals(unknowns.item(i).getAttributes().getNamedItem("MarkerTag").getNodeValue())) {
+                if ("225".equals(unknowns.item(i).getAttributes().
+                        getNamedItem("MarkerTag").getNodeValue())) {
                     found = true;
                 }
             }
