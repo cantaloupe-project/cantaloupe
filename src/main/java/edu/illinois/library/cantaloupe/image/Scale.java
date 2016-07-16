@@ -19,40 +19,33 @@ public class Scale implements Operation {
      * Represents a resample algorithm.
      */
     public enum Filter {
-        BELL, BICUBIC, BOX, BSPLINE, HERMITE, LANCZOS3, MITCHELL, TRIANGLE;
+
+        BELL("Bell", ResampleFilters.getBellFilter()),
+        BICUBIC("Bicubic", ResampleFilters.getBiCubicFilter()),
+        BOX("Box", ResampleFilters.getBoxFilter()),
+        BSPLINE("B-Spline", ResampleFilters.getBSplineFilter()),
+        HERMITE("Hermite", ResampleFilters.getHermiteFilter()),
+        LANCZOS3("Lanczos3", ResampleFilters.getLanczos3Filter()),
+        MITCHELL("Mitchell", ResampleFilters.getMitchellFilter()),
+        TRIANGLE("Triangle", ResampleFilters.getTriangleFilter());
+
+        private String name;
+        private ResampleFilter resampleFilter;
+
+        Filter(String name, ResampleFilter resampleFilter) {
+            this.name = name;
+            this.resampleFilter = resampleFilter;
+        }
+
+        public String getName() {
+            return name;
+        }
 
         /**
          * @return Equivalent ResampleFilter instance.
          */
         public ResampleFilter getResampleFilter() {
-            ResampleFilter filter = null;
-            switch (this) {
-                case BELL:
-                    filter = ResampleFilters.getBellFilter();
-                    break;
-                case BICUBIC:
-                    filter = ResampleFilters.getBiCubicFilter();
-                    break;
-                case BOX:
-                    filter = ResampleFilters.getBoxFilter();
-                    break;
-                case BSPLINE:
-                    filter = ResampleFilters.getBSplineFilter();
-                    break;
-                case HERMITE:
-                    filter = ResampleFilters.getHermiteFilter();
-                    break;
-                case LANCZOS3:
-                    filter = ResampleFilters.getLanczos3Filter();
-                    break;
-                case MITCHELL:
-                    filter = ResampleFilters.getMitchellFilter();
-                    break;
-                case TRIANGLE:
-                    filter = ResampleFilters.getTriangleFilter();
-                    break;
-            }
-            return filter;
+            return resampleFilter;
         }
 
     }
