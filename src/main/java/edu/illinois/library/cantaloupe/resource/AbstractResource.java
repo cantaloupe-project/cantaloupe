@@ -188,10 +188,10 @@ public abstract class AbstractResource extends ServerResource {
      * @param opList Operation list to add the operations to.
      * @param fullSize Full size of the source image.
      */
-    public void addNonEndpointOperations(final OperationList opList,
-                                         final Dimension fullSize) {
+    protected void addNonEndpointOperations(final OperationList opList,
+                                            final Dimension fullSize) {
+        // Redactions
         try {
-            // Redactions
             if (RedactionService.isEnabled()) {
                 List<Redaction> redactions = RedactionService.redactionsFor(
                         opList.getIdentifier(),
@@ -205,8 +205,16 @@ public abstract class AbstractResource extends ServerResource {
                 logger.debug("addNonEndpointOperations(): redactions are " +
                         "disabled; skipping.");
             }
+        } catch (DelegateScriptDisabledException e) {
+            // no problem
+            logger.debug("addNonEndpointOperations(): delegate script is " +
+                    "disabled; skipping redactions.");
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
 
-            // Watermark
+        // Watermark
+        try {
             if (WatermarkService.isEnabled()) {
                 opList.add(WatermarkService.newWatermark(
                         opList, fullSize, getReference().toUrl(),
@@ -217,8 +225,16 @@ public abstract class AbstractResource extends ServerResource {
                 logger.debug("addNonEndpointOperations(): watermarking is " +
                         "disabled; skipping.");
             }
+        } catch (DelegateScriptDisabledException e) {
+            // no problem
+            logger.debug("addNonEndpointOperations(): delegate script is " +
+                    "disabled; skipping watermark.");
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
 
-            // ICC profile
+        // ICC profile
+        try {
             if (IccProfileService.isEnabled()) {
                 IccProfileService service = new IccProfileService();
                 opList.add(service.getProfile(opList.getIdentifier(),
@@ -226,18 +242,14 @@ public abstract class AbstractResource extends ServerResource {
                         getRequest().getHeaders().getValuesMap(),
                         getCanonicalClientIpAddress()));
             }
-
-            // Metadata copies
-            if (Configuration.getInstance().
-                    getBoolean(PRESERVE_METADATA_CONFIG_KEY, false)) {
-                opList.add(new MetadataCopy());
-            }
-        } catch (DelegateScriptDisabledException e) {
-            // no problem
-            logger.debug("addNonEndpointOperations(): delegate script is " +
-                    "disabled; skipping.");
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
+        }
+
+        // Metadata copies
+        if (Configuration.getInstance().
+                getBoolean(PRESERVE_METADATA_CONFIG_KEY, false)) {
+            opList.add(new MetadataCopy());
         }
     }
 
