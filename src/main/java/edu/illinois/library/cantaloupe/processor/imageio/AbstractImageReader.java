@@ -444,24 +444,20 @@ abstract class AbstractImageReader {
         if (iioReader == null) {
             createReader();
         }
-        RenderedImage image = null;
-        try {
-            Crop crop = null;
-            for (Operation op : ops) {
-                if (op instanceof Crop) {
-                    crop = (Crop) op;
-                    crop.applyOrientation(orientation, getSize());
-                    break;
-                }
+        RenderedImage image;
+        Crop crop = null;
+        for (Operation op : ops) {
+            if (op instanceof Crop) {
+                crop = (Crop) op;
+                crop.applyOrientation(orientation, getSize());
+                break;
             }
-            if (crop != null) {
-                image = iioReader.readAsRenderedImage(0,
-                        iioReader.getDefaultReadParam());
-            } else {
-                image = iioReader.read(0);
-            }
-        } finally {
-            dispose();
+        }
+        if (crop != null) {
+            image = iioReader.readAsRenderedImage(0,
+                    iioReader.getDefaultReadParam());
+        } else {
+            image = iioReader.read(0);
         }
         if (image == null) {
             throw new UnsupportedSourceFormatException(iioReader.getFormatName());
