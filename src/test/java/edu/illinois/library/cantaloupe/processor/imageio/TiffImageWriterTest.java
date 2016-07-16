@@ -12,7 +12,6 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import it.geosolutions.imageio.plugins.tiff.TIFFTag;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,8 +21,9 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.PlanarImage;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -33,9 +33,7 @@ public class TiffImageWriterTest {
 
     private BufferedImage bufferedImage;
     private Metadata metadata;
-    private FileOutputStream outputStream;
     private PlanarImage planarImage;
-    private File tempFile;
 
     @Before
     public void setUp() throws Exception {
@@ -51,37 +49,30 @@ public class TiffImageWriterTest {
         bufferedImage = new TiffImageReader(fixture).read();
         planarImage =  PlanarImage.wrapRenderedImage(
                 new TiffImageReader(fixture).readRendered());
-
-        // Create a temp file to write to
-        tempFile = File.createTempFile("test", "tmp");
-        outputStream = new FileOutputStream(tempFile);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        outputStream.close();
-        tempFile.delete();
     }
 
     @Test
     public void testWriteWithBufferedImage() throws Exception {
-        getWriter().write(bufferedImage, outputStream);
-        ImageIO.read(tempFile);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        newWriter().write(bufferedImage, os);
+        ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
     }
 
     @Test
     public void testWriteWithBufferedImageAndIccProfile() throws Exception {
         configureIccProfile();
-        getWriter().write(bufferedImage, outputStream);
-        checkForIccProfile();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        newWriter().write(bufferedImage, os);
+        checkForIccProfile(os.toByteArray());
     }
 
     @Test
     public void testWriteWithBufferedImageAndExifMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
-        getWriter().write(bufferedImage, outputStream);
-        checkForExifMetadata();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        newWriter().write(bufferedImage, os);
+        checkForExifMetadata(os.toByteArray());
     }
 
     @Test
@@ -92,37 +83,42 @@ public class TiffImageWriterTest {
 
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
-        getWriter().write(bufferedImage, outputStream);
-        checkForIptcMetadata();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        newWriter().write(bufferedImage, os);
+        checkForIptcMetadata(os.toByteArray());
     }
 
     @Test
     public void testWriteWithBufferedImageAndXmpMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
-        getWriter().write(bufferedImage, outputStream);
-        checkForXmpMetadata();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        newWriter().write(bufferedImage, os);
+        checkForXmpMetadata(os.toByteArray());
     }
 
     @Test
     public void testWriteWithPlanarImage() throws Exception {
-        getWriter().write(planarImage, outputStream);
-        ImageIO.read(tempFile);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        newWriter().write(planarImage, os);
+        ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
     }
 
     @Test
     public void testWriteWithPlanarImageAndIccProfile() throws Exception {
         configureIccProfile();
-        getWriter().write(planarImage, outputStream);
-        checkForIccProfile();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        newWriter().write(planarImage, os);
+        checkForIccProfile(os.toByteArray());
     }
 
     @Test
     public void testWriteWithPlanarImageAndExifMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
-        getWriter().write(planarImage, outputStream);
-        checkForExifMetadata();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        newWriter().write(planarImage, os);
+        checkForExifMetadata(os.toByteArray());
     }
 
     @Test
@@ -134,16 +130,18 @@ public class TiffImageWriterTest {
 
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
-        getWriter().write(planarImage, outputStream);
-        checkForIptcMetadata();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        newWriter().write(planarImage, os);
+        checkForIptcMetadata(os.toByteArray());
     }
 
     @Test
     public void testWriteWithPlanarImageAndXmpMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
-        getWriter().write(planarImage, outputStream);
-        checkForXmpMetadata();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        newWriter().write(planarImage, os);
+        checkForXmpMetadata(os.toByteArray());
     }
 
     private void configureIccProfile() throws Exception {
@@ -157,11 +155,11 @@ public class TiffImageWriterTest {
                 TestUtil.getFixture("AdobeRGB1998.icc").getAbsolutePath());
     }
 
-    private void checkForIccProfile() throws Exception {
+    private void checkForIccProfile(byte[] imageData) throws Exception {
         final Iterator<ImageReader> readers =
                 ImageIO.getImageReadersByFormatName("TIFF");
         final ImageReader reader = readers.next();
-        try (ImageInputStream iis = ImageIO.createImageInputStream(tempFile)) {
+        try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             reader.setInput(iis);
             final IIOMetadata metadata = reader.getImageMetadata(0);
             final TIFFDirectory dir = TIFFDirectory.createFromMetadata(metadata);
@@ -172,11 +170,11 @@ public class TiffImageWriterTest {
         }
     }
 
-    private void checkForExifMetadata() throws Exception {
+    private void checkForExifMetadata(byte[] imageData) throws Exception {
         final Iterator<ImageReader> readers =
                 ImageIO.getImageReadersByFormatName("TIFF");
         final ImageReader reader = readers.next();
-        try (ImageInputStream iis = ImageIO.createImageInputStream(tempFile)) {
+        try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             reader.setInput(iis);
             final IIOMetadata metadata = reader.getImageMetadata(0);
             final TIFFDirectory dir = TIFFDirectory.createFromMetadata(metadata);
@@ -187,11 +185,11 @@ public class TiffImageWriterTest {
         }
     }
 
-    private void checkForIptcMetadata() throws Exception {
+    private void checkForIptcMetadata(byte[] imageData) throws Exception {
         final Iterator<ImageReader> readers =
                 ImageIO.getImageReadersByFormatName("TIFF");
         final ImageReader reader = readers.next();
-        try (ImageInputStream iis = ImageIO.createImageInputStream(tempFile)) {
+        try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             reader.setInput(iis);
             final IIOMetadata metadata = reader.getImageMetadata(0);
             final TIFFDirectory dir = TIFFDirectory.createFromMetadata(metadata);
@@ -201,11 +199,11 @@ public class TiffImageWriterTest {
         }
     }
 
-    private void checkForXmpMetadata() throws Exception {
+    private void checkForXmpMetadata(byte[] imageData) throws Exception {
         final Iterator<ImageReader> readers =
                 ImageIO.getImageReadersByFormatName("TIFF");
         final ImageReader reader = readers.next();
-        try (ImageInputStream iis = ImageIO.createImageInputStream(tempFile)) {
+        try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             reader.setInput(iis);
             final IIOMetadata metadata = reader.getImageMetadata(0);
             final TIFFDirectory dir = TIFFDirectory.createFromMetadata(metadata);
@@ -215,7 +213,7 @@ public class TiffImageWriterTest {
         }
     }
 
-    private TiffImageWriter getWriter() throws IOException {
+    private TiffImageWriter newWriter() throws IOException {
         OperationList opList = new OperationList();
         if (IccProfileService.isEnabled()) {
             IccProfile profile = new IccProfileService().getProfile(
