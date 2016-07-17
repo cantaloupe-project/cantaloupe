@@ -84,13 +84,12 @@ abstract class AbstractImageReader {
         }
         if (it.hasNext()) {
             iioReader = it.next();
-        }
-        if (iioReader != null) {
             iioReader.setInput(inputStream);
-            logger.info("createReader(): using {}", iioReader.getClass().getName());
+            logger.info("createReader(): using {}",
+                    iioReader.getClass().getName());
         } else {
-            throw new IOException("Unable to determine the format of the " +
-                    "source image.");
+            throw new IOException("createReader(): unable to determine the " +
+                    "format of the source image.");
         }
     }
 
@@ -422,7 +421,8 @@ abstract class AbstractImageReader {
         if (iioReader == null) {
             createReader();
         }
-        return iioReader.readAsRenderedImage(0, iioReader.getDefaultReadParam());
+        return iioReader.readAsRenderedImage(0,
+                iioReader.getDefaultReadParam());
     }
 
     /**
