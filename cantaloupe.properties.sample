@@ -233,9 +233,9 @@ processor.webp = ImageMagickProcessor
 processor.fallback = Java2dProcessor
 
 # Available values are `StreamStrategy` and `CacheStrategy`. StreamStrategy
-# will try to stream source images from stream-based resolvers; CacheStrategy
-# will cache them locally first. If CacheStrategy is selected, FilesystemCache
-# will also need to be configured, below.
+# will try to stream source images from non-filesystem resolvers, when this
+# is possible; CacheStrategy will first download them into the source cache
+# using FilesystemCache, which must also be configured.
 StreamProcessor.retrieval_strategy = StreamStrategy
 
 #----------------------------------------
