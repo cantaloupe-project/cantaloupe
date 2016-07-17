@@ -118,6 +118,14 @@ public class ImageReader {
 
     /**
      * @param imageIndex Zero-based index.
+     * @return Compression type of the image at the given index.
+     */
+    public Compression getCompression(int imageIndex) throws IOException {
+        return reader.getCompression(imageIndex);
+    }
+
+    /**
+     * @param imageIndex Zero-based index.
      * @return Metadata of the image at the given index.
      * @throws IOException
      */

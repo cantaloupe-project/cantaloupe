@@ -25,6 +25,11 @@ class PngImageReader extends AbstractImageReader {
         super(streamSource, Format.PNG);
     }
 
+    @Override
+    Compression getCompression(int imageIndex) throws IOException {
+        return Compression.ZLIB;
+    }
+
     Metadata getMetadata(int imageIndex) throws IOException {
         if (iioReader == null) {
             createReader();

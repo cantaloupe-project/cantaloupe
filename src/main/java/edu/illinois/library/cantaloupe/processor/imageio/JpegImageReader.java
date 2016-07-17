@@ -25,6 +25,11 @@ class JpegImageReader extends AbstractImageReader {
         super(streamSource, Format.JPG);
     }
 
+    @Override
+    Compression getCompression(int imageIndex) throws IOException {
+        return Compression.JPEG;
+    }
+
     Metadata getMetadata(int imageIndex) throws IOException {
         if (iioReader == null) {
             createReader();

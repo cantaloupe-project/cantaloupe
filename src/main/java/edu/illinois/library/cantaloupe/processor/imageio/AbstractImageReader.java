@@ -107,6 +107,8 @@ abstract class AbstractImageReader {
         }
     }
 
+    abstract Compression getCompression(int imageIndex) throws IOException;
+
     abstract Metadata getMetadata(int imageIndex) throws IOException;
 
     /**

@@ -22,6 +22,8 @@ public interface Metadata {
      */
     Object getExif();
 
+    IIOMetadata getIioMetadata();
+
     /**
      * @return IPTC data, or null if none was found in the source metadata.
      */

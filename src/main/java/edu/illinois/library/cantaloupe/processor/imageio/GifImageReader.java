@@ -25,6 +25,11 @@ class GifImageReader extends AbstractImageReader {
         super(streamSource, Format.GIF);
     }
 
+    @Override
+    Compression getCompression(int imageIndex) throws IOException {
+        return Compression.LZW;
+    }
+
     Metadata getMetadata(int imageIndex) throws IOException {
         if (iioReader == null) {
             createReader();

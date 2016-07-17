@@ -25,6 +25,12 @@ class BmpImageReader extends AbstractImageReader {
         super(streamSource, Format.BMP);
     }
 
+    @Override
+    Compression getCompression(int imageIndex) throws IOException {
+        return Compression.UNCOMPRESSED;
+    }
+
+    @Override
     Metadata getMetadata(int imageIndex) throws IOException {
         if (iioReader == null) {
             createReader();

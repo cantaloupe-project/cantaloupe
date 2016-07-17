@@ -13,9 +13,11 @@ import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatExceptio
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.NodeList;
 
 import javax.imageio.ImageIO;
 import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.metadata.IIOMetadataNode;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.File;
@@ -66,6 +68,36 @@ class TiffImageReader extends AbstractImageReader {
         } else {
             throw new IOException("Unable to determine the format of the " +
                     "source image.");
+        }
+    }
+
+    @Override
+    Compression getCompression(int imageIndex) throws IOException {
+        String compStr = "";
+        final IIOMetadataNode node = getMetadata(0).getAsTree();
+        final NodeList fields = node.getElementsByTagName("TIFFField");
+        for (int i = 0; i < fields.getLength(); i++) {
+            if ("259".equals(fields.item(i).getAttributes().getNamedItem("number").getNodeValue())) {
+                compStr = fields.item(i).getChildNodes().item(0).
+                        getChildNodes().item(0).getAttributes().
+                        getNamedItem("description").getNodeValue();
+                break;
+            }
+        }
+
+        switch (compStr) {
+            case "JPEG":
+                return Compression.JPEG;
+            case "LZW":
+                return Compression.LZW;
+            case "PackBits":
+                return Compression.PACKBITS;
+            case "Uncompressed":
+                return Compression.UNCOMPRESSED;
+            case "ZLib":
+                return Compression.ZLIB;
+            default:
+                return Compression.UNKNOWN;
         }
     }
 
