@@ -440,7 +440,7 @@ public class Version2_1ConformanceTest {
             assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
         }
 
-        client = getClientForUriPath("/" + IMAGE + "/full/0,0/15/color.jpg");
+        client = getClientForUriPath("/wide.jpg/full/3,0/15/color.jpg");
         try {
             client.get();
             fail("Expected exception");

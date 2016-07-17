@@ -254,6 +254,22 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
+     * Checks the given operation list against the given image size.
+     *
+     * @param opList
+     * @param fullSize
+     * @throws EmptyPayloadException
+     */
+    protected final void checkRequest(final OperationList opList,
+                                      final Dimension fullSize)
+            throws EmptyPayloadException {
+        final Dimension resultingSize = opList.getResultingSize(fullSize);
+        if (resultingSize.width < 1 || resultingSize.height < 1) {
+            throw new EmptyPayloadException();
+        }
+    }
+
+    /**
      * Some web servers have issues dealing with encoded slashes (%2F) in URLs.
      * This method enables the use of an alternate string to represent a slash
      * via {@link #SLASH_SUBSTITUTE_CONFIG_KEY}.
