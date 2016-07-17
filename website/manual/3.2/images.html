@@ -18,6 +18,7 @@ title: Source Formats
     <ul>
       <li><a href="#JPEG">JPEG</a></li>
       <li><a href="#JPEG2000">JPEG2000</a></li>
+      <li><a href="#PNG">PNG</a></li>
       <li><a href="#TIFF">TIFF</a>
         <ul>
           <li><a href="#Strip-Based%20vs.%20Tile-Based">Strip-Based vs. Tile-Based</a></li>
@@ -32,19 +33,21 @@ title: Source Formats
 
 <h2 id="Size Considerations">Size Considerations</h2>
 
-<p>Most requests to an image server will call for cropped tiles and/or downscaled derivatives of a source image. Both of these will return less data than is contained in the entire image. A basic image reader, disregarding efficiency, will try to read the entire source image into memory before the cropping and scaling operations are carried out. This works fine for small images&mdash;up to a few thousand pixels square&mdash;because they can be read quickly and won't consume much memory. As image size increases, though, it works progressively less fine. As source images expand into the range of hundreds of megapixels, a huge burden is placed on the server, which delivers a slow and unsatisfying experience to clients.</p>
+<p>Most requests to an image server will call for cropped tiles and/or downscaled derivatives of a source image. Both of these will return less data than is contained in the entire image. A basic image reader, disregarding efficiency, will try to read the entire source image into memory before the cropping and scaling operations are carried out. This works fine for small images&mdash;up to a few thousand pixels square&mdash;because they can be read quickly and won't consume much memory. But as source images expand into the range of tens and hundreds of megapixels, an increasing burden is placed on the server, and requests take longer and longer to complete.</p>
 
 <p>It would be much better if the image reader could read only the requested region, and even employ subsampling to read only the pixels within that region that are needed to satisfy the requested scale factor. This strategy would require a reader that is written to support it, as well as an image format capable of facilitating it. Two such formats&mdash;<a href="#JPEG2000">JPEG2000</a> and <a href="#TIFF">multi-resolution tiled TIFF</a>&mdash;are detailed later in this section.</p>
 
-<p>Cantaloupe tries to do the best it can with whatever source formats it is asked to serve. However, some <a href="processors.html#Supported%20Source%20Formats">processor/format combinations</a> will perform better than others.</p>
+<p>Cantaloupe tries to do the best it can with whatever source formats it is asked to serve. However, some image formats are inherently better suited for large sizes and some <a href="processors.html#Supported%20Source%20Formats">processor/format combinations</a> will perform better than others.</p>
 
 <h2 id="Source Formats">Source Formats</h2>
 
 <h3 id="JPEG">JPEG</h3>
 
-<p>Most processors that support image sources support this format, with (the author assumes) roughly similar performance.</p>
+<p>Most processors that support image sources support this format, some perhaps more efficiently than others, though this is untested.</p>
 
-<p><a href="processors.html#Java2dProcessor">Java2dProcessor</a> and <a href="processors.html#JaiProcessor">JaiProcessor</a> use the default ImageIO JPEG reader to read JPEGs. The performance of this reader is known to vary greatly from JRE to JRE, with newer versions performing better.</p>
+<p>In general, this is not a good format for delivery of high-resolution images because source image data must be fully read into memory and decoded.</p>
+
+<p><a href="processors.html#Java2dProcessor">Java2dProcessor</a> and <a href="processors.html#JaiProcessor">JaiProcessor</a> use the default ImageIO JPEG reader, whose performance is known to vary greatly from JRE to JRE, with newer versions performing better.</p>
 
 <h3 id="JPEG2000">JPEG2000</h3>
 
@@ -52,13 +55,23 @@ title: Source Formats
 
 <p><a href="processors.html#KakaduProcessor">KakaduProcessor</a> is the most efficient processor for this format, and it performs very well, even with huge images. Unfortunately, Kakadu is not free.</p>
 
-<p><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a> uses the <a href="http://www.openjpeg.org">OpenJPEG</a> decoder, which is generally considered, as of this writing, to be the fastest open-source JPEG2000 decoder. (<a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a>'s JPEG2000 delegate, if installed, will also use the OpenJPEG library, but less efficiently as it won't use its region-extraction or level-reduction features.)</p>
+<p><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a> uses the <a href="http://www.openjpeg.org">OpenJPEG</a> decoder, which is one of the faster open-source JPEG2000 decoders. Another option to look at would be <a href="https://github.com/GrokImageCompression/grok">Grok</a>, which might work with this processor, but is untested.</p>
+
+<p><a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a>'s JPEG2000 delegate, if installed, will also use the OpenJPEG library, but less efficiently as it won't use its region-extraction or level-reduction features.</p>
 
 <p><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> can read and write JPEG2000 using JasPer, if the necessary plugin is installed. This will probably not be fast enough to be usable for most purposes.</p>
 
+<p>There is a JPEG2000 ImageIO plugin based on JJ2000 which would bring support to Java2dProcessor and JaiProcessor, but it is not included because it is too slow to be usable.</p>
+
+<h3 id="PNG">PNG</h3>
+
+<p>Most processors that support image sources support this format, some perhaps more efficiently than others, though this is untested.</p>
+
+<p>In general, this is not a good format for delivery of high-resolution images. At best, image pixels have to be read in whole rows, and most readers will not even do that.</p>
+
 <h3 id="TIFF">TIFF</h3>
 
-<p>TIFF is a common format that most processors can read. However, there are some criteria that source images must meet in order to be delivered with maximum efficiency.</p>
+<p>TIFF is a common format that most processors can read. However, there are some criteria that source images must meet in order to be delivered efficiently.</p>
 
 <h4 id="Strip-Based vs. Tile-Based">Strip-Based vs. Tile-Based</h4>
 
@@ -70,7 +83,7 @@ title: Source Formats
 
 <h4 id="Multi-Resolution">Multi-Resolution (Pyramidal) TIFF</h4>
 
-<p>Multi-resolution TIFF is a special type of TIFF file that can be read more efficiently at reduced scales. In addition to the main image, a multi-resolution TIFF file will contain a sequence of progressively half-sized sub-images: for example, a 10000&times;10000 pixel main image would include derivatives of 5000&times;5000 pixels, 2500&times;2500 pixels, 1250&times;1250 pixels, and so on, all embedded in the same file.</p>
+<p>Multi-resolution TIFF is a special type of TIFF file that can be read more efficiently at reduced scales. In addition to the main image, a multi-resolution TIFF file will contain a sequence of progressively half-sized sub-images: for example, a 10000&times;10000 pixel main image would include derivatives of 5000&times;5000 pixels, 2500&times;2500 pixels, and so on, all in the same file.</p>
 
 <p>Each of the levels in a multi-resolution TIFF file can be striped or tiled, just as in a mono-resolution file. Tiled and pyramidal encodings are complementary: the former improves efficiency with reduced regions at large scales, and the latter improves efficiency at reduced scales. For efficient deep zooming, TIFF images need to be pyramidal, and each level of the pyramid should be tiled.</p>
 

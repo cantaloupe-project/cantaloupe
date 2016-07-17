@@ -100,7 +100,7 @@ cache.client.no_transform = true
 
 <ul>
   <li>Requests for full-sized, unaltered source images are not cached, and are instead streamed through with no processing.</li>
-  <li>Cantaloupe does not cache entire IIIF information response representations&mdash;only image metadata, which is the only expensive part to generate. This means it is possible to change other configuration options that would affect the contents of information responses without having to purge the cache.</li>
+  <li>Entire IIIF information response representations are not cached&mdash;only image metadata, which is the only expensive part to generate. This means it is possible to change other configuration options that would affect the contents of information responses without having to purge the cache.</li>
   <li>When derivative caching is enabled, "miss" responses are streamed to the client and cache synchronously. If the cache I/O is slower than the connection to the client, response times may be adversely affected.</li>
   <li>The derivative cache is shared across API endpoints. Requests for the same image from different endpoints will return the same cached image.</li>
 </ul>
@@ -135,7 +135,7 @@ cache.client.no_transform = true
 
 <h4 id="Automatic Maintenance">Automatic</h4>
 
-<p>Since version 2.2, a "cache worker" is available that will periodically clean and purge expired items from the cache in a low-priority background thread. (See the <code>cache.server.worker.*</code> configuration options.)</p>
+<p>Since version 2.2, a "cache worker" is available that will periodically clean and purge expired items from the cache automatically. (See the <code>cache.server.worker.*</code> configuration options.)</p>
 
 <hr>
 
