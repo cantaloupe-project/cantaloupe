@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.processor.Java2dUtil;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
@@ -90,6 +91,8 @@ class TiffImageReader extends AbstractImageReader {
      * the returned image will require cropping.</p>
      *
      * @param ops
+     * @param orientation     Orientation of the source image data as reported
+     *                        by e.g. embedded metadata.
      * @param reductionFactor {@link ReductionFactor#factor} property will be
      *                        modified to reflect the reduction factor of the
      *                        returned image.
@@ -102,7 +105,9 @@ class TiffImageReader extends AbstractImageReader {
      * @throws IOException
      * @throws ProcessorException
      */
+    @Override
     public BufferedImage read(final OperationList ops,
+                              final Orientation orientation,
                               final ReductionFactor reductionFactor,
                               final Set<ImageReader.Hint> hints)
             throws IOException, ProcessorException {
@@ -118,6 +123,7 @@ class TiffImageReader extends AbstractImageReader {
             for (Operation op : ops) {
                 if (op instanceof Crop) {
                     crop = (Crop) op;
+                    crop.applyOrientation(orientation, getSize());
                 } else if (op instanceof Scale) {
                     scale = (Scale) op;
                 }
@@ -154,7 +160,9 @@ class TiffImageReader extends AbstractImageReader {
      * @throws IOException
      * @throws ProcessorException
      */
+    @Override
     public RenderedImage readRendered(final OperationList ops,
+                                      final Orientation orientation,
                                       final ReductionFactor reductionFactor)
             throws IOException, ProcessorException {
         if (iioReader == null) {
@@ -169,6 +177,7 @@ class TiffImageReader extends AbstractImageReader {
         for (Operation op : ops) {
             if (op instanceof Crop) {
                 crop = (Crop) op;
+                crop.applyOrientation(orientation, getSize());
             } else if (op instanceof Scale) {
                 scale = (Scale) op;
             }

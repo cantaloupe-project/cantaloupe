@@ -432,12 +432,16 @@ abstract class AbstractImageReader {
      * @param ops
      * @param orientation     Orientation of the source image data, e.g. as
      *                        reported by embedded metadata.
+     * @param reductionFactor {@link ReductionFactor#factor} property will be
+     *                        modified to reflect the reduction factor of the
+     *                        returned image.
      * @return RenderedImage best matching the given parameters.
      * @throws IOException
      * @throws ProcessorException
      */
     RenderedImage readRendered(final OperationList ops,
-                               final Orientation orientation)
+                               final Orientation orientation,
+                               final ReductionFactor reductionFactor)
             throws IOException, ProcessorException {
         if (iioReader == null) {
             createReader();

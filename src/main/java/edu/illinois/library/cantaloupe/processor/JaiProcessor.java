@@ -133,7 +133,8 @@ class JaiProcessor extends AbstractImageIoProcessor
         try {
             final Orientation orientation = getEffectiveOrientation();
             final ReductionFactor rf = new ReductionFactor();
-            RenderedImage renderedImage = reader.readRendered(ops, orientation);
+            RenderedImage renderedImage = reader.readRendered(ops, orientation,
+                    rf);
 
             if (renderedImage != null) {
                 BufferedImage image = null;
