@@ -441,6 +441,28 @@ landing page, as well as in one of the tables below. A list of output formats su
     <td class="text-center">N/A</td>
     <td class="text-center">N/A</td>
   </tr>
+  <tr>
+    <td>Configurable resample filters</td>
+    <td class="text-center bg-danger"></td>
+    <td class="text-center bg-danger"></td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-danger"></td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>Sharpening</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
 </table>
 
 <hr>
@@ -567,7 +589,7 @@ landing page, as well as in one of the tables below. A list of output formats su
 <p>GraphicsMagickProcessor uses <a href="http://im4java.sourceforge.net">im4java</a> to invoke the <a href="http://www.graphicsmagick.org">GraphicsMagick</a> executable
 (<span class="filename">gm</span>). As such, GraphicsMagick must be installed.</p>
 
-<p>GraphicsMagick produces high-quality output and supports all of the IIIF transforms and most IIIF output formats (assuming the necessary libraries are installed; see <a href="http://www.graphicsmagick.org/formats.html">Supported Formats</a>).</p>
+<p>GraphicsMagick produces high-quality output&mdash;competitive with ImageMagick&mdash;and supports all of the IIIF transforms and most IIIF output formats (assuming the necessary libraries are installed; see <a href="http://www.graphicsmagick.org/formats.html">Supported Formats</a>).</p>
 
 <p>GraphicsMagickProcessor is typically faster than <a href="#ImageMagickProcessor">ImageMagickProcessor</a>. However, like ImageMagickProcessor, it is neither tile- nor multi-resolution-aware and thus fares poorly with large images.</p>
 
@@ -580,8 +602,9 @@ landing page, as well as in one of the tables below. A list of output formats su
 <p>ImageMagickProcessor, like <a href="#GraphicsMagickProcessor">GraphicsMagickProcessor</a>, uses
 <a href="http://im4java.sourceforge.net">im4java</a> to wrap <a href="http://www.imagemagick.org/">ImageMagick</a> commands. As such, ImageMagick must be installed.</p>
 
-<p>ImageMagick produces high-quality output and supports all of the IIIF
-transforms and all IIIF output formats, assuming the necessary delegates are installed. It also supports a wide array of source formats.</p>
+<p>ImageMagick supports all of the IIIF transforms and all IIIF output formats, assuming the necessary delegates are installed. It also supports a wide array of source formats.</p>
+
+<p>ImageMagick's output quality is superlative; the thumbnails it produces are hard to beat. This comes at the expense of performance, which may be increasingly dear as image size increases.</p>
 
 <div class="alert alert-warning">ImageMagick is not known for being particularly fast or efficient. Because it runs in an external process, it is not constrained by the JVM's memory limits, so using it with very large images can cause memory consumption to spiral out of control and effectively hang the server.</div>
 
@@ -596,7 +619,7 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 
 <p>Although it does support some other operations, <span class="filename">kdu_expand</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. All other operations (differential scaling, rotation, etc.) are performed using either the Java 2D or JAI APIs (configurable).</p>
 
-<p>To use this processor, Kakadu must be installed. (See the note below.) The Kakadu binaries will automatically be detected if they are on the PATH; otherwise, set the <code>KakaduProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory.</p>
+<p>To use this processor, Kakadu must be installed. (See the note below.) The Kakadu binaries will automatically be detected if they are on the path; otherwise, set the <code>KakaduProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory.</p>
 
 <div class="alert alert-info">Note: Kakadu is not free and the SDK is not included with Cantaloupe. As of this writing, the necessary binaries can be downloaded from the Kakadu website and used for demonstration purposes.</div>
 
@@ -609,7 +632,7 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 
 <p>Although it does support some other operations, <span class="filename">opj_decompress</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. The rest of the IIIF operations (differential scaling, rotation, etc.) are performed using either the Java 2D or JAI APIs (configurable).</p>
 
-<p>To use this processor, OpenJPEG must be installed. The OpenJPEG binaries will automatically be detected if they are on the PATH; otherwise, set the <code>OpenJpegProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory.</p>
+<p>To use this processor, OpenJPEG must be installed. The OpenJPEG binaries will automatically be detected if they are on the path; otherwise, set the <code>OpenJpegProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory.</p>
 
 <hr>
 
@@ -617,7 +640,7 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 
 <p>FfmpegProcessor uses the <a href="http://www.ffmpeg.org">FFmpeg</a> tool to extract still frames from video files. It can be used for thumbnail generation á la YouTube, as well as deep zooming of high-resolution still frames.</p>
 
-<p>FfmpegProcessor has been tested with FFmpeg version 2.8. Other versions may or may not work.</p>
+<p>FfmpegProcessor has been tested with FFmpeg version 2.8. Other versions may or may not work. If you notice any incompatibilities, please file an issue.</p>
 
 <h4>Optional Parameters</h4>
 
