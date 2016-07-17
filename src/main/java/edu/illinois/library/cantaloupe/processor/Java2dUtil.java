@@ -419,6 +419,50 @@ public abstract class Java2dUtil {
     static BufferedImage scaleImage(final BufferedImage inImage,
                                     final Scale scale,
                                     final ReductionFactor rf) {
+        /*
+        This method uses the image scaling code in
+        com.mortennobel.imagescaling (see
+        https://blog.nobel-joergensen.com/2008/12/20/downscaling-images-in-java/)
+        as an alternative to the scaling available in Graphics2D.
+        Problem is, while the performance of Graphics2D.drawImage() is OK, the
+        quality, even using RenderingHints.VALUE_INTERPOLATION_BILINEAR, is
+        horrible for downscaling. BufferedImage.getScaledInstance() is
+        somewhat the opposite: great quality but very slow. There may be ways
+        to mitigate the former (like multi-step downscaling) but not without
+        cost.
+
+        Subjective quality of downscale from 2288x1520 to 200x200:
+
+        Lanczos3 > Box > Bicubic > Mitchell > Triangle > Bell > Hermite >
+            BSpline > Graphics2D
+
+        Approximate time-to-complete of same (milliseconds, 2.3GHz i7):
+        Triangle: 19
+        Box: 20
+        Hermite: 24
+        Bicubic: 25
+        Mitchell: 30
+        BSpline: 53
+        Graphics2D: 70
+        Bell: 145
+        Lanczos3: 238
+
+        Subjective quality of upscale from 2288x1520 to 3000x3000:
+        Lanczos3 > Bicubic > Mitchell > Graphics2D = Triangle = Hermite >
+            Bell > BSpline > Box
+
+        Approximate time-to-complete of same (milliseconds, 2.3GHz i7):
+        Triangle: 123
+        Hermite: 142
+        Box: 162
+        Bicubic: 206
+        Mitchell: 224
+        BSpline: 230
+        Graphics2D: 268
+        Lanczos3: 355
+        Bell: 468
+        */
+
         final Dimension sourceSize = new Dimension(
                 inImage.getWidth(), inImage.getHeight());
 
@@ -436,52 +480,15 @@ public abstract class Java2dUtil {
             targetSize = scale.getResultingSize(sourceSize);
         }
 
+        // com.mortennobel.imagescaling.ResampleFilter requires a target size
+        // of at least 3 pixels on a side.
+        // OpenSeadragon has been known to request smaller.
+        targetSize.width = (targetSize.width < 3) ? 3 : targetSize.width;
+        targetSize.height = (targetSize.height < 3) ? 3 : targetSize.height;
+
         BufferedImage scaledImage = inImage;
         if (!scale.isNoOp() && (targetSize.width != sourceSize.width &&
                 targetSize.height != sourceSize.height)) {
-            /*
-            This method uses the image scaling code in
-            com.mortennobel.imagescaling (see
-            https://blog.nobel-joergensen.com/2008/12/20/downscaling-images-in-java/)
-            as an alternative to the scaling available in Graphics2D.
-            Problem is, while the performance of Graphics2D.drawImage() is OK,
-            the quality, even using RenderingHints.VALUE_INTERPOLATION_BILINEAR,
-            is horrible for downscaling. BufferedImage.getScaledInstance()
-            is somewhat the opposite: great quality but very slow. There may be
-            ways to mitigate the former (like multi-step downscaling) but not
-            without cost.
-
-            Subjective quality of downscale from 2288x1520 to 200x200:
-
-            Lanczos3 > Box > Bicubic > Mitchell > Triangle > Bell > Hermite >
-                BSpline > Graphics2D
-
-            Approximate time-to-complete of same (milliseconds, 2.3GHz i7):
-            Triangle: 19
-            Box: 20
-            Hermite: 24
-            Bicubic: 25
-            Mitchell: 30
-            BSpline: 53
-            Graphics2D: 70
-            Bell: 145
-            Lanczos3: 238
-
-            Subjective quality of upscale from 2288x1520 to 3000x3000:
-            Lanczos3 > Bicubic > Mitchell > Graphics2D = Triangle = Hermite >
-                Bell > BSpline > Box
-
-            Approximate time-to-complete of same (milliseconds, 2.3GHz i7):
-            Triangle: 123
-            Hermite: 142
-            Box: 162
-            Bicubic: 206
-            Mitchell: 224
-            BSpline: 230
-            Graphics2D: 268
-            Lanczos3: 355
-            Bell: 468
-            */
             final long startMsec = System.currentTimeMillis();
 
             final ResampleOp resampleOp = new ResampleOp(
