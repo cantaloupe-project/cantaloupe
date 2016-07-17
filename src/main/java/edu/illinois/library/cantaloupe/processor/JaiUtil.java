@@ -332,31 +332,6 @@ abstract class JaiUtil {
     }
 
     /**
-     * @param inImage Image to scale
-     * @param scale   Scale operation
-     * @return Scaled image, or the input image if the given scale is a no-op.
-     */
-    static RenderedOp scaleImage(RenderedOp inImage, Scale scale) {
-        return scaleImage(inImage, scale,
-                Interpolation.getInstance(Interpolation.INTERP_BILINEAR),
-                new ReductionFactor(0));
-    }
-
-    /**
-     * @param inImage Image to scale
-     * @param scale   Scale operation
-     * @param rf      Reduction factor that has already been applied to
-     *                <code>inImage</code>
-     * @return Scaled image, or the input image if the given scale is a no-op.
-     */
-    static RenderedOp scaleImage(RenderedOp inImage, Scale scale,
-                                 ReductionFactor rf) {
-        return scaleImage(inImage, scale,
-                Interpolation.getInstance(Interpolation.INTERP_BILINEAR),
-                rf);
-    }
-
-    /**
      * Scales an image using JAI, taking an already-applied reduction factor
      * into account. (In other words, the dimensions of the input image have
      * already been halved <code>reductionFactor</code> times but the given
@@ -403,6 +378,59 @@ abstract class JaiUtil {
             pb.add(0.0f);
             pb.add(interpolation);
             scaledImage = JAI.create("scale", pb);
+        }
+        return scaledImage;
+    }
+
+    /**
+     * Better-quality alternative to {@link #scaleImage(RenderedOp, Scale,
+     * Interpolation, ReductionFactor)}. Unfortunately, that method has to
+     * remain around due to a bug in JAI (see inline comment in
+     * {@link JaiProcessor#process}).
+     *
+     * @param inImage       Image to scale
+     * @param scale         Requested size ignoring any reduction factor
+     * @param rf            Reduction factor that has already been applied to
+     *                        <code>inImage</code>
+     * @return Scaled image, or the input image if the given scale is a no-op.
+     */
+    static RenderedOp scaleImageUsingSubsampleAverage(RenderedOp inImage,
+                                                      Scale scale,
+                                                      ReductionFactor rf) {
+        RenderedOp scaledImage = inImage;
+        if (!scale.isNoOp()) {
+            final int sourceWidth = inImage.getWidth();
+            final int sourceHeight = inImage.getHeight();
+            final Dimension scaledSize = scale.getResultingSize(
+                    new Dimension(sourceWidth, sourceHeight));
+
+            double xScale = scaledSize.width / (double) sourceWidth;
+            double yScale = scaledSize.height / (double) sourceHeight;
+            if (scale.getPercent() != null) {
+                xScale = scale.getPercent() / rf.getScale();
+                yScale = scale.getPercent() / rf.getScale();
+            }
+
+            // Enforce a minimum scale of 3 pixels on a side.
+            // OpenSeadragon has been known to request smaller.
+            double minXScale = 3f / (double) sourceWidth;
+            double minYScale = 3f / (double) sourceHeight;
+            xScale = (xScale < minXScale) ? minXScale : xScale;
+            yScale = (yScale < minYScale) ? minYScale : yScale;
+
+            logger.debug("scaleImage(): width: {}%; height: {}%",
+                    xScale * 100, yScale * 100);
+            final ParameterBlock pb = new ParameterBlock();
+            pb.addSource(inImage);
+            pb.add(xScale);
+            pb.add(yScale);
+            pb.add(0.0); // X translation
+            pb.add(0.0); // Y translation
+
+            final RenderingHints hints = new RenderingHints(
+                    RenderingHints.KEY_RENDERING,
+                    RenderingHints.VALUE_RENDER_QUALITY);
+            scaledImage = JAI.create("SubsampleAverage", pb, hints);
         }
         return scaledImage;
     }

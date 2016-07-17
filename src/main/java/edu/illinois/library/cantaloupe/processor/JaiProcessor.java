@@ -13,6 +13,7 @@ import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
+import edu.illinois.library.cantaloupe.processor.imageio.Compression;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
@@ -147,39 +148,36 @@ class JaiProcessor extends AbstractImageIoProcessor
                         renderedOp = JaiUtil.
                                 cropImage(renderedOp, (Crop) op, rf);
                     } else if (op instanceof Scale && !op.isNoOp()) {
-                        Interpolation interpolation = Interpolation.
-                                getInstance(Interpolation.INTERP_BILINEAR);
-                        // The JAI scale operation has a bug that causes it to
-                        // fail on right-edge deflate-compressed tiles when
-                        // using any interpolation other than nearest-neighbor,
-                        // with an ArrayIndexOutOfBoundsException in
-                        // PlanarImage.cobbleByte().
-                        // Example: /iiif/2/56324x18006-pyramidal-tiled-deflate.tif/32768,0,23556,18006/737,/0/default.jpg
-                        // So, if we are scaling a TIFF and its metadata says
-                        // it's deflate-compressed, use nearest-neighbor, which
-                        // is horrible, but better than nothing.
-                        if (getSourceFormat().equals(Format.TIF)) {
-                            try {
-                                final Node node = reader.getMetadata(0).getAsTree();
-                                final StringWriter writer = new StringWriter();
-                                final Transformer t = TransformerFactory.
-                                        newInstance().newTransformer();
-                                t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-                                t.setOutputProperty(OutputKeys.INDENT, "no");
-                                t.transform(new DOMSource(node),
-                                        new StreamResult(writer));
-                                if (writer.toString().contains("description=\"ZLib\"")) {
-                                    interpolation = Interpolation.
-                                            getInstance(Interpolation.INTERP_NEAREST);
-                                }
-                            } catch (TransformerException e) {
-                                logger.error(e.getMessage());
-                            }
+                        /*
+                        JAI has a bug that causes it to fail on right-edge
+                        deflate-compressed tiles when using the
+                        SubsampleAverage operation, as well as the scale
+                        operation with any interpolation other than
+                        nearest-neighbor. The error is an
+                        ArrayIndexOutOfBoundsException in
+                        PlanarImage.cobbleByte().
+                        Example: /iiif/2/56324x18006-pyramidal-tiled-deflate.tif/32768,0,23556,18006/737,/0/default.jpg
+                        So, the strategy is:
+                        1) if the TIFF is deflate-compressed, use the scale
+                           operation with nearest-neighbor interpolation, which
+                           is horrible, but better than nothing.
+                        2) otherwise, use the SubsampleAverage operation.
+                        */
+                        if (getSourceFormat().equals(Format.TIF) &&
+                            reader.getCompression(0).equals(Compression.ZLIB)) {
+                            logger.debug("process(): detected " +
+                                    "ZLib-compressed TIFF; using the scale " +
+                                    "operator with nearest-neighbor " +
+                                    "interpolation.");
+                            renderedOp = JaiUtil.scaleImage(
+                                    renderedOp,
+                                    (Scale) op,
+                                    Interpolation.getInstance(Interpolation.INTERP_NEAREST),
+                                    rf);
+                        } else {
+                            renderedOp = JaiUtil.scaleImageUsingSubsampleAverage(
+                                    renderedOp, (Scale) op, rf);
                         }
-                        logger.debug("Scaling using {}",
-                                interpolation.getClass().getName());
-                        renderedOp = JaiUtil.scaleImage(renderedOp, (Scale) op,
-                                interpolation, rf);
                     } else if (op instanceof Transpose) {
                         renderedOp = JaiUtil.
                                 transposeImage(renderedOp, (Transpose) op);
