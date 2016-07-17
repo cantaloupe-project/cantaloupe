@@ -146,31 +146,28 @@ class TiffImageReader extends AbstractImageReader {
         if (iioReader == null) {
             createReader();
         }
-        BufferedImage image = null;
-        try {
-            Crop crop = new Crop();
-            crop.setFull(true);
-            Scale scale = new Scale();
-            scale.setMode(Scale.Mode.FULL);
-            for (Operation op : ops) {
-                if (op instanceof Crop) {
-                    crop = (Crop) op;
-                    crop.applyOrientation(orientation, getSize());
-                } else if (op instanceof Scale) {
-                    scale = (Scale) op;
-                }
+
+        Crop crop = new Crop();
+        crop.setFull(true);
+        Scale scale = new Scale();
+        scale.setMode(Scale.Mode.FULL);
+        for (Operation op : ops) {
+            if (op instanceof Crop) {
+                crop = (Crop) op;
+                crop.applyOrientation(orientation, getSize());
+            } else if (op instanceof Scale) {
+                scale = (Scale) op;
             }
-            image = readSmallestUsableSubimage(crop, scale,
-                    reductionFactor, hints);
-        } finally {
-            dispose();
         }
+
+        BufferedImage image = readSmallestUsableSubimage(crop, scale,
+                reductionFactor, hints);
         if (image == null) {
             throw new UnsupportedSourceFormatException(iioReader.getFormatName());
         }
         BufferedImage rgbImage = Java2dUtil.convertCustomToRgb(image);
         if (rgbImage != image) {
-            logger.warn("Converted {} to RGB (this is very expensive)",
+            logger.info("read(): converted {} to RGB (this is very expensive)",
                     ops.getIdentifier());
         }
         return rgbImage;
@@ -200,7 +197,6 @@ class TiffImageReader extends AbstractImageReader {
         if (iioReader == null) {
             createReader();
         }
-        RenderedImage image;
 
         Crop crop = new Crop();
         crop.setFull(true);
@@ -214,9 +210,9 @@ class TiffImageReader extends AbstractImageReader {
                 scale = (Scale) op;
             }
         }
-        image = readSmallestUsableSubimage(crop, scale,
-                reductionFactor);
 
+        RenderedImage image = readSmallestUsableSubimage(crop, scale,
+                reductionFactor);
         if (image == null) {
             throw new UnsupportedSourceFormatException(iioReader.getFormatName());
         }
