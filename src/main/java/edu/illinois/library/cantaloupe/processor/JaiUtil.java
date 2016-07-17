@@ -386,20 +386,23 @@ abstract class JaiUtil {
                 yScale = scale.getPercent() / rf.getScale();
             }
 
-            if (xScale > 0 && yScale > 0) {
-                logger.debug("scaleImage(): width: {}%; height: {}%",
-                        xScale * 100, yScale * 100);
-                final ParameterBlock pb = new ParameterBlock();
-                pb.addSource(inImage);
-                pb.add((float) xScale);
-                pb.add((float) yScale);
-                pb.add(0.0f);
-                pb.add(0.0f);
-                pb.add(interpolation);
-                scaledImage = JAI.create("scale", pb);
-            } else {
-                logger.debug("scaleImage(): cannot scale to 0% width/height.");
-            }
+            // Enforce a minimum scale of 3 pixels on a side.
+            // OpenSeadragon has been known to request smaller.
+            double minXScale = 3f / (double) sourceWidth;
+            double minYScale = 3f / (double) sourceHeight;
+            xScale = (xScale < minXScale) ? minXScale : xScale;
+            yScale = (yScale < minYScale) ? minYScale : yScale;
+
+            logger.debug("scaleImage(): width: {}%; height: {}%",
+                    xScale * 100, yScale * 100);
+            final ParameterBlock pb = new ParameterBlock();
+            pb.addSource(inImage);
+            pb.add((float) xScale);
+            pb.add((float) yScale);
+            pb.add(0.0f);
+            pb.add(0.0f);
+            pb.add(interpolation);
+            scaledImage = JAI.create("scale", pb);
         }
         return scaledImage;
     }
