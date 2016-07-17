@@ -24,13 +24,13 @@ title: Metadata
 
 <h2 id="Overview">Overview</h2>
 
-<p>Many image formats are capable of storing supplementary technical and/or descriptive metadata alongside the actual image data. Formats may define their own metadata encodings, and they may also include provisions for storing other standard metadata formats like EXIF, IPTC IIM, and XMP. More than one such type may be present even within the same file.</p>
+<p>Many image formats are capable of storing supplementary technical and/or descriptive metadata alongside the actual image data in a file. Formats may be able to store standard metadata formats like EXIF, IPTC IIM, and XMP, and they may also define their own metadata formats. More than one such format may be present even within the same file.</p>
 
 <p>When an image request is received&mdash;unless it calls for the full-sized unmodified source image&mdash;the image server will have to dynamically create and return a derivative image. As this is a whole new image, distinct from the source image, populating it with metadata would require an additional step.</p>
 
 <p>When <code>metadata.preserve</code> is set to <code>true</code> in the configuration file, an effort will be made to copy metadata from source images into derivative images.</p>
 
-<p>See the <a href="processors.html#Supported%20Features">Supported Features</a> table for a breakdown of support for this feature by processor.</p>
+<p>This currently does not work in all processors; see the <a href="processors.html#Supported%20Features">Supported Features</a> table for a breakdown.</p>
 
 <hr>
 
