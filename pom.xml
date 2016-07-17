@@ -54,7 +54,7 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.1.3</version>
+      <version>1.1.7</version>
     </dependency>
     <!-- Used by AmazonS3Resolver and AmazonS3Cache -->
     <dependency>
@@ -86,13 +86,13 @@
     <dependency>
       <groupId>com.microsoft.azure</groupId>
       <artifactId>azure-storage</artifactId>
-      <version>4.0.0</version>
+      <version>4.3.0</version>
     </dependency>
     <!-- Provides a JDBC connection pool for JdbcResolver and JdbcCache -->
     <dependency>
       <groupId>com.zaxxer</groupId>
       <artifactId>HikariCP</artifactId>
-      <version>2.4.1</version>
+      <version>2.4.7</version>
     </dependency>
     <!-- Manages the application configuration. -->
     <dependency>
@@ -146,7 +146,7 @@
     <dependency>
       <groupId>org.apache.pdfbox</groupId>
       <artifactId>pdfbox</artifactId>
-      <version>2.0.0-RC3</version>
+      <version>2.0.2</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -171,17 +171,17 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
-      <version>9.3.8.v20160314</version>
+      <version>9.3.10.v20160621</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>9.3.8.v20160314</version>
+      <version>9.3.10.v20160621</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-webapp</artifactId>
-      <version>9.3.8.v20160314</version>
+      <version>9.3.10.v20160621</version>
     </dependency>
     <!-- Used by GraphicsMagickProcessor and ImageMagickProcessor -->
     <dependency>
@@ -193,7 +193,7 @@
     <dependency>
       <groupId>org.jruby</groupId>
       <artifactId>jruby</artifactId>
-      <version>9.0.5.0</version>
+      <version>9.1.2.0</version>
       <type>pom</type>
     </dependency>
     <!-- Restlet is our REST framework. -->
@@ -244,13 +244,13 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.7.12</version>
+      <version>1.7.21</version>
     </dependency>
     <!-- intercepts jcl log messages from Commons etc. -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>jcl-over-slf4j</artifactId>
-      <version>1.7.12</version>
+      <version>1.7.21</version>
     </dependency>
   </dependencies>
 
