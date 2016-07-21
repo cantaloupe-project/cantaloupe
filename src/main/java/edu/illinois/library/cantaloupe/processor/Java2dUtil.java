@@ -15,6 +15,7 @@ import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
+import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +65,7 @@ public abstract class Java2dUtil {
                                          final ReductionFactor reductionFactor,
                                          final List<Redaction> redactions) {
         if (baseImage != null && redactions.size() > 0) {
-            final long msec = System.currentTimeMillis();
+            final Stopwatch watch = new Stopwatch();
             final Dimension imageSize = new Dimension(
                     baseImage.getWidth(), baseImage.getHeight());
 
@@ -91,7 +92,7 @@ public abstract class Java2dUtil {
             }
             g2d.dispose();
             logger.debug("applyRedactions() executed in {} msec",
-                    System.currentTimeMillis() - msec);
+                    watch.timeElapsed());
         }
         return baseImage;
     }
@@ -133,7 +134,7 @@ public abstract class Java2dUtil {
                                               final Position position,
                                               final int inset) {
         if (overlayImage != null && position != null) {
-            final long msec = System.currentTimeMillis();
+            final Stopwatch watch = new Stopwatch();
             int overlayX, overlayY;
             switch (position) {
                 case TOP_LEFT:
@@ -194,7 +195,7 @@ public abstract class Java2dUtil {
             g2d.drawImage(overlayImage, overlayX, overlayY, null);
             g2d.dispose();
             logger.debug("overlayImage() executed in {} msec",
-                    System.currentTimeMillis() - msec);
+                    watch.timeElapsed());
         }
         return baseImage;
     }
@@ -215,7 +216,7 @@ public abstract class Java2dUtil {
             final BufferedImage inImage) {
         BufferedImage outImage = inImage;
         if (inImage != null && inImage.getType() == BufferedImage.TYPE_CUSTOM) {
-            final long msec = System.currentTimeMillis();
+            final Stopwatch watch = new Stopwatch();
 
             outImage = new BufferedImage(inImage.getWidth(),
                     inImage.getHeight(), BufferedImage.TYPE_INT_RGB);
@@ -224,7 +225,7 @@ public abstract class Java2dUtil {
             g.dispose();
 
             logger.debug("convertCustomToRgb() executed in {} msec",
-                    System.currentTimeMillis() - msec);
+                    watch.timeElapsed());
         }
         return outImage;
     }
@@ -263,7 +264,7 @@ public abstract class Java2dUtil {
                 croppedSize.height == inImage.getHeight())) {
             croppedImage = inImage;
         } else {
-            final long msec = System.currentTimeMillis();
+            final Stopwatch watch = new Stopwatch();
             final double scale = rf.getScale();
             final double regionX = crop.getX() * scale;
             final double regionY = crop.getY() * scale;
@@ -302,7 +303,7 @@ public abstract class Java2dUtil {
 
             logger.debug("cropImage(): cropped {}x{} image to {} in {} msec",
                     inImage.getWidth(), inImage.getHeight(), crop,
-                    System.currentTimeMillis() - msec);
+                    watch.timeElapsed());
         }
         return croppedImage;
     }
@@ -323,7 +324,7 @@ public abstract class Java2dUtil {
     public static BufferedImage removeAlpha(final BufferedImage inImage) {
         BufferedImage outImage = inImage;
         if (inImage.getColorModel().hasAlpha()) {
-            final long msec = System.currentTimeMillis();
+            final Stopwatch watch = new Stopwatch();
             int newType;
             switch (inImage.getType()) {
                 case BufferedImage.TYPE_4BYTE_ABGR:
@@ -339,8 +340,7 @@ public abstract class Java2dUtil {
             g.drawImage(inImage, 0, 0, null);
             g.dispose();
             logger.debug("removeAlpha(): converted BufferedImage type {} to " +
-                    "RGB in {} msec", inImage.getType(),
-                    System.currentTimeMillis() - msec);
+                    "RGB in {} msec", inImage.getType(), watch.timeElapsed());
         }
         return outImage;
     }
@@ -355,7 +355,7 @@ public abstract class Java2dUtil {
                                      final Rotate rotate) {
         BufferedImage rotatedImage = inImage;
         if (!rotate.isNoOp()) {
-            final long msec = System.currentTimeMillis();
+            final Stopwatch watch = new Stopwatch();
             final double radians = Math.toRadians(rotate.getDegrees());
             final int sourceWidth = inImage.getWidth();
             final int sourceHeight = inImage.getHeight();
@@ -384,7 +384,7 @@ public abstract class Java2dUtil {
             g2d.setRenderingHints(hints);
             g2d.drawImage(inImage, tx, null);
             logger.debug("rotateImage() executed in {} msec",
-                    System.currentTimeMillis() - msec);
+                    watch.timeElapsed());
         }
         return rotatedImage;
     }
@@ -489,7 +489,7 @@ public abstract class Java2dUtil {
         BufferedImage scaledImage = inImage;
         if (!scale.isNoOp() && (targetSize.width != sourceSize.width &&
                 targetSize.height != sourceSize.height)) {
-            final long startMsec = System.currentTimeMillis();
+            final Stopwatch watch = new Stopwatch();
 
             final ResampleOp resampleOp = new ResampleOp(
                     targetSize.width, targetSize.height);
@@ -516,8 +516,7 @@ public abstract class Java2dUtil {
                     "the {} filter in {} msec",
                     sourceSize.width, sourceSize.height,
                     targetSize.width, targetSize.height,
-                    filter.getName(),
-                    System.currentTimeMillis() - startMsec);
+                    filter.getName(), watch.timeElapsed());
         }
         return scaledImage;
     }
@@ -531,7 +530,7 @@ public abstract class Java2dUtil {
                                       final Sharpen sharpen) {
         BufferedImage sharpenedImage = inImage;
         if (!sharpen.isNoOp()) {
-            final long startMsec = System.currentTimeMillis();
+            final Stopwatch watch = new Stopwatch();
 
             final ResampleOp resampleOp = new ResampleOp(
                     inImage.getWidth(), inImage.getHeight());
@@ -540,8 +539,7 @@ public abstract class Java2dUtil {
             sharpenedImage = resampleOp.filter(inImage, null);
 
             logger.debug("sharpenImage(): sharpened by {} in {} msec",
-                    sharpen.getAmount(),
-                    System.currentTimeMillis() - startMsec);
+                    sharpen.getAmount(), watch.timeElapsed());
         }
         return sharpenedImage;
     }
@@ -555,7 +553,7 @@ public abstract class Java2dUtil {
     static BufferedImage transformColor(final BufferedImage inImage,
                                         final Color color) {
         BufferedImage filteredImage = inImage;
-        final long msec = System.currentTimeMillis();
+        final Stopwatch watch = new Stopwatch();
         switch (color) {
             case GRAY:
                 filteredImage = new BufferedImage(inImage.getWidth(),
@@ -574,7 +572,7 @@ public abstract class Java2dUtil {
 
             logger.debug("transformColor(): filtered {}x{} image in {} msec",
                     inImage.getWidth(), inImage.getHeight(),
-                    System.currentTimeMillis() - msec);
+                    watch.timeElapsed());
         }
         return filteredImage;
     }
@@ -586,7 +584,7 @@ public abstract class Java2dUtil {
      */
     static BufferedImage transposeImage(final BufferedImage inImage,
                                         final Transpose transpose) {
-        final long msec = System.currentTimeMillis();
+        final Stopwatch watch = new Stopwatch();
         AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
         switch (transpose) {
             case HORIZONTAL:
@@ -601,7 +599,7 @@ public abstract class Java2dUtil {
         BufferedImage outImage = op.filter(inImage, null);
 
         logger.debug("transposeImage(): transposed image in {} msec",
-                System.currentTimeMillis() - msec);
+                watch.timeElapsed());
         return outImage;
     }
 

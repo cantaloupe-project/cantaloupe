@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
+import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,7 +93,7 @@ class AzureStorageCache implements DerivativeCache {
 
         final CloudBlobClient client = getClientInstance();
         try {
-            final long msec = System.currentTimeMillis();
+            final Stopwatch watch = new Stopwatch();
             final CloudBlobContainer container =
                     client.getContainerReference(containerName);
             final String objectKey = getObjectKey(identifier);
@@ -101,8 +102,7 @@ class AzureStorageCache implements DerivativeCache {
             if (blob.exists()) {
                 ImageInfo info = ImageInfo.fromJson(blob.openInputStream());
                 logger.info("getImageInfo(): read {} from container {} in {} msec",
-                        objectKey, containerName,
-                        System.currentTimeMillis() - msec);
+                        objectKey, containerName, watch.timeElapsed());
                 return info;
             }
             return null;

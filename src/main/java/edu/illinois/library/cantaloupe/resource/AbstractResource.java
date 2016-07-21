@@ -19,6 +19,7 @@ import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.Request;
 import org.restlet.data.CacheDirective;
@@ -385,11 +386,11 @@ public abstract class AbstractResource extends ServerResource {
         ImageInfo info = null;
         DerivativeCache cache = CacheFactory.getDerivativeCache();
         if (cache != null) {
-            long msec = System.currentTimeMillis();
+            final Stopwatch watch = new Stopwatch();
             info = cache.getImageInfo(identifier);
             if (info != null) {
                 logger.debug("Retrieved dimensions of {} from cache in {} msec",
-                        identifier, System.currentTimeMillis() - msec);
+                        identifier, watch.timeElapsed());
             } else {
                 info = readInfo(identifier, proc);
                 cache.putImageInfo(identifier, info);
@@ -457,10 +458,10 @@ public abstract class AbstractResource extends ServerResource {
      */
     private ImageInfo readInfo(final Identifier identifier,
                                final Processor proc) throws ProcessorException {
-        final long msec = System.currentTimeMillis();
+        final Stopwatch watch = new Stopwatch();
         final ImageInfo info = proc.getImageInfo();
         logger.debug("Read info of {} in {} msec", identifier,
-                System.currentTimeMillis() - msec);
+                watch.timeElapsed());
         return info;
     }
 

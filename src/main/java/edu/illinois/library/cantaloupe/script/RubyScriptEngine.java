@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.script;
 
+import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,12 +28,12 @@ class RubyScriptEngine implements ScriptEngine {
      */
     @Override
     public Object invoke(String methodName) throws ScriptException {
-        final long msec = System.currentTimeMillis();
+        final Stopwatch watch = new Stopwatch();
         final String invocationString = String.format("%s::%s",
                 MODULE, methodName);
         final Object returnValue = scriptEngine.eval(invocationString);
         logger.debug("invoke({}::{}): exec time: {} msec",
-                MODULE, methodName, System.currentTimeMillis() - msec);
+                MODULE, methodName, watch.timeElapsed());
         return returnValue;
     }
 
@@ -45,12 +46,12 @@ class RubyScriptEngine implements ScriptEngine {
     @Override
     public Object invoke(String methodName, Object[] args)
             throws ScriptException {
-        final long msec = System.currentTimeMillis();
+        final Stopwatch watch = new Stopwatch();
         final String invocationString = String.format("%s::%s(%s)",
                 MODULE, methodName, serializeAsRuby(args));
         final Object returnValue = scriptEngine.eval(invocationString);
-        logger.debug("invoke({}::{}(*args)): exec time: {} msec",
-                MODULE, methodName, System.currentTimeMillis() - msec);
+        logger.debug("invoke({}::{}()): exec time: {} msec",
+                MODULE, methodName, watch.timeElapsed());
         return returnValue;
     }
 
@@ -90,10 +91,10 @@ class RubyScriptEngine implements ScriptEngine {
      *     <li>All other types as String</li>
      * </ul>
      *
-     * @param object Java object
-     * @return Ruby source code
+     * @param object Java object conforming to the types in the description.
+     * @return Ruby source code.
      */
-    public String serializeAsRuby(Object object) {
+    String serializeAsRuby(Object object) {
         StringBuilder rubyCode = new StringBuilder();
         if (object == null) {
             rubyCode.append("nil");

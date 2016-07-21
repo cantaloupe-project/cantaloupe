@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.io.IOUtils;
 import org.restlet.data.Disposition;
 import org.restlet.data.MediaType;
@@ -44,10 +45,10 @@ public class CachedImageRepresentation extends OutputRepresentation {
      */
     @Override
     public void write(OutputStream outputStream) throws IOException {
-        final long msec = System.currentTimeMillis();
+        final Stopwatch watch = new Stopwatch();
         IOUtils.copy(inputStream, outputStream);
         logger.debug("Streamed from the cache without resolving in {} msec",
-                System.currentTimeMillis() - msec);
+                watch.timeElapsed());
     }
 
 }
