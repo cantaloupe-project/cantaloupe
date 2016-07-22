@@ -23,7 +23,7 @@ abstract class AbstractProcessor {
         if (getAvailableOutputFormats().size() < 1) {
             throw new UnsupportedSourceFormatException(
                     getClass().getSimpleName() + " does not support the " +
-                            format + " source format");
+                            format.getName() + " source format");
         }
     }
 

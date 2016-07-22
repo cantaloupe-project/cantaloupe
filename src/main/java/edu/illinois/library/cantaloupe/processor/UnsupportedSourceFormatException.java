@@ -13,7 +13,7 @@ public class UnsupportedSourceFormatException extends ProcessorException {
     }
 
     public UnsupportedSourceFormatException(Format format) {
-        super("Unsupported source format: " + format);
+        super("Unsupported source format: " + format.getName());
     }
 
 }
