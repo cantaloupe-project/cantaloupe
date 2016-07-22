@@ -57,12 +57,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Processor using the Kakadu kdu_expand and kdu_jp2info command-line tools.
- * Written for version 7.7, but may work with other versions. Uses kdu_expand
- * for cropping and an initial scale reduction factor, and either Java 2D or
- * JAI for all remaining processing steps. kdu_expand generates BMP output
- * which is streamed directly to the ImageIO or JAI reader, which are really
- * fast with BMP for some reason.
+ * <p>Processor using the Kakadu kdu_expand and kdu_jp2info command-line
+ * tools. Written against version 7.7, but should work with other versions,
+ * as long as their command-line interface is compatible.</p>
+ *
+ * <p>kdu_expand is used for cropping and an initial scale reduction factor,
+ * and Java 2D for all remaining processing steps. kdu_expand generates TIFF
+ * output which is streamed (more or less) directly to the ImageIO reader.
+ * (TIFF is used in order to preserve any embedded source ICC profile.)</p>
  *
  * @see <a href="http://kakadusoftware.com/wp-content/uploads/2014/06/Usage_Examples-v7_7.txt">
  *     Usage Examples for the Demonstration Applications Supplied with Kakadu
@@ -129,7 +131,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
         final File devStdout = new File("/dev/stdout");
         if (devStdout.exists() && devStdout.canWrite()) {
             // Due to another quirk of kdu_expand, we need to create a symlink
-            // from {temp path}/stdout.bmp to /dev/stdout, to tell kdu_expand
+            // from {temp path}/stdout.tif to /dev/stdout, to tell kdu_expand
             // what format to write.
             try {
                 stdoutSymlink = createStdoutSymlink();
@@ -152,7 +154,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
     private static Path createStdoutSymlink() throws IOException {
         File tempDir = new File(System.getProperty("java.io.tmpdir"));
         final File link = new File(tempDir.getAbsolutePath() + "/cantaloupe-" +
-                UUID.randomUUID() + ".bmp");
+                UUID.randomUUID() + ".tif");
         link.deleteOnExit();
         final File devStdout = new File("/dev/stdout");
         return Files.createSymbolicLink(Paths.get(link.getAbsolutePath()),
@@ -361,7 +363,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
 
                 final ImageReader reader = new ImageReader(
                         new InputStreamStreamSource(processInputStream),
-                        Format.BMP);
+                        Format.TIF);
                 try {
                     postProcessUsingJava2d(reader, ops, imageInfo, reductionFactor,
                             outputStream);
