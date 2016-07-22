@@ -32,7 +32,16 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Processor using the ImageMagick `convert` and `identify` command-line tools.
+ * <p>Processor using the ImageMagick `convert` and `identify` command-line
+ * tools.</p>
+ *
+ * <p>This class does not implement <var>FileProcessor</var> because testing
+ * indicates that reading from streams is significantly faster.</p>
+ *
+ * <p>This processor does not respect the
+ * {@link edu.illinois.library.cantaloupe.resource.AbstractResource#PRESERVE_METADATA_CONFIG_KEY}
+ * setting because to not preserve metadata would entail not preserving an
+ * ICC profile. Thus, metadata always passes through.</p>
  */
 class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
 
@@ -52,13 +61,6 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
                            final OperationList ops,
                            final Dimension fullSize,
                            final String backgroundColor) {
-        // If we are not preserving metadata, strip it. This has to happen
-        // before an ICC profile is added (below).
-        if (!Configuration.getInstance().
-                getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false)) {
-            imOp.strip();
-        }
-
         for (Operation op : ops) {
             if (op instanceof Crop) {
                 Crop crop = (Crop) op;

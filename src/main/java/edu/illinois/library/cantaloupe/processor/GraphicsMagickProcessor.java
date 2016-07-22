@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
-import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import org.apache.commons.lang3.StringUtils;
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
@@ -35,8 +34,13 @@ import java.util.Set;
  * <p>Processor using the GraphicsMagick <code>gm</code> command-line tool.
  * Tested with version 1.3.21; other versions may or may not work.</p>
  *
- * <p>Does not implement <var>FileProcessor</var> because testing indicates
- * that reading from streams is significantly faster.</p>
+ * <p>This class does not implement <var>FileProcessor</var> because testing
+ * indicates that reading from streams is significantly faster.</p>
+ *
+ * <p>This processor does not respect the
+ * {@link edu.illinois.library.cantaloupe.resource.AbstractResource#PRESERVE_METADATA_CONFIG_KEY}
+ * setting because to not preserve metadata would entail not preserving an
+ * ICC profile. Thus, metadata always passes through.</p>
  */
 class GraphicsMagickProcessor extends Im4JavaProcessor
         implements StreamProcessor {
@@ -152,13 +156,6 @@ class GraphicsMagickProcessor extends Im4JavaProcessor
                            final OperationList ops,
                            final Dimension fullSize,
                            final String backgroundColor) {
-        // If we are not preserving metadata, strip it. This has to happen
-        // before an ICC profile is added (below).
-        if (!Configuration.getInstance().
-                getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false)) {
-            imOp.strip();
-        }
-
         for (Operation op : ops) {
             if (op instanceof Crop) {
                 Crop crop = (Crop) op;
