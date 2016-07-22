@@ -16,18 +16,18 @@ title: What's New
 
 <ul>
   <li>Java 8 is now required.</li>
+  <li>Major efficiency improvements in the Java 2D processing pipeline affecting Java2dProcessor, JaiProcessor, and KakaduProcessor.</li>
   <li>All processors that use the Java 2D pipeline (Java2dProcessor, KakaduProcessor, OpenJpegProcessor, PdfBoxProcessor) support selectable upscaling and downscaling filters.</li>
+  <li>Improved the scale quality of JaiProcessor.</li>
   <li>All processors offer configurable sharpening.</li>
   <li>All processors copy source ICC color profiles into derivative images.</li>
   <li>Added the ability to copy EXIF, IPTC IIM, XMP, and/or native TIFF and PNG metadata from source images to derivative images of the same format, for some processors.</li>
-  <li>Improved the scale quality of JaiProcessor.</li>
   <li>Java2dProcessor and JaiProcessor respect the value of an embedded EXIF Orientation tag.</li>
-  <li>Major efficiency improvements in the Java 2D processing pipeline affecting Java2dProcessor, JaiProcessor, and KakaduProcessor.</li>
-  <li>Increased the default Java2dProcessor/JaiProcessor JPEG output quality to 0.8 (80).</li>
+  <li>Increased the default Java2dProcessor/JaiProcessor JPEG compression to 0.8 (80).</li>
   <li>Added support for the <code>X-IIIF-ID</code> proxy header, in order to return correct image identifiers in information responses whose requests have passed through a reverse proxy using a different identifier.</li>
   <li>Removed the JAI post-processor option for KakaduProcessor and OpenJpegProcessor.</li>
   <li>HTTP 415 is returned instead of HTTP 400 when an output format is requested that is valid but unsupported by the current processor.</li>
-  <li>Colorized the application console log.</li>
-  <li>Console log messages above <code>INFO</code> go to stderr.</li>
+  <li>Colorized the console application log.</li>
+  <li>Console application log messages with a severity of <code>WARN</code> and above are routed to standard error.</li>
   <li>Upgraded a number of libraries.</li>
 </ul>
