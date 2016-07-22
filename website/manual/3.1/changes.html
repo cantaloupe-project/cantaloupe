@@ -17,6 +17,7 @@ title: What's New
 <ul>
   <li>Fixed a resource leak that would cause landing pages, error pages, and the Control Panel to become inaccessible after a long time running.</li>
   <li>Fixed a bug where the watermark wouldn't be added if redactions were enabled and set to use <code>DelegateScriptStrategy</code> but the delegate script was disabled.</li>
+  <li>Fixed tile sizes in the IIIF Image API 2.x information response when using KakaduProcessor.</li>
   <li>HTTP 400 is returned in response to a request for an image that would be zero pixels on a side, even when the zero dimension was not explicit in the request (for example, a size of <code>4,</code> for an image that is at least five times wider than it is tall). (Previously, it was only returned when zero pixels was explicitly requested, and the returned image was incorrect.)</li>
 </ul>
 
