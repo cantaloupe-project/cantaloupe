@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
@@ -11,6 +12,7 @@ import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.processor.ReductionFactor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,6 +76,15 @@ abstract class AbstractImageReader {
         setFormat(format);
     }
 
+    /**
+     * @return Whether the metadata will need to be read.
+     */
+    private boolean canIgnoreMetadata() {
+        final Configuration config = Configuration.getInstance();
+        return (!config.getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false) &&
+                !config.getBoolean("metadata.respect_orientation", false));
+    }
+
     protected void createReader() throws IOException {
         Iterator<javax.imageio.ImageReader> it;
         if (format != null) {
@@ -83,8 +94,22 @@ abstract class AbstractImageReader {
             it = ImageIO.getImageReaders(inputStream);
         }
         if (it.hasNext()) {
+            /*
+            http://docs.oracle.com/javase/8/docs/api/javax/imageio/ImageReader.html#setInput(java.lang.Object,%20boolean,%20boolean)
+            The ignoreMetadata parameter, if set to true, allows the reader
+            to disregard any metadata encountered during the read. Subsequent
+            calls to the getStreamMetadata and getImageMetadata methods may
+            return null, and an IIOImage returned from readAll may return null
+            from their getMetadata method. Setting this parameter may allow
+            the reader to work more efficiently. The reader may choose to
+            disregard this setting and return metadata normally.
+            */
+            final boolean ignoreMetadata = canIgnoreMetadata();
+            logger.debug("createReader(): ignoring metadata? {}",
+                    ignoreMetadata);
+
             iioReader = it.next();
-            iioReader.setInput(inputStream);
+            iioReader.setInput(inputStream, false, ignoreMetadata);
             logger.info("createReader(): using {}",
                     iioReader.getClass().getName());
         } else {
