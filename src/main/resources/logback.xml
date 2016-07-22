@@ -4,8 +4,9 @@
     <appender name="AppConsoleLog" class="ch.qos.logback.core.ConsoleAppender">
         <filter class="edu.illinois.library.cantaloupe.logging.ApplicationLogFilter" />
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %highlight(%-5level) %cyan(%logger{36}) - %msg%n</pattern>
         </encoder>
+        <withJansi>true</withJansi>
     </appender>
 
     <if condition='property("log.application.FileAppender.enabled").contains("true")'>

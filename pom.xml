@@ -183,6 +183,12 @@
       <artifactId>jetty-webapp</artifactId>
       <version>9.3.10.v20160621</version>
     </dependency>
+    <!-- Enables colorized Logback console output in Windows -->
+    <dependency>
+      <groupId>org.fusesource.jansi</groupId>
+      <artifactId>jansi</artifactId>
+      <version>1.13</version>
+    </dependency>
     <!-- Used by GraphicsMagickProcessor and ImageMagickProcessor -->
     <dependency>
       <groupId>org.im4java</groupId>
