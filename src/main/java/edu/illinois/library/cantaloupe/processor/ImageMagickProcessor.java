@@ -53,6 +53,13 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
                            final OperationList ops,
                            final Dimension fullSize,
                            final String backgroundColor) {
+        // If we are not preserving metadata, strip it. This has to happen
+        // before an ICC profile is added (below).
+        if (!Configuration.getInstance().
+                getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false)) {
+            imOp.strip();
+        }
+
         for (Operation op : ops) {
             if (op instanceof Crop) {
                 Crop crop = (Crop) op;
@@ -134,11 +141,6 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
         final Configuration config = Configuration.getInstance();
         final double sharpenValue = config.getDouble(SHARPEN_CONFIG_KEY, 0);
         imOp.unsharp(sharpenValue);
-
-        if (!Configuration.getInstance().
-                getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false)) {
-            imOp.strip();
-        }
     }
 
     @Override
