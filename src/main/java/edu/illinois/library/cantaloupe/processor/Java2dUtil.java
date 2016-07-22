@@ -201,36 +201,6 @@ public abstract class Java2dUtil {
     }
 
     /**
-     * <p>Copies the given BufferedImage of type
-     * {@link BufferedImage#TYPE_CUSTOM} into a new image of type
-     * {@link BufferedImage#TYPE_INT_RGB}, to make it work with the
-     * rest of the image operation pipeline.</p>
-     *
-     * <p>This is extremely expensive and should be avoided if possible.</p>
-     *
-     * @param inImage Image to convert
-     * @return A new BufferedImage of type RGB, or the input image if it
-     * is not of custom type.
-     */
-    public static BufferedImage convertCustomToRgb(
-            final BufferedImage inImage) {
-        BufferedImage outImage = inImage;
-        if (inImage != null && inImage.getType() == BufferedImage.TYPE_CUSTOM) {
-            final Stopwatch watch = new Stopwatch();
-
-            outImage = new BufferedImage(inImage.getWidth(),
-                    inImage.getHeight(), BufferedImage.TYPE_INT_RGB);
-            Graphics2D g = outImage.createGraphics();
-            g.drawImage(inImage, 0, 0, null);
-            g.dispose();
-
-            logger.debug("convertCustomToRgb() executed in {} msec",
-                    watch.timeElapsed());
-        }
-        return outImage;
-    }
-
-    /**
      * @param inImage Image to crop
      * @param crop Crop operation
      * @return Cropped image, or the input image if the given operation is a

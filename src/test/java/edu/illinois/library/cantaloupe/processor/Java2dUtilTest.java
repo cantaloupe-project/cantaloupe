@@ -163,20 +163,6 @@ public class Java2dUtilTest {
     }
 
     @Test
-    public void testConvertToRgb() throws IOException {
-        // test that input image of TYPE_INT_RGB is returned with no conversion
-        BufferedImage custom = new BufferedImage(10, 10,
-                BufferedImage.TYPE_INT_RGB);
-        assertSame(custom, Java2dUtil.convertCustomToRgb(custom));
-
-        // test with image of TYPE_CUSTOM
-        custom = ImageIO.read(TestUtil.
-                getFixture("images/tif-rgb-monores-64x56x8-striped-uncompressed.tif"));
-        BufferedImage output = Java2dUtil.convertCustomToRgb(custom);
-        assertEquals(BufferedImage.TYPE_INT_RGB, output.getType());
-    }
-
-    @Test
     public void testCropImage() {
         BufferedImage inImage = new BufferedImage(200, 100,
                 BufferedImage.TYPE_INT_RGB);
