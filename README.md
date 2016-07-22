@@ -11,10 +11,11 @@ the primary source of documentation.
 
 ## Requirements
 
-The only hard requirement is Java 7 or newer--either the
+The only requirement is Java 8; either the
 [Oracle JRE](https://www.java.com/en/) or
 [OpenJDK](http://openjdk.java.net/install/index.html) will work. Optional
-components, such as particular processors, may have additional requirements.
+components, such as particular processors, may have additional requirements;
+see the user manual.
 
 ## Configure
 
