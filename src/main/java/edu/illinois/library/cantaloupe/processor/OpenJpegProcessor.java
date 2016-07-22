@@ -45,12 +45,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Processor using the OpenJPEG opj_decompress and opj_dump command-line tools.
- * Written for version 2.1.0, but may work with other versions. Uses
- * opj_decompress for cropping and an initial scale reduction factor, and
- * either Java 2D or JAI for all remaining processing steps. opj_decompress
- * generates BMP output which is streamed directly to the ImageIO or JAI
- * reader, which are really fast with BMP for some reason.
+ * <p>Processor using the OpenJPEG opj_decompress and opj_dump command-line
+ * tools. Written against version 2.1.0, but should work with other versions,
+ * as long as their command-line interface is compatible.</p>
+ *
+ * <p>opj_decompress for cropping and an initial scale reduction factor, and
+ * Java 2D for all remaining processing steps. opj_decompress
+ * generates BMP output which is streamed directly to the ImageIO reader,
+ * which is really fast with BMP.</p>
+ *
+ * <p>Note that BMP does not support embedded ICC profiles, but this is not
+ * really a problem because opj_decompress converts the RGB source data
+ * itself.</p>
  */
 class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
 
