@@ -1,12 +1,8 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MetadataCopy;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.icc.IccProfile;
-import edu.illinois.library.cantaloupe.image.icc.IccProfileService;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
@@ -40,8 +36,6 @@ public class GifImageWriterTest {
     @Before
     public void setUp() throws Exception {
         final Configuration config = Configuration.getInstance();
-        // Disable ICC profiles (will be re-enabled in certain tests)
-        config.setProperty(IccProfileService.ICC_ENABLED_CONFIG_KEY, false);
         // Disable metadata preservation (will be re-enabled in certain tests)
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false);
 
@@ -68,13 +62,6 @@ public class GifImageWriterTest {
         getWriter().write(bufferedImage, outputStream);
         ImageIO.read(tempFile);
     }
-
-    @Test
-    public void testWriteWithBufferedImageAndIccProfile()  throws Exception {
-        configureIccProfile();
-        getWriter().write(bufferedImage, outputStream);
-        checkForIccProfile();
-    }
     /* Disabled, as GifMetadata.getXmp() is disabled.
     @Test
     public void testWriteWithBufferedImageAndMetadata()  throws Exception {
@@ -89,13 +76,6 @@ public class GifImageWriterTest {
         getWriter().write(planarImage, outputStream);
         ImageIO.read(tempFile);
     }
-
-    @Test
-    public void testWriteWithPlanarImageAndIccProfile() throws Exception {
-        configureIccProfile();
-        getWriter().write(planarImage, outputStream);
-        checkForIccProfile();
-    }
     /* Disabled, as GifMetadata.getXmp() is disabled.
     @Test
     public void testWriteWithPlanarImageAndMetadata() throws Exception {
@@ -105,16 +85,6 @@ public class GifImageWriterTest {
         checkForMetadata();
     }
     */
-    private void configureIccProfile() throws Exception {
-        final Configuration config = Configuration.getInstance();
-        config.setProperty(IccProfileService.ICC_ENABLED_CONFIG_KEY, true);
-        config.setProperty(IccProfileService.ICC_STRATEGY_CONFIG_KEY,
-                "BasicStrategy");
-        config.setProperty(IccProfileService.ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY,
-                "test");
-        config.setProperty(IccProfileService.ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY,
-                TestUtil.getFixture("AdobeRGB1998.icc").getAbsolutePath());
-    }
 
     private void checkForIccProfile() throws Exception {
         // Read it back in
@@ -158,11 +128,6 @@ public class GifImageWriterTest {
 
     private GifImageWriter getWriter() throws IOException {
         OperationList opList = new OperationList();
-        if (IccProfileService.isEnabled()) {
-            IccProfile profile = new IccProfileService().getProfile(
-                    new Identifier("cats"), Format.GIF, null, "127.0.0.1");
-            opList.add(profile);
-        }
         if (Configuration.getInstance().
                 getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false)) {
             opList.add(new MetadataCopy());

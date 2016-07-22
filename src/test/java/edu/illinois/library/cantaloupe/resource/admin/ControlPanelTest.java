@@ -69,7 +69,6 @@ public class ControlPanelTest {
         testCachesSection();
         testOverlaysSection();
         testMetadataSection();
-        testColorProfilesSection();
         testDelegateScriptSection();
         testLoggingSection();
     }
@@ -520,31 +519,6 @@ public class ControlPanelTest {
         // Assert that the application configuration has been updated correctly
         final Configuration config = Configuration.getInstance();
         assertTrue(config.getBoolean("metadata.preserve"));
-    }
-
-    private void testColorProfilesSection() throws Exception {
-        css("#cl-color-profiles-button").click();
-
-        // Fill in the form
-        css("[name=\"metadata.icc.enabled\"]").click();
-        new Select(css("[name=\"metadata.icc.strategy\"]")).
-                selectByValue("BasicStrategy");
-        css("[name=\"metadata.icc.BasicStrategy.profile\"]").sendKeys("/path/to/profile.icc");
-        css("[name=\"metadata.icc.BasicStrategy.profile_name\"]").sendKeys("Test Profile");
-
-        // Submit the form
-        css("#cl-color-profiles input[type=\"submit\"]").click();
-
-        Thread.sleep(SLEEP_AFTER_SUBMIT);
-
-        // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
-        assertTrue(config.getBoolean("metadata.icc.enabled"));
-        assertEquals("BasicStrategy", config.getString("metadata.icc.strategy"));
-        assertEquals("/path/to/profile.icc",
-                config.getString("metadata.icc.BasicStrategy.profile"));
-        assertEquals("Test Profile",
-                config.getString("metadata.icc.BasicStrategy.profile_name"));
     }
 
     private void testDelegateScriptSection() throws Exception {

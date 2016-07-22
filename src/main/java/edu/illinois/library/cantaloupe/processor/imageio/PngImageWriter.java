@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.icc.IccProfile;
 import org.w3c.dom.NodeList;
 
 import javax.imageio.IIOImage;
@@ -12,7 +11,6 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.PlanarImage;
-import java.awt.color.ICC_ColorSpace;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -38,28 +36,6 @@ class PngImageWriter extends AbstractImageWriter {
     PngImageWriter(OperationList opList,
                    Metadata sourceMetadata) {
         super(opList, sourceMetadata);
-    }
-
-    /**
-     * @param baseTree Metadata to embed the profile into.
-     * @param profile Profile to embed.
-     * @throws IOException
-     */
-    @Override
-    protected void addIccProfile(final IIOMetadataNode baseTree,
-                                 final IccProfile profile)
-            throws IOException {
-        final ICC_ColorSpace colorSpace =
-                new ICC_ColorSpace(profile.getProfile());
-        final byte[] compressedProfile =
-                deflate(colorSpace.getProfile().getData());
-        final IIOMetadataNode iccNode =
-                new IIOMetadataNode("iCCP");
-        iccNode.setAttribute("compressionMethod", "deflate");
-        iccNode.setAttribute("profileName", profile.getName());
-        iccNode.setUserObject(compressedProfile);
-
-        baseTree.appendChild(iccNode);
     }
 
     /**

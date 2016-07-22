@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.MetadataCopy;
-import edu.illinois.library.cantaloupe.image.icc.IccProfileService;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.redaction.RedactionService;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
@@ -230,19 +229,6 @@ public abstract class AbstractResource extends ServerResource {
             // no problem
             logger.debug("addNonEndpointOperations(): delegate script is " +
                     "disabled; skipping watermark.");
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-
-        // ICC profile
-        try {
-            if (IccProfileService.isEnabled()) {
-                IccProfileService service = new IccProfileService();
-                opList.add(service.getProfile(opList.getIdentifier(),
-                        opList.getOutputFormat(),
-                        getRequest().getHeaders().getValuesMap(),
-                        getCanonicalClientIpAddress()));
-            }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }

@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.icc.IccProfile;
 import org.w3c.dom.NodeList;
 
 import javax.imageio.IIOImage;
@@ -38,34 +37,6 @@ class GifImageWriter extends AbstractImageWriter {
     GifImageWriter(OperationList opList,
                    Metadata sourceMetadata) {
         super(opList, sourceMetadata);
-    }
-
-    /**
-     * @param baseTree Metadata to embed the profile into.
-     * @param profile Profile to embed.
-     * @throws IOException
-     */
-    @Override
-    protected void addIccProfile(final IIOMetadataNode baseTree,
-                                 final IccProfile profile) throws IOException {
-        // Obtain or create /ApplicationExtensions
-        final NodeList appExtensionsList =
-                baseTree.getElementsByTagName("ApplicationExtensions");
-        IIOMetadataNode appExtensions;
-        if (appExtensionsList.getLength() > 0) {
-            appExtensions = (IIOMetadataNode) appExtensionsList.item(0);
-        } else {
-            appExtensions = new IIOMetadataNode("ApplicationExtensions");
-            baseTree.appendChild(appExtensions);
-        }
-
-        // Create /ApplicationExtensions/ApplicationExtension
-        final IIOMetadataNode appExtension =
-                new IIOMetadataNode("ApplicationExtension");
-        appExtension.setAttribute("applicationID", "ICCRGBG1");
-        appExtension.setAttribute("authenticationCode", "012");
-        appExtension.setUserObject(profile.getProfile().getData());
-        appExtensions.appendChild(appExtension);
     }
 
     @Override

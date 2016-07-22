@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.processor.imageio;
 import edu.illinois.library.cantaloupe.image.MetadataCopy;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.icc.IccProfile;
 
 import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriteParam;
@@ -41,20 +40,6 @@ abstract class AbstractImageWriter {
     }
 
     /**
-     * <p>Embeds the given ICC profile into the given tree.</p>
-     *
-     * <p>Writers for formats that don't support ICC profiles may simply do
-     * nothing.</p>
-     *
-     * @param baseTree Tree to embed the profile into.
-     * @param profile Profile to embed.
-     * @throws IOException
-     */
-    abstract protected void addIccProfile(IIOMetadataNode baseTree,
-                                          IccProfile profile)
-            throws IOException;
-
-    /**
      * <p>Embeds metadata from {@link #sourceMetadata} into the given tree.</p>
      *
      * <p>Writers for formats that don't support metadata may simply do
@@ -87,9 +72,7 @@ abstract class AbstractImageWriter {
         final IIOMetadataNode baseTree =
                 (IIOMetadataNode) derivativeMetadata.getAsTree(formatName);
         for (final Operation op : opList) {
-            if (op instanceof IccProfile) {
-                addIccProfile(baseTree, (IccProfile) op);
-            } else if (op instanceof MetadataCopy && sourceMetadata != null) {
+            if (op instanceof MetadataCopy && sourceMetadata != null) {
                 addMetadata(baseTree);
             }
         }

@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
-import edu.illinois.library.cantaloupe.image.icc.IccProfile;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import org.apache.commons.lang3.StringUtils;
 import org.im4java.core.ConvertCmd;
@@ -132,8 +131,6 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
                         imOp.monochrome();
                         break;
                 }
-            } else if (op instanceof IccProfile) {
-                imOp.profile(((IccProfile) op).getFile().getAbsolutePath());
             }
         }
 

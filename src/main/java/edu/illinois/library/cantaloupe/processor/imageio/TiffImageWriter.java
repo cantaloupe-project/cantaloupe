@@ -5,11 +5,8 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.MetadataCopy;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.icc.IccProfile;
-import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import it.geosolutions.imageio.plugins.tiff.TIFFField;
-import it.geosolutions.imageio.plugins.tiff.TIFFTag;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -20,7 +17,6 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.PlanarImage;
-import java.awt.color.ICC_ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
@@ -49,41 +45,6 @@ class TiffImageWriter extends AbstractImageWriter {
     TiffImageWriter(OperationList opList,
                     Metadata sourceMetadata) {
         super(opList, sourceMetadata);
-    }
-
-    /**
-     * No-op.
-     *
-     * @see {@link #addIccProfile(IIOMetadata, IccProfile)}
-     */
-    @Override
-    protected void addIccProfile(final IIOMetadataNode baseNode,
-                                 final IccProfile profile) {}
-
-    /**
-     * @param baseMetadata Metadata to embed the profile into.
-     * @param profile Profile to embed.
-     * @return Metadata with ICC profile embedded.
-     * @throws IOException
-     */
-    private IIOMetadata addIccProfile(final IIOMetadata baseMetadata,
-                                      final IccProfile profile)
-            throws IOException {
-        if (profile != null) {
-            final TIFFDirectory dir =
-                    TIFFDirectory.createFromMetadata(baseMetadata);
-            final BaselineTIFFTagSet base = BaselineTIFFTagSet.getInstance();
-            final TIFFTag iccTag = base.getTag(BaselineTIFFTagSet.TAG_ICC_PROFILE);
-            final ICC_ColorSpace colorSpace =
-                    new ICC_ColorSpace(profile.getProfile());
-
-            final byte[] data = colorSpace.getProfile().getData();
-            final TIFFField iccField = new TIFFField(
-                    iccTag, TIFFTag.TIFF_UNDEFINED, data.length, data);
-            dir.addTIFFField(iccField);
-            return dir.getAsMetadata();
-        }
-        return baseMetadata;
     }
 
     /**
@@ -148,10 +109,7 @@ class TiffImageWriter extends AbstractImageWriter {
                 ImageTypeSpecifier.createFromRenderedImage(image),
                 writeParam);
         for (final Operation op : opList) {
-            if (op instanceof IccProfile) {
-                derivativeMetadata =
-                        addIccProfile(derivativeMetadata, (IccProfile) op);
-            } else if (op instanceof MetadataCopy && sourceMetadata != null) {
+            if (op instanceof MetadataCopy && sourceMetadata != null) {
                 derivativeMetadata = addMetadata(
                         sourceMetadata, derivativeMetadata);
             }

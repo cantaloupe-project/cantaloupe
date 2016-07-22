@@ -3,10 +3,8 @@ package edu.illinois.library.cantaloupe.processor.imageio;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.icc.IccProfile;
 import edu.illinois.library.cantaloupe.processor.Java2dUtil;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -42,35 +40,6 @@ class JpegImageWriter extends AbstractImageWriter {
     JpegImageWriter(OperationList opList,
                     Metadata sourceMetadata) {
         super(opList, sourceMetadata);
-    }
-
-    /**
-     * @param baseTree Metadata to embed the profile into.
-     * @param profile Profile to embed.
-     * @throws IOException
-     */
-    @Override
-    protected void addIccProfile(final IIOMetadataNode baseTree,
-                                 final IccProfile profile)
-            throws IOException {
-        final IIOMetadataNode iccNode = new IIOMetadataNode("app2ICC");
-        iccNode.setUserObject(profile.getProfile());
-
-        // Append the app2ICC node we just created to /JPEGvariety/app0JFIF
-        NodeList level1Nodes = baseTree.getChildNodes();
-        for (int i = 0; i < level1Nodes.getLength(); i++) {
-            Node level1Node = level1Nodes.item(i);
-            if (level1Node.getNodeName().equals("JPEGvariety")) {
-                NodeList level2Nodes = level1Node.getChildNodes();
-                for (int j = 0; j < level2Nodes.getLength(); j++) {
-                    Node level2Node = level2Nodes.item(j);
-                    if (level2Node.getNodeName().equals("app0JFIF")) {
-                        level2Node.appendChild(iccNode);
-                        break;
-                    }
-                }
-            }
-        }
     }
 
     /**

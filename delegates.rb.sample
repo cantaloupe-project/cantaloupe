@@ -71,20 +71,6 @@ module Cantaloupe
   end
 
   ##
-  # @param identifier [String] Image identifier
-  # @param output_format [Hash<String,String>] Hash with `media_type` and
-  #                                            `extension` keys.
-  # @param request_headers [Hash<String,String>]
-  # @param client_ip [String]
-  # @return [Hash<String,String>,nil] Hash with `name` and `pathname` keys
-  #         containing the name of the profile and its absolute pathname,
-  #         respectively; or an empty hash to not embed a profile.
-  #
-  def self.icc_profile(identifier, output_format, request_headers, client_ip)
-    {}
-  end
-
-  ##
   # Tells which resolver to use for the given identifier.
   #
   # @param identifier [String] Image identifier

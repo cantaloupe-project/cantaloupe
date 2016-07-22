@@ -5,8 +5,6 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MetadataCopy;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.icc.IccProfile;
-import edu.illinois.library.cantaloupe.image.icc.IccProfileService;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
@@ -38,8 +36,6 @@ public class JpegImageWriterTest {
     @Before
     public void setUp() throws Exception {
         final Configuration config = Configuration.getInstance();
-        // Disable ICC profiles (will be re-enabled in certain tests)
-        config.setProperty(IccProfileService.ICC_ENABLED_CONFIG_KEY, false);
         // Disable metadata preservation (will be re-enabled in certain tests)
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false);
 
@@ -56,14 +52,6 @@ public class JpegImageWriterTest {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         getWriter().write(bufferedImage, os);
         ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
-    }
-
-    @Test
-    public void testWriteWithBufferedImageAndIccProfile() throws Exception {
-        configureIccProfile();
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter().write(bufferedImage, os);
-        checkForIccProfile(os.toByteArray());
     }
 
     @Test
@@ -111,14 +99,6 @@ public class JpegImageWriterTest {
     }
 
     @Test
-    public void testWriteWithPlanarImageAndIccProfile() throws Exception {
-        configureIccProfile();
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter().write(planarImage, os);
-        checkForIccProfile(os.toByteArray());
-    }
-
-    @Test
     public void testWriteWithPlanarImageAndExifMetadata() throws Exception {
         final File fixture = TestUtil.getImage("jpg-exif.jpg");
         metadata = new JpegImageReader(fixture).getMetadata(0);
@@ -153,17 +133,6 @@ public class JpegImageWriterTest {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         getWriter().write(planarImage, os);
         checkForXmpMetadata(os.toByteArray());
-    }
-
-    private void configureIccProfile() throws Exception {
-        final Configuration config = Configuration.getInstance();
-        config.setProperty(IccProfileService.ICC_ENABLED_CONFIG_KEY, true);
-        config.setProperty(IccProfileService.ICC_STRATEGY_CONFIG_KEY,
-                "BasicStrategy");
-        config.setProperty(IccProfileService.ICC_BASIC_STRATEGY_PROFILE_NAME_CONFIG_KEY,
-                "test");
-        config.setProperty(IccProfileService.ICC_BASIC_STRATEGY_PROFILE_CONFIG_KEY,
-                TestUtil.getFixture("AdobeRGB1998.icc").getAbsolutePath());
     }
 
     private void checkForIccProfile(byte[] imageData) throws Exception {
@@ -256,11 +225,6 @@ public class JpegImageWriterTest {
 
     private JpegImageWriter getWriter() throws IOException {
         OperationList opList = new OperationList();
-        if (IccProfileService.isEnabled()) {
-            IccProfile profile = new IccProfileService().getProfile(
-                    new Identifier("cats"), Format.GIF, null, "127.0.0.1");
-            opList.add(profile);
-        }
         if (Configuration.getInstance().
                 getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false)) {
             opList.add(new MetadataCopy());
