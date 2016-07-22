@@ -220,17 +220,11 @@ abstract class AbstractImageReader {
      * {@link ImageIO#read} that reads a whole image (excluding subimages) in
      * one shot.
      *
-     * @return BufferedImage guaranteed to not be of type
-     *         {@link BufferedImage#TYPE_CUSTOM}.
+     * @return Read image.
      * @throws IOException
      */
     BufferedImage read() throws IOException {
-        final BufferedImage image = ImageIO.read(inputStream);
-        final BufferedImage rgbImage = Java2dUtil.convertCustomToRgb(image);
-        if (rgbImage != image) {
-            logger.warn("Converted image to RGB (this is very expensive)");
-        }
-        return rgbImage;
+        return ImageIO.read(inputStream);
     }
 
     /**
@@ -285,12 +279,8 @@ abstract class AbstractImageReader {
         if (image == null) {
             throw new UnsupportedSourceFormatException(iioReader.getFormatName());
         }
-        BufferedImage rgbImage = Java2dUtil.convertCustomToRgb(image);
-        if (rgbImage != image) {
-            logger.warn("Converted {} to RGB (this is very expensive)",
-                    ops.getIdentifier());
-        }
-        return rgbImage;
+
+        return image;
     }
 
     /**

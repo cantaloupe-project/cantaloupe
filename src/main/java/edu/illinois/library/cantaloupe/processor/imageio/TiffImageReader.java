@@ -165,12 +165,7 @@ class TiffImageReader extends AbstractImageReader {
         if (image == null) {
             throw new UnsupportedSourceFormatException(iioReader.getFormatName());
         }
-        BufferedImage rgbImage = Java2dUtil.convertCustomToRgb(image);
-        if (rgbImage != image) {
-            logger.info("read(): converted {} to RGB (this is very expensive)",
-                    ops.getIdentifier());
-        }
-        return rgbImage;
+        return image;
     }
 
     ////////////////////////////////////////////////////////////////////////
