@@ -13,27 +13,38 @@ title: For Developers
 <h1>For Developers</h1>
 
 <ul>
+  <li><a href="#Versioning">Versioning</a></li>
+  <li><a href="#Branching">Branching</a></li>
   <li><a href="#Contributing">Contributing</a></li>
-  <li><a href="#Administrative%20Info">Administrative Info</a>
-    <ul>
-      <li><a href="#Website">Website</a></li>
-      <li><a href="#Versioning">Versioning</a></li>
-      <li><a href="#Releasing">Releasing</a></li>
-    </ul>
-  </li>
+  <li><a href="#Releasing">Releasing</a></li>
 </ul>
 
 <p>Cantaloupe is a Maven project that should open right up in any Java IDE. Simply use the same configuration file and VM options (e.g. <code>-Dcantaloupe.config=...</code>) as usual.</p>
 
 <hr>
 
-<h2 id="Contributing">Contributing</h2>
+<h3 id="Versioning">Versioning</h3>
 
-<p>This project uses the <a href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow/">Gitflow</a> branching model. All changes should take place in feature branches ("feature/xxxx") that branch off from the main branch, "develop," from which they can be integrated into a particular release by the release manager.</p>
+<p>Cantaloupe roughly uses semantic versioning. Major releases (n) involve major reengineering that breaks backwards compatibility in a significant way. Minor releases (n.n) either do not break compatibility, or only in a minor way. Patch releases (n.n.n) are for bugfixes only.</p>
+
+<hr>
+
+<h2 id="Branching">Branching</h2>
+
+<p>Cantaloupe uses the <a href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow/">Gitflow</a> branching model. <code>develop</code> is the main branch that roughly tracks the current state of the next non-bugfix release. Significant features branch off into feature branches (<code>feature/xxxx</code>), from which they can be integrated into a particular release.</p>
+
+<p>When a major or minor version is ready for release in <code>develop</code>, it branches off into a <code>release/n.n</code> branch. There, its version is formally set and it is then merged into <code>master</code>, where the formal release is tagged.</p>
+
+<p>Bugfixes that would increment a minor version of a release are applied to the release branch for that release, and merged back into <code>develop</code>.</p>
+
+<hr>
+
+<h2 id="Contributing">Contributing</h2>
 
 <p>The general process for contributing code changes is:</p>
 
 <ol>
+  <li>Submit a "heads-up" issue in the tracker</li>
   <li><a href="https://github.com/medusa-project/cantaloupe/fork">Create a fork</a></li>
   <li>Create a feature branch (<code>git checkout -b feature/my-new-feature</code>)</li>
   <li>Commit your changes (<code>`git commit -am 'Add some feature'</code>)</li>
@@ -43,15 +54,9 @@ title: For Developers
 
 <hr>
 
-<h2 id="Administrative Info">Administrative Info</h2>
+<h2 id="Releasing">Releasing</h2>
 
-<p>(This section is for release managers only.)</p>
-
-<h3 id="Versioning">Versioning</h3>
-
-<p>Cantaloupe roughly uses semantic versioning. Major releases (n) involve major reengineering that breaks backwards compatibility in a significant way. Minor releases (n.n) either do not break compatibility, or only in a minor way. Patch releases (n.n.n) are for bugfixes only.</p>
-
-<h3 id="Releasing">Releasing</h3>
+<p>(This section is for the release manager only.)</p>
 
 <p>Currently, the release process is mostly manual, consisting of the following steps:</p>
 
