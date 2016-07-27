@@ -60,6 +60,11 @@ ul.toc, ul.toc ul {
   margin-left: 1.5em;
   padding-left: 0em; }
 
+div.benefits ul {
+  margin-left: 1.2em;
+  padding-left: 0px;
+}
+
 span.filename {
   font-family: monospace; }
 
