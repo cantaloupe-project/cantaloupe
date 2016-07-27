@@ -115,6 +115,9 @@ public class ImageResource extends Iiif2Resource {
         final Dimension fullSize =
                 getOrReadInfo(ops.getIdentifier(), processor).getSize();
 
+        // Will throw an exception if anything is wrong.
+        checkRequest(ops, fullSize);
+
         if (!isAuthorized(ops, fullSize)) {
             throw new AccessDeniedException();
         }

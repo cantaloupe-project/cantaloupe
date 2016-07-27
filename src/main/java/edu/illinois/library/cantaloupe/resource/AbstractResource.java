@@ -184,8 +184,9 @@ public abstract class AbstractResource extends ServerResource {
      * @param opList Operation list to add the operations to.
      * @param fullSize Full size of the source image.
      */
-    public void addNonEndpointOperations(final OperationList opList,
-                                         final Dimension fullSize) {
+    protected void addNonEndpointOperations(final OperationList opList,
+                                            final Dimension fullSize) {
+        // Redactions
         try {
             if (RedactionService.isEnabled()) {
                 List<Redaction> redactions = RedactionService.redactionsFor(
@@ -197,10 +198,19 @@ public abstract class AbstractResource extends ServerResource {
                     opList.add(redaction);
                 }
             } else {
-                logger.info("Redactions are disabled ({} = false); skipping.",
-                        RedactionService.REDACTION_ENABLED_CONFIG_KEY);
+                logger.debug("addNonEndpointOperations(): redactions are " +
+                        "disabled; skipping.");
             }
+        } catch (DelegateScriptDisabledException e) {
+            // no problem
+            logger.debug("addNonEndpointOperations(): delegate script is " +
+                    "disabled; skipping redactions.");
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
 
+        // Watermark
+        try {
             if (WatermarkService.isEnabled()) {
                 opList.add(WatermarkService.newWatermark(
                         opList, fullSize, getReference().toUrl(),
@@ -208,17 +218,32 @@ public abstract class AbstractResource extends ServerResource {
                         getCanonicalClientIpAddress(),
                         getRequest().getCookies().getValuesMap()));
             } else {
-                logger.info("Watermarking is disabled ({} = false); skipping.",
-                        WatermarkService.WATERMARK_ENABLED_CONFIG_KEY);
+                logger.debug("addNonEndpointOperations(): watermarking is " +
+                        "disabled; skipping.");
             }
         } catch (DelegateScriptDisabledException e) {
             // no problem
-            logger.info("Delegate script disabled; skipping non-endpoint " +
-                    "operations.");
+            logger.debug("addNonEndpointOperations(): delegate script is " +
+                    "disabled; skipping watermark.");
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
+    }
 
+    /**
+     * Checks the given operation list against the given image size.
+     *
+     * @param opList
+     * @param fullSize
+     * @throws EmptyPayloadException
+     */
+    protected final void checkRequest(final OperationList opList,
+                                      final Dimension fullSize)
+            throws EmptyPayloadException {
+        final Dimension resultingSize = opList.getResultingSize(fullSize);
+        if (resultingSize.width < 1 || resultingSize.height < 1) {
+            throw new EmptyPayloadException();
+        }
     }
 
     /**

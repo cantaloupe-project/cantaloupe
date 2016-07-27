@@ -148,6 +148,9 @@ public class ImageResource extends Iiif1Resource {
             throw new AccessDeniedException();
         }
 
+        // Will throw an exception if anything is wrong.
+        checkRequest(ops, fullSize);
+
         addNonEndpointOperations(ops, fullSize);
 
         // Find out whether the processor supports that source format by
