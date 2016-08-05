@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Scale;
-import edu.illinois.library.cantaloupe.processor.Java2dUtil;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.processor.ReductionFactor;
@@ -19,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
+import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
@@ -51,6 +51,9 @@ abstract class AbstractImageReader {
 
     /** Assigned by createReader(). */
     protected javax.imageio.ImageReader iioReader;
+
+    /** Set in setSource(). */
+    private Object source;
 
     /**
      * Initializes an instance.
@@ -197,17 +200,28 @@ abstract class AbstractImageReader {
         return new Dimension(width, height);
     }
 
+    private void reset() throws IOException {
+        if (source instanceof File) {
+            setSource((File) source);
+        } else {
+            setSource((StreamSource) source);
+        }
+        createReader();
+    }
+
     void setFormat(Format format) {
         this.format = format;
     }
 
     void setSource(File inputFile) throws IOException {
         dispose();
+        source = inputFile;
         inputStream = new FileImageInputStream(inputFile);
     }
 
     void setSource(StreamSource streamSource) throws IOException {
         dispose();
+        source = streamSource;
         inputStream = streamSource.newImageInputStream();
     }
 
@@ -419,7 +433,41 @@ abstract class AbstractImageReader {
         final ImageReadParam param = iioReader.getDefaultReadParam();
         param.setSourceRegion(region);
 
-        return iioReader.read(imageIndex, param);
+        try {
+            return iioReader.read(imageIndex, param);
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage().contains("Numbers of source Raster bands " +
+                    "and source color space components do not match")) {
+                /*
+                This probably means that the embedded ICC profile is
+                incompatible with the source image data.
+                (JPEGImageReader is not very lenient.)
+                See: https://github.com/medusa-project/cantaloupe/issues/41
+
+                To deal with this situation, we will try reading again,
+                ignoring the color profile. We need to reset the reader, and
+                then read into a grayscale BufferedImage.
+                */
+                reset();
+
+                // Credit: http://stackoverflow.com/a/11571181
+                final Iterator<ImageTypeSpecifier> imageTypes =
+                        iioReader.getImageTypes(0);
+                while (imageTypes.hasNext()) {
+                    final ImageTypeSpecifier imageTypeSpecifier = imageTypes.next();
+                    final int bufferedImageType = imageTypeSpecifier.getBufferedImageType();
+                    if (bufferedImageType == BufferedImage.TYPE_BYTE_GRAY) {
+                        param.setDestinationType(imageTypeSpecifier);
+                        break;
+                    }
+                }
+
+                return iioReader.read(imageIndex, param);
+            } else {
+                throw e;
+            }
+        }
+
     }
 
     ////////////////////////////////////////////////////////////////////////
