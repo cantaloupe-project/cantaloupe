@@ -13,6 +13,7 @@ import org.w3c.dom.Node;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
+import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
@@ -55,6 +56,9 @@ class ImageIoImageReader {
 
     /** Set in setFormat() */
     private Format format;
+
+    /** Set in setSource() */
+    private Object source;
 
     static {
         ImageIO.setUseCache(false);
@@ -250,13 +254,24 @@ class ImageIoImageReader {
         return new Dimension(width, height);
     }
 
+    private void reset() throws IOException {
+        if (source instanceof File) {
+            setSource((File) source);
+        } else {
+            setSource((StreamSource) source);
+        }
+        createReader();
+    }
+
     public void setSource(File inputFile) throws IOException {
         dispose();
+        source = inputFile;
         inputStream = new FileImageInputStream(inputFile);
     }
 
     public void setSource(StreamSource streamSource) throws IOException {
         dispose();
+        source = streamSource;
         inputStream = streamSource.newImageInputStream();
     }
 
@@ -556,7 +571,39 @@ class ImageIoImageReader {
             param.setSourceSubsampling(subsample, subsample, 0, 0);
         }
         hints.add(ReaderHint.ALREADY_CROPPED);
-        return reader.read(imageIndex, param);
+        try {
+            return reader.read(imageIndex, param);
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage().contains("Numbers of source Raster bands " +
+                    "and source color space components do not match")) {
+                /*
+                This probably means that the embedded ICC profile is
+                incompatible with the source image data.
+                (JPEGImageReader is not very lenient.)
+                See: https://github.com/medusa-project/cantaloupe/issues/41
+
+                To deal with this situation, we will try reading again,
+                ignoring the color profile. We need to reset the reader, and
+                then read into a grayscale BufferedImage.
+                */
+                reset();
+
+                // Credit: http://stackoverflow.com/a/11571181
+                final Iterator<ImageTypeSpecifier> imageTypes = reader.getImageTypes(0);
+                while (imageTypes.hasNext()) {
+                    final ImageTypeSpecifier imageTypeSpecifier = imageTypes.next();
+                    final int bufferedImageType = imageTypeSpecifier.getBufferedImageType();
+                    if (bufferedImageType == BufferedImage.TYPE_BYTE_GRAY) {
+                        param.setDestinationType(imageTypeSpecifier);
+                        break;
+                    }
+                }
+
+                return reader.read(imageIndex, param);
+            } else {
+                throw e;
+            }
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////
