@@ -253,6 +253,18 @@ public class Java2dUtilTest {
     }
 
     @Test
+    public void testReduceTo8Bits() throws IOException {
+        // assert that an 8-bit image is untouched
+        BufferedImage image = new BufferedImage(100, 100,
+                BufferedImage.TYPE_INT_RGB);
+        BufferedImage result = Java2dUtil.reduceTo8Bits(image);
+        assertSame(image, result);
+
+        // assert that a 16-bit image is downsampled
+        // TODO: write this
+    }
+
+    @Test
     public void testRemoveAlpha() {
         // TODO: write this
     }

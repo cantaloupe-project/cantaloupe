@@ -291,6 +291,25 @@ public abstract class Java2dUtil {
         return reader.read();
     }
 
+    /**
+     * Reduces an image's component size to 8 bits if greater.
+     *
+     * @param inImage Image to reduce
+     * @return Reduced image, or the input image if it already is 8 bits or
+     * less.
+     */
+    static BufferedImage reduceTo8Bits(final BufferedImage inImage) {
+        BufferedImage outImage = inImage;
+        if (inImage.getColorModel().getComponentSize(0) > 8) {
+            final int type = inImage.getColorModel().hasAlpha() ?
+                    BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
+            outImage = new BufferedImage(inImage.getWidth(),
+                    inImage.getHeight(), type);
+            outImage.createGraphics().drawImage(inImage, null, 0, 0);
+        }
+        return outImage;
+    }
+
     public static BufferedImage removeAlpha(final BufferedImage inImage) {
         BufferedImage outImage = inImage;
         if (inImage.getColorModel().hasAlpha()) {
