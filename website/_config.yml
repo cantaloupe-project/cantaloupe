@@ -1,5 +1,5 @@
 # Site settings
-title: Cantaloupe
+title: Cantaloupe Image Server
 email: alexd@n-ary.net
 description: > # this means to ignore newlines until "baseurl:"
   High-performance IIIF image server in Java

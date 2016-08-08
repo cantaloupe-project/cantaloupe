@@ -33,9 +33,9 @@ title: Source Formats
 
 <h2 id="Size Considerations">Size Considerations</h2>
 
-<p>Most requests to an image server will call for cropped tiles and/or downscaled derivatives of a source image. Both of these will return less data than is contained in the entire image. A basic image reader, disregarding efficiency, will try to read the entire source image into memory before the cropping and scaling operations are carried out. This works fine for small images&mdash;up to a few thousand pixels square&mdash;because they can be read quickly and won't consume much memory. But as source images expand into the range of tens and hundreds of megapixels, an increasing burden is placed on the server, and requests take longer and longer to complete.</p>
+<p>Most requests to an image server will call for cropped tiles and/or downscaled derivatives of a source image. Both of these will contain less data than the entire image. A basic image reader, disregarding efficiency, will try to read the entire source image into memory before the cropping and scaling operations are carried out. This works fine for small images, because they can be read quickly and won't consume much memory. But as source images expand into the range of tens and hundreds of megapixels, an increasing burden is placed on the server, and requests take longer and longer to complete.</p>
 
-<p>It would be much better if the image reader could read only the requested region, and even employ subsampling to read only the pixels within that region that are needed to satisfy the requested scale factor. This strategy would require a reader that is written to support it, as well as an image format capable of facilitating it. Two such formats&mdash;<a href="#JPEG2000">JPEG2000</a> and <a href="#TIFF">multi-resolution tiled TIFF</a>&mdash;are detailed later in this section.</p>
+<p>It would be better if the image reader could read only the requested region, and even employ subsampling to read only the pixels within that region that are needed to satisfy the requested scale factor. This strategy would require a reader that is written to support it, as well as an image format capable of facilitating it. Two such formats&mdash;<a href="#JPEG2000">JPEG2000</a> and <a href="#TIFF">multi-resolution tiled TIFF</a>&mdash;are detailed later in this section.</p>
 
 <p>Cantaloupe tries to do the best it can with whatever source formats it is asked to serve. However, some image formats are inherently better suited for large sizes and some <a href="processors.html#Supported%20Source%20Formats">processor/format combinations</a> will perform better than others.</p>
 
@@ -45,9 +45,7 @@ title: Source Formats
 
 <p>Most processors that support image sources support this format, some perhaps more efficiently than others, though this is untested.</p>
 
-<p>In general, this is not a good format for delivery of high-resolution images because source image data must be fully read into memory and decoded.</p>
-
-<p><a href="processors.html#Java2dProcessor">Java2dProcessor</a> and <a href="processors.html#JaiProcessor">JaiProcessor</a> use the default ImageIO JPEG reader, whose performance is known to vary greatly from JRE to JRE, with newer versions performing better.</p>
+<p>JPEG is not an ideal format for delivery of high-resolution images because the entire source image data must be read into memory and decoded.</p>
 
 <h3 id="JPEG2000">JPEG2000</h3>
 
@@ -61,13 +59,13 @@ title: Source Formats
 
 <p><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> can read and write JPEG2000 using JasPer, if the necessary plugin is installed. This will probably not be fast enough to be usable for most purposes.</p>
 
-<p>There is a JPEG2000 ImageIO plugin based on JJ2000 which would bring support to Java2dProcessor and JaiProcessor, but it is not included because it is too slow to be usable.</p>
+<p>There is an ImageIO plugin for JPEG2000 based on JJ2000 which would bring support to Java2dProcessor and JaiProcessor, but it is not included because it is too slow to be usable.</p>
 
 <h3 id="PNG">PNG</h3>
 
 <p>Most processors that support image sources support this format, some perhaps more efficiently than others, though this is untested.</p>
 
-<p>In general, this is not a good format for delivery of high-resolution images. At best, image pixels have to be read in whole rows, and most readers will not even do that.</p>
+<p>In general, this is not an ideal format for delivery of high-resolution images, for the reason explained in the <a href="#JPEG">JPEG</a> section.</p>
 
 <h3 id="TIFF">TIFF</h3>
 

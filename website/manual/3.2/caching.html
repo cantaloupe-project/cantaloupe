@@ -25,6 +25,7 @@ title: Caches
           <li><a href="#Automatic%20Maintenance">Automatic</a></li>
         </ul>
       </li>
+      <li><a href="#Limiting">Limiting</a></li>
       <li><a href="#Implementations">Implementations</a>
         <ul>
           <li><a href="#FilesystemCache">FilesystemCache</a></li>
@@ -136,6 +137,18 @@ cache.client.no_transform = true
 <h4 id="Automatic Maintenance">Automatic</h4>
 
 <p>Since version 2.2, a "cache worker" is available that will periodically clean and purge expired items from the cache automatically. (See the <code>cache.server.worker.*</code> configuration options.)</p>
+
+<hr>
+
+<h3 id="Limiting">Limiting</h3>
+
+<p>Depending on the amount of source content served, the varieties of derivatives generated, the time-to-live setting, and how often <a href="#Maintenance">maintenance</a> is performed, the cache may grow very large. The image server does not track its size, as this would be either expensive, or, for some cache implementations, impossible. Managing the cache size is therefore the responsibility of the administrator, and it can be accomplished by any combination of:</p>
+
+<ol>
+  <li>Performing maintenance more often;</li>
+  <li>Reducing the time-to-live (using the <code>*Cache.ttl_seconds</code> configuration keys);</li>
+  <li>Increasing the threshold by allocating more storage.</li>
+</ol>
 
 <hr>
 
