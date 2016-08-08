@@ -56,7 +56,7 @@ public class ProcessorFactoryTest {
             fail("Expected exception");
         } catch (UnsupportedSourceFormatException e) {
             assertEquals(e.getMessage(),
-                    "Java2dProcessor does not support the webp source format");
+                    "Java2dProcessor does not support the WebP source format");
         }
     }
 
@@ -88,7 +88,7 @@ public class ProcessorFactoryTest {
             ProcessorFactory.getProcessor(Format.WEBP);
             fail("Expected exception");
         } catch (UnsupportedSourceFormatException e) {
-            assertEquals("Java2dProcessor does not support the webp source format",
+            assertEquals("Java2dProcessor does not support the WebP source format",
                     e.getMessage());
         }
     }

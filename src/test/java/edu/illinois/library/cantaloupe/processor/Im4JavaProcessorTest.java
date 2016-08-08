@@ -84,7 +84,9 @@ abstract class Im4JavaProcessorTest extends ProcessorTest {
         final Configuration config = Configuration.getInstance();
         config.clear();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false);
-        assertXmpPresent(false);
+        // Metadata shouldn't be stripped, because it would also strip the ICC
+        // profile.
+        assertXmpPresent(true);
     }
 
     private void assertXmpPresent(boolean yesOrNo) throws Exception {
