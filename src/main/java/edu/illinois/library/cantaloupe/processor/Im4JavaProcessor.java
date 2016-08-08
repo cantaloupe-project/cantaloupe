@@ -55,9 +55,6 @@ abstract class Im4JavaProcessor extends AbstractProcessor {
     }
 
     public ImageInfo getImageInfo() throws ProcessorException {
-        if (getAvailableOutputFormats().size() < 1) {
-            throw new UnsupportedSourceFormatException(format);
-        }
         try (InputStream inputStream = streamSource.newInputStream()) {
             Info sourceInfo = new Info(
                     format.getPreferredExtension() + ":-",
