@@ -415,6 +415,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
         final List<String> command = new ArrayList<>();
         command.add(getPath("kdu_expand"));
         command.add("-quiet");
+        command.add("-resilient");
         command.add("-no_alpha");
         command.add("-i");
         command.add(sourceFile.getAbsolutePath());
