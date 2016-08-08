@@ -344,7 +344,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
             String msg = e.getMessage();
             final String errorStr = errorBucket.toString();
             if (errorStr != null && errorStr.length() > 0) {
-                msg += " (command output: " + msg + ")";
+                msg += " (command output: " + errorStr + ")";
             }
             throw new ProcessorException(msg, e);
         }
