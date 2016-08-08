@@ -540,7 +540,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
                                         final ReductionFactor reductionFactor,
                                         final OutputStream outputStream)
             throws IOException, ProcessorException {
-        BufferedImage image = reader.read();
+        BufferedImage image = Java2dUtil.reduceTo8Bits(reader.read());
 
         // The crop has already been applied, but we need to retain a
         // reference to it for any redactions.
