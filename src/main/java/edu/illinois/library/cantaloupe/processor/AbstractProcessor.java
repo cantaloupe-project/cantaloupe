@@ -22,8 +22,7 @@ abstract class AbstractProcessor {
         this.format = format;
         if (getAvailableOutputFormats().size() < 1) {
             throw new UnsupportedSourceFormatException(
-                    getClass().getSimpleName() + " does not support the " +
-                            format.getName() + " source format");
+                    (Processor) this, format);
         }
     }
 
