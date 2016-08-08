@@ -382,10 +382,16 @@ public abstract class ProcessorTest {
             StreamSource source = new TestStreamSource(fixture);
             ((StreamProcessor) proc).setStreamSource(source);
         }
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        proc.process(opList, proc.getImageInfo(), outputStream);
-        // TODO: verify that this is a valid image
-        assertTrue(outputStream.toByteArray().length > 100);
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            proc.process(opList, proc.getImageInfo(), outputStream);
+            // TODO: verify that this is a valid image
+            assertTrue(outputStream.toByteArray().length > 100);
+        } catch (Exception e) {
+            System.out.println("Fixture: " + fixture);
+            System.out.println("Ops: " + opList);
+            throw e;
+        }
     }
 
 }
