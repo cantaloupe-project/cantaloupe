@@ -59,12 +59,24 @@ import java.util.concurrent.Executors;
 /**
  * <p>Processor using the Kakadu kdu_expand and kdu_jp2info command-line
  * tools. Written against version 7.7, but should work with other versions,
- * as long as their command-line interface is compatible.</p>
+ * as long as their command-line interface is compatible. (There is also a JNI
+ * binding available for Kakadu, but the author does not have access to the
+ * Kakadu SDK.</p>
  *
  * <p>kdu_expand is used for cropping and an initial scale reduction factor,
  * and Java 2D for all remaining processing steps. kdu_expand generates TIFF
  * output which is streamed (more or less) directly to the ImageIO reader.
- * (TIFF is used in order to preserve any embedded source ICC profile.)</p>
+ * (TIFF is used in order to preserve embedded ICC profiles.)</p>
+ *
+ * <p>kdu_expand reads and writes the files named in the <code>-i</code>
+ * and <code>-o</code> flags passed to it, respectively. The file in the
+ * <code>-o</code> flag must have a recognized image extension such as .bmp,
+ * .tif, etc. This means that it's not possible to natively write to a
+ * {@link ProcessBuilder} {@link InputStream}. Instead, we have to resort to
+ * a trick whereby we create a symlink from /tmp/whatever.tif to /dev/stdout
+ * (which only exists on Unix), which will enable us to accomplish this.
+ * The temporary symlink is created in the static initializer and deleted on
+ * exit.</p>
  *
  * @see <a href="http://kakadusoftware.com/wp-content/uploads/2014/06/Usage_Examples-v7_7.txt">
  *     Usage Examples for the Demonstration Applications Supplied with Kakadu

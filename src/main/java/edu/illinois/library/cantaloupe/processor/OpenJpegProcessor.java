@@ -47,16 +47,24 @@ import java.util.concurrent.Executors;
 /**
  * <p>Processor using the OpenJPEG opj_decompress and opj_dump command-line
  * tools. Written against version 2.1.0, but should work with other versions,
- * as long as their command-line interface is compatible.</p>
+ * as long as their command-line interface is compatible. (There is also a JNI
+ * binding available, but it is broken as of this writing.)</p>
  *
- * <p>opj_decompress for cropping and an initial scale reduction factor, and
- * Java 2D for all remaining processing steps. opj_decompress
- * generates BMP output which is streamed directly to the ImageIO reader,
- * which is really fast with BMP.</p>
+ * <p>opj_decompress is used for cropping and an initial scale reduction
+ * factor. (Java 2D is used for all remaining processing steps.)
+ * opj_decompress generates BMP output which is streamed to an ImageIO reader.
+ * (BMP does not support embedded ICC profiles, but this is not a problem
+ * because opj_decompress converts the RGB source data itself.)</p>
  *
- * <p>Note that BMP does not support embedded ICC profiles, but this is not
- * really a problem because opj_decompress converts the RGB source data
- * itself.</p>
+ * <p>opj_decompress reads and writes the files named in the <code>-i</code>
+ * and <code>-o</code> flags passed to it, respectively. The file in the
+ * <code>-o</code> flag must have a recognized image extension such as .bmp,
+ * .tif, etc. This means that it's not possible to natively write to a
+ * {@link ProcessBuilder} {@link InputStream}. Instead, we have to resort to
+ * a trick whereby we create a symlink from /tmp/whatever.bmp to /dev/stdout
+ * (which only exists on Unix), which will enable us to accomplish this.
+ * The temporary symlink is created in the static initializer and deleted on
+ * exit.</p>
  */
 class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
 
