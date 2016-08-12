@@ -230,15 +230,17 @@ abstract class AbstractImageReader {
     ////////////////////////////////////////////////////////////////////////
 
     /**
-     * Expedient but not necessarily efficient method wrapping
-     * {@link ImageIO#read} that reads a whole image (excluding subimages) in
-     * one shot.
+     * Expedient but not necessarily efficient method that reads a whole image
+     * (excluding subimages) in one shot.
      *
      * @return Read image.
      * @throws IOException
      */
     BufferedImage read() throws IOException {
-        return ImageIO.read(inputStream);
+        if (iioReader == null) {
+            createReader();
+        }
+        return iioReader.read(0);
     }
 
     /**
