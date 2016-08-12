@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Rotate;
@@ -246,7 +245,7 @@ public class Java2dUtilTest {
         config.clear();
 
         Watermark watermark = new Watermark();
-        watermark.setImage(TestUtil.getImage("jpg"));
+        watermark.setImage(TestUtil.getImage("png"));
         watermark.setPosition(Position.BOTTOM_RIGHT);
 
         assertNotNull(Java2dUtil.getWatermarkImage(watermark));

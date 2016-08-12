@@ -1,13 +1,10 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MetadataCopy;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -29,55 +26,43 @@ import static org.junit.Assert.*;
 
 public class JpegImageWriterTest {
 
-    private BufferedImage bufferedImage;
-    private Metadata metadata;
-    private PlanarImage planarImage;
-
-    @Before
-    public void setUp() throws Exception {
-        final Configuration config = Configuration.getInstance();
-        // Disable metadata preservation (will be re-enabled in certain tests)
-        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false);
-
-        // Read an image fixture into memory
-        final File fixture = TestUtil.getImage("jpg-xmp.jpg");
-        metadata = new JpegImageReader(fixture).getMetadata(0);
-        bufferedImage = new JpegImageReader(fixture).read();
-        planarImage =  PlanarImage.wrapRenderedImage(
-                new JpegImageReader(fixture).readRendered());
-    }
-
     @Test
     public void testWriteWithBufferedImage() throws Exception {
+        final File fixture = TestUtil.getImage("jpg-xmp.jpg");
+        final JpegImageReader reader = new JpegImageReader(fixture);
+        final Metadata metadata = reader.getMetadata(0);
+        final BufferedImage image = reader.read();
+
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter().write(bufferedImage, os);
+        getWriter(metadata).write(image, os);
         ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
     }
 
     @Test
     public void testWriteWithBufferedImageAndExifMetadata() throws Exception {
-        final File fixture = TestUtil.getImage("jpg-exif.jpg");
-        metadata = new JpegImageReader(fixture).getMetadata(0);
-        bufferedImage = new JpegImageReader(fixture).read();
-
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        final File fixture = TestUtil.getImage("jpg-exif.jpg");
+        final JpegImageReader reader = new JpegImageReader(fixture);
+        final Metadata metadata = reader.getMetadata(0);
+        final BufferedImage image = reader.read();
+
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter().write(bufferedImage, os);
+        getWriter(metadata).write(image, os);
         checkForExifMetadata(os.toByteArray());
     }
 
     @Test
     public void testWriteWithBufferedImageAndIptcMetadata() throws Exception {
-        final File fixture = TestUtil.getImage("jpg-iptc.jpg");
-        metadata = new JpegImageReader(fixture).getMetadata(0);
-        bufferedImage = new JpegImageReader(fixture).read();
-
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        final File fixture = TestUtil.getImage("jpg-iptc.jpg");
+        final JpegImageReader reader = new JpegImageReader(fixture);
+        final Metadata metadata = reader.getMetadata(0);
+        final BufferedImage image = reader.read();
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter().write(bufferedImage, os);
+        getWriter(metadata).write(image, os);
         checkForIptcMetadata(os.toByteArray());
     }
 
@@ -85,44 +70,56 @@ public class JpegImageWriterTest {
     public void testWriteWithBufferedImageAndXmpMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        final File fixture = TestUtil.getImage("jpg-xmp.jpg");
+        final JpegImageReader reader = new JpegImageReader(fixture);
+        final Metadata metadata = reader.getMetadata(0);
+        final BufferedImage image = reader.read();
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter().write(bufferedImage, os);
+        getWriter(metadata).write(image, os);
         checkForXmpMetadata(os.toByteArray());
     }
 
     @Test
     public void testWriteWithPlanarImage() throws Exception {
+        final File fixture = TestUtil.getImage("jpg-xmp.jpg");
+        final JpegImageReader reader = new JpegImageReader(fixture);
+        final Metadata metadata = reader.getMetadata(0);
+        final PlanarImage image =  PlanarImage.wrapRenderedImage(
+                reader.readRendered());
+
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter().write(planarImage, os);
+        getWriter(metadata).write(image, os);
         ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
     }
 
     @Test
     public void testWriteWithPlanarImageAndExifMetadata() throws Exception {
-        final File fixture = TestUtil.getImage("jpg-exif.jpg");
-        metadata = new JpegImageReader(fixture).getMetadata(0);
-        planarImage =  PlanarImage.wrapRenderedImage(
-                new JpegImageReader(fixture).readRendered());
-
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        final File fixture = TestUtil.getImage("jpg-exif.jpg");
+        final JpegImageReader reader = new JpegImageReader(fixture);
+        final Metadata metadata = reader.getMetadata(0);
+        final PlanarImage image =  PlanarImage.wrapRenderedImage(
+                reader.readRendered());
+
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter().write(planarImage, os);
+        getWriter(metadata).write(image, os);
         checkForExifMetadata(os.toByteArray());
     }
 
     @Test
     public void testWriteWithPlanarImageAndIptcMetadata() throws Exception {
-        final File fixture = TestUtil.getImage("jpg-iptc.jpg");
-        metadata = new JpegImageReader(fixture).getMetadata(0);
-        planarImage =  PlanarImage.wrapRenderedImage(
-                new JpegImageReader(fixture).readRendered());
-
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        final File fixture = TestUtil.getImage("jpg-iptc.jpg");
+        final JpegImageReader reader = new JpegImageReader(fixture);
+        final Metadata metadata = reader.getMetadata(0);
+        final PlanarImage image =  PlanarImage.wrapRenderedImage(
+                reader.readRendered());
+
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter().write(planarImage, os);
+        getWriter(metadata).write(image, os);
         checkForIptcMetadata(os.toByteArray());
     }
 
@@ -130,13 +127,18 @@ public class JpegImageWriterTest {
     public void testWriteWithPlanarImageAndXmpMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        final File fixture = TestUtil.getImage("jpg-xmp.jpg");
+        final JpegImageReader reader = new JpegImageReader(fixture);
+        final Metadata metadata = reader.getMetadata(0);
+        final PlanarImage image =  PlanarImage.wrapRenderedImage(
+                reader.readRendered());
+
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter().write(planarImage, os);
+        getWriter(metadata).write(image, os);
         checkForXmpMetadata(os.toByteArray());
     }
 
     private void checkForIccProfile(byte[] imageData) throws Exception {
-        // Read it back in
         final Iterator<ImageReader> readers =
                 ImageIO.getImageReadersByFormatName("JPEG");
         final ImageReader reader = readers.next();
@@ -223,7 +225,7 @@ public class JpegImageWriterTest {
         }
     }
 
-    private JpegImageWriter getWriter() throws IOException {
+    private JpegImageWriter getWriter(Metadata metadata) throws IOException {
         OperationList opList = new OperationList();
         if (Configuration.getInstance().
                 getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false)) {

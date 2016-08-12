@@ -9,7 +9,6 @@ import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;
 import it.geosolutions.imageio.plugins.tiff.EXIFParentTIFFTagSet;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import it.geosolutions.imageio.plugins.tiff.TIFFTag;
-import org.junit.Before;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
@@ -28,57 +27,43 @@ import static org.junit.Assert.*;
 
 public class TiffImageWriterTest {
 
-    private BufferedImage bufferedImage;
-    private Metadata metadata;
-    private PlanarImage planarImage;
-
-    @Before
-    public void setUp() throws Exception {
-        final Configuration config = Configuration.getInstance();
-        // Disable metadata preservation (will be re-enabled in certain tests)
-        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false);
-
-        // Read an image fixture into memory
-        final File fixture = TestUtil.getImage("tif-xmp.tif");
-        metadata = new TiffImageReader(fixture).getMetadata(0);
-        bufferedImage = new TiffImageReader(fixture).read();
-        planarImage =  PlanarImage.wrapRenderedImage(
-                new TiffImageReader(fixture).readRendered());
-    }
-
     @Test
     public void testWriteWithBufferedImage() throws Exception {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        newWriter().write(bufferedImage, os);
-        ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
-    }
+        final File fixture = TestUtil.getImage("tif-xmp.tif");
+        final TiffImageReader reader = new TiffImageReader(fixture);
+        final Metadata metadata = reader.getMetadata(0);
+        final BufferedImage image = reader.read();
 
-    @Test
-    public void testWriteWithBufferedImageAndIccProfile() throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        newWriter().write(bufferedImage, os);
-        checkForIccProfile(os.toByteArray());
+        newWriter(metadata).write(image, os);
+        ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
     }
 
     @Test
     public void testWriteWithBufferedImageAndExifMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        final File fixture = TestUtil.getImage("tif-exif.tif");
+        final TiffImageReader reader = new TiffImageReader(fixture);
+        final Metadata metadata = reader.getMetadata(0);
+        final BufferedImage image = reader.read();
+
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        newWriter().write(bufferedImage, os);
+        newWriter(metadata).write(image, os);
         checkForExifMetadata(os.toByteArray());
     }
 
     @Test
     public void testWriteWithBufferedImageAndIptcMetadata() throws Exception {
-        final File fixture = TestUtil.getImage("tif-iptc.tif");
-        metadata = new TiffImageReader(fixture).getMetadata(0);
-        bufferedImage = new TiffImageReader(fixture).read();
-
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        final File fixture = TestUtil.getImage("tif-iptc.tif");
+        final TiffImageReader reader = new TiffImageReader(fixture);
+        final Metadata metadata = reader.getMetadata(0);
+        final BufferedImage image = reader.read();
+
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        newWriter().write(bufferedImage, os);
+        newWriter(metadata).write(image, os);
         checkForIptcMetadata(os.toByteArray());
     }
 
@@ -86,45 +71,56 @@ public class TiffImageWriterTest {
     public void testWriteWithBufferedImageAndXmpMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        final File fixture = TestUtil.getImage("tif-xmp.tif");
+        final TiffImageReader reader = new TiffImageReader(fixture);
+        final Metadata metadata = reader.getMetadata(0);
+        final BufferedImage image = reader.read();
+
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        newWriter().write(bufferedImage, os);
+        newWriter(metadata).write(image, os);
         checkForXmpMetadata(os.toByteArray());
     }
 
     @Test
     public void testWriteWithPlanarImage() throws Exception {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        newWriter().write(planarImage, os);
-        ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
-    }
+        final File fixture = TestUtil.getImage("tif-xmp.tif");
+        final TiffImageReader reader = new TiffImageReader(fixture);
+        final Metadata metadata = reader.getMetadata(0);
+        final PlanarImage image =
+                PlanarImage.wrapRenderedImage(reader.readRendered());
 
-    @Test
-    public void testWriteWithPlanarImageAndIccProfile() throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        newWriter().write(planarImage, os);
-        checkForIccProfile(os.toByteArray());
+        newWriter(metadata).write(image, os);
+        ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
     }
 
     @Test
     public void testWriteWithPlanarImageAndExifMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        final File fixture = TestUtil.getImage("tif-exif.tif");
+        final TiffImageReader reader = new TiffImageReader(fixture);
+        final Metadata metadata = reader.getMetadata(0);
+        final PlanarImage image =
+                PlanarImage.wrapRenderedImage(reader.readRendered());
+
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        newWriter().write(planarImage, os);
+        newWriter(metadata).write(image, os);
         checkForExifMetadata(os.toByteArray());
     }
 
     @Test
     public void testWriteWithPlanarImageAndIptcMetadata() throws Exception {
-        final File fixture = TestUtil.getImage("tif-iptc.tif");
-        metadata = new TiffImageReader(fixture).getMetadata(0);
-        planarImage =  PlanarImage.wrapRenderedImage(
-                new TiffImageReader(fixture).readRendered());
-
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        final File fixture = TestUtil.getImage("tif-iptc.tif");
+        final TiffImageReader reader = new TiffImageReader(fixture);
+        final Metadata metadata = reader.getMetadata(0);
+        final PlanarImage image =
+                PlanarImage.wrapRenderedImage(reader.readRendered());
+
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        newWriter().write(planarImage, os);
+        newWriter(metadata).write(image, os);
         checkForIptcMetadata(os.toByteArray());
     }
 
@@ -132,8 +128,14 @@ public class TiffImageWriterTest {
     public void testWriteWithPlanarImageAndXmpMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        final File fixture = TestUtil.getImage("tif-xmp.tif");
+        final TiffImageReader reader = new TiffImageReader(fixture);
+        final Metadata metadata = reader.getMetadata(0);
+        final PlanarImage image =
+                PlanarImage.wrapRenderedImage(reader.readRendered());
+
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        newWriter().write(planarImage, os);
+        newWriter(metadata).write(image, os);
         checkForXmpMetadata(os.toByteArray());
     }
 
@@ -195,7 +197,7 @@ public class TiffImageWriterTest {
         }
     }
 
-    private TiffImageWriter newWriter() throws IOException {
+    private TiffImageWriter newWriter(Metadata metadata) throws IOException {
         OperationList opList = new OperationList();
         if (Configuration.getInstance().
                 getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false)) {
