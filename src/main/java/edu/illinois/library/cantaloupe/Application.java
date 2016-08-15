@@ -13,49 +13,74 @@ import java.util.jar.Manifest;
  * Ostensible main application class, which is vestigial and should probably
  * be eliminated.
  */
-public class Application { // TODO: eliminate this
+public final class Application {
 
     private static Logger logger = LoggerFactory.getLogger(Application.class);
 
     /**
+     * Caches the lazy-loaded version from getVersion().
+     */
+    private static String cachedVersion = null;
+
+    /**
+     * Lock object for synchronization.
+     */
+    private static final Object lock = new Object();
+
+    /**
      * @return The application version from MANIFEST.MF, or a string like
-     *         "SNAPSHOT" if not running from a jar.
+     *         "Unknown" if not running from a jar. The return value is
+     *         cached.
      */
     public static String getVersion() {
-        // We will fall back to this if we can't pull the version out of the
-        // jar for some reason.
-        String versionStr = "SNAPSHOT";
+        if (cachedVersion == null) {
+            synchronized(lock) {
+                cachedVersion = readVersionFromManifest();
+                if (cachedVersion == null) {
+                    cachedVersion = "Unknown";
+                }
+            }
+        }
+        return cachedVersion;
+    }
 
+    /**
+     * @return The version. May be null.
+     */
+    private static String readVersionFromManifest() {
+        String versionStr = null;
         final Class clazz = Application.class;
         final String className = clazz.getSimpleName() + ".class";
         final URL classUrl = clazz.getResource(className);
 
-        // This could be null if there is a resource leak caused by code
-        // opening enough JarURLInputStreams (with URL.openStream()) and
-        // failing to close them.
         if (classUrl != null) {
             final String classPath = classUrl.toString();
             if (classPath.startsWith("file")) {
+                // The classpath will contain /WEB-INF only when running from a
+                // JAR.
                 final int webInfIndex = classPath.lastIndexOf("/WEB-INF");
                 if (webInfIndex > -1) {
                     final String manifestPath =
                             classPath.substring(0, webInfIndex) +
                                     "/META-INF/MANIFEST.MF";
                     try (InputStream urlStream = new URL(manifestPath).openStream()) {
-                        Manifest manifest = new Manifest(urlStream);
-                        Attributes attr = manifest.getMainAttributes();
-                        String version = attr.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
+                        final Manifest manifest = new Manifest(urlStream);
+                        final Attributes attr = manifest.getMainAttributes();
+                        final String version = attr.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
                         if (version != null) {
                             versionStr = version;
                         }
                     } catch (IOException e) {
                         logger.error(e.getMessage(), e);
                     }
+                } else {
+                    logger.debug("readVersionFromManifest(): apparently not " +
+                            "running from a JAR, so no version to read");
                 }
             }
         } else {
-            versionStr = "Unknown";
-            logger.error("Unable to get the {} resource", className);
+            logger.error("readVersionFromManifest(): unable to get the " +
+                    "{} resource", className);
         }
         return versionStr;
     }
