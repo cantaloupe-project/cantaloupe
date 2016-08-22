@@ -502,14 +502,15 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         final File cacheFile = getSourceImageFile(identifier);
         if (cacheFile != null && cacheFile.exists()) {
             if (!isExpired(cacheFile)) {
-                logger.info("getImageFile(): hit: {}", identifier);
+                logger.info("getImageFile(): hit: {} ({})",
+                        identifier, cacheFile.getAbsolutePath());
                 file = cacheFile;
             } else {
                 logger.info("getImageFile(): deleting stale file: {}",
-                        cacheFile.getName());
+                        cacheFile.getAbsolutePath());
                 if (!cacheFile.delete()) {
                     logger.warn("getImageFile(): unable to delete {}",
-                            cacheFile);
+                            cacheFile.getAbsolutePath());
                 }
             }
         }
@@ -534,14 +535,14 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             if (cacheFile != null && cacheFile.exists()) {
                 if (!isExpired(cacheFile)) {
                     logger.info("getImageInfo(Identifier): hit: {}",
-                            cacheFile.getName());
+                            cacheFile.getAbsolutePath());
                     return ImageInfo.fromJson(cacheFile);
                 } else {
                     logger.info("getImageInfo(Identifier): deleting stale " +
-                            "cache file: {}", cacheFile.getName());
+                            "cache file: {}", cacheFile.getAbsolutePath());
                     if (!cacheFile.delete()) {
                         logger.warn("getImageInfo(Identifier): unable to " +
-                                "delete {}", cacheFile);
+                                "delete {}", cacheFile.getAbsolutePath());
                     }
                 }
             }
@@ -563,17 +564,18 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         if (cacheFile != null && cacheFile.exists()) {
             if (!isExpired(cacheFile)) {
                 try {
-                    logger.info("getImageInputStream(): hit: {}", ops);
+                    logger.info("getImageInputStream(): hit: {} ({})",
+                            ops, cacheFile.getAbsolutePath());
                     inputStream = new FileInputStream(cacheFile);
                 } catch (FileNotFoundException e) {
                     logger.error(e.getMessage(), e);
                 }
             } else {
                 logger.info("getImageInputStream(): deleting stale file: {}",
-                        cacheFile.getName());
+                        cacheFile.getAbsolutePath());
                 if (!cacheFile.delete()) {
                     logger.warn("getImageInputStream(): unable to delete {}",
-                            cacheFile);
+                            cacheFile.getAbsolutePath());
                 }
             }
         }
