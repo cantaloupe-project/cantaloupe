@@ -12,6 +12,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,6 +21,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
+import static edu.illinois.library.cantaloupe.cache.FilesystemCache.getHashedStringBasedSubdirectory;
+import static edu.illinois.library.cantaloupe.cache.FilesystemCache.getRootDerivativeImagePathname;
+import static edu.illinois.library.cantaloupe.cache.FilesystemCache.getRootInfoPathname;
+import static edu.illinois.library.cantaloupe.cache.FilesystemCache.getRootSourceImagePathname;
 import static org.junit.Assert.*;
 
 public class FilesystemCacheTest {
@@ -69,44 +74,100 @@ public class FilesystemCacheTest {
     public void testGetHashedStringBasedSubdirectory() throws Exception {
         assertEquals(
                 String.format("/08%s32%sc1", File.separator, File.separator),
-                FilesystemCache.getHashedStringBasedSubdirectory("cats"));
+                getHashedStringBasedSubdirectory("cats"));
 
         Configuration config = Configuration.getInstance();
         config.setProperty(FilesystemCache.DIRECTORY_DEPTH_CONFIG_KEY, 2);
         config.setProperty(FilesystemCache.DIRECTORY_NAME_LENGTH_CONFIG_KEY, 3);
         assertEquals(
                 String.format("/083%s2c1", File.separator, File.separator),
-                FilesystemCache.getHashedStringBasedSubdirectory("cats"));
+                getHashedStringBasedSubdirectory("cats"));
 
         config.setProperty(FilesystemCache.DIRECTORY_DEPTH_CONFIG_KEY, 0);
-        assertEquals("", FilesystemCache.getHashedStringBasedSubdirectory("cats"));
+        assertEquals("", getHashedStringBasedSubdirectory("cats"));
     }
 
     /* cleanUp() */
 
     @Test
-    public void testCleanUp() throws Exception {
+    public void testCleanUpDeletesTempFiles() throws Exception {
         OperationList ops = TestUtil.newOperationList();
 
         // create a new source image file
         File sourceImageFile = instance.getSourceImageFile(ops.getIdentifier());
         sourceImageFile.getParentFile().mkdirs();
-        sourceImageFile.createNewFile();
+        FileUtils.writeStringToFile(sourceImageFile, "not empty");
         // create a new derivative image file
         File derivativeImageFile = instance.getDerivativeImageFile(ops);
         derivativeImageFile.getParentFile().mkdirs();
-        derivativeImageFile.createNewFile();
+        FileUtils.writeStringToFile(derivativeImageFile, "not empty");
         // create a new info file
         File infoFile = instance.getInfoFile(ops.getIdentifier());
         infoFile.getParentFile().mkdirs();
-        infoFile.createNewFile();
+        FileUtils.writeStringToFile(infoFile, "not empty");
         // create some temp files
         File sourceImageTempFile = instance.getSourceImageTempFile(ops.getIdentifier());
-        sourceImageTempFile.createNewFile();
+        FileUtils.writeStringToFile(sourceImageTempFile, "not empty");
         File derivativeImageTempFile = instance.getDerivativeImageTempFile(ops);
-        derivativeImageTempFile.createNewFile();
+        FileUtils.writeStringToFile(derivativeImageTempFile, "not empty");
         File infoTempFile = instance.getInfoTempFile(ops.getIdentifier());
-        infoTempFile.createNewFile();
+        FileUtils.writeStringToFile(infoTempFile, "not empty");
+
+        instance.cleanUp();
+
+        // The temp files aren't expired yet, so expect them to be present.
+        // But the empty files should be gone.
+        Iterator<File> it = FileUtils.iterateFiles(fixturePath, null, true);
+        int count = 0;
+        while (it.hasNext()) {
+            it.next();
+            count++;
+        }
+        assertEquals(6, count);
+    }
+
+    @Test
+    public void testCleanUpDeletesEmptyFiles() throws Exception {
+        OperationList ops = TestUtil.newOperationList();
+
+        // create a new source image file
+        File sourceImageFile = instance.getSourceImageFile(ops.getIdentifier());
+        sourceImageFile.getParentFile().mkdirs();
+        FileUtils.writeStringToFile(sourceImageFile, "not empty");
+        // create a new derivative image file
+        File derivativeImageFile = instance.getDerivativeImageFile(ops);
+        derivativeImageFile.getParentFile().mkdirs();
+        FileUtils.writeStringToFile(derivativeImageFile, "not empty");
+        // create a new info file
+        File infoFile = instance.getInfoFile(ops.getIdentifier());
+        infoFile.getParentFile().mkdirs();
+        FileUtils.writeStringToFile(infoFile, "not empty");
+        // create some temp files
+        File sourceImageTempFile = instance.getSourceImageTempFile(ops.getIdentifier());
+        FileUtils.writeStringToFile(sourceImageTempFile, "not empty");
+        File derivativeImageTempFile = instance.getDerivativeImageTempFile(ops);
+        FileUtils.writeStringToFile(derivativeImageTempFile, "not empty");
+        File infoTempFile = instance.getInfoTempFile(ops.getIdentifier());
+        FileUtils.writeStringToFile(infoTempFile, "not empty");
+
+        // create some empty files
+        String root = getRootSourceImagePathname();
+        File path = new File(root + "/bogus");
+        path.mkdirs();
+        new File(path + "/empty").createNewFile();
+        new File(path + "/empty2").createNewFile();
+
+        root = getRootDerivativeImagePathname();
+        path = new File(root + "/bogus");
+        path.mkdirs();
+        new File(path + "/empty").createNewFile();
+        new File(path + "/empty2").createNewFile();
+
+        root = getRootInfoPathname();
+        path = new File(root + "/bogus");
+        path.mkdirs();
+        new File(path + "/empty").createNewFile();
+        new File(path + "/empty2").createNewFile();
 
         instance.cleanUp();
 
@@ -165,7 +226,7 @@ public class FilesystemCacheTest {
         final String expected = String.format("%s%simage%s%s%s_%s_%s_%s_%s.%s",
                 pathname,
                 File.separator,
-                FilesystemCache.getHashedStringBasedSubdirectory(identifier.toString()),
+                getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator,
                 FilesystemCache.filenameSafe(identifier.toString()),
                 FilesystemCache.filenameSafe(crop.toString()),
@@ -199,7 +260,7 @@ public class FilesystemCacheTest {
         final String expected = String.format("%s%simage%s%s%s.%s",
                 pathname,
                 File.separator,
-                FilesystemCache.getHashedStringBasedSubdirectory(ops.getIdentifier().toString()),
+                getHashedStringBasedSubdirectory(ops.getIdentifier().toString()),
                 File.separator,
                 FilesystemCache.filenameSafe(identifier.toString()),
                 format);
@@ -379,7 +440,7 @@ public class FilesystemCacheTest {
         final String expected = String.format("%s%sinfo%s%s%s.json",
                 pathname,
                 File.separator,
-                FilesystemCache.getHashedStringBasedSubdirectory(identifier.toString()),
+                getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator,
                 FilesystemCache.filenameSafe(identifier.toString()));
         assertEquals(new File(expected), instance.getInfoFile(identifier));
@@ -401,7 +462,7 @@ public class FilesystemCacheTest {
         final String expected = String.format("%s%ssource%s%s%s",
                 pathname,
                 File.separator,
-                FilesystemCache.getHashedStringBasedSubdirectory(identifier.toString()),
+                getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator,
                 FilesystemCache.filenameSafe(identifier.toString()));
         assertEquals(new File(expected), instance.getSourceImageFile(identifier));

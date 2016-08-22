@@ -49,8 +49,8 @@ import java.util.regex.Pattern;
 class FilesystemCache implements SourceCache, DerivativeCache {
 
     /**
-     * Used by {@link Files#walkFileTree} to delete all temp files within a
-     * directory tree.
+     * Used by {@link Files#walkFileTree} to delete all temp and zero-byte
+     * files within a directory tree.
      */
     private static class CacheCleaner extends SimpleFileVisitor<Path> {
 
@@ -69,26 +69,40 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     .getPathMatcher("glob:*" + TEMP_EXTENSION);
         }
 
+        private void delete(File file) {
+            try {
+                FileUtils.forceDelete(file);
+                numDeleted++;
+            } catch (IOException e) {
+                logger.warn(e.getMessage(), e);
+            }
+        }
+
         private void done() {
-            logger.info("Cleaned {} temp files.", numDeleted);
+            logger.info("Cleaned {} files.", numDeleted);
         }
 
         private void test(Path path) {
-            final Path name = path.getFileName();
-            final File file = path.toFile();
-            // Since we have not overridden preVisitDirectory(), "file" will
+            // Since we have not overridden preVisitDirectory(), this will
             // always be a file.
-            if (name != null && matcher.matches(name)) {
+            final File file = path.toFile();
+
+            // Delete temp files.
+            if (matcher.matches(path.getFileName())) {
                 // Try to avoid matching temp files that may still be open for
                 // writing by assuming that files last modified long enough ago
                 // are closed.
                 if (System.currentTimeMillis() - file.lastModified() > MIN_AGE_MSEC) {
-                    try {
-                        FileUtils.forceDelete(file);
-                        numDeleted++;
-                    } catch (IOException e) {
-                        logger.warn(e.getMessage(), e);
+                    delete(file);
+                }
+            } else {
+                // Delete zero-byte files.
+                try {
+                    if (Files.size(path) == 0) {
+                        delete(file);
                     }
+                } catch (IOException e) {
+                    logger.error(e.getMessage(), e);
                 }
             }
         }
@@ -320,7 +334,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @return Pathname of the root cache folder.
      * @throws CacheException if {@link #PATHNAME_CONFIG_KEY} is undefined.
      */
-    private static String getRootPathname() throws CacheException {
+    static String getRootPathname() throws CacheException {
         final String pathname = Configuration.getInstance().
                 getString(PATHNAME_CONFIG_KEY);
         if (pathname == null) {
@@ -334,7 +348,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * {@link #PATHNAME_CONFIG_KEY} is not set.
      * @throws CacheException
      */
-    private static String getRootDerivativeImagePathname()
+    static String getRootDerivativeImagePathname()
             throws CacheException {
         return getRootPathname() + File.separator + DERIVATIVE_IMAGE_FOLDER;
     }
@@ -344,7 +358,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * {@link #PATHNAME_CONFIG_KEY} is not set.
      * @throws CacheException
      */
-    private static String getRootInfoPathname() throws CacheException {
+    static String getRootInfoPathname() throws CacheException {
         return getRootPathname() + File.separator + INFO_FOLDER;
     }
 
@@ -353,7 +367,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * {@link #PATHNAME_CONFIG_KEY} is not set.
      * @throws CacheException
      */
-    private static String getRootSourceImagePathname() throws CacheException {
+    static String getRootSourceImagePathname() throws CacheException {
         return getRootPathname() + File.separator + SOURCE_IMAGE_FOLDER;
     }
 
@@ -372,7 +386,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     /**
-     * Cleans up temp files.
+     * Cleans up temp and zero-byte files.
      *
      * @throws CacheException
      */
