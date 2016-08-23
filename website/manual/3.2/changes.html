@@ -27,6 +27,7 @@ title: What's New
   <li>Added support for a <code>X-IIIF-ID</code> request header, in order to return correct image identifiers in information responses whose requests have passed through a reverse proxy using a different identifier.</li>
   <li>Removed the JAI post-processor option for KakaduProcessor and OpenJpegProcessor.</li>
   <li>Zero-byte files are deleted when purging or cleaning FilesystemCache.</li>
+  <li>KakaduProcessor displays a less inscrutable error message when it is unable to read a source file.</li>
   <li>HTTP 415 is returned instead of HTTP 400 when an output format is requested that is valid but unsupported by the current processor.</li>
   <li>Colorized the console application log.</li>
   <li>Console application log messages with a severity of <code>WARN</code> and above are routed to standard error.</li>

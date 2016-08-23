@@ -71,7 +71,7 @@ import java.util.concurrent.Executors;
  * <p>kdu_expand reads and writes the files named in the <code>-i</code>
  * and <code>-o</code> flags passed to it, respectively. The file in the
  * <code>-o</code> flag must have a recognized image extension such as .bmp,
- * .tif, etc. This means that it's not possible to natively write to a
+ * .tif, etc. This means that it's not possible to natively write into a
  * {@link ProcessBuilder} {@link InputStream}. Instead, we have to resort to
  * a trick whereby we create a symlink from /tmp/whatever.tif to /dev/stdout
  * (which only exists on Unix), which will enable us to accomplish this.
@@ -286,7 +286,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
      * @throws ParserConfigurationException
      */
     private void readImageInfoDocument()
-            throws SAXException, IOException,ParserConfigurationException {
+            throws SAXException, IOException, ParserConfigurationException {
         final List<String> command = new ArrayList<>();
         command.add(getPath("kdu_jp2info"));
         command.add("-i");
@@ -300,17 +300,27 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
         ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
 
         try (InputStream processInputStream = process.getInputStream()) {
-            // Ideally we could just call
-            // DocumentBuilder.parse(process.getInputStream()), but the XML
-            // output of kdu_jp2info may contain leading whitespace that
-            // causes a SAXParseException. So, read into a byte array in
-            // order to trim it, and then parse that. TODO: use a FilterInputStream
             IOUtils.copy(processInputStream, outputBucket);
-            final String xml = outputBucket.toString("UTF-8").trim();
+            // This will be an XML string if all went well, otherwise it will
+            // be non-XML text.
+            final String kduOutput = outputBucket.toString("UTF-8").trim();
 
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            infoDocument = db.parse(new InputSource(new StringReader(xml)));
+            // A typical error message looks like:
+            // -------------
+            // Kakadu Error:
+            // Input file is neither a raw codestream nor a box-structured file.  Not a
+            // JPEG2000 file.
+            if (kduOutput.startsWith("--")) {
+                final String kduMessage =
+                        kduOutput.substring(kduOutput.lastIndexOf("Kakadu Error:") + 13).
+                                replace("\n", " ").trim();
+                throw new IOException("Failed to read the source file. " +
+                        "(kdu_jp2info output: " + kduMessage + ")");
+            } else {
+                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                DocumentBuilder db = dbf.newDocumentBuilder();
+                infoDocument = db.parse(new InputSource(new StringReader(kduOutput)));
+            }
         }
     }
 
