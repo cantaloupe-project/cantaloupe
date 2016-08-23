@@ -246,7 +246,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
             info.getImages().add(image);
             return info;
         } catch (IOException e) {
-            throw new ProcessorException("Failed to parse size", e);
+            throw new ProcessorException(e.getMessage(), e);
         }
     }
 
@@ -262,7 +262,20 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
         Process process = pb.start();
 
         try (InputStream processInputStream = process.getInputStream()) {
-            imageInfo = IOUtils.toString(processInputStream, "UTF-8");
+            String opjOutput = IOUtils.toString(processInputStream, "UTF-8");
+
+            // A typical error message looks like:
+            // [ERROR] Unknown input file format: /path/to/file.jp2
+            // Known file formats are *.j2k, *.jp2, *.jpc or *.jpt
+            if (opjOutput.startsWith("[ERROR]")) {
+                final String opjMessage =
+                        opjOutput.substring(opjOutput.lastIndexOf("ERROR]") + 7,
+                                opjOutput.indexOf("\n")).trim();
+                throw new IOException("Failed to read the source file. " +
+                        "(opj_dump says: " + opjMessage + ")");
+            } else {
+                imageInfo = opjOutput;
+            }
         }
     }
 
