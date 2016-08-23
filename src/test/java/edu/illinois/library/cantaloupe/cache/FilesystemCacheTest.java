@@ -90,44 +90,7 @@ public class FilesystemCacheTest {
     /* cleanUp() */
 
     @Test
-    public void testCleanUpDeletesTempFiles() throws Exception {
-        OperationList ops = TestUtil.newOperationList();
-
-        // create a new source image file
-        File sourceImageFile = instance.getSourceImageFile(ops.getIdentifier());
-        sourceImageFile.getParentFile().mkdirs();
-        FileUtils.writeStringToFile(sourceImageFile, "not empty");
-        // create a new derivative image file
-        File derivativeImageFile = instance.getDerivativeImageFile(ops);
-        derivativeImageFile.getParentFile().mkdirs();
-        FileUtils.writeStringToFile(derivativeImageFile, "not empty");
-        // create a new info file
-        File infoFile = instance.getInfoFile(ops.getIdentifier());
-        infoFile.getParentFile().mkdirs();
-        FileUtils.writeStringToFile(infoFile, "not empty");
-        // create some temp files
-        File sourceImageTempFile = instance.getSourceImageTempFile(ops.getIdentifier());
-        FileUtils.writeStringToFile(sourceImageTempFile, "not empty");
-        File derivativeImageTempFile = instance.getDerivativeImageTempFile(ops);
-        FileUtils.writeStringToFile(derivativeImageTempFile, "not empty");
-        File infoTempFile = instance.getInfoTempFile(ops.getIdentifier());
-        FileUtils.writeStringToFile(infoTempFile, "not empty");
-
-        instance.cleanUp();
-
-        // The temp files aren't expired yet, so expect them to be present.
-        // But the empty files should be gone.
-        Iterator<File> it = FileUtils.iterateFiles(fixturePath, null, true);
-        int count = 0;
-        while (it.hasNext()) {
-            it.next();
-            count++;
-        }
-        assertEquals(6, count);
-    }
-
-    @Test
-    public void testCleanUpDeletesEmptyFiles() throws Exception {
+    public void testCleanUpDoesNotDeleteUnexpiredFiles() throws Exception {
         OperationList ops = TestUtil.newOperationList();
 
         // create a new source image file
@@ -169,27 +132,69 @@ public class FilesystemCacheTest {
         new File(path + "/empty").createNewFile();
         new File(path + "/empty2").createNewFile();
 
+        instance.setMinCleanableAge(10000);
         instance.cleanUp();
 
-        // the temp files aren't expired yet, so expect them to be present
         Iterator<File> it = FileUtils.iterateFiles(fixturePath, null, true);
         int count = 0;
         while (it.hasNext()) {
             it.next();
             count++;
         }
-        assertEquals(6, count);
+        assertEquals(12, count);
+    }
 
-        // expire them and check again
-        for (File file : new File[] { sourceImageTempFile,
-                derivativeImageTempFile, infoTempFile }) {
-            file.setLastModified(System.currentTimeMillis() - 1000 * 60 * 300);
-        }
+    @Test
+    public void testCleanUpDeletesExpiredFiles() throws Exception {
+        OperationList ops = TestUtil.newOperationList();
+
+        // create a new source image file
+        File sourceImageFile = instance.getSourceImageFile(ops.getIdentifier());
+        sourceImageFile.getParentFile().mkdirs();
+        FileUtils.writeStringToFile(sourceImageFile, "not empty");
+        // create a new derivative image file
+        File derivativeImageFile = instance.getDerivativeImageFile(ops);
+        derivativeImageFile.getParentFile().mkdirs();
+        FileUtils.writeStringToFile(derivativeImageFile, "not empty");
+        // create a new info file
+        File infoFile = instance.getInfoFile(ops.getIdentifier());
+        infoFile.getParentFile().mkdirs();
+        FileUtils.writeStringToFile(infoFile, "not empty");
+        // create some temp files
+        File sourceImageTempFile = instance.getSourceImageTempFile(ops.getIdentifier());
+        FileUtils.writeStringToFile(sourceImageTempFile, "not empty");
+        File derivativeImageTempFile = instance.getDerivativeImageTempFile(ops);
+        FileUtils.writeStringToFile(derivativeImageTempFile, "not empty");
+        File infoTempFile = instance.getInfoTempFile(ops.getIdentifier());
+        FileUtils.writeStringToFile(infoTempFile, "not empty");
+
+        // create some empty files
+        String root = getRootSourceImagePathname();
+        File path = new File(root + "/bogus");
+        path.mkdirs();
+        new File(path + "/empty").createNewFile();
+        new File(path + "/empty2").createNewFile();
+
+        root = getRootDerivativeImagePathname();
+        path = new File(root + "/bogus");
+        path.mkdirs();
+        new File(path + "/empty").createNewFile();
+        new File(path + "/empty2").createNewFile();
+
+        root = getRootInfoPathname();
+        path = new File(root + "/bogus");
+        path.mkdirs();
+        new File(path + "/empty").createNewFile();
+        new File(path + "/empty2").createNewFile();
+
+        instance.setMinCleanableAge(10);
+
+        Thread.sleep(1000);
 
         instance.cleanUp();
 
-        it = FileUtils.iterateFiles(fixturePath, null, true);
-        count = 0;
+        Iterator<File> it = FileUtils.iterateFiles(fixturePath, null, true);
+        int count = 0;
         while (it.hasNext()) {
             it.next();
             count++;

@@ -57,14 +57,12 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         private static final Logger logger = LoggerFactory.
                 getLogger(CacheCleaner.class);
 
-        // Any file last modified more than 10 minutes ago is fair game for
-        // deletion.
-        private static final long MIN_AGE_MSEC = 1000 * 60 * 10;
-
         private final PathMatcher matcher;
+        private long minCleanableAge;
         private int numDeleted = 0;
 
-        CacheCleaner() {
+        CacheCleaner(long minCleanableAge) {
+            this.minCleanableAge = minCleanableAge;
             matcher = FileSystems.getDefault()
                     .getPathMatcher("glob:*" + TEMP_EXTENSION);
         }
@@ -87,22 +85,22 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             // always be a file.
             final File file = path.toFile();
 
-            // Delete temp files.
-            if (matcher.matches(path.getFileName())) {
-                // Try to avoid matching temp files that may still be open for
-                // writing by assuming that files last modified long enough ago
-                // are closed.
-                if (System.currentTimeMillis() - file.lastModified() > MIN_AGE_MSEC) {
+            // Try to avoid matching temp files that may still be open for
+            // writing by assuming that files last modified long enough ago
+            // are closed.
+            if (System.currentTimeMillis() - file.lastModified() > minCleanableAge) {
+                // Delete temp files.
+                if (matcher.matches(path.getFileName())) {
                     delete(file);
-                }
-            } else {
-                // Delete zero-byte files.
-                try {
-                    if (Files.size(path) == 0) {
-                        delete(file);
+                } else {
+                    // Delete zero-byte files.
+                    try {
+                        if (Files.size(path) == 0) {
+                            delete(file);
+                        }
+                    } catch (IOException e) {
+                        logger.error(e.getMessage(), e);
                     }
-                } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
                 }
             }
         }
@@ -247,6 +245,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * from any thread. */
     private final Set<Identifier> infosBeingWritten =
             new ConcurrentSkipListSet<>();
+
+    private long minCleanableAge = 1000 * 60 * 10;
 
     /** Set of identifiers for which image files are currently being written
      * from any thread. */
@@ -410,7 +410,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     getRootInfoPathname() };
             for (String pathname : pathnamesToClean) {
                 logger.info("cleanUp(): cleaning directory: {}", pathname);
-                CacheCleaner cleaner = new CacheCleaner();
+                CacheCleaner cleaner = new CacheCleaner(minCleanableAge);
                 Files.walkFileTree(Paths.get(pathname), cleaner);
                 cleaner.done();
             }
@@ -984,6 +984,17 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         } finally {
             infosBeingWritten.remove(identifier);
         }
+    }
+
+    /**
+     * Sets the age threshold for cleaning files. Cleanable files last
+     * modified less than this many milliseconds ago will not be subject to
+     * cleanup.
+     *
+     * @param age Age in milliseconds.
+     */
+    void setMinCleanableAge(long age) {
+        minCleanableAge = age;
     }
 
 }
