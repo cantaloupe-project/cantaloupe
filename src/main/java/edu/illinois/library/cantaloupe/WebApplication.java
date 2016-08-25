@@ -256,7 +256,7 @@ public class WebApplication extends Application {
             adminAuth.setNext(AdminResource.class);
             router.attach(ADMIN_PATH, adminAuth);
         } catch (ConfigurationException e) {
-            getLogger().log(Level.SEVERE, e.getMessage());
+            getLogger().log(Level.WARNING, e.getMessage());
         }
 
         /****************** Other routes *******************/
