@@ -13,6 +13,7 @@ title: For Developers
 <h1>For Developers</h1>
 
 <ul>
+  <li><a href="#Building">Building</a></li>
   <li><a href="#Versioning">Versioning</a></li>
   <li><a href="#Branching">Branching</a></li>
   <li>
@@ -27,6 +28,12 @@ title: For Developers
 </ul>
 
 <p>Cantaloupe is a Maven project that should open right up in any Java IDE. Simply use the same configuration file and VM options (e.g. <code>-Dcantaloupe.config=...</code>) as usual.</p>
+
+<hr>
+
+<h3 id="Building">Building</h3>
+
+<p>From the project directory, build with the following command: <code>mvn package -Dmaven.test.skip=true</code>. This will create a <span class="filename">.war</span> and <span class="filename">.zip</span> file in the <span class="filename">target</span> subdirectory.</p>
 
 <hr>
 
