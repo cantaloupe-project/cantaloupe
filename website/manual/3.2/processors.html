@@ -420,13 +420,13 @@ landing page, as well as in one of the tables below. A list of output formats su
     <td class="text-center">N/A</td>
   </tr>
   <tr>
-    <td>Copy ICC profiles into derivatives</td>
-    <td class="text-center bg-success">&check;</td>
-    <td class="text-center bg-success">&check;</td>
-    <td class="text-center bg-success">&check;</td>
-    <td class="text-center bg-success">&check;</td>
-    <td class="text-center bg-success">&check;</td>
-    <td class="text-center bg-success">&check;</td>
+    <td>ICC profiles</td>
+    <td class="text-center bg-success">&check;*</td>
+    <td class="text-center bg-success">&check;*</td>
+    <td class="text-center bg-success">&check;*</td>
+    <td class="text-center bg-success">&check;*</td>
+    <td class="text-center bg-success">&check;*</td>
+    <td class="text-center bg-success">&check;**</td>
     <td class="text-center">N/A</td>
     <td class="text-center bg-danger"></td>
   </tr>
@@ -464,6 +464,9 @@ landing page, as well as in one of the tables below. A list of output formats su
     <td class="text-center bg-success">&check;</td>
   </tr>
 </table>
+
+<p>&check;*: Copied into derivative images.</p>
+<p>&check;**: Derivative image pixel data is modified according to the ICC profile.</p>
 
 <hr>
 
@@ -617,7 +620,7 @@ landing page, as well as in one of the tables below. A list of output formats su
 
 <p>Although it does support some other operations, <span class="filename">kdu_expand</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. All other operations (differential scaling, rotation, etc.) are performed using Java 2D.</p>
 
-<p>To use this processor, Kakadu must be installed. (See the note below.) The Kakadu binaries will automatically be detected if they are on the path; otherwise, set the <code>KakaduProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory.</p>
+<p>To use this processor, Kakadu must be installed. (See the note below.) The Kakadu binaries will automatically be detected if they are on the path; otherwise, set the <code>KakaduProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory. The <code>LD_LIBRARY_PATH</code> environment variable will also need to be set to locate the Kakadu shared library.</p>
 
 <div class="alert alert-info">Note: Kakadu is not free and the SDK is not included with Cantaloupe. As of this writing, the necessary binaries can be downloaded from the Kakadu website and used for demonstration purposes.</div>
 
@@ -630,7 +633,7 @@ landing page, as well as in one of the tables below. A list of output formats su
 
 <p>Although it does support some other operations, <span class="filename">opj_decompress</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. The rest of the IIIF operations (differential scaling, rotation, etc.) are performed using Java 2D.</p>
 
-<p>To use this processor, OpenJPEG must be installed. The OpenJPEG binaries will automatically be detected if they are on the path; otherwise, set the <code>OpenJpegProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory.</p>
+<p>To use this processor, OpenJPEG must be installed. The OpenJPEG binaries will automatically be detected if they are on the path; otherwise, set the <code>OpenJpegProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory. The <code>LD_LIBRARY_PATH</code> environment variable will also need to be set to locate the OpenJPEG shared library.</p>
 
 <hr>
 
