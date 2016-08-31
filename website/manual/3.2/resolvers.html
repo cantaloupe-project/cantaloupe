@@ -92,7 +92,50 @@ FilesystemResolver.BasicLookupStrategy.path_suffix =
 
 <p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple filesystems, or perhaps your identifiers are opaque and you need to perform a database or web service request to locate the corresponding images. With this lookup strategy, you can tell FilesystemResolver to invoke a method in your <a href="delegate-script.html">delegate script</a> and capture the pathname it returns.</p>
 
-<p>The delegate script method, <code>get_pathname(identifier)</code>, will take in an identifier and should return a pathname, if available, or <code>nil</code>, if not. A Solr query, for example, could look like:</p>
+<p>The delegate script method, <code>get_pathname(identifier)</code>, will take in an identifier string and should return a pathname, if available, or <code>nil</code>, if not. (See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script.) Examples follow:</p>
+
+<h5>Example 1: Query a PostgreSQL database to find the pathname corresponding to a given identifier</h5>
+
+{% highlight ruby %}
+require 'java'
+
+java_import 'org.postgresql.Driver'
+java_import 'java.sql.DriverManager'
+
+module Cantaloupe
+  module FilesystemResolver
+    JDBC_URL = 'jdbc:postgresql://localhost:5432/mydatabase'
+    JDBC_USER = 'myuser'
+    JDBC_PASSWORD = 'mypassword'
+
+    # DriverManager is actually java.sql.DriverManager
+    # (https://docs.oracle.com/javase/8/docs/api/java/sql/DriverManager.html);
+    # we are calling Java API via JRuby.
+    # By making the connection static, we can avoid reconnecting every time
+    # get_pathname() is called.
+    @@conn = DriverManager.get_connection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
+
+    def self.get_pathname(identifier)
+      begin
+        # Note the use of prepared statements to prevent SQL injection.
+        sql = 'SELECT pathname FROM images WHERE identifier = ? LIMIT 1'
+        stmt = @@conn.prepare_statement(sql)
+        stmt.set_string(1, identifier.to_s)
+        results = stmt.execute_query
+        results.next
+        pathname = results.getString(1)
+        return (pathname.length > 0) ? pathname : nil
+      ensure
+        stmt.close if stmt
+      end
+    end
+  end
+end
+{% endhighlight %}
+
+<p>Note that several common Ruby database libraries (like the mysql and pgsql gems) use native extensions, and as a result, they won't work in JRuby. Instead, the course of action above is to use the JDBC API via the JRuby-Java bridge. For this to work, a JDBC driver for your database will need to be installed on the Java classpath, and referenced in a <code>java_import</code> statement.</p>
+
+<h5>Example 2: Query Solr to find the pathname corresponding to a given identifier</h5>
 
 {% highlight ruby %}
 require 'net/http'
@@ -117,8 +160,6 @@ module Cantaloupe
   end
 end
 {% endhighlight %}
-
-<p>See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script.</p>
 
 <hr>
 
@@ -145,9 +186,9 @@ HttpResolver.url_suffix =
 
 <h4 id="HttpResolverScriptLookupStrategy">ScriptLookupStrategy</h4>
 
-<p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple URLs, or perhaps your identifiers are opaque and you need to run a database or web service request to locate them.  With this lookup strategy, you can tell FilesystemResolver to invoke a method in your <a href="delegate-script.html">delegate script</a> and capture the URL it returns.</p>
+<p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple URLs, or perhaps your identifiers are opaque and you need to run a database or web service request to locate them.  With this lookup strategy, you can tell HttpResolver to invoke a method in your <a href="delegate-script.html">delegate script</a> and capture the URL it returns.</p>
 
-<p>The delegate script method, <code>get_url(identifier)</code>, will take in an identifier and should return a URL, if available, or <code>nil</code>, if not. See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for an example of a similar script.</p>
+<p>The delegate script method, <code>get_url(identifier)</code>, will take in an identifier string and should return a URL, if available, or <code>nil</code>, if not. See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for examples of similar scripts.</p>
 
 <hr>
 
@@ -251,7 +292,7 @@ end
 
 <p>When your URL identifiers don't match your Amazon S3 object keys, ScriptLookupStrategy is available to tell AmazonS3Resolver to capture the object key returned by a method in your <a href="delegate-script.html">delegate script</a>.</p>
 
-<p>The delegate script method, <code>get_s3_object_key(identifier)</code>, will take in an identifier and should return an S3 object key string, if available, or <code>nil</code>, if not. See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for an example of a similar script.</p>
+<p>The delegate script method, <code>get_s3_object_key(identifier)</code>, will take in an identifier string and should return an S3 object key string, if available, or <code>nil</code>, if not. See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for an example of a similar script.</p>
 
 <hr>
 
@@ -278,4 +319,4 @@ end
 
 <p>When your URL identifiers don't match your Azure Storage blob keys, ScriptLookupStrategy is available to tell AzureStorageResolver to capture the blob key returned by a method in your <a href="delegate-script.html">delegate script</a>.</p>
 
-<p>The delegate script method, <code>get_azure_storage_blob_key(identifier)</code>, will take in an identifier and should return a blob key string, if available, or <code>nil</code>, if not. See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for an example of a similar script.</p>
+<p>The delegate script method, <code>get_azure_storage_blob_key(identifier)</code>, will take in an identifier string and should return a blob key string, if available, or <code>nil</code>, if not. See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for an example of a similar script.</p>
