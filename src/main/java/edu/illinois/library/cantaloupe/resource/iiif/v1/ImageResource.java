@@ -104,7 +104,7 @@ public class ImageResource extends Iiif1Resource {
                     getPreferredExtension();
         }
 
-        // Assemble the URI parameters into an OperationList objects
+        // Assemble the URI parameters into an OperationList instance
         final OperationList ops = new Parameters(
                 (String) attrs.get("identifier"),
                 (String) attrs.get("region"),

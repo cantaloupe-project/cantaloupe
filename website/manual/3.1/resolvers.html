@@ -32,7 +32,7 @@ title: Resolvers
 
 <p>Resolvers locate and provide access to source images. A resolver translates an identifier in a request URL to an image locator, such as a pathname, in the particular type of underlying storage it is written to interface with. It can then check whether the underlying object exists and is accessible, and if so, provide access to it to other image server components. The rest of the image server does not need to know where an image resides, be it on the filesystem, in a database, on a remote web server, or in cloud storage&mdash;it can simply ask the current resolver, whatever it may be, to provide a Java object from which an image can be read.</p>
 
-<p>The Java object in question may be a stream, or a file. All resolvers can provide stream access, but only <a href="#FilesystemResolver">FilesystemResolver</a> can provide file access. This distinction is important because <a href="processors.html#Compatibility">not all processors can read from streams</a>.</p>
+<p>The Java object in question may be a stream, or a file. All resolvers can provide stream access, but only <a href="#FilesystemResolver">FilesystemResolver</a> can provide file access. This distinction is important because <a href="processors.html#Resolver%20Compatibility">not all processors can read from streams</a>.</p>
 
 <h2 id="Selection">Selection</h2>
 

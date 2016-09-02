@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Orientation;
 
 import java.awt.Dimension;
 import java.io.File;
@@ -18,7 +19,7 @@ import java.util.List;
 
 /**
  * Contains JSON-serializable information about an image, such as dimensions,
- * number of subimages, and tile sizes.
+ * orientation, its subimages, and tile sizes.
  *
  * @see <a href="https://github.com/FasterXML/jackson-databind">jackson-databind
  * docs</a>
@@ -27,23 +28,25 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public final class ImageInfo {
 
-    @JsonPropertyOrder({ "width", "height", "tileWidth", "tileHeight" })
+    @JsonPropertyOrder({ "width", "height", "tileWidth", "tileHeight",
+            "orientation" })
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Image {
         public int width = 0;
         public int height = 0;
+        public String orientation;
         public Integer tileWidth;
         public Integer tileHeight;
 
         @Override
         public boolean equals(Object obj) {
             if (obj instanceof Image) {
-                Image other = (Image) obj;
+                final Image other = (Image) obj;
                 if (other.width == this.width && other.height == this.height) {
                     if (this.tileWidth != null && other.tileWidth != null &&
-                            this.tileWidth == other.tileWidth &&
+                            this.tileWidth.equals(other.tileWidth) &&
                             this.tileHeight != null && other.tileHeight != null &&
-                            this.tileHeight == other.tileHeight) {
+                            this.tileHeight.equals(other.tileHeight)) {
                         return true;
                     } else if (this.tileWidth == null && other.tileWidth == null &&
                             this.tileHeight == null && other.tileHeight == null) {
@@ -55,16 +58,64 @@ public final class ImageInfo {
         }
 
         @JsonIgnore
+        public Orientation getOrientation() {
+            if (orientation != null) {
+                return Orientation.valueOf(orientation);
+            }
+            return Orientation.ROTATE_0;
+        }
+
+        /**
+         * @return Image size with the orientation taken into account.
+         */
+        @JsonIgnore
+        public Dimension getOrientationSize() {
+            Dimension size = getSize();
+            if (getOrientation().equals(Orientation.ROTATE_90) ||
+                    getOrientation().equals(Orientation.ROTATE_270)) {
+                final int tmp = size.width;
+                size.width = size.height;
+                size.height = tmp;
+            }
+            return size;
+        }
+
+        /**
+         * @return Tile size with the orientation taken into account.
+         */
+        @JsonIgnore
+        public Dimension getOrientationTileSize() {
+            Dimension tileSize = getTileSize();
+            if (getOrientation().equals(Orientation.ROTATE_90) ||
+                    getOrientation().equals(Orientation.ROTATE_270)) {
+                final int tmp = tileSize.width;
+                tileSize.width = tileSize.height;
+                tileSize.height = tmp;
+            }
+            return tileSize;
+        }
+
+        /**
+         * @return Actual image size, disregarding orientation.
+         */
+        @JsonIgnore
         public Dimension getSize() {
             return new Dimension(width, height);
         }
 
+        /**
+         * @return Actual tile size, disregarding orientation.
+         */
         @JsonIgnore
         public Dimension getTileSize() {
             if (tileWidth != null && tileHeight != null) {
                 return new Dimension(tileWidth, tileHeight);
             }
             return new Dimension(width, height);
+        }
+
+        public void setOrientation(Orientation orientation) {
+            this.orientation = orientation.toString();
         }
 
         public void setSize(Dimension size) {
@@ -206,6 +257,32 @@ public final class ImageInfo {
 
     public List<Image> getImages() {
         return images;
+    }
+
+    /**
+     * @return Orientatino of the main image.
+     */
+    @JsonIgnore
+    public Orientation getOrientation() {
+        return images.get(0).getOrientation();
+    }
+
+    /**
+     * @return Size of the main image, respecting its orientation.
+     */
+    @JsonIgnore
+    public Dimension getOrientationSize() {
+        return getOrientationSize(0);
+    }
+
+    /**
+     * @param imageIndex
+     * @return Size of the image at the given index, respecting its
+     *         orientation.
+     */
+    @JsonIgnore
+    public Dimension getOrientationSize(int imageIndex) {
+        return images.get(imageIndex).getOrientationSize();
     }
 
     /**

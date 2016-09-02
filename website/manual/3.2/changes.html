@@ -1,0 +1,35 @@
+---
+layout: manual_3.2
+title: What's New
+---
+
+<ol class="breadcrumb">
+  <li><a href="{{ site.baseurl }}/">Home</a></li>
+  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
+  <li><a href="{{ site.baseurl }}/manual/3.2/">3.2</a></li>
+  <li class="active">What's New</li>
+</ol>
+
+<h2>What's New in <span class="version">3.2</span></h2>
+
+<h2>3.2</h2>
+
+<ul>
+  <li>Java 8 is now required.</li>
+  <li>Significant efficiency improvements in the Java 2D processing pipeline affecting Java2dProcessor, JaiProcessor, and KakaduProcessor.</li>
+  <li>All processors that use the Java 2D pipeline (Java2dProcessor, KakaduProcessor, OpenJpegProcessor, PdfBoxProcessor) support selectable upscaling and downscaling filters.</li>
+  <li>Improved the scale quality of JaiProcessor.</li>
+  <li>All processors offer configurable sharpening levels.</li>
+  <li>Applicable processors respect source ICC color profiles.</li>
+  <li>Added the option to copy EXIF, IPTC IIM, XMP, and/or native TIFF and PNG metadata from source images to derivative images of the same format, for some processors.</li>
+  <li>Java2dProcessor and JaiProcessor respect the value of an embedded EXIF Orientation tag.</li>
+  <li>Increased the default Java2dProcessor/JaiProcessor JPEG quality to 0.8 (80).</li>
+  <li>Added support for a <code>X-IIIF-ID</code> request header, in order to return correct image identifiers in information responses whose requests have passed through a reverse proxy using a different identifier.</li>
+  <li>Removed the JAI post-processor option for KakaduProcessor and OpenJpegProcessor.</li>
+  <li>Zero-byte files are deleted when purging or cleaning FilesystemCache.</li>
+  <li>KakaduProcessor and OpenJpegProcessor display a less inscrutable error message when they are unable to read a source file.</li>
+  <li>HTTP 415 is returned instead of HTTP 400 when an output format is requested that is valid but unsupported by the current processor.</li>
+  <li>Colorized the console application log.</li>
+  <li>Console application log messages with a severity of <code>WARN</code> and above are routed to standard error.</li>
+  <li>Upgraded a number of libraries.</li>
+</ul>

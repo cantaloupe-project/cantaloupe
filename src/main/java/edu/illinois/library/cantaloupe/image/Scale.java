@@ -1,5 +1,8 @@
 package edu.illinois.library.cantaloupe.image;
 
+import com.mortennobel.imagescaling.ResampleFilter;
+import com.mortennobel.imagescaling.ResampleFilters;
+
 import java.awt.Dimension;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,15 +15,58 @@ import java.util.Map;
  */
 public class Scale implements Operation {
 
+    /**
+     * Represents a resample algorithm.
+     */
+    public enum Filter {
+
+        BELL("Bell", ResampleFilters.getBellFilter()),
+        BICUBIC("Bicubic", ResampleFilters.getBiCubicFilter()),
+        BOX("Box", ResampleFilters.getBoxFilter()),
+        BSPLINE("B-Spline", ResampleFilters.getBSplineFilter()),
+        HERMITE("Hermite", ResampleFilters.getHermiteFilter()),
+        LANCZOS3("Lanczos3", ResampleFilters.getLanczos3Filter()),
+        MITCHELL("Mitchell", ResampleFilters.getMitchellFilter()),
+        TRIANGLE("Triangle", ResampleFilters.getTriangleFilter());
+
+        private String name;
+        private ResampleFilter resampleFilter;
+
+        Filter(String name, ResampleFilter resampleFilter) {
+            this.name = name;
+            this.resampleFilter = resampleFilter;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * @return Equivalent ResampleFilter instance.
+         */
+        public ResampleFilter getResampleFilter() {
+            return resampleFilter;
+        }
+
+    }
+
     public enum Mode {
         ASPECT_FIT_HEIGHT, ASPECT_FIT_WIDTH, ASPECT_FIT_INSIDE,
         NON_ASPECT_FILL, FULL
     }
 
+    private Filter filter;
     private Integer height;
     private Mode scaleMode = Mode.ASPECT_FIT_INSIDE;
     private Float percent;
     private Integer width;
+
+    /**
+     * @return Resample filter to prefer. May be null.
+     */
+    public Filter getFilter() {
+        return filter;
+    }
 
     /**
      * @return Absolute pixel height. May be null.
@@ -140,6 +186,17 @@ public class Scale implements Operation {
                 (this.getPercent() == null && this.getHeight() == null && this.getWidth() == null);
     }
 
+    /**
+     * @param filter Resample filter to prefer.
+     */
+    public void setFilter(Filter filter) {
+        this.filter = filter;
+    }
+
+    /**
+     * @param height Integer greater than 0
+     * @throws IllegalArgumentException
+     */
     public void setHeight(Integer height) throws IllegalArgumentException {
         if (height <= 0) {
             throw new IllegalArgumentException("Height must be a positive integer");
@@ -162,6 +219,10 @@ public class Scale implements Operation {
         this.scaleMode = scaleMode;
     }
 
+    /**
+     * @param width Integer greater than 0
+     * @throws IllegalArgumentException
+     */
     public void setWidth(Integer width) throws IllegalArgumentException {
         if (width <= 0) {
             throw new IllegalArgumentException("Width must be a positive integer");
@@ -187,14 +248,27 @@ public class Scale implements Operation {
     }
 
     /**
-     * @return String representation of the instance, guaranteed to uniquely
-     * represent the instance.
+     * <p>Returns a string representation of the instance, guaranteed to
+     * uniquely represent the instance. The format is:</p>
+     *
+     * <dl>
+     *     <dt>No-op</dt>
+     *     <dd><code>none</code></dd>
+     *     <dt>Percent</dt>
+     *     <dd><code>nnn%(,filter)</code></dd>
+     *     <dt>Aspect-fit-inside</dt>
+     *     <dd><code>!w,h(,filter)</code></dd>
+     *     <dt>Other</dt>
+     *     <dd><code>w,h(,filter)</code></dd>
+     * </dl>
+     *
+     * @return String representation of the instance.
      */
     @Override
     public String toString() {
         String str = "";
         if (this.isNoOp()) {
-            str += "none";
+            return "none";
         } else if (this.getPercent() != null) {
             str += NumberUtil.removeTrailingZeroes(this.getPercent() * 100) + "%";
         } else {
@@ -208,6 +282,9 @@ public class Scale implements Operation {
             if (this.getHeight() != null && this.getHeight() > 0) {
                 str += this.getHeight();
             }
+        }
+        if (getFilter() != null) {
+            str += "," + getFilter().toString().toLowerCase();
         }
         return str;
     }

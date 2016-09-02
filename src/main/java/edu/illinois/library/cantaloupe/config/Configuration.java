@@ -95,6 +95,14 @@ public class Configuration {
         return null;
     }
 
+    public double getDouble(String key) {
+        return commonsConfig.getDouble(key);
+    }
+
+    public double getDouble(String key, double defaultValue) {
+        return commonsConfig.getDouble(key, defaultValue);
+    }
+
     public float getFloat(String key) {
         return commonsConfig.getFloat(key);
     }

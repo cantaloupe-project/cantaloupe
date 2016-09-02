@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.MetadataCopy;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.redaction.RedactionService;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
@@ -17,6 +18,7 @@ import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.Request;
 import org.restlet.data.CacheDirective;
@@ -68,6 +70,8 @@ public abstract class AbstractResource extends ServerResource {
     public static final String CONTENT_DISPOSITION_CONFIG_KEY =
             "endpoint.iiif.content_disposition";
     public static final String MAX_PIXELS_CONFIG_KEY = "max_pixels";
+    public static final String PRESERVE_METADATA_CONFIG_KEY =
+            "metadata.preserve";
     public static final String PURGE_MISSING_CONFIG_KEY =
             "cache.server.purge_missing";
     public static final String RESOLVE_FIRST_CONFIG_KEY =
@@ -228,6 +232,12 @@ public abstract class AbstractResource extends ServerResource {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
+
+        // Metadata copies
+        if (Configuration.getInstance().
+                getBoolean(PRESERVE_METADATA_CONFIG_KEY, false)) {
+            opList.add(new MetadataCopy());
+        }
     }
 
     /**
@@ -362,11 +372,11 @@ public abstract class AbstractResource extends ServerResource {
         ImageInfo info = null;
         DerivativeCache cache = CacheFactory.getDerivativeCache();
         if (cache != null) {
-            long msec = System.currentTimeMillis();
+            final Stopwatch watch = new Stopwatch();
             info = cache.getImageInfo(identifier);
             if (info != null) {
-                logger.info("Retrieved dimensions of {} from cache in {} msec",
-                        identifier, System.currentTimeMillis() - msec);
+                logger.debug("Retrieved dimensions of {} from cache in {} msec",
+                        identifier, watch.timeElapsed());
             } else {
                 info = readInfo(identifier, proc);
                 cache.putImageInfo(identifier, info);
@@ -419,7 +429,7 @@ public abstract class AbstractResource extends ServerResource {
             final String method = "authorized?";
             return (boolean) engine.invoke(method, args);
         } catch (DelegateScriptDisabledException e) {
-            logger.info("isAuthorized(): delegate script disabled; allowing.");
+            logger.debug("isAuthorized(): delegate script is disabled; allowing.");
             return true;
         }
     }
@@ -434,10 +444,10 @@ public abstract class AbstractResource extends ServerResource {
      */
     private ImageInfo readInfo(final Identifier identifier,
                                final Processor proc) throws ProcessorException {
-        final long msec = System.currentTimeMillis();
+        final Stopwatch watch = new Stopwatch();
         final ImageInfo info = proc.getImageInfo();
-        logger.info("Read info of {} in {} msec", identifier,
-                System.currentTimeMillis() - msec);
+        logger.debug("Read info of {} in {} msec", identifier,
+                watch.timeElapsed());
         return info;
     }
 

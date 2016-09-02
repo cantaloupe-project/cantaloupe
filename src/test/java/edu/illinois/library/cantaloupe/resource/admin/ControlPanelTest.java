@@ -68,6 +68,7 @@ public class ControlPanelTest {
         testProcessorsSection();
         testCachesSection();
         testOverlaysSection();
+        testMetadataSection();
         testDelegateScriptSection();
         testLoggingSection();
     }
@@ -255,47 +256,60 @@ public class ControlPanelTest {
         // FfmpegProcessor
         css("#cl-processors li > a[href=\"#FfmpegProcessor\"]").click();
         css("[name=\"FfmpegProcessor.path_to_binaries\"]").sendKeys("/ffpath");
+        css("[name=\"FfmpegProcessor.sharpen\"]").sendKeys("0.2");
         // GraphicsMagickProcessor
         css("#cl-processors li > a[href=\"#GraphicsMagickProcessor\"]").click();
         css("[name=\"GraphicsMagickProcessor.path_to_binaries\"]").sendKeys("/gmpath");
+        css("[name=\"GraphicsMagickProcessor.sharpen\"]").sendKeys("0.2");
         new Select(css("[name=\"GraphicsMagickProcessor.background_color\"]")).
                 selectByValue("black");
         // ImageMagickProcessor
         css("#cl-processors li > a[href=\"#ImageMagickProcessor\"]").click();
         css("[name=\"ImageMagickProcessor.path_to_binaries\"]").sendKeys("/impath");
+        css("[name=\"ImageMagickProcessor.sharpen\"]").sendKeys("0.2");
         new Select(css("[name=\"ImageMagickProcessor.background_color\"]")).
                 selectByValue("white");
         // JaiProcessor
         css("#cl-processors li > a[href=\"#JaiProcessor\"]").click();
+        css("[name=\"JaiProcessor.sharpen\"]").sendKeys("0.2");
         css("[name=\"JaiProcessor.jpg.quality\"]").sendKeys("0.55");
         new Select(css("[name=\"JaiProcessor.tif.compression\"]")).
                 selectByVisibleText("PackBits");
         // Java2dProcessor
         css("#cl-processors li > a[href=\"#Java2dProcessor\"]").click();
-        new Select(css("[name=\"Java2dProcessor.scale_mode\"]")).
-                selectByValue("quality");
+        new Select(css("[name=\"Java2dProcessor.downscale_filter\"]")).
+                selectByVisibleText("Mitchell");
+        new Select(css("[name=\"Java2dProcessor.upscale_filter\"]")).
+                selectByVisibleText("Triangle");
+        css("[name=\"Java2dProcessor.sharpen\"]").sendKeys("0.2");
         css("[name=\"Java2dProcessor.jpg.quality\"]").sendKeys("0.55");
         new Select(css("[name=\"Java2dProcessor.tif.compression\"]")).
                 selectByVisibleText("PackBits");
+
         // KakaduProcessor
         css("#cl-processors li > a[href=\"#KakaduProcessor\"]").click();
         css("[name=\"KakaduProcessor.path_to_binaries\"]").sendKeys("/kpath");
-        new Select(css("[name=\"KakaduProcessor.post_processor\"]")).
-                selectByValue("jai");
-        new Select(css("[name=\"KakaduProcessor.post_processor.java2d.scale_mode\"]")).
-                selectByValue("quality");
+        new Select(css("[name=\"KakaduProcessor.downscale_filter\"]")).
+                selectByVisibleText("Mitchell");
+        new Select(css("[name=\"KakaduProcessor.upscale_filter\"]")).
+                selectByVisibleText("Triangle");
+        css("[name=\"KakaduProcessor.sharpen\"]").sendKeys("0.2");
         // OpenJpegProcessor
         css("#cl-processors li > a[href=\"#OpenJpegProcessor\"]").click();
         css("[name=\"OpenJpegProcessor.path_to_binaries\"]").sendKeys("/ojpath");
-        new Select(css("[name=\"OpenJpegProcessor.post_processor\"]")).
-                selectByValue("java2d");
-        new Select(css("[name=\"OpenJpegProcessor.post_processor.java2d.scale_mode\"]")).
-                selectByValue("speed");
+        new Select(css("[name=\"OpenJpegProcessor.downscale_filter\"]")).
+                selectByVisibleText("Mitchell");
+        new Select(css("[name=\"OpenJpegProcessor.upscale_filter\"]")).
+                selectByVisibleText("Triangle");
+        css("[name=\"OpenJpegProcessor.sharpen\"]").sendKeys("0.2");
         // PdfBoxProcessor
         css("#cl-processors li > a[href=\"#PdfBoxProcessor\"]").click();
         css("[name=\"PdfBoxProcessor.dpi\"]").sendKeys("300");
-        new Select(css("[name=\"PdfBoxProcessor.post_processor.java2d.scale_mode\"]")).
-                selectByValue("quality");
+        new Select(css("[name=\"PdfBoxProcessor.downscale_filter\"]")).
+                selectByVisibleText("Mitchell");
+        new Select(css("[name=\"PdfBoxProcessor.upscale_filter\"]")).
+                selectByVisibleText("Triangle");
+        css("[name=\"PdfBoxProcessor.sharpen\"]").sendKeys("0.2");
 
         // Submit the form
         css("#cl-processors input[type=\"submit\"]").click();
@@ -311,22 +325,27 @@ public class ControlPanelTest {
         // FfmpegProcessor
         assertEquals("/ffpath",
                 config.getString("FfmpegProcessor.path_to_binaries"));
+        assertEquals("0.2", config.getString("FfmpegProcessor.sharpen"));
         // GraphicsMagickProcessor
         assertEquals("/gmpath",
                 config.getString("GraphicsMagickProcessor.path_to_binaries"));
+        assertEquals("0.2",
+                config.getString("GraphicsMagickProcessor.sharpen"));
         assertEquals("black",
                 config.getString("GraphicsMagickProcessor.background_color"));
         // ImageMagickProcessor
         assertEquals("/impath",
                 config.getString("ImageMagickProcessor.path_to_binaries"));
+        assertEquals("0.2", config.getString("ImageMagickProcessor.sharpen"));
         assertEquals("white",
                 config.getString("ImageMagickProcessor.background_color"));
         // JaiProcessor
+        assertEquals("0.2", config.getString("JaiProcessor.sharpen"));
         assertEquals("0.55", config.getString("JaiProcessor.jpg.quality"));
         assertEquals("PackBits",
                 config.getString("JaiProcessor.tif.compression"));
         // Java2dProcessor
-        assertEquals("quality", config.getString("Java2dProcessor.scale_mode"));
+        assertEquals("0.2", config.getString("Java2dProcessor.sharpen"));
         assertEquals("0.55",
                 config.getString("Java2dProcessor.jpg.quality"));
         assertEquals("PackBits",
@@ -334,20 +353,14 @@ public class ControlPanelTest {
         // KakaduProcessor
         assertEquals("/kpath",
                 config.getString("KakaduProcessor.path_to_binaries"));
-        assertEquals("jai", config.getString("KakaduProcessor.post_processor"));
-        assertEquals("quality",
-                config.getString("KakaduProcessor.post_processor.java2d.scale_mode"));
+        assertEquals("0.2", config.getString("KakaduProcessor.sharpen"));
         // OpenJpegProcessor
         assertEquals("/ojpath",
                 config.getString("OpenJpegProcessor.path_to_binaries"));
-        assertEquals("java2d",
-                config.getString("OpenJpegProcessor.post_processor"));
-        assertEquals("speed",
-                config.getString("OpenJpegProcessor.post_processor.java2d.scale_mode"));
+        assertEquals("0.2", config.getString("KakaduProcessor.sharpen"));
         // PdfBoxProcessor
         assertEquals(300, config.getInt("PdfBoxProcessor.dpi"));
-        assertEquals("quality",
-                config.getString("PdfBoxProcessor.post_processor.java2d.scale_mode"));
+        assertEquals("0.2", config.getString("PdfBoxProcessor.sharpen"));
     }
 
     private void testCachesSection() throws Exception {
@@ -490,6 +503,22 @@ public class ControlPanelTest {
         assertEquals("6",
                 config.getString("watermark.BasicStrategy.output_height_threshold"));
         assertTrue(config.getBoolean("redaction.enabled"));
+    }
+
+    private void testMetadataSection() throws Exception {
+        css("#cl-metadata-button").click();
+
+        // Fill in the form
+        css("[name=\"metadata.preserve\"]").click();
+
+        // Submit the form
+        css("#cl-metadata input[type=\"submit\"]").click();
+
+        Thread.sleep(SLEEP_AFTER_SUBMIT);
+
+        // Assert that the application configuration has been updated correctly
+        final Configuration config = Configuration.getInstance();
+        assertTrue(config.getBoolean("metadata.preserve"));
     }
 
     private void testDelegateScriptSection() throws Exception {

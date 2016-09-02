@@ -51,10 +51,17 @@ base_uri =
 slash_substitute =
 
 # Maximum number of pixels to return in a response, to prevent overloading
-# the server. Requests for more pixels than this will receive an HTTP 403
+# the server. Requests for more pixels than this will receive an error
 # response. Set to 0 for no maximum.
 # Note: this is ignored when requesting an unmodified source image.
 max_pixels = 400000000
+
+# Sometimes helpful.
+print_stack_trace_on_error_pages = true
+
+###########################################################################
+# DELEGATE SCRIPT
+###########################################################################
 
 # Enables the delegate script: a Ruby script containing various delegate
 # methods. (See the user manual.)
@@ -64,9 +71,6 @@ delegate_script.enabled = false
 # filename is specified, it will be searched for in the same folder as this
 # file, and then the current working directory.
 delegate_script.pathname = delegates.rb
-
-# Sometimes helpful.
-print_stack_trace_on_error_pages = true
 
 ###########################################################################
 # ENDPOINTS
@@ -232,9 +236,10 @@ processor.webp = ImageMagickProcessor
 # Fall back to this processor for any formats not assigned above.
 processor.fallback = Java2dProcessor
 
-# This option is kind of hard to explain; see the user manual.
-# Available values are `StreamStrategy` and `CacheStrategy` If CacheStrategy
-# is selected, FilesystemCache will also need to be configured, below.
+# Available values are `StreamStrategy` and `CacheStrategy`. StreamStrategy
+# will try to stream source images from non-filesystem resolvers, when this
+# is possible; CacheStrategy will first download them into the source cache
+# using FilesystemCache, which must also be configured.
 StreamProcessor.retrieval_strategy = StreamStrategy
 
 #----------------------------------------
@@ -245,6 +250,9 @@ StreamProcessor.retrieval_strategy = StreamStrategy
 # Overrides the PATH.
 FfmpegProcessor.path_to_binaries =
 
+# Intensity of an unsharp mask from 0 to 1.
+FfmpegProcessor.sharpen = 0
+
 #----------------------------------------
 # GraphicsMagickProcessor
 #----------------------------------------
@@ -252,6 +260,9 @@ FfmpegProcessor.path_to_binaries =
 # Optional absolute path of the directory containing the GraphicsMagick binary.
 # Overrides the PATH.
 GraphicsMagickProcessor.path_to_binaries =
+
+# Intensity of an unsharp mask from 0 to 1.
+GraphicsMagickProcessor.sharpen = 0
 
 # Color of the background when an image is rotated. Only affects output
 # formats that do not support transparency.
@@ -265,6 +276,9 @@ GraphicsMagickProcessor.background_color = black
 # Overrides the PATH.
 ImageMagickProcessor.path_to_binaries = /usr/local/bin
 
+# Intensity of an unsharp mask from 0 to 1.
+ImageMagickProcessor.sharpen = 0
+
 # Color of the background when an image is rotated. Only affects output
 # formats that do not support transparency.
 ImageMagickProcessor.background_color = black
@@ -273,8 +287,11 @@ ImageMagickProcessor.background_color = black
 # JaiProcessor
 #----------------------------------------
 
+# Intensity of an unsharp mask from 0 to 1.
+JaiProcessor.sharpen = 0
+
 # JPEG output quality. Should be a number between 0-1.
-JaiProcessor.jpg.quality = 0.7
+JaiProcessor.jpg.quality = 0.8
 
 # TIFF output compression type. Available values are `LZW`, `Deflate`,
 # `ZLib`, `JPEG`, and `PackBits`. Leave blank for no compression.
@@ -284,12 +301,16 @@ JaiProcessor.tif.compression = LZW
 # Java2dProcessor
 #----------------------------------------
 
-# Available values are `quality` and `speed`. `speed` is ~10-20% faster at
-# the expense of visible aliasing at small scales.
-Java2dProcessor.scale_mode = speed
+# Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
+# `lanczos3`, `mitchell`, `triangle`.
+Java2dProcessor.upscale_filter = bicubic
+Java2dProcessor.downscale_filter = bicubic
+
+# Intensity of an unsharp mask from 0 to 1.
+Java2dProcessor.sharpen = 0
 
 # JPEG output quality. Should be a number between 0-1.
-Java2dProcessor.jpg.quality = 0.7
+Java2dProcessor.jpg.quality = 0.8
 
 # TIFF output compression type. Available values are `LZW`, `Deflate`,
 # `ZLib`, `JPEG`, and `PackBits`. Leave blank for no compression.
@@ -303,12 +324,13 @@ Java2dProcessor.tif.compression = LZW
 # Overrides the PATH.
 KakaduProcessor.path_to_binaries =
 
-# Available values are `jai` and `java2d`.
-KakaduProcessor.post_processor = java2d
+# Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
+# `lanczos3`, `mitchell`, `triangle`.
+KakaduProcessor.upscale_filter = bicubic
+KakaduProcessor.downscale_filter = bicubic
 
-# Available values are `quality` and `speed`. `speed` is ~10-20% faster at
-# the expense of visible aliasing at small scales.
-KakaduProcessor.post_processor.java2d.scale_mode = speed
+# Intensity of an unsharp mask from 0 to 1.
+KakaduProcessor.sharpen = 0
 
 #----------------------------------------
 # OpenJpegProcessor
@@ -318,25 +340,30 @@ KakaduProcessor.post_processor.java2d.scale_mode = speed
 # Overrides the PATH.
 OpenJpegProcessor.path_to_binaries =
 
-# Available values are `jai` and `java2d`.
-OpenJpegProcessor.post_processor = java2d
+# Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
+# `lanczos3`, `mitchell`, `triangle`.
+OpenJpegProcessor.upscale_filter = bicubic
+OpenJpegProcessor.downscale_filter = bicubic
 
-# Available values are `quality` and `speed`. `speed` is ~10-20% faster at
-# the expense of visible aliasing at small scales.
-OpenJpegProcessor.post_processor.java2d.scale_mode = speed
+# Intensity of an unsharp mask from 0 to 1.
+OpenJpegProcessor.sharpen = 0
 
 #----------------------------------------
 # PdfBoxProcessor
 #----------------------------------------
 
-# Controls the resolution of the PDF rasterization at a scale factor of 1.
-# Requests for scales less than 0.5 or larger than 2 will automatically
-# use a lower or higher factor of this.
+# Resolution of the PDF rasterization at a scale of 1. Requests for
+# scales less than 0.5 or larger than 2 will automatically use a lower or
+# higher factor of this.
 PdfBoxProcessor.dpi = 150
 
-# Available values are `quality` and `speed`. `speed` is ~10-20% faster at
-# the expense of visible aliasing at small scales.
-PdfBoxProcessor.post_processor.java2d.scale_mode = speed
+# Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
+# `lanczos3`, `mitchell`, `triangle`.
+PdfBoxProcessor.upscale_filter = bicubic
+PdfBoxProcessor.downscale_filter = bicubic
+
+# Intensity of an unsharp mask from 0 to 1.
+PdfBoxProcessor.sharpen = 0
 
 ###########################################################################
 # CLIENT-SIDE CACHING
@@ -517,6 +544,18 @@ watermark.BasicStrategy.output_height_threshold = 300
 # Whether to enable redactions. See the user manual for information about
 # how these work.
 redaction.enabled = false
+
+###########################################################################
+# METADATA
+###########################################################################
+
+# Whether to attempt to copy source image metadata (EXIF, IPTC, XMP) into
+# derivative images. (This is not foolproof; see the user manual.)
+metadata.preserve = false
+
+# Whether to respect the EXIF "Orientation" field to auto-rotate images.
+# The check for this field can impair performance slightly.
+metadata.respect_orientation = false
 
 ###########################################################################
 # LOGGING

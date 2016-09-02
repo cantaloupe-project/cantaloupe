@@ -1,16 +1,20 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Crop;
-import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,8 +32,8 @@ import java.util.Set;
  * <p>Processor using the Java 2D and ImageIO frameworks.</p>
  *
  * <p>Because they both use ImageIO, this processor has a lot in common with
- * {@link JaiProcessor} and so a lot of functionality in both has been
- * extracted into a base class.</p>
+ * {@link JaiProcessor} and so common functionality has been extracted into a
+ * base class.</p>
  */
 class Java2dProcessor extends AbstractImageIoProcessor
         implements StreamProcessor, FileProcessor {
@@ -37,10 +41,11 @@ class Java2dProcessor extends AbstractImageIoProcessor
     private static Logger logger = LoggerFactory.
             getLogger(Java2dProcessor.class);
 
-    static final String JPG_QUALITY_CONFIG_KEY = "Java2dProcessor.jpg.quality";
-    static final String SCALE_MODE_CONFIG_KEY = "Java2dProcessor.scale_mode";
-    static final String TIF_COMPRESSION_CONFIG_KEY =
-            "Java2dProcessor.tif.compression";
+    static final String DOWNSCALE_FILTER_CONFIG_KEY =
+            "Java2dProcessor.downscale_filter";
+    static final String SHARPEN_CONFIG_KEY = "Java2dProcessor.sharpen";
+    static final String UPSCALE_FILTER_CONFIG_KEY =
+            "Java2dProcessor.upscale_filter";
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
@@ -74,6 +79,28 @@ class Java2dProcessor extends AbstractImageIoProcessor
                 ProcessorFeature.SIZE_BY_PERCENT,
                 ProcessorFeature.SIZE_BY_WIDTH,
                 ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
+    }
+
+    Scale.Filter getDownscaleFilter() {
+        final String upscaleFilterStr = Configuration.getInstance().
+                getString(DOWNSCALE_FILTER_CONFIG_KEY);
+        try {
+            return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
+        } catch (Exception e) {
+            logger.warn("Invalid value for {}", DOWNSCALE_FILTER_CONFIG_KEY);
+        }
+        return null;
+    }
+
+    Scale.Filter getUpscaleFilter() {
+        final String upscaleFilterStr = Configuration.getInstance().
+                getString(UPSCALE_FILTER_CONFIG_KEY);
+        try {
+            return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
+        } catch (Exception e) {
+            logger.warn("Invalid value for {}", UPSCALE_FILTER_CONFIG_KEY);
+        }
+        return null;
     }
 
     @Override
@@ -116,18 +143,22 @@ class Java2dProcessor extends AbstractImageIoProcessor
             throw new UnsupportedOutputFormatException();
         }
 
+        final ImageReader reader = getReader();
         try {
+            final Orientation orientation = getEffectiveOrientation();
+
             final ReductionFactor rf = new ReductionFactor();
-            final Set<ImageIoImageReader.ReaderHint> hints = new HashSet<>();
-            BufferedImage image = reader.read(ops, rf, hints);
+            final Set<ImageReader.Hint> hints = new HashSet<>();
+            BufferedImage image = reader.read(ops, orientation, rf, hints);
 
             // Apply the crop operation, if present, and maintain a reference
             // to it for subsequent operations to refer to.
-            Crop crop = new Crop(0, 0, image.getWidth(), image.getHeight());
+            Crop crop = new Crop(0, 0, image.getWidth(), image.getHeight(),
+                    orientation, imageInfo.getSize());
             for (Operation op : ops) {
                 if (op instanceof Crop) {
                     crop = (Crop) op;
-                    if (!hints.contains(ImageIoImageReader.ReaderHint.ALREADY_CROPPED)) {
+                    if (!hints.contains(ImageReader.Hint.ALREADY_CROPPED)) {
                         image = Java2dUtil.cropImage(image, crop, rf);
                     }
                 }
@@ -142,21 +173,40 @@ class Java2dProcessor extends AbstractImageIoProcessor
             }
             image = Java2dUtil.applyRedactions(image, crop, rf, redactions);
 
-            // Apply all other operations.
+            // Apply most other operations.
             for (Operation op : ops) {
                 if (op instanceof Scale) {
-                    final boolean highQuality = Configuration.getInstance().
-                            getString(SCALE_MODE_CONFIG_KEY, "speed").
-                            equals("quality");
-                    image = Java2dUtil.scaleImage(image, (Scale) op, rf,
-                            highQuality);
+                    final Scale scale = (Scale) op;
+                    final Float upOrDown =
+                            scale.getResultingScale(imageInfo.getSize());
+                    if (upOrDown != null) {
+                        final Scale.Filter filter =
+                                (upOrDown > 1) ?
+                                        getUpscaleFilter() : getDownscaleFilter();
+                        scale.setFilter(filter);
+                    }
+
+                    image = Java2dUtil.scaleImage(image, scale, rf);
                 } else if (op instanceof Transpose) {
                     image = Java2dUtil.transposeImage(image, (Transpose) op);
                 } else if (op instanceof Rotate) {
-                    image = Java2dUtil.rotateImage(image, (Rotate) op);
-                } else if (op instanceof Filter) {
-                    image = Java2dUtil.filterImage(image, (Filter) op);
-                } else if (op instanceof Watermark) {
+                    Rotate rotation = (Rotate) op;
+                    rotation.addDegrees(orientation.getDegrees());
+                    image = Java2dUtil.rotateImage(image, rotation);
+                } else if (op instanceof Color) {
+                    image = Java2dUtil.transformColor(image, (Color) op);
+                }
+            }
+
+            // Apply the sharpen operation, if present.
+            final Configuration config = Configuration.getInstance();
+            final float sharpenValue = config.getFloat(SHARPEN_CONFIG_KEY, 0);
+            final Sharpen sharpen = new Sharpen(sharpenValue);
+            image = Java2dUtil.sharpenImage(image, sharpen);
+
+            // Apply remaining operations.
+            for (Operation op : ops) {
+                if (op instanceof Watermark) {
                     try {
                         image = Java2dUtil.applyWatermark(image,
                                 (Watermark) op);
@@ -166,10 +216,12 @@ class Java2dProcessor extends AbstractImageIoProcessor
                 }
             }
 
-            new ImageIoImageWriter().write(image, ops.getOutputFormat(),
-                    outputStream);
+            new ImageWriter(ops, reader.getMetadata(0)).
+                    write(image, ops.getOutputFormat(), outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
+        } finally {
+            reader.dispose();
         }
     }
 

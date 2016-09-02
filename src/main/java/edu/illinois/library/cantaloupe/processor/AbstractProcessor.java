@@ -6,6 +6,9 @@ import java.util.Set;
 
 abstract class AbstractProcessor {
 
+    static final String RESPECT_ORIENTATION_CONFIG_KEY =
+            "metadata.respect_orientation";
+
     protected Format format;
 
     abstract public Set<Format> getAvailableOutputFormats();
@@ -19,8 +22,7 @@ abstract class AbstractProcessor {
         this.format = format;
         if (getAvailableOutputFormats().size() < 1) {
             throw new UnsupportedSourceFormatException(
-                    getClass().getSimpleName() + " does not support the " +
-                            format + " source format");
+                    (Processor) this, format);
         }
     }
 

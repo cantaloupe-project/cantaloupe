@@ -56,6 +56,10 @@
                     <a href="#cl-overlays" aria-controls="cl-overlays"
                        role="tab" data-toggle="tab">Overlays</a>
                 </li>
+                <li role="presentation" class="list-group-item" id="cl-metadata-button">
+                    <a href="#cl-metadata" aria-controls="cl-metadata"
+                       role="tab" data-toggle="tab">Metadata</a>
+                </li>
                 <li role="presentation" class="list-group-item" id="cl-delegate-script-button">
                     <a href="#cl-delegate-script" aria-controls="cl-delegate-script"
                        role="tab" data-toggle="tab">Delegate Script</a>
@@ -127,6 +131,10 @@
                                     <tr>
                                         <td>X-Forwarded-For</td>
                                         <td>$xForwardedForHeader</td>
+                                    </tr>
+                                    <tr>
+                                        <td>X-IIIF-ID</td>
+                                        <td>$xIiifIdHeader</td>
                                     </tr>
                                 </table>
                             </section>
@@ -1201,6 +1209,21 @@
                                                        data-requires-restart="false">
                                             </td>
                                         </tr>
+                                        <tr>
+                                            <td>Sharpening
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Sharpens images before delivery.
+                                                   Should be a decimal number between 0 and 1">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="number"
+                                                       step="0.1"
+                                                       name="FfmpegProcessor.sharpen"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
                                     </table>
                                 </div>
 
@@ -1217,6 +1240,21 @@
                                             <td>
                                                 <input class="form-control" type="text"
                                                        name="GraphicsMagickProcessor.path_to_binaries"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Sharpening
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Sharpens images before delivery.
+                                                   Should be a decimal number between 0 and 1">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="number"
+                                                       step="0.1"
+                                                       name="GraphicsMagickProcessor.sharpen"
                                                        data-requires-restart="false">
                                             </td>
                                         </tr>
@@ -1258,6 +1296,21 @@
                                             </td>
                                         </tr>
                                         <tr>
+                                            <td>Sharpening
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Sharpens images before delivery.
+                                                   Should be a decimal number between 0 and 1">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="number"
+                                                       step="0.1"
+                                                       name="ImageMagickProcessor.sharpen"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
                                             <td>Background color
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
@@ -1280,6 +1333,21 @@
 
                                 <div role="tabpanel" class="tab-pane" id="JaiProcessor">
                                     <table class="table table-striped">
+                                        <tr>
+                                            <td>Sharpening
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Sharpens images before delivery.
+                                                   Should be a decimal number between 0 and 1">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="number"
+                                                       step="0.1"
+                                                       name="JaiProcessor.sharpen"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
                                         <tr>
                                             <td>JPEG quality
                                                 <a tabindex="0" class="btn btn-sm cl-help"
@@ -1321,20 +1389,42 @@
                                 <div role="tabpanel" class="tab-pane" id="Java2dProcessor">
                                     <table class="table table-striped">
                                         <tr>
-                                            <td>Scale mode
+                                            <td>Downscale Filter</td>
+                                            <td>
+                                                <select class="form-control"
+                                                        name="Java2dProcessor.downscale_filter"
+                                                        data-requires-restart="false">
+                                                    #foreach ($filter in $scaleFilters)
+                                                        <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
+                                                    #end
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Upscale Filter</td>
+                                            <td>
+                                                <select class="form-control"
+                                                        name="Java2dProcessor.upscale_filter"
+                                                        data-requires-restart="false">
+                                                    #foreach ($filter in $scaleFilters)
+                                                        <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
+                                                    #end
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Sharpening
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="Speed is 10-20% faster at the expense of
-                                                   visible aliasing at small scales.">?</a>
+                                                   data-content="Sharpens images before delivery.
+                                                   Should be a decimal number between 0 and 1">?</a>
                                             </td>
                                             <td>
-                                                <select class="form-control"
-                                                        name="Java2dProcessor.scale_mode"
-                                                        data-requires-restart="false">
-                                                    <option value="speed">Speed</option>
-                                                    <option value="quality">Quality</option>
-                                                </select>
+                                                <input class="form-control" type="number"
+                                                       step="0.1"
+                                                       name="Java2dProcessor.sharpen"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1391,31 +1481,42 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Post-processor</td>
+                                            <td>Downscale Filter</td>
                                             <td>
                                                 <select class="form-control"
-                                                        name="KakaduProcessor.post_processor"
+                                                        name="KakaduProcessor.downscale_filter"
                                                         data-requires-restart="false">
-                                                    <option value="java2d">Java 2D</option>
-                                                    <option value="jai">JAI</option>
+                                                    #foreach ($filter in $scaleFilters)
+                                                        <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
+                                                    #end
                                                 </select>
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Java 2D scale mode
+                                            <td>Upscale Filter</td>
+                                            <td>
+                                                <select class="form-control"
+                                                        name="KakaduProcessor.upscale_filter"
+                                                        data-requires-restart="false">
+                                                    #foreach ($filter in $scaleFilters)
+                                                        <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
+                                                    #end
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Sharpening
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="Speed is 10-20% faster at the expense of
-                                                   visible aliasing at small scales.">?</a>
+                                                   data-content="Sharpens images before delivery.
+                                                   Should be a decimal number between 0 and 1">?</a>
                                             </td>
                                             <td>
-                                                <select class="form-control"
-                                                        name="KakaduProcessor.post_processor.java2d.scale_mode"
-                                                        data-requires-restart="false">
-                                                    <option value="speed">Speed</option>
-                                                    <option value="quality">Quality</option>
-                                                </select>
+                                                <input class="form-control" type="number"
+                                                       step="0.1"
+                                                       name="KakaduProcessor.sharpen"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                     </table>
@@ -1438,31 +1539,42 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Post-processor</td>
+                                            <td>Downscale Filter</td>
                                             <td>
                                                 <select class="form-control"
-                                                        name="OpenJpegProcessor.post_processor"
+                                                        name="OpenJpegProcessor.downscale_filter"
                                                         data-requires-restart="false">
-                                                    <option value="java2d">Java 2D</option>
-                                                    <option value="jai">JAI</option>
+                                                    #foreach ($filter in $scaleFilters)
+                                                        <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
+                                                    #end
                                                 </select>
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Java 2D scale mode
+                                            <td>Upscale Filter</td>
+                                            <td>
+                                                <select class="form-control"
+                                                        name="OpenJpegProcessor.upscale_filter"
+                                                        data-requires-restart="false">
+                                                    #foreach ($filter in $scaleFilters)
+                                                        <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
+                                                    #end
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Sharpening
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="Speed is 10-20% faster at the expense of
-                                                   visible aliasing at small scales.">?</a>
+                                                   data-content="Sharpens images before delivery.
+                                                   Should be a decimal number between 0 and 1">?</a>
                                             </td>
                                             <td>
-                                                <select class="form-control"
-                                                        name="OpenJpegProcessor.post_processor.java2d.scale_mode"
-                                                        data-requires-restart="false">
-                                                    <option value="speed">Speed</option>
-                                                    <option value="quality">Quality</option>
-                                                </select>
+                                                <input class="form-control" type="number"
+                                                       step="0.1"
+                                                       name="OpenJpegProcessor.sharpen"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                     </table>
@@ -1488,20 +1600,42 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Java 2D scale mode
+                                            <td>Downscale Filter</td>
+                                            <td>
+                                                <select class="form-control"
+                                                        name="PdfBoxProcessor.downscale_filter"
+                                                        data-requires-restart="false">
+                                                    #foreach ($filter in $scaleFilters)
+                                                        <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
+                                                    #end
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Upscale Filter</td>
+                                            <td>
+                                                <select class="form-control"
+                                                        name="PdfBoxProcessor.upscale_filter"
+                                                        data-requires-restart="false">
+                                                    #foreach ($filter in $scaleFilters)
+                                                        <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
+                                                    #end
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Sharpening
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="Speed is 10-20% faster at the expense of
-                                                   visible aliasing at small scales.">?</a>
+                                                   data-content="Sharpens images before delivery.
+                                                   Should be a decimal number between 0 and 1">?</a>
                                             </td>
                                             <td>
-                                                <select class="form-control"
-                                                        name="PdfBoxProcessor.post_processor.java2d.scale_mode"
-                                                        data-requires-restart="false">
-                                                    <option value="speed">Speed</option>
-                                                    <option value="quality">Quality</option>
-                                                </select>
+                                                <input class="form-control" type="number"
+                                                       step="0.1"
+                                                       name="PdfBoxProcessor.sharpen"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                     </table>
@@ -2319,6 +2453,32 @@
                                 </tr>
                             </table>
                         </section>
+                        <input type="submit" class="btn btn-primary" value="Save">
+                    </form>
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="cl-metadata">
+                    <form method="post">
+                        <section>
+                            <h2>Metadata</h2>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="metadata.preserve"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Preserve
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
                         <input type="submit" class="btn btn-primary" value="Save">
                     </form>
                 </div>

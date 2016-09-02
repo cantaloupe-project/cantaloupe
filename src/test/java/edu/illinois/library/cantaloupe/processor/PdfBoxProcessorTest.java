@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
@@ -13,6 +14,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import static edu.illinois.library.cantaloupe.processor.PdfBoxProcessor.DOWNSCALE_FILTER_CONFIG_KEY;
+import static edu.illinois.library.cantaloupe.processor.PdfBoxProcessor.UPSCALE_FILTER_CONFIG_KEY;
 import static org.junit.Assert.*;
 
 public class PdfBoxProcessorTest extends ProcessorTest {
@@ -25,12 +28,63 @@ public class PdfBoxProcessorTest extends ProcessorTest {
         config.clear();
         config.setProperty(PdfBoxProcessor.DPI_CONFIG_KEY, 72);
 
-        instance = new PdfBoxProcessor();
-        instance.setSourceFormat(Format.PDF);
+        instance = newInstance();
     }
 
-    protected Processor getProcessor() {
-        return instance;
+    protected PdfBoxProcessor newInstance() {
+        PdfBoxProcessor proc = new PdfBoxProcessor();
+        try {
+            proc.setSourceFormat(Format.PDF);
+        } catch (UnsupportedSourceFormatException e) {
+            fail("Huge bug");
+        }
+        return proc;
+    }
+
+    @Test
+    public void testGetDownscaleFilter() {
+        assertNull(instance.getDownscaleFilter());
+
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "bell");
+        assertEquals(Scale.Filter.BELL, instance.getDownscaleFilter());
+        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "bicubic");
+        assertEquals(Scale.Filter.BICUBIC, instance.getDownscaleFilter());
+        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "bspline");
+        assertEquals(Scale.Filter.BSPLINE, instance.getDownscaleFilter());
+        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "box");
+        assertEquals(Scale.Filter.BOX, instance.getDownscaleFilter());
+        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "hermite");
+        assertEquals(Scale.Filter.HERMITE, instance.getDownscaleFilter());
+        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "lanczos3");
+        assertEquals(Scale.Filter.LANCZOS3, instance.getDownscaleFilter());
+        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "mitchell");
+        assertEquals(Scale.Filter.MITCHELL, instance.getDownscaleFilter());
+        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "triangle");
+        assertEquals(Scale.Filter.TRIANGLE, instance.getDownscaleFilter());
+    }
+
+    @Test
+    public void testGetUpscaleFilter() {
+        assertNull(instance.getUpscaleFilter());
+
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "bell");
+        assertEquals(Scale.Filter.BELL, instance.getUpscaleFilter());
+        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "bicubic");
+        assertEquals(Scale.Filter.BICUBIC, instance.getUpscaleFilter());
+        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "bspline");
+        assertEquals(Scale.Filter.BSPLINE, instance.getUpscaleFilter());
+        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "box");
+        assertEquals(Scale.Filter.BOX, instance.getUpscaleFilter());
+        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "hermite");
+        assertEquals(Scale.Filter.HERMITE, instance.getUpscaleFilter());
+        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "lanczos3");
+        assertEquals(Scale.Filter.LANCZOS3, instance.getUpscaleFilter());
+        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "mitchell");
+        assertEquals(Scale.Filter.MITCHELL, instance.getUpscaleFilter());
+        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "triangle");
+        assertEquals(Scale.Filter.TRIANGLE, instance.getUpscaleFilter());
     }
 
     @Test

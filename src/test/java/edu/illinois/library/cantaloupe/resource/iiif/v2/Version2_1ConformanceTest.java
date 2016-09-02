@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -60,8 +61,10 @@ public class Version2_1ConformanceTest {
                     "images");
             config.setProperty("print_stack_trace_on_error_pages", false);
             config.setProperty("http.port", PORT);
-            config.setProperty("processor.fallback", "Java2dProcessor");
-            config.setProperty("resolver.static", "FilesystemResolver");
+            config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
+                    "Java2dProcessor");
+            config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
+                    "FilesystemResolver");
             config.setProperty("FilesystemResolver.lookup_strategy",
                     "BasicLookupStrategy");
             config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",
@@ -668,7 +671,8 @@ public class Version2_1ConformanceTest {
                 client.get();
                 fail("Expected exception");
             } catch (ResourceException e) {
-                assertEquals(Status.SERVER_ERROR_INTERNAL, client.getStatus());
+                assertEquals(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE,
+                        client.getStatus());
             }
         }
     }

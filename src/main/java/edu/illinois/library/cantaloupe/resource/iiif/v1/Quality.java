@@ -1,17 +1,17 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.image.Filter;
+import edu.illinois.library.cantaloupe.image.Color;
 
 public enum Quality {
 
     BITONAL, COLOR, GRAY, NATIVE;
 
-    public Filter toFilter() {
+    public Color toFilter() {
         switch (this) {
             case BITONAL:
-                return Filter.BITONAL;
+                return Color.BITONAL;
             case GRAY:
-                return Filter.GRAY;
+                return Color.GRAY;
             default:
                 return null;
         }

@@ -1,6 +1,10 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -12,6 +16,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import static edu.illinois.library.cantaloupe.processor.AbstractProcessor.RESPECT_ORIENTATION_CONFIG_KEY;
 import static org.junit.Assert.*;
 
 public class JaiProcessorTest extends ProcessorTest {
@@ -20,22 +25,22 @@ public class JaiProcessorTest extends ProcessorTest {
         System.setProperty("com.sun.media.jai.disableMediaLib", "true");
     }
 
-    JaiProcessor instance;
+    private JaiProcessor instance;
 
     @Before
     public void setUp() {
-        instance = new JaiProcessor();
+        instance = newInstance();
     }
 
-    protected Processor getProcessor() {
-        return instance;
+    protected JaiProcessor newInstance() {
+        return new JaiProcessor();
     }
 
     @Test
     public void testAvailableOutputFormats() throws Exception {
         final HashMap<Format,Set<Format>> formats = new HashMap<>();
-        for (Format format : ImageIoImageReader.supportedFormats()) {
-            formats.put(format, ImageIoImageWriter.supportedFormats());
+        for (Format format : ImageReader.supportedFormats()) {
+            formats.put(format, ImageWriter.supportedFormats());
         }
 
         instance.setSourceFormat(Format.JPG);
@@ -59,14 +64,14 @@ public class JaiProcessorTest extends ProcessorTest {
                 getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif");
 
         // test as a StreamProcessor
-        StreamProcessor sproc = (StreamProcessor) getProcessor();
+        StreamProcessor sproc = (StreamProcessor) newInstance();
         StreamSource streamSource = new TestStreamSource(fixture);
         sproc.setStreamSource(streamSource);
         sproc.setSourceFormat(Format.TIF);
         assertEquals(expectedInfo, sproc.getImageInfo());
 
         // test as a FileProcessor
-        FileProcessor fproc = (FileProcessor) getProcessor();
+        FileProcessor fproc = (FileProcessor) newInstance();
         fproc.setSourceFile(fixture);
         fproc.setSourceFormat(Format.TIF);
         assertEquals(expectedInfo, fproc.getImageInfo());
@@ -79,6 +84,21 @@ public class JaiProcessorTest extends ProcessorTest {
         } catch (UnsupportedSourceFormatException e) {
             // pass
         }
+    }
+
+    @Test
+    public void testGetImageInfoWithOrientation() throws Exception {
+        Configuration.getInstance().
+                setProperty(RESPECT_ORIENTATION_CONFIG_KEY, true);
+
+        final File fixture = TestUtil.getImage("jpg-rotated.jpg");
+
+        final FileProcessor fproc = (FileProcessor) newInstance();
+        fproc.setSourceFile(fixture);
+        fproc.setSourceFormat(Format.JPG);
+
+        final ImageInfo info = fproc.getImageInfo();
+        assertEquals(Orientation.ROTATE_90, info.getOrientation());
     }
 
     @Test

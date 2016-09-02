@@ -1,0 +1,102 @@
+---
+layout: manual_3.2
+title: For Developers
+---
+
+<ol class="breadcrumb">
+  <li><a href="{{ site.baseurl }}/">Home</a></li>
+  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
+  <li><a href="{{ site.baseurl }}/manual/3.2/">3.2</a></li>
+  <li class="active">For Developers</li>
+</ol>
+
+<h1>For Developers</h1>
+
+<ul>
+  <li><a href="#Building">Building</a></li>
+  <li><a href="#Versioning">Versioning</a></li>
+  <li><a href="#Branching">Branching</a></li>
+  <li>
+    <a href="#Contributing">Contributing</a>
+    <ul>
+      <li><a href="#Writing%20Custom%20Resolvers">Writing Custom Resolvers</a></li>
+      <li><a href="#Writing%20Custom%20Processors">Writing Custom Processors</a></li>
+      <li><a href="#Writing%20Custom%20Caches">Writing Custom Caches</a></li>
+    </ul>
+  </li>
+  <li><a href="#Releasing">Releasing</a></li>
+</ul>
+
+<p>Cantaloupe is a Maven project that should open right up in any Java IDE. Simply use the same configuration file and VM options (e.g. <code>-Dcantaloupe.config=...</code>) as usual.</p>
+
+<hr>
+
+<h3 id="Building">Building</h3>
+
+<p>From the project directory, build with the following command: <code>mvn package -Dmaven.test.skip=true</code>. This will create a <span class="filename">.war</span> and <span class="filename">.zip</span> file in the <span class="filename">target</span> subdirectory.</p>
+
+<hr>
+
+<h3 id="Versioning">Versioning</h3>
+
+<p>Cantaloupe roughly uses semantic versioning. Major releases (n) involve major reengineering that breaks backwards compatibility in a significant way. Minor releases (n.n) either do not break compatibility, or only in a minor way. Patch releases (n.n.n) are for bugfixes only.</p>
+
+<hr>
+
+<h2 id="Branching">Branching</h2>
+
+<p>Cantaloupe uses the <a href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow/">Gitflow</a> branching model. <code>develop</code> is the main branch that roughly tracks the current state of the next non-bugfix release. Significant features branch off into feature branches (<code>feature/xxxx</code>), from which they can be integrated into a particular release.</p>
+
+<p>When a major or minor version is ready for release in <code>develop</code>, it branches off into a <code>release/n.n</code> branch. There, its version is formally set and it is then merged into <code>master</code>, where the formal release is tagged.</p>
+
+<p>Bugfixes that would increment a minor version of a release are applied to the release branch for that release, and merged back into <code>develop</code>.</p>
+
+<hr>
+
+<h2 id="Contributing">Contributing</h2>
+
+<p>Contributions are welcome. The suggested process for contributing code changes is:</p>
+
+<ol>
+  <li>Submit a "heads-up" issue in the tracker, preferably before beginning any work</li>
+  <li><a href="https://github.com/medusa-project/cantaloupe/fork">Create a fork</a></li>
+  <li>Create a feature branch (<code>git checkout -b feature/my-new-feature</code>)</li>
+  <li>Commit your changes (<code>`git commit -am 'Add some feature'</code>)</li>
+  <li>Push to the branch (<code>git push origin feature/my-new-feature</code>)</li>
+  <li>Create a pull request</li>
+</ol>
+
+<h3 id="Writing Custom Resolvers">Writing Custom Resolvers</h3>
+
+<p>See the package documentation for <code>edu.illinois.library.cantaloupe.resolver</code> in the source code.
+
+<h3 id="Writing Custom Processors">Writing Custom Processors</h3>
+
+<p>See the package documentation for <code>edu.illinois.library.cantaloupe.processor</code> in the source code.
+
+<h3 id="Writing Custom Caches">Writing Custom Caches</h3>
+
+<p>See the package documentation for <code>edu.illinois.library.cantaloupe.cache</code> in the source code.
+
+<hr>
+
+<h2 id="Releasing">Releasing</h2>
+
+<p>(This section is for the release manager only.)</p>
+
+<p>Currently, the release process is mostly manual, consisting of the following steps:</p>
+
+<ol>
+  <li>Finalize the code to be released, addressing any relevant milestone issues, TODOs, etc.</li>
+  <li>Ensure that the tests are current, comprehensive, and passing</li>
+  <li>Finalize the documentation, including the website, user manual, change log, and Javadoc</li>
+  <li>Merge into "release/vX.X"</li>
+  <li>Update the version in <span class="filename">pom.xml</span> and commit this change</li>
+  <li>Merge into "master"</li>
+  <li>Create the release .zip archive with <code>mvn clean; mvn package</code></li>
+  <li>Check that the .zip archive is as expected</li>
+  <li>Tag the release: <code>git tag -a v{version} -m 'Tag v{version}'</code></li>
+  <li>Push the code: <code>git push origin master; git push origin release/x.x; git push --tags</code></li>
+  <li>Add the .zip archive and change log info to the release tag on GitHub</li>
+  <li>Deploy the updated website.</li>
+</ol>

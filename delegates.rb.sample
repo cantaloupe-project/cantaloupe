@@ -139,18 +139,18 @@ module Cantaloupe
 
     ##
     # Returns an SQL statement that can be used to retrieve the media (MIME)
-    # type of an image. If the media type is
-    # stored in the database, this can return an SQL statement to retrieve it,
-    # in which case the "SELECT" and "FROM" clauses should be in uppercase in
-    # order to be autodetected. If commented out, the media type will be
-    # inferred from the identifier extension (if present).
+    # type of an image. If the media type is stored in the database, this can
+    # return an SQL statement to retrieve it, in which case the "SELECT" and
+    # "FROM" clauses should be in uppercase in order to be autodetected. If
+    # commented out, the media type will be inferred from the identifier
+    # extension (if present).
     #
     def self.get_media_type
     end
 
     ##
-    # Returns an SQL statement that selects the BLOB corresponding to the value
-    # returned by get_database_identifier.
+    # Returns an SQL statement that selects the BLOB corresponding to the
+    # value returned by get_database_identifier.
     #
     def self.get_lookup_sql
     end
@@ -184,11 +184,11 @@ module Cantaloupe
   # @param identifier [String] Image identifier
   # @param operations [Array<Hash<String,Object>>] Array of operations in
   #                   order of execution. Only operations that are not no-ops
-  #                   will be included. Every hash contains an "operation" key
+  #                   will be included. Every hash contains an `operation` key
   #                   corresponding to the type of operation. See the Javadoc
   #                   of e.i.l.c.image.Operation implementations for a list of
   #                   possible operations.
-  # @param resulting_size [Hash<String,String>] Hash with "width" and "height"
+  # @param resulting_size [Hash<String,String>] Hash with `width` and `height`
   #                       keys corresponding to the pixel dimensions of the
   #                       resulting image after all operations are applied.
   # @param output_format [Hash<String,String>] Hash with "media_type" and
@@ -207,5 +207,5 @@ module Cantaloupe
 
 end
 
-# Uncomment to test on the command line (`ruby delegates.rb`)
+# Uncomment to test on the command line (`jruby delegates.rb`)
 # puts Cantaloupe::FilesystemResolver::get_pathname('image.jpg')

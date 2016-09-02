@@ -3,9 +3,12 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
+import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 
@@ -70,10 +73,10 @@ public class JaiUtilTest {
     @Test
     public void testReformatImage() throws Exception {
         final OperationList ops = new OperationList();
-        final ReductionFactor reductionFactor = new ReductionFactor();
-        ImageIoImageReader reader = new ImageIoImageReader(
+        ImageReader reader = new ImageReader(
                 TestUtil.getFixture(IMAGE), Format.JPG);
-        RenderedImage image = reader.readRendered(ops, reductionFactor);
+        RenderedImage image = reader.readRendered(ops, Orientation.ROTATE_0,
+                new ReductionFactor());
         PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
         RenderedOp renderedOp = JaiUtil.reformatImage(planarImage,
                 new Dimension(512, 512));
@@ -110,7 +113,9 @@ public class JaiUtilTest {
     }
 
     @Test
-    public void testScaleImage() throws Exception {
+    public void testScaleImage() {
+        // TODO: write this
+        /*
         RenderedOp image = getFixture(IMAGE);
 
         // test with no-op scale
@@ -127,11 +132,29 @@ public class JaiUtilTest {
         scaledImage = JaiUtil.scaleImage(image, scale);
         assertEquals(image.getWidth() * percent, scaledImage.getWidth(), fudge);
         assertEquals(image.getHeight() * percent, scaledImage.getHeight(), fudge);
+        */
     }
 
     @Test
-    public void testScaleImageWithReductionFactor() {
+    public void testScaleImageUsingSubsampleAverage() {
         // TODO: write this
+    }
+
+    @Test
+    public void testSharpenImage() throws Exception {
+        RenderedOp image = getFixture(IMAGE);
+
+        // test with no-op sharpen
+        Sharpen sharpen = new Sharpen();
+        sharpen.setAmount(0);
+        RenderedOp sharpenedImage = JaiUtil.sharpenImage(image, sharpen);
+        assertSame(image, sharpenedImage);
+
+        // test with non-no-op sharpen
+        sharpen = new Sharpen();
+        sharpen.setAmount(0.5f);
+        sharpenedImage = JaiUtil.sharpenImage(image, sharpen);
+        assertNotSame(image, sharpenedImage);
     }
 
     @Test
@@ -152,10 +175,10 @@ public class JaiUtilTest {
 
     private RenderedOp getFixture(final String name) throws Exception {
         final OperationList ops = new OperationList();
-        final ReductionFactor reductionFactor = new ReductionFactor();
-        ImageIoImageReader reader = new ImageIoImageReader(
+        ImageReader reader = new ImageReader(
                 TestUtil.getFixture(name), Format.JPG);
-        RenderedImage image = reader.readRendered(ops, reductionFactor);
+        RenderedImage image = reader.readRendered(ops, Orientation.ROTATE_0,
+                new ReductionFactor());
         PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
         return JaiUtil.reformatImage(planarImage, new Dimension(512, 512));
     }

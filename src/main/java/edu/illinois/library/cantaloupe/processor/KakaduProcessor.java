@@ -2,16 +2,19 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.image.Filter;
+import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.apache.commons.io.IOUtils;
@@ -22,7 +25,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.media.jai.RenderedOp;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -32,7 +34,6 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
@@ -56,12 +57,26 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Processor using the Kakadu kdu_expand and kdu_jp2info command-line tools.
- * Written for version 7.7, but may work with other versions. Uses kdu_expand
- * for cropping and an initial scale reduction factor, and either Java 2D or
- * JAI for all remaining processing steps. kdu_expand generates BMP output
- * which is streamed directly to the ImageIO or JAI reader, which are really
- * fast with BMP for some reason.
+ * <p>Processor using the Kakadu kdu_expand and kdu_jp2info command-line
+ * tools. Written against version 7.7, but should work with other versions,
+ * as long as their command-line interface is compatible. (There is also a JNI
+ * binding available for Kakadu, but the author does not have access to the
+ * Kakadu SDK.</p>
+ *
+ * <p>kdu_expand is used for cropping and an initial scale reduction factor,
+ * and Java 2D for all remaining processing steps. kdu_expand generates TIFF
+ * output which is streamed (more or less) directly to the ImageIO reader.
+ * (TIFF is used in order to preserve embedded ICC profiles.)</p>
+ *
+ * <p>kdu_expand reads and writes the files named in the <code>-i</code>
+ * and <code>-o</code> flags passed to it, respectively. The file in the
+ * <code>-o</code> flag must have a recognized image extension such as .bmp,
+ * .tif, etc. This means that it's not possible to natively write into a
+ * {@link ProcessBuilder} {@link InputStream}. Instead, we have to resort to
+ * a trick whereby we create a symlink from /tmp/whatever.tif to /dev/stdout
+ * (which only exists on Unix), which will enable us to accomplish this.
+ * The temporary symlink is created in the static initializer and deleted on
+ * exit.</p>
  *
  * @see <a href="http://kakadusoftware.com/wp-content/uploads/2014/06/Usage_Examples-v7_7.txt">
  *     Usage Examples for the Demonstration Applications Supplied with Kakadu
@@ -72,12 +87,13 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
     private static Logger logger = LoggerFactory.
             getLogger(KakaduProcessor.class);
 
-    static final String JAVA2D_SCALE_MODE_CONFIG_KEY =
-            "KakaduProcessor.post_processor.java2d.scale_mode";
+    static final String DOWNSCALE_FILTER_CONFIG_KEY =
+            "KakaduProcessor.downscale_filter";
     static final String PATH_TO_BINARIES_CONFIG_KEY =
             "KakaduProcessor.path_to_binaries";
-    static final String POST_PROCESSOR_CONFIG_KEY =
-            "KakaduProcessor.post_processor";
+    static final String SHARPEN_CONFIG_KEY = "KakaduProcessor.sharpen";
+    static final String UPSCALE_FILTER_CONFIG_KEY =
+            "KakaduProcessor.upscale_filter";
 
     private static final short MAX_REDUCTION_FACTOR = 5;
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
@@ -127,7 +143,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
         final File devStdout = new File("/dev/stdout");
         if (devStdout.exists() && devStdout.canWrite()) {
             // Due to another quirk of kdu_expand, we need to create a symlink
-            // from {temp path}/stdout.bmp to /dev/stdout, to tell kdu_expand
+            // from {temp path}/stdout.tif to /dev/stdout, to tell kdu_expand
             // what format to write.
             try {
                 stdoutSymlink = createStdoutSymlink();
@@ -150,7 +166,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
     private static Path createStdoutSymlink() throws IOException {
         File tempDir = new File(System.getProperty("java.io.tmpdir"));
         final File link = new File(tempDir.getAbsolutePath() + "/cantaloupe-" +
-                UUID.randomUUID() + ".bmp");
+                UUID.randomUUID() + ".tif");
         link.deleteOnExit();
         final File devStdout = new File("/dev/stdout");
         return Files.createSymbolicLink(Paths.get(link.getAbsolutePath()),
@@ -177,9 +193,31 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
     public Set<Format> getAvailableOutputFormats() {
         final Set<Format> outputFormats = new HashSet<>();
         if (format == Format.JP2) {
-            outputFormats.addAll(ImageIoImageWriter.supportedFormats());
+            outputFormats.addAll(ImageWriter.supportedFormats());
         }
         return outputFormats;
+    }
+
+    Scale.Filter getDownscaleFilter() {
+        final String upscaleFilterStr = Configuration.getInstance().
+                getString(DOWNSCALE_FILTER_CONFIG_KEY);
+        try {
+            return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
+        } catch (Exception e) {
+            logger.warn("Invalid value for {}", DOWNSCALE_FILTER_CONFIG_KEY);
+        }
+        return null;
+    }
+
+    Scale.Filter getUpscaleFilter() {
+        final String upscaleFilterStr = Configuration.getInstance().
+                getString(UPSCALE_FILTER_CONFIG_KEY);
+        try {
+            return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
+        } catch (Exception e) {
+            logger.warn("Invalid value for {}", UPSCALE_FILTER_CONFIG_KEY);
+        }
+        return null;
     }
 
     /**
@@ -248,7 +286,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
      * @throws ParserConfigurationException
      */
     private void readImageInfoDocument()
-            throws SAXException, IOException,ParserConfigurationException {
+            throws SAXException, IOException, ParserConfigurationException {
         final List<String> command = new ArrayList<>();
         command.add(getPath("kdu_jp2info"));
         command.add("-i");
@@ -262,17 +300,27 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
         ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
 
         try (InputStream processInputStream = process.getInputStream()) {
-            // Ideally we could just call
-            // DocumentBuilder.parse(process.getInputStream()), but the XML
-            // output of kdu_jp2info may contain leading whitespace that
-            // causes a SAXParseException. So, read into a byte array in
-            // order to trim it, and then parse that. TODO: use a FilterInputStream
             IOUtils.copy(processInputStream, outputBucket);
-            final String xml = outputBucket.toString("UTF-8").trim();
+            // This will be an XML string if all went well, otherwise it will
+            // be non-XML text.
+            final String kduOutput = outputBucket.toString("UTF-8").trim();
 
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            infoDocument = db.parse(new InputSource(new StringReader(xml)));
+            // A typical error message looks like:
+            // -------------
+            // Kakadu Error:
+            // Input file is neither a raw codestream nor a box-structured file.  Not a
+            // JPEG2000 file.
+            if (kduOutput.startsWith("--")) {
+                final String kduMessage =
+                        kduOutput.substring(kduOutput.lastIndexOf("Kakadu Error:") + 13).
+                                replace("\n", " ").trim();
+                throw new IOException("Failed to read the source file. " +
+                        "(kdu_jp2info output: " + kduMessage + ")");
+            } else {
+                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                DocumentBuilder db = dbf.newDocumentBuilder();
+                infoDocument = db.parse(new InputSource(new StringReader(kduOutput)));
+            }
         }
     }
 
@@ -335,33 +383,22 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
                 executorService.submit(
                         new StreamCopier(processErrorStream, errorBucket));
 
-                final ImageIoImageReader reader = new ImageIoImageReader();
-                reader.setFormat(Format.BMP);
-                reader.setSource(new InputStreamStreamSource(processInputStream));
-
-                final Configuration config = Configuration.getInstance();
-                switch (config.getString(POST_PROCESSOR_CONFIG_KEY, "java2d").toLowerCase()) {
-                    case "jai":
-                        logger.info("Post-processing using JAI ({} = jai)",
-                                POST_PROCESSOR_CONFIG_KEY);
-                        postProcessUsingJai(reader, ops, reductionFactor,
-                                outputStream);
-                        break;
-                    default:
-                        logger.info("Post-processing using Java 2D ({} = java2d)",
-                                POST_PROCESSOR_CONFIG_KEY);
-                        postProcessUsingJava2d(reader, ops, reductionFactor,
-                                outputStream);
-                        break;
-                }
-
-                final int code = process.waitFor();
-                if (code != 0) {
-                    logger.warn("kdu_expand returned with code {}", code);
-                    final String errorStr = errorBucket.toString();
-                    if (errorStr != null && errorStr.length() > 0) {
-                        throw new ProcessorException(errorStr);
+                final ImageReader reader = new ImageReader(
+                        new InputStreamStreamSource(processInputStream),
+                        Format.TIF);
+                try {
+                    postProcessUsingJava2d(reader, ops, imageInfo, reductionFactor,
+                            outputStream);
+                    final int code = process.waitFor();
+                    if (code != 0) {
+                        logger.warn("kdu_expand returned with code {}", code);
+                        final String errorStr = errorBucket.toString();
+                        if (errorStr != null && errorStr.length() > 0) {
+                            throw new ProcessorException(errorStr);
+                        }
                     }
+                } finally {
+                    reader.dispose();
                 }
             } finally {
                 process.destroy();
@@ -373,7 +410,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
             String msg = e.getMessage();
             final String errorStr = errorBucket.toString();
             if (errorStr != null && errorStr.length() > 0) {
-                msg += " (command output: " + msg + ")";
+                msg += " (command output: " + errorStr + ")";
             }
             throw new ProcessorException(msg, e);
         }
@@ -400,6 +437,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
         final List<String> command = new ArrayList<>();
         command.add(getPath("kdu_expand"));
         command.add("-quiet");
+        command.add("-resilient");
         command.add("-no_alpha");
         command.add("-i");
         command.add(sourceFile.getAbsolutePath());
@@ -518,56 +556,13 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
         return tileSize;
     }
 
-    private void postProcessUsingJai(final ImageIoImageReader reader,
-                                     final OperationList opList,
-                                     final ReductionFactor reductionFactor,
-                                     final OutputStream outputStream)
-            throws IOException, ProcessorException {
-        BufferedImage image = null;
-        RenderedImage renderedImage = reader.readRendered();
-        RenderedOp renderedOp = JaiUtil.reformatImage(
-                RenderedOp.wrapRenderedImage(renderedImage),
-                new Dimension(512, 512));
-        for (Operation op : opList) {
-            if (op instanceof Scale) {
-                renderedOp = JaiUtil.scaleImage(renderedOp, (Scale) op,
-                        reductionFactor);
-            } else if (op instanceof Transpose) {
-                renderedOp = JaiUtil.transposeImage(renderedOp, (Transpose) op);
-            } else if (op instanceof Rotate) {
-                renderedOp = JaiUtil.rotateImage(renderedOp, (Rotate) op);
-            } else if (op instanceof Filter) {
-                renderedOp = JaiUtil.filterImage(renderedOp, (Filter) op);
-            } else if (op instanceof Watermark) {
-                // Let's cheat and apply the watermark using Java 2D.
-                // There seems to be minimal performance penalty in doing
-                // this, and doing it in JAI is harder.
-                image = renderedOp.getAsBufferedImage();
-                try {
-                    image = Java2dUtil.applyWatermark(image, (Watermark) op);
-                } catch (ConfigurationException e) {
-                    logger.error(e.getMessage());
-                }
-            }
-        }
-
-        ImageIoImageWriter writer = new ImageIoImageWriter();
-
-        if (image != null) {
-            writer.write(image, opList.getOutputFormat(), outputStream);
-            image.flush();
-        } else {
-            writer.write(renderedOp, opList.getOutputFormat(),
-                    outputStream);
-        }
-    }
-
-    private void postProcessUsingJava2d(final ImageIoImageReader reader,
+    private void postProcessUsingJava2d(final ImageReader reader,
                                         final OperationList opList,
+                                        final ImageInfo imageInfo,
                                         final ReductionFactor reductionFactor,
                                         final OutputStream outputStream)
             throws IOException, ProcessorException {
-        BufferedImage image = reader.read();
+        BufferedImage image = Java2dUtil.reduceTo8Bits(reader.read());
 
         // The crop has already been applied, but we need to retain a
         // reference to it for any redactions.
@@ -589,24 +584,41 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
         image = Java2dUtil.applyRedactions(image, crop, reductionFactor,
                 redactions);
 
-        // Perform all remaining operations.
+        // Apply most remaining operations.
         for (Operation op : opList) {
             if (op instanceof Scale) {
-                final boolean highQuality = Configuration.getInstance().
-                        getString(JAVA2D_SCALE_MODE_CONFIG_KEY, "speed").
-                        equals("quality");
-                image = Java2dUtil.scaleImage(image,
-                        (Scale) op, reductionFactor, highQuality);
+                final Scale scale = (Scale) op;
+                final Float upOrDown =
+                        scale.getResultingScale(imageInfo.getSize());
+                if (upOrDown != null) {
+                    final Scale.Filter filter =
+                            (upOrDown > 1) ?
+                                    getUpscaleFilter() : getDownscaleFilter();
+                    scale.setFilter(filter);
+                }
+
+                image = Java2dUtil.scaleImage(image, scale, reductionFactor);
             } else if (op instanceof Transpose) {
                 image = Java2dUtil.transposeImage(image,
                         (Transpose) op);
             } else if (op instanceof Rotate) {
                 image = Java2dUtil.rotateImage(image,
                         (Rotate) op);
-            } else if (op instanceof Filter) {
-                image = Java2dUtil.filterImage(image,
-                        (Filter) op);
-            } else if (op instanceof Watermark) {
+            } else if (op instanceof Color) {
+                image = Java2dUtil.transformColor(image,
+                        (Color) op);
+            }
+        }
+
+        // Apply the sharpen operation, if present.
+        final Configuration config = Configuration.getInstance();
+        final float sharpenValue = config.getFloat(SHARPEN_CONFIG_KEY, 0);
+        final Sharpen sharpen = new Sharpen(sharpenValue);
+        image = Java2dUtil.sharpenImage(image, sharpen);
+
+        // Apply all remaining operations.
+        for (Operation op : opList) {
+            if (op instanceof Watermark) {
                 try {
                     image = Java2dUtil.applyWatermark(image, (Watermark) op);
                 } catch (ConfigurationException e) {
@@ -615,8 +627,8 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
             }
         }
 
-        new ImageIoImageWriter().write(image, opList.getOutputFormat(),
-                outputStream);
+        new ImageWriter(opList).
+                write(image, opList.getOutputFormat(), outputStream);
         image.flush();
     }
 

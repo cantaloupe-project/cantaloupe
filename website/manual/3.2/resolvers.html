@@ -1,0 +1,355 @@
+---
+layout: manual_3.2
+title: Resolvers
+---
+
+<ol class="breadcrumb">
+  <li><a href="{{ site.baseurl }}/">Home</a></li>
+  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
+  <li><a href="{{ site.baseurl }}/manual/3.2/">3.2</a></li>
+  <li class="active">Resolvers</li>
+</ol>
+
+<h1>Resolvers</h1>
+
+<ul>
+  <li><a href="#Selection">Selection</a>
+    <ul>
+      <li><a href="#Static%20Resolver">Static</a></li>
+      <li><a href="#Dynamic%20Resolvers">Dynamic</a></li>
+      <li><a href="#Which%20Resolver%20Should%20I%20Use">Which Resolver Should I Use?</a></li>
+    </ul>
+  </li>
+  <li><a href="#Implementations">Implementations</a>
+    <ul>
+      <li><a href="#FilesystemResolver">FilesystemResolver</a></li>
+      <li><a href="#HttpResolver">HttpResolver</a></li>
+      <li><a href="#JdbcResolver">JdbcResolver</a></li>
+      <li><a href="#AmazonS3Resolver">AmazonS3Resolver</a></li>
+      <li><a href="#AzureStorageResolver">AzureStorageResolver</a></li>
+    </ul>
+  </li>
+</ul>
+
+<p>Resolvers locate and provide access to source images. A resolver translates an identifier in a request URL to an image locator, such as a pathname, in the particular type of underlying storage it is written to interface with. It can then check whether the underlying object exists and is accessible, and if so, provide access to it to other image server components. The rest of the image server does not need to know where an image resides, be it on the filesystem, in a database, on a remote web server, or in cloud storage&mdash;it can simply ask the current resolver, whatever it may be, to provide a generic interface from which an image can be read.</p>
+
+<p>The interface in question may be a stream or a file. All resolvers can provide stream access, but only <a href="#FilesystemResolver">FilesystemResolver</a> can provide file access. This distinction is important because <a href="processors.html#Resolver%20Compatibility">not all processors can read from streams</a>.</p>
+
+<h2 id="Selection">Selection</h2>
+
+<p>In a typical configuration, <a href="#Static%20Resolver">one resolver will handle all requests</a>. It is also possible to configure the image server to <a href="#Dynamic%20Resolvers">select a resolver dynamically</a> upon each request depending on the image identifier.</p>
+
+<h3 id="Static Resolver">Static Resolver</h2>
+
+<p>When the <code>resolver.static</code> configuration key is set to the name of a resolver, Cantaloupe will use that resolver for all requests. This is simple and should work in most scenarios.</p>
+
+<h3 id="Dynamic Resolvers">Dynamic Resolvers</h2>
+
+<p>When a static resolver is not flexible enough, it is also possible to serve images from different sources simultaneously. For example, you may have some images stored on a filesystem, and others stored on Amazon S3. <em>If you can differentiate their sources based on their identifier in code</em>&mdash;either by analyzing the identifier string, or performing some kind of service request&mdash;you can use the <a href="delegate-script.html">delegate script</a> mechanism to write a simple Ruby method to tell the image server which resolver to use for a given request.</p>
+
+<p>To enable dynamic resolver selection, set the <code>resolver.delegate</code> configuration key to <code>true</code>. Then, implement the <code>get_resolver(identifier)</code> method in the delegate script, which takes in an identifier and returns a resolver name (such as FilesystemResolver, HttpResolver, etc.) For example:</p>
+
+{% highlight ruby %}
+module Cantaloupe
+  def self.get_resolver(identifier)
+    # Here, you would perform some kind of analysis on `identifier`:
+    # parse it, look it up in a web service or database...
+    # and then return the name of the resolver to use to serve it.
+    'FilesystemResolver'
+  end
+end
+{% endhighlight %}
+
+<p>See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script.</p>
+
+<h3 id="Which Resolver Should I Use">Which Resolver Should I Use?</h3>
+
+<table class="table table-bordered">
+  <caption>I want to serve images located&hellip;</caption>
+  <tr>
+    <td rowspan="2">On a filesystem&hellip;</td>
+    <td>&hellip;and the identifiers I use in URLs will correspond predictably to filesystem paths</td>
+    <td><a href="#FilesystemResolver">FilesystemResolver</a> with BasicLookupStrategy</td>
+  </tr>
+  <tr>
+    <td>&hellip;and filesystem paths will need to be looked up (in a SQL database, search server, index file, etc.) based on their identifier</td>
+    <td><a href="#FilesystemResolver">FilesystemResolver</a> with ScriptLookupStrategy</td>
+  </tr>
+  <tr>
+    <td rowspan="2">On a local or remote web server&hellip;</td>
+    <td>&hellip;and the identifiers I use in URLs will correspond predictably to URL paths</td>
+    <td><a href="#HttpResolver">HttpResolver</a> with BasicLookupStrategy</td>
+  </tr>
+  <tr>
+    <td>&hellip;and URL paths will need to be looked up (in a SQL database, search server, index file, etc.) based on their identifier</td>
+    <td><a href="#HttpResolver">HttpResolver</a> with ScriptLookupStrategy</td>
+  </tr>
+  <tr>
+    <td colspan="2">As binaries or BLOBs in a SQL database</td>
+    <td><a href="#JdbcResolver">JdbcResolver</a></td>
+  </tr>
+  <tr>
+    <td colspan="2">In the cloud</td>
+    <td><a href="#AmazonS3Resolver">AmazonS3Resolver</a> or <a href="#AzureStorageResolver">AzureStorageResolver</a></td>
+  </tr>
+</table>
+
+<h2 id="Implementations">Implementations</h2>
+
+<h3 id="FilesystemResolver">FilesystemResolver</h3>
+
+<p>FilesystemResolver maps a URL identifier to a filesystem path, for retrieving images on a local or attached filesystem. In addition to being the most compatible resolver, <strong>this is also the most efficient resolver</strong> and may or may not be the only option for serving very large source images.</p>
+
+<p>For images with extensions that are missing or unrecognized, this resolver will check the "magic number" to determine type, which will add some overhead. It is therefore slightly more efficient to serve images with extensions.</p>
+
+<p>FilesystemResolver supports two distinct lookup strategies, defined by the <code>FilesystemResolver.lookup_strategy</code> configuration option.</p>
+
+<h4 id="FilesystemResolverBasicLookupStrategy">BasicLookupStrategy</h4>
+
+<p>BasicLookupStrategy locates images by concatenating a pre-defined path prefix and/or suffix. For example, with the following configuration options set:</p>
+
+{% highlight properties %}
+# Note trailing slash!
+FilesystemResolver.BasicLookupStrategy.path_prefix = /usr/local/images/
+FilesystemResolver.BasicLookupStrategy.path_suffix =
+{% endhighlight %}
+
+<p>An identifier of <code>image.jpg</code> in the URL will resolve to
+<span class="filename">/usr/local/images/image.jpg</span>.</p>
+
+<p>To prevent arbitrary directory traversal, BasicLookupStrategy will strip out <code>..{path separator}</code> and <code>{path separator}..</code> from identifiers before resolving the path.</p>
+
+<div class="alert alert-danger">Note: it is dangerous to <strong>not</strong> use <code>path_prefix</code>. The shallower the path, the more of the filesystem that will be exposed.</div>
+
+<h4 id="FilesystemResolverScriptLookupStrategy">ScriptLookupStrategy</h4>
+
+<p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple filesystems, or perhaps your identifiers are opaque and you need to perform a database or web service request to locate the corresponding images. With this lookup strategy, you can tell FilesystemResolver to invoke a method in your <a href="delegate-script.html">delegate script</a> and capture the pathname it returns.</p>
+
+<p>The delegate script method, <code>get_pathname(identifier)</code>, will take in an identifier string and should return a pathname, if available, or <code>nil</code>, if not. (See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script.) Examples follow:</p>
+
+<h5>Example 1: Query a PostgreSQL database to find the pathname corresponding to a given identifier</h5>
+
+{% highlight ruby %}
+require 'java'
+
+java_import 'org.postgresql.Driver'
+java_import 'java.sql.DriverManager'
+
+module Cantaloupe
+  module FilesystemResolver
+    JDBC_URL = 'jdbc:postgresql://localhost:5432/mydatabase'
+    JDBC_USER = 'myuser'
+    JDBC_PASSWORD = 'mypassword'
+
+    # DriverManager is actually java.sql.DriverManager
+    # (https://docs.oracle.com/javase/8/docs/api/java/sql/DriverManager.html);
+    # we are calling Java API via JRuby.
+    # By making the connection static, we can avoid reconnecting every time
+    # get_pathname() is called.
+    @@conn = DriverManager.get_connection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
+
+    def self.get_pathname(identifier)
+      begin
+        # Note the use of prepared statements to prevent SQL injection.
+        sql = 'SELECT pathname FROM images WHERE identifier = ? LIMIT 1'
+        stmt = @@conn.prepare_statement(sql)
+        stmt.set_string(1, identifier.to_s)
+        results = stmt.execute_query
+        results.next
+        pathname = results.getString(1)
+        return (pathname.length > 0) ? pathname : nil
+      ensure
+        stmt.close if stmt
+      end
+    end
+  end
+end
+{% endhighlight %}
+
+<p>Note that several common Ruby database libraries (like the mysql and pgsql gems) use native extensions, and as a result, they won't work in JRuby. Instead, the course of action above is to use the JDBC API via the JRuby-Java bridge. For this to work, a JDBC driver for your database will need to be installed on the Java classpath, and referenced in a <code>java_import</code> statement.</p>
+
+<h5>Example 2: Query Solr to find the pathname corresponding to a given identifier</h5>
+
+{% highlight ruby %}
+require 'net/http'
+require 'cgi'
+
+module Cantaloupe
+  module FilesystemResolver
+    def self.get_pathname(identifier)
+      uri = 'http://localhost:8983/solr/collection1/select?q=' +
+          CGI.escape('id:"' + identifier + '"') +
+          '&amp;fl=pathname_si&amp;wt=ruby'
+      uri = URI.parse(uri)
+
+      http = Net::HTTP.new(uri.host, uri.port)
+      request = Net::HTTP::Get.new(uri.request_uri)
+      response = http.request(request)
+      return nil if response.code.to_i >= 400
+
+      results = eval(response.body)['response']['docs']
+      results.any? ? results.first['pathname_si'] : nil
+    end
+  end
+end
+{% endhighlight %}
+
+<hr>
+
+<h3 id="HttpResolver">HttpResolver</h3>
+
+<p>HttpResolver maps a URL identifier to an HTTP or HTTPS resource, for retrieving images from a web server.</p>
+
+<p>It is preferable to use this resolver with source images with recognizable file extensions. For images with an extension that is missing or unrecognizable, it will issue an HTTP HEAD request to the server to check the <code>Content-Type</code> header. If the type cannot be inferred from that, an error response will be returned.</p>
+
+<p>HttpResolver supports two distinct lookup strategies, defined by the <code>HttpResolver.lookup_strategy</code> configuration option.</p>
+
+<h4 id="HttpResolverBasicLookupStrategy">BasicLookupStrategy</h4>
+
+<p>BasicLookupStrategy locates images by concatenating a pre-defined URL prefix and/or suffix. For example, with the following configuration options set:</p>
+
+{% highlight properties %}
+# Note trailing slash!
+HttpResolver.url_prefix = http://example.org/images/
+HttpResolver.url_suffix =
+{% endhighlight %}
+
+<p>An identifier of <code>image.jpg</code> in the URL will resolve to
+<span class="filename">http://example.org/images/image.jpg</span>.
+
+<h4 id="HttpResolverScriptLookupStrategy">ScriptLookupStrategy</h4>
+
+<p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple URLs, or perhaps your identifiers are opaque and you need to run a database or web service request to locate them.  With this lookup strategy, you can tell HttpResolver to invoke a method in your <a href="delegate-script.html">delegate script</a> and capture the URL it returns.</p>
+
+<p>The delegate script method, <code>get_url(identifier)</code>, will take in an identifier string and should return a URL, if available, or <code>nil</code>, if not. See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for examples of similar scripts.</p>
+
+<hr>
+
+<h3 id="JdbcResolver">JdbcResolver</h3>
+
+<p>JdbcResolver maps a URL identifier to an RDBMS BLOB field, for retrieving images from a relational database. It does not require a custom schema and can adapt to any schema. The downside of that is that some <a href="delegate-script.html">delegate script</a> methods must be implemented in order to obtain the information needed to run the SQL queries.</p>
+
+<p>Cantaloupe does not include any JDBC drivers, so a driver JAR for the desired database must be obtained separately and saved somewhere on the classpath.</p>
+
+<p>The JDBC connection is initialized by the <code>JdbcResolver.url</code>, <code>JdbcResolver.user</code>, and <code>JdbcResolver.password</code> configuration options. If the user or password are not necessary, they can be left blank. The connection string must use your driver's JDBC syntax:</p>
+
+<pre><code>jdbc:postgresql://localhost:5432/my_database
+jdbc:mysql://localhost:3306/my_database
+jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre>
+
+<p>Consult the driver's documentation for details.</p>
+
+<p>Then, the resolver needs to be told:</p>
+
+<ol>
+  <li><a href="#JdbcResolverIdentifierMethod">The database value corresponding to a given identifier</a></li>
+  <li><a href="#JdbcResolverMediaTypeMethod">The media type corresponding to that value</a></li>
+  <li><a href="#JdbcResolverBlobSQLMethod">The SQL statement that retrieves the BLOB value corresponding to that value</a></li>
+</ol>
+
+<h4 id="JdbcResolverIdentifierMethod">Database Identifier Retrieval Method</h4>
+
+<p>This method takes in an unencoded URL identifier and returns the corresponding database value of the identifier.</p>
+
+{% highlight ruby %}
+module Cantaloupe
+  module JdbcResolver
+    get_database_identifier(url_identifier)
+      # If URL identifiers map directly to values in the database, simply
+      # return url_identifier. Otherwise, you could transform it, perform
+      # a service request to look it up, etc.
+      url_identifier
+    end
+  end
+end
+{% endhighlight %}
+
+<h4 id="JdbcResolverMediaTypeMethod">Media Type Retrieval Method</h4>
+
+<p>This method returns a media (MIME) type corresponding to the value returned by the <code><a href="#JdbcResolverIdentifierMethod">get_database_identifier</a></code> method. If the media type is stored in the database, this example will return an SQL statement to retrieve it.</p>
+
+{% highlight ruby %}
+module Cantaloupe
+  module JdbcResolver
+    def get_media_type
+      'SELECT media_type ' +
+          'FROM some_table ' +
+          'WHERE some_identifier = ?'
+    end
+  end
+end
+{% endhighlight %}
+
+<p>If the URL identifier will <strong>always</strong> have a known, valid image extension, like <span class="filename">.jpg</span>, <span class="filename">.tif</span>, etc., this method can return <code>nil</code>, and Cantaloupe will infer the media type from the extension.</p>
+
+<h4 id="JdbcResolverBlobSQLMethod">BLOB Retrieval SQL Method</h4>
+
+<p>The <code>get_lookup_sql</code> method returns an SQL statement that selects the BLOB value corresponding to the value returned by the <code><a href="#JdbcResolverIdentifierMethod">get_database_identifier</a></code> method.</p>
+
+{% highlight ruby %}
+module Cantaloupe
+  module JdbcResolver
+    def get_lookup_sql
+      'SELECT image_blob_column '
+          'FROM some_table '
+          'WHERE some_identifier = ?'
+    end
+  end
+end
+{% endhighlight %}
+
+<hr>
+
+<h3 id="AmazonS3Resolver">AmazonS3Resolver</h3>
+
+<p>AmazonS3Resolver maps a URL identifier to an <a href="https://aws.amazon.com/s3/">Amazon Simple Storage Service (S3)</a> object, for retrieving images from Amazon S3. It can be configured with the following options:</p>
+
+<dl>
+  <dt><code>AmazonS3Resolver.access_key_id</code></dt>
+  <dd>An access key associated with your AWS account. (See <a href="http://aws.amazon.com/security-credentials">AWS Security Credentials</a>.)</dd>
+  <dt><code>AmazonS3Resolver.secret_key</code></dt>
+  <dd>A secret key associated with your AWS account. (See <a href="http://aws.amazon.com/security-credentials">AWS Security Credentials</a>.)</dd>
+  <dt><code>AmazonS3Resolver.bucket.name</code></dt>
+  <dd>Name of the bucket containing the images to be served.</dd>
+  <dt><code>AmazonS3Resolver.bucket.region</code></dt>
+  <dd>Name of a region to send requests to, such as <code>us-east-1</code>. Can be commented out or left blank to use a default region. (See <a href="http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region">S3 Regions</a>.)</dd>
+  <dt><code>AmazonS3Resolver.lookup_strategy</code></dt>
+  <dd>The strategy to use to look up images based on their URL identifier. See below.</dd>
+</dl>
+
+<h4 id="AmazonS3ResolverBasicLookupStrategy">BasicLookupStrategy</h4>
+
+<p>BasicLookupStrategy locates images by passing the URL identifier as-is to S3, with no additional configuration necessary or possible.</p>
+
+<h4 id="AmazonS3ResolverScriptLookupStrategy">ScriptLookupStrategy</h4>
+
+<p>When your URL identifiers don't match your Amazon S3 object keys, ScriptLookupStrategy is available to tell AmazonS3Resolver to capture the object key returned by a method in your <a href="delegate-script.html">delegate script</a>.</p>
+
+<p>The delegate script method, <code>get_s3_object_key(identifier)</code>, will take in an identifier string and should return an S3 object key string, if available, or <code>nil</code>, if not. See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for an example of a similar script.</p>
+
+<hr>
+
+<h3 id="AzureStorageResolver">AzureStorageResolver</h3>
+
+<p>AzureStorageResolver maps a URL identifier to a <a href="https://azure.microsoft.com/en-us/services/storage/">Microsoft Azure Storage</a> blob, for retrieving images from Azure Storage. It can be configured with the following options:</p>
+
+<dl>
+  <dt><code>AzureStorageResolver.account_name</code></dt>
+  <dd>The name of your Azure account.</dd>
+  <dt><code>AzureStorageResolver.account_key</code></dt>
+  <dd>A key to access your Azure Storage account.</dd>
+  <dt><code>AzureStorageResolver.container_name</code></dt>
+  <dd>Name of the container from which to serve images.</dd>
+  <dt><code>AzureStorageResolver.lookup_strategy</code></dt>
+  <dd>The strategy to use to look up images based on their URL identifier. See below.</dd>
+</dl>
+
+<h4 id="AzureStorageResolverBasicLookupStrategy">BasicLookupStrategy</h4>
+
+<p>BasicLookupStrategy locates images by passing the URL identifier as-is to Azure Storage, with no additional configuration necessary or possible.</p>
+
+<h4 id="AzureStorageResolverScriptLookupStrategy">ScriptLookupStrategy</h4>
+
+<p>When your URL identifiers don't match your Azure Storage blob keys, ScriptLookupStrategy is available to tell AzureStorageResolver to capture the blob key returned by a method in your <a href="delegate-script.html">delegate script</a>.</p>
+
+<p>The delegate script method, <code>get_azure_storage_blob_key(identifier)</code>, will take in an identifier string and should return a blob key string, if available, or <code>nil</code>, if not. See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for an example of a similar script.</p>

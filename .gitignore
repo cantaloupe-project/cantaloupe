@@ -2,6 +2,7 @@
 .chkbit
 .DS_Store
 Thumbs.db
+.chkbit
 
 # IDE/Maven junk
 .idea/*

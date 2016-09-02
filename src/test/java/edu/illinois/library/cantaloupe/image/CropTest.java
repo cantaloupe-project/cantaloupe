@@ -36,6 +36,73 @@ public class CropTest {
     }
 
     @Test
+    public void testApplyOrientationOf0() {
+        final Dimension fullSize = new Dimension(500, 250);
+        crop = new Crop(100, 50, 400, 200);
+        crop.applyOrientation(Orientation.ROTATE_0, fullSize);
+        assertEquals(100, crop.getX(), DELTA);
+        assertEquals(50, crop.getY(), DELTA);
+        assertEquals(400, crop.getWidth(), DELTA);
+        assertEquals(200, crop.getHeight(), DELTA);
+    }
+
+    /**
+     * The crop area rotates counter-clockwise over the image to a bottom-left
+     * origin.
+     */
+    @Test
+    public void testApplyOrientationOf90() {
+        Dimension fullSize = new Dimension(500, 250);
+        crop = new Crop(100, 50, 400, 200);
+        crop.applyOrientation(Orientation.ROTATE_90, fullSize);
+        assertEquals(50, crop.getX(), DELTA);
+        assertEquals(0, crop.getY(), DELTA);
+        assertEquals(200, crop.getWidth(), DELTA);
+        assertEquals(150, crop.getHeight(), DELTA);
+
+        fullSize = new Dimension(2000, 500);
+        crop = new Crop(100, 100, 1900, 200);
+        crop.applyOrientation(Orientation.ROTATE_90, fullSize);
+        assertEquals(100, crop.getX(), DELTA);
+        assertEquals(0, crop.getY(), DELTA);
+        assertEquals(200, crop.getWidth(), DELTA);
+        assertEquals(400, crop.getHeight(), DELTA);
+    }
+
+    @Test
+    public void testApplyOrientationOf180() {
+        Dimension fullSize = new Dimension(500, 250);
+        crop = new Crop(100, 50, 400, 200);
+        crop.applyOrientation(Orientation.ROTATE_180, fullSize);
+        assertEquals(0, crop.getX(), DELTA);
+        assertEquals(0, crop.getY(), DELTA);
+        assertEquals(400, crop.getWidth(), DELTA);
+        assertEquals(200, crop.getHeight(), DELTA);
+    }
+
+    /**
+     * The crop area rotates clockwise over the image to a top-right origin.
+     */
+    @Test
+    public void testApplyOrientationOf270() {
+        Dimension fullSize = new Dimension(500, 250);
+        crop = new Crop(100, 50, 400, 200);
+        crop.applyOrientation(Orientation.ROTATE_270, fullSize);
+        assertEquals(250, crop.getX(), DELTA);
+        assertEquals(100, crop.getY(), DELTA);
+        assertEquals(200, crop.getWidth(), DELTA);
+        assertEquals(150, crop.getHeight(), DELTA);
+
+        fullSize = new Dimension(2000, 500);
+        crop = new Crop(100, 100, 1900, 200);
+        crop.applyOrientation(Orientation.ROTATE_270, fullSize);
+        assertEquals(1700, crop.getX(), DELTA);
+        assertEquals(100, crop.getY(), DELTA);
+        assertEquals(200, crop.getWidth(), DELTA);
+        assertEquals(400, crop.getHeight(), DELTA);
+    }
+
+    @Test
     public void testGetRectangleWithFull() {
         final Dimension fullSize = new Dimension(300, 200);
         Crop crop = new Crop();
@@ -54,34 +121,22 @@ public class CropTest {
     @Test
     public void testGetRectangleWithPixels() {
         final Dimension fullSize = new Dimension(300, 200);
-        Crop crop = new Crop();
-        crop.setX(20f);
-        crop.setY(20f);
-        crop.setWidth(50f);
-        crop.setHeight(50f);
+        Crop crop = new Crop(20, 20, 50, 50);
         assertEquals(new Rectangle(20, 20, 50, 50), crop.getRectangle(fullSize));
     }
 
     @Test
     public void testGetRectangleWithPercentage() {
         final Dimension fullSize = new Dimension(300, 200);
-        Crop crop = new Crop();
+        Crop crop = new Crop(0.2f, 0.2f, 0.5f, 0.5f);
         crop.setUnit(Crop.Unit.PERCENT);
-        crop.setX(0.2f);
-        crop.setY(0.2f);
-        crop.setWidth(0.5f);
-        crop.setHeight(0.5f);
         assertEquals(new Rectangle(60, 40, 150, 100), crop.getRectangle(fullSize));
     }
 
     @Test
     public void testGetRectangleDoesNotExceedFullSizeBounds() {
         final Dimension fullSize = new Dimension(300, 200);
-        Crop crop = new Crop();
-        crop.setX(200f);
-        crop.setY(150f);
-        crop.setWidth(100f);
-        crop.setHeight(100f);
+        Crop crop = new Crop(200f, 150f, 100f, 100f);
         assertEquals(new Rectangle(200, 150, 100, 50), crop.getRectangle(fullSize));
     }
 
@@ -93,19 +148,11 @@ public class CropTest {
         crop.setFull(true);
         assertEquals(new Dimension(200, 200), crop.getResultingSize(fullSize));
         // pixels
-        crop = new Crop();
-        crop.setX(20f);
-        crop.setY(20f);
-        crop.setWidth(50f);
-        crop.setHeight(50f);
+        crop = new Crop(20f, 20f, 50f, 50f);
         assertEquals(new Dimension(50, 50), crop.getResultingSize(fullSize));
         // percentage
-        crop = new Crop();
+        crop = new Crop(0.2f, 0.2f, 0.5f, 0.5f);
         crop.setUnit(Crop.Unit.PERCENT);
-        crop.setX(0.2f);
-        crop.setY(0.2f);
-        crop.setWidth(0.5f);
-        crop.setHeight(0.5f);
         assertEquals(new Dimension(100, 100), crop.getResultingSize(fullSize));
     }
 
@@ -267,11 +314,7 @@ public class CropTest {
 
     @Test
     public void testToMap() {
-        final Crop crop = new Crop();
-        crop.setX(25);
-        crop.setY(25);
-        crop.setWidth(50);
-        crop.setHeight(50);
+        final Crop crop = new Crop(25, 25, 50, 50);
         crop.setUnit(Crop.Unit.PIXELS);
         crop.setFull(false);
 

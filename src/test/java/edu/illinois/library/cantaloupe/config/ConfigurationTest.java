@@ -96,6 +96,31 @@ public class ConfigurationTest {
         }
     }
 
+    /* getDouble(String) */
+
+    @Test
+    public void testGetDouble() {
+        final double delta = 0.0000001f;
+        instance.setProperty("test1", 0.25f);
+        instance.setProperty("test2", "0.55");
+        assertEquals(0.25f, instance.getDouble("test1"), delta);
+        assertEquals(0.55f, instance.getDouble("test2"), delta);
+        try {
+            instance.getDouble("test3");
+            fail("Expected exception");
+        } catch (NoSuchElementException e) {
+            // pass
+        }
+    }
+
+    /* getDouble(String, boolean) */
+
+    @Test
+    public void testGetDoubleWithDefault() {
+        final float delta = 0.0000001f;
+        assertEquals(0.65f, instance.getDouble("test1", 0.65f), delta);
+    }
+
     /* getFloat(String) */
 
     @Test

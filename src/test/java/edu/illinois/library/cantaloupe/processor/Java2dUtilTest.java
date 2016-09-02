@@ -1,10 +1,10 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
+import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Position;
@@ -162,20 +162,6 @@ public class Java2dUtilTest {
     }
 
     @Test
-    public void testConvertToRgb() throws IOException {
-        // test that input image of TYPE_INT_RGB is returned with no conversion
-        BufferedImage custom = new BufferedImage(10, 10,
-                BufferedImage.TYPE_INT_RGB);
-        assertSame(custom, Java2dUtil.convertCustomToRgb(custom));
-
-        // test with image of TYPE_CUSTOM
-        custom = ImageIO.read(TestUtil.
-                getFixture("images/tif-rgb-monores-64x56x8-striped-uncompressed.tif"));
-        BufferedImage output = Java2dUtil.convertCustomToRgb(custom);
-        assertEquals(BufferedImage.TYPE_INT_RGB, output.getType());
-    }
-
-    @Test
     public void testCropImage() {
         BufferedImage inImage = new BufferedImage(200, 100,
                 BufferedImage.TYPE_INT_RGB);
@@ -259,10 +245,22 @@ public class Java2dUtilTest {
         config.clear();
 
         Watermark watermark = new Watermark();
-        watermark.setImage(TestUtil.getImage("jpg"));
+        watermark.setImage(TestUtil.getImage("png"));
         watermark.setPosition(Position.BOTTOM_RIGHT);
 
         assertNotNull(Java2dUtil.getWatermarkImage(watermark));
+    }
+
+    @Test
+    public void testReduceTo8Bits() throws IOException {
+        // assert that an 8-bit image is untouched
+        BufferedImage image = new BufferedImage(100, 100,
+                BufferedImage.TYPE_INT_RGB);
+        BufferedImage result = Java2dUtil.reduceTo8Bits(image);
+        assertSame(image, result);
+
+        // assert that a 16-bit image is downsampled
+        // TODO: write this
     }
 
     @Test
@@ -334,6 +332,17 @@ public class Java2dUtilTest {
     }
 
     @Test
+    public void testSharpenImage() {
+        BufferedImage inImage = new BufferedImage(200, 100,
+                BufferedImage.TYPE_INT_RGB);
+        Sharpen sharpen = new Sharpen(0.1f);
+        BufferedImage outImage = Java2dUtil.sharpenImage(inImage, sharpen);
+
+        assertEquals(200, outImage.getWidth());
+        assertEquals(100, outImage.getHeight());
+    }
+
+    @Test
     public void testScaleImageWithReductionFactor() {
         BufferedImage inImage = new BufferedImage(100, 100,
                 BufferedImage.TYPE_INT_RGB);
@@ -343,8 +352,7 @@ public class Java2dUtilTest {
         scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
         scale.setWidth(50);
         ReductionFactor rf = new ReductionFactor(1);
-        BufferedImage outImage = Java2dUtil.scaleImage(inImage, scale,
-                rf, true);
+        BufferedImage outImage = Java2dUtil.scaleImage(inImage, scale, rf);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
@@ -353,7 +361,7 @@ public class Java2dUtilTest {
         scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
         scale.setHeight(50);
         rf = new ReductionFactor(1);
-        outImage = Java2dUtil.scaleImage(inImage, scale, rf, false);
+        outImage = Java2dUtil.scaleImage(inImage, scale, rf);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
@@ -363,7 +371,7 @@ public class Java2dUtilTest {
         scale.setWidth(50);
         scale.setHeight(50);
         rf = new ReductionFactor(1);
-        outImage = Java2dUtil.scaleImage(inImage, scale, rf, true);
+        outImage = Java2dUtil.scaleImage(inImage, scale, rf);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
@@ -371,7 +379,7 @@ public class Java2dUtilTest {
         scale = new Scale();
         scale.setPercent(0.25f);
         rf = new ReductionFactor(2);
-        outImage = Java2dUtil.scaleImage(inImage, scale, rf, true);
+        outImage = Java2dUtil.scaleImage(inImage, scale, rf);
         assertEquals(100, outImage.getWidth());
         assertEquals(100, outImage.getHeight());
     }

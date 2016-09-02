@@ -6,7 +6,7 @@
   <artifactId>Cantaloupe</artifactId>
   <packaging>war</packaging>
   <!-- needs to be kept synchronized with properties/cantaloupe.version -->
-  <version>3.1.2</version>
+  <version>3.2</version>
   <name>Cantaloupe</name>
   <url>https://medusa-project.github.io/cantaloupe/</url>
   <inceptionYear>2015</inceptionYear>
@@ -14,7 +14,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <cantaloupe.version>3.1.2</cantaloupe.version>
+    <cantaloupe.version>3.2</cantaloupe.version>
     <restlet.version>2.3.7</restlet.version>
   </properties>
 
@@ -22,7 +22,7 @@
     <developer>
       <id>alexd</id>
       <name>Alex Dolski</name>
-      <email>alexd@illinois.edu</email>
+      <email>alexd@n-ary.net</email>
       <organization>University of Illinois at Urbana-Champaign Library</organization>
       <organizationUrl>http://www.library.illinois.edu/</organizationUrl>
       <roles>
@@ -54,7 +54,7 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.1.3</version>
+      <version>1.1.7</version>
     </dependency>
     <!-- Used by AmazonS3Resolver and AmazonS3Cache -->
     <dependency>
@@ -76,17 +76,23 @@
       <version>1.4.190</version>
       <scope>test</scope>
     </dependency>
+    <!-- Used by com.mortennobel.imagescaling -->
+    <dependency>
+      <groupId>com.jhlabs</groupId>
+      <artifactId>filters</artifactId>
+      <version>2.0.235</version>
+    </dependency>
     <!-- Used by AzureStorageResolver and AzureStorageCache-->
     <dependency>
       <groupId>com.microsoft.azure</groupId>
       <artifactId>azure-storage</artifactId>
-      <version>4.0.0</version>
+      <version>4.3.0</version>
     </dependency>
     <!-- Provides a JDBC connection pool for JdbcResolver and JdbcCache -->
     <dependency>
       <groupId>com.zaxxer</groupId>
       <artifactId>HikariCP</artifactId>
-      <version>2.4.1</version>
+      <version>2.4.7</version>
     </dependency>
     <!-- Manages the application configuration. -->
     <dependency>
@@ -140,13 +146,20 @@
     <dependency>
       <groupId>org.apache.pdfbox</groupId>
       <artifactId>pdfbox</artifactId>
-      <version>2.0.0-RC3</version>
+      <version>2.0.1</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.12</version>
       <scope>test</scope>
+    </dependency>
+    <!-- Assists in parsing XMP metadata in RDF/XML -->
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>apache-jena-libs</artifactId>
+      <type>pom</type>
+      <version>3.1.0</version>
     </dependency>
     <!-- Supports <if> expressions in logback.xml -->
     <dependency>
@@ -158,17 +171,23 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
-      <version>9.3.8.v20160314</version>
+      <version>9.3.10.v20160621</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>9.3.8.v20160314</version>
+      <version>9.3.10.v20160621</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-webapp</artifactId>
-      <version>9.3.8.v20160314</version>
+      <version>9.3.10.v20160621</version>
+    </dependency>
+    <!-- Enables colorized Logback console output in Windows -->
+    <dependency>
+      <groupId>org.fusesource.jansi</groupId>
+      <artifactId>jansi</artifactId>
+      <version>1.13</version>
     </dependency>
     <!-- Used by GraphicsMagickProcessor and ImageMagickProcessor -->
     <dependency>
@@ -180,7 +199,7 @@
     <dependency>
       <groupId>org.jruby</groupId>
       <artifactId>jruby</artifactId>
-      <version>9.0.5.0</version>
+      <version>9.1.2.0</version>
       <type>pom</type>
     </dependency>
     <!-- Restlet is our REST framework. -->
@@ -224,20 +243,20 @@
     <dependency>
       <groupId>org.seleniumhq.selenium</groupId>
       <artifactId>selenium-java</artifactId>
-      <version>2.53.0</version>
+      <version>2.53.1</version>
       <scope>test</scope>
     </dependency>
     <!-- Logging interface used by the application -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.7.12</version>
+      <version>1.7.21</version>
     </dependency>
     <!-- intercepts jcl log messages from Commons etc. -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>jcl-over-slf4j</artifactId>
-      <version>1.7.12</version>
+      <version>1.7.21</version>
     </dependency>
   </dependencies>
 
@@ -263,8 +282,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.3</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>1.8</source>
+          <target>1.8</target>
         </configuration>
       </plugin>
 

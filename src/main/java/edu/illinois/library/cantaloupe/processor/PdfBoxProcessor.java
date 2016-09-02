@@ -2,16 +2,18 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Crop;
-import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.resource.iiif.v1.Quality;
@@ -33,7 +35,8 @@ import java.util.Set;
 
 /**
  * Processor using the <a href="https://pdfbox.apache.org">Apache PDFBox</a>
- * library to render source PDFs.
+ * library to render source PDFs, and Java 2D or JAI to perform post-
+ * rasterization processing steps.
  */
 class PdfBoxProcessor extends AbstractProcessor
         implements FileProcessor, StreamProcessor {
@@ -41,9 +44,12 @@ class PdfBoxProcessor extends AbstractProcessor
     private static Logger logger = LoggerFactory.
             getLogger(PdfBoxProcessor.class);
 
+    static final String DOWNSCALE_FILTER_CONFIG_KEY =
+            "PdfBoxProcessor.downscale_filter";
     static final String DPI_CONFIG_KEY = "PdfBoxProcessor.dpi";
-    static final String JAVA2D_SCALE_MODE_CONFIG_KEY =
-            "PdfBoxProcessor.post_processor.java2d.scale_mode";
+    static final String SHARPEN_CONFIG_KEY = "PdfBoxProcessor.sharpen";
+    static final String UPSCALE_FILTER_CONFIG_KEY =
+            "PdfBoxProcessor.upscale_filter";
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
@@ -87,9 +93,31 @@ class PdfBoxProcessor extends AbstractProcessor
     public Set<Format> getAvailableOutputFormats() {
         final Set<Format> outputFormats = new HashSet<>();
         if (format == Format.PDF) {
-            outputFormats.addAll(ImageIoImageWriter.supportedFormats());
+            outputFormats.addAll(ImageWriter.supportedFormats());
         }
         return outputFormats;
+    }
+
+    Scale.Filter getDownscaleFilter() {
+        final String upscaleFilterStr = Configuration.getInstance().
+                getString(DOWNSCALE_FILTER_CONFIG_KEY);
+        try {
+            return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
+        } catch (Exception e) {
+            logger.warn("Invalid value for {}", DOWNSCALE_FILTER_CONFIG_KEY);
+        }
+        return null;
+    }
+
+    Scale.Filter getUpscaleFilter() {
+        final String upscaleFilterStr = Configuration.getInstance().
+                getString(UPSCALE_FILTER_CONFIG_KEY);
+        try {
+            return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
+        } catch (Exception e) {
+            logger.warn("Invalid value for {}", UPSCALE_FILTER_CONFIG_KEY);
+        }
+        return null;
     }
 
     @Override
@@ -179,13 +207,14 @@ class PdfBoxProcessor extends AbstractProcessor
                 try {
                     page = Integer.parseInt(pageStr);
                 } catch (NumberFormatException e) {
-                    logger.info("Page number is not an integer.");
+                    logger.info("Page number from URI query string is not " +
+                            "an integer; using page 1.");
                 }
             }
             page = Math.max(page, 1);
 
             final BufferedImage image = readImage(page - 1, rf.factor);
-            postProcessUsingJava2d(image, opList, rf, outputStream);
+            postProcessUsingJava2d(image, opList, imageInfo, rf, outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
@@ -193,6 +222,7 @@ class PdfBoxProcessor extends AbstractProcessor
 
     private void postProcessUsingJava2d(BufferedImage image,
                                         final OperationList opList,
+                                        final ImageInfo imageInfo,
                                         final ReductionFactor reductionFactor,
                                         final OutputStream outputStream)
             throws IOException, ProcessorException {
@@ -215,21 +245,39 @@ class PdfBoxProcessor extends AbstractProcessor
         image = Java2dUtil.applyRedactions(image, crop, reductionFactor,
                 redactions);
 
-        // Apply all other operations.
+        // Apply most remaining operations.
         for (Operation op : opList) {
             if (op instanceof Scale) {
-                final boolean highQuality = Configuration.getInstance().
-                        getString(JAVA2D_SCALE_MODE_CONFIG_KEY, "speed").
-                        equals("quality");
-                image = Java2dUtil.scaleImage(image,
-                        (Scale) op, reductionFactor, highQuality);
+                final Scale scale = (Scale) op;
+                final Float upOrDown =
+                        scale.getResultingScale(imageInfo.getSize());
+                if (upOrDown != null) {
+                    final Scale.Filter filter =
+                            (upOrDown > 1) ?
+                                    getUpscaleFilter() : getDownscaleFilter();
+                    scale.setFilter(filter);
+                }
+
+                image = Java2dUtil.scaleImage(image, (Scale) op,
+                        reductionFactor);
             } else if (op instanceof Transpose) {
                 image = Java2dUtil.transposeImage(image, (Transpose) op);
             } else if (op instanceof Rotate) {
                 image = Java2dUtil.rotateImage(image, (Rotate) op);
-            } else if (op instanceof Filter) {
-                image = Java2dUtil.filterImage(image, (Filter) op);
-            } else if (op instanceof Watermark) {
+            } else if (op instanceof Color) {
+                image = Java2dUtil.transformColor(image, (Color) op);
+            }
+        }
+
+        // Apply the sharpen operation, if present.
+        final Configuration config = Configuration.getInstance();
+        final float sharpenValue = config.getFloat(SHARPEN_CONFIG_KEY, 0);
+        final Sharpen sharpen = new Sharpen(sharpenValue);
+        image = Java2dUtil.sharpenImage(image, sharpen);
+
+        // Apply remaining operations.
+        for (Operation op : opList) {
+            if (op instanceof Watermark) {
                 try {
                     image = Java2dUtil.applyWatermark(image, (Watermark) op);
                 } catch (ConfigurationException e) {
@@ -238,8 +286,8 @@ class PdfBoxProcessor extends AbstractProcessor
             }
         }
 
-        new ImageIoImageWriter().write(image, opList.getOutputFormat(),
-                outputStream);
+        new ImageWriter(opList).
+                write(image, opList.getOutputFormat(), outputStream);
         image.flush();
     }
 

@@ -18,6 +18,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
+import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,13 +85,13 @@ class AmazonS3Cache implements DerivativeCache {
             final ByteArrayInputStream s3Stream = new ByteArrayInputStream(
                     bytes);
             try {
-                final long msec = System.currentTimeMillis();
+                final Stopwatch watch = new Stopwatch();
                 final PutObjectRequest request = new PutObjectRequest(
                         bucketName, objectKey, s3Stream, metadata);
                 s3.putObject(request);
                 logger.info("Wrote {} bytes to {} in bucket {} in {} msec",
                         bytes.length, objectKey, bucketName,
-                        System.currentTimeMillis() - msec);
+                        watch.timeElapsed());
             } catch (AmazonS3Exception e) {
                 throw new IOException(e.getMessage(), e);
             }
@@ -179,13 +180,12 @@ class AmazonS3Cache implements DerivativeCache {
         final String bucketName = getBucketName();
         final String objectKey = getObjectKey(identifier);
         try {
-            final long msec = System.currentTimeMillis();
+            final Stopwatch watch = new Stopwatch();
             final S3Object object = s3.getObject(
                     new GetObjectRequest(bucketName, objectKey));
             final ImageInfo info = ImageInfo.fromJson(object.getObjectContent());
             logger.info("getImageInfo(): read {} from bucket {} in {} msec",
-                    objectKey, bucketName,
-                    System.currentTimeMillis() - msec);
+                    objectKey, bucketName, watch.timeElapsed());
             return info;
         } catch (AmazonS3Exception e) {
             if (e.getStatusCode() == 404) {
@@ -343,13 +343,12 @@ class AmazonS3Cache implements DerivativeCache {
 
             final InputStream s3Stream = new ByteArrayInputStream(jsonBytes);
 
-            final long msec = System.currentTimeMillis();
+            final Stopwatch watch = new Stopwatch();
             final PutObjectRequest request = new PutObjectRequest(
                     bucketName, objectKey, s3Stream, metadata);
             s3.putObject(request);
             logger.info("putImageInfo(): wrote {} to bucket {} in {} msec",
-                    objectKey, bucketName,
-                    System.currentTimeMillis() - msec);
+                    objectKey, bucketName, watch.timeElapsed());
         } catch (AmazonS3Exception | JsonProcessingException e) {
             throw new CacheException(e.getMessage(), e);
         }

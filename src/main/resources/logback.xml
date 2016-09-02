@@ -1,11 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
 
-    <appender name="AppConsoleLog" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="AppStdoutLog" class="ch.qos.logback.core.ConsoleAppender">
+        <target>System.out</target>
         <filter class="edu.illinois.library.cantaloupe.logging.ApplicationLogFilter" />
+        <filter class="edu.illinois.library.cantaloupe.logging.StandardOutputLogFilter" />
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <!-- %white and %gray seem to be inverted as of version 1.1.7 -->
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %highlight(%-5level) %white(%logger{36}) - %msg%n</pattern>
         </encoder>
+        <withJansi>true</withJansi>
+    </appender>
+
+    <appender name="AppStderrLog" class="ch.qos.logback.core.ConsoleAppender">
+        <target>System.err</target>
+        <filter class="edu.illinois.library.cantaloupe.logging.ApplicationLogFilter" />
+        <filter class="edu.illinois.library.cantaloupe.logging.StandardErrorLogFilter" />
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %highlight(%-5level) %cyan(%logger{36}) - %msg%n</pattern>
+        </encoder>
+        <withJansi>true</withJansi>
     </appender>
 
     <if condition='property("log.application.FileAppender.enabled").contains("true")'>
@@ -51,7 +65,7 @@
         </then>
     </if>
 
-    <appender name="AccessConsoleLog" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="AccessStdoutLog" class="ch.qos.logback.core.ConsoleAppender">
         <filter class="edu.illinois.library.cantaloupe.logging.AccessLogFilter" />
         <encoder>
             <pattern>%msg%n</pattern>
@@ -106,7 +120,7 @@
     <logger name="edu.illinois.library.cantaloupe.logging.AccessLogService" additivity="false">
         <if condition='property("log.access.ConsoleAppender.enabled").contains("true")'>
             <then>
-                <appender-ref ref="AccessConsoleLog" />
+                <appender-ref ref="AccessStdoutLog" />
             </then>
         </if>
         <if condition='property("log.access.FileAppender.enabled").contains("true")'>
@@ -130,10 +144,12 @@
     <logger name="org.restlet" level="INFO" />
 
     <root level="${log.application.level}">
-        <!-- Hook up access log appenders -->
+        <!--
+        Access log appenders
+        -->
         <if condition='property("log.access.ConsoleAppender.enabled").contains("true")'>
             <then>
-                <appender-ref ref="AccessConsoleLog" />
+                <appender-ref ref="AccessStdoutLog" />
             </then>
         </if>
         <if condition='property("log.access.FileAppender.enabled").contains("true")'>
@@ -151,10 +167,14 @@
                 <appender-ref ref="AccessSyslogLog" />
             </then>
         </if>
-        <!-- Hook up application log appenders -->
+
+        <!--
+        Application log appenders
+        -->
         <if condition='property("log.application.ConsoleAppender.enabled").contains("true")'>
             <then>
-                <appender-ref ref="AppConsoleLog" />
+                <appender-ref ref="AppStdoutLog" />
+                <appender-ref ref="AppStderrLog" />
             </then>
         </if>
         <if condition='property("log.application.FileAppender.enabled").contains("true")'>

@@ -1,15 +1,21 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
-import edu.illinois.library.cantaloupe.image.Filter;
+import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
+import edu.illinois.library.cantaloupe.processor.imageio.Compression;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +40,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Processor using the Java Advanced Imaging (JAI) framework.
+ * <p>Processor using the Java Advanced Imaging (JAI) framework.</p>
+ *
+ * <p>Because they both use ImageIO, this processor has a lot in common with
+ * {@link Java2dProcessor} and so common functionality has been extracted into
+ * a base class.</p>
  *
  * @see <a href="http://docs.oracle.com/cd/E19957-01/806-5413-10/806-5413-10.pdf">
  *     Programming in Java Advanced Imaging</a>
@@ -44,10 +54,7 @@ class JaiProcessor extends AbstractImageIoProcessor
 
     private static Logger logger = LoggerFactory.getLogger(JaiProcessor.class);
 
-    static final String JPG_QUALITY_CONFIG_KEY =
-            "JaiProcessor.jpg.quality";
-    static final String TIF_COMPRESSION_CONFIG_KEY =
-            "JaiProcessor.tif.compression";
+    static final String SHARPEN_CONFIG_KEY = "JaiProcessor.sharpen";
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
@@ -123,9 +130,12 @@ class JaiProcessor extends AbstractImageIoProcessor
             throw new UnsupportedOutputFormatException();
         }
 
+        final ImageReader reader = getReader();
         try {
+            final Orientation orientation = getEffectiveOrientation();
             final ReductionFactor rf = new ReductionFactor();
-            RenderedImage renderedImage = reader.readRendered(ops, rf);
+            RenderedImage renderedImage = reader.readRendered(ops, orientation,
+                    rf);
 
             if (renderedImage != null) {
                 BufferedImage image = null;
@@ -138,48 +148,58 @@ class JaiProcessor extends AbstractImageIoProcessor
                         renderedOp = JaiUtil.
                                 cropImage(renderedOp, (Crop) op, rf);
                     } else if (op instanceof Scale && !op.isNoOp()) {
-                        Interpolation interpolation = Interpolation.
-                                getInstance(Interpolation.INTERP_BILINEAR);
-                        // The JAI scale operation has a bug that causes it to
-                        // fail on right-edge deflate-compressed tiles when
-                        // using any interpolation other than nearest-neighbor,
-                        // with an ArrayIndexOutOfBoundsException in
-                        // PlanarImage.cobbleByte().
-                        // Example: /iiif/2/56324x18006-pyramidal-tiled-deflate.tif/32768,0,23556,18006/737,/0/default.jpg
-                        // So, if we are scaling a TIFF and its metadata says
-                        // it's deflate-compressed, use nearest-neighbor, which
-                        // is horrible, but better than nothing.
-                        if (getSourceFormat().equals(Format.TIF)) {
-                            try {
-                                Node node = reader.getMetadata(0);
-                                StringWriter writer = new StringWriter();
-                                Transformer t = TransformerFactory.newInstance().newTransformer();
-                                t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-                                t.setOutputProperty(OutputKeys.INDENT, "no");
-                                t.transform(new DOMSource(node),
-                                        new StreamResult(writer));
-                                if (writer.toString().contains("description=\"ZLib\"")) {
-                                    interpolation = Interpolation.
-                                            getInstance(Interpolation.INTERP_NEAREST);
-                                }
-                            } catch (TransformerException e) {
-                                logger.error(e.getMessage());
-                            }
+                        /*
+                        JAI has a bug that causes it to fail on right-edge
+                        deflate-compressed tiles when using the
+                        SubsampleAverage operation, as well as the scale
+                        operation with any interpolation other than
+                        nearest-neighbor. The error is an
+                        ArrayIndexOutOfBoundsException in
+                        PlanarImage.cobbleByte().
+                        Example: /iiif/2/56324x18006-pyramidal-tiled-deflate.tif/32768,0,23556,18006/737,/0/default.jpg
+                        So, the strategy is:
+                        1) if the TIFF is deflate-compressed, use the scale
+                           operation with nearest-neighbor interpolation, which
+                           is horrible, but better than nothing.
+                        2) otherwise, use the SubsampleAverage operation.
+                        */
+                        if (getSourceFormat().equals(Format.TIF) &&
+                            reader.getCompression(0).equals(Compression.ZLIB)) {
+                            logger.debug("process(): detected " +
+                                    "ZLib-compressed TIFF; using the scale " +
+                                    "operator with nearest-neighbor " +
+                                    "interpolation.");
+                            renderedOp = JaiUtil.scaleImage(
+                                    renderedOp,
+                                    (Scale) op,
+                                    Interpolation.getInstance(Interpolation.INTERP_NEAREST),
+                                    rf);
+                        } else {
+                            renderedOp = JaiUtil.scaleImageUsingSubsampleAverage(
+                                    renderedOp, (Scale) op, rf);
                         }
-                        logger.debug("Scaling using {}",
-                                interpolation.getClass().getName());
-                        renderedOp = JaiUtil.scaleImage(renderedOp, (Scale) op,
-                                interpolation, rf);
                     } else if (op instanceof Transpose) {
                         renderedOp = JaiUtil.
                                 transposeImage(renderedOp, (Transpose) op);
                     } else if (op instanceof Rotate) {
+                        Rotate rotate = (Rotate) op;
+                        rotate.addDegrees(orientation.getDegrees());
+                        renderedOp = JaiUtil.rotateImage(renderedOp, rotate);
+                    } else if (op instanceof Color) {
                         renderedOp = JaiUtil.
-                                rotateImage(renderedOp, (Rotate) op);
-                    } else if (op instanceof Filter) {
-                        renderedOp = JaiUtil.
-                                filterImage(renderedOp, (Filter) op);
-                    } else if (op instanceof Watermark) {
+                                transformColor(renderedOp, (Color) op);
+                    }
+                }
+
+                // Apply the sharpen operation, if present.
+                final Configuration config = Configuration.getInstance();
+                final float sharpenValue = config.getFloat(SHARPEN_CONFIG_KEY, 0);
+                final Sharpen sharpen = new Sharpen(sharpenValue);
+                renderedOp = JaiUtil.sharpenImage(renderedOp, sharpen);
+
+                // Apply remaining operations.
+                for (Operation op : ops) {
+                    if (op instanceof Watermark) {
                         // Let's cheat and apply the watermark using Java 2D.
                         // There seems to be minimal performance penalty in doing
                         // this, and doing it in JAI is harder.
@@ -192,7 +212,8 @@ class JaiProcessor extends AbstractImageIoProcessor
                         }
                     }
                 }
-                ImageIoImageWriter writer = new ImageIoImageWriter();
+                final ImageWriter writer = new ImageWriter(ops,
+                        reader.getMetadata(0));
 
                 if (image != null) {
                     writer.write(image, ops.getOutputFormat(), outputStream);
@@ -203,6 +224,8 @@ class JaiProcessor extends AbstractImageIoProcessor
             }
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
+        } finally {
+            reader.dispose();
         }
     }
 

@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
-
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,6 +13,10 @@ import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
+/**
+ * This class is divided into two sections: one for ImageInfo and one for
+ * ImageInfo.Image.
+ */
 public class ImageInfoTest {
 
     private ImageInfo instance;
@@ -20,7 +24,10 @@ public class ImageInfoTest {
     @Before
     public void setUp() {
         instance = new ImageInfo(100, 80, Format.JPG);
+        instance.getImages().get(0).setOrientation(Orientation.ROTATE_270);
     }
+
+    /************************ ImageInfo tests ****************************/
 
     @Test
     public void testFromJsonWithFile() throws Exception {
@@ -42,7 +49,6 @@ public class ImageInfoTest {
         ImageInfo info = ImageInfo.fromJson(json);
         assertEquals(info.toString(), instance.toString());
     }
-
 
     @Test
     public void testEquals() {
@@ -69,6 +75,18 @@ public class ImageInfoTest {
     public void testGetImages() {
         assertEquals(1, instance.getImages().size());
         assertEquals(0, new ImageInfo().getImages().size());
+    }
+
+    @Test
+    public void testGetOrientation() {
+        assertEquals(Orientation.ROTATE_270, instance.getOrientation());
+    }
+
+    @Test
+    public void testGetOrientationSize() {
+        ImageInfo.Image image = instance.getImages().get(0);
+        image.setOrientation(Orientation.ROTATE_90);
+        assertEquals(new Dimension(80, 100), instance.getOrientationSize());
     }
 
     @Test
@@ -115,6 +133,22 @@ public class ImageInfoTest {
         instance.writeAsJson(baos);
         assertTrue(Arrays.equals(baos.toByteArray(),
                 instance.toJson().getBytes()));
+    }
+
+    /********************* ImageInfo.Image tests *************************/
+
+    @Test
+    public void testImageGetOrientationSize() {
+        ImageInfo.Image image = instance.getImages().get(0);
+        image.setOrientation(Orientation.ROTATE_90);
+        assertEquals(new Dimension(80, 100), image.getOrientationSize());
+    }
+
+    @Test
+    public void testImageGetOrientationTileSize() {
+        ImageInfo.Image image = instance.getImages().get(0);
+        image.setOrientation(Orientation.ROTATE_90);
+        assertEquals(new Dimension(80, 100), image.getOrientationTileSize());
     }
 
 }

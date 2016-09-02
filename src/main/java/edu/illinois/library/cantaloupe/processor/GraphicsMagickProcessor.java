@@ -1,21 +1,18 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Crop;
-import edu.illinois.library.cantaloupe.image.Filter;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
-import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Transpose;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
-import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.apache.commons.lang3.StringUtils;
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
 import org.im4java.core.IMOperation;
-import org.im4java.core.Info;
 import org.im4java.process.Pipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +25,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,10 +34,15 @@ import java.util.Set;
  * <p>Processor using the GraphicsMagick <code>gm</code> command-line tool.
  * Tested with version 1.3.21; other versions may or may not work.</p>
  *
- * <p>Does not implement <code>FileProcessor</code> because testing indicates
- * that stream-reading is significantly faster.</p>
+ * <p>This class does not implement <var>FileProcessor</var> because testing
+ * indicates that reading from streams is significantly faster.</p>
+ *
+ * <p>This processor does not respect the
+ * {@link edu.illinois.library.cantaloupe.resource.AbstractResource#PRESERVE_METADATA_CONFIG_KEY}
+ * setting because to not preserve metadata would entail not preserving an
+ * ICC profile. Thus, metadata always passes through.</p>
  */
-class GraphicsMagickProcessor extends AbstractProcessor
+class GraphicsMagickProcessor extends Im4JavaProcessor
         implements StreamProcessor {
 
     private static Logger logger = LoggerFactory.
@@ -49,46 +50,12 @@ class GraphicsMagickProcessor extends AbstractProcessor
 
     static final String BACKGROUND_COLOR_CONFIG_KEY =
             "GraphicsMagickProcessor.background_color";
+    static final String SHARPEN_CONFIG_KEY = "GraphicsMagickProcessor.sharpen";
     static final String PATH_TO_BINARIES_CONFIG_KEY =
             "GraphicsMagickProcessor.path_to_binaries";
 
-    private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
-            new HashSet<>();
-    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-            SUPPORTED_IIIF_1_1_QUALITIES = new HashSet<>();
-    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-            SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
     // Lazy-initialized by getFormats()
     private static HashMap<Format, Set<Format>> supportedFormats;
-
-    private StreamSource streamSource;
-
-    static {
-        SUPPORTED_IIIF_1_1_QUALITIES.addAll(Arrays.asList(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
-        SUPPORTED_IIIF_2_0_QUALITIES.addAll(Arrays.asList(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
-        SUPPORTED_FEATURES.addAll(Arrays.asList(
-                ProcessorFeature.MIRRORING,
-                ProcessorFeature.REGION_BY_PERCENT,
-                ProcessorFeature.REGION_BY_PIXELS,
-                ProcessorFeature.REGION_SQUARE,
-                ProcessorFeature.ROTATION_ARBITRARY,
-                ProcessorFeature.ROTATION_BY_90S,
-                ProcessorFeature.SIZE_ABOVE_FULL,
-                ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
-                ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
-                ProcessorFeature.SIZE_BY_HEIGHT,
-                ProcessorFeature.SIZE_BY_PERCENT,
-                ProcessorFeature.SIZE_BY_WIDTH,
-                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
-    }
 
     /**
      * @param binaryName Name of an executable
@@ -185,110 +152,10 @@ class GraphicsMagickProcessor extends AbstractProcessor
         return supportedFormats;
     }
 
-    @Override
-    public Set<Format> getAvailableOutputFormats() {
-        Set<Format> formats = getFormats().get(format);
-        if (formats == null) {
-            formats = new HashSet<>();
-        }
-        return formats;
-    }
-
-    @Override
-    public ImageInfo getImageInfo() throws ProcessorException {
-        if (getAvailableOutputFormats().size() < 1) {
-            throw new UnsupportedSourceFormatException(format);
-        }
-        try (InputStream inputStream = streamSource.newInputStream()) {
-            Info sourceInfo = new Info(
-                    format.getPreferredExtension() + ":-",
-                    inputStream, true);
-            return new ImageInfo(sourceInfo.getImageWidth(),
-                    sourceInfo.getImageHeight(), sourceInfo.getImageWidth(),
-                    sourceInfo.getImageHeight(), getSourceFormat());
-        } catch (IM4JavaException | IOException e) {
-            throw new ProcessorException(e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public StreamSource getStreamSource() {
-        return this.streamSource;
-    }
-
-    @Override
-    public Set<ProcessorFeature> getSupportedFeatures() {
-        Set<ProcessorFeature> features = new HashSet<>();
-        if (getAvailableOutputFormats().size() > 0) {
-            features.addAll(SUPPORTED_FEATURES);
-        }
-        return features;
-    }
-
-    @Override
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-    getSupportedIiif1_1Qualities() {
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-                qualities = new HashSet<>();
-        if (getAvailableOutputFormats().size() > 0) {
-            qualities.addAll(SUPPORTED_IIIF_1_1_QUALITIES);
-        }
-        return qualities;
-    }
-
-    @Override
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-    getSupportedIiif2_0Qualities() {
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-                qualities = new HashSet<>();
-        if (getAvailableOutputFormats().size() > 0) {
-            qualities.addAll(SUPPORTED_IIIF_2_0_QUALITIES);
-        }
-        return qualities;
-    }
-
-    @Override
-    public void process(final OperationList ops,
-                        final ImageInfo imageInfo,
-                        final OutputStream outputStream)
-            throws ProcessorException {
-        if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {
-            throw new UnsupportedOutputFormatException();
-        }
-
-        try {
-            IMOperation op = new IMOperation();
-            op.addImage(format.getPreferredExtension() + ":-");
-            assembleOperation(op, ops, imageInfo.getSize());
-
-            op.addImage(ops.getOutputFormat().getPreferredExtension() + ":-"); // write to stdout
-
-            // true = use GraphicsMagick instead of ImageMagick
-            ConvertCmd convert = new ConvertCmd(true);
-
-            String binaryPath = Configuration.getInstance().
-                    getString(PATH_TO_BINARIES_CONFIG_KEY, "");
-            if (binaryPath.length() > 0) {
-                convert.setSearchPath(binaryPath);
-            }
-
-            try (InputStream inputStream = streamSource.newInputStream()) {
-                convert.setInputProvider(new Pipe(inputStream, null));
-                convert.setOutputConsumer(new Pipe(null, outputStream));
-                convert.run(op);
-            }
-        } catch (InterruptedException | IM4JavaException | IOException e) {
-            throw new ProcessorException(e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public void setStreamSource(StreamSource streamSource) {
-        this.streamSource = streamSource;
-    }
-
-    private void assembleOperation(IMOperation imOp, OperationList ops,
-                                   Dimension fullSize) {
+    void assembleOperation(final IMOperation imOp,
+                           final OperationList ops,
+                           final Dimension fullSize,
+                           final String backgroundColor) {
         for (Operation op : ops) {
             if (op instanceof Crop) {
                 Crop crop = (Crop) op;
@@ -348,14 +215,12 @@ class GraphicsMagickProcessor extends AbstractProcessor
                     if (ops.getOutputFormat().supportsTransparency()) {
                         imOp.background("none");
                     } else {
-                        final String bgColor = Configuration.getInstance().
-                                getString(BACKGROUND_COLOR_CONFIG_KEY, "black");
-                        imOp.background(bgColor);
+                        imOp.background(backgroundColor);
                     }
                     imOp.rotate((double) rotate.getDegrees());
                 }
-            } else if (op instanceof Filter) {
-                switch ((Filter) op) {
+            } else if (op instanceof Color) {
+                switch ((Color) op) {
                     case GRAY:
                         imOp.colorspace("Gray");
                         break;
@@ -364,6 +229,58 @@ class GraphicsMagickProcessor extends AbstractProcessor
                         break;
                 }
             }
+        }
+
+        // Apply the sharpen operation, if present.
+        final Configuration config = Configuration.getInstance();
+        final double sharpenValue = config.getDouble(SHARPEN_CONFIG_KEY, 0);
+        imOp.unsharp(sharpenValue);
+    }
+
+    @Override
+    public Set<Format> getAvailableOutputFormats() {
+        Set<Format> formats = getFormats().get(format);
+        if (formats == null) {
+            formats = new HashSet<>();
+        }
+        return formats;
+    }
+
+    @Override
+    public void process(final OperationList ops,
+                        final ImageInfo imageInfo,
+                        final OutputStream outputStream)
+            throws ProcessorException {
+        if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {
+            throw new UnsupportedOutputFormatException();
+        }
+
+        final Configuration config = Configuration.getInstance();
+        try {
+            IMOperation op = new IMOperation();
+            op.addImage(format.getPreferredExtension() + ":-");
+            String bgColor =
+                    config.getString(BACKGROUND_COLOR_CONFIG_KEY, "black");
+            assembleOperation(op, ops, imageInfo.getSize(), bgColor);
+
+            op.addImage(ops.getOutputFormat().getPreferredExtension() + ":-"); // write to stdout
+
+            // true = use GraphicsMagick instead of ImageMagick
+            ConvertCmd convert = new ConvertCmd(true);
+
+            String binaryPath =
+                    config.getString(PATH_TO_BINARIES_CONFIG_KEY, "");
+            if (binaryPath.length() > 0) {
+                convert.setSearchPath(binaryPath);
+            }
+
+            try (InputStream inputStream = streamSource.newInputStream()) {
+                convert.setInputProvider(new Pipe(inputStream, null));
+                convert.setOutputConsumer(new Pipe(null, outputStream));
+                convert.run(op);
+            }
+        } catch (InterruptedException | IM4JavaException | IOException e) {
+            throw new ProcessorException(e.getMessage(), e);
         }
     }
 

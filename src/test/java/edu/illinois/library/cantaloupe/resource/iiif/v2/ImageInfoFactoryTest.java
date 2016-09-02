@@ -42,6 +42,19 @@ public class ImageInfoFactoryTest {
                 processor.getImageInfo());
     }
 
+    private void setUpForRotatedImage() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty("metadata.respect_orientation", true);
+
+        identifier = new Identifier("bla");
+        processor = ProcessorFactory.getProcessor(Format.JPG);
+        ((FileProcessor) processor).setSourceFile(
+                TestUtil.getImage("jpg-rotated.jpg"));
+
+        imageInfo = ImageInfoFactory.newImageInfo(identifier, imageUri, processor,
+                processor.getImageInfo());
+    }
+
     @Test
     public void testNewImageInfoContext() {
         assertEquals("http://iiif.io/api/image/2/context.json",
@@ -64,8 +77,20 @@ public class ImageInfoFactoryTest {
     }
 
     @Test
+    public void testNewImageInfoWidthWithRotatedImage() throws Exception {
+        setUpForRotatedImage();
+        assertEquals(64, imageInfo.get("width"));
+    }
+
+    @Test
     public void testNewImageInfoHeight() {
         assertEquals(522, (int) imageInfo.get("height"));
+    }
+
+    @Test
+    public void testNewImageInfoHeightWithRotatedImage() throws Exception {
+        setUpForRotatedImage();
+        assertEquals(56, imageInfo.get("height"));
     }
 
     @Test
@@ -82,6 +107,11 @@ public class ImageInfoFactoryTest {
     }
 
     @Test
+    public void testNewImageInfoSizesWithRotatedImage() throws Exception {
+        // TODO: write this (need a bigger rotated image)
+    }
+
+    @Test
     public void testNewImageInfoTilesWithUntiledImage() {
         List<ImageInfo.Tile> tiles =
                 (List<ImageInfo.Tile>) imageInfo.get("tiles");
@@ -94,6 +124,15 @@ public class ImageInfoFactoryTest {
         assertEquals(2, (long) tiles.get(0).scaleFactors.get(1));
         assertEquals(4, (long) tiles.get(0).scaleFactors.get(2));
         assertEquals(8, (long) tiles.get(0).scaleFactors.get(3));
+    }
+
+    @Test
+    public void testNewImageInfoTilesWithRotatedImage() throws Exception {
+        setUpForRotatedImage();
+        List<ImageInfo.Tile> tiles =
+                (List<ImageInfo.Tile>) imageInfo.get("tiles");
+        assertEquals(64, (long) tiles.get(0).width);
+        assertEquals(56, (long) tiles.get(0).height);
     }
 
     @Test

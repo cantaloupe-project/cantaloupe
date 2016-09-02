@@ -13,7 +13,13 @@ public class UnsupportedSourceFormatException extends ProcessorException {
     }
 
     public UnsupportedSourceFormatException(Format format) {
-        super("Unsupported source format: " + format);
+        super("Unsupported source format: " + format.getName());
+    }
+
+    public UnsupportedSourceFormatException(Processor proc, Format format) {
+        super(proc.getClass().getSimpleName() + " does not support " +
+                (format.equals(Format.UNKNOWN) ? "this" :
+                        "the " + format.getName()) + " source format");
     }
 
 }

@@ -11,10 +11,16 @@ import ch.qos.logback.core.spi.FilterReply;
 public class ApplicationLogFilter extends Filter<ILoggingEvent> {
 
     public FilterReply decide(ILoggingEvent event) {
-        // Filter out useless log messages.
+        // Filter out useless Restlet log messages.
         if (event.getLoggerName().equals("org.restlet") &&
                 event.getLevel().equals(Level.INFO) &&
                 event.getMessage().contains("ing the internal HTTP client")) {
+            return FilterReply.DENY;
+        }
+        // Filter out debug messages from the embedded Jetty server as they
+        // totally overwhelm the debug log.
+        if (event.getLoggerName().startsWith("org.eclipse.jetty") &&
+                event.getLevel().equals(Level.DEBUG)) {
             return FilterReply.DENY;
         }
         // Reject Jetty access log messages.

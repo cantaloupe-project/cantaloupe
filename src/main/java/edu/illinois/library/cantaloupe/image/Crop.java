@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * <p>Encapsulates a cropping operation.</p>
  *
- * <p>Note that {@link #isFull()} can be assumed to take precedence over all
+ * <p>Note that {@link #isFull()} should be assumed to take precedence over all
  * other properties.</p>
  */
 public class Crop implements Operation {
@@ -52,6 +52,63 @@ public class Crop implements Operation {
         setY(y);
         setWidth(width);
         setHeight(height);
+    }
+
+    public Crop(int x, int y, int width, int height,
+                Orientation orientation, Dimension fullSize) {
+        setX(x);
+        setY(y);
+        setWidth(width);
+        setHeight(height);
+        applyOrientation(orientation, fullSize);
+    }
+
+    public Crop(float x, float y, float width, float height) {
+        setX(x);
+        setY(y);
+        setWidth(width);
+        setHeight(height);
+    }
+
+    /**
+     * Modifies the coordinates of the instance to adapt to an image that is
+     * to be treated as rotated. (As in e.g. the case of an EXIF Orientation
+     * tag describing the rotation of un-rotated image data.)
+     *
+     * @param orientation Rotation to apply.
+     * @param fullSize Dimensions of the un-rotated image.
+     */
+    public void applyOrientation(Orientation orientation, Dimension fullSize) {
+        if (isNoOp() || getWidth() < 1 || getHeight() < 1) {
+            return;
+        }
+        switch (orientation) {
+            case ROTATE_90:
+                float originalX = getX();
+                setX(getY());
+                float y = fullSize.height - originalX - getWidth();
+                setY(y >= 0 ? y : 0);
+                // Swap width and height
+                float originalW = getWidth();
+                setWidth(getHeight());
+                setHeight(Math.min(fullSize.height - originalX, originalW));
+                break;
+            case ROTATE_180:
+                setX(fullSize.width - getX() - getWidth());
+                setY(fullSize.height - getY() - getHeight());
+                break;
+            case ROTATE_270:
+                float originalY = getY();
+                setY(getX());
+                setX(fullSize.width - originalY - getHeight());
+                // Swap width and height
+                originalW = getWidth();
+                setWidth(getHeight());
+                float height = (originalW <= fullSize.height - getY()) ?
+                        originalW : fullSize.height - getY();
+                setHeight(height);
+                break;
+        }
     }
 
     /**
@@ -228,8 +285,8 @@ public class Crop implements Operation {
     }
 
     /**
-     * Returns a string representation of the instance, guaranteed to uniquely
-     * represent the instance. The format is:
+     * <p>Returns a string representation of the instance, guaranteed to
+     * uniquely represent the instance. The format is:</p>
      *
      * <dl>
      *     <dt>No-op</dt>

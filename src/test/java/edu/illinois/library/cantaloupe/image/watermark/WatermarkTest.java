@@ -18,6 +18,11 @@ public class WatermarkTest {
     }
 
     @Test
+    public void testToMap() {
+        // TODO: write this
+    }
+
+    @Test
     public void testToString() throws IOException {
         Watermark watermark = new Watermark();
         watermark.setImage(TestUtil.getImage("jpg"));

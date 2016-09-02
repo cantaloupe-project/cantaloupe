@@ -16,4 +16,14 @@
   <link rel="stylesheet" href="{{ "/css/base.css" | prepend: site.baseurl }}">
 
   <script src="{{ "/scripts/jquery.min.js" | prepend: site.baseurl }}"></script>
+
+  <script>
+  // Redirect http:// to https:// (except on localhost)
+  var host = '{{ site.url }}'.replace('http://', '').
+      replace('https://', '').split(/[/?#]/)[0];
+  if (window.location.host == host && window.location.protocol != 'https:') {
+    window.location.protocol = 'https:';
+  }
+  </script>
+
 </head>

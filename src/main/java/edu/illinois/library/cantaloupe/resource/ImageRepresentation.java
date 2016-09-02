@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
@@ -10,6 +9,7 @@ import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.restlet.data.Disposition;
@@ -112,7 +112,7 @@ public class ImageRepresentation extends OutputRepresentation {
 
     private void doWrite(OutputStream outputStream) throws IOException {
         try {
-            final long msec = System.currentTimeMillis();
+            final Stopwatch watch = new Stopwatch();
             // If the operations are effectively a no-op, the source image can
             // be streamed right through.
             if (ops.isNoOp(processor.getSourceFormat())) {
@@ -126,14 +126,14 @@ public class ImageRepresentation extends OutputRepresentation {
                     final InputStream inputStream = streamSource.newInputStream();
                     IOUtils.copy(inputStream, outputStream);
                 }
-                logger.info("Streamed with no processing in {} msec: {}",
-                        System.currentTimeMillis() - msec, ops);
+                logger.debug("Streamed with no processing in {} msec: {}",
+                        watch.timeElapsed(), ops);
             } else {
                 processor.process(ops, imageInfo, outputStream);
 
-                logger.info("{} processed in {} msec: {}",
+                logger.debug("{} processed in {} msec: {}",
                         processor.getClass().getSimpleName(),
-                        System.currentTimeMillis() - msec, ops);
+                        watch.timeElapsed(), ops);
             }
         } catch (Exception e) {
             throw new IOException(e);

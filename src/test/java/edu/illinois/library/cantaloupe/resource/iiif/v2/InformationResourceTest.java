@@ -275,13 +275,14 @@ public class InformationResourceTest extends ResourceTest {
         client.getRequest().getHeaders().add("X-Forwarded-Host", "example.org");
         client.getRequest().getHeaders().add("X-Forwarded-Port", "8080");
         client.getRequest().getHeaders().add("X-Forwarded-Path", "/cats");
+        client.getRequest().getHeaders().add("X-IIIF-ID", "originalID");
         client.get();
         String json = client.getResponse().getEntityAsText();
         ObjectMapper mapper = new ObjectMapper();
         Map<String,Object> info =
                 (Map<String,Object>) mapper.readValue(json, TreeMap.class);
         assertEquals("http://example.org:8080/cats" +
-                WebApplication.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
+                WebApplication.IIIF_2_PATH + "/originalID", info.get("@id"));
     }
 
     @Test

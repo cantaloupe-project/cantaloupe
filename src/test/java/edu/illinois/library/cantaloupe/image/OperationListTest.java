@@ -98,7 +98,7 @@ public class OperationListTest {
     @Test
     public void testContains() {
         assertTrue(ops.contains(Scale.class));
-        assertFalse(ops.contains(Filter.class));
+        assertFalse(ops.contains(Color.class));
     }
 
     /* equals(Object) */
@@ -292,6 +292,26 @@ public class OperationListTest {
         assertTrue(ops.isNoOp());
     }
 
+    @Test
+    public void testIsNoOp10() {
+        // Set up a no-op....
+        Crop crop = new Crop();
+        crop.setFull(true);
+        Scale scale = new Scale();
+        scale.setMode(Scale.Mode.FULL);
+        ops = new OperationList();
+        ops.setIdentifier(new Identifier("identifier.gif"));
+        ops.add(crop);
+        ops.add(scale);
+        ops.add(new Rotate(0));
+        ops.setOutputFormat(Format.GIF);
+
+        // Add a MetadataCopy
+        ops.add(new MetadataCopy());
+
+        assertTrue(ops.isNoOp());
+    }
+
     /* isNoOp(Format) */
 
     @Test
@@ -377,7 +397,7 @@ public class OperationListTest {
         scale.setPercent(0.4f);
         ops.add(scale);
         ops.add(new Rotate(15));
-        ops.add(Filter.BITONAL);
+        ops.add(Color.BITONAL);
         ops.setOutputFormat(Format.JPG);
         ops.getOptions().put("animal", "cat");
 

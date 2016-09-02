@@ -4,7 +4,6 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
-import java.awt.Dimension;
 import java.io.OutputStream;
 import java.util.Set;
 

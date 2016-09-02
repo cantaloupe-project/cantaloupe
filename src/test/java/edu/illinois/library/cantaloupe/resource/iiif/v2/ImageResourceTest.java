@@ -295,6 +295,11 @@ public class ImageResourceTest extends ResourceTest {
         client.get();
         header = client.getResponse().getHeaders().getFirst("Link");
         assertTrue(header.getValue().startsWith("<https://example.org/"));
+
+        client.getRequest().getHeaders().add("X-IIIF-ID", "originalID");
+        client.get();
+        header = client.getResponse().getHeaders().getFirst("Link");
+        assertTrue(header.getValue().contains("/originalID/"));
     }
 
     @Test
@@ -455,7 +460,7 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testUnavailableOutputFormat() throws IOException {
+    public void testInvalidOutputFormat() throws IOException {
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.bogus");
         try {
@@ -463,6 +468,19 @@ public class ImageResourceTest extends ResourceTest {
             fail("Expected exception");
         } catch (ResourceException e) {
             assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
+        }
+    }
+
+    @Test
+    public void testUnavailableOutputFormat() throws IOException {
+        ClientResource client = getClientForUriPath(
+                "/" + IMAGE + "/full/full/0/default.webp");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE,
+                    client.getStatus());
         }
     }
 
