@@ -17,6 +17,7 @@ title: Resolvers
     <ul>
       <li><a href="#Static%20Resolver">Static</a></li>
       <li><a href="#Dynamic%20Resolvers">Dynamic</a></li>
+      <li><a href="#Which%20Resolver%20Should%20I%20Use">Which Resolver Should I Use?</a></li>
     </ul>
   </li>
   <li><a href="#Implementations">Implementations</a>
@@ -60,6 +61,38 @@ end
 {% endhighlight %}
 
 <p>See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script.</p>
+
+<h3 id="Which Resolver Should I Use">Which Resolver Should I Use?</h3>
+
+<table class="table table-bordered">
+  <caption>I want to serve images located&hellip;</caption>
+  <tr>
+    <td rowspan="2">On a filesystem&hellip;</td>
+    <td>&hellip;and the identifiers I use in URLs will correspond predictably to filesystem paths</td>
+    <td><a href="#FilesystemResolver">FilesystemResolver</a> with BasicLookupStrategy</td>
+  </tr>
+  <tr>
+    <td>&hellip;and filesystem paths will need to be looked up (in a SQL database, search server, index file, etc.) based on their identifier</td>
+    <td><a href="#FilesystemResolver">FilesystemResolver</a> with ScriptLookupStrategy</td>
+  </tr>
+  <tr>
+    <td rowspan="2">On a local or remote web server&hellip;</td>
+    <td>&hellip;and the identifiers I use in URLs will correspond predictably to URL paths</td>
+    <td><a href="#HttpResolver">HttpResolver</a> with BasicLookupStrategy</td>
+  </tr>
+  <tr>
+    <td>&hellip;and URL paths will need to be looked up (in a SQL database, search server, index file, etc.) based on their identifier</td>
+    <td><a href="#HttpResolver">HttpResolver</a> with ScriptLookupStrategy</td>
+  </tr>
+  <tr>
+    <td colspan="2">As binaries or BLOBs in a SQL database</td>
+    <td><a href="#JdbcResolver">JdbcResolver</a></td>
+  </tr>
+  <tr>
+    <td colspan="2">In the cloud</td>
+    <td><a href="#AmazonS3Resolver">AmazonS3Resolver</a> or <a href="#AzureStorageResolver">AzureStorageResolver</a></td>
+  </tr>
+</table>
 
 <h2 id="Implementations">Implementations</h2>
 
