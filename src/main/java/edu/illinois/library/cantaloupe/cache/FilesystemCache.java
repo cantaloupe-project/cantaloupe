@@ -917,6 +917,10 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             try {
                 logger.info("purgeImage(): deleting {}", sourceFile);
                 FileUtils.forceDelete(sourceFile);
+            } catch (FileNotFoundException e) {
+                // This is not really a problem, and probably more likely to
+                // happen than not.
+                logger.info("purgeImage(): no source image for {}", sourceFile);
             } catch (IOException e) {
                 logger.warn(e.getMessage());
             }
@@ -931,13 +935,14 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             }
             // Delete the info
             final File infoFile = getInfoFile(identifier);
-            if (infoFile.exists()) {
-                try {
-                    logger.info("purgeImage(): deleting {}", infoFile);
-                    FileUtils.forceDelete(infoFile);
-                } catch (IOException e) {
-                    logger.warn(e.getMessage());
-                }
+            try {
+                logger.info("purgeImage(): deleting {}", infoFile);
+                FileUtils.forceDelete(infoFile);
+            } catch (FileNotFoundException e) {
+                // This is not a problem, and as likely to happen as not.
+                logger.info("purgeImage(): no info for {}", infoFile);
+            } catch (IOException e) {
+                logger.warn(e.getMessage());
             }
         } finally {
             infosBeingPurged.remove(identifier);
