@@ -128,6 +128,9 @@ public class ControlPanelTest {
         css("[name=\"endpoint.iiif.1.enabled\"]").click();
         css("[name=\"endpoint.iiif.2.enabled\"]").click();
         css("[name=\"endpoint.iiif.2.restrict_to_sizes\"]").click();
+        css("[name=\"endpoint.api.enabled\"]").click();
+        css("[name=\"endpoint.api.username\"]").sendKeys("cats");
+        css("[name=\"endpoint.api.secret\"]").sendKeys("dogs");
 
         // Submit the form
         css("#cl-endpoints input[type=\"submit\"]").click();
@@ -143,6 +146,9 @@ public class ControlPanelTest {
         assertTrue(config.getBoolean("endpoint.iiif.1.enabled"));
         assertTrue(config.getBoolean("endpoint.iiif.2.enabled"));
         assertTrue(config.getBoolean("endpoint.iiif.2.restrict_to_sizes"));
+        assertTrue(config.getBoolean("endpoint.api.enabled"));
+        assertEquals("cats", config.getString("endpoint.api.username"));
+        assertEquals("dogs", config.getString("endpoint.api.secret"));
     }
 
     private void testResolverSection() throws Exception {

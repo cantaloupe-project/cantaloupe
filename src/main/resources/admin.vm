@@ -513,6 +513,43 @@
                                 </tr>
                             </table>
                         </section>
+
+                        <section>
+                            <h3>API</h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="endpoint.api.enabled"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Username</td>
+                                    <td>
+                                        <input class="form-control" type="text"
+                                               name="endpoint.api.username"
+                                               data-requires-restart="true">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Secret</td>
+                                    <td>
+                                        <input class="form-control" type="text"
+                                               name="endpoint.api.secret"
+                                               data-requires-restart="true">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
                         <input type="submit" class="btn btn-primary" value="Save">
                     </form>
                 </div>
