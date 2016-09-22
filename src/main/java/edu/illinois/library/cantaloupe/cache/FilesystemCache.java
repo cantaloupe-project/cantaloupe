@@ -474,7 +474,13 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 getHashedStringBasedSubdirectory(identifier.toString()));
         final File[] files =
                 cacheFolder.listFiles(new IdentifierFilter(identifier));
-        return new ArrayList<>(Arrays.asList(files));
+        ArrayList<File> fileList;
+        if (files != null && files.length > 0) {
+            fileList = new ArrayList<>(Arrays.asList(files));
+        } else {
+            fileList = new ArrayList<>();
+        }
+        return fileList;
     }
 
     /**
