@@ -10,11 +10,6 @@
 # marked with "!!".
 ###########################################################################
 
-# Enables the Control Panel, at /admin.
-admin.enabled = false
-# Password to access the Control Panel. (The username is always "admin".)
-admin.password =
-
 # !! Whether to enable HTTP access (http://), and on what host interface
 # and TCP port. (Applies in standalone mode only.)
 http.enabled = true
@@ -37,6 +32,17 @@ https.key_password = myPassword
 auth.basic.enabled = false
 auth.basic.username = myself
 auth.basic.secret = mypassword
+
+# Enables the Control Panel, at /admin.
+admin.enabled = false
+# Password to access the Control Panel. (The username is "admin".)
+admin.password =
+
+# Enables the non-IIIF administrative REST API. (See the user manual.)
+admin.api.enabled = false
+# HTTP Basic credentials to access the REST API.
+admin.api.username =
+admin.api.secret =
 
 # Base URI to use for internal links, such as Link headers and JSON-LD @id
 # values, in a reverse-proxy context. This should only be used when

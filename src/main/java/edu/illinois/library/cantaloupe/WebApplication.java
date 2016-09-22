@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatExceptio
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
 import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
+import edu.illinois.library.cantaloupe.resource.api.ApiResource;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
@@ -107,6 +108,8 @@ public class WebApplication extends Application {
     }
 
     public static final String ADMIN_SECRET_CONFIG_KEY = "admin.password";
+    public static final String API_SECRET_CONFIG_KEY = "admin.api.secret";
+    public static final String API_USERNAME_CONFIG_KEY = "admin.api.username";
     public static final String BASIC_AUTH_ENABLED_CONFIG_KEY =
             "auth.basic.enabled";
     public static final String BASIC_AUTH_SECRET_CONFIG_KEY =
@@ -115,6 +118,7 @@ public class WebApplication extends Application {
             "auth.basic.username";
 
     public static final String ADMIN_PATH = "/admin";
+    public static final String API_PATH = "/api";
     public static final String IIIF_PATH = "/iiif";
     public static final String IIIF_1_PATH = "/iiif/1";
     public static final String IIIF_2_PATH = "/iiif/2";
@@ -153,7 +157,27 @@ public class WebApplication extends Application {
         final MapVerifier verifier = new MapVerifier();
         verifier.getLocalSecrets().put("admin", secret.toCharArray());
         final ChallengeAuthenticator auth = new ChallengeAuthenticator(
-                getContext(), ChallengeScheme.HTTP_BASIC, "Cantaloupe Realm");
+                getContext(), ChallengeScheme.HTTP_BASIC,
+                "Cantaloupe Control Panel");
+        auth.setVerifier(verifier);
+        return auth;
+    }
+
+    private ChallengeAuthenticator createApiAuthenticator()
+            throws ConfigurationException {
+        final Configuration config = Configuration.getInstance();
+        final String secret = config.getString(API_SECRET_CONFIG_KEY);
+        if (secret == null || secret.length() < 1) {
+            throw new ConfigurationException(API_SECRET_CONFIG_KEY +
+                    " is not set. The API will be unavailable.");
+        }
+
+        final MapVerifier verifier = new MapVerifier();
+        verifier.getLocalSecrets().put(config.getString(API_USERNAME_CONFIG_KEY),
+                secret.toCharArray());
+        final ChallengeAuthenticator auth = new ChallengeAuthenticator(
+                getContext(), ChallengeScheme.HTTP_BASIC,
+                "Cantaloupe API Realm");
         auth.setVerifier(verifier);
         return auth;
     }
@@ -255,6 +279,16 @@ public class WebApplication extends Application {
             ChallengeAuthenticator adminAuth = createAdminAuthenticator();
             adminAuth.setNext(AdminResource.class);
             router.attach(ADMIN_PATH, adminAuth);
+        } catch (ConfigurationException e) {
+            getLogger().log(Level.WARNING, e.getMessage());
+        }
+
+        /****************** API route ********************/
+
+        try {
+            ChallengeAuthenticator apiAuth = createApiAuthenticator();
+            apiAuth.setNext(ApiResource.class);
+            router.attach(API_PATH + "/{identifier}", apiAuth);
         } catch (ConfigurationException e) {
             getLogger().log(Level.WARNING, e.getMessage());
         }
