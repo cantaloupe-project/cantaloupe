@@ -108,8 +108,8 @@ public class WebApplication extends Application {
     }
 
     public static final String ADMIN_SECRET_CONFIG_KEY = "admin.password";
-    public static final String API_SECRET_CONFIG_KEY = "admin.api.secret";
-    public static final String API_USERNAME_CONFIG_KEY = "admin.api.username";
+    public static final String API_SECRET_CONFIG_KEY = "endpoint.api.secret";
+    public static final String API_USERNAME_CONFIG_KEY = "endpoint.api.username";
     public static final String BASIC_AUTH_ENABLED_CONFIG_KEY =
             "auth.basic.enabled";
     public static final String BASIC_AUTH_SECRET_CONFIG_KEY =

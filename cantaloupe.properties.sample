@@ -38,12 +38,6 @@ admin.enabled = false
 # Password to access the Control Panel. (The username is "admin".)
 admin.password =
 
-# Enables the non-IIIF administrative REST API. (See the user manual.)
-admin.api.enabled = false
-# HTTP Basic credentials to access the REST API.
-admin.api.username =
-admin.api.secret =
-
 # Base URI to use for internal links, such as Link headers and JSON-LD @id
 # values, in a reverse-proxy context. This should only be used when
 # X-Forwarded-* headers cannot be used instead (see the user manual).
@@ -97,6 +91,13 @@ endpoint.iiif.min_tile_size = 1024
 # If true, requests for sizes other than those specified in an info.json
 # response will be denied.
 endpoint.iiif.2.restrict_to_sizes = false
+
+# Enables the administrative REST API. (See the user manual.)
+endpoint.api.enabled = false
+
+# HTTP Basic credentials to access the REST API.
+endpoint.api.username =
+endpoint.api.secret =
 
 ###########################################################################
 # RESOLVERS

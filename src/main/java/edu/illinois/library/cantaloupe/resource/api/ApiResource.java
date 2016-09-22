@@ -13,12 +13,12 @@ import org.restlet.resource.ResourceException;
 
 public class ApiResource extends AbstractResource {
 
-    static final String API_ENABLED_CONFIG_KEY = "admin.api.enabled";
+    static final String ENABLED_CONFIG_KEY = "endpoint.api.enabled";
 
     @Override
     protected void doInit() throws ResourceException {
         if (!Configuration.getInstance().
-                getBoolean(API_ENABLED_CONFIG_KEY, true)) {
+                getBoolean(ENABLED_CONFIG_KEY, true)) {
             throw new EndpointDisabledException();
         }
         super.doInit();

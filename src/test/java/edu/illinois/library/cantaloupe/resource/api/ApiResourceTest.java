@@ -30,7 +30,7 @@ public class ApiResourceTest extends ResourceTest {
 
         Configuration config = Configuration.getInstance();
         resetConfiguration();
-        config.setProperty(ApiResource.API_ENABLED_CONFIG_KEY, true);
+        config.setProperty(ApiResource.ENABLED_CONFIG_KEY, true);
         config.setProperty(WebApplication.API_USERNAME_CONFIG_KEY, username);
         config.setProperty(WebApplication.API_SECRET_CONFIG_KEY, secret);
 
@@ -40,7 +40,7 @@ public class ApiResourceTest extends ResourceTest {
     @Test
     public void testDoPurgeWithEndpointDisabled() {
         Configuration config = Configuration.getInstance();
-        config.setProperty(ApiResource.API_ENABLED_CONFIG_KEY, false);
+        config.setProperty(ApiResource.ENABLED_CONFIG_KEY, false);
 
         ClientResource client = getClientForUriPath(WebApplication.API_PATH + "/" + identifier);
         client.setChallengeResponse(

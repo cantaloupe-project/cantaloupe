@@ -141,7 +141,7 @@ end
 
 <h2 id="API">API</h2>
 
-<p>The API endpoint exposes a (currently very limited) set of administrative actions. It is disabled by default, but can be enabled by setting the <code>admin.api.enabled</code> configuration option to <code>true</code>.</p>
+<p>The API endpoint exposes a (currently very limited) set of administrative actions. It is disabled by default, but can be enabled by setting the <code>endpoint.api.enabled</code> configuration option to <code>true</code>.</p>
 
 <table class="table table-striped table-bordered">
   <tr>
@@ -155,7 +155,7 @@ end
     <td>Purge an image from the cache</td>
     <td>DELETE</td>
     <td>/api/:identifier</td>
-    <td>HTTP Basic (credentials set in <code>admin.api.username</code> and <code>admin.api.secret</code>)</td>
+    <td>HTTP Basic (credentials set in <code>endpoint.api.username</code> and <code>endpoint.api.secret</code>)</td>
     <td>Purges all images corresponding to the given identifier from the cache.</td>
   </tr>
 </table>
