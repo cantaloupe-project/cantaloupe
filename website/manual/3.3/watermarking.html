@@ -1,0 +1,183 @@
+---
+layout: manual_3.3
+title: Watermarking
+---
+
+<ol class="breadcrumb">
+  <li><a href="{{ site.baseurl }}/">Home</a></li>
+  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
+  <li><a href="{{ site.baseurl }}/manual/3.3/">3.3</a></li>
+  <li class="active">Watermarking</li>
+</ol>
+
+<h1>Watermarking</h1>
+
+<ul>
+  <li><a href="#Modes%20of%20Operation">Modes of Operation</a>
+    <ul>
+        <li><a href="#BasicStrategy">BasicStrategy</a></li>
+        <li><a href="#ScriptStrategy">ScriptStrategy</a></li>
+    </ul>
+  </li>
+  <li><a href="#Requirements">Requirements</a></li>
+  <li><a href="#Positioning">Positioning</a></li>
+  <li><a href="#Processor%20Support">Processor Support</a></li>
+  <li><a href="#Implications">Implications</a>
+    <ul>
+      <li><a href="#Performance">Performance</a></li>
+      <li><a href="#Zooming%20Image%20Viewers">Zooming Image Viewers</a></li>
+      <li><a href="#Caching">Caching</a></li>
+    </ul>
+  </li>
+</ul>
+
+<p>The watermarking feature overlays an image "watermark" on top of an output image. This can be useful for applying branding, attribution, copyright notices, and so on.</p>
+
+<h2 id="Modes of Operation">Modes of Operation</h2>
+
+<p>The watermarking system offers two "strategies," or modes of operation: a basic strategy, where watermark properties are hard-coded in the configuration file and applied to all requests; and a <a href="#ScriptStrategy">script strategy</a>, where the decision whether or not to apply a watermark depends on the return value of a delegate script method. The <code>watermark.strategy</code> configuration key is used to set the strategy.</p>
+
+<h3 id="BasicStrategy">BasicStrategy</h3>
+
+<p>With BasicStrategy, the <code>watermark.BasicStrategy.*</code> keys in the configuration file are used to set a watermark image, position, inset, and minimum size cutoff. This strategy is easy to configure and works well when you intend for the same watermark to be applied to all images.</p>
+
+<h3 id="ScriptStrategy">ScriptStrategy</h3>
+
+<p>Perhaps you only want to apply a watermark to some of your images, and to others, you want to apply a different watermark, or no watermark. Perhaps you want to control watermarking based on the client's IP address, or user agent, or whether it possesses a certain cookie. Or, perhaps you only want to apply watermarks to JPEG output images, and not GIFs. Or, perhaps you don't want to apply a watermark to images that have been rotated. All of this is possible by writing just a few lines of code.</p>
+
+<p>With the <code>Cantaloupe::watermark</code> delegate script method, you can tell the image server whether or not to apply a watermark in response to a particular request, in what position to apply it, and what image to apply. An example of how this can be accomplished appears below:</p>
+
+{% highlight ruby %}
+module Cantaloupe
+  ##
+  # See the argument & return value documentation in delegates.rb.sample.
+  #
+  def self.watermark(identifier, operations, resulting_size, output_format,
+                     request_uri, request_headers, client_ip, cookies)
+    # If the resulting image is less than this many pixels on a side, don't
+    # apply the watermark.
+    min_size_cutoff = 300
+    return false if resulting_size['width'] < min_size_cutoff or
+        resulting_size['height'] < min_size_cutoff
+
+    # Don't render a watermark to clients on localhost.
+    return false if %w(127.0.0.1 ::1/128).include?(client_ip)
+
+    # Don't render a watermark on GIF images.
+    return false if output_format['media_type'] == 'image/gif'
+
+    # Don't render a watermark on images of cantaloupes.
+    return false if identifier.downcase.include?('cantaloupe')
+
+    # Render a different watermark for iOS clients.
+    if request_headers.
+        select{ |k,v| k.downcase == 'user-agent' and v.include?('iOS') }.any?
+      return {
+        'pathname' => '/path/to/ios-watermark.png',
+        'position' => 'bottom right',
+        'inset' => 0
+      }
+    end
+
+    # Render the default watermark for all other clients.
+    {
+      'pathname' => '/path/to/default-watermark.png',
+      'position' => 'bottom right',
+      'inset' => 10
+    }
+  end
+end
+{% endhighlight %}
+
+<h2 id="Requirements">Requirements</h2>
+
+<p>The watermark must be a 24-bit PNG image, either RGB or RGBA. It will be blended pixel-for-pixel into the output image, respecting its alpha channel.</p>
+
+<p><a href="images/watermark-sample.png">Sample watermark (PNG)</a></p>
+
+<h2 id="Positioning">Positioning</h2>
+
+<p>Position and inset are configurable. Below, all availble positions are pictured with insets of zero:</p>
+
+<table>
+  <tr>
+    <td>
+      <figure>
+        <img class="img-responsive" src="images/watermark-520-top-left.jpg">
+        <figcaption>top left</figcaption>
+      </figure>
+    </td>
+    <td>
+      <figure>
+        <img class="img-responsive" src="images/watermark-520-top-center.jpg">
+        <figcaption>top center</figcaption>
+      </figure>
+    </td>
+    <td>
+      <figure>
+        <img class="img-responsive" src="images/watermark-520-top-right.jpg">
+        <figcaption>top right</figcaption>
+      </figure>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <figure>
+        <img class="img-responsive" src="images/watermark-520-left-center.jpg">
+        <figcaption>left center</figcaption>
+      </figure>
+    </td>
+    <td>
+      <figure>
+        <img class="img-responsive" src="images/watermark-520-center.jpg">
+        <figcaption>center</figcaption>
+      </figure>
+    </td>
+    <td>
+      <figure>
+        <img class="img-responsive" src="images/watermark-520-right-center.jpg">
+        <figcaption>right center</figcaption>
+      </figure>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <figure>
+        <img class="img-responsive" src="images/watermark-520-bottom-left.jpg">
+        <figcaption>bottom left</figcaption>
+      </figure>
+    </td>
+    <td>
+      <figure>
+        <img class="img-responsive" src="images/watermark-520-bottom-center.jpg">
+        <figcaption>bottom center</figcaption>
+      </figure>
+    </td>
+    <td>
+      <figure>
+        <img class="img-responsive" src="images/watermark-520-bottom-right.jpg">
+        <figcaption>bottom right</figcaption>
+      </figure>
+    </td>
+  </tr>
+</table>
+
+<h2 id="Processor Support">Processor Support</h2>
+
+<p>Not all processors support watermarking; see the <a href="processors.html#Supported%20Features">table of processor-supported features</a>.</p>
+
+<h2 id="Implications">Implications</h2>
+
+<h3 id="#Performance">Performance</h3>
+
+<p>Watermark application should have minimal impact on response times, adding perhaps a few milliseconds for a typical-sized watermark. One thing to note, though, is that normally, requests for source images with no modification are streamed through with no processing. When watermarking is enabled, this will no longer be the case.</p>
+
+<h3 id="Zooming Image Viewers">Zooming Image Viewers</h3>
+
+<p>Zooming image viewers display a mosaic of cropped image tiles. When watermarking is enabled, each tile will have a watermark, which may look more or less strange depending on the size of the watermark and the tile size used by the viewer. The image server has no control over this.</p>
+
+<p>One way of getting around this might be to set the <code>watermark.BasicStrategy.output_width_threshold</code> and <code>watermark.BasicStrategy.output_height_threshold</code> configuration options to values that are slightly larger than the tile size used by the zooming image viewer. This will disable watermarking for zooming image viewer tiles, but enable for it for anything larger. Unfortunately, the tile size used by the viewer may differ depending on the source image, as the recommended tile sizes in <a href="endpoints.html">information responses</a> will vary on a per-image basis.</p>
+
+<h3 id="Caching">Caching</h3>
+
+<p>Watermark parameters (filename, position, inset, etc.) are encoded in cached-image identifiers. When watermark settings change, cached watermarked images will be re-generated automatically, and images with different watermark settings (when using <a href="#ScriptStrategy">ScriptStrategy</a>) will be cached separately.</p>
