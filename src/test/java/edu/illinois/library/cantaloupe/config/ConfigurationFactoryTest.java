@@ -22,10 +22,10 @@ public class ConfigurationFactoryTest {
                     "illinois", "library", "cantaloupe", "test");
 
             String goodProps = testPath + File.separator + "cantaloupe.properties";
-            System.setProperty(ConfigurationFactory.CONFIG_FILE_VM_ARGUMENT, goodProps);
+            System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, goodProps);
             assertNotNull(ConfigurationFactory.getInstance());
         } catch (IOException e) {
-            fail("Failed to set " + ConfigurationFactory.CONFIG_FILE_VM_ARGUMENT);
+            fail("Failed to set " + ConfigurationFactory.CONFIG_VM_ARGUMENT);
         }
     }
 

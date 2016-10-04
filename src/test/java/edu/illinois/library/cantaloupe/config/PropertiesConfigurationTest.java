@@ -94,11 +94,11 @@ public class PropertiesConfigurationTest {
                     "illinois", "library", "cantaloupe", "test");
 
             String goodProps = testPath + File.separator + "cantaloupe.properties";
-            System.setProperty(ConfigurationFactory.CONFIG_FILE_VM_ARGUMENT, goodProps);
+            System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, goodProps);
             assertEquals(new File(cwd + "/src/test/java/edu/illinois/library/cantaloupe/test/cantaloupe.properties"),
                     instance.getFile());
         } catch (IOException e) {
-            fail("Failed to set " + ConfigurationFactory.CONFIG_FILE_VM_ARGUMENT);
+            fail("Failed to set " + ConfigurationFactory.CONFIG_VM_ARGUMENT);
         }
     }
 

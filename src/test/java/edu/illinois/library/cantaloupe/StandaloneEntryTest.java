@@ -49,7 +49,7 @@ public class StandaloneEntryTest {
     private static void resetConfiguration() throws IOException {
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
-        System.setProperty(ConfigurationFactory.CONFIG_FILE_VM_ARGUMENT,
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT,
                 TestUtil.getFixture("config.properties").getAbsolutePath());
         try {
             config.setProperty(WebServer.HTTP_ENABLED_CONFIG_KEY, true);
@@ -72,37 +72,23 @@ public class StandaloneEntryTest {
     @After
     public void tearDown() throws IOException {
         deleteCacheDir();
-        System.clearProperty(ConfigurationFactory.CONFIG_FILE_VM_ARGUMENT);
+        System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
         System.clearProperty(EntryServlet.CLEAN_CACHE_VM_ARGUMENT);
         System.clearProperty(EntryServlet.PURGE_CACHE_VM_ARGUMENT);
         System.clearProperty(EntryServlet.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT);
     }
 
     @Test
-    public void testMainWithMissingConfigFileArgumentExits() throws Exception {
-        exit.expectSystemExitWithStatus(-1);
-        System.clearProperty(ConfigurationFactory.CONFIG_FILE_VM_ARGUMENT);
-        StandaloneEntry.main(new String[] {});
-    }
-
-    @Test
-    public void testMainWithEmptyConfigFileArgumentExits() throws Exception {
-        exit.expectSystemExitWithStatus(-1);
-        System.setProperty(ConfigurationFactory.CONFIG_FILE_VM_ARGUMENT, "");
-        StandaloneEntry.main(new String[] {});
-    }
-
-    @Test
     public void testMainWithInvalidConfigFileArgumentExits() throws Exception {
         exit.expectSystemExitWithStatus(-1);
-        System.setProperty(ConfigurationFactory.CONFIG_FILE_VM_ARGUMENT, "/bla/bla/bla");
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "/bla/bla/bla");
         StandaloneEntry.main(new String[] {});
     }
 
     @Test
     public void testMainWithDirectoryConfigFileArgumentExits() throws Exception {
         exit.expectSystemExitWithStatus(-1);
-        System.setProperty(ConfigurationFactory.CONFIG_FILE_VM_ARGUMENT,
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT,
                 TestUtil.getFixture("bla").getParentFile().getAbsolutePath());
         StandaloneEntry.main(new String[] {});
     }

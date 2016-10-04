@@ -38,7 +38,7 @@ class PropertiesConfiguration implements Configuration {
 
     public File getFile() {
         String configFilePath = System.
-                getProperty(ConfigurationFactory.CONFIG_FILE_VM_ARGUMENT);
+                getProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
         if (configFilePath != null) {
             try {
                 // expand paths that start with "~"

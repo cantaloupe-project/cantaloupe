@@ -4,7 +4,7 @@ import java.io.IOException;
 
 public abstract class ConfigurationFactory {
 
-    public static final String CONFIG_FILE_VM_ARGUMENT = "cantaloupe.config"; // TODO: rename to CONFIG_VM_ARGUMENT
+    public static final String CONFIG_VM_ARGUMENT = "cantaloupe.config";
 
     private static volatile Configuration instance;
     private static final Object lock = new Object();
@@ -14,7 +14,7 @@ public abstract class ConfigurationFactory {
     }
 
     /**
-     * @return Global application configuration instance.
+     * @return Shared application configuration instance.
      */
     public static Configuration getInstance() {
         Configuration config = instance;
@@ -22,7 +22,14 @@ public abstract class ConfigurationFactory {
             synchronized (lock) {
                 config = instance;
                 if (config == null) {
-                    config = new PropertiesConfiguration();
+                    final String configArg = System.getProperty(CONFIG_VM_ARGUMENT);
+                    // If there is no configuration VM option supplied, try to
+                    // get configuration from the environment.
+                    if (configArg == null || configArg.length() < 1) {
+                        config = new EnvironmentConfiguration();
+                    } else {
+                        config = new PropertiesConfiguration();
+                    }
                     try {
                         config.reload();
                     } catch (IOException e) {
