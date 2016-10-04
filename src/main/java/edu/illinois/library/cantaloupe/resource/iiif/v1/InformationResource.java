@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
-import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -79,7 +79,7 @@ public class InformationResource extends Iiif1Resource {
             // Determine the format of the source image
             format = resolver.getSourceFormat();
         } catch (FileNotFoundException e) {
-            if (Configuration.getInstance().
+            if (ConfigurationFactory.getInstance().
                     getBoolean(PURGE_MISSING_CONFIG_KEY, false)) {
                 // if the image was not found, purge it from the cache
                 final Cache cache = CacheFactory.getDerivativeCache();

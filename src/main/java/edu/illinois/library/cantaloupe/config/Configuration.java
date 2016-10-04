@@ -1,166 +1,66 @@
 package edu.illinois.library.cantaloupe.config;
 
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.FileConfiguration;
-import org.apache.commons.configuration.PropertiesConfiguration;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
-/**
- * Singleton class wrapping a Commons Configuration instance for writing
- * properties files retaining structure and comments.
- */
-public class Configuration {
-
-    public static final String CONFIG_FILE_VM_ARGUMENT = "cantaloupe.config";
-
-    private static volatile Configuration instance;
-    private static final Object lock = new Object();
-
-    private org.apache.commons.configuration.Configuration commonsConfig =
-            new BaseConfiguration();
-
-    public static synchronized void clearInstance() {
-        instance = null;
-    }
+public interface Configuration {
 
     /**
-     * @return Global application configuration instance.
+     * Clears the key-value pairs from the instance (but not its persistent
+     * store).
      */
-    public static Configuration getInstance() {
-        Configuration config = instance;
-        if (config == null) {
-            synchronized (lock) {
-                config = instance;
-                if (config == null) {
-                    config = new Configuration();
-                    config.reloadConfigurationFile();
-                    instance = config;
-                }
-            }
-        }
-        return config;
-    }
+    void clear();
 
-    protected Configuration() {}
+    boolean getBoolean(String key);
 
-    public void clear() {
-        commonsConfig.clear();
-    }
+    boolean getBoolean(String key, boolean defaultValue);
 
-    public synchronized void reloadConfigurationFile() {
-        final File configFile = getConfigurationFile();
-        if (configFile != null) {
-            try {
-                if (commonsConfig != null && commonsConfig instanceof PropertiesConfiguration) {
-                    System.out.println("Reloading config file: " + configFile);
-                } else {
-                    System.out.println("Loading config file: " + configFile);
-                }
-                commonsConfig = new PropertiesConfiguration(configFile);
-            } catch (org.apache.commons.configuration.ConfigurationException e) {
-                // The logger may not have been initialized yet, as it depends
-                // on a working configuration. (Also, we don't want to
-                // introduce a dependency on the logger.)
-                System.out.println(e.getMessage());
-            }
-        }
-    }
+    double getDouble(String key);
 
-    public boolean getBoolean(String key) {
-        return commonsConfig.getBoolean(key);
-    }
-
-    public boolean getBoolean(String key, boolean defaultValue) {
-        return commonsConfig.getBoolean(key, defaultValue);
-    }
-
-    public File getConfigurationFile() {
-        String configFilePath = System.getProperty(CONFIG_FILE_VM_ARGUMENT);
-        if (configFilePath != null) {
-            try {
-                // expand paths that start with "~"
-                configFilePath = configFilePath.replaceFirst("^~",
-                        System.getProperty("user.home"));
-                return new File(configFilePath).getCanonicalFile();
-            } catch (IOException e) {
-                // The logger may not have been initialized yet, as it depends
-                // on a working configuration. (Also, we don't want to
-                // introduce a dependency on the logger.)
-                System.out.println(e.getMessage());
-            }
-        }
-        return null;
-    }
-
-    public double getDouble(String key) {
-        return commonsConfig.getDouble(key);
-    }
-
-    public double getDouble(String key, double defaultValue) {
-        return commonsConfig.getDouble(key, defaultValue);
-    }
-
-    public float getFloat(String key) {
-        return commonsConfig.getFloat(key);
-    }
-
-    public float getFloat(String key, float defaultValue) {
-        return commonsConfig.getFloat(key, defaultValue);
-    }
-
-    public int getInt(String key) {
-        return commonsConfig.getInt(key);
-    }
-
-    public int getInt(String key, int defaultValue) {
-        return commonsConfig.getInt(key, defaultValue);
-    }
-
-    public Iterator<String> getKeys() {
-        return commonsConfig.getKeys();
-    }
-
-    public long getLong(String key) {
-        return commonsConfig.getLong(key);
-    }
-
-    public long getLong(String key, long defaultValue) {
-        return commonsConfig.getLong(key, defaultValue);
-    }
-
-    public Object getProperty(String key) {
-        return commonsConfig.getProperty(key);
-    }
-
-    public String getString(String key) {
-        return commonsConfig.getString(key);
-    }
-
-    public String getString(String key, String defaultValue) {
-        return commonsConfig.getString(key, defaultValue);
-    }
+    double getDouble(String key, double defaultValue);
 
     /**
-     * Saves the configuration to the file returned by
-     * {@link #getConfigurationFile()}, if available, or does nothing if not.
+     * @return File corresponding to the persistent configuration file, or
+     *         <code>null</code> if the implementation is not file-based.
+     */
+    File getFile();
+
+    float getFloat(String key);
+
+    float getFloat(String key, float defaultValue);
+
+    int getInt(String key);
+
+    int getInt(String key, int defaultValue);
+
+    Iterator<String> getKeys();
+
+    long getLong(String key);
+
+    long getLong(String key, long defaultValue);
+
+    Object getProperty(String key);
+
+    String getString(String key);
+
+    String getString(String key, String defaultValue);
+
+    /**
+     * Reloads the configuration from its persistent store.
      *
-     * @throws IOException
+     * @throws IOException If there is a problem reloading the configuration.
      */
-    public synchronized void save() throws IOException {
-        if (commonsConfig instanceof FileConfiguration) {
-            try {
-                ((FileConfiguration) commonsConfig).save();
-            } catch (org.apache.commons.configuration.ConfigurationException e) {
-                throw new IOException(e.getMessage(), e);
-            }
-        }
-    }
+    void reload() throws IOException;
 
-    public synchronized void setProperty(String key, Object value) {
-        commonsConfig.setProperty(key, value);
-    }
+    /**
+     * Saves the configuration. Not all implementations will be able to do
+     * this, which is fine.
+     *
+     * @throws IOException If there is a problem saving the file.
+     */
+    void save() throws IOException;
+
+    void setProperty(String key, Object value);
 
 }

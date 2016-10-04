@@ -15,6 +15,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
@@ -136,7 +137,7 @@ class AmazonS3Cache implements DerivativeCache {
 
     static synchronized AmazonS3 getClientInstance() {
         if (client == null) {
-            final Configuration config = Configuration.getInstance();
+            final Configuration config = ConfigurationFactory.getInstance();
 
             class ConfigFileCredentials implements AWSCredentials {
                 @Override
@@ -171,7 +172,8 @@ class AmazonS3Cache implements DerivativeCache {
     public void cleanUp() {}
 
     String getBucketName() {
-        return Configuration.getInstance().getString(BUCKET_NAME_CONFIG_KEY);
+        return ConfigurationFactory.getInstance().
+                getString(BUCKET_NAME_CONFIG_KEY);
     }
 
     @Override
@@ -253,7 +255,7 @@ class AmazonS3Cache implements DerivativeCache {
      * slash.
      */
     String getObjectKeyPrefix() {
-        String prefix = Configuration.getInstance().
+        String prefix = ConfigurationFactory.getInstance().
                 getString(OBJECT_KEY_PREFIX_CONFIG_KEY);
         if (prefix.length() < 1 || prefix.equals("/")) {
             return "";
@@ -286,7 +288,7 @@ class AmazonS3Cache implements DerivativeCache {
 
     @Override
     public void purgeExpired() throws CacheException {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         final AmazonS3 s3 = getClientInstance();
         final String bucketName = getBucketName();
 

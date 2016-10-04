@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resolver;
 import static org.junit.Assert.*;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
@@ -29,7 +30,7 @@ public class HttpResolverTest {
         server = new WebServer();
         server.start();
 
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         config.setProperty(HttpResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "BasicLookupStrategy");
@@ -102,7 +103,7 @@ public class HttpResolverTest {
 
     @Test
     public void testGetUrlWithBasicLookupStrategy() throws Exception {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
 
         // with prefix
         config.setProperty(HttpResolver.URL_PREFIX_CONFIG_KEY,
@@ -124,7 +125,7 @@ public class HttpResolverTest {
 
     @Test
     public void testGetUrlWithScriptLookupStrategy() throws Exception {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(HttpResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
 

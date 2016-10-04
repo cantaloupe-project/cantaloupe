@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
@@ -84,7 +85,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
      */
     private static ClientResource newClientResource(final Reference url) {
         final ClientResource resource = new ClientResource(url);
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         final String username = config.getString(BASIC_AUTH_USERNAME_CONFIG_KEY, "");
         final String secret = config.getString(BASIC_AUTH_SECRET_CONFIG_KEY, "");
         if (username.length() > 0 && secret.length() > 0) {
@@ -132,8 +133,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     }
 
     public Reference getUrl() throws IOException {
-        final Configuration config = Configuration.getInstance();
-
+        final Configuration config = ConfigurationFactory.getInstance();
         switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
             case "BasicLookupStrategy":
                 return getUrlWithBasicStrategy();
@@ -186,7 +186,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     }
 
     private Reference getUrlWithBasicStrategy() {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         final String prefix = config.getString(URL_PREFIX_CONFIG_KEY, "");
         final String suffix = config.getString(URL_SUFFIX_CONFIG_KEY, "");
         return new Reference(prefix + identifier.toString() + suffix);

@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.image.redaction;
 
-import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -18,7 +18,7 @@ public class RedactionServiceTest {
 
     @Before
     public void setUp() throws Exception {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         // valid config options
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
@@ -46,7 +46,7 @@ public class RedactionServiceTest {
 
     @Test
     public void testIsEnabled() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         // null value
         config.setProperty(RedactionService.REDACTION_ENABLED_CONFIG_KEY, null);

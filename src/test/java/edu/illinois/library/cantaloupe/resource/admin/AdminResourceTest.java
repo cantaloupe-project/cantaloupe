@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.StandaloneEntry;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,7 +35,7 @@ public class AdminResourceTest extends ResourceTest {
         super.setUp();
         StandaloneEntry.getWebServer().stop();
 
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         resetConfiguration();
         config.setProperty(WebApplication.ADMIN_SECRET_CONFIG_KEY, secret);
 
@@ -43,7 +44,7 @@ public class AdminResourceTest extends ResourceTest {
 
     @Test
     public void testCacheHeaders() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty("cache.client.enabled", "true");
         config.setProperty("cache.client.max_age", "1234");
         config.setProperty("cache.client.shared_max_age", "4567");
@@ -107,7 +108,7 @@ public class AdminResourceTest extends ResourceTest {
 
     @Test
     public void testDoGetAsJson() {
-        Configuration.getInstance().setProperty("test", "cats");
+        ConfigurationFactory.getInstance().setProperty("test", "cats");
 
         ClientResource client = getClientForUriPath(WebApplication.ADMIN_PATH);
         client.setChallengeResponse(
@@ -129,7 +130,7 @@ public class AdminResourceTest extends ResourceTest {
                 new ChallengeResponse(ChallengeScheme.HTTP_BASIC, username, secret));
         client.post(entity, MediaType.APPLICATION_JSON);
 
-        assertEquals("cats", Configuration.getInstance().getString("test"));
+        assertEquals("cats", ConfigurationFactory.getInstance().getString("test"));
     }
 
     @Test
@@ -139,7 +140,7 @@ public class AdminResourceTest extends ResourceTest {
 
     @Test
     public void testEnabled() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         // enabled
         config.setProperty(AdminResource.CONTROL_PANEL_ENABLED_CONFIG_KEY, true);
 

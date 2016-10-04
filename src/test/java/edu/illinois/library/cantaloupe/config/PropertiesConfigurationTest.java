@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.config;
 
-import org.apache.commons.configuration.ConversionException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -12,41 +11,23 @@ import java.util.NoSuchElementException;
 
 import static org.junit.Assert.*;
 
-public class ConfigurationTest {
+public class PropertiesConfigurationTest {
 
-    private Configuration instance;
+    private PropertiesConfiguration instance;
 
     @Before
     public void setUp() {
-        instance = new Configuration();
+        instance = new PropertiesConfiguration();
     }
 
-    /* clearInstance() */
+    /* clear() */
 
     @Test
-    public void testClearInstance() {
-        Configuration instance1 = Configuration.getInstance();
-        Configuration.clearInstance();
-        Configuration instance2 = Configuration.getInstance();
-        assertNotSame(instance1, instance2);
-    }
-
-    /* getInstance() */
-
-    @Test
-    public void testGetInstance() {
-        try {
-            File directory = new File(".");
-            String cwd = directory.getCanonicalPath();
-            Path testPath = Paths.get(cwd, "src", "test", "java", "edu",
-                    "illinois", "library", "cantaloupe", "test");
-
-            String goodProps = testPath + File.separator + "cantaloupe.properties";
-            System.setProperty(edu.illinois.library.cantaloupe.config.Configuration.CONFIG_FILE_VM_ARGUMENT, goodProps);
-            assertNotNull(Configuration.getInstance());
-        } catch (IOException e) {
-            fail("Failed to set " + edu.illinois.library.cantaloupe.config.Configuration.CONFIG_FILE_VM_ARGUMENT);
-        }
+    public void testClear() {
+        PropertiesConfiguration instance = new PropertiesConfiguration();
+        instance.setProperty("cats", "yes");
+        instance.clear();
+        assertNull(instance.getString("cats"));
     }
 
     /* getBoolean(String) */
@@ -77,25 +58,6 @@ public class ConfigurationTest {
         assertFalse(instance.getBoolean("test3", false));
     }
 
-    /* getConfigurationFile() */
-
-    @Test
-    public void testGetConfigurationFile() {
-        try {
-            File directory = new File(".");
-            String cwd = directory.getCanonicalPath();
-            Path testPath = Paths.get(cwd, "src", "test", "java", "edu",
-                    "illinois", "library", "cantaloupe", "test");
-
-            String goodProps = testPath + File.separator + "cantaloupe.properties";
-            System.setProperty(edu.illinois.library.cantaloupe.config.Configuration.CONFIG_FILE_VM_ARGUMENT, goodProps);
-            assertEquals(new File(cwd + "/src/test/java/edu/illinois/library/cantaloupe/test/cantaloupe.properties"),
-                    Configuration.getInstance().getConfigurationFile());
-        } catch (IOException e) {
-            fail("Failed to set " + edu.illinois.library.cantaloupe.config.Configuration.CONFIG_FILE_VM_ARGUMENT);
-        }
-    }
-
     /* getDouble(String) */
 
     @Test
@@ -119,6 +81,25 @@ public class ConfigurationTest {
     public void testGetDoubleWithDefault() {
         final float delta = 0.0000001f;
         assertEquals(0.65f, instance.getDouble("test1", 0.65f), delta);
+    }
+
+    /* getFile() */
+
+    @Test
+    public void testGetFile() {
+        try {
+            File directory = new File(".");
+            String cwd = directory.getCanonicalPath();
+            Path testPath = Paths.get(cwd, "src", "test", "java", "edu",
+                    "illinois", "library", "cantaloupe", "test");
+
+            String goodProps = testPath + File.separator + "cantaloupe.properties";
+            System.setProperty(ConfigurationFactory.CONFIG_FILE_VM_ARGUMENT, goodProps);
+            assertEquals(new File(cwd + "/src/test/java/edu/illinois/library/cantaloupe/test/cantaloupe.properties"),
+                    instance.getFile());
+        } catch (IOException e) {
+            fail("Failed to set " + ConfigurationFactory.CONFIG_FILE_VM_ARGUMENT);
+        }
     }
 
     /* getFloat(String) */

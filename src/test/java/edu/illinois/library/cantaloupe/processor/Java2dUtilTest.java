@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
@@ -78,7 +79,7 @@ public class Java2dUtilTest {
     @Test
     public void testApplyWatermark() throws Exception {
         // ward off NPEs
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.clear();
 
         // read the base image into a BufferedImage
@@ -119,7 +120,7 @@ public class Java2dUtilTest {
     @Test
     public void testApplyWatermarkWithInset() throws Exception {
         // ward off NPEs
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.clear();
 
         // read the base image into a BufferedImage
@@ -241,7 +242,7 @@ public class Java2dUtilTest {
 
     @Test
     public void testGetWatermarkImage() throws Exception {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.clear();
 
         Watermark watermark = new Watermark();

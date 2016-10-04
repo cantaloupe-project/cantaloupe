@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -40,7 +41,7 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testCacheHeaders() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty("cache.client.enabled", "true");
         config.setProperty("cache.client.max_age", "1234");
         config.setProperty("cache.client.shared_max_age", "4567");
@@ -78,7 +79,7 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testEndpointDisabled() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.jpg");
 
@@ -115,7 +116,7 @@ public class InformationResourceTest extends ResourceTest {
             cacheFolder.mkdir();
         }
 
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
                 "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
@@ -192,7 +193,7 @@ public class InformationResourceTest extends ResourceTest {
     public void testResolverProcessorCompatibility() throws Exception {
         WebServer server = new WebServer();
 
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         resetConfiguration();
         config.setProperty("resolver.static", "HttpResolver");
         config.setProperty("HttpResolver.lookup_strategy", "BasicLookupStrategy");
@@ -218,7 +219,7 @@ public class InformationResourceTest extends ResourceTest {
     @Test
     public void testSlashSubstitution() throws Exception {
         WebServer server = new WebServer();
-        Configuration.getInstance().setProperty("slash_substitute", "CATS");
+        ConfigurationFactory.getInstance().setProperty("slash_substitute", "CATS");
         try {
             server.start();
             ClientResource client = getClientForUriPath("/subfolderCATSjpg/info.json");
@@ -254,7 +255,7 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testUrisInJsonWithBaseUriOverride() throws IOException {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.BASE_URI_CONFIG_KEY,
                 "http://example.org/");
 
@@ -287,7 +288,7 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testBaseUriOverridesProxyHeaders() throws IOException {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.BASE_URI_CONFIG_KEY,
                 "https://example.net/");
 

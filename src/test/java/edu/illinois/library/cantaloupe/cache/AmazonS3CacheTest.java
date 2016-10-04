@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.cache;
 import com.amazonaws.services.s3.iterable.S3Objects;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -40,7 +41,7 @@ public class AmazonS3CacheTest {
         final String secretKey = lines[1].replace("AWSSecretKey=", "").trim();
         final String bucketName = lines[3].replace("TestBucket=", "").trim();
 
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         config.setProperty(AmazonS3Cache.OBJECT_KEY_PREFIX_CONFIG_KEY, "test/");
         config.setProperty(AmazonS3Cache.TTL_SECONDS_CONFIG_KEY, 1);
@@ -73,7 +74,7 @@ public class AmazonS3CacheTest {
     @Test
     public void testGetBucketName() {
         assertEquals(
-                Configuration.getInstance().getString(AmazonS3Cache.BUCKET_NAME_CONFIG_KEY),
+                ConfigurationFactory.getInstance().getString(AmazonS3Cache.BUCKET_NAME_CONFIG_KEY),
                 instance.getBucketName());
     }
 
@@ -159,7 +160,7 @@ public class AmazonS3CacheTest {
 
     @Test
     public void testGetObjectKeyPrefix() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
 
         config.setProperty(AmazonS3Cache.OBJECT_KEY_PREFIX_CONFIG_KEY, "");
         assertEquals("", instance.getObjectKeyPrefix());

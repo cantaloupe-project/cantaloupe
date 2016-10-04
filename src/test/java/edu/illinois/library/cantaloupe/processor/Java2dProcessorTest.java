@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Scale;
@@ -51,7 +52,7 @@ public class Java2dProcessorTest extends ProcessorTest {
     public void testGetDownscaleFilter() {
         assertNull(instance.getDownscaleFilter());
 
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "bell");
         assertEquals(Scale.Filter.BELL, instance.getDownscaleFilter());
         config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "bicubic");
@@ -74,7 +75,7 @@ public class Java2dProcessorTest extends ProcessorTest {
     public void testGetUpscaleFilter() {
         assertNull(instance.getUpscaleFilter());
 
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "bell");
         assertEquals(Scale.Filter.BELL, instance.getUpscaleFilter());
         config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "bicubic");
@@ -133,7 +134,7 @@ public class Java2dProcessorTest extends ProcessorTest {
 
     @Test
     public void testGetImageInfoWithOrientation() throws Exception {
-        Configuration.getInstance().
+        ConfigurationFactory.getInstance().
                 setProperty(RESPECT_ORIENTATION_CONFIG_KEY, true);
 
         final File fixture = TestUtil.getImage("jpg-rotated.jpg");

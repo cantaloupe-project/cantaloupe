@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.MetadataCopy;
 import edu.illinois.library.cantaloupe.image.Operation;
@@ -123,7 +124,7 @@ class TiffImageWriter extends AbstractImageWriter {
      */
     private ImageWriteParam getJaiWriteParam(ImageWriter writer) {
         final ImageWriteParam writeParam = writer.getDefaultWriteParam();
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         final String compressionType = config.getString(
                 JAI_TIF_COMPRESSION_CONFIG_KEY);
         if (compressionType != null) {
@@ -139,7 +140,7 @@ class TiffImageWriter extends AbstractImageWriter {
      */
     private ImageWriteParam getJava2dWriteParam(ImageWriter writer) {
         final ImageWriteParam writeParam = writer.getDefaultWriteParam();
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         final String compressionType = config.getString(
                 JAVA2D_TIF_COMPRESSION_CONFIG_KEY);
         if (compressionType != null) {

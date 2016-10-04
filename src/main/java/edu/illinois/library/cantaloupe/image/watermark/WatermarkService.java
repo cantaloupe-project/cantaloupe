@@ -1,13 +1,12 @@
 package edu.illinois.library.cantaloupe.image.watermark;
 
-import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
 import java.awt.Dimension;
@@ -32,9 +31,6 @@ public abstract class WatermarkService {
          * properties for a particular request. */
         DELEGATE_SCRIPT;
     }
-
-    private static Logger logger = LoggerFactory.
-            getLogger(WatermarkService.class);
 
     public static final String WATERMARK_ENABLED_CONFIG_KEY =
             "watermark.enabled";
@@ -160,7 +156,7 @@ public abstract class WatermarkService {
      * @throws ConfigurationException
      */
     private static File getBasicImage() throws ConfigurationException {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         final String path = config.getString(WATERMARK_FILE_CONFIG_KEY, "");
         if (path.length() > 0) {
             return new File(path);
@@ -177,7 +173,7 @@ public abstract class WatermarkService {
      *         {@link WatermarkService#WATERMARK_INSET_CONFIG_KEY} is not set.
      */
     private static int getBasicInset() {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         return config.getInt(WATERMARK_INSET_CONFIG_KEY, 0);
     }
 
@@ -192,7 +188,7 @@ public abstract class WatermarkService {
      */
     private static Position getBasicPosition()
             throws ConfigurationException {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         final String configValue = config.
                 getString(WATERMARK_POSITION_CONFIG_KEY, "");
         if (configValue.length() > 0) {
@@ -209,7 +205,7 @@ public abstract class WatermarkService {
     }
 
     private static Strategy getStrategy() {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         final String configValue = config.
                 getString(WATERMARK_STRATEGY_CONFIG_KEY, "BasicStrategy");
         switch (configValue) {
@@ -224,7 +220,7 @@ public abstract class WatermarkService {
      * @return Whether {@link #WATERMARK_ENABLED_CONFIG_KEY} is true.
      */
     public static boolean isEnabled() {
-        return Configuration.getInstance().
+        return ConfigurationFactory.getInstance().
                 getBoolean(WATERMARK_ENABLED_CONFIG_KEY, false);
     }
 
@@ -234,7 +230,7 @@ public abstract class WatermarkService {
      * the given dimensions.
      */
     public static boolean shouldApplyToImage(Dimension outputImageSize) {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         final int minOutputWidth =
                 config.getInt(WATERMARK_OUTPUT_WIDTH_THRESHOLD_CONFIG_KEY, 0);
         final int minOutputHeight =

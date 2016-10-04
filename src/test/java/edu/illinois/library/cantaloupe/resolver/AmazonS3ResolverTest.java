@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
@@ -47,7 +48,7 @@ public class AmazonS3ResolverTest {
         final String secretKey = lines[1].replace("AWSSecretKey=", "").trim();
         final String bucket = lines[2].replace("Bucket=", "").trim();
 
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         config.setProperty(AmazonS3Resolver.BUCKET_NAME_CONFIG_KEY, bucket);
         config.setProperty(AmazonS3Resolver.ACCESS_KEY_ID_CONFIG_KEY, accessKeyId);
@@ -81,7 +82,7 @@ public class AmazonS3ResolverTest {
 
     @Test
     public void testGetStreamSourceWithScriptLookupStrategy() throws Exception {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AmazonS3Resolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
@@ -128,7 +129,7 @@ public class AmazonS3ResolverTest {
 
     @Test
     public void testGetSourceFormatWithScriptLookupStrategy() throws IOException {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AmazonS3Resolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,

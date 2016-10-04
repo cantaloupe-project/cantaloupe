@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +41,7 @@ public abstract class CacheFactory {
      * @return Set of single instances of all available source caches.
      */
     public static Set<SourceCache> getAllSourceCaches() {
-        return new HashSet<SourceCache>(
+        return new HashSet<>(
                 Collections.singletonList(new FilesystemCache()));
     }
 
@@ -55,7 +55,7 @@ public abstract class CacheFactory {
      */
     public static synchronized DerivativeCache getDerivativeCache() {
         try {
-            String cacheName = Configuration.getInstance().
+            String cacheName = ConfigurationFactory.getInstance().
                     getString(DERIVATIVE_CACHE_CONFIG_KEY);
             if (cacheName != null && cacheName.length() > 0) {
                 String className = CacheFactory.class.getPackage().getName() +
@@ -86,7 +86,7 @@ public abstract class CacheFactory {
      */
     public static synchronized SourceCache getSourceCache() {
         try {
-            String cacheName = Configuration.getInstance().
+            String cacheName = ConfigurationFactory.getInstance().
                     getString(SOURCE_CACHE_CONFIG_KEY);
             if (cacheName != null && cacheName.length() > 0) {
                 String className = CacheFactory.class.getPackage().getName() +

@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -59,7 +60,7 @@ public class ImageResourceTest extends ResourceTest {
         final String username = "user";
         final String secret = "secret";
         StandaloneEntry.getWebServer().stop();
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(WebApplication.BASIC_AUTH_ENABLED_CONFIG_KEY, "true");
         config.setProperty(WebApplication.BASIC_AUTH_USERNAME_CONFIG_KEY, username);
         config.setProperty(WebApplication.BASIC_AUTH_SECRET_CONFIG_KEY, secret);
@@ -94,7 +95,7 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testCacheHeadersWhenCachingEnabled() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty("cache.client.enabled", "true");
         config.setProperty("cache.client.max_age", "1234");
         config.setProperty("cache.client.shared_max_age", "4567");
@@ -130,7 +131,7 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testCacheHeadersWhenCachingDisabled() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty("cache.client.enabled", "false");
         config.setProperty("cache.client.max_age", "1234");
         config.setProperty("cache.client.shared_max_age", "4567");
@@ -157,7 +158,7 @@ public class ImageResourceTest extends ResourceTest {
         assertNull(client.getResponseEntity().getDisposition());
 
         // inline
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(ImageResource.CONTENT_DISPOSITION_CONFIG_KEY,
                 "inline");
         client.get();
@@ -176,7 +177,7 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testEndpointDisabled() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.jpg");
 
@@ -218,7 +219,7 @@ public class ImageResourceTest extends ResourceTest {
             cacheFolder.mkdir();
         }
 
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
                 "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
@@ -281,7 +282,7 @@ public class ImageResourceTest extends ResourceTest {
      */
     @Test
     public void testLinkHeader() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.jpg");
 
@@ -304,7 +305,7 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testMaxPixels() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.png");
 
@@ -323,7 +324,7 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testMaxPixelsIgnoredWhenStreamingSource() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.jpg");
         config.setProperty("max_pixels", 1000);
@@ -344,7 +345,7 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testGetRepresentationDisposition() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.clear();
 
         final Identifier identifier = new Identifier("cats?/\\dogs");
@@ -388,7 +389,7 @@ public class ImageResourceTest extends ResourceTest {
         WebServer server = new WebServer();
 
         resetConfiguration();
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty("resolver.static", "HttpResolver");
         config.setProperty("HttpResolver.lookup_strategy", "BasicLookupStrategy");
         config.setProperty("HttpResolver.BasicLookupStrategy.url_prefix",
@@ -413,7 +414,7 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testRestrictToSizes() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
 
         // not restricted
         config.setProperty(ImageResource.RESTRICT_TO_SIZES_CONFIG_KEY, false);
@@ -437,7 +438,7 @@ public class ImageResourceTest extends ResourceTest {
     @Test
     public void testSlashSubstitution() throws Exception {
         WebServer server = new WebServer();
-        Configuration.getInstance().setProperty("slash_substitute", "CATS");
+        ConfigurationFactory.getInstance().setProperty("slash_substitute", "CATS");
         try {
             server.start();
             ClientResource client = getClientForUriPath("/subfolderCATSjpg/full/full/0/default.jpg");

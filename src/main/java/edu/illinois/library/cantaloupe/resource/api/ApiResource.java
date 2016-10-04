@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.resource.api;
 
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
-import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
@@ -18,7 +18,7 @@ public class ApiResource extends AbstractResource {
 
     @Override
     protected void doInit() throws ResourceException {
-        if (!Configuration.getInstance().
+        if (!ConfigurationFactory.getInstance().
                 getBoolean(ENABLED_CONFIG_KEY, true)) {
             throw new EndpointDisabledException();
         }

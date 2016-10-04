@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -44,7 +45,7 @@ public class ImageMagickProcessorTest extends Im4JavaProcessorTest {
             // retrieve the output of the `identify -list format` command,
             // which contains a list of all supported formats
             Runtime runtime = Runtime.getRuntime();
-            Configuration config = Configuration.getInstance();
+            Configuration config = ConfigurationFactory.getInstance();
             config.clear();
 
             String pathPrefix = config.getString("ImageMagickProcessor.path_to_binaries");
@@ -113,7 +114,7 @@ public class ImageMagickProcessorTest extends Im4JavaProcessorTest {
     @Test
     public void testProcessWithRotationAndCustomBackgroundColorAndNonTransparentOutputFormat()
             throws Exception {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         config.setProperty(ImageMagickProcessor.BACKGROUND_COLOR_CONFIG_KEY, "blue");
 

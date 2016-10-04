@@ -5,6 +5,7 @@ import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.ListBlobItem;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -41,7 +42,7 @@ public class AzureStorageCacheTest {
         final String accountKey = lines[1].replace("account_key=", "").trim();
         final String container = lines[3].replace("test_container=", "").trim();
 
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         config.setProperty(AzureStorageCache.OBJECT_KEY_PREFIX_CONFIG_KEY, "test/");
         config.setProperty(AzureStorageCache.TTL_SECONDS_CONFIG_KEY, 1);
@@ -74,7 +75,7 @@ public class AzureStorageCacheTest {
     @Test
     public void testGetContainerName() {
         assertEquals(
-                Configuration.getInstance().
+                ConfigurationFactory.getInstance().
                         getString(AzureStorageCache.CONTAINER_NAME_CONFIG_KEY),
                 AzureStorageCache.getContainerName());
     }
@@ -159,7 +160,7 @@ public class AzureStorageCacheTest {
 
     @Test
     public void testGetObjectKeyPrefix() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
 
         config.setProperty(AzureStorageCache.OBJECT_KEY_PREFIX_CONFIG_KEY, "");
         assertEquals("", instance.getObjectKeyPrefix());

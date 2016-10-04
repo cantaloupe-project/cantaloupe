@@ -6,6 +6,7 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
@@ -17,7 +18,7 @@ public abstract class LoggerUtil {
      * Reloads the Logback configuration from logback.xml.
      */
     public static synchronized void reloadConfiguration() {
-        Configuration appConfig = Configuration.getInstance();
+        Configuration appConfig = ConfigurationFactory.getInstance();
         if (appConfig != null) {
             // Reset the logger context
             LoggerContext loggerContext = (LoggerContext)

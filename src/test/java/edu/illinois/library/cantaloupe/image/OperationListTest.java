@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.image;
 import static org.junit.Assert.*;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -35,7 +36,7 @@ public class OperationListTest {
 
     @Before
     public void setUp() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         config.setProperty(WatermarkService.WATERMARK_ENABLED_CONFIG_KEY, false);
 

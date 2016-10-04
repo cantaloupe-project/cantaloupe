@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 
 import java.io.File;
 import java.net.URL;
@@ -23,10 +23,10 @@ public class StandaloneEntry {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-        final File configFile = Configuration.getInstance().getConfigurationFile();
+        final File configFile = ConfigurationFactory.getInstance().getFile();
         if (configFile == null) {
             System.out.println("Usage: java " +
-                    "-D" + Configuration.CONFIG_FILE_VM_ARGUMENT +
+                    "-D" + ConfigurationFactory.CONFIG_FILE_VM_ARGUMENT +
                     "=cantaloupe.properties -jar " + getWarFile().getName());
             System.exit(-1);
         }

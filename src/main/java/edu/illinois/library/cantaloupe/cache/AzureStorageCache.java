@@ -8,6 +8,7 @@ import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azure.storage.blob.ListBlobItem;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
@@ -51,7 +52,7 @@ class AzureStorageCache implements DerivativeCache {
     static synchronized CloudBlobClient getClientInstance() {
         if (client == null) {
             try {
-                final Configuration config = Configuration.getInstance();
+                final Configuration config = ConfigurationFactory.getInstance();
                 final String accountName = config.getString(ACCOUNT_NAME_CONFIG_KEY);
                 final String accountKey = config.getString(ACCOUNT_KEY_CONFIG_KEY);
 
@@ -77,7 +78,7 @@ class AzureStorageCache implements DerivativeCache {
 
     static String getContainerName() {
         // All letters in a container name must be lowercase.
-        return Configuration.getInstance().
+        return ConfigurationFactory.getInstance().
                 getString(CONTAINER_NAME_CONFIG_KEY).toLowerCase();
     }
 
@@ -188,7 +189,7 @@ class AzureStorageCache implements DerivativeCache {
      * slash.
      */
     String getObjectKeyPrefix() {
-        String prefix = Configuration.getInstance().
+        String prefix = ConfigurationFactory.getInstance().
                 getString(OBJECT_KEY_PREFIX_CONFIG_KEY);
         if (prefix.length() < 1 || prefix.equals("/")) {
             return "";
@@ -244,7 +245,7 @@ class AzureStorageCache implements DerivativeCache {
         final CloudBlobClient client = getClientInstance();
 
         final Calendar c = Calendar.getInstance();
-        c.add(Calendar.SECOND, 0 - Configuration.getInstance().
+        c.add(Calendar.SECOND, 0 - ConfigurationFactory.getInstance().
                 getInt(TTL_SECONDS_CONFIG_KEY));
         final Date cutoffDate = c.getTime();
 

@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
@@ -46,10 +47,10 @@ public class StandaloneEntryTest {
     public final ExpectedSystemExit exit = ExpectedSystemExit.none();
 
     private static void resetConfiguration() throws IOException {
-        Configuration.clearInstance();
-        System.setProperty(Configuration.CONFIG_FILE_VM_ARGUMENT,
+        Configuration config = ConfigurationFactory.getInstance();
+        config.clear();
+        System.setProperty(ConfigurationFactory.CONFIG_FILE_VM_ARGUMENT,
                 TestUtil.getFixture("config.properties").getAbsolutePath());
-        Configuration config = Configuration.getInstance();
         try {
             config.setProperty(WebServer.HTTP_ENABLED_CONFIG_KEY, true);
             config.setProperty(WebServer.HTTP_PORT_CONFIG_KEY, HTTP_PORT);
@@ -71,7 +72,7 @@ public class StandaloneEntryTest {
     @After
     public void tearDown() throws IOException {
         deleteCacheDir();
-        System.clearProperty(Configuration.CONFIG_FILE_VM_ARGUMENT);
+        System.clearProperty(ConfigurationFactory.CONFIG_FILE_VM_ARGUMENT);
         System.clearProperty(EntryServlet.CLEAN_CACHE_VM_ARGUMENT);
         System.clearProperty(EntryServlet.PURGE_CACHE_VM_ARGUMENT);
         System.clearProperty(EntryServlet.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT);
@@ -80,28 +81,28 @@ public class StandaloneEntryTest {
     @Test
     public void testMainWithMissingConfigFileArgumentExits() throws Exception {
         exit.expectSystemExitWithStatus(-1);
-        System.clearProperty(Configuration.CONFIG_FILE_VM_ARGUMENT);
+        System.clearProperty(ConfigurationFactory.CONFIG_FILE_VM_ARGUMENT);
         StandaloneEntry.main(new String[] {});
     }
 
     @Test
     public void testMainWithEmptyConfigFileArgumentExits() throws Exception {
         exit.expectSystemExitWithStatus(-1);
-        System.setProperty(Configuration.CONFIG_FILE_VM_ARGUMENT, "");
+        System.setProperty(ConfigurationFactory.CONFIG_FILE_VM_ARGUMENT, "");
         StandaloneEntry.main(new String[] {});
     }
 
     @Test
     public void testMainWithInvalidConfigFileArgumentExits() throws Exception {
         exit.expectSystemExitWithStatus(-1);
-        System.setProperty(Configuration.CONFIG_FILE_VM_ARGUMENT, "/bla/bla/bla");
+        System.setProperty(ConfigurationFactory.CONFIG_FILE_VM_ARGUMENT, "/bla/bla/bla");
         StandaloneEntry.main(new String[] {});
     }
 
     @Test
     public void testMainWithDirectoryConfigFileArgumentExits() throws Exception {
         exit.expectSystemExitWithStatus(-1);
-        System.setProperty(Configuration.CONFIG_FILE_VM_ARGUMENT,
+        System.setProperty(ConfigurationFactory.CONFIG_FILE_VM_ARGUMENT,
                 TestUtil.getFixture("bla").getParentFile().getAbsolutePath());
         StandaloneEntry.main(new String[] {});
     }
@@ -126,7 +127,7 @@ public class StandaloneEntryTest {
         imageDir.mkdirs();
         infoDir.mkdirs();
 
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
                 "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
@@ -157,7 +158,7 @@ public class StandaloneEntryTest {
 
         // set up the cache
         resetConfiguration();
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
                 "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
@@ -210,7 +211,7 @@ public class StandaloneEntryTest {
         imageDir.mkdirs();
         infoDir.mkdirs();
 
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
                 "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",

@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -12,7 +13,7 @@ public class WebServerTest {
 
     @Before
     public void setUp() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.clear();
 
         instance = new WebServer();

@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Operation;
@@ -62,7 +63,7 @@ class GraphicsMagickProcessor extends Im4JavaProcessor
      * @return
      */
     private static String getPath(String binaryName) {
-        String path = Configuration.getInstance().
+        String path = ConfigurationFactory.getInstance().
                 getString(PATH_TO_BINARIES_CONFIG_KEY);
         if (path != null && path.length() > 0) {
             path = StringUtils.stripEnd(path, File.separator) + File.separator +
@@ -232,7 +233,7 @@ class GraphicsMagickProcessor extends Im4JavaProcessor
         }
 
         // Apply the sharpen operation, if present.
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         final double sharpenValue = config.getDouble(SHARPEN_CONFIG_KEY, 0);
         imOp.unsharp(sharpenValue);
     }
@@ -255,7 +256,7 @@ class GraphicsMagickProcessor extends Im4JavaProcessor
             throw new UnsupportedOutputFormatException();
         }
 
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         try {
             IMOperation op = new IMOperation();
             op.addImage(format.getPreferredExtension() + ":-");

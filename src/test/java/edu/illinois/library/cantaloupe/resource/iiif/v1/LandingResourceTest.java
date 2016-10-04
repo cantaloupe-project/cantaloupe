@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.junit.Test;
 import org.restlet.data.Status;
@@ -19,7 +20,7 @@ public class LandingResourceTest extends ResourceTest {
 
     @Test
     public void testEndpointDisabled() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         ClientResource client = getClientForUriPath(
                 WebApplication.IIIF_1_PATH);
 

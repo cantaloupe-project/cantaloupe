@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.MetadataCopy;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.redaction.RedactionService;
@@ -98,7 +99,7 @@ public abstract class AbstractResource extends ServerResource {
     public static Reference getPublicRootRef(final Request request) {
         Reference rootRef = new Reference(request.getRootRef());
 
-        final String baseUri = Configuration.getInstance().
+        final String baseUri = ConfigurationFactory.getInstance().
                 getString(BASE_URI_CONFIG_KEY);
         if (baseUri != null && baseUri.length() > 0) {
             final Reference baseRef = new Reference(baseUri);
@@ -157,7 +158,7 @@ public abstract class AbstractResource extends ServerResource {
     public static Disposition getRepresentationDisposition(
             Identifier identifier, Format outputFormat) {
         Disposition disposition = new Disposition();
-        switch (Configuration.getInstance().
+        switch (ConfigurationFactory.getInstance().
                 getString(CONTENT_DISPOSITION_CONFIG_KEY, "none")) {
             case "inline":
                 disposition.setType(Disposition.TYPE_INLINE);
@@ -234,7 +235,7 @@ public abstract class AbstractResource extends ServerResource {
         }
 
         // Metadata copies
-        if (Configuration.getInstance().
+        if (ConfigurationFactory.getInstance().
                 getBoolean(PRESERVE_METADATA_CONFIG_KEY, false)) {
             opList.add(new MetadataCopy());
         }
@@ -266,7 +267,7 @@ public abstract class AbstractResource extends ServerResource {
      * @return Path component with slashes decoded
      */
     protected final String decodeSlashes(final String uriPathComponent) {
-        final String substitute = Configuration.getInstance().
+        final String substitute = ConfigurationFactory.getInstance().
                 getString(SLASH_SUBSTITUTE_CONFIG_KEY, "");
         if (substitute.length() > 0) {
             return StringUtils.replace(uriPathComponent, substitute, "/");
@@ -281,7 +282,7 @@ public abstract class AbstractResource extends ServerResource {
     protected final List<CacheDirective> getCacheDirectives() {
         List<CacheDirective> directives = new ArrayList<>();
         try {
-            final Configuration config = Configuration.getInstance();
+            final Configuration config = ConfigurationFactory.getInstance();
             final boolean enabled = config.getBoolean(
                     CLIENT_CACHE_ENABLED_CONFIG_KEY, false);
             if (enabled) {
@@ -344,7 +345,7 @@ public abstract class AbstractResource extends ServerResource {
             throws IOException, ProcessorException, CacheException {
         // Max allowed size is ignored when the processing is a no-op.
         final long maxAllowedSize = (ops.isNoOp(format)) ?
-                0 : Configuration.getInstance().getLong(MAX_PIXELS_CONFIG_KEY, 0);
+                0 : ConfigurationFactory.getInstance().getLong(MAX_PIXELS_CONFIG_KEY, 0);
 
         final ImageInfo imageInfo = getOrReadInfo(ops.getIdentifier(), proc);
         final Dimension effectiveSize = ops.getResultingSize(imageInfo.getSize());

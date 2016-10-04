@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.MetadataCopy;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
@@ -40,7 +41,7 @@ public class PngImageWriterTest {
 
     @Test
     public void testWriteWithBufferedImageAndNativeMetadata()  throws Exception {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("png-nativemetadata.png");
         final PngImageReader reader = new PngImageReader(fixture);
@@ -54,7 +55,7 @@ public class PngImageWriterTest {
 
     @Test
     public void testWriteWithBufferedImageAndXmpMetadata()  throws Exception {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("png-xmp.png");
         final PngImageReader reader = new PngImageReader(fixture);
@@ -81,7 +82,7 @@ public class PngImageWriterTest {
 
     @Test
     public void testWriteWithPlanarImageAndNativeMetadata() throws Exception {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("png-nativemetadata.png");
         final PngImageReader reader = new PngImageReader(fixture);
@@ -96,7 +97,7 @@ public class PngImageWriterTest {
 
     @Test
     public void testWriteWithPlanarImageAndXmpMetadata() throws Exception {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("png-xmp.png");
         final PngImageReader reader = new PngImageReader(fixture);
@@ -184,7 +185,7 @@ public class PngImageWriterTest {
 
     private PngImageWriter getWriter(Metadata metadata) throws IOException {
         OperationList opList = new OperationList();
-        if (Configuration.getInstance().
+        if (ConfigurationFactory.getInstance().
                 getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false)) {
             opList.add(new MetadataCopy());
         }

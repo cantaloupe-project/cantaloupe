@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource.api;
 import edu.illinois.library.cantaloupe.StandaloneEntry;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +29,7 @@ public class ApiResourceTest extends ResourceTest {
         super.setUp();
         StandaloneEntry.getWebServer().stop();
 
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         resetConfiguration();
         config.setProperty(ApiResource.ENABLED_CONFIG_KEY, true);
         config.setProperty(WebApplication.API_USERNAME_CONFIG_KEY, username);
@@ -39,7 +40,7 @@ public class ApiResourceTest extends ResourceTest {
 
     @Test
     public void testDoPurgeWithEndpointDisabled() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(ApiResource.ENABLED_CONFIG_KEY, false);
 
         ClientResource client = getClientForUriPath(WebApplication.API_PATH + "/" + identifier);

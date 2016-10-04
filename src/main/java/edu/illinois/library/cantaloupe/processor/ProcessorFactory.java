@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 
 import java.io.IOException;
@@ -67,13 +67,13 @@ public abstract class ProcessorFactory {
      *         one is not set.
      */
     private static String getAssignedProcessorName(Format format) {
-        final String value = Configuration.getInstance().
+        final String value = ConfigurationFactory.getInstance().
                 getString("processor." + format.getPreferredExtension());
         return (value != null && value.length() > 0) ? value : null;
     }
 
     private static String getFallbackProcessorName() {
-        return Configuration.getInstance().
+        return ConfigurationFactory.getInstance().
                 getString(FALLBACK_PROCESSOR_CONFIG_KEY);
     }
 

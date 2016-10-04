@@ -1,7 +1,8 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Operation;
@@ -99,7 +100,7 @@ class PdfBoxProcessor extends AbstractProcessor
     }
 
     Scale.Filter getDownscaleFilter() {
-        final String upscaleFilterStr = Configuration.getInstance().
+        final String upscaleFilterStr = ConfigurationFactory.getInstance().
                 getString(DOWNSCALE_FILTER_CONFIG_KEY);
         try {
             return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
@@ -110,7 +111,7 @@ class PdfBoxProcessor extends AbstractProcessor
     }
 
     Scale.Filter getUpscaleFilter() {
-        final String upscaleFilterStr = Configuration.getInstance().
+        final String upscaleFilterStr = ConfigurationFactory.getInstance().
                 getString(UPSCALE_FILTER_CONFIG_KEY);
         try {
             return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
@@ -270,7 +271,7 @@ class PdfBoxProcessor extends AbstractProcessor
         }
 
         // Apply the sharpen operation, if present.
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         final float sharpenValue = config.getFloat(SHARPEN_CONFIG_KEY, 0);
         final Sharpen sharpen = new Sharpen(sharpenValue);
         image = Java2dUtil.sharpenImage(image, sharpen);
@@ -340,7 +341,8 @@ class PdfBoxProcessor extends AbstractProcessor
     }
 
     private float getDpi(int reductionFactor) {
-        float dpi = Configuration.getInstance().getFloat(DPI_CONFIG_KEY, 150);
+        float dpi = ConfigurationFactory.getInstance().
+                getFloat(DPI_CONFIG_KEY, 150);
         // Decrease the DPI if the reduction factor is positive.
         for (int i = 0; i < reductionFactor; i++) {
             dpi /= 2f;

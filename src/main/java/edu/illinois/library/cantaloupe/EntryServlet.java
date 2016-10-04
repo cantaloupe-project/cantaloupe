@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.CacheWorker;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.ConfigurationWatcher;
 import edu.illinois.library.cantaloupe.logging.LoggerUtil;
 import org.restlet.data.Protocol;
@@ -146,7 +147,7 @@ public class EntryServlet extends ServerServlet {
     }
 
     private void startCacheWorker() {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         if (config.getBoolean(CacheWorker.ENABLED_CONFIG_KEY, false)) {
             cacheWorkerExecutorService =
                     Executors.newSingleThreadScheduledExecutor();
@@ -158,8 +159,8 @@ public class EntryServlet extends ServerServlet {
     }
 
     private void startConfigWatcher() {
-        final Configuration config = Configuration.getInstance();
-        if (config.getConfigurationFile() != null) {
+        final Configuration config = ConfigurationFactory.getInstance();
+        if (config.getFile() != null) {
             configWatcherExecutorService =
                     Executors.newSingleThreadScheduledExecutor();
             configWatcherFuture = configWatcherExecutorService.submit(configWatcher);

@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.StandaloneEntry;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.WebServer;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
@@ -52,7 +53,7 @@ public class Version1_1ConformanceTest {
     private WebServer webServer;
 
     public static void resetConfiguration() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         try {
             File directory = new File(".");
@@ -130,7 +131,7 @@ public class Version1_1ConformanceTest {
         File directory = new File(".");
         String cwd = directory.getCanonicalPath();
         Path path = Paths.get(cwd, "src", "test", "resources");
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         resetConfiguration();
         config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",
                 path + File.separator);
