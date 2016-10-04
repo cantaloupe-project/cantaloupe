@@ -289,6 +289,7 @@ public class WebApplication extends Application {
         try {
             ChallengeAuthenticator apiAuth = createApiAuthenticator();
             apiAuth.setNext(ApiResource.class);
+            router.attach(API_PATH + "/configuration", apiAuth);
             router.attach(API_PATH + "/{identifier}", apiAuth);
         } catch (ConfigurationException e) {
             getLogger().log(Level.WARNING, e.getMessage());

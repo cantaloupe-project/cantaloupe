@@ -36,7 +36,6 @@ public class AdminResourceTest extends ResourceTest {
         StandaloneEntry.getWebServer().stop();
 
         Configuration config = ConfigurationFactory.getInstance();
-        resetConfiguration();
         config.setProperty(WebApplication.ADMIN_SECRET_CONFIG_KEY, secret);
 
         StandaloneEntry.getWebServer().start();
@@ -101,7 +100,6 @@ public class AdminResourceTest extends ResourceTest {
                 new ChallengeResponse(ChallengeScheme.HTTP_BASIC, username, secret));
         client.get(MediaType.TEXT_HTML);
         assertEquals(Status.SUCCESS_OK, client.getStatus());
-        System.out.println(client.getResponse().getEntityAsText());
         assertTrue(client.getResponse().getEntityAsText().
                 contains("Cantaloupe Image Server"));
     }

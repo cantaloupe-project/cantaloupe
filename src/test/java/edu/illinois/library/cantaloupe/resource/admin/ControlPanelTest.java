@@ -42,7 +42,6 @@ public class ControlPanelTest {
     @Before
     public void setUp() throws Exception {
         Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
         config.setProperty(WebApplication.ADMIN_SECRET_CONFIG_KEY, secret);
         config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
                 "FilesystemResolver");
