@@ -32,6 +32,10 @@
                     <a href="#cl-status" aria-controls="cl-status"
                        role="tab" data-toggle="tab">Status</a>
                 </li>
+                <li role="presentation" class="list-group-item" id="cl-configuration-button">
+                    <a href="#cl-configuration" aria-controls="cl-configuration"
+                       role="tab" data-toggle="tab">Configuration</a>
+                </li>
                 <li role="presentation" class="list-group-item" id="cl-http-button">
                     <a href="#cl-http" aria-controls="cl-http"
                        role="tab" data-toggle="tab">HTTP</a>
@@ -145,10 +149,45 @@
                         <h2>VM Arguments</h2>
                         <pre>#foreach ($arg in $vmArguments)$arg<br>#end</pre>
                     </section>
+                </div>
 
+                <div role="tabpanel" class="tab-pane" id="cl-configuration">
                     <section>
                         <h2>Configuration File</h2>
                         <pre>$configFilePath</pre>
+                    </section>
+
+                    <section>
+                        <h2>Representations</h2>
+                        <ul class="nav nav-pills" role="tablist">
+                            <li role="presentation" class="active">
+                                <a href="#cl-properties-configuration"
+                                   aria-controls="cl-properties-configuration" role="tab"
+                                   data-toggle="tab">Properties</a>
+                            </li>
+                            <li role="presentation">
+                                <a href="#cl-json-configuration"
+                                   aria-controls="cl-json-configuration" role="tab"
+                                   data-toggle="tab">JSON</a>
+                            </li>
+                            <li role="presentation">
+                                <a href="#cl-environment-configuration"
+                                   aria-controls="cl-environment-configuration" role="tab"
+                                   data-toggle="tab">Environment</a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <div role="tabpanel" class="tab-pane active" id="cl-properties-configuration">
+                                <pre></pre>
+                            </div>
+                            <div role="tabpanel" class="tab-pane" id="cl-json-configuration">
+                                <pre></pre>
+                            </div>
+                            <div role="tabpanel" class="tab-pane" id="cl-environment-configuration">
+                                <pre></pre>
+                            </div>
+                        </div>
                     </section>
                 </div>
 

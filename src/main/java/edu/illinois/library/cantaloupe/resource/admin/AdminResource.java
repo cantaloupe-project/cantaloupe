@@ -177,9 +177,8 @@ public class AdminResource extends AbstractResource {
 
         final File configFile =
                 ConfigurationFactory.getInstance().getFile();
-        if (configFile != null) {
-            vars.put("configFilePath", configFile.getAbsolutePath());
-        }
+        vars.put("configFilePath", (configFile != null) ?
+                configFile.getAbsolutePath() : "None (Using Environment)");
 
         ////////////////////////////////////////////////////////////////////
         //////////////////////// status section ////////////////////////////
