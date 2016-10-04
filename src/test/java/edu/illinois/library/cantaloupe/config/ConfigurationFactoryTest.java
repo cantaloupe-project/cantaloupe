@@ -23,8 +23,7 @@ public class ConfigurationFactoryTest {
     }
 
     @Test
-    public void testGetInstanceReturnsJsonConfigurationWithJsonVmOption()
-            throws Exception {
+    public void testGetInstanceReturnsJsonConfiguration() throws Exception {
         File directory = new File(".");
         String cwd = directory.getCanonicalPath();
         Path testPath = Paths.get(cwd, "src", "test", "java", "edu",
@@ -36,8 +35,13 @@ public class ConfigurationFactoryTest {
     }
 
     @Test
-    public void testGetInstanceReturnsPropertiesConfigurationWithPropertiesVmOption()
-            throws Exception {
+    public void testGetInstanceReturnsMemoryConfiguration() throws Exception {
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        assertTrue(ConfigurationFactory.getInstance() instanceof MemoryConfiguration);
+    }
+
+    @Test
+    public void testGetInstanceReturnsPropertiesConfiguration() throws Exception {
         File directory = new File(".");
         String cwd = directory.getCanonicalPath();
         Path testPath = Paths.get(cwd, "src", "test", "java", "edu",
