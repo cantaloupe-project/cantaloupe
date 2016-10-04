@@ -1,8 +1,5 @@
 package edu.illinois.library.cantaloupe.config;
 
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.FileConfiguration;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
@@ -11,10 +8,10 @@ import java.util.Iterator;
  * Class wrapping a Commons PropertyConfiguration instance for writing
  * properties files retaining structure and comments.
  */
-class PropertiesConfiguration implements Configuration {
+class PropertiesConfiguration extends FileConfiguration implements Configuration {
 
-    private org.apache.commons.configuration.Configuration commonsConfig =
-            new BaseConfiguration();
+    private org.apache.commons.configuration.PropertiesConfiguration commonsConfig =
+            new org.apache.commons.configuration.PropertiesConfiguration();
 
     public void clear() {
         commonsConfig.clear();
@@ -34,25 +31,6 @@ class PropertiesConfiguration implements Configuration {
 
     public double getDouble(String key, double defaultValue) {
         return commonsConfig.getDouble(key, defaultValue);
-    }
-
-    public File getFile() {
-        String configFilePath = System.
-                getProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
-        if (configFilePath != null) {
-            try {
-                // expand paths that start with "~"
-                configFilePath = configFilePath.replaceFirst("^~",
-                        System.getProperty("user.home"));
-                return new File(configFilePath).getCanonicalFile();
-            } catch (IOException e) {
-                // The logger may not have been initialized yet, as it depends
-                // on a working configuration. (Also, we don't want to
-                // introduce a dependency on the logger.)
-                System.out.println(e.getMessage());
-            }
-        }
-        return null;
     }
 
     public float getFloat(String key) {
@@ -99,8 +77,7 @@ class PropertiesConfiguration implements Configuration {
         final File configFile = getFile();
         if (configFile != null) {
             try {
-                if (commonsConfig != null && commonsConfig instanceof
-                        org.apache.commons.configuration.PropertiesConfiguration) {
+                if (commonsConfig != null) {
                     System.out.println("Reloading config file: " + configFile);
                 } else {
                     System.out.println("Loading config file: " + configFile);
@@ -124,7 +101,7 @@ class PropertiesConfiguration implements Configuration {
      */
     public synchronized void save() throws IOException {
         try {
-            ((FileConfiguration) commonsConfig).save();
+            commonsConfig.save();
         } catch (org.apache.commons.configuration.ConfigurationException e) {
             throw new IOException(e.getMessage(), e);
         }

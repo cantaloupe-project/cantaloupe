@@ -23,10 +23,10 @@ public abstract class ConfigurationFactory {
                 config = instance;
                 if (config == null) {
                     final String configArg = System.getProperty(CONFIG_VM_ARGUMENT);
-                    // If there is no configuration VM option supplied, try to
-                    // get configuration from the environment.
                     if (configArg == null || configArg.length() < 1) {
                         config = new EnvironmentConfiguration();
+                    } else if (configArg.endsWith(".json")) {
+                        config = new JsonConfiguration();
                     } else {
                         config = new PropertiesConfiguration();
                     }

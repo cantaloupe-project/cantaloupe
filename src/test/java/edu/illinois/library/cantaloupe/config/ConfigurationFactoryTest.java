@@ -1,9 +1,9 @@
 package edu.illinois.library.cantaloupe.config;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -11,22 +11,41 @@ import static org.junit.Assert.*;
 
 public class ConfigurationFactoryTest {
 
-    /* getInstance() */
+    @Before
+    public void setUp() {
+        ConfigurationFactory.clearInstance();
+    }
 
     @Test
-    public void testGetInstance() {
-        try {
-            File directory = new File(".");
-            String cwd = directory.getCanonicalPath();
-            Path testPath = Paths.get(cwd, "src", "test", "java", "edu",
-                    "illinois", "library", "cantaloupe", "test");
+    public void testGetInstanceReturnsEnvironmentConfigurationWithNoVmOption() {
+        System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
+        assertTrue(ConfigurationFactory.getInstance() instanceof EnvironmentConfiguration);
+    }
 
-            String goodProps = testPath + File.separator + "cantaloupe.properties";
-            System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, goodProps);
-            assertNotNull(ConfigurationFactory.getInstance());
-        } catch (IOException e) {
-            fail("Failed to set " + ConfigurationFactory.CONFIG_VM_ARGUMENT);
-        }
+    @Test
+    public void testGetInstanceReturnsJsonConfigurationWithJsonVmOption()
+            throws Exception {
+        File directory = new File(".");
+        String cwd = directory.getCanonicalPath();
+        Path testPath = Paths.get(cwd, "src", "test", "java", "edu",
+                "illinois", "library", "cantaloupe", "test");
+        String opt = testPath + File.separator + "cantaloupe.json";
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, opt);
+
+        assertTrue(ConfigurationFactory.getInstance() instanceof JsonConfiguration);
+    }
+
+    @Test
+    public void testGetInstanceReturnsPropertiesConfigurationWithPropertiesVmOption()
+            throws Exception {
+        File directory = new File(".");
+        String cwd = directory.getCanonicalPath();
+        Path testPath = Paths.get(cwd, "src", "test", "java", "edu",
+                "illinois", "library", "cantaloupe", "test");
+        String opt = testPath + File.separator + "cantaloupe.properties";
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, opt);
+
+        assertTrue(ConfigurationFactory.getInstance() instanceof PropertiesConfiguration);
     }
 
 }

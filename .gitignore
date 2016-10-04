@@ -11,6 +11,7 @@ nbactions.xml
 dependency-reduced-pom.xml
 
 # App config
+/cantaloupe.json
 /cantaloupe.properties
 /delegates.rb
 /watermark.*
