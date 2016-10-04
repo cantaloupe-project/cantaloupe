@@ -1,0 +1,80 @@
+---
+layout: manual_3.3
+title: Configuration
+---
+
+<ol class="breadcrumb">
+  <li><a href="{{ site.baseurl }}/">Home</a></li>
+  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
+  <li><a href="{{ site.baseurl }}/manual/3.3/">3.3</a></li>
+  <li class="active">Configuration</li>
+</ol>
+
+<h1>Configuration</h1>
+
+<ul>
+  <li><a href="#Methods">Methods</a>
+    <ul>
+      <li><a href="#Properties">Properties</a></li>
+      <li><a href="#JSON">JSON</a></li>
+      <li><a href="#Environment">Environment</a></li>
+      <li><a href="#Switching%20to%20a%20Different%20Method">Switching to a Different Method</a></li>
+    </ul>
+  </li>
+  <li><a href="#Live%20Changes">Live Changes</a></li>
+</ul>
+
+<h2 id="Methods">Methods</h2>
+
+<p>Cantaloupe can be configured in one of several ways.</p>
+
+<h3 id="Properties">Properties</h3>
+
+<p>Properties configuration is the "traditional" configuration method that Cantaloupe has used since its inception. (<a href="https://en.wikipedia.org/wiki/.properties">.properties</a> is a syntax for configuration files that is very easy to read and write.) It is still the recommended configuration method, if it will suit your needs.</p>
+
+<p>A sample .properties configuration file, called <span class="filename">cantaloupe.properties.sample</span>, is included in the distribution archive. It is recommended to make a copy of this file and use the copy as your primary configuration file.</p>
+
+<p>To use a .properties configuration file, supply the <code>-Dcantaloupe.config</code> VM option, pointing to an absolute or relative path to the file. The file can be located anywhere, but its name must end in <span class="filename">.properties</span>.</p>
+
+<hr>
+
+<h3 id="JSON">JSON</h3>
+
+<p>JSON configuration debuted in version 3.3. Essentially, it uses all of the same keys as properties configuration, but in JSON format, which is easier for computers to read and write.</p>
+
+<p>The main advantage of JSON configuration is that it can be updated on-the-fly via a <a href="endpoints.html#API">REST API method</a>. When a configuration change is received via the REST API, it will be written out to the configuration file immediately.</p>
+
+<p>To use a JSON configuration file, supply the <code>-Dcantaloupe.config</code> VM option, pointing to an absolute or relative path to the file. The file can be located anywhere, but its name must end in <span class="filename">.json</span>.</p>
+
+<hr>
+
+<h3 id="Environment">Environment</h2>
+
+<p>Environment configuration also debuted in version 3.3. This method will use configuration stored in the user environment.</p>
+
+<p>The syntax of the keys used in the other configuration methods is incompatible with the environment. Keys are all-uppercase; have a prefix of <var>CANTALOUPE_</var>; and have underscores in place of periods. So, a key like:</p>
+
+<p><code>endpoint.iiif.2.enabled = true</code></p>
+
+<p>Would be stored in the environment as:</p>
+
+<p><code>CANTALOUPE_ENDPOINT_IIIF_2_ENABLED=true</code></p>
+
+<p>Cantaloupe cannot write to the environment, but it will pick up changes immediately.</p>
+
+<hr>
+
+<h3 id="Switching to a Different Method">Switching to a Different Method</h3>
+
+<p>Normally, you will start off with a <a href="#Properties">properties configuration</a>. From there, you have two options:</p>
+
+<ol>
+  <li>Transform the properties file to your desired format yourself.</li>
+  <li>Go to the "Configuration" tab of the <a href="getting-started.html#Control%20Panel">Control Panel</a> to retrieve JSON or environment representations of your current configuration.</li>
+</ol>
+
+<hr>
+
+<h2 id="Live Changes">Live Changes</h2>
+
+<p>Cantaloupe automatically reloads the configuration file within a few seconds of a change. Changes to most keys take effect immediately, but some require a restart; see the sample properties file for documentation of which.</p>
