@@ -25,8 +25,6 @@ public abstract class ConfigurationFactory {
                     final String configArg = System.getProperty(CONFIG_VM_ARGUMENT);
                     if (configArg == null || configArg.length() < 1) {
                         config = new EnvironmentConfiguration();
-                    } else if (configArg.endsWith(".json")) {
-                        config = new JsonConfiguration();
                     } else if (configArg.equals("memory")) {
                         config = new MemoryConfiguration();
                     } else {

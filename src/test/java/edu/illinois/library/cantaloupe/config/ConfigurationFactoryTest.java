@@ -23,18 +23,6 @@ public class ConfigurationFactoryTest {
     }
 
     @Test
-    public void testGetInstanceReturnsJsonConfiguration() throws Exception {
-        File directory = new File(".");
-        String cwd = directory.getCanonicalPath();
-        Path testPath = Paths.get(cwd, "src", "test", "java", "edu",
-                "illinois", "library", "cantaloupe", "test");
-        String opt = testPath + File.separator + "cantaloupe.json";
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, opt);
-
-        assertTrue(ConfigurationFactory.getInstance() instanceof JsonConfiguration);
-    }
-
-    @Test
     public void testGetInstanceReturnsMemoryConfiguration() throws Exception {
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         assertTrue(ConfigurationFactory.getInstance() instanceof MemoryConfiguration);
