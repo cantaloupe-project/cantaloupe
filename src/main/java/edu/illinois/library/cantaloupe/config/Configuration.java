@@ -34,6 +34,11 @@ public interface Configuration {
 
     int getInt(String key, int defaultValue);
 
+    /**
+     * @return All keys contained in the configuration. Note that the syntax of
+     *         the keys are not guaranteed to be consistent across
+     *         implementations.
+     */
     Iterator<String> getKeys();
 
     long getLong(String key);

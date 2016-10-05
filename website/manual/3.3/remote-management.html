@@ -42,14 +42,14 @@ title: Remote Management
     <td>GET</td>
     <td>/api/configuration</td>
     <td>application/json</td>
-    <td></td>
+    <td>Does not work with <a href="configuration.html#Environment">environment configuration</a>.</td>
   </tr>
   <tr>
     <td>Update the configuration</td>
     <td>PUT</td>
     <td>/api/configuration</td>
     <td>application/json</td>
-    <td>Updates the configuration with keys provided in the request body. (It is not necessary to supply all keys; only the ones to change.)</td>
+    <td>Updates the configuration with keys provided in the request body. (It is not necessary to supply all keys; only the ones to change.) Does not work with <a href="configuration.html#Environment">environment configuration</a>.</td>
   </tr>
   <tr>
     <td>Purge an image from the cache</td>

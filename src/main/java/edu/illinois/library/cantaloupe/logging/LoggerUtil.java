@@ -20,18 +20,20 @@ public abstract class LoggerUtil {
     public static synchronized void reloadConfiguration() {
         Configuration appConfig = ConfigurationFactory.getInstance();
         if (appConfig != null) {
-            // Reset the logger context
+            // Reset the logger context.
             LoggerContext loggerContext = (LoggerContext)
                     LoggerFactory.getILoggerFactory();
             JoranConfigurator jc = new JoranConfigurator();
             jc.setContext(loggerContext);
             loggerContext.reset();
-            // Then copy logging-related configuration key/values into logger
-            // context properties...
+            // Copy logging-related configuration key/values into logger
+            // context properties.
             Iterator it = appConfig.getKeys();
             while (it.hasNext()) {
                 String key = (String) it.next();
-                if (key.startsWith("log.")) {
+                // The second condition works with EnvironmentConfiguration;
+                // the first works with all other configurations.
+                if (key.startsWith("log.") || key.contains("_LOG_")) {
                     loggerContext.putProperty(key, appConfig.getString(key));
                 }
             }

@@ -24,10 +24,12 @@ public abstract class ResourceTest {
     protected static final Integer PORT = TestUtil.getOpenPort();
 
     protected static Client client = new Client(new Context(), Protocol.HTTP);
+    protected static WebServer webServer = StandaloneEntry.getWebServer();
 
     public static void resetConfiguration() throws IOException {
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         ConfigurationFactory.clearInstance();
+
         final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty("print_stack_trace_on_error_pages", false);
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
@@ -47,26 +49,20 @@ public abstract class ResourceTest {
     @Before
     public void setUp() throws Exception {
         resetConfiguration();
-        WebServer webServer = StandaloneEntry.getWebServer();
         webServer.setHttpEnabled(true);
         webServer.setHttpPort(PORT);
-        webServer.start();
     }
 
     @After
     public void tearDown() throws Exception {
-        StandaloneEntry.getWebServer().stop();
+        webServer.stop();
     }
 
     protected ClientResource getClientForUriPath(String path) {
-        Reference url = new Reference(getBaseUri() + path);
+        Reference url = new Reference("http://localhost:" + PORT + path);
         ClientResource resource = new ClientResource(url);
         resource.setNext(client);
         return resource;
-    }
-
-    protected String getBaseUri() {
-        return "http://localhost:" + PORT;
     }
 
 }

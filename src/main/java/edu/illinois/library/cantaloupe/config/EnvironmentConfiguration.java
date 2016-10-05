@@ -21,7 +21,9 @@ import java.util.Iterator;
  *
  * <p>This class is read-only.</p>
  */
-class EnvironmentConfiguration implements Configuration {
+public class EnvironmentConfiguration implements Configuration {
+
+    private static final String ENVIRONMENT_KEY_PREFIX = "CANTALOUPE_";
 
     private org.apache.commons.configuration.Configuration commonsConfig =
             new org.apache.commons.configuration.EnvironmentConfiguration();
@@ -31,30 +33,30 @@ class EnvironmentConfiguration implements Configuration {
     }
 
     /**
-     * Transforms a configuration key to one that is contains only
+     * Transforms a configuration key to one that contains only
      * environment-safe characters.
      *
      * @param key Configuration key
      * @return Transformed key compatible with the environment.
      */
-    private String compatibleKey(String key) {
-        return "CANTALOUPE_" + key.replace(".", "_").toUpperCase();
+    private String environmentKey(String key) {
+        return ENVIRONMENT_KEY_PREFIX + key.replace(".", "_").toUpperCase();
     }
 
     public boolean getBoolean(String key) {
-        return commonsConfig.getBoolean(compatibleKey(key));
+        return commonsConfig.getBoolean(environmentKey(key));
     }
 
     public boolean getBoolean(String key, boolean defaultValue) {
-        return commonsConfig.getBoolean(key, defaultValue);
+        return commonsConfig.getBoolean(environmentKey(key), defaultValue);
     }
 
     public double getDouble(String key) {
-        return commonsConfig.getDouble(key);
+        return commonsConfig.getDouble(environmentKey(key));
     }
 
     public double getDouble(String key, double defaultValue) {
-        return commonsConfig.getDouble(key, defaultValue);
+        return commonsConfig.getDouble(environmentKey(key), defaultValue);
     }
 
     /**
@@ -65,19 +67,19 @@ class EnvironmentConfiguration implements Configuration {
     }
 
     public float getFloat(String key) {
-        return commonsConfig.getFloat(key);
+        return commonsConfig.getFloat(environmentKey(key));
     }
 
     public float getFloat(String key, float defaultValue) {
-        return commonsConfig.getFloat(key, defaultValue);
+        return commonsConfig.getFloat(environmentKey(key), defaultValue);
     }
 
     public int getInt(String key) {
-        return commonsConfig.getInt(key);
+        return commonsConfig.getInt(environmentKey(key));
     }
 
     public int getInt(String key, int defaultValue) {
-        return commonsConfig.getInt(key, defaultValue);
+        return commonsConfig.getInt(environmentKey(key), defaultValue);
     }
 
     public Iterator<String> getKeys() {
@@ -85,23 +87,23 @@ class EnvironmentConfiguration implements Configuration {
     }
 
     public long getLong(String key) {
-        return commonsConfig.getLong(key);
+        return commonsConfig.getLong(environmentKey(key));
     }
 
     public long getLong(String key, long defaultValue) {
-        return commonsConfig.getLong(key, defaultValue);
+        return commonsConfig.getLong(environmentKey(key), defaultValue);
     }
 
     public Object getProperty(String key) {
-        return commonsConfig.getProperty(key);
+        return commonsConfig.getProperty(environmentKey(key));
     }
 
     public String getString(String key) {
-        return commonsConfig.getString(key);
+        return commonsConfig.getString(environmentKey(key));
     }
 
     public String getString(String key, String defaultValue) {
-        return commonsConfig.getString(key, defaultValue);
+        return commonsConfig.getString(environmentKey(key), defaultValue);
     }
 
     /**
@@ -115,7 +117,7 @@ class EnvironmentConfiguration implements Configuration {
     public void save() {}
 
     public synchronized void setProperty(String key, Object value) {
-        commonsConfig.setProperty(key, value);
+        commonsConfig.setProperty(environmentKey(key), value);
     }
 
 }
