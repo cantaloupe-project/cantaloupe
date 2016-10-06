@@ -175,11 +175,6 @@ public class AdminResource extends AbstractResource {
     private Map<String,Object> getTemplateVars() throws Exception {
         final Map<String, Object> vars = getCommonTemplateVars(getRequest());
 
-        final File configFile =
-                ConfigurationFactory.getInstance().getFile();
-        vars.put("configFilePath", (configFile != null) ?
-                configFile.getAbsolutePath() : "None (Using Environment)");
-
         ////////////////////////////////////////////////////////////////////
         //////////////////////// status section ////////////////////////////
         ////////////////////////////////////////////////////////////////////
@@ -220,6 +215,11 @@ public class AdminResource extends AbstractResource {
                 headers.getFirstValue("X-Forwarded-For", true, ""));
         vars.put("xIiifIdHeader",
                 headers.getFirstValue("X-IIIF-ID", true, ""));
+
+        final File configFile =
+                ConfigurationFactory.getInstance().getFile();
+        vars.put("configFilePath", (configFile != null) ?
+                configFile.getAbsolutePath() : "None (Using Environment)");
 
         ////////////////////////////////////////////////////////////////////
         /////////////////////// resolver section ///////////////////////////
