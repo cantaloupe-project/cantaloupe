@@ -41,35 +41,8 @@ var Configuration = function(data) {
     /**
      * @returns {String}
      */
-    this.toEnvironmentString = function() {
-        var string = '';
-        var keys = self.keys();
-        keys.sort();
-        keys.forEach(function(key) {
-            var safeKey = 'CANTALOUPE_' + key.toUpperCase().replace(/\./g, '_');
-            string += safeKey + '="' + self.get(key) + "\"\n";
-        });
-        return string;
-    };
-
-    /**
-     * @returns {String}
-     */
     this.toJsonString = function() {
         return JSON.stringify(data, null, 2);
-    };
-
-    /**
-     * @returns {String}
-     */
-    this.toPropertiesString = function() {
-        var string = '';
-        var keys = self.keys();
-        keys.sort();
-        keys.forEach(function(key) {
-            string += key + ' = ' + self.get(key) + "\n";
-        });
-        return string;
     };
 
 };
@@ -84,12 +57,6 @@ var Form = function(config) {
     var self = this;
 
     var attachEventListeners = function() {
-
-        $('body').on('CLConfigurationChanged', function(e, config) {
-            $('#cl-environment-configuration > pre').text(config.toEnvironmentString());
-            $('#cl-json-configuration > pre').text(config.toJsonString());
-            $('#cl-properties-configuration > pre').text(config.toPropertiesString());
-        });
 
         /**
          * Shows or hides all the other rows in the same table as a checkbox
@@ -194,8 +161,6 @@ var Form = function(config) {
         });
 
         attachEventListeners();
-
-        $('body').trigger('CLConfigurationChanged', config);
     };
 
     this.setRestartRequired = function(bool) {
@@ -242,7 +207,6 @@ var Form = function(config) {
                     restart_required = false;
                     alert.remove();
                 });
-                $('body').trigger('CLConfigurationChanged', config);
             },
             error: function(xhr, status, error) {
                 console.error(xhr);
