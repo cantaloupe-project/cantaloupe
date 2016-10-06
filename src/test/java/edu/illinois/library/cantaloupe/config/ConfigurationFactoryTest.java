@@ -17,12 +17,6 @@ public class ConfigurationFactoryTest {
     }
 
     @Test
-    public void testGetInstanceReturnsEnvironmentConfigurationWithNoVmOption() {
-        System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
-        assertTrue(ConfigurationFactory.getInstance() instanceof EnvironmentConfiguration);
-    }
-
-    @Test
     public void testGetInstanceReturnsMemoryConfiguration() throws Exception {
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         assertTrue(ConfigurationFactory.getInstance() instanceof MemoryConfiguration);

@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.config.EnvironmentConfiguration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
@@ -63,7 +62,6 @@ public class ApiResource extends AbstractResource {
      */
     @Get("application/json")
     public Representation getConfiguration() throws Exception {
-        forbidIfUsingEnvironmentConfiguration();
         final Configuration config = ConfigurationFactory.getInstance();
 
         final Map<String,Object> map = new LinkedHashMap<>();
@@ -81,8 +79,6 @@ public class ApiResource extends AbstractResource {
      */
     @Put("application/json")
     public Representation putConfiguration(Representation rep) throws Exception {
-        forbidIfUsingEnvironmentConfiguration();
-
         final Configuration config = ConfigurationFactory.getInstance();
         final Map submittedConfig = new ObjectMapper().readValue(
                 rep.getStream(), HashMap.class);
@@ -97,15 +93,6 @@ public class ApiResource extends AbstractResource {
         config.save();
 
         return new EmptyRepresentation();
-    }
-
-    private void forbidIfUsingEnvironmentConfiguration()
-            throws ResourceException {
-        if (ConfigurationFactory.getInstance() instanceof EnvironmentConfiguration) {
-            throw new ResourceException(Status.CLIENT_ERROR_FORBIDDEN,
-                    "This method is not supported with " +
-                            EnvironmentConfiguration.class.getSimpleName() + ".");
-        }
     }
 
 }

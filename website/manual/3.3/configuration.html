@@ -13,55 +13,25 @@ title: Configuration
 <h1>Configuration</h1>
 
 <ul>
-  <li><a href="#Methods">Methods</a>
-    <ul>
-      <li><a href="#Properties%20File">Properties File</a></li>
-      <li><a href="#Environment">Environment</a></li>
-      <li><a href="#Switching%20to%20a%20Different%20Method">Switching to a Different Method</a></li>
-    </ul>
-  </li>
+  <li><a href="#Overview">Overview</a></li>
   <li><a href="#Live%20Changes">Live Changes</a></li>
   <li><a href="#Remote%20Changes">Remote Changes</a></li>
 </ul>
 
-<h2 id="Methods">Methods</h2>
+<h2 id="Overview">Overview</h2>
 
-<p>Cantaloupe can obtain its configuration from a file or from operating system environment variables.</p>
+<p>Cantaloupe obtains its configuration from a <a href="https://en.wikipedia.org/wiki/.properties">.properties file</a>. A sample configuration file, called <span class="filename">cantaloupe.properties.sample</span>, is included in the distribution archive. It is recommended to make a copy of this file and use the copy as your primary configuration file.</p>
 
-<h3 id="Properties File">Properties File</h3>
-
-<p>Properties file configuration is the traditional configuration method that Cantaloupe has used since its inception. (<a href="https://en.wikipedia.org/wiki/.properties">.properties</a> is a syntax for configuration files that is very easy to read and write.) It is still the recommended configuration method.</p>
-
-<p>A sample .properties configuration file, called <span class="filename">cantaloupe.properties.sample</span>, is included in the distribution archive. It is recommended to make a copy of this file and use the copy as your primary configuration file.</p>
-
-<p>To use a .properties configuration file, supply the <code>-Dcantaloupe.config</code> VM option, pointing to an absolute or relative path to the file. The file can be located anywhere, but its name must end in <span class="filename">.properties</span>. See <a href="getting-started.html#Running">Getting Started</a> for examples.</p>
-
-<h3 id="Environment">Environment</h2>
-
-<p>Environment configuration uses configuration stored in the user environment. This method debuted in version 3.3.</p>
-
-<p>Note that because the syntax of the keys used in other configuration methods is incompatible with the environment, they need to be modified to be all-uppercase; have a prefix of <var>CANTALOUPE_</var>; and have underscores in place of periods. So, a key like:</p>
-
-<p><code>endpoint.iiif.2.enabled = true</code></p>
-
-<p>Would be stored in the environment as:</p>
-
-<p><code>CANTALOUPE_ENDPOINT_IIIF_2_ENABLED=true</code></p>
-
-<p>The image server cannot write to the environment, but it will pick up changes. Changes to most keys take effect immediately, but some require a restart; see the sample properties file for documentation of which.</p>
-
-<h3 id="Switching to a Different Method">Switching to a Different Method</h3>
-
-<p>There are two main options for switching configuration methods. The first is two transform your current configuration to your desired configuration manually. The second is to use the "Configuration" tab of the <a href="remote-management.html#Control%20Panel">Control Panel</a> to retrieve a different representation your current configuration.</p>
+<p>To tell the image server where the configuration file is located, supply the <code>-Dcantaloupe.config</code> VM option, pointing to an absolute or relative path to the file. The file can be located anywhere, and named anything. (See <a href="getting-started.html#Running">Getting Started</a> for examples.)</p>
 
 <hr>
 
 <h2 id="Live Changes">Live Changes</h2>
 
-<p>For file-based configuration methods, Cantaloupe will automatically reload the configuration file within a few seconds of a change. Changes to most keys take effect immediately, but some require a restart; see the sample properties file for documentation of which.</p>
+<p>The configuration file will be automatically reloaded within a few seconds of a change. Changes to most keys take effect immediately, but some require a restart; see the sample configuration file for documentation of which.</p>
 
 <hr>
 
 <h2 id="Remote Changes">Remote Changes</h2>
 
-<p>The configuration can be updated remotely via the <a href="remote-management.html#REST%20API">REST API</a>. When a change is received, it will be activated immediately and written out to the configuration file, if available (but not the environment, as that is read-only).</p>
+<p>The configuration can be updated remotely via the <a href="remote-management.html#REST%20API">REST API</a>. When a change is received, it will be activated immediately and written out to the configuration file, if it is writable.</p>
