@@ -1,0 +1,61 @@
+---
+layout: manual_3.3
+title: Remote Management
+---
+
+<ol class="breadcrumb">
+  <li><a href="{{ site.baseurl }}/">Home</a></li>
+  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
+  <li><a href="{{ site.baseurl }}/manual/3.3/">3.3</a></li>
+  <li class="active">Remote Management</li>
+</ol>
+
+<h1>Remote Management</h1>
+
+<ul>
+  <li><a href="#Control%20Panel">Control Panel</a></li>
+  <li><a href="#REST%20API">REST API</a></li>
+</ul>
+
+<h2 id="Control Panel">Control Panel</h2>
+
+<p>The Control Panel is a web-based administrative interface with monitoring and configuration capabilities. It is disabled by default. To enable it, set <code>admin.enabled</code> to <code>true</code> and set a password in <code>admin.password</code>. Then, navigate to <span class="filename">/admin</span> in a web browser and log in with that password and a username of "admin."</p>
+
+<hr>
+
+<h2 id="REST API">REST API</h2>
+
+<p>The REST API exposes a set of administrative actions. It is disabled by default, but can be enabled by setting the <code>endpoint.api.enabled</code> configuration option to <code>true</code>.</p>
+
+<p>All API methods require HTTP Basic authentication. Credentials are set in <code>endpoint.api.username</code> and <code>endpoint.api.secret</code>.</td>
+
+<table class="table table-striped table-bordered">
+  <tr>
+    <th>Action</th>
+    <th>HTTP Method</th>
+    <th>URI</th>
+    <th>Request Content-Type(s)</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>Retrieve the configuration</td>
+    <td>GET</td>
+    <td>/api/configuration</td>
+    <td>application/json</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Update the configuration</td>
+    <td>PUT</td>
+    <td>/api/configuration</td>
+    <td>application/json</td>
+    <td>Updates the configuration with keys provided in the request body. (It is not necessary to supply all keys; only the ones to change.).</td>
+  </tr>
+  <tr>
+    <td>Purge an image from the cache</td>
+    <td>DELETE</td>
+    <td>/api/:identifier</td>
+    <td>*</td>
+    <td>Purges all images corresponding to the given identifier from the cache.</td>
+  </tr>
+</table>

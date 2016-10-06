@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
@@ -27,7 +28,7 @@ public class ImageInfoFactoryTest {
 
     @Before
     public void setUp() throws Exception {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
                 "Java2dProcessor");
@@ -43,7 +44,7 @@ public class ImageInfoFactoryTest {
     }
 
     private void setUpForRotatedImage() throws Exception {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty("metadata.respect_orientation", true);
 
         identifier = new Identifier("bla");
@@ -183,11 +184,11 @@ public class ImageInfoFactoryTest {
 
         // with max_pixels > 0
         assertTrue(((Map) profile.get(1)).get("maxArea").
-                equals(Configuration.getInstance().
+                equals(ConfigurationFactory.getInstance().
                         getInt(AbstractResource.MAX_PIXELS_CONFIG_KEY)));
 
         // with max_pixels == 0
-        Configuration.getInstance().
+        ConfigurationFactory.getInstance().
                 setProperty(AbstractResource.MAX_PIXELS_CONFIG_KEY, 0);
         imageInfo = ImageInfoFactory.newImageInfo(identifier, imageUri,
                 processor, processor.getImageInfo());
@@ -211,7 +212,7 @@ public class ImageInfoFactoryTest {
 
     @Test
     public void testNewImageInfoDelegateScriptKeys() throws Exception {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(
                 ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY, true);
         config.setProperty(

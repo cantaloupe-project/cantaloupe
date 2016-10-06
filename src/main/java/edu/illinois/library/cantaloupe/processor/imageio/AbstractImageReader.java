@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
@@ -83,7 +84,7 @@ abstract class AbstractImageReader {
      * @return Whether the metadata will need to be read.
      */
     private boolean canIgnoreMetadata() {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         return (!config.getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false) &&
                 !config.getBoolean("metadata.respect_orientation", false));
     }

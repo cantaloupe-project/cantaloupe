@@ -7,6 +7,7 @@ import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
@@ -72,7 +73,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     private static CloudBlobClient getClientInstance() {
         if (client == null) {
             try {
-                final Configuration config = Configuration.getInstance();
+                final Configuration config = ConfigurationFactory.getInstance();
                 final String accountName = config.getString(ACCOUNT_NAME_CONFIG_KEY);
                 final String accountKey = config.getString(ACCOUNT_KEY_CONFIG_KEY);
 
@@ -98,7 +99,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     }
 
     private CloudBlockBlob getObject() throws IOException {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         final String containerName = config.getString(CONTAINER_NAME_CONFIG_KEY);
         logger.info("Using container: {}", containerName);
 
@@ -120,7 +121,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     }
 
     private String getObjectKey() throws IOException {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
             case "BasicLookupStrategy":
                 return identifier.toString();

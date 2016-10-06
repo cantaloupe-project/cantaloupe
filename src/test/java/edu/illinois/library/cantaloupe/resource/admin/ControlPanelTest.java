@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.StandaloneEntry;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.WebServer;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -40,8 +41,7 @@ public class ControlPanelTest {
 
     @Before
     public void setUp() throws Exception {
-        Configuration config = Configuration.getInstance();
-        config.clear();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(WebApplication.ADMIN_SECRET_CONFIG_KEY, secret);
         config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
                 "FilesystemResolver");
@@ -99,7 +99,7 @@ public class ControlPanelTest {
         Thread.sleep(SLEEP_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         assertTrue(config.getBoolean("http.enabled"));
         assertEquals("1.2.3.4", config.getString("http.host"));
         assertEquals(8989, config.getInt("http.port"));
@@ -138,7 +138,7 @@ public class ControlPanelTest {
         Thread.sleep(SLEEP_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         assertEquals(5000, config.getInt("max_pixels"));
         assertEquals("attachment",
                 config.getString("endpoint.iiif.content_disposition"));
@@ -205,7 +205,7 @@ public class ControlPanelTest {
         Thread.sleep(SLEEP_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         assertFalse(config.getBoolean("resolver.delegate"));
         assertEquals("FilesystemResolver", config.getString("resolver.static"));
         // AmazonS3Resolver
@@ -323,7 +323,7 @@ public class ControlPanelTest {
         Thread.sleep(SLEEP_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         assertEquals("Java2dProcessor", config.getString("processor.gif"));
         assertEquals("JaiProcessor", config.getString("processor.fallback"));
         assertEquals("StreamStrategy",
@@ -428,7 +428,7 @@ public class ControlPanelTest {
         Thread.sleep(SLEEP_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         assertTrue(config.getBoolean("cache.client.enabled"));
         assertEquals("250", config.getString("cache.client.max_age"));
         assertEquals("220", config.getString("cache.client.shared_max_age"));
@@ -495,7 +495,7 @@ public class ControlPanelTest {
         Thread.sleep(SLEEP_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         assertTrue(config.getBoolean("watermark.enabled"));
         assertEquals("BasicStrategy", config.getString("watermark.strategy"));
         assertEquals("/image.png",
@@ -523,7 +523,7 @@ public class ControlPanelTest {
         Thread.sleep(SLEEP_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         assertTrue(config.getBoolean("metadata.preserve"));
     }
 
@@ -540,7 +540,7 @@ public class ControlPanelTest {
         Thread.sleep(SLEEP_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         assertTrue(config.getBoolean("delegate_script.enabled"));
         assertEquals("file", config.getString("delegate_script.pathname"));
     }
@@ -589,7 +589,7 @@ public class ControlPanelTest {
         Thread.sleep(SLEEP_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         assertEquals("warn", config.getString("log.application.level"));
         assertTrue(config.getBoolean("log.application.ConsoleAppender.enabled"));
 

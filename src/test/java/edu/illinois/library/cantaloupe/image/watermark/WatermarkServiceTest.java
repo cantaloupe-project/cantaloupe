@@ -1,7 +1,8 @@
 package edu.illinois.library.cantaloupe.image.watermark;
 
-import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -22,7 +23,7 @@ public class WatermarkServiceTest {
 
     @Before
     public void setUp() throws Exception {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         // valid config options
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
@@ -61,7 +62,7 @@ public class WatermarkServiceTest {
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, null);
         try {
             WatermarkService.newWatermark(opList, fullSize, requestUrl,
@@ -74,7 +75,7 @@ public class WatermarkServiceTest {
 
     @Test
     public void testNewWatermarkWithScriptStrategyReturningWatermark() throws Exception {
-        Configuration.getInstance().setProperty(
+        ConfigurationFactory.getInstance().setProperty(
                 WatermarkService.WATERMARK_STRATEGY_CONFIG_KEY, "ScriptStrategy");
 
         final OperationList opList = new OperationList();
@@ -95,7 +96,7 @@ public class WatermarkServiceTest {
 
     @Test
     public void testNewWatermarkWithScriptStrategyReturningFalse() throws Exception {
-        Configuration.getInstance().setProperty(
+        ConfigurationFactory.getInstance().setProperty(
                 WatermarkService.WATERMARK_STRATEGY_CONFIG_KEY, "ScriptStrategy");
 
         final OperationList opList = new OperationList();
@@ -114,7 +115,7 @@ public class WatermarkServiceTest {
 
     @Test
     public void testIsEnabled() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         // null value
         config.setProperty(WatermarkService.WATERMARK_ENABLED_CONFIG_KEY, null);
@@ -129,7 +130,7 @@ public class WatermarkServiceTest {
 
     @Test
     public void testShouldApplyToImage() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.clear();
 
         final Dimension imageSize = new Dimension(100, 100);

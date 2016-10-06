@@ -32,9 +32,9 @@
                     <a href="#cl-status" aria-controls="cl-status"
                        role="tab" data-toggle="tab">Status</a>
                 </li>
-                <li role="presentation" class="list-group-item" id="cl-server-button">
-                    <a href="#cl-server" aria-controls="cl-server"
-                       role="tab" data-toggle="tab">Server</a>
+                <li role="presentation" class="list-group-item" id="cl-http-button">
+                    <a href="#cl-http" aria-controls="cl-http"
+                       role="tab" data-toggle="tab">HTTP</a>
                 </li>
                 <li role="presentation" class="list-group-item" id="cl-endpoints-button">
                     <a href="#cl-endpoints" aria-controls="cl-endpoints"
@@ -152,7 +152,7 @@
                     </section>
                 </div>
 
-                <div role="tabpanel" class="tab-pane" id="cl-server">
+                <div role="tabpanel" class="tab-pane" id="cl-http">
                     <form method="post">
                         <section>
                             <h2>HTTP <small>(Standalone)</small></h2>

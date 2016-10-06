@@ -20,7 +20,7 @@ public class ConfigurationWatcher implements Runnable {
 
     @Override
     public void run() {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         FilesystemWatcher.Callback callback = new FilesystemWatcher.Callback() {
             @Override
             public void created(Path path) { handle(path); }
@@ -32,15 +32,18 @@ public class ConfigurationWatcher implements Runnable {
             public void modified(Path path) { handle(path); }
 
             private void handle(Path path) {
-                if (path.toFile().equals(
-                        config.getConfigurationFile())) {
-                    config.reloadConfigurationFile();
-                    LoggerUtil.reloadConfiguration();
+                if (path.toFile().equals(config.getFile())) {
+                    try {
+                        config.reload();
+                        LoggerUtil.reloadConfiguration();
+                    } catch (IOException e) {
+                        logger.error(e.getMessage(), e);
+                    }
                 }
             }
         };
         try {
-            Path path = config.getConfigurationFile().toPath().getParent();
+            Path path = config.getFile().toPath().getParent();
             filesystemWatcher = new FilesystemWatcher(path, callback);
             filesystemWatcher.processEvents();
         } catch (IOException e) {

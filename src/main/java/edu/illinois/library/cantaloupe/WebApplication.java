@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
@@ -58,7 +59,7 @@ public class WebApplication extends Application {
                     throwable = throwable.getCause();
                 }
                 message = throwable.getMessage();
-                Configuration config = Configuration.getInstance();
+                Configuration config = ConfigurationFactory.getInstance();
                 if (config.getBoolean("print_stack_trace_on_error_pages", false)) {
                     StringWriter sw = new StringWriter();
                     throwable.printStackTrace(new PrintWriter(sw));
@@ -146,7 +147,7 @@ public class WebApplication extends Application {
 
     private ChallengeAuthenticator createAdminAuthenticator()
             throws ConfigurationException {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         final String secret = config.getString(ADMIN_SECRET_CONFIG_KEY);
         if (secret == null || secret.length() < 1) {
             throw new ConfigurationException(
@@ -165,7 +166,7 @@ public class WebApplication extends Application {
 
     private ChallengeAuthenticator createApiAuthenticator()
             throws ConfigurationException {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         final String secret = config.getString(API_SECRET_CONFIG_KEY);
         if (secret == null || secret.length() < 1) {
             throw new ConfigurationException(API_SECRET_CONFIG_KEY +
@@ -183,7 +184,7 @@ public class WebApplication extends Application {
     }
 
     private ChallengeAuthenticator createEndpointAuthenticator() {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         final String username = config.getString(BASIC_AUTH_USERNAME_CONFIG_KEY);
         final String secret = config.getString(BASIC_AUTH_SECRET_CONFIG_KEY);
 
@@ -288,6 +289,7 @@ public class WebApplication extends Application {
         try {
             ChallengeAuthenticator apiAuth = createApiAuthenticator();
             apiAuth.setNext(ApiResource.class);
+            router.attach(API_PATH + "/configuration", apiAuth);
             router.attach(API_PATH + "/{identifier}", apiAuth);
         } catch (ConfigurationException e) {
             getLogger().log(Level.WARNING, e.getMessage());

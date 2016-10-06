@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -9,7 +10,6 @@ import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
-import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import org.apache.commons.lang3.StringUtils;
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
@@ -137,7 +137,7 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
         }
 
         // Apply the sharpen operation, if present.
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         final double sharpenValue = config.getDouble(SHARPEN_CONFIG_KEY, 0);
         imOp.unsharp(sharpenValue);
     }
@@ -156,7 +156,7 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
      * @return
      */
     private static String getPath(String binaryName) {
-        String path = Configuration.getInstance().
+        String path = ConfigurationFactory.getInstance().
                 getString(PATH_TO_BINARIES_CONFIG_KEY);
         if (path != null && path.length() > 0) {
             path = StringUtils.stripEnd(path, File.separator) + File.separator +
@@ -255,7 +255,7 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
             throw new UnsupportedOutputFormatException();
         }
 
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         try {
             IMOperation op = new IMOperation();
             op.addImage(format.getPreferredExtension() + ":-"); // read from stdin

@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -73,7 +74,7 @@ abstract class Im4JavaProcessorTest extends ProcessorTest {
 
     @Test
     public void testProcessPreservesMetadata() throws Exception {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
         assertXmpPresent(true);
@@ -81,7 +82,7 @@ abstract class Im4JavaProcessorTest extends ProcessorTest {
 
     @Test
     public void testProcessStripsMetadata() throws Exception {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false);
         // Metadata shouldn't be stripped, because it would also strip the ICC
@@ -90,7 +91,7 @@ abstract class Im4JavaProcessorTest extends ProcessorTest {
     }
 
     private void assertXmpPresent(boolean yesOrNo) throws Exception {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, yesOrNo);
 
@@ -139,7 +140,7 @@ abstract class Im4JavaProcessorTest extends ProcessorTest {
     @Test
     public void testProcessWithRotationAndCustomBackgroundColorAndTransparentOutputFormat()
             throws Exception {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         config.setProperty(ImageMagickProcessor.BACKGROUND_COLOR_CONFIG_KEY, "blue");
 

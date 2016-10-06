@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,7 +12,7 @@ public class ProcessorFactoryTest {
 
     @Before
     public void setUp() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         config.setProperty("GraphicsMagickProcessor.path_to_binaries", "/usr/local/bin");
         config.setProperty("ImageMagickProcessor.path_to_binaries", "/usr/local/bin");
@@ -30,7 +31,7 @@ public class ProcessorFactoryTest {
      */
     @Test
     public void testGetProcessorWithSupportedAssignedFormat() throws Exception {
-        Configuration.getInstance().
+        ConfigurationFactory.getInstance().
                 setProperty("processor.jpg", "Java2dProcessor");
         assertTrue(ProcessorFactory.getProcessor(Format.JPG) instanceof Java2dProcessor);
     }
@@ -47,9 +48,9 @@ public class ProcessorFactoryTest {
      */
     @Test
     public void testGetProcessorWithUnsupportedAssignedFormat() throws Exception {
-        Configuration.getInstance().
+        ConfigurationFactory.getInstance().
                 setProperty("processor.webp", "Java2dProcessor");
-        Configuration.getInstance().
+        ConfigurationFactory.getInstance().
                 setProperty("processor.fallback", "GraphicsMagickProcessor");
         try {
             ProcessorFactory.getProcessor(Format.WEBP);
@@ -68,7 +69,7 @@ public class ProcessorFactoryTest {
      */
     @Test
     public void testGetProcessorWithFormatSupportedByFallback() throws Exception {
-        Configuration.getInstance().
+        ConfigurationFactory.getInstance().
                 setProperty("processor.fallback", "Java2dProcessor");
         assertTrue(ProcessorFactory.getProcessor(Format.JPG) instanceof Java2dProcessor);
     }
@@ -82,7 +83,7 @@ public class ProcessorFactoryTest {
      */
     @Test
     public void testGetProcessorWithFormatUnsupportedByFallback() throws Exception {
-        Configuration.getInstance().
+        ConfigurationFactory.getInstance().
                 setProperty("processor.fallback", "Java2dProcessor");
         try {
             ProcessorFactory.getProcessor(Format.WEBP);
@@ -117,7 +118,7 @@ public class ProcessorFactoryTest {
      */
     @Test
     public void testGetProcessorWithUnknownProcessor() throws Exception {
-        Configuration.getInstance().
+        ConfigurationFactory.getInstance().
                 setProperty("processor.jpg", "AmazingFakeProcessor");
         try {
             ProcessorFactory.getProcessor(Format.JPG);
@@ -136,7 +137,7 @@ public class ProcessorFactoryTest {
      */
     @Test
     public void testGetProcessorWithUnknownFallbackProcessor() throws Exception {
-        Configuration.getInstance().
+        ConfigurationFactory.getInstance().
                 setProperty("processor.fallback", "AmazingFakeProcessor");
         try {
             ProcessorFactory.getProcessor(Format.JPG);

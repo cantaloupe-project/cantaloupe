@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.script;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,7 +15,7 @@ public class ScriptEngineFactoryTest {
 
     @Before
     public void setUp() throws Exception {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
                 "true");
@@ -24,7 +25,7 @@ public class ScriptEngineFactoryTest {
 
     @Test
     public void testGetScriptEngineWithDelegateScriptDisabled() throws Exception {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(
                 ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY, false);
         try {
@@ -43,7 +44,7 @@ public class ScriptEngineFactoryTest {
 
     @Test
     public void testGetScriptEngineWithPresentInvalidScript() throws Exception {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(
                 ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
                 TestUtil.getImage("txt").getAbsolutePath());
@@ -57,7 +58,7 @@ public class ScriptEngineFactoryTest {
 
     @Test
     public void testGetScriptEngineWithMissingScript() throws Exception {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         // bogus script
         config.setProperty(
                 ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,

@@ -333,6 +333,10 @@
                   <fileset dir="${project.build.directory}/classes/">
                     <include name="edu/illinois/library/cantaloupe/config/Configuration.class" />
                     <include name="edu/illinois/library/cantaloupe/config/ConfigurationException.class" />
+                    <include name="edu/illinois/library/cantaloupe/config/ConfigurationFactory.class" />
+                    <include name="edu/illinois/library/cantaloupe/config/EnvironmentConfiguration.class" />
+                    <include name="edu/illinois/library/cantaloupe/config/FileConfiguration.class" />
+                    <include name="edu/illinois/library/cantaloupe/config/PropertiesConfiguration.class" />
                     <include name="edu/illinois/library/cantaloupe/StandaloneEntry.class" />
                     <include name="edu/illinois/library/cantaloupe/WebServer.class" />
                   </fileset>

@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resolver;
 import static org.junit.Assert.*;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
@@ -23,7 +24,7 @@ public class FilesystemResolverTest {
     private FilesystemResolver instance;
 
     private static void resetConfiguration() throws IOException {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
                 "true");
@@ -101,7 +102,7 @@ public class FilesystemResolverTest {
 
     @Test
     public void testGetPathnameWithBasicLookupStrategy() throws IOException {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
 
         config.setProperty(FilesystemResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "BasicLookupStrategy");
@@ -132,7 +133,7 @@ public class FilesystemResolverTest {
     @Test
     public void testGetPathnameWithScriptLookupStrategy()
             throws IOException {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(FilesystemResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
 

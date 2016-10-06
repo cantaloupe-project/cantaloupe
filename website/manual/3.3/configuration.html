@@ -1,0 +1,37 @@
+---
+layout: manual_3.3
+title: Configuration
+---
+
+<ol class="breadcrumb">
+  <li><a href="{{ site.baseurl }}/">Home</a></li>
+  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
+  <li><a href="{{ site.baseurl }}/manual/3.3/">3.3</a></li>
+  <li class="active">Configuration</li>
+</ol>
+
+<h1>Configuration</h1>
+
+<ul>
+  <li><a href="#Overview">Overview</a></li>
+  <li><a href="#Live%20Changes">Live Changes</a></li>
+  <li><a href="#Remote%20Changes">Remote Changes</a></li>
+</ul>
+
+<h2 id="Overview">Overview</h2>
+
+<p>Cantaloupe obtains its configuration from a <a href="https://en.wikipedia.org/wiki/.properties">.properties file</a>. A sample configuration file, called <span class="filename">cantaloupe.properties.sample</span>, is included in the distribution archive. It is recommended to make a copy of this file and use the copy as your primary configuration file.</p>
+
+<p>To tell the image server where the configuration file is located, supply the <code>-Dcantaloupe.config</code> VM option, pointing to an absolute or relative path to the file. The file can be located anywhere, and named anything. (See <a href="getting-started.html#Running">Getting Started</a> for examples.)</p>
+
+<hr>
+
+<h2 id="Live Changes">Live Changes</h2>
+
+<p>The configuration file will be automatically reloaded within a few seconds of a change. Changes to most keys take effect immediately, but some require a restart; see the sample configuration file for documentation of which.</p>
+
+<hr>
+
+<h2 id="Remote Changes">Remote Changes</h2>
+
+<p>The configuration can be updated remotely via the <a href="remote-management.html#REST%20API">REST API</a>. When a change is received, it will be activated immediately and written out to the configuration file, if it is writable.</p>

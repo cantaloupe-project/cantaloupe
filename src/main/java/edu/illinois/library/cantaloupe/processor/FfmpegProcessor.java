@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -94,7 +95,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
      * @return
      */
     private static String getPath(String binaryName) {
-        String path = Configuration.getInstance().
+        String path = ConfigurationFactory.getInstance().
                 getString(PATH_TO_BINARIES_CONFIG_KEY);
         if (path != null && path.length() > 0) {
             path = StringUtils.stripEnd(path, File.separator) + File.separator +
@@ -455,7 +456,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
         // The docs mention a max of 63, but the image falls apart way before
         // that.
         final float MAX_AMOUNT = 13f;
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         int amount = Math.round(MAX_AMOUNT *
                 config.getFloat(SHARPEN_CONFIG_KEY, 0));
 

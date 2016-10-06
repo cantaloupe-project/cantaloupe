@@ -4,7 +4,7 @@ import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
-import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -77,7 +77,7 @@ public class ImageResource extends Iiif2Resource {
         // If we don't need to resolve first, and are using a cache, and the
         // cache contains an image matching the request, skip all the setup and
         // just return the cached image.
-        if (!Configuration.getInstance().
+        if (!ConfigurationFactory.getInstance().
                 getBoolean(RESOLVE_FIRST_CONFIG_KEY, true)) {
             DerivativeCache cache = CacheFactory.getDerivativeCache();
             if (cache != null) {
@@ -97,7 +97,7 @@ public class ImageResource extends Iiif2Resource {
         try {
             format = resolver.getSourceFormat();
         } catch (FileNotFoundException e) {
-            if (Configuration.getInstance().
+            if (ConfigurationFactory.getInstance().
                     getBoolean(PURGE_MISSING_CONFIG_KEY, false)) {
                 // if the image was not found, purge it from the cache
                 final Cache cache = CacheFactory.getDerivativeCache();
@@ -122,7 +122,8 @@ public class ImageResource extends Iiif2Resource {
             throw new AccessDeniedException();
         }
 
-        if (Configuration.getInstance().getBoolean(RESTRICT_TO_SIZES_CONFIG_KEY, false)) {
+        if (ConfigurationFactory.getInstance().
+                getBoolean(RESTRICT_TO_SIZES_CONFIG_KEY, false)) {
             final ImageInfo imageInfo = ImageInfoFactory.newImageInfo(
                     identifier, null, processor,
                     getOrReadInfo(identifier, processor));

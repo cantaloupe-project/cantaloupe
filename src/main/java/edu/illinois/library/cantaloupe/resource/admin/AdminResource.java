@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Scale;
@@ -92,7 +93,7 @@ public class AdminResource extends AbstractResource {
 
     @Override
     protected void doInit() throws ResourceException {
-        if (!Configuration.getInstance().
+        if (!ConfigurationFactory.getInstance().
                 getBoolean(CONTROL_PANEL_ENABLED_CONFIG_KEY, true)) {
             throw new EndpointDisabledException();
         }
@@ -133,7 +134,7 @@ public class AdminResource extends AbstractResource {
      */
     @Post("application/json")
     public Representation doPost(Representation rep) throws IOException {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         final Map submittedConfig = new ObjectMapper().readValue(
                 rep.getStream(), HashMap.class);
 
@@ -146,14 +147,7 @@ public class AdminResource extends AbstractResource {
 
         }
 
-        // If the application configuration is file-based, save it.
-        final File configFile = config.getConfigurationFile();
-        if (configFile != null) {
-            logger.debug("Saving {}", configFile);
-            config.save();
-        } else {
-            logger.debug("No configuration file; nothing to save.");
-        }
+        config.save();
 
         return new EmptyRepresentation();
     }
@@ -162,7 +156,7 @@ public class AdminResource extends AbstractResource {
      * @return Map representation of the application configuration.
      */
     private Map<String,Object> configurationAsMap() {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         final Map<String,Object> configMap = new HashMap<>();
         final Iterator it = config.getKeys();
         while (it.hasNext()) {
@@ -180,12 +174,6 @@ public class AdminResource extends AbstractResource {
      */
     private Map<String,Object> getTemplateVars() throws Exception {
         final Map<String, Object> vars = getCommonTemplateVars(getRequest());
-
-        final File configFile =
-                Configuration.getInstance().getConfigurationFile();
-        if (configFile != null) {
-            vars.put("configFilePath", configFile.getAbsolutePath());
-        }
 
         ////////////////////////////////////////////////////////////////////
         //////////////////////// status section ////////////////////////////
@@ -227,6 +215,11 @@ public class AdminResource extends AbstractResource {
                 headers.getFirstValue("X-Forwarded-For", true, ""));
         vars.put("xIiifIdHeader",
                 headers.getFirstValue("X-IIIF-ID", true, ""));
+
+        final File configFile =
+                ConfigurationFactory.getInstance().getFile();
+        vars.put("configFilePath", (configFile != null) ?
+                configFile.getAbsolutePath() : "None (Using Environment)");
 
         ////////////////////////////////////////////////////////////////////
         /////////////////////// resolver section ///////////////////////////

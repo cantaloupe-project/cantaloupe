@@ -1,9 +1,10 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.StandaloneEntry;
 import edu.illinois.library.cantaloupe.WebServer;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -23,16 +24,20 @@ public abstract class ResourceTest {
     protected static final Integer PORT = TestUtil.getOpenPort();
 
     protected static Client client = new Client(new Context(), Protocol.HTTP);
+    protected static WebServer webServer = StandaloneEntry.getWebServer();
 
     public static void resetConfiguration() throws IOException {
-        Configuration config = Configuration.getInstance();
-        config.clear();
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        ConfigurationFactory.clearInstance();
+
+        final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty("print_stack_trace_on_error_pages", false);
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
                 "true");
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
-        config.setProperty("processor.fallback", "Java2dProcessor");
+        config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
+                "Java2dProcessor");
         config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
                 "FilesystemResolver");
         config.setProperty("FilesystemResolver.lookup_strategy",
@@ -44,26 +49,20 @@ public abstract class ResourceTest {
     @Before
     public void setUp() throws Exception {
         resetConfiguration();
-        WebServer webServer = StandaloneEntry.getWebServer();
         webServer.setHttpEnabled(true);
         webServer.setHttpPort(PORT);
-        webServer.start();
     }
 
     @After
     public void tearDown() throws Exception {
-        StandaloneEntry.getWebServer().stop();
+        webServer.stop();
     }
 
     protected ClientResource getClientForUriPath(String path) {
-        Reference url = new Reference(getBaseUri() + path);
+        Reference url = new Reference("http://localhost:" + PORT + path);
         ClientResource resource = new ClientResource(url);
         resource.setNext(client);
         return resource;
-    }
-
-    protected String getBaseUri() {
-        return "http://localhost:" + PORT;
     }
 
 }

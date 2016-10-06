@@ -1,16 +1,21 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
-import edu.illinois.library.cantaloupe.StandaloneEntry;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.restlet.data.ChallengeResponse;
 import org.restlet.data.ChallengeScheme;
+import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -19,32 +24,33 @@ import static org.junit.Assert.*;
  */
 public class ApiResourceTest extends ResourceTest {
 
-    private static final String identifier = "jpg";
-    private static final String username = "admin";
-    private static final String secret = "secret";
+    private static final String IDENTIFIER = "jpg";
+    private static final String USERNAME = "admin";
+    private static final String SECRET = "secret";
 
     @Before
+    @Override
     public void setUp() throws Exception {
         super.setUp();
-        StandaloneEntry.getWebServer().stop();
 
-        Configuration config = Configuration.getInstance();
-        resetConfiguration();
+        final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(ApiResource.ENABLED_CONFIG_KEY, true);
-        config.setProperty(WebApplication.API_USERNAME_CONFIG_KEY, username);
-        config.setProperty(WebApplication.API_SECRET_CONFIG_KEY, secret);
+        config.setProperty(WebApplication.API_USERNAME_CONFIG_KEY, USERNAME);
+        config.setProperty(WebApplication.API_SECRET_CONFIG_KEY, SECRET);
 
-        StandaloneEntry.getWebServer().start();
+        webServer.start();
     }
+
+    /* doPurge() */
 
     @Test
     public void testDoPurgeWithEndpointDisabled() {
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(ApiResource.ENABLED_CONFIG_KEY, false);
 
-        ClientResource client = getClientForUriPath(WebApplication.API_PATH + "/" + identifier);
+        ClientResource client = getClientForUriPath(WebApplication.API_PATH + "/" + IDENTIFIER);
         client.setChallengeResponse(
-                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, username, secret));
+                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, USERNAME, SECRET));
         try {
             client.delete();
             fail("Expected exception");
@@ -55,7 +61,7 @@ public class ApiResourceTest extends ResourceTest {
 
     @Test
     public void testDoPurgeWithNoCredentials() throws Exception {
-        ClientResource client = getClientForUriPath(WebApplication.API_PATH + "/" + identifier);
+        ClientResource client = getClientForUriPath(WebApplication.API_PATH + "/" + IDENTIFIER);
         try {
             client.delete();
             fail("Expected exception");
@@ -66,7 +72,7 @@ public class ApiResourceTest extends ResourceTest {
 
     @Test
     public void testDoPurgeWithInvalidCredentials() throws Exception {
-        ClientResource client = getClientForUriPath(WebApplication.API_PATH + "/" + identifier);
+        ClientResource client = getClientForUriPath(WebApplication.API_PATH + "/" + IDENTIFIER);
         client.setChallengeResponse(
                 new ChallengeResponse(ChallengeScheme.HTTP_BASIC, "invalid", "invalid"));
         try {
@@ -79,13 +85,43 @@ public class ApiResourceTest extends ResourceTest {
 
     @Test
     public void testDoPurgeWithValidCredentials() throws Exception {
-        ClientResource client = getClientForUriPath(WebApplication.API_PATH + "/" + identifier);
+        ClientResource client = getClientForUriPath(WebApplication.API_PATH + "/" + IDENTIFIER);
         client.setChallengeResponse(
-                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, username, secret));
+                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, USERNAME, SECRET));
         client.delete();
         assertEquals(Status.SUCCESS_NO_CONTENT, client.getStatus());
 
         // TODO: assert that relevant cache files have been deleted
+    }
+
+    /* getConfiguration() */
+
+    @Test
+    public void testGetConfiguration() throws Exception {
+        System.setProperty("cats", "yes");
+
+        ClientResource client = getClientForUriPath(WebApplication.API_PATH + "/configuration");
+        client.setChallengeResponse(
+                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, USERNAME, SECRET));
+        client.get();
+
+        assertTrue(client.getResponseEntity().getText().startsWith("{"));
+    }
+
+    /* putConfiguration() */
+
+    @Test
+    public void testPutConfiguration() throws Exception {
+        Map<String,Object> entityMap = new HashMap<>();
+        entityMap.put("test", "cats");
+        String entity = new ObjectMapper().writer().writeValueAsString(entityMap);
+
+        ClientResource client = getClientForUriPath(WebApplication.API_PATH + "/configuration");
+        client.setChallengeResponse(
+                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, USERNAME, SECRET));
+        client.put(entity, MediaType.APPLICATION_JSON);
+
+        assertEquals("cats", ConfigurationFactory.getInstance().getString("test"));
     }
 
 }

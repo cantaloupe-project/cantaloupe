@@ -1,7 +1,8 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
@@ -162,7 +163,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
      * @return
      */
     private static String getPath(String binaryName) {
-        String path = Configuration.getInstance().
+        String path = ConfigurationFactory.getInstance().
                 getString(PATH_TO_BINARIES_CONFIG_KEY);
         if (path != null && path.length() > 0) {
             path = StringUtils.stripEnd(path, File.separator) +
@@ -183,7 +184,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
     }
 
     Scale.Filter getDownscaleFilter() {
-        final String upscaleFilterStr = Configuration.getInstance().
+        final String upscaleFilterStr = ConfigurationFactory.getInstance().
                 getString(DOWNSCALE_FILTER_CONFIG_KEY);
         try {
             return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
@@ -194,7 +195,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
     }
 
     Scale.Filter getUpscaleFilter() {
-        final String upscaleFilterStr = Configuration.getInstance().
+        final String upscaleFilterStr = ConfigurationFactory.getInstance().
                 getString(UPSCALE_FILTER_CONFIG_KEY);
         try {
             return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
@@ -523,7 +524,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
         }
 
         // Apply the sharpen operation, if present.
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         final float sharpenValue = config.getFloat(SHARPEN_CONFIG_KEY, 0);
         final Sharpen sharpen = new Sharpen(sharpenValue);
         image = Java2dUtil.sharpenImage(image, sharpen);

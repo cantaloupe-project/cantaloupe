@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -96,7 +96,7 @@ abstract class ImageInfoFactory {
         // to what can be delivered efficiently.
         final Set<Dimension> uniqueTileSizes = new HashSet<>();
 
-        final int minTileSize = Configuration.getInstance().
+        final int minTileSize = ConfigurationFactory.getInstance().
                 getInt(MIN_TILE_SIZE_CONFIG_KEY, 1024);
 
         // Find a tile width and height. If the image is not tiled,
@@ -154,7 +154,7 @@ abstract class ImageInfoFactory {
         profile.add(profileMap);
 
         // maxArea (maxWidth and maxHeight are currently not supported)
-        final int maxPixels = Configuration.getInstance().
+        final int maxPixels = ConfigurationFactory.getInstance().
                 getInt(AbstractResource.MAX_PIXELS_CONFIG_KEY, 0);
         if (maxPixels > 0) {
             profileMap.put("maxArea", maxPixels);

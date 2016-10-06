@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
@@ -37,7 +38,7 @@ public class OpenJpegProcessorTest extends ProcessorTest {
     public void testGetDownscaleFilter() {
         assertNull(instance.getDownscaleFilter());
 
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "bell");
         assertEquals(Scale.Filter.BELL, instance.getDownscaleFilter());
         config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "bicubic");
@@ -60,7 +61,7 @@ public class OpenJpegProcessorTest extends ProcessorTest {
     public void testGetUpscaleFilter() {
         assertNull(instance.getUpscaleFilter());
 
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "bell");
         assertEquals(Scale.Filter.BELL, instance.getUpscaleFilter());
         config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "bicubic");

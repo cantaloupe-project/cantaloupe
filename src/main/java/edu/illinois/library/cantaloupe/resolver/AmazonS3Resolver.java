@@ -10,6 +10,7 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
@@ -70,7 +71,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
     private static AmazonS3 getClientInstance() {
         if (client == null) {
-            final Configuration config = Configuration.getInstance();
+            final Configuration config = ConfigurationFactory.getInstance();
 
             class ConfigFileCredentials implements AWSCredentials {
                 @Override
@@ -114,7 +115,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     private S3Object getObject() throws IOException {
         AmazonS3 s3 = getClientInstance();
 
-        Configuration config = Configuration.getInstance();
+        Configuration config = ConfigurationFactory.getInstance();
         final String bucketName = config.getString(BUCKET_NAME_CONFIG_KEY);
         logger.info("Using bucket: {}", bucketName);
         final String objectKey = getObjectKey();
@@ -131,7 +132,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     }
 
     private String getObjectKey() throws IOException {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
             case "BasicLookupStrategy":
                 return identifier.toString();

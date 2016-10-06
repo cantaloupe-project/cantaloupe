@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
@@ -19,22 +20,14 @@ import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Node;
 
 import javax.media.jai.Interpolation;
 import javax.media.jai.RenderedOp;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -192,7 +185,7 @@ class JaiProcessor extends AbstractImageIoProcessor
                 }
 
                 // Apply the sharpen operation, if present.
-                final Configuration config = Configuration.getInstance();
+                final Configuration config = ConfigurationFactory.getInstance();
                 final float sharpenValue = config.getFloat(SHARPEN_CONFIG_KEY, 0);
                 final Sharpen sharpen = new Sharpen(sharpenValue);
                 renderedOp = JaiUtil.sharpenImage(renderedOp, sharpen);

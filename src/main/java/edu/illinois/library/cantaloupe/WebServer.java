@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
@@ -60,7 +61,7 @@ public class WebServer {
      * configuration.
      */
     public WebServer() {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         if (config != null) {
             httpEnabled = config.getBoolean(HTTP_ENABLED_CONFIG_KEY, false);
             httpHost = config.getString(HTTP_HOST_CONFIG_KEY, "0.0.0.0");

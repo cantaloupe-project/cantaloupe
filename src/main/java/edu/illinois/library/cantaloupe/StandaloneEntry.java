@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 
 import java.io.File;
 import java.net.URL;
@@ -9,38 +10,51 @@ import java.security.ProtectionDomain;
 /**
  * <p>Serves as the main application class in a standalone context.</p>
  *
- * <p>This class will be unavailable in a Servlet container and should have
- * as few dependencies as possible.</p>
+ * <p>This class will be unavailable in a Servlet container, so should not be
+ * referred to externally if at all possible. It should also have as few
+ * dependencies as possible.</p>
  */
 public class StandaloneEntry {
 
     private static WebServer webServer;
 
     /**
-     * Checks invocation arguments and starts the embedded Servlet container.
+     * <p>Checks the configuration VM option and starts the embedded web
+     * container. The following configuration options are supported:</p>
+     *
+     * <dl>
+     *     <dt><code>-Dcantaloupe.config</code> option supplied:</dt>
+     *     <dd>Will use the configuration file at the corresponding
+     *     pathname.</dd>
+     *     <dt>No <code>-Dcantaloupe.config</code> option supplied:</dt>
+     *     <dd>Will attempt to get configuration from the environment.</dd>
+     * </dl>
      *
      * @param args Ignored.
-     * @throws Exception
+     * @throws Exception If there is a problem starting the web server.
      */
     public static void main(String[] args) throws Exception {
-        final File configFile = Configuration.getInstance().getConfigurationFile();
-        if (configFile == null) {
-            System.out.println("Usage: java " +
-                    "-D" + Configuration.CONFIG_FILE_VM_ARGUMENT +
-                    "=cantaloupe.properties -jar " + getWarFile().getName());
-            System.exit(-1);
-        }
-        if (!configFile.exists()) {
-            System.out.println("Configuration file does not exist.");
-            System.exit(-1);
-        }
-        if (!configFile.isFile()) {
-            System.out.println("Configuration file is not a file.");
-            System.exit(-1);
-        }
-        if (!configFile.canRead()) {
-            System.out.println("Configuration file is not readable.");
-            System.exit(-1);
+        final Configuration config = ConfigurationFactory.getInstance();
+        // This will be null if the user is not using file-based configuration.
+        final File configFile = config.getFile();
+        if (config.getFile() != null) {
+            if (!configFile.exists()) {
+                System.out.println("Does not exist: " + configFile);
+                System.exit(-1);
+            }
+            if (!configFile.isFile()) {
+                System.out.println("Not a file: " + configFile);
+                System.exit(-1);
+            }
+            if (!configFile.canRead()) {
+                System.out.println("Not readable: " + configFile);
+                System.exit(-1);
+            }
+        } else {
+            System.out.println("StandaloneEntry.main(): No -D" +
+                    ConfigurationFactory.CONFIG_VM_ARGUMENT +
+                    " option provided; assuming environment-based " +
+                    "configuration.");
         }
         getWebServer().start();
     }

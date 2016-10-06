@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.MetadataCopy;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
@@ -41,7 +42,7 @@ public class TiffImageWriterTest {
 
     @Test
     public void testWriteWithBufferedImageAndExifMetadata() throws Exception {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("tif-exif.tif");
         final TiffImageReader reader = new TiffImageReader(fixture);
@@ -55,7 +56,7 @@ public class TiffImageWriterTest {
 
     @Test
     public void testWriteWithBufferedImageAndIptcMetadata() throws Exception {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("tif-iptc.tif");
         final TiffImageReader reader = new TiffImageReader(fixture);
@@ -69,7 +70,7 @@ public class TiffImageWriterTest {
 
     @Test
     public void testWriteWithBufferedImageAndXmpMetadata() throws Exception {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("tif-xmp.tif");
         final TiffImageReader reader = new TiffImageReader(fixture);
@@ -96,7 +97,7 @@ public class TiffImageWriterTest {
 
     @Test
     public void testWriteWithPlanarImageAndExifMetadata() throws Exception {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("tif-exif.tif");
         final TiffImageReader reader = new TiffImageReader(fixture);
@@ -111,7 +112,7 @@ public class TiffImageWriterTest {
 
     @Test
     public void testWriteWithPlanarImageAndIptcMetadata() throws Exception {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("tif-iptc.tif");
         final TiffImageReader reader = new TiffImageReader(fixture);
@@ -126,7 +127,7 @@ public class TiffImageWriterTest {
 
     @Test
     public void testWriteWithPlanarImageAndXmpMetadata() throws Exception {
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("tif-xmp.tif");
         final TiffImageReader reader = new TiffImageReader(fixture);
@@ -199,7 +200,7 @@ public class TiffImageWriterTest {
 
     private TiffImageWriter newWriter(Metadata metadata) throws IOException {
         OperationList opList = new OperationList();
-        if (Configuration.getInstance().
+        if (ConfigurationFactory.getInstance().
                 getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false)) {
             opList.add(new MetadataCopy());
         }

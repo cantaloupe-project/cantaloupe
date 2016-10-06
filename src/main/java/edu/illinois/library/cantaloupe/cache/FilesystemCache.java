@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -304,7 +305,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             digest.update(uniqueString.getBytes(Charset.forName("UTF8")));
             final String sum = Hex.encodeHexString(digest.digest());
 
-            final Configuration config = Configuration.getInstance();
+            final Configuration config = ConfigurationFactory.getInstance();
             final int depth = config.getInt(DIRECTORY_DEPTH_CONFIG_KEY, 3);
             final int nameLength =
                     config.getInt(DIRECTORY_NAME_LENGTH_CONFIG_KEY, 2);
@@ -335,7 +336,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @throws CacheException if {@link #PATHNAME_CONFIG_KEY} is undefined.
      */
     static String getRootPathname() throws CacheException {
-        final String pathname = Configuration.getInstance().
+        final String pathname = ConfigurationFactory.getInstance().
                 getString(PATHNAME_CONFIG_KEY);
         if (pathname == null) {
             throw new CacheException(PATHNAME_CONFIG_KEY + " is undefined.");
@@ -379,7 +380,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      *         returned.
      */
     private static boolean isExpired(File file) {
-        final long ttlMsec = 1000 * Configuration.getInstance().
+        final long ttlMsec = 1000 * ConfigurationFactory.getInstance().
                 getLong(TTL_CONFIG_KEY, 0);
         return ttlMsec > 0 && file.isFile() &&
                 System.currentTimeMillis() - getLastAccessTime(file) > ttlMsec;
