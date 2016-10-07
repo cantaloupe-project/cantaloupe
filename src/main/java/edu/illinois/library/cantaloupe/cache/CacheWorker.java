@@ -6,15 +6,13 @@ import org.slf4j.LoggerFactory;
 /**
  * Purges expired items from the cache.
  */
-public class CacheWorker implements Runnable {
+class CacheWorker implements Runnable {
 
     private static final Logger logger = LoggerFactory.
             getLogger(CacheWorker.class);
 
-    public static final String ENABLED_CONFIG_KEY =
-            "cache.server.worker.enabled";
-    public static final String INTERVAL_CONFIG_KEY =
-            "cache.server.worker.interval";
+    static final String ENABLED_CONFIG_KEY = "cache.server.worker.enabled";
+    static final String INTERVAL_CONFIG_KEY = "cache.server.worker.interval";
 
     /**
      * Runs one sweep of the worker.

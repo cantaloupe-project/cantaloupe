@@ -3,8 +3,7 @@ package edu.illinois.library.cantaloupe;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
-import edu.illinois.library.cantaloupe.cache.CacheWorker;
-import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.cache.CacheWorkerRunner;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.logging.LoggerUtil;
 import org.restlet.data.Protocol;
@@ -13,10 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 /**
  * <p>Serves as the entry Servlet in both standalone and Servlet container
@@ -32,15 +27,10 @@ public class EntryServlet extends ServerServlet {
 
     private static Logger logger = LoggerFactory.getLogger(EntryServlet.class);
 
-    public static final String CLEAN_CACHE_VM_ARGUMENT =
-            "cantaloupe.cache.clean";
-    public static final String PURGE_CACHE_VM_ARGUMENT =
-            "cantaloupe.cache.purge";
-    public static final String PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT =
+    static final String CLEAN_CACHE_VM_ARGUMENT = "cantaloupe.cache.clean";
+    static final String PURGE_CACHE_VM_ARGUMENT = "cantaloupe.cache.purge";
+    static final String PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT =
             "cantaloupe.cache.purge_expired";
-
-    private static ScheduledExecutorService cacheWorkerExecutorService;
-    private static ScheduledFuture<?> cacheWorkerFuture;
 
     static {
         // Suppress a Dock icon in OS X
@@ -130,32 +120,14 @@ public class EntryServlet extends ServerServlet {
 
         handleVmArguments();
         ConfigurationFactory.getInstance().startWatching();
-        startCacheWorker();
+        CacheWorkerRunner.start();
     }
 
     @Override
     public void destroy() {
         super.destroy();
-        stopCacheWorker();
+        CacheWorkerRunner.stop();
         ConfigurationFactory.getInstance().stopWatching();
-    }
-
-    private void startCacheWorker() {
-        final Configuration config = ConfigurationFactory.getInstance();
-        if (config.getBoolean(CacheWorker.ENABLED_CONFIG_KEY, false)) {
-            cacheWorkerExecutorService =
-                    Executors.newSingleThreadScheduledExecutor();
-            cacheWorkerFuture = cacheWorkerExecutorService.scheduleAtFixedRate(
-                    new CacheWorker(), 5,
-                    config.getInt(CacheWorker.INTERVAL_CONFIG_KEY, -1),
-                    TimeUnit.SECONDS);
-        }
-    }
-
-    private void stopCacheWorker() {
-        logger.info("Stopping the cache worker...");
-        cacheWorkerFuture.cancel(true);
-        cacheWorkerExecutorService.shutdown();
     }
 
 }
