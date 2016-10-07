@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.CacheWorker;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.config.ConfigurationWatcher;
 import edu.illinois.library.cantaloupe.logging.LoggerUtil;
 import org.restlet.data.Protocol;
 import org.restlet.ext.servlet.ServerServlet;
@@ -15,7 +14,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -43,10 +41,6 @@ public class EntryServlet extends ServerServlet {
 
     private static ScheduledExecutorService cacheWorkerExecutorService;
     private static ScheduledFuture<?> cacheWorkerFuture;
-    private static ConfigurationWatcher configWatcher =
-            new ConfigurationWatcher();
-    private static ScheduledExecutorService configWatcherExecutorService;
-    private static Future<?> configWatcherFuture;
 
     static {
         // Suppress a Dock icon in OS X
@@ -135,7 +129,7 @@ public class EntryServlet extends ServerServlet {
         getComponent().getClients().add(Protocol.CLAP);
 
         handleVmArguments();
-        startConfigWatcher();
+        ConfigurationFactory.getInstance().startWatching();
         startCacheWorker();
     }
 
@@ -143,7 +137,7 @@ public class EntryServlet extends ServerServlet {
     public void destroy() {
         super.destroy();
         stopCacheWorker();
-        stopConfigWatcher();
+        ConfigurationFactory.getInstance().stopWatching();
     }
 
     private void startCacheWorker() {
@@ -158,26 +152,10 @@ public class EntryServlet extends ServerServlet {
         }
     }
 
-    private void startConfigWatcher() {
-        final Configuration config = ConfigurationFactory.getInstance();
-        if (config.getFile() != null) {
-            configWatcherExecutorService =
-                    Executors.newSingleThreadScheduledExecutor();
-            configWatcherFuture = configWatcherExecutorService.submit(configWatcher);
-        }
-    }
-
     private void stopCacheWorker() {
         logger.info("Stopping the cache worker...");
         cacheWorkerFuture.cancel(true);
         cacheWorkerExecutorService.shutdown();
-    }
-
-    private void stopConfigWatcher() {
-        logger.info("Stopping the config watcher...");
-        configWatcher.stop();
-        configWatcherFuture.cancel(true);
-        configWatcherExecutorService.shutdown();
     }
 
 }

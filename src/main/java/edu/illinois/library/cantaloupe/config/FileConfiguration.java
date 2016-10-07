@@ -2,8 +2,15 @@ package edu.illinois.library.cantaloupe.config;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 
 abstract class FileConfiguration {
+
+    private ConfigurationWatcher watcher = new ConfigurationWatcher();
+    private ScheduledExecutorService watcherExecutorService;
+    private Future<?> watcherFuture;
 
     public File getFile() {
         String configFilePath = System.
@@ -22,6 +29,24 @@ abstract class FileConfiguration {
             }
         }
         return null;
+    }
+
+    /**
+     * Starts watching the configuration file for changes.
+     */
+    public synchronized void startWatching() {
+        watcherExecutorService =
+                Executors.newSingleThreadScheduledExecutor();
+        watcherFuture = watcherExecutorService.submit(watcher);
+    }
+
+    /**
+     * Stops watching the configuration file for changes.
+     */
+    public synchronized void stopWatching() {
+        watcher.stop();
+        watcherFuture.cancel(true);
+        watcherExecutorService.shutdown();
     }
 
 }

@@ -8,10 +8,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 /**
- * Listens for changes to the configuration file and reloads it when it has
+ * Listens for changes to a configuration file and reloads it when it has
  * changed.
  */
-public class ConfigurationWatcher implements Runnable {
+class ConfigurationWatcher implements Runnable {
 
     private static Logger logger =
             LoggerFactory.getLogger(ConfigurationWatcher.class);

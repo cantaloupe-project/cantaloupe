@@ -144,17 +144,25 @@ class MemoryConfiguration implements Configuration {
     /**
      * No-op.
      */
-    public synchronized void reload() {
+    public synchronized void reload() {}
+
+    /**
+     * No-op.
+     */
+    public void save() throws IOException {}
+
+    public void setProperty(String key, Object value) {
+        configuration.put(key, value);
     }
 
     /**
      * No-op.
      */
-    public void save() throws IOException {
-    }
+    public void startWatching() {}
 
-    public void setProperty(String key, Object value) {
-        configuration.put(key, value);
-    }
+    /**
+     * No-op.
+     */
+    public void stopWatching() {}
 
 }

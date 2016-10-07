@@ -59,13 +59,25 @@ public interface Configuration {
     void reload() throws IOException;
 
     /**
-     * Saves the configuration. Not all implementations will be able to do
-     * this, which is fine.
+     * Saves the configuration. Implementations that don't support saving
+     * should just do nothing.
      *
      * @throws IOException If there is a problem saving the file.
      */
     void save() throws IOException;
 
     void setProperty(String key, Object value);
+
+    /**
+     * Starts watching the configuration file for changes. Implementations that
+     * don't support watching should just do nothing.
+     */
+    void startWatching();
+
+    /**
+     * Stops watching the configuration file for changes. Implementations that
+     * don't support watching should just do nothing.
+     */
+    void stopWatching();
 
 }
