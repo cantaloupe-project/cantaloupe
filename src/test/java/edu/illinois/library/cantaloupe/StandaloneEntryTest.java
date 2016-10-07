@@ -47,21 +47,19 @@ public class StandaloneEntryTest {
     public final ExpectedSystemExit exit = ExpectedSystemExit.none();
 
     private static void resetConfiguration() throws IOException {
-        Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT,
                 TestUtil.getFixture("config.properties").getAbsolutePath());
-        try {
-            config.setProperty(WebServer.HTTP_ENABLED_CONFIG_KEY, true);
-            config.setProperty(WebServer.HTTP_PORT_CONFIG_KEY, HTTP_PORT);
-            config.setProperty(WebServer.HTTPS_ENABLED_CONFIG_KEY, false);
-            config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
-                    "FilesystemResolver");
-            config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
-                    "Java2dProcessor");
-        } catch (Exception e) {
-            fail("Failed to get the configuration");
-        }
+
+        ConfigurationFactory.clearInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
+
+        config.setProperty(WebServer.HTTP_ENABLED_CONFIG_KEY, true);
+        config.setProperty(WebServer.HTTP_PORT_CONFIG_KEY, HTTP_PORT);
+        config.setProperty(WebServer.HTTPS_ENABLED_CONFIG_KEY, false);
+        config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
+                "FilesystemResolver");
+        config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
+                "Java2dProcessor");
     }
 
     @Before
@@ -76,6 +74,20 @@ public class StandaloneEntryTest {
         System.clearProperty(EntryServlet.CLEAN_CACHE_VM_ARGUMENT);
         System.clearProperty(EntryServlet.PURGE_CACHE_VM_ARGUMENT);
         System.clearProperty(EntryServlet.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT);
+    }
+
+    @Test
+    public void testMainWithMissingConfigFileArgumentExits() throws Exception {
+        exit.expectSystemExitWithStatus(-1);
+        System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
+        StandaloneEntry.main(new String[] {});
+    }
+
+    @Test
+    public void testMainWithEmptyConfigFileArgumentExits() throws Exception {
+        exit.expectSystemExitWithStatus(-1);
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "");
+        StandaloneEntry.main(new String[] {});
     }
 
     @Test

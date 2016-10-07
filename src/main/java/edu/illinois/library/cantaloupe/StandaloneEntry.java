@@ -35,26 +35,24 @@ public class StandaloneEntry {
      */
     public static void main(String[] args) throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        // This will be null if the user is not using file-based configuration.
         final File configFile = config.getFile();
-        if (config.getFile() != null) {
-            if (!configFile.exists()) {
-                System.out.println("Does not exist: " + configFile);
-                System.exit(-1);
-            }
-            if (!configFile.isFile()) {
-                System.out.println("Not a file: " + configFile);
-                System.exit(-1);
-            }
-            if (!configFile.canRead()) {
-                System.out.println("Not readable: " + configFile);
-                System.exit(-1);
-            }
-        } else {
-            System.out.println("StandaloneEntry.main(): No -D" +
-                    ConfigurationFactory.CONFIG_VM_ARGUMENT +
-                    " option provided; assuming environment-based " +
-                    "configuration.");
+        if (configFile == null) {
+            System.out.println("Usage: java " +
+                    "-D" + ConfigurationFactory.CONFIG_VM_ARGUMENT +
+                    "=cantaloupe.properties -jar " + getWarFile().getName());
+            System.exit(-1);
+        }
+        if (!configFile.exists()) {
+            System.out.println("Does not exist: " + configFile);
+            System.exit(-1);
+        }
+        if (!configFile.isFile()) {
+            System.out.println("Not a file: " + configFile);
+            System.exit(-1);
+        }
+        if (!configFile.canRead()) {
+            System.out.println("Not readable: " + configFile);
+            System.exit(-1);
         }
         getWebServer().start();
     }
