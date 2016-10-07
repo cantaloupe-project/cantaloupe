@@ -23,18 +23,23 @@ public abstract class ConfigurationFactory {
                 config = instance;
                 if (config == null) {
                     final String configArg = System.getProperty(CONFIG_VM_ARGUMENT);
-                    if (configArg.equals("memory")) {
-                        config = new MemoryConfiguration();
+                    if (configArg != null) {
+                        if (configArg.equals("memory")) {
+                            config = new MemoryConfiguration();
+                        } else {
+                            config = new PropertiesConfiguration();
+                        }
+                        try {
+                            config.reload();
+                        } catch (IOException e) {
+                            System.err.println("ConfigurationFactory.getInstance(): " +
+                                    e.getMessage());
+                        }
+                        instance = config;
                     } else {
-                        config = new PropertiesConfiguration();
-                    }
-                    try {
-                        config.reload();
-                    } catch (IOException e) {
                         System.err.println("ConfigurationFactory.getInstance(): " +
-                                e.getMessage());
+                                "missing " + CONFIG_VM_ARGUMENT + " VM option.");
                     }
-                    instance = config;
                 }
             }
         }
