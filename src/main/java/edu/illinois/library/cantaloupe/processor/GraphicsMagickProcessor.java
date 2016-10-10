@@ -232,6 +232,9 @@ class GraphicsMagickProcessor extends Im4JavaProcessor
             }
         }
 
+        // Automatically adjust levels during conversion from 16-bit to 8-bit.
+        imOp.autoLevel();
+
         // Apply the sharpen operation, if present.
         final Configuration config = ConfigurationFactory.getInstance();
         final double sharpenValue = config.getDouble(SHARPEN_CONFIG_KEY, 0);
