@@ -151,6 +151,7 @@ class Java2dProcessor extends AbstractImageIoProcessor
             final ReductionFactor rf = new ReductionFactor();
             final Set<ImageReader.Hint> hints = new HashSet<>();
             BufferedImage image = reader.read(ops, orientation, rf, hints);
+            image = Java2dUtil.reduceTo8Bits(image);
 
             // Apply the crop operation, if present, and maintain a reference
             // to it for subsequent operations to refer to.
