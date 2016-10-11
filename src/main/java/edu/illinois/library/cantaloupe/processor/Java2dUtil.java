@@ -26,6 +26,7 @@ import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorConvertOp;
 import java.io.IOException;
 import java.util.List;
 
@@ -296,7 +297,7 @@ public abstract class Java2dUtil {
      *
      * @param inImage Image to reduce
      * @return Reduced image, or the input image if it already is 8 bits or
-     * less.
+     *         less.
      */
     static BufferedImage reduceTo8Bits(final BufferedImage inImage) {
         BufferedImage outImage = inImage;
@@ -305,7 +306,10 @@ public abstract class Java2dUtil {
                     BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
             outImage = new BufferedImage(inImage.getWidth(),
                     inImage.getHeight(), type);
-            outImage.createGraphics().drawImage(inImage, null, 0, 0);
+            final ColorConvertOp op = new ColorConvertOp(
+                    inImage.getColorModel().getColorSpace(),
+                    outImage.getColorModel().getColorSpace(), null);
+            outImage.createGraphics().drawImage(inImage, op, 0, 0);
         }
         return outImage;
     }
