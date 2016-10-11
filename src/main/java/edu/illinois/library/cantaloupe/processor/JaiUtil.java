@@ -66,12 +66,10 @@ abstract class JaiUtil {
      * @return Cropped image, or the input image if the given operation is a
      *         no-op.
      */
-    static RenderedOp cropImage(RenderedOp inImage,
-                                Crop crop,
+    static RenderedOp cropImage(RenderedOp inImage, Crop crop,
                                 ReductionFactor rf) {
-        RenderedOp croppedImage = inImage;
         if (!crop.isNoOp()) {
-            // calculate the region x, y, and actual width/height
+            // Calculate the region x, y, and actual width/height.
             final double scale = rf.getScale();
             final double regionX = crop.getX() * scale;
             final double regionY = crop.getY() * scale;
@@ -114,9 +112,9 @@ abstract class JaiUtil {
             pb.add(y);
             pb.add(croppedWidth);
             pb.add(croppedHeight);
-            croppedImage = JAI.create("crop", pb);
+            inImage = JAI.create("crop", pb);
         }
-        return croppedImage;
+        return inImage;
     }
 
     /**
@@ -130,18 +128,19 @@ abstract class JaiUtil {
     }
 
     /**
-     * Normalizes the component size to 8 bits per pixel.
+     * Linearly scales the pixel values of the given image into an 8-bit range.
      *
-     * @param inImage
-     * @return
+     * @param inImage Image to rescale.
+     * @return Rescaled image.
      */
-    static RenderedOp normalizeLevels(RenderedOp inImage) {
+    static RenderedOp rescalePixels(RenderedOp inImage) {
+        final int targetSize = 8;
         final int componentSize = inImage.getColorModel().getComponentSize(0);
-        if (componentSize != 8) {
+        if (componentSize != targetSize) {
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
 
-            final double multiplier = Math.pow(2, 8) / Math.pow(2, componentSize);
+            final double multiplier = Math.pow(2, targetSize) / Math.pow(2, componentSize);
             // Per-band constants to multiply by.
             final double[] constants = {multiplier};
             pb.add(constants);
@@ -150,7 +149,7 @@ abstract class JaiUtil {
             final double[] offsets = {0};
             pb.add(offsets);
 
-            logger.debug("normalizeLevels(): multiplying by {}", multiplier);
+            logger.debug("rescalePixels(): multiplying by {}", multiplier);
             inImage = JAI.create("rescale", pb);
         }
         return inImage;
@@ -163,20 +162,19 @@ abstract class JaiUtil {
      *         is a no-op.
      */
     static RenderedOp rotateImage(RenderedOp inImage, Rotate rotate) {
-        RenderedOp rotatedImage = inImage;
         if (!rotate.isNoOp()) {
             logger.debug("rotateImage(): rotating {} degrees",
                     rotate.getDegrees());
 
             ParameterBlock pb = new ParameterBlock();
-            pb.addSource(rotatedImage);
+            pb.addSource(inImage);
             pb.add(inImage.getWidth() / 2.0f);                   // x origin
             pb.add(inImage.getHeight() / 2.0f);                  // y origin
             pb.add((float) Math.toRadians(rotate.getDegrees())); // radians
             pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
-            rotatedImage = JAI.create("rotate", pb);
+            inImage = JAI.create("rotate", pb);
         }
-        return rotatedImage;
+        return inImage;
     }
 
     /**
@@ -189,13 +187,12 @@ abstract class JaiUtil {
      * @param scale         Requested size ignoring any reduction factor
      * @param interpolation Interpolation
      * @param rf            Reduction factor that has already been applied to
-     *                        <code>inImage</code>
+     *                      <code>inImage</code>
      * @return Scaled image, or the input image if the given scale is a no-op.
      */
     static RenderedOp scaleImage(RenderedOp inImage, Scale scale,
                                  Interpolation interpolation,
                                  ReductionFactor rf) {
-        RenderedOp scaledImage = inImage;
         if (!scale.isNoOp()) {
             final int sourceWidth = inImage.getWidth();
             final int sourceHeight = inImage.getHeight();
@@ -225,9 +222,9 @@ abstract class JaiUtil {
             pb.add(0.0f);
             pb.add(0.0f);
             pb.add(interpolation);
-            scaledImage = JAI.create("scale", pb);
+            inImage = JAI.create("scale", pb);
         }
-        return scaledImage;
+        return inImage;
     }
 
     /**
@@ -236,16 +233,15 @@ abstract class JaiUtil {
      * remain around due to a bug in JAI (see inline comment in
      * {@link JaiProcessor#process}).
      *
-     * @param inImage       Image to scale
-     * @param scale         Requested size ignoring any reduction factor
-     * @param rf            Reduction factor that has already been applied to
-     *                        <code>inImage</code>
+     * @param inImage Image to scale
+     * @param scale   Requested size ignoring any reduction factor
+     * @param rf      Reduction factor that has already been applied to
+     *                <code>inImage</code>
      * @return Scaled image, or the input image if the given scale is a no-op.
      */
     static RenderedOp scaleImageUsingSubsampleAverage(RenderedOp inImage,
                                                       Scale scale,
                                                       ReductionFactor rf) {
-        RenderedOp scaledImage = inImage;
         if (!scale.isNoOp()) {
             final int sourceWidth = inImage.getWidth();
             final int sourceHeight = inImage.getHeight();
@@ -260,7 +256,6 @@ abstract class JaiUtil {
             }
 
             // Enforce a minimum scale of 3 pixels on a side.
-            // OpenSeadragon has been known to request smaller.
             double minXScale = 3f / (double) sourceWidth;
             double minYScale = 3f / (double) sourceHeight;
             xScale = (xScale < minXScale) ? minXScale : xScale;
@@ -278,9 +273,9 @@ abstract class JaiUtil {
             final RenderingHints hints = new RenderingHints(
                     RenderingHints.KEY_RENDERING,
                     RenderingHints.VALUE_RENDER_QUALITY);
-            scaledImage = JAI.create("SubsampleAverage", pb, hints);
+            inImage = JAI.create("SubsampleAverage", pb, hints);
         }
-        return scaledImage;
+        return inImage;
     }
 
     /**
@@ -288,18 +283,16 @@ abstract class JaiUtil {
      * @param sharpen The sharpen operation.
      * @return Sharpened image.
      */
-    static RenderedOp sharpenImage(final RenderedOp inImage,
+    static RenderedOp sharpenImage(RenderedOp inImage,
                                    final Sharpen sharpen) {
-        RenderedOp sharpenedImage = inImage;
         if (!sharpen.isNoOp()) {
-            // http://docs.oracle.com/cd/E17802_01/products/products/java-media/jai/forDevelopers/jai-apidocs/javax/media/jai/operator/UnsharpMaskDescriptor.html
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
             pb.add(null);
             pb.add(sharpen.getAmount());
-            sharpenedImage = JAI.create("UnsharpMask", pb);
+            inImage = JAI.create("UnsharpMask", pb);
         }
-        return sharpenedImage;
+        return inImage;
     }
 
     /**

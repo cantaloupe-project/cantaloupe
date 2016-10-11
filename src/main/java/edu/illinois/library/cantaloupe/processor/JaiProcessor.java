@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.media.jai.Interpolation;
 import javax.media.jai.RenderedOp;
-import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
@@ -131,7 +130,7 @@ class JaiProcessor extends AbstractImageIoProcessor
                     orientation, rf);
             RenderedOp renderedOp = JaiUtil.getAsRenderedOp(
                     RenderedOp.wrapRenderedImage(renderedImage));
-            renderedOp = JaiUtil.normalizeLevels(renderedOp);
+            renderedOp = JaiUtil.rescalePixels(renderedOp);
             renderedOp = JaiUtil.convertTo8Bits(renderedOp);
 
             for (Operation op : ops) {
