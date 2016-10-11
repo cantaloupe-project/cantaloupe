@@ -48,6 +48,8 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
     private static Logger logger = LoggerFactory.
             getLogger(ImageMagickProcessor.class);
 
+    static final String AUTO_LEVELS_CONFIG_KEY =
+            "ImageMagickProcessor.auto_levels";
     static final String BACKGROUND_COLOR_CONFIG_KEY =
             "ImageMagickProcessor.background_color";
     static final String PATH_TO_BINARIES_CONFIG_KEY =
@@ -136,10 +138,14 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
             }
         }
 
+        final Configuration config = ConfigurationFactory.getInstance();
+        if (config.getBoolean(AUTO_LEVELS_CONFIG_KEY, false)) {
+            imOp.autoLevel();
+        }
+
         imOp.depth(8);
 
         // Apply the sharpen operation, if present.
-        final Configuration config = ConfigurationFactory.getInstance();
         final double sharpenValue = config.getDouble(SHARPEN_CONFIG_KEY, 0);
         imOp.unsharp(sharpenValue);
     }
