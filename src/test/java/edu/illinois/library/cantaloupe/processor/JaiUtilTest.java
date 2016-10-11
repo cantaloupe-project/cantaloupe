@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rotate;
-import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
@@ -78,8 +77,7 @@ public class JaiUtilTest {
         RenderedImage image = reader.readRendered(ops, Orientation.ROTATE_0,
                 new ReductionFactor());
         PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
-        RenderedOp renderedOp = JaiUtil.reformatImage(planarImage,
-                new Dimension(512, 512));
+        RenderedOp renderedOp = JaiUtil.getAsRenderedOp(planarImage);
         assertEquals(64, renderedOp.getWidth());
         assertEquals(56, renderedOp.getHeight());
     }
@@ -180,7 +178,7 @@ public class JaiUtilTest {
         RenderedImage image = reader.readRendered(ops, Orientation.ROTATE_0,
                 new ReductionFactor());
         PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
-        return JaiUtil.reformatImage(planarImage, new Dimension(512, 512));
+        return JaiUtil.getAsRenderedOp(planarImage);
     }
 
 }

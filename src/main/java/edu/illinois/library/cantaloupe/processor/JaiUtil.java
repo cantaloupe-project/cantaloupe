@@ -11,13 +11,11 @@ import edu.illinois.library.cantaloupe.image.Transpose;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.media.jai.ImageLayout;
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
 import javax.media.jai.OpImage;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
-import javax.media.jai.TileCache;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TransposeDescriptor;
 import java.awt.Dimension;
@@ -26,7 +24,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
-import java.util.HashMap;
 
 abstract class JaiUtil {
 
@@ -58,6 +55,24 @@ abstract class JaiUtil {
         }
         return markedImage;
     } */
+
+    /**
+     * Reduces an image's component size to 8 bits if greater.
+     *
+     * @param inImage Image to reduce
+     * @return Reduced image, or the input image if it already is 8 bits or
+     *         less.
+     */
+    static RenderedOp convertTo8Bits(RenderedOp inImage) {
+        if (inImage.getColorModel().getComponentSize(0) != 8) {
+            // This seems to clip the color depth to 8-bit. Not sure why it
+            // works.
+            final ParameterBlock pb = new ParameterBlock();
+            pb.addSource(inImage);
+            inImage = JAI.create("format", pb, inImage.getRenderingHints());
+        }
+        return inImage;
+    }
 
     /**
      * @param inImage Image to crop
@@ -136,42 +151,42 @@ abstract class JaiUtil {
         return croppedImage;
     }
 
-    private static RenderingHints defaultRenderingHints(Dimension tileSize) {
-        final ImageLayout tileLayout = new ImageLayout();
-        tileLayout.setTileWidth(tileSize.width);
-        tileLayout.setTileHeight(tileSize.height);
-
-        final TileCache tileCache = JAI.getDefaultInstance().getTileCache();
-        tileCache.setMemoryCapacity(0);
-
-        final HashMap<RenderingHints.Key, Object> map = new HashMap<>();
-        map.put(JAI.KEY_TILE_CACHE, tileCache);
-        map.put(JAI.KEY_IMAGE_LAYOUT, tileLayout);
-        map.put(JAI.KEY_INTERPOLATION,
-                Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
-        return new RenderingHints(map);
+    /**
+     * @param inImage Image to get a RenderedOp of.
+     * @return RenderedOp
+     */
+    static RenderedOp getAsRenderedOp(PlanarImage inImage) {
+        final ParameterBlock pb = new ParameterBlock();
+        pb.addSource(inImage);
+        return JAI.create("null", pb);
     }
 
-    /*
-     * This doesn't work.
+    /**
+     * Normalizes the component size to 8 bits per pixel.
      *
      * @param inImage
      * @return
-     *
-    public static RenderedOp reduceTo24Bit(RenderedOp inImage) {
-        // TODO: this produces an all-white image when used with 48-bit input
-        RenderedOp reducedImage = inImage;
-        final ParameterBlock pb = new ParameterBlock();
-        pb.addSource(inImage);
-        pb.add(ColorQuantizerDescriptor.MEDIANCUT); // quantizationAlgorithm
-        pb.add(256);                                // maxColorNum
-        pb.add(null);                               // upperBound
-        pb.add(null);                               // roi
-        pb.add(1);                                  // xPeriod
-        pb.add(1);                                  // yPeriod
-        reducedImage = JAI.create("ColorQuantizer", pb);
-        return reducedImage;
-    }*/
+     */
+    static RenderedOp normalizeLevels(RenderedOp inImage) {
+        final int componentSize = inImage.getColorModel().getComponentSize(0);
+        if (componentSize != 8) {
+            ParameterBlock pb = new ParameterBlock();
+            pb.addSource(inImage);
+
+            final double multiplier = Math.pow(2, 8) / Math.pow(2, componentSize);
+            // Per-band constants to multiply by.
+            final double[] constants = {multiplier};
+            pb.add(constants);
+
+            // Per-band offsets to be added.
+            final double[] offsets = {0};
+            pb.add(offsets);
+
+            logger.debug("normalizeLevels(): multiplying by {}", multiplier);
+            inImage = JAI.create("rescale", pb);
+        }
+        return inImage;
+    }
 
     /**
      * @param baseImage    Base image over which to draw the overlay.
@@ -295,17 +310,6 @@ abstract class JaiUtil {
             }
         }
         return baseImage;
-    }
-
-    /**
-     * @param inImage  Image to reformat
-     * @param tileSize JAI tile size
-     * @return Reformatted image
-     */
-    static RenderedOp reformatImage(PlanarImage inImage, Dimension tileSize) {
-        final ParameterBlock pb = new ParameterBlock();
-        pb.addSource(inImage);
-        return JAI.create("format", pb, defaultRenderingHints(tileSize));
     }
 
     /**

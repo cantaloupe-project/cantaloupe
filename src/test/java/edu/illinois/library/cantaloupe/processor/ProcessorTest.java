@@ -14,6 +14,7 @@ import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -34,7 +35,8 @@ public abstract class ProcessorTest {
 
     protected static final String IMAGE = "images/jpg-rgb-64x56x8-baseline.jpg";
 
-    static {
+    @Before
+    public void setUp() throws Exception {
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
     }
