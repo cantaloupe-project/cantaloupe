@@ -136,8 +136,7 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
             }
         }
 
-        // Automatically adjust levels during conversion from 16-bit to 8-bit.
-        imOp.autoLevel();
+        imOp.depth(8);
 
         // Apply the sharpen operation, if present.
         final Configuration config = ConfigurationFactory.getInstance();
