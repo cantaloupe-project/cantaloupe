@@ -1,8 +1,6 @@
 package edu.illinois.library.cantaloupe.config;
 
 import edu.illinois.library.cantaloupe.logging.LoggerUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -12,9 +10,6 @@ import java.nio.file.Path;
  * changed.
  */
 class ConfigurationWatcher implements Runnable {
-
-    private static Logger logger =
-            LoggerFactory.getLogger(ConfigurationWatcher.class);
 
     private FilesystemWatcher filesystemWatcher;
 
@@ -37,7 +32,7 @@ class ConfigurationWatcher implements Runnable {
                         config.reload();
                         LoggerUtil.reloadConfiguration();
                     } catch (IOException e) {
-                        logger.error(e.getMessage(), e);
+                        System.err.println("ConfigurationWatcher.run(): " + e.getMessage());
                     }
                 }
             }
@@ -47,7 +42,7 @@ class ConfigurationWatcher implements Runnable {
             filesystemWatcher = new FilesystemWatcher(path, callback);
             filesystemWatcher.processEvents();
         } catch (IOException e) {
-            logger.error(e.getMessage(), e);
+            System.err.println("ConfigurationWatcher.run(): " + e.getMessage());
         }
     }
 
