@@ -334,7 +334,10 @@
                     <include name="edu/illinois/library/cantaloupe/config/Configuration.class" />
                     <include name="edu/illinois/library/cantaloupe/config/ConfigurationException.class" />
                     <include name="edu/illinois/library/cantaloupe/config/ConfigurationFactory.class" />
+                    <include name="edu/illinois/library/cantaloupe/config/ConfigurationWatcher.class" />
                     <include name="edu/illinois/library/cantaloupe/config/FileConfiguration.class" />
+                    <include name="edu/illinois/library/cantaloupe/config/FilesystemWatcher.class" />
+                    <include name="edu/illinois/library/cantaloupe/config/FilesystemWatcher$Callback.class" />
                     <include name="edu/illinois/library/cantaloupe/config/PropertiesConfiguration.class" />
                     <include name="edu/illinois/library/cantaloupe/StandaloneEntry.class" />
                     <include name="edu/illinois/library/cantaloupe/WebServer.class" />
