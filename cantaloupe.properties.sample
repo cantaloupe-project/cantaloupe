@@ -264,8 +264,8 @@ FfmpegProcessor.sharpen = 0
 # GraphicsMagickProcessor
 #----------------------------------------
 
-# Optional absolute path of the directory containing the GraphicsMagick binary.
-# Overrides the PATH.
+# !! Optional absolute path of the directory containing the GraphicsMagick
+# binary. Overrides the PATH.
 GraphicsMagickProcessor.path_to_binaries =
 
 # Intensity of an unsharp mask from 0 to 1.
@@ -279,8 +279,8 @@ GraphicsMagickProcessor.background_color = black
 # ImageMagickProcessor
 #----------------------------------------
 
-# Optional absolute path of the directory containing the ImageMagick binaries.
-# Overrides the PATH.
+# !! Optional absolute path of the directory containing the ImageMagick
+# binaries. Overrides the PATH.
 ImageMagickProcessor.path_to_binaries = /usr/local/bin
 
 # Intensity of an unsharp mask from 0 to 1.

@@ -1277,7 +1277,7 @@
                                             <td>
                                                 <input class="form-control" type="text"
                                                        name="GraphicsMagickProcessor.path_to_binaries"
-                                                       data-requires-restart="false">
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1329,7 +1329,7 @@
                                             <td>
                                                 <input class="form-control" type="text"
                                                        name="ImageMagickProcessor.path_to_binaries"
-                                                       data-requires-restart="false">
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>

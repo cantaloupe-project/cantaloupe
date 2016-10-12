@@ -15,6 +15,7 @@ import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
 import org.im4java.core.IMOperation;
 import org.im4java.process.Pipe;
+import org.im4java.process.ProcessStarter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +59,14 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
 
     // Lazy-initialized by getFormats()
     protected static HashMap<Format, Set<Format>> supportedFormats;
+
+    ImageMagickProcessor() {
+        final Configuration config = ConfigurationFactory.getInstance();
+        final String path = config.getString(PATH_TO_BINARIES_CONFIG_KEY);
+        if (path != null) {
+            ProcessStarter.setGlobalSearchPath(path);
+        }
+    }
 
     void assembleOperation(final IMOperation imOp,
                            final OperationList ops,
@@ -274,12 +283,6 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
             op.addImage(ops.getOutputFormat().getPreferredExtension() + ":-"); // write to stdout
 
             ConvertCmd convert = new ConvertCmd();
-
-            String binaryPath =
-                    config.getString(PATH_TO_BINARIES_CONFIG_KEY, "");
-            if (binaryPath.length() > 0) {
-                convert.setSearchPath(binaryPath);
-            }
 
             try (InputStream inputStream = streamSource.newInputStream()) {
                 convert.setInputProvider(new Pipe(inputStream, null));
