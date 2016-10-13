@@ -603,11 +603,11 @@ landing page, as well as in one of the tables below. A list of output formats su
 <h3 id="ImageMagickProcessor">ImageMagickProcessor</h3>
 
 <p>ImageMagickProcessor, like <a href="#GraphicsMagickProcessor">GraphicsMagickProcessor</a>, uses
-<a href="http://im4java.sourceforge.net">im4java</a> to wrap <a href="http://www.imagemagick.org/">ImageMagick</a> commands. As such, ImageMagick must be installed.</p>
+<a href="http://im4java.sourceforge.net">im4java</a> to wrap <a href="http://www.imagemagick.org/">ImageMagick</a> commands. As such, ImageMagick must be installed. Currently, the <span class="filename">convert</span> and <span class="filename">identify</span> executables from version 6.x are used. Version 7 replaces these with a single <span class="filename">magick</span> command, which is not yet supported. Therefore, if using ImageMagick 7, be sure that the <span class="filename">convert</span> and <span class="filename">identify</span> commands ("legacy utilities" as the Windows installer calls them) are installed.</p>
 
 <p>ImageMagick supports all of the IIIF transforms and all IIIF output formats, assuming the necessary delegates are installed. It also supports a wide array of source formats.</p>
 
-<p>ImageMagick's output quality is superlative; its thumbnails, in particular, are hard to beat. This comes at the expense of performance, which suffers increasingly as image size increases.</p>
+<p>ImageMagick's output quality is excellent; its thumbnails, in particular, are hard to beat. This comes at the expense of performance, which suffers increasingly as image size increases.</p>
 
 <div class="alert alert-info">It is recommended to find or compile a "Q8" version of ImageMagick, as its memory use will be halved.</div>
 
