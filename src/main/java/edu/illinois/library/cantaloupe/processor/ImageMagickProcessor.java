@@ -145,6 +145,8 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
             }
         }
 
+        imOp.depth(8);
+
         // Apply the sharpen operation, if present.
         final Configuration config = Configuration.getInstance();
         final double sharpenValue = config.getDouble(SHARPEN_CONFIG_KEY, 0);
