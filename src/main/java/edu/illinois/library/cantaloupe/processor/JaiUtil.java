@@ -167,7 +167,7 @@ abstract class JaiUtil {
      * @param inImage
      * @return
      */
-    static RenderedOp normalizeLevels(RenderedOp inImage) {
+    static RenderedOp rescalePixels(RenderedOp inImage) {
         final int componentSize = inImage.getColorModel().getComponentSize(0);
         if (componentSize != 8) {
             ParameterBlock pb = new ParameterBlock();
@@ -182,7 +182,7 @@ abstract class JaiUtil {
             final double[] offsets = {0};
             pb.add(offsets);
 
-            logger.debug("normalizeLevels(): multiplying by {}", multiplier);
+            logger.debug("rescalePixels(): multiplying by {}", multiplier);
             inImage = JAI.create("rescale", pb);
         }
         return inImage;
