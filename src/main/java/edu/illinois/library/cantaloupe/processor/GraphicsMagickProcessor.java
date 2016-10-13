@@ -14,6 +14,7 @@ import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
 import org.im4java.core.IMOperation;
 import org.im4java.process.Pipe;
+import org.im4java.process.ProcessStarter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,6 +153,14 @@ class GraphicsMagickProcessor extends Im4JavaProcessor
         return supportedFormats;
     }
 
+    GraphicsMagickProcessor() {
+        final Configuration config = Configuration.getInstance();
+        final String path = config.getString(PATH_TO_BINARIES_CONFIG_KEY);
+        if (path != null) {
+            ProcessStarter.setGlobalSearchPath(path);
+        }
+    }
+
     void assembleOperation(final IMOperation imOp,
                            final OperationList ops,
                            final Dimension fullSize,
@@ -267,12 +276,6 @@ class GraphicsMagickProcessor extends Im4JavaProcessor
 
             // true = use GraphicsMagick instead of ImageMagick
             ConvertCmd convert = new ConvertCmd(true);
-
-            String binaryPath =
-                    config.getString(PATH_TO_BINARIES_CONFIG_KEY, "");
-            if (binaryPath.length() > 0) {
-                convert.setSearchPath(binaryPath);
-            }
 
             try (InputStream inputStream = streamSource.newInputStream()) {
                 convert.setInputProvider(new Pipe(inputStream, null));
