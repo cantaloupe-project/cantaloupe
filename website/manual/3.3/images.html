@@ -14,6 +14,7 @@ title: Source Formats
 
 <ul>
   <li><a href="#Size%20Considerations">Size Considerations</a></li>
+  <li><a href="#Bit%20Depth%20Considerations">Bit Depth Considerations</a></li>
   <li><a href="#Source%20Formats">Source Formats</a>
     <ul>
       <li><a href="#JPEG">JPEG</a></li>
@@ -33,11 +34,17 @@ title: Source Formats
 
 <h2 id="Size Considerations">Size Considerations</h2>
 
-<p>Most requests to an image server will call for cropped tiles and/or downscaled derivatives of a source image. Both of these will contain less data than the entire image. A basic image reader, disregarding efficiency, will try to read the entire source image into memory before the cropping and scaling operations are carried out. This works fine for small images, because they can be read quickly and won't consume much memory. But as source images expand into the range of tens and hundreds of megapixels, an increasing burden is placed on the server, and requests take longer and longer to complete.</p>
+<p>Most requests to an image server will call for cropped tiles and/or downscaled derivatives of a source image. Both of these will contain fewer pixels than the entire source image. A basic image reader, disregarding efficiency, will try to read the entire source image into memory before the cropping and scaling operations are carried out. This works fine for small images, because they can be read quickly and won't consume much memory. But as the pixel count increases, an increasing burden is placed on the server, and requests take longer and longer to complete.</p>
 
 <p>It would be better if the image reader could read only the requested region, and even employ subsampling to read only the pixels within that region that are needed to satisfy the requested scale factor. This strategy would require a reader that is written to support it, as well as an image format capable of facilitating it. Two such formats&mdash;<a href="#JPEG2000">JPEG2000</a> and <a href="#TIFF">multi-resolution tiled TIFF</a>&mdash;are detailed later in this section.</p>
 
 <p>Cantaloupe tries to do the best it can with whatever source formats it is asked to serve. However, some image formats are inherently better suited for large sizes and some <a href="processors.html#Supported%20Source%20Formats">processor/format combinations</a> will perform better than others.</p>
+
+<h2 id="Bit Depth Considerations">Bit Depth Considerations</h2>
+
+<p>Most processors support non-8-bits-per-channel source images, but all output (derivative) images have 8 bits per channel. The pixel luminance values of non-8-bit images will be scaled linerarly to fit within 8 bits.</p>
+
+<p><a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a> offers an <code>ImageMagickProcessor.auto_levels</code> configuration option which modifies this behavior, normalizing the pixel values to utilize a full 8 bits of dynamic range. This is primarily useful when working with 16-bit source images (for example) that do not use a full 16 bits of dynamic range and would appear overly dark when scaled down to 8 bits.</p>
 
 <h2 id="Source Formats">Source Formats</h2>
 
