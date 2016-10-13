@@ -275,6 +275,7 @@ public class ControlPanelTest {
         css("[name=\"ImageMagickProcessor.sharpen\"]").sendKeys("0.2");
         new Select(css("[name=\"ImageMagickProcessor.background_color\"]")).
                 selectByValue("white");
+        css("[name=\"ImageMagickProcessor.auto_levels\"]").click();
         // JaiProcessor
         css("#cl-processors li > a[href=\"#JaiProcessor\"]").click();
         css("[name=\"JaiProcessor.sharpen\"]").sendKeys("0.2");
@@ -345,6 +346,7 @@ public class ControlPanelTest {
         assertEquals("0.2", config.getString("ImageMagickProcessor.sharpen"));
         assertEquals("white",
                 config.getString("ImageMagickProcessor.background_color"));
+        assertTrue(config.getBoolean("ImageMagickProcessor.auto_levels"));
         // JaiProcessor
         assertEquals("0.2", config.getString("JaiProcessor.sharpen"));
         assertEquals("0.55", config.getString("JaiProcessor.jpg.quality"));

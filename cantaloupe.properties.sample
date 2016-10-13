@@ -290,7 +290,7 @@ ImageMagickProcessor.sharpen = 0
 # formats that do not support transparency.
 ImageMagickProcessor.background_color = black
 
-# Auto-adjusts images' dynamic range.
+# Automatically normalizes dynamic range.
 ImageMagickProcessor.auto_levels = false
 
 #----------------------------------------

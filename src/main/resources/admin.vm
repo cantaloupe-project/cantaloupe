@@ -1365,6 +1365,26 @@
                                                 </select>
                                             </td>
                                         </tr>
+                                        <tr>
+                                            <td>
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Automatically normalizes
+                                                   dynamic range.">?</a>
+                                            </td>
+                                            <td>
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox"
+                                                               name="ImageMagickProcessor.auto_levels"
+                                                               value="true"
+                                                               data-requires-restart="false">
+                                                        Auto Levels
+                                                    </label>
+                                                </div>
+                                            </td>
+                                        </tr>
                                     </table>
                                 </div>
 
