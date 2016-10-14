@@ -61,7 +61,7 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
     ImageMagickProcessor() {
         final Configuration config = Configuration.getInstance();
         final String path = config.getString(PATH_TO_BINARIES_CONFIG_KEY);
-        if (path != null) {
+        if (path != null && path.length() > 0) {
             ProcessStarter.setGlobalSearchPath(path);
         }
     }
