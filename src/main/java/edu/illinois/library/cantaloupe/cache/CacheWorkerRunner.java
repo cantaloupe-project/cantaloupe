@@ -31,8 +31,12 @@ public abstract class CacheWorkerRunner {
 
     public static synchronized void stop() {
         logger.info("Stopping the cache worker...");
-        future.cancel(true);
-        executorService.shutdown();
+        if (future != null) {
+            future.cancel(true);
+        }
+        if (executorService != null) {
+            executorService.shutdown();
+        }
     }
 
 }
