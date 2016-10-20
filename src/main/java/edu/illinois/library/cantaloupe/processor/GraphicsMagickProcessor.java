@@ -157,7 +157,7 @@ class GraphicsMagickProcessor extends Im4JavaProcessor
     GraphicsMagickProcessor() {
         final Configuration config = ConfigurationFactory.getInstance();
         final String path = config.getString(PATH_TO_BINARIES_CONFIG_KEY);
-        if (path != null) {
+        if (path != null && path.length() > 0) {
             ProcessStarter.setGlobalSearchPath(path);
         }
     }
