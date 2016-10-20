@@ -168,15 +168,23 @@ public class EntryServlet extends ServerServlet {
 
     private void stopCacheWorker() {
         logger.info("Stopping the cache worker...");
-        cacheWorkerFuture.cancel(true);
-        cacheWorkerExecutorService.shutdown();
+        if (cacheWorkerFuture != null) {
+            cacheWorkerFuture.cancel(true);
+        }
+        if (cacheWorkerExecutorService != null) {
+            cacheWorkerExecutorService.shutdown();
+        }
     }
 
     private void stopConfigWatcher() {
         logger.info("Stopping the config watcher...");
         configWatcher.stop();
-        configWatcherFuture.cancel(true);
-        configWatcherExecutorService.shutdown();
+        if (configWatcherFuture != null) {
+            configWatcherFuture.cancel(true);
+        }
+        if (configWatcherExecutorService != null) {
+            configWatcherExecutorService.shutdown();
+        }
     }
 
 }
