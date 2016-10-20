@@ -179,6 +179,7 @@ public abstract class AbstractResource extends ServerResource {
         super.doInit();
         getResponse().getHeaders().add("X-Powered-By",
                 "Cantaloupe/" + Application.getVersion());
+        logger.info("doInit(): handling {}", getReference());
     }
 
     /**
