@@ -52,6 +52,8 @@ class GraphicsMagickProcessor extends Im4JavaProcessor
 
     static final String BACKGROUND_COLOR_CONFIG_KEY =
             "GraphicsMagickProcessor.background_color";
+    static final String NORMALIZE_CONFIG_KEY =
+            "GraphicsMagickProcessor.normalize";
     static final String SHARPEN_CONFIG_KEY = "GraphicsMagickProcessor.sharpen";
     static final String PATH_TO_BINARIES_CONFIG_KEY =
             "GraphicsMagickProcessor.path_to_binaries";
@@ -241,10 +243,14 @@ class GraphicsMagickProcessor extends Im4JavaProcessor
             }
         }
 
+        final Configuration config = ConfigurationFactory.getInstance();
+        if (config.getBoolean(NORMALIZE_CONFIG_KEY, false)) {
+            imOp.normalize();
+        }
+
         imOp.depth(8);
 
         // Apply the sharpen operation, if present.
-        final Configuration config = ConfigurationFactory.getInstance();
         final double sharpenValue = config.getDouble(SHARPEN_CONFIG_KEY, 0);
         imOp.unsharp(sharpenValue);
     }

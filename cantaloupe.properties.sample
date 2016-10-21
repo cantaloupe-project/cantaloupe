@@ -275,6 +275,9 @@ GraphicsMagickProcessor.sharpen = 0
 # formats that do not support transparency.
 GraphicsMagickProcessor.background_color = black
 
+# Adjusts levels to utilize available dynamic range.
+GraphicsMagickProcessor.normalize = false
+
 #----------------------------------------
 # ImageMagickProcessor
 #----------------------------------------

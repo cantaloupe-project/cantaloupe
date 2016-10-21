@@ -269,6 +269,7 @@ public class ControlPanelTest {
         css("[name=\"GraphicsMagickProcessor.sharpen\"]").sendKeys("0.2");
         new Select(css("[name=\"GraphicsMagickProcessor.background_color\"]")).
                 selectByValue("black");
+        css("[name=\"GraphicsMagickProcessor.normalize\"]").click();
         // ImageMagickProcessor
         css("#cl-processors li > a[href=\"#ImageMagickProcessor\"]").click();
         css("[name=\"ImageMagickProcessor.path_to_binaries\"]").sendKeys("/impath");
@@ -340,6 +341,7 @@ public class ControlPanelTest {
                 config.getString("GraphicsMagickProcessor.sharpen"));
         assertEquals("black",
                 config.getString("GraphicsMagickProcessor.background_color"));
+        assertTrue(config.getBoolean("GraphicsMagickProcessor.normalize"));
         // ImageMagickProcessor
         assertEquals("/impath",
                 config.getString("ImageMagickProcessor.path_to_binaries"));
