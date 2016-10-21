@@ -1281,21 +1281,6 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Sharpening
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Sharpens images before delivery.
-                                                   Should be a decimal number between 0 and 1">?</a>
-                                            </td>
-                                            <td>
-                                                <input class="form-control" type="number"
-                                                       step="0.1"
-                                                       name="GraphicsMagickProcessor.sharpen"
-                                                       data-requires-restart="false">
-                                            </td>
-                                        </tr>
-                                        <tr>
                                             <td>Background color
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
@@ -1333,6 +1318,21 @@
                                                 </div>
                                             </td>
                                         </tr>
+                                        <tr>
+                                            <td>Sharpening
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Sharpens images before delivery.
+                                                   Should be a decimal number between 0 and 1">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="number"
+                                                       step="0.1"
+                                                       name="GraphicsMagickProcessor.sharpen"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
                                     </table>
                                 </div>
 
@@ -1350,21 +1350,6 @@
                                                 <input class="form-control" type="text"
                                                        name="ImageMagickProcessor.path_to_binaries"
                                                        data-requires-restart="true">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Sharpening
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Sharpens images before delivery.
-                                                   Should be a decimal number between 0 and 1">?</a>
-                                            </td>
-                                            <td>
-                                                <input class="form-control" type="number"
-                                                       step="0.1"
-                                                       name="ImageMagickProcessor.sharpen"
-                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1403,6 +1388,21 @@
                                                         Normalize
                                                     </label>
                                                 </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Sharpening
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Sharpens images before delivery.
+                                                   Should be a decimal number between 0 and 1">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="number"
+                                                       step="0.1"
+                                                       name="ImageMagickProcessor.sharpen"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                     </table>
@@ -1490,21 +1490,6 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Sharpening
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Sharpens images before delivery.
-                                                   Should be a decimal number between 0 and 1">?</a>
-                                            </td>
-                                            <td>
-                                                <input class="form-control" type="number"
-                                                       step="0.1"
-                                                       name="Java2dProcessor.sharpen"
-                                                       data-requires-restart="false">
-                                            </td>
-                                        </tr>
-                                        <tr>
                                             <td>
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
@@ -1522,6 +1507,21 @@
                                                         Normalize
                                                     </label>
                                                 </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Sharpening
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Sharpens images before delivery.
+                                                   Should be a decimal number between 0 and 1">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="number"
+                                                       step="0.1"
+                                                       name="Java2dProcessor.sharpen"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                         <tr>
@@ -1599,6 +1599,26 @@
                                                         <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
                                                     #end
                                                 </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Automatically normalizes
+                                                   brightness and contrast.">?</a>
+                                            </td>
+                                            <td>
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox"
+                                                               name="KakaduProcessor.normalize"
+                                                               value="true"
+                                                               data-requires-restart="false">
+                                                        Normalize
+                                                    </label>
+                                                </div>
                                             </td>
                                         </tr>
                                         <tr>

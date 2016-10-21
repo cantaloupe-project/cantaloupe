@@ -90,6 +90,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
 
     static final String DOWNSCALE_FILTER_CONFIG_KEY =
             "KakaduProcessor.downscale_filter";
+    static final String NORMALIZE_CONFIG_KEY = "KakaduProcessor.normalize";
     static final String PATH_TO_BINARIES_CONFIG_KEY =
             "KakaduProcessor.path_to_binaries";
     static final String SHARPEN_CONFIG_KEY = "KakaduProcessor.sharpen";
@@ -563,7 +564,12 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
                                         final ReductionFactor reductionFactor,
                                         final OutputStream outputStream)
             throws IOException, ProcessorException {
+        final Configuration config = ConfigurationFactory.getInstance();
         BufferedImage image = Java2dUtil.reduceTo8Bits(reader.read());
+
+        if (config.getBoolean(NORMALIZE_CONFIG_KEY, false)) {
+            image = Java2dUtil.stretchContrast(image);
+        }
 
         // The crop has already been applied, but we need to retain a
         // reference to it for any redactions.
@@ -612,7 +618,6 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
         }
 
         // Apply the sharpen operation, if present.
-        final Configuration config = ConfigurationFactory.getInstance();
         final float sharpenValue = config.getFloat(SHARPEN_CONFIG_KEY, 0);
         final Sharpen sharpen = new Sharpen(sharpenValue);
         image = Java2dUtil.sharpenImage(image, sharpen);

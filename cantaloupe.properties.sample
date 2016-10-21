@@ -268,15 +268,15 @@ FfmpegProcessor.sharpen = 0
 # binary. Overrides the PATH.
 GraphicsMagickProcessor.path_to_binaries =
 
-# Intensity of an unsharp mask from 0 to 1.
-GraphicsMagickProcessor.sharpen = 0
-
 # Color of the background when an image is rotated. Only affects output
 # formats that do not support transparency.
 GraphicsMagickProcessor.background_color = black
 
 # Adjusts levels to utilize available dynamic range.
 GraphicsMagickProcessor.normalize = false
+
+# Intensity of an unsharp mask from 0 to 1.
+GraphicsMagickProcessor.sharpen = 0
 
 #----------------------------------------
 # ImageMagickProcessor
@@ -286,15 +286,15 @@ GraphicsMagickProcessor.normalize = false
 # binaries. Overrides the PATH.
 ImageMagickProcessor.path_to_binaries = /usr/local/bin
 
-# Intensity of an unsharp mask from 0 to 1.
-ImageMagickProcessor.sharpen = 0
-
 # Color of the background when an image is rotated. Only affects output
 # formats that do not support transparency.
 ImageMagickProcessor.background_color = black
 
 # Expands contrast to utilize available dynamic range.
 ImageMagickProcessor.normalize = false
+
+# Intensity of an unsharp mask from 0 to 1.
+ImageMagickProcessor.sharpen = 0
 
 #----------------------------------------
 # JaiProcessor
@@ -319,6 +319,9 @@ JaiProcessor.tif.compression = LZW
 Java2dProcessor.upscale_filter = bicubic
 Java2dProcessor.downscale_filter = bicubic
 
+# Expands contrast to utilize available dynamic range.
+Java2dProcessor.normalize = false
+
 # Intensity of an unsharp mask from 0 to 1.
 Java2dProcessor.sharpen = 0
 
@@ -328,9 +331,6 @@ Java2dProcessor.jpg.quality = 0.8
 # TIFF output compression type. Available values are `LZW`, `Deflate`,
 # `ZLib`, `JPEG`, and `PackBits`. Leave blank for no compression.
 Java2dProcessor.tif.compression = LZW
-
-# Expands contrast to utilize available dynamic range.
-Java2dProcessor.normalize = false
 
 #----------------------------------------
 # KakaduProcessor
@@ -344,6 +344,9 @@ KakaduProcessor.path_to_binaries =
 # `lanczos3`, `mitchell`, `triangle`.
 KakaduProcessor.upscale_filter = bicubic
 KakaduProcessor.downscale_filter = bicubic
+
+# Expands contrast to utilize available dynamic range.
+KakaduProcessor.normalize = false
 
 # Intensity of an unsharp mask from 0 to 1.
 KakaduProcessor.sharpen = 0
