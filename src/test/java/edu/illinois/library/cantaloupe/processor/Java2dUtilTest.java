@@ -14,6 +14,8 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -383,6 +385,25 @@ public class Java2dUtilTest {
         outImage = Java2dUtil.scaleImage(inImage, scale, rf);
         assertEquals(100, outImage.getWidth());
         assertEquals(100, outImage.getHeight());
+    }
+
+    @Test
+    public void testStretchContrast() {
+        BufferedImage image = new BufferedImage(100, 100,
+                BufferedImage.TYPE_INT_RGB);
+        final Rectangle leftHalf = new Rectangle(0, 0, 50, 100);
+        final Rectangle rightHalf = new Rectangle(50, 0, 50, 100);
+
+        final Graphics2D g2d = image.createGraphics();
+        g2d.setColor(Color.DARK_GRAY);
+        g2d.fill(leftHalf);
+        g2d.setColor(Color.LIGHT_GRAY);
+        g2d.fill(rightHalf);
+
+        image = Java2dUtil.stretchContrast(image);
+
+        assertEquals(-16777216, image.getRGB(10, 10));
+        assertEquals(-1, image.getRGB(90, 90));
     }
 
     @Test

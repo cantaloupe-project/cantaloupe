@@ -541,6 +541,97 @@ public abstract class Java2dUtil {
     }
 
     /**
+     * <p>Linearly stretches the contrast of an image to occupy the full range
+     * of intensities. Histogram gaps will result.</p>
+     *
+     * <p>Does not work with indexed images.</p>
+     *
+     * @param inImage Image to stretch.
+     * @return Stretched image.
+     */
+    static BufferedImage stretchContrast(BufferedImage inImage) {
+        if (inImage.getType() != BufferedImage.TYPE_BYTE_INDEXED) {
+            // Stretch only if there is at least this difference between
+            // minimum and maximum luminance.
+            final float threshold = 0.01f;
+            final float maxColor =
+                    (float) Math.pow(2, inImage.getColorModel().getComponentSize(0));
+
+            final Stopwatch watch = new Stopwatch();
+            final int minX = inImage.getMinX();
+            final int minY = inImage.getMinY();
+            final int width = inImage.getWidth();
+            final int height = inImage.getHeight();
+            float lowRgb = maxColor, highRgb = 0;
+
+            // Scan every pixel to find the darkest and brightest.
+            for (int x = minX; x < minX + width; x++) {
+                for (int y = minY; y < minY + height; y++) {
+                    final int color = inImage.getRGB(x, y);
+                    final int red = (color >>> 16) & 0xFF;
+                    final int green = (color >>> 8) & 0xFF;
+                    final int blue = color & 0xFF;
+                    if (red < lowRgb) {
+                        lowRgb = red;
+                    }
+                    if (green < lowRgb) {
+                        lowRgb = green;
+                    }
+                    if (blue < lowRgb) {
+                        lowRgb = blue;
+                    }
+                    if (red > highRgb) {
+                        highRgb = red;
+                    }
+                    if (green > highRgb) {
+                        highRgb = green;
+                    }
+                    if (blue > highRgb) {
+                        highRgb = blue;
+                    }
+                }
+            }
+
+            if (Math.abs(highRgb - lowRgb) > threshold) {
+                for (int x = minX; x < minX + width; x++) {
+                    for (int y = minY; y < minY + height; y++) {
+                        final int color = inImage.getRGB(x, y);
+                        final int red = (color >>> 16) & 0xFF;
+                        final int green = (color >>> 8) & 0xFF;
+                        final int blue = color & 0xFF;
+
+                        float stretchedRed =
+                                Math.abs((red - lowRgb) / (highRgb - lowRgb));
+                        if (stretchedRed > 1) {
+                            stretchedRed = 1;
+                        }
+                        float stretchedGreen =
+                                Math.abs((green - lowRgb) / (highRgb - lowRgb));
+                        if (stretchedGreen > 1) {
+                            stretchedGreen = 1;
+                        }
+                        float stretchedBlue =
+                                Math.abs((blue - lowRgb) / (highRgb - lowRgb));
+                        if (stretchedBlue > 1) {
+                            stretchedBlue = 1;
+                        }
+                        final java.awt.Color outColor = new java.awt.Color(
+                                stretchedRed, stretchedGreen, stretchedBlue);
+                        inImage.setRGB(x, y, outColor.getRGB());
+                    }
+                }
+                logger.debug("stretchContrast(): rescaled in {} msec ",
+                        watch.timeElapsed());
+            } else {
+                logger.debug("stretchContrast(): not enough contrast to stretch.");
+            }
+        } else {
+            logger.debug("stretchContrast(): can't stretch an indexed image.");
+        }
+        return inImage;
+    }
+
+    /**
      * @param inImage Image to filter
      * @param color   Color operation
      * @return Filtered image, or the input image if the given color operation
