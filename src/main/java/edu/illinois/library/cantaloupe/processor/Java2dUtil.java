@@ -302,6 +302,7 @@ public abstract class Java2dUtil {
     static BufferedImage reduceTo8Bits(final BufferedImage inImage) {
         BufferedImage outImage = inImage;
         if (inImage.getColorModel().getComponentSize(0) > 8) {
+            final Stopwatch watch = new Stopwatch();
             final int type = inImage.getColorModel().hasAlpha() ?
                     BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
             outImage = new BufferedImage(inImage.getWidth(),
@@ -310,6 +311,8 @@ public abstract class Java2dUtil {
                     inImage.getColorModel().getColorSpace(),
                     outImage.getColorModel().getColorSpace(), null);
             outImage.createGraphics().drawImage(inImage, op, 0, 0);
+            logger.debug("reduceTo8Bits(): converted in {} msec",
+                    watch.timeElapsed());
         }
         return outImage;
     }
