@@ -74,6 +74,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
 
     static final String DOWNSCALE_FILTER_CONFIG_KEY =
             "OpenJpegProcessor.downscale_filter";
+    static final String NORMALIZE_CONFIG_KEY = "OpenJpegProcessor.normalize";
     static final String PATH_TO_BINARIES_CONFIG_KEY =
             "OpenJpegProcessor.path_to_binaries";
     static final String SHARPEN_CONFIG_KEY = "OpenJpegProcessor.sharpen";
@@ -480,6 +481,11 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
             throws IOException, ProcessorException {
         BufferedImage image = reader.read();
 
+        final Configuration config = ConfigurationFactory.getInstance();
+        if (config.getBoolean(NORMALIZE_CONFIG_KEY, false)) {
+            image = Java2dUtil.stretchContrast(image);
+        }
+
         // The crop has already been applied, but we need to retain a
         // reference to it for any redactions.
         Crop crop = null;
@@ -524,7 +530,6 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
         }
 
         // Apply the sharpen operation, if present.
-        final Configuration config = ConfigurationFactory.getInstance();
         final float sharpenValue = config.getFloat(SHARPEN_CONFIG_KEY, 0);
         final Sharpen sharpen = new Sharpen(sharpenValue);
         image = Java2dUtil.sharpenImage(image, sharpen);

@@ -364,6 +364,9 @@ OpenJpegProcessor.path_to_binaries =
 OpenJpegProcessor.upscale_filter = bicubic
 OpenJpegProcessor.downscale_filter = bicubic
 
+# Expands contrast to utilize available dynamic range.
+OpenJpegProcessor.normalize = false
+
 # Intensity of an unsharp mask from 0 to 1.
 OpenJpegProcessor.sharpen = 0
 

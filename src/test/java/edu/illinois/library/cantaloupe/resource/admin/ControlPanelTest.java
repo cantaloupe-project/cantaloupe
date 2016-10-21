@@ -310,6 +310,7 @@ public class ControlPanelTest {
                 selectByVisibleText("Mitchell");
         new Select(css("[name=\"OpenJpegProcessor.upscale_filter\"]")).
                 selectByVisibleText("Triangle");
+        css("[name=\"OpenJpegProcessor.normalize\"]").click();
         css("[name=\"OpenJpegProcessor.sharpen\"]").sendKeys("0.2");
         // PdfBoxProcessor
         css("#cl-processors li > a[href=\"#PdfBoxProcessor\"]").click();
@@ -370,6 +371,7 @@ public class ControlPanelTest {
         // OpenJpegProcessor
         assertEquals("/ojpath",
                 config.getString("OpenJpegProcessor.path_to_binaries"));
+        assertTrue(config.getBoolean("OpenJpegProcessor.normalize"));
         assertEquals("0.2", config.getString("KakaduProcessor.sharpen"));
         // PdfBoxProcessor
         assertEquals(300, config.getInt("PdfBoxProcessor.dpi"));
