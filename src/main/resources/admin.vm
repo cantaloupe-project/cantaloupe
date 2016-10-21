@@ -1371,16 +1371,16 @@
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
                                                    data-content="Automatically normalizes
-                                                   dynamic range.">?</a>
+                                                   brightness and contrast.">?</a>
                                             </td>
                                             <td>
                                                 <div class="checkbox">
                                                     <label>
                                                         <input type="checkbox"
-                                                               name="ImageMagickProcessor.auto_levels"
+                                                               name="ImageMagickProcessor.normalize"
                                                                value="true"
                                                                data-requires-restart="false">
-                                                        Auto Levels
+                                                        Normalize
                                                     </label>
                                                 </div>
                                             </td>
