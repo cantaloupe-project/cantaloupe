@@ -44,6 +44,7 @@ class Java2dProcessor extends AbstractImageIoProcessor
 
     static final String DOWNSCALE_FILTER_CONFIG_KEY =
             "Java2dProcessor.downscale_filter";
+    static final String NORMALIZE_CONFIG_KEY = "Java2dProcessor.normalize";
     static final String SHARPEN_CONFIG_KEY = "Java2dProcessor.sharpen";
     static final String UPSCALE_FILTER_CONFIG_KEY =
             "Java2dProcessor.upscale_filter";
@@ -151,7 +152,13 @@ class Java2dProcessor extends AbstractImageIoProcessor
             final ReductionFactor rf = new ReductionFactor();
             final Set<ImageReader.Hint> hints = new HashSet<>();
             BufferedImage image = reader.read(ops, orientation, rf, hints);
+
             image = Java2dUtil.reduceTo8Bits(image);
+
+            if (ConfigurationFactory.getInstance().
+                    getBoolean(NORMALIZE_CONFIG_KEY, false)) {
+                image = Java2dUtil.stretchContrast(image);
+            }
 
             // Apply the crop operation, if present, and maintain a reference
             // to it for subsequent operations to refer to.

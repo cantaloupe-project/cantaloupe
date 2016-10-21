@@ -1485,6 +1485,26 @@
                                             </td>
                                         </tr>
                                         <tr>
+                                            <td>
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Automatically normalizes
+                                                   brightness and contrast.">?</a>
+                                            </td>
+                                            <td>
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox"
+                                                               name="Java2dProcessor.normalize"
+                                                               value="true"
+                                                               data-requires-restart="false">
+                                                        Normalize
+                                                    </label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
                                             <td>JPEG quality
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"

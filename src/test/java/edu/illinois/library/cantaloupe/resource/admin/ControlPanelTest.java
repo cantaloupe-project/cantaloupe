@@ -289,10 +289,10 @@ public class ControlPanelTest {
         new Select(css("[name=\"Java2dProcessor.upscale_filter\"]")).
                 selectByVisibleText("Triangle");
         css("[name=\"Java2dProcessor.sharpen\"]").sendKeys("0.2");
+        css("[name=\"Java2dProcessor.normalize\"]").click();
         css("[name=\"Java2dProcessor.jpg.quality\"]").sendKeys("0.55");
         new Select(css("[name=\"Java2dProcessor.tif.compression\"]")).
                 selectByVisibleText("PackBits");
-
         // KakaduProcessor
         css("#cl-processors li > a[href=\"#KakaduProcessor\"]").click();
         css("[name=\"KakaduProcessor.path_to_binaries\"]").sendKeys("/kpath");
@@ -354,6 +354,7 @@ public class ControlPanelTest {
                 config.getString("JaiProcessor.tif.compression"));
         // Java2dProcessor
         assertEquals("0.2", config.getString("Java2dProcessor.sharpen"));
+        assertTrue(config.getBoolean("Java2dProcessor.normalize"));
         assertEquals("0.55",
                 config.getString("Java2dProcessor.jpg.quality"));
         assertEquals("PackBits",

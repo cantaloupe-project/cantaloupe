@@ -326,6 +326,9 @@ Java2dProcessor.jpg.quality = 0.8
 # `ZLib`, `JPEG`, and `PackBits`. Leave blank for no compression.
 Java2dProcessor.tif.compression = LZW
 
+# Expands contrast to utilize available dynamic range.
+Java2dProcessor.normalize = false
+
 #----------------------------------------
 # KakaduProcessor
 #----------------------------------------
