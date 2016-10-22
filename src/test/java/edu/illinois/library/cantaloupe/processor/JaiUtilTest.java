@@ -11,10 +11,17 @@ import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 
+import javax.imageio.ImageIO;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
-import java.awt.Dimension;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import static org.junit.Assert.*;
 
@@ -153,6 +160,30 @@ public class JaiUtilTest {
         sharpen.setAmount(0.5f);
         sharpenedImage = JaiUtil.sharpenImage(image, sharpen);
         assertNotSame(image, sharpenedImage);
+    }
+
+    @Test
+    public void testStretchContrast() throws IOException {
+        BufferedImage image = new BufferedImage(100, 100,
+                BufferedImage.TYPE_INT_RGB);
+        final Rectangle leftHalf = new Rectangle(0, 0, 50, 100);
+        final Rectangle rightHalf = new Rectangle(50, 0, 50, 100);
+
+        final Graphics2D g2d = image.createGraphics();
+        g2d.setColor(Color.DARK_GRAY);
+        g2d.fill(leftHalf);
+        g2d.setColor(Color.LIGHT_GRAY);
+        g2d.fill(rightHalf);
+
+        RenderedOp renderedOp = JaiUtil.getAsRenderedOp(RenderedOp.wrapRenderedImage(image));
+        renderedOp = JaiUtil.stretchContrast(renderedOp);
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        ImageIO.write(renderedOp, "JPEG", os);
+        image = ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
+
+        assertEquals(-16777216, image.getRGB(10, 10));
+        assertEquals(-1, image.getRGB(90, 90));
     }
 
     @Test
