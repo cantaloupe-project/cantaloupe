@@ -1411,6 +1411,26 @@
                                 <div role="tabpanel" class="tab-pane" id="JaiProcessor">
                                     <table class="table table-striped">
                                         <tr>
+                                            <td>
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Automatically normalizes
+                                                   brightness and contrast.">?</a>
+                                            </td>
+                                            <td>
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox"
+                                                               name="JaiProcessor.normalize"
+                                                               value="true"
+                                                               data-requires-restart="false">
+                                                        Normalize
+                                                    </label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
                                             <td>Sharpening
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"

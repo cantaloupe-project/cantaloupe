@@ -300,6 +300,9 @@ ImageMagickProcessor.sharpen = 0
 # JaiProcessor
 #----------------------------------------
 
+# Expands contrast to utilize available dynamic range.
+JaiProcessor.normalize = false
+
 # Intensity of an unsharp mask from 0 to 1.
 JaiProcessor.sharpen = 0
 

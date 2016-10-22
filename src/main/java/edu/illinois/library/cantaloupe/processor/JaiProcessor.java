@@ -46,6 +46,7 @@ class JaiProcessor extends AbstractImageIoProcessor
 
     private static Logger logger = LoggerFactory.getLogger(JaiProcessor.class);
 
+    static final String NORMALIZE_CONFIG_KEY = "JaiProcessor.normalize";
     static final String SHARPEN_CONFIG_KEY = "JaiProcessor.sharpen";
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
@@ -133,6 +134,27 @@ class JaiProcessor extends AbstractImageIoProcessor
             renderedOp = JaiUtil.rescalePixels(renderedOp);
             renderedOp = JaiUtil.convertTo8Bits(renderedOp);
 
+            final Configuration config = ConfigurationFactory.getInstance();
+
+            // Normalize the image, if specified in the configuration.
+            if (config.getBoolean(NORMALIZE_CONFIG_KEY, false)) {
+                // If we are performing a crop, normalize only the crop area.
+                boolean cropping = false;
+                for (Operation op : ops) {
+                    if (op instanceof Crop) {
+                        Crop crop = (Crop) op;
+                        if (!crop.isNoOp()) {
+                            cropping = true;
+                            renderedOp = JaiUtil.stretchContrast(renderedOp, crop);
+                            break;
+                        }
+                    }
+                }
+                if (!cropping) {
+                    renderedOp = JaiUtil.stretchContrast(renderedOp);
+                }
+            }
+
             for (Operation op : ops) {
                 if (op instanceof Crop) {
                     renderedOp = JaiUtil.cropImage(renderedOp, (Crop) op, rf);
@@ -178,7 +200,6 @@ class JaiProcessor extends AbstractImageIoProcessor
             }
 
             // Apply the sharpen operation, if present.
-            final Configuration config = ConfigurationFactory.getInstance();
             final float sharpenValue = config.getFloat(SHARPEN_CONFIG_KEY, 0);
             final Sharpen sharpen = new Sharpen(sharpenValue);
             renderedOp = JaiUtil.sharpenImage(renderedOp, sharpen);

@@ -279,6 +279,7 @@ public class ControlPanelTest {
         css("[name=\"ImageMagickProcessor.sharpen\"]").sendKeys("0.2");
         // JaiProcessor
         css("#cl-processors li > a[href=\"#JaiProcessor\"]").click();
+        css("[name=\"JaiProcessor.normalize\"]").click();
         css("[name=\"JaiProcessor.sharpen\"]").sendKeys("0.2");
         css("[name=\"JaiProcessor.jpg.quality\"]").sendKeys("0.55");
         new Select(css("[name=\"JaiProcessor.tif.compression\"]")).
@@ -352,6 +353,7 @@ public class ControlPanelTest {
         assertTrue(config.getBoolean("ImageMagickProcessor.normalize"));
         assertEquals("0.2", config.getString("ImageMagickProcessor.sharpen"));
         // JaiProcessor
+        assertTrue(config.getBoolean("JaiProcessor.normalize"));
         assertEquals("0.2", config.getString("JaiProcessor.sharpen"));
         assertEquals("0.55", config.getString("JaiProcessor.jpg.quality"));
         assertEquals("PackBits",
