@@ -25,6 +25,9 @@ import java.io.InputStream;
 import java.nio.file.AccessDeniedException;
 import java.util.Arrays;
 
+/**
+ * Resolver for serving images from HTTP(S) servers.
+ */
 class HttpResolver extends AbstractResolver implements StreamResolver {
 
     private static class HttpStreamSource implements StreamSource {
@@ -173,11 +176,14 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         } catch (ResourceException e) {
             // nothing we can do but log it
             if (contentType.length() > 0) {
-                logger.warn("Failed to determine source format based on a " +
-                        "Content-Type of {}", contentType);
+                logger.warn("Failed to determine the source format of the " +
+                        "resource at {} based on a Content-Type of {}.",
+                        url, contentType);
             } else {
-                logger.warn("Failed to determine source format (missing " +
-                        "Content-Type at {})", url);
+                logger.warn("Failed to determine the source format of the " +
+                        "resource at {}. The web server's response must " +
+                        "include a Content-Type header with the value of " +
+                        "the media (MIME) type of the source image.", url);
             }
         } finally {
             resource.release();
