@@ -97,7 +97,10 @@ class FilesystemResolver extends AbstractResolver
             case "ScriptLookupStrategy":
                 try {
                     return getPathnameWithScriptStrategy();
-                } catch (ScriptException | DelegateScriptDisabledException e) {
+                } catch (DelegateScriptDisabledException e) {
+                    logger.error(e.getMessage());
+                    throw new IOException(e);
+                } catch (ScriptException e) {
                     logger.error(e.getMessage(), e);
                     throw new IOException(e);
                 }
