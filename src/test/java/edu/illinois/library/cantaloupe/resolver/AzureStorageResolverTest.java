@@ -49,6 +49,7 @@ public class AzureStorageResolverTest {
         final String accountKey = lines[1].replace("account_key=", "").trim();
         final String container = lines[2].replace("container=", "").trim();
 
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         config.setProperty(AzureStorageResolver.CONTAINER_NAME_CONFIG_KEY, container);

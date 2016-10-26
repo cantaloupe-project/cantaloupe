@@ -41,6 +41,7 @@ public class AmazonS3CacheTest {
         final String secretKey = lines[1].replace("AWSSecretKey=", "").trim();
         final String bucketName = lines[3].replace("TestBucket=", "").trim();
 
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         final Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         config.setProperty(AmazonS3Cache.OBJECT_KEY_PREFIX_CONFIG_KEY, "test/");

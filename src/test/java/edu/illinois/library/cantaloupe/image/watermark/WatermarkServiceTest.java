@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.image.watermark;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -23,6 +22,7 @@ public class WatermarkServiceTest {
 
     @Before
     public void setUp() throws Exception {
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         // valid config options
@@ -51,26 +51,6 @@ public class WatermarkServiceTest {
         assertEquals(new File("/dev/null"), watermark.getImage());
         assertEquals(10, watermark.getInset());
         assertEquals(Position.TOP_LEFT, watermark.getPosition());
-    }
-
-    @Test
-    public void testNewWatermarkWithBasicStrategyAndInvalidConfig() throws Exception {
-        final OperationList opList = new OperationList();
-        final Dimension fullSize = new Dimension(0, 0);
-        final URL requestUrl = new URL("http://example.org/");
-        final Map<String,String> requestHeaders = new HashMap<>();
-        final String clientIp = "";
-        final Map<String,String> cookies = new HashMap<>();
-
-        Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(WatermarkService.WATERMARK_FILE_CONFIG_KEY, null);
-        try {
-            WatermarkService.newWatermark(opList, fullSize, requestUrl,
-                    requestHeaders, clientIp, cookies);
-            fail();
-        } catch (ConfigurationException e) {
-            // pass
-        }
     }
 
     @Test
@@ -117,9 +97,6 @@ public class WatermarkServiceTest {
     public void testIsEnabled() {
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
-        // null value
-        config.setProperty(WatermarkService.WATERMARK_ENABLED_CONFIG_KEY, null);
-        assertFalse(WatermarkService.isEnabled());
         // false
         config.setProperty(WatermarkService.WATERMARK_ENABLED_CONFIG_KEY, false);
         assertFalse(WatermarkService.isEnabled());

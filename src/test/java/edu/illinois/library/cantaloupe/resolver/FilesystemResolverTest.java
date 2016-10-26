@@ -24,6 +24,7 @@ public class FilesystemResolverTest {
     private FilesystemResolver instance;
 
     private static void resetConfiguration() throws IOException {
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,

@@ -52,6 +52,7 @@ public class FilesystemCacheTest {
             throw new IOException("Failed to create folder: " + infoPath);
         }
 
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         config.setProperty(FilesystemCache.DIRECTORY_DEPTH_CONFIG_KEY, 3);

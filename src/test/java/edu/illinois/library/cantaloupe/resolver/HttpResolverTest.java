@@ -30,6 +30,7 @@ public class HttpResolverTest {
         server = new WebServer();
         server.start();
 
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         config.setProperty(HttpResolver.LOOKUP_STRATEGY_CONFIG_KEY,

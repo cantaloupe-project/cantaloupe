@@ -48,6 +48,7 @@ public class AmazonS3ResolverTest {
         final String secretKey = lines[1].replace("AWSSecretKey=", "").trim();
         final String bucket = lines[2].replace("Bucket=", "").trim();
 
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         config.setProperty(AmazonS3Resolver.BUCKET_NAME_CONFIG_KEY, bucket);

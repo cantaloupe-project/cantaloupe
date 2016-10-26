@@ -10,6 +10,7 @@ public class CacheWorkerTest {
 
     @Before
     public void setUp() {
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         config.setProperty(CacheWorker.ENABLED_CONFIG_KEY, true);

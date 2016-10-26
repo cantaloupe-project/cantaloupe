@@ -18,6 +18,7 @@ public class RedactionServiceTest {
 
     @Before
     public void setUp() throws Exception {
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         // valid config options
@@ -48,9 +49,6 @@ public class RedactionServiceTest {
     public void testIsEnabled() {
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
-        // null value
-        config.setProperty(RedactionService.REDACTION_ENABLED_CONFIG_KEY, null);
-        assertFalse(RedactionService.isEnabled());
         // false
         config.setProperty(RedactionService.REDACTION_ENABLED_CONFIG_KEY, false);
         assertFalse(RedactionService.isEnabled());

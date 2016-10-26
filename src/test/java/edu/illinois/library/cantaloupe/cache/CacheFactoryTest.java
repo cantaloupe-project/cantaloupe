@@ -20,6 +20,7 @@ public class CacheFactoryTest {
 
     @Test
     public void testGetInstance() throws Exception {
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
 
