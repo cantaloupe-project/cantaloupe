@@ -145,7 +145,7 @@ module Cantaloupe
     # (https://docs.oracle.com/javase/8/docs/api/java/sql/DriverManager.html);
     # we are calling Java API via JRuby.
     # By making the connection static, we can avoid reconnecting every time
-    # get_pathname() is called.
+    # get_pathname() is called, which would be slow and expensive.
     @@conn = DriverManager.get_connection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
 
     def self.get_pathname(identifier)
@@ -166,9 +166,36 @@ module Cantaloupe
 end
 {% endhighlight %}
 
-<p>Note that several common Ruby database libraries (like the mysql and pgsql gems) use native extensions, and as a result, they won't work in JRuby. Instead, the course of action above is to use the JDBC API via the JRuby-Java bridge. For this to work, a JDBC driver for your database will need to be installed on the Java classpath, and referenced in a <code>java_import</code> statement.</p>
+<p>Note that several common Ruby database libraries (like the mysql and pgsql gems) use native extensions. These won't work in JRuby. Instead, the course of action above is to use the JDBC API via the JRuby-Java bridge. For this to work, a JDBC driver for your database will need to be installed on the Java classpath, and referenced in a <code>java_import</code> statement.</p>
 
-<h5>Example 2: Query Solr to find the pathname corresponding to a given identifier</h5>
+<h5>Example 2: Query a web service to find the pathname corresponding to a given identifier</h5>
+
+<p>This very simple imaginary web service will return a pathname in the response body if an image was found, and an empty response body if not.</p>
+
+{% highlight ruby %}
+require 'net/http'
+require 'cgi'
+
+module Cantaloupe
+  module FilesystemResolver
+    def self.get_pathname(identifier)
+      uri = 'http://example.org/webservice/' + CGI.escape(identifier)
+      uri = URI.parse(uri)
+
+      http = Net::HTTP.new(uri.host, uri.port)
+      request = Net::HTTP::Get.new(uri.request_uri)
+      response = http.request(request)
+      return nil if response.code.to_i >= 400
+
+      (response.body.length > 0) ? response.body.strip : nil
+    end
+  end
+end
+{% endhighlight %}
+
+<h5>Example 3: Query Solr to find the pathname corresponding to a given identifier</h5>
+
+<p>In this variation on the previous example, our web service is Solr, and instead of parsing a text string out of the response body, we treat the body as Ruby code.</p>
 
 {% highlight ruby %}
 require 'net/http'
