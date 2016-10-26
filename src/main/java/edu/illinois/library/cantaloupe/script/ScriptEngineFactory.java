@@ -17,28 +17,6 @@ public abstract class ScriptEngineFactory {
             "delegate_script.pathname";
 
     /**
-     * @return File representing the delegate script, whether or not the
-     *         delegate script system is enabled.
-     * @throws FileNotFoundException If the script specified in
-     *         {@link #DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY} does not exist, or
-     *         if no script is specified.
-     */
-    public static File getScript() throws FileNotFoundException {
-        final Configuration config = ConfigurationFactory.getInstance();
-        // The script name may be an absolute path or a filename.
-        final String scriptValue =
-                config.getString(DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY, "");
-        if (scriptValue != null && scriptValue.length() > 0) {
-            File script = findScript(scriptValue);
-            if (!script.exists()) {
-                throw new FileNotFoundException(script.getAbsolutePath());
-            }
-            return script;
-        }
-        throw new FileNotFoundException();
-    }
-
-    /**
      * @return New ScriptEngine instance with the delegate script code loaded;
      *         or, if there is no delegate script, an empty module.
      * @throws FileNotFoundException If the delegate script specified in the
@@ -54,10 +32,32 @@ public abstract class ScriptEngineFactory {
         final Configuration config = ConfigurationFactory.getInstance();
         if (config.getBoolean(DELEGATE_SCRIPT_ENABLED_CONFIG_KEY, false)) {
             final ScriptEngine engine = new RubyScriptEngine();
-            engine.load(FileUtils.readFileToString(getScript()));
+            engine.load(FileUtils.readFileToString(getScriptFile()));
             return engine;
         }
         throw new DelegateScriptDisabledException();
+    }
+
+    /**
+     * @return File representing the delegate script, whether or not the
+     *         delegate script system is enabled.
+     * @throws FileNotFoundException If the script specified in
+     *         {@link #DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY} does not exist, or
+     *         if no script is specified.
+     */
+    static File getScriptFile() throws FileNotFoundException {
+        final Configuration config = ConfigurationFactory.getInstance();
+        // The script name may be an absolute path or a filename.
+        final String scriptValue =
+                config.getString(DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY, "");
+        if (scriptValue != null && scriptValue.length() > 0) {
+            File script = findScript(scriptValue);
+            if (!script.exists()) {
+                throw new FileNotFoundException(script.getAbsolutePath());
+            }
+            return script;
+        }
+        throw new FileNotFoundException();
     }
 
     /**
