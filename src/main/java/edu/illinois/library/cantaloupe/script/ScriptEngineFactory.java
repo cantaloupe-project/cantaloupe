@@ -9,6 +9,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+/**
+ * Provides access to a shared {@link ScriptEngine} instance.
+ */
 public abstract class ScriptEngineFactory {
 
     public static final String DELEGATE_SCRIPT_ENABLED_CONFIG_KEY =
@@ -16,26 +19,34 @@ public abstract class ScriptEngineFactory {
     public static final String DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY =
             "delegate_script.pathname";
 
+    private static final Object lock = new Object();
+
+    private static ScriptEngine scriptEngine;
+
     /**
-     * @return New ScriptEngine instance with the delegate script code loaded;
-     *         or, if there is no delegate script, an empty module.
+     * @return Shared ScriptEngine instance, ready for use.
      * @throws FileNotFoundException If the delegate script specified in the
      *                               application configuration was not found.
-     * @throws DelegateScriptDisabledException If there is no delegate script
-     *                                         specified in the application
+     * @throws DelegateScriptDisabledException If the delegate script is
+     *                                         disabled in the application
      *                                         configuration.
      * @throws IOException
      * @throws ScriptException
      */
     public static ScriptEngine getScriptEngine() throws IOException,
             DelegateScriptDisabledException, ScriptException {
-        final Configuration config = ConfigurationFactory.getInstance();
-        if (config.getBoolean(DELEGATE_SCRIPT_ENABLED_CONFIG_KEY, false)) {
-            final ScriptEngine engine = new RubyScriptEngine();
-            engine.load(FileUtils.readFileToString(getScriptFile()));
-            return engine;
+        if (scriptEngine == null) {
+            synchronized (lock) {
+                final Configuration config = ConfigurationFactory.getInstance();
+                if (config.getBoolean(DELEGATE_SCRIPT_ENABLED_CONFIG_KEY, false)) {
+                    scriptEngine = new RubyScriptEngine();
+                    scriptEngine.load(FileUtils.readFileToString(getScriptFile()));
+                } else {
+                    throw new DelegateScriptDisabledException();
+                }
+            }
         }
-        throw new DelegateScriptDisabledException();
+        return scriptEngine;
     }
 
     /**

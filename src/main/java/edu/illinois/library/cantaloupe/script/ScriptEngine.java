@@ -25,4 +25,14 @@ public interface ScriptEngine {
      */
     void load(String code) throws ScriptException;
 
+    /**
+     * Starts watching the script file for changes.
+     */
+    void startWatching();
+
+    /**
+     * Stops watching the script file for changes.
+     */
+    void stopWatching();
+
 }

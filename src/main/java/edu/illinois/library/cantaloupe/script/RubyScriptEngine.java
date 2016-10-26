@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @see <a href="https://github.com/jruby/jruby/wiki/Embedding-with-JSR-223">
  *     Embedding JRuby with JSR223 - Code Examples</a>
  */
-class RubyScriptEngine implements ScriptEngine {
+class RubyScriptEngine extends AbstractScriptEngine implements ScriptEngine {
 
     private static Logger logger = LoggerFactory.
             getLogger(RubyScriptEngine.class);
@@ -33,7 +33,7 @@ class RubyScriptEngine implements ScriptEngine {
      * @return Module name.
      * @throws ScriptException
      */
-    protected String getModuleName(String methodName) {
+    String getModuleName(String methodName) {
         final String[] parts = StringUtils.split(methodName, "::");
         if (parts.length == 1) {
             return TOP_MODULE;
@@ -47,7 +47,7 @@ class RubyScriptEngine implements ScriptEngine {
      * @param methodName Full method name including module names.
      * @return Method name excluding module names.
      */
-    protected String getUnqualifiedMethodName(String methodName) {
+    String getUnqualifiedMethodName(String methodName) {
         String[] parts = StringUtils.split(methodName, "::");
         return parts[parts.length - 1];
     }

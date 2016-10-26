@@ -6,6 +6,8 @@ import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.CacheWorkerRunner;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.logging.LoggerUtil;
+import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
+import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.restlet.data.Protocol;
 import org.restlet.ext.servlet.ServerServlet;
 import org.slf4j.Logger;
@@ -121,6 +123,13 @@ public class EntryServlet extends ServerServlet {
         handleVmArguments();
         ConfigurationFactory.getInstance().startWatching();
         CacheWorkerRunner.start();
+        try {
+            ScriptEngineFactory.getScriptEngine().startWatching();
+        } catch (DelegateScriptDisabledException e) {
+            logger.info("init(): {}", e.getMessage());
+        } catch (Exception e) {
+            logger.error("init(): {}", e.getMessage());
+        }
     }
 
     @Override
@@ -128,6 +137,13 @@ public class EntryServlet extends ServerServlet {
         super.destroy();
         CacheWorkerRunner.stop();
         ConfigurationFactory.getInstance().stopWatching();
+        try {
+            ScriptEngineFactory.getScriptEngine().stopWatching();
+        } catch (DelegateScriptDisabledException e) {
+            logger.info("init(): {}", e.getMessage());
+        } catch (Exception e) {
+            logger.info("destroy(): {}", e.getMessage());
+        }
     }
 
 }
