@@ -209,8 +209,8 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
             throws IOException, ScriptException,
             DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final String[] args = { identifier.toString() };
-        final Object result = engine.invoke(GET_URL_DELEGATE_METHOD, args);
+        final Object result = engine.invoke(GET_URL_DELEGATE_METHOD,
+                identifier.toString());
         if (result == null) {
             throw new FileNotFoundException(GET_URL_DELEGATE_METHOD +
                     " returned nil for " + identifier);

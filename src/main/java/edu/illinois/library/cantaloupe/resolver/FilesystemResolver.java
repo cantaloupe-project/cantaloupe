@@ -126,8 +126,8 @@ class FilesystemResolver extends AbstractResolver
             throws IOException, ScriptException,
             DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final String[] args = { identifier.toString() };
-        final Object result = engine.invoke(GET_PATHNAME_DELEGATE_METHOD, args);
+        final Object result = engine.invoke(GET_PATHNAME_DELEGATE_METHOD,
+                identifier.toString());
         if (result == null) {
             throw new FileNotFoundException(
                     GET_PATHNAME_DELEGATE_METHOD + " returned nil for " +

@@ -127,17 +127,16 @@ public abstract class WatermarkService {
         resultingSizeArg.put("height", resultingSize.height);
 
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final Object[] args = new Object[8];
-        args[0] = opList.getIdentifier().toString();           // identifier
-        args[1] = opList.toMap(fullSize).get("operations");    // operations
-        args[2] = resultingSizeArg;                            // resulting_size
-        args[3] = opList.toMap(fullSize).get("output_format"); // output_format
-        args[4] = requestUrl.toString();                       // request_uri
-        args[5] = requestHeaders;                              // request_headers
-        args[6] = clientIp;                                    // client_ip
-        args[7] = cookies;                                     // cookies
         final String method = "watermark";
-        final Object result = engine.invoke(method, args);
+        final Object result = engine.invoke(method,
+                opList.getIdentifier().toString(),           // identifier
+                opList.toMap(fullSize).get("operations"),    // operations
+                resultingSizeArg,                            // resulting_size
+                opList.toMap(fullSize).get("output_format"), // output_format
+                requestUrl.toString(),                       // request_uri
+                requestHeaders,                              // request_headers
+                clientIp,                                    // client_ip
+                cookies);                                    // cookies
         if (result == null || (result instanceof Boolean && !((Boolean) result))) {
             return null;
         }

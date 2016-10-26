@@ -5,133 +5,95 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.script.Invocable;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import java.util.Collection;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * @see <a href="https://github.com/jruby/jruby/wiki/Embedding-with-JSR-223">
+ *     Embedding JRuby with JSR223 - Code Examples</a>
+ */
 class RubyScriptEngine implements ScriptEngine {
 
     private static Logger logger = LoggerFactory.
             getLogger(RubyScriptEngine.class);
 
-    /** Ruby module containing methods to invoke */
-    private static final String MODULE = "Cantaloupe";
+    /** Top-level Ruby module containing methods to invoke. */
+    static final String TOP_MODULE = "Cantaloupe";
 
-    private javax.script.ScriptEngine scriptEngine = new ScriptEngineManager().
-            getEngineByName("jruby");
+    private final Object lock = new Object();
+    private javax.script.ScriptEngine scriptEngine;
+    private final AtomicBoolean scriptIsLoading = new AtomicBoolean(false);
 
     /**
-     * @param methodName Method to invoke
-     * @return Return value of the invocation
+     * @param methodName Full method name including module names.
+     * @return Module name.
      * @throws ScriptException
      */
-    @Override
-    public Object invoke(String methodName) throws ScriptException {
-        final Stopwatch watch = new Stopwatch();
-        final String invocationString = String.format("%s::%s",
-                MODULE, methodName);
-        final Object returnValue = scriptEngine.eval(invocationString);
-        logger.debug("invoke({}::{}): exec time: {} msec",
-                MODULE, methodName, watch.timeElapsed());
-        return returnValue;
+    protected String getModuleName(String methodName) {
+        final String[] parts = StringUtils.split(methodName, "::");
+        if (parts.length == 1) {
+            return TOP_MODULE;
+        }
+        final List<String> partsArr = Arrays.asList(parts);
+        return TOP_MODULE + "::" +
+                StringUtils.join(partsArr.subList(0, partsArr.size() - 1), "::");
     }
 
     /**
-     * @param methodName Method to invoke
-     * @param args See {@link #serializeAsRuby(Object)} for allowed types
-     * @return Return value of the invocation
+     * @param methodName Full method name including module names.
+     * @return Method name excluding module names.
+     */
+    protected String getUnqualifiedMethodName(String methodName) {
+        String[] parts = StringUtils.split(methodName, "::");
+        return parts[parts.length - 1];
+    }
+
+    /**
+     * @param methodName Method to invoke, including all prefixes except the
+     *                   top-level one in {@link #TOP_MODULE}.
+     * @param args Arguments to pass to the method.
+     * @return Return value of the method.
      * @throws ScriptException
      */
     @Override
-    public Object invoke(String methodName, Object[] args)
+    public Object invoke(String methodName, Object... args)
             throws ScriptException {
         final Stopwatch watch = new Stopwatch();
-        final String invocationString = String.format("%s::%s(%s)",
-                MODULE, methodName, serializeAsRuby(args));
-        final Object returnValue = scriptEngine.eval(invocationString);
-        logger.debug("invoke({}::{}()): exec time: {} msec",
-                MODULE, methodName, watch.timeElapsed());
-        return returnValue;
+
+        // Block while the script is being (re)loaded.
+        synchronized (lock) {
+            while (scriptIsLoading.get()) {
+                try {
+                    lock.wait();
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        }
+        try {
+            final Object returnValue = ((Invocable) scriptEngine).
+                    invokeMethod(
+                            scriptEngine.eval(getModuleName(methodName)),
+                            getUnqualifiedMethodName(methodName), args);
+            logger.debug("invoke({}::{}): exec time: {} msec",
+                    TOP_MODULE, methodName, watch.timeElapsed());
+            return returnValue;
+        } catch (NoSuchMethodException e) {
+            throw new ScriptException(e);
+        }
     }
 
     @Override
-    public void load(String code) throws ScriptException {
+    public synchronized void load(String code) throws ScriptException {
+        scriptIsLoading.set(true);
+        logger.info("load(): loading script code");
+        scriptEngine = new ScriptEngineManager().getEngineByName("jruby");
         scriptEngine.eval(code);
-    }
-
-    @Override
-    public boolean methodExists(String methodName) throws ScriptException {
-        return (boolean) scriptEngine.eval(
-                String.format("%s.respond_to?(%s)",
-                MODULE, serializeStringAsRuby(methodName)));
-    }
-
-    private String serializeAsRuby(Object[] args) {
-        final StringBuilder rubyCode = new StringBuilder();
-        for (int i = 0; i < args.length; i++) {
-            rubyCode.append(serializeAsRuby(args[i]));
-            if (i < args.length - 1) {
-                rubyCode.append(", ");
-            }
-        }
-        return rubyCode.toString();
-    }
-
-    /**
-     * <p>Serializes the given arguments to Ruby source code:</p>
-     *
-     * <ul>
-     *     <li>{@link Collection} as Array</li>
-     *     <li>{@link Map} as Hash with String keys
-     *     (from {@link Object#toString()})</li>
-     *     <li>{@link Boolean} as Boolean</li>
-     *     <li>{@link Number} as Numeric</li>
-     *     <li><code>null</code> as <code>nil</code></li>
-     *     <li>All other types as String</li>
-     * </ul>
-     *
-     * @param object Java object conforming to the types in the description.
-     * @return Ruby source code.
-     */
-    String serializeAsRuby(Object object) {
-        StringBuilder rubyCode = new StringBuilder();
-        if (object == null) {
-            rubyCode.append("nil");
-        } else if (object instanceof Number || object instanceof Boolean) {
-            rubyCode.append(object.toString());
-        } else if (object instanceof Collection) {
-            rubyCode.append("[");
-            Collection collection = (Collection) object;
-            for (int i = 0, length = collection.size(); i < length; i++) {
-                rubyCode.append(serializeAsRuby(collection.toArray()[i]));
-                if (i < length - 1) {
-                    rubyCode.append(", ");
-                }
-            }
-            rubyCode.append("]");
-        } else if (object instanceof Map) {
-            rubyCode.append("{");
-            Map map = (Map) object;
-            int i = 0;
-            for (Object key : map.keySet()) {
-                rubyCode.append(serializeStringAsRuby(key.toString()));
-                rubyCode.append(" => ");
-                rubyCode.append(serializeAsRuby(map.get(key)));
-                if (i < map.size() - 1) {
-                    rubyCode.append(", ");
-                }
-                i++;
-            }
-            rubyCode.append("}");
-        } else {
-            rubyCode.append(serializeStringAsRuby(object.toString()));
-        }
-        return rubyCode.toString();
-    }
-
-    private String serializeStringAsRuby(String arg) {
-        return "'" + StringUtils.replace(arg, "'", "\\'") + "'";
+        scriptIsLoading.set(false);
     }
 
 }

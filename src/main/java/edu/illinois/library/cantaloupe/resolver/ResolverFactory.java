@@ -122,9 +122,8 @@ public abstract class ResolverFactory {
     private static Resolver newDynamicResolver(final Identifier identifier)
             throws Exception {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final String[] args = {identifier.toString()};
-
-        final Object result = engine.invoke(RESOLVER_CHOOSER_DELEGATE_METHOD, args);
+        final Object result = engine.invoke(RESOLVER_CHOOSER_DELEGATE_METHOD,
+                identifier.toString());
         return newResolver((String) result);
     }
 

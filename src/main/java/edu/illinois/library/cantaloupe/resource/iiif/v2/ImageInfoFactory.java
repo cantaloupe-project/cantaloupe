@@ -179,9 +179,8 @@ abstract class ImageInfoFactory {
 
         // additional keys
         try {
-            final String[] args = { identifier.toString() };
             final Map keyMap = (Map) ScriptEngineFactory.getScriptEngine().
-                    invoke(SERVICE_DELEGATE_METHOD, args);
+                    invoke(SERVICE_DELEGATE_METHOD, identifier.toString());
             imageInfo.putAll(keyMap);
         } catch (DelegateScriptDisabledException e) {
             logger.info("Delegate script disabled; skipping service " +

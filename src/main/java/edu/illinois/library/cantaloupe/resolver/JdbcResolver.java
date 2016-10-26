@@ -175,9 +175,8 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     String getDatabaseIdentifier() throws IOException,
             ScriptException, DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final String[] args = { identifier.toString() };
         final Object result = engine.invoke(
-                GET_DATABASE_IDENTIFIER_DELEGATE_METHOD, args);
+                GET_DATABASE_IDENTIFIER_DELEGATE_METHOD, identifier.toString());
         return (String) result;
     }
 

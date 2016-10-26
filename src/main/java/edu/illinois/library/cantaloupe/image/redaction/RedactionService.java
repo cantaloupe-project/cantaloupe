@@ -85,13 +85,12 @@ public abstract class RedactionService {
             throws IOException, ScriptException,
             DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final Object[] args = new Object[4];
-        args[0] = identifier.toString();                       // identifier
-        args[1] = requestHeaders;                              // request_headers
-        args[2] = clientIp;                                    // client_ip
-        args[3] = cookies;                                     // cookies
         final String method = "redactions";
-        final Object result = engine.invoke(method, args);
+        final Object result = engine.invoke(method,
+                identifier.toString(), // identifier
+                requestHeaders,        // request_headers
+                clientIp,              // client_ip
+                cookies);              // cookies
         if (result == null || (result instanceof Boolean && !((Boolean) result))) {
             return null;
         }

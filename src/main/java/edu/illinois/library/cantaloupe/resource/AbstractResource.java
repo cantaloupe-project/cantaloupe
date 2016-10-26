@@ -414,22 +414,19 @@ public abstract class AbstractResource extends ServerResource {
 
         final Map opListMap = opList.toMap(fullSize);
 
-        // delegate method parameters
-        final Object args[] = new Object[9];
-        args[0] = opList.getIdentifier().toString();        // identifier
-        args[1] = fullSizeArg;                              // full_size
-        args[2] = opListMap.get("operations");              // operations
-        args[3] = resultingSizeArg;                         // resulting_size
-        args[4] = opListMap.get("output_format");           // output_format
-        args[5] = getReference().toString();                // request_uri
-        args[6] = getRequest().getHeaders().getValuesMap(); // request_headers
-        args[7] = getCanonicalClientIpAddress();            // client_ip
-        args[8] = getRequest().getCookies().getValuesMap(); // cookies
-
         try {
             final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
             final String method = "authorized?";
-            return (boolean) engine.invoke(method, args);
+            return (boolean) engine.invoke(method,
+                    opList.getIdentifier().toString(),         // identifier
+                    fullSizeArg,                               // full_size
+                    opListMap.get("operations"),               // operations
+                    resultingSizeArg,                          // resulting_size
+                    opListMap.get("output_format"),            // output_format
+                    getReference().toString(),                 // request_uri
+                    getRequest().getHeaders().getValuesMap(),  // request_headers
+                    getCanonicalClientIpAddress(),             // client_ip
+                    getRequest().getCookies().getValuesMap()); // cookies
         } catch (DelegateScriptDisabledException e) {
             logger.debug("isAuthorized(): delegate script is disabled; allowing.");
             return true;
