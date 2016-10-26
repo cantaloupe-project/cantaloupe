@@ -10,8 +10,10 @@ public abstract class ConfigurationFactory {
     private static final Object lock = new Object();
 
     public static synchronized void clearInstance() {
-        instance.stopWatching();
-        instance = null;
+        if (instance != null) {
+            instance.stopWatching();
+            instance = null;
+        }
     }
 
     /**
