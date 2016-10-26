@@ -58,8 +58,7 @@ public class RubyScriptEngineTest {
         final String function = "func2";
 
         for (int i = 0; i < 3; i++) {
-            String[] args = { String.valueOf(i) };
-            String result = (String) instance.invoke(function, args);
+            String result = (String) instance.invoke(function, String.valueOf(i));
             assertEquals(String.valueOf(i), result);
         }
     }
