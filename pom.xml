@@ -305,7 +305,7 @@
               <includeGroupIds>
                 <!-- direct dependencies -->
                 commons-configuration, org.eclipse.jetty,javax.servlet
-                <!-- transitive dependencies -->
+                <!-- dependencies of dependencies-->
                 commons-lang, commons-logging
               </includeGroupIds>
               <outputDirectory>
@@ -336,9 +336,9 @@
                     <include name="edu/illinois/library/cantaloupe/config/ConfigurationFactory.class" />
                     <include name="edu/illinois/library/cantaloupe/config/ConfigurationWatcher.class" />
                     <include name="edu/illinois/library/cantaloupe/config/FileConfiguration.class" />
-                    <include name="edu/illinois/library/cantaloupe/config/FilesystemWatcher.class" />
-                    <include name="edu/illinois/library/cantaloupe/config/FilesystemWatcher$Callback.class" />
                     <include name="edu/illinois/library/cantaloupe/config/PropertiesConfiguration.class" />
+                    <include name="edu/illinois/library/cantaloupe/util/FilesystemWatcher.class" />
+                    <include name="edu/illinois/library/cantaloupe/util/FilesystemWatcher$Callback.class" />
                     <include name="edu/illinois/library/cantaloupe/StandaloneEntry.class" />
                     <include name="edu/illinois/library/cantaloupe/WebServer.class" />
                   </fileset>

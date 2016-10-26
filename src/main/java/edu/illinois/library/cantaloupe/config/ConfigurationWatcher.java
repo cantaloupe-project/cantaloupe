@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.config;
 
 import edu.illinois.library.cantaloupe.logging.LoggerUtil;
+import edu.illinois.library.cantaloupe.util.FilesystemWatcher;
 
 import java.io.IOException;
 import java.nio.file.Path;

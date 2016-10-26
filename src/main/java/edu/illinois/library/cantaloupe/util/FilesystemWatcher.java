@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.config;
+package edu.illinois.library.cantaloupe.util;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -12,14 +12,14 @@ import java.util.Map;
 import static java.nio.file.StandardWatchEventKinds.*;
 
 /**
- * Watches a directory for changes.
+ * Watches a directory for changes to files contained within.
  *
  * Based on <a href="http://docs.oracle.com/javase/tutorial/essential/io/notification.html">
  *     Watching a Directory for Changes</a>.
  */
-class FilesystemWatcher {
+public class FilesystemWatcher {
 
-    interface Callback {
+    public interface Callback {
         void created(Path path);
         void deleted(Path path);
         void modified(Path path);
@@ -38,7 +38,7 @@ class FilesystemWatcher {
     /**
      * Creates a WatchService and registers the given directory.
      */
-    FilesystemWatcher(Path dir, Callback callback) throws IOException {
+    public FilesystemWatcher(Path dir, Callback callback) throws IOException {
         this.callback = callback;
         this.watcher = FileSystems.getDefault().newWatchService();
         this.keys = new HashMap<>();
@@ -51,7 +51,7 @@ class FilesystemWatcher {
     /**
      * Process all events for keys queued to the watcher
      */
-    void processEvents() {
+    public void processEvents() {
         while (true) {
             if (shouldStop) {
                 return;
