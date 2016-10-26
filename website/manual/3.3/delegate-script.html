@@ -22,17 +22,23 @@ title: Delegate Script
 
 <p>Delegate methods are implemented in Ruby, and invoked by a JRuby interpreter bundled into the image server. There is no need to install an external Ruby environment and no need to know Java; just type some code into a file, and go.</p>
 
-<p>The delegate script mechanism is disabled by default. To enable it, copy the sample delegate script, <span class="filename">delegates.rb.sample</span>, included in the distribution, to <span class="filename">delegates.rb</span>; reference it from the <code>delegate_script.pathname</code> configuration option; and set <code>delegate_script.enabled</code> to <code>true</code>.</p>
+<p>Prior to version 3.2, the JRuby interpreter was compatible with Ruby 2.2. Since version 3.2, it has been compatible with version 2.3.</p>
+
+<p>The delegate script mechanism is disabled by default. To enable it, follow these steps:</p>
+
+<ol>
+  <li>Copy the sample delegate script, <span class="filename">delegates.rb.sample</span>, included in the distribution, to <span class="filename">delegates.rb</span>.</li>
+  <li>Reference it from the <code>delegate_script.pathname</code> configuration option.</li>
+  <li>Set <code>delegate_script.enabled</code> to <code>true</code>.</li>
+</ol>
 
 <hr>
 
 <h2 id="Rules">Rules</h2>
 
-<p>While the arguments and return types of each method will vary, all delegate methods must be contained within a <code>Cantaloupe</code> module. Inside a method, anything goes, and you can use any (non-platform-native) gems that you have installed with <code>gem install</code>.</p>
+<p>While the arguments and return types of each method will vary, all delegate methods must be contained within a <code>Cantaloupe</code> module. Inside a method, anything goes, and you can use any (non-platform-native) gems that you have installed with <code>gem install</code>. Because delegate methods will be called frequently, though, they should be written with efficiency in mind.</p>
 
-<p>Because delegate methods will be called frequently, though, they should be written with efficiency in mind.</p>
-
-<p>The delegate script will be reloaded on each request, so it can be edited without restarting. But, code that has been loaded into the JRuby runtime cannot be unloaded. For example, when a method is changed, it will overwrite the old version; but a constant cannot be redefined.</p>
+<p>Starting in version 3.3, the delegate script is reloaded whenever the script file changes. (Previously, it was reloaded on each request.) Be aware, though, that code that has already been loaded into the JRuby runtime cannot be unloaded. For example, when a method is changed, it will overwrite the old version; but constants cannot be redefined.</p>
 
 <div class="alert alert-danger">Note: generally, neither method arguments nor return values are sanitized or validated. <strong>Be very careful to write defensive, injection-aware code.</strong></div>
 

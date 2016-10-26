@@ -2652,7 +2652,7 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="delegate_script.enabled"
-                                                       data-requires-restart="false">
+                                                       data-requires-restart="true">
                                                 Enabled
                                             </label>
                                         </div>
@@ -2671,7 +2671,7 @@
                                     <td>
                                         <input class="form-control" type="text"
                                                name="delegate_script.pathname" maxlength="4096"
-                                               data-requires-restart="false">
+                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                             </table>
