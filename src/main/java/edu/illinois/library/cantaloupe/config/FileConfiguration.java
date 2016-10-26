@@ -45,8 +45,12 @@ abstract class FileConfiguration {
      */
     public synchronized void stopWatching() {
         watcher.stop();
-        watcherFuture.cancel(true);
-        watcherExecutorService.shutdown();
+        if (watcherFuture != null) {
+            watcherFuture.cancel(true);
+        }
+        if (watcherExecutorService != null) {
+            watcherExecutorService.shutdown();
+        }
     }
 
 }
