@@ -2,8 +2,8 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Color;
+import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -11,9 +11,7 @@ import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import org.apache.commons.lang3.StringUtils;
-import org.im4java.core.ConvertCmd;
-import org.im4java.core.IM4JavaException;
-import org.im4java.core.IMOperation;
+import org.im4java.process.ArrayListOutputConsumer;
 import org.im4java.process.Pipe;
 import org.im4java.process.ProcessStarter;
 import org.slf4j.Logger;
@@ -41,10 +39,10 @@ import java.util.Set;
  *
  * <p>This processor does not respect the
  * {@link edu.illinois.library.cantaloupe.resource.AbstractResource#PRESERVE_METADATA_CONFIG_KEY}
- * setting because to not preserve metadata would entail not preserving an
- * ICC profile. Thus, metadata always passes through.</p>
+ * setting because telling IM not to preserve metadata means telling it not to
+ * preserve an ICC profile. Thus, metadata always passes through.</p>
  */
-class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
+class ImageMagickProcessor extends MagickProcessor implements StreamProcessor {
 
     private static Logger logger = LoggerFactory.
             getLogger(ImageMagickProcessor.class);
@@ -67,58 +65,82 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
         }
     }
 
-    void assembleOperation(final IMOperation imOp,
-                           final OperationList ops,
-                           final Dimension fullSize,
-                           final String backgroundColor) {
+    @Override
+    public Set<Format> getAvailableOutputFormats() {
+        Set<Format> formats = getFormats().get(format);
+        if (formats == null) {
+            formats = new HashSet<>();
+        }
+        return formats;
+    }
+
+    private List<String> getConvertArguments(final OperationList ops,
+                                             final Dimension fullSize) {
+        final List<String> args = new ArrayList<>();
+
+        args.add("convert");
+        args.add(format.getPreferredExtension() + ":-"); // read from stdin
+
         for (Operation op : ops) {
             if (op instanceof Crop) {
                 Crop crop = (Crop) op;
                 if (!crop.isNoOp()) {
+                    args.add("-crop");
                     if (crop.getShape().equals(Crop.Shape.SQUARE)) {
                         final int shortestSide =
                                 Math.min(fullSize.width, fullSize.height);
-                        int x = (fullSize.width - shortestSide) / 2;
-                        int y = (fullSize.height - shortestSide) / 2;
-                        imOp.crop(shortestSide, shortestSide, x, y);
+                        final int x = (fullSize.width - shortestSide) / 2;
+                        final int y = (fullSize.height - shortestSide) / 2;
+                        final String string = String.format("%dx%d+%d+%d",
+                                shortestSide, shortestSide, x, y);
+                        args.add(string);
                     } else if (crop.getUnit().equals(Crop.Unit.PERCENT)) {
-                        // im4java doesn't support cropping x/y by percentage
+                        // IM doesn't support cropping x/y by percentage
                         // (only width/height), so we have to calculate them.
-                        int x = Math.round(crop.getX() * fullSize.width);
-                        int y = Math.round(crop.getY() * fullSize.height);
-                        int width = Math.round(crop.getWidth() * 100);
-                        int height = Math.round(crop.getHeight() * 100);
-                        imOp.crop(width, height, x, y, "%");
+                        final int x = Math.round(crop.getX() * fullSize.width);
+                        final int y = Math.round(crop.getY() * fullSize.height);
+                        final int width = Math.round(crop.getWidth() * 100);
+                        final int height = Math.round(crop.getHeight() * 100);
+                        final String string = String.format("%dx%d+%d+%d%%",
+                                width, height, x, y);
+                        args.add(string);
                     } else {
-                        imOp.crop(Math.round(crop.getWidth()),
+                        final String string = String.format("%dx%d+%d+%d",
+                                Math.round(crop.getWidth()),
                                 Math.round(crop.getHeight()),
                                 Math.round(crop.getX()),
                                 Math.round(crop.getY()));
+                        args.add(string);
                     }
                 }
             } else if (op instanceof Scale) {
                 Scale scale = (Scale) op;
                 if (!scale.isNoOp()) {
+                    args.add("-resize");
                     if (scale.getPercent() != null) {
-                        imOp.resize(Math.round(scale.getPercent() * 100),
-                                Math.round(scale.getPercent() * 100), "%");
+                        final String arg = (scale.getPercent() * 100) + "%";
+                        args.add(arg);
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                        imOp.resize(scale.getWidth());
+                        args.add(scale.getWidth().toString());
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                        imOp.resize(null, scale.getHeight());
+                        args.add(scale.getHeight().toString());
                     } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
-                        imOp.resize(scale.getWidth(), scale.getHeight(), "!");
+                        final String arg = String.format("%dx%d!",
+                                scale.getWidth(), scale.getHeight());
+                        args.add(arg);
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                        imOp.resize(scale.getWidth(), scale.getHeight());
+                        final String arg = String.format("%dx%d",
+                                scale.getWidth(), scale.getHeight());
+                        args.add(arg);
                     }
                 }
             } else if (op instanceof Transpose) {
                 switch ((Transpose) op) {
                     case HORIZONTAL:
-                        imOp.flop();
+                        args.add("-flop");
                         break;
                     case VERTICAL:
-                        imOp.flip();
+                        args.add("-flip");
                         break;
                 }
             } else if (op instanceof Rotate) {
@@ -127,20 +149,25 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
                     // If the output format supports transparency, make the
                     // background transparent. Otherwise, use a
                     // user-configurable background color.
+                    args.add("-background");
                     if (ops.getOutputFormat().supportsTransparency()) {
-                        imOp.background("none");
+                        args.add("none");
                     } else {
-                        imOp.background(backgroundColor);
+                        final Configuration config =
+                                ConfigurationFactory.getInstance();
+                        args.add(config.getString(BACKGROUND_COLOR_CONFIG_KEY, "black"));
                     }
-                    imOp.rotate((double) rotate.getDegrees());
+                    args.add("-rotate");
+                    args.add(Double.toString(rotate.getDegrees()));
                 }
             } else if (op instanceof Color) {
                 switch ((Color) op) {
                     case GRAY:
-                        imOp.colorspace("Gray");
+                        args.add("-colorspace");
+                        args.add("Gray");
                         break;
                     case BITONAL:
-                        imOp.monochrome();
+                        args.add("-monochrome");
                         break;
                 }
             }
@@ -148,23 +175,52 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
 
         final Configuration config = ConfigurationFactory.getInstance();
         if (config.getBoolean(NORMALIZE_CONFIG_KEY, false)) {
-            imOp.normalize();
+            args.add("-normalize");
         }
 
-        imOp.depth(8);
+        args.add("-depth");
+        args.add("8");
 
         // Apply the sharpen operation, if present.
         final double sharpenValue = config.getDouble(SHARPEN_CONFIG_KEY, 0);
-        imOp.unsharp(sharpenValue);
+        if (sharpenValue > 0) {
+            args.add("-unsharp");
+            args.add(Double.toString(sharpenValue));
+        }
+
+        // Write to stdout.
+        args.add(ops.getOutputFormat().getPreferredExtension() + ":-");
+
+        return args;
     }
 
     @Override
-    public Set<Format> getAvailableOutputFormats() {
-        Set<Format> formats = getFormats().get(format);
-        if (formats == null) {
-            formats = new HashSet<>();
+    public ImageInfo getImageInfo() throws ProcessorException {
+        try (InputStream inputStream = streamSource.newInputStream()) {
+            final List<String> args = new ArrayList<>();
+            args.add("identify");
+            args.add("-ping");
+            args.add("-format");
+            args.add("%w\n%h\n%r");
+            args.add(format.getPreferredExtension() + ":-");
+
+            ArrayListOutputConsumer consumer = new ArrayListOutputConsumer();
+
+            final ProcessStarter cmd = new ProcessStarter();
+            cmd.setInputProvider(new Pipe(inputStream, null));
+            cmd.setOutputConsumer(consumer);
+            logger.info("getImageInfo(): invoking {}",
+                    StringUtils.join(args, " ").replace("\n", ""));
+            cmd.run(args);
+
+            final ArrayList<String> output = consumer.getOutput();
+            final int width = Integer.parseInt(output.get(0));
+            final int height = Integer.parseInt(output.get(1));
+            return new ImageInfo(width, height, width, height,
+                    getSourceFormat());
+        } catch (Exception e) {
+            throw new ProcessorException(e.getMessage(), e);
         }
-        return formats;
     }
 
     /**
@@ -203,7 +259,7 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
             final String commandString = StringUtils.join(pb.command(), " ");
 
             try {
-                logger.info("Executing {}", commandString);
+                logger.info("getFormats(): invoking {}", commandString);
                 final Process process = pb.start();
 
                 try (final InputStream processInputStream = process.getInputStream()) {
@@ -212,34 +268,39 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
                     String s;
                     while ((s = stdInput.readLine()) != null) {
                         s = s.trim();
-                        if (s.startsWith("JP2")) {
+                        if (s.startsWith("BMP")) {
+                            formats.add(Format.BMP);
+                            if (s.contains(" rw")) {
+                                outputFormats.add(Format.BMP);
+                            }
+                        } else if (s.startsWith("GIF")) {
+                            formats.add(Format.GIF);
+                            if (s.contains(" rw")) {
+                                outputFormats.add(Format.GIF);
+                            }
+                        } else if (s.startsWith("JP2")) {
                             formats.add(Format.JP2);
                             if (s.contains(" rw")) {
                                 outputFormats.add(Format.JP2);
                             }
-                        }
-                        if (s.startsWith("JPEG")) {
+                        } else if (s.startsWith("JPEG")) {
                             formats.add(Format.JPG);
                             if (s.contains(" rw")) {
                                 outputFormats.add(Format.JPG);
                             }
-                        }
-                        if (s.startsWith("PNG")) {
+                        } else if (s.startsWith("PNG")) {
                             formats.add(Format.PNG);
                             if (s.contains(" rw")) {
                                 outputFormats.add(Format.PNG);
                             }
-                        }
-                        if (s.startsWith("PDF") && s.contains(" rw")) {
+                        } else if (s.startsWith("PDF") && s.contains(" rw")) {
                             outputFormats.add(Format.PDF);
-                        }
-                        if (s.startsWith("TIFF")) {
+                        } else if (s.startsWith("TIFF")) {
                             formats.add(Format.TIF);
                             if (s.contains(" rw")) {
                                 outputFormats.add(Format.TIF);
                             }
-                        }
-                        if (s.startsWith("WEBP")) {
+                        } else if (s.startsWith("WEBP")) {
                             formats.add(Format.WEBP);
                             if (s.contains(" rw")) {
                                 outputFormats.add(Format.WEBP);
@@ -248,10 +309,10 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
                     }
                     process.waitFor();
                 } catch (InterruptedException e) {
-                    logger.error(e.getMessage());
+                    logger.error("getFormats(): {}", e.getMessage());
                 }
             } catch (IOException e) {
-                logger.error(e.getMessage());
+                logger.error("getFormats(): {}", e.getMessage());
             }
 
             supportedFormats = new HashMap<>();
@@ -271,24 +332,14 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
             throw new UnsupportedOutputFormatException();
         }
 
-        final Configuration config = ConfigurationFactory.getInstance();
-        try {
-            IMOperation op = new IMOperation();
-            op.addImage(format.getPreferredExtension() + ":-"); // read from stdin
-            String bgColor =
-                    config.getString(BACKGROUND_COLOR_CONFIG_KEY, "black");
-            assembleOperation(op, ops, imageInfo.getSize(), bgColor);
-
-            op.addImage(ops.getOutputFormat().getPreferredExtension() + ":-"); // write to stdout
-
-            ConvertCmd convert = new ConvertCmd();
-
-            try (InputStream inputStream = streamSource.newInputStream()) {
-                convert.setInputProvider(new Pipe(inputStream, null));
-                convert.setOutputConsumer(new Pipe(null, outputStream));
-                convert.run(op);
-            }
-        } catch (InterruptedException | IM4JavaException | IOException e) {
+        try (InputStream inputStream = streamSource.newInputStream()) {
+            final List<String> args = getConvertArguments(ops, imageInfo.getSize());
+            final ProcessStarter cmd = new ProcessStarter();
+            cmd.setInputProvider(new Pipe(inputStream, null));
+            cmd.setOutputConsumer(new Pipe(null, outputStream));
+            logger.info("process(): invoking {}", StringUtils.join(args, " "));
+            cmd.run(args);
+        } catch (Exception e) {
             throw new ProcessorException(e.getMessage(), e);
         }
     }

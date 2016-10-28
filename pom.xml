@@ -189,12 +189,6 @@
       <artifactId>jansi</artifactId>
       <version>1.13</version>
     </dependency>
-    <!-- Used by GraphicsMagickProcessor and ImageMagickProcessor -->
-    <dependency>
-      <groupId>org.im4java</groupId>
-      <artifactId>im4java</artifactId>
-      <version>1.4.0</version>
-    </dependency>
     <!-- Used to execute delegate script methods -->
     <dependency>
       <groupId>org.jruby</groupId>

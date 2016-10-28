@@ -31,7 +31,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-abstract class Im4JavaProcessorTest extends ProcessorTest {
+abstract class MagickProcessorTest extends ProcessorTest {
 
     abstract protected HashMap<Format, Set<Format>> getAvailableOutputFormats()
             throws IOException;

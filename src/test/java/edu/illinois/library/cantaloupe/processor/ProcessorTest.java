@@ -37,6 +37,7 @@ public abstract class ProcessorTest {
 
     @Before
     public void setUp() throws Exception {
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
     }

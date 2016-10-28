@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
 /**
  * For this to work, the ImageMagick binaries must be on the PATH.
  */
-public class ImageMagickProcessorTest extends Im4JavaProcessorTest {
+public class ImageMagickProcessorTest extends MagickProcessorTest {
 
     private static HashMap<Format, Set<Format>> supportedFormats;
 
@@ -38,7 +38,7 @@ public class ImageMagickProcessorTest extends Im4JavaProcessorTest {
     protected HashMap<Format, Set<Format>> getAvailableOutputFormats()
             throws IOException {
         if (supportedFormats == null) {
-            final Set<Format> formats = new HashSet<>();
+            final Set<Format> sourceFormats = new HashSet<>();
             final Set<Format> outputFormats = new HashSet<>();
 
             String cmdPath = "identify";
@@ -47,7 +47,6 @@ public class ImageMagickProcessorTest extends Im4JavaProcessorTest {
             Runtime runtime = Runtime.getRuntime();
             Configuration config = ConfigurationFactory.getInstance();
             config.clear();
-
             String pathPrefix = config.getString("ImageMagickProcessor.path_to_binaries");
             if (pathPrefix != null) {
                 cmdPath = pathPrefix + File.separator + cmdPath;
@@ -61,35 +60,40 @@ public class ImageMagickProcessorTest extends Im4JavaProcessorTest {
 
             while ((s = stdInput.readLine()) != null) {
                 s = s.trim();
-                if (s.startsWith("JP2")) {
-                    formats.add(Format.JP2);
+                if (s.startsWith("BMP")) {
+                    sourceFormats.add(Format.BMP);
+                    if (s.contains(" rw")) {
+                        outputFormats.add(Format.BMP);
+                    }
+                } else if (s.startsWith("GIF")) {
+                    sourceFormats.add(Format.GIF);
+                    if (s.contains(" rw")) {
+                        outputFormats.add(Format.GIF);
+                    }
+                } else if (s.startsWith("JP2")) {
+                    sourceFormats.add(Format.JP2);
                     if (s.contains(" rw")) {
                         outputFormats.add(Format.JP2);
                     }
-                }
-                if (s.startsWith("JPEG")) {
-                    formats.add(Format.JPG);
+                } else if (s.startsWith("JPEG")) {
+                    sourceFormats.add(Format.JPG);
                     if (s.contains(" rw")) {
                         outputFormats.add(Format.JPG);
                     }
-                }
-                if (s.startsWith("PNG")) {
-                    formats.add(Format.PNG);
+                } else if (s.startsWith("PNG")) {
+                    sourceFormats.add(Format.PNG);
                     if (s.contains(" rw")) {
                         outputFormats.add(Format.PNG);
                     }
-                }
-                if (s.startsWith("PDF") && s.contains(" rw")) {
+                } else if (s.startsWith("PDF") && s.contains(" rw")) {
                     outputFormats.add(Format.PDF);
-                }
-                if (s.startsWith("TIFF")) {
-                    formats.add(Format.TIF);
+                } else if (s.startsWith("TIFF")) {
+                    sourceFormats.add(Format.TIF);
                     if (s.contains(" rw")) {
                         outputFormats.add(Format.TIF);
                     }
-                }
-                if (s.startsWith("WEBP")) {
-                    formats.add(Format.WEBP);
+                } else if (s.startsWith("WEBP")) {
+                    sourceFormats.add(Format.WEBP);
                     if (s.contains(" rw")) {
                         outputFormats.add(Format.WEBP);
                     }
@@ -98,9 +102,9 @@ public class ImageMagickProcessorTest extends Im4JavaProcessorTest {
 
             supportedFormats = new HashMap<>();
             for (Format format : Format.values()) {
-                supportedFormats.put(format, new HashSet<Format>());
+                supportedFormats.put(format, new HashSet<>());
             }
-            for (Format format : formats) {
+            for (Format format : sourceFormats) {
                 supportedFormats.put(format, outputFormats);
             }
         }
@@ -145,8 +149,8 @@ public class ImageMagickProcessorTest extends Im4JavaProcessorTest {
         // "ImageMagick blue"
         assertEquals(255, alpha);
         assertTrue(red < 5);
-        assertEquals(4, green);
-        assertEquals(254, blue);
+        assertTrue(green < 5);
+        assertTrue(blue > 250);
     }
 
 }

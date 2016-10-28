@@ -2,21 +2,16 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
-import org.im4java.core.IM4JavaException;
-import org.im4java.core.Info;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Base class for processors that use the im4java library.
- *
- * @see <a href="http://im4java.sourceforge.net">im4java</a>
+ * Base class for {@link ImageMagickProcessor} and
+ * {@link GraphicsMagickProcessor}.
  */
-abstract class Im4JavaProcessor extends AbstractProcessor {
+abstract class MagickProcessor extends AbstractProcessor {
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
@@ -52,19 +47,6 @@ abstract class Im4JavaProcessor extends AbstractProcessor {
                 ProcessorFeature.SIZE_BY_PERCENT,
                 ProcessorFeature.SIZE_BY_WIDTH,
                 ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
-    }
-
-    public ImageInfo getImageInfo() throws ProcessorException {
-        try (InputStream inputStream = streamSource.newInputStream()) {
-            Info sourceInfo = new Info(
-                    format.getPreferredExtension() + ":-",
-                    inputStream, true);
-            return new ImageInfo(sourceInfo.getImageWidth(),
-                    sourceInfo.getImageHeight(), sourceInfo.getImageWidth(),
-                    sourceInfo.getImageHeight(), getSourceFormat());
-        } catch (IM4JavaException | IOException e) {
-            throw new ProcessorException(e.getMessage(), e);
-        }
     }
 
     public StreamSource getStreamSource() {
