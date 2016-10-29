@@ -282,7 +282,7 @@ public abstract class Java2dUtil {
     /**
      * @param watermark
      * @return Watermark image, or null if
-     *         {@link WatermarkService#WATERMARK_FILE_CONFIG_KEY} is not set.
+     *         {@link WatermarkService#BASIC_STRATEGY_FILE_CONFIG_KEY} is not set.
      * @throws IOException
      */
     static BufferedImage getWatermarkImage(Watermark watermark)

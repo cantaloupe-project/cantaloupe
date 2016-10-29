@@ -32,25 +32,23 @@ public abstract class WatermarkService {
         DELEGATE_SCRIPT;
     }
 
-    public static final String WATERMARK_ENABLED_CONFIG_KEY =
-            "watermark.enabled";
-    public static final String WATERMARK_STRATEGY_CONFIG_KEY =
-            "watermark.strategy";
-    public static final String WATERMARK_FILE_CONFIG_KEY =
+    public static final String ENABLED_CONFIG_KEY = "watermark.enabled";
+    public static final String STRATEGY_CONFIG_KEY = "watermark.strategy";
+    public static final String BASIC_STRATEGY_FILE_CONFIG_KEY =
             "watermark.BasicStrategy.image";
-    public static final String WATERMARK_INSET_CONFIG_KEY =
+    public static final String BASIC_STRATEGY_INSET_CONFIG_KEY =
             "watermark.BasicStrategy.inset";
-    public static final String WATERMARK_OUTPUT_HEIGHT_THRESHOLD_CONFIG_KEY =
+    public static final String BASIC_STRATEGY_OUTPUT_HEIGHT_THRESHOLD_CONFIG_KEY =
             "watermark.BasicStrategy.output_height_threshold";
-    public static final String WATERMARK_OUTPUT_WIDTH_THRESHOLD_CONFIG_KEY =
+    public static final String BASIC_STRATEGY_OUTPUT_WIDTH_THRESHOLD_CONFIG_KEY =
             "watermark.BasicStrategy.output_width_threshold";
-    public static final String WATERMARK_POSITION_CONFIG_KEY =
+    public static final String BASIC_STRATEGY_POSITION_CONFIG_KEY =
             "watermark.BasicStrategy.position";
 
     /**
      * Factory method that returns a new {@link Watermark} based on either
      * the configuration, or the delegate script method return value, depending
-     * on the setting of {@link #WATERMARK_STRATEGY_CONFIG_KEY}.
+     * on the setting of {@link #STRATEGY_CONFIG_KEY}.
      *
      * @param opList Required for ScriptStrategy.
      * @param fullSize Required for ScriptStrategy.
@@ -148,40 +146,40 @@ public abstract class WatermarkService {
     }
 
     /**
-     * Returns the value of {@link #WATERMARK_FILE_CONFIG_KEY} when
-     * {@link #WATERMARK_STRATEGY_CONFIG_KEY} is set to "BasicStrategy."
+     * Returns the value of {@link #BASIC_STRATEGY_FILE_CONFIG_KEY} when
+     * {@link #STRATEGY_CONFIG_KEY} is set to "BasicStrategy."
      *
      * @return File
      * @throws ConfigurationException
      */
     private static File getBasicImage() throws ConfigurationException {
         final Configuration config = ConfigurationFactory.getInstance();
-        final String path = config.getString(WATERMARK_FILE_CONFIG_KEY, "");
+        final String path = config.getString(BASIC_STRATEGY_FILE_CONFIG_KEY, "");
         if (path.length() > 0) {
             return new File(path);
         }
         throw new ConfigurationException(
-                WATERMARK_FILE_CONFIG_KEY + " is not set.");
+                BASIC_STRATEGY_FILE_CONFIG_KEY + " is not set.");
     }
 
     /**
-     * Returns the value of {@link #WATERMARK_INSET_CONFIG_KEY} when
-     * {@link #WATERMARK_STRATEGY_CONFIG_KEY} is set to "BasicStrategy."
+     * Returns the value of {@link #BASIC_STRATEGY_INSET_CONFIG_KEY} when
+     * {@link #STRATEGY_CONFIG_KEY} is set to "BasicStrategy."
      *
      * @return Watermark inset, defaulting to 0 if
-     *         {@link WatermarkService#WATERMARK_INSET_CONFIG_KEY} is not set.
+     *         {@link WatermarkService#BASIC_STRATEGY_INSET_CONFIG_KEY} is not set.
      */
     private static int getBasicInset() {
         final Configuration config = ConfigurationFactory.getInstance();
-        return config.getInt(WATERMARK_INSET_CONFIG_KEY, 0);
+        return config.getInt(BASIC_STRATEGY_INSET_CONFIG_KEY, 0);
     }
 
     /**
-     * Returns the value of {@link #WATERMARK_POSITION_CONFIG_KEY} when
-     * {@link #WATERMARK_STRATEGY_CONFIG_KEY} is set to "BasicStrategy."
+     * Returns the value of {@link #BASIC_STRATEGY_POSITION_CONFIG_KEY} when
+     * {@link #STRATEGY_CONFIG_KEY} is set to "BasicStrategy."
      *
      * @return Watermark position, or null if
-     *         {@link WatermarkService#WATERMARK_POSITION_CONFIG_KEY} is not
+     *         {@link WatermarkService#BASIC_STRATEGY_POSITION_CONFIG_KEY} is not
      *         set.
      * @throws ConfigurationException
      */
@@ -189,24 +187,24 @@ public abstract class WatermarkService {
             throws ConfigurationException {
         final Configuration config = ConfigurationFactory.getInstance();
         final String configValue = config.
-                getString(WATERMARK_POSITION_CONFIG_KEY, "");
+                getString(BASIC_STRATEGY_POSITION_CONFIG_KEY, "");
         if (configValue.length() > 0) {
             try {
                 return Position.fromString(configValue);
             } catch (IllegalArgumentException e) {
                 throw new ConfigurationException(
-                        "Invalid " + WATERMARK_POSITION_CONFIG_KEY +
+                        "Invalid " + BASIC_STRATEGY_POSITION_CONFIG_KEY +
                                 " value: " + configValue);
             }
         }
         throw new ConfigurationException(
-                WATERMARK_POSITION_CONFIG_KEY + " is not set.");
+                BASIC_STRATEGY_POSITION_CONFIG_KEY + " is not set.");
     }
 
     private static Strategy getStrategy() {
         final Configuration config = ConfigurationFactory.getInstance();
         final String configValue = config.
-                getString(WATERMARK_STRATEGY_CONFIG_KEY, "BasicStrategy");
+                getString(STRATEGY_CONFIG_KEY, "BasicStrategy");
         switch (configValue) {
             case "ScriptStrategy":
                 return Strategy.DELEGATE_SCRIPT;
@@ -216,11 +214,11 @@ public abstract class WatermarkService {
     }
 
     /**
-     * @return Whether {@link #WATERMARK_ENABLED_CONFIG_KEY} is true.
+     * @return Whether {@link #ENABLED_CONFIG_KEY} is true.
      */
     public static boolean isEnabled() {
         return ConfigurationFactory.getInstance().
-                getBoolean(WATERMARK_ENABLED_CONFIG_KEY, false);
+                getBoolean(ENABLED_CONFIG_KEY, false);
     }
 
     /**
@@ -231,9 +229,9 @@ public abstract class WatermarkService {
     public static boolean shouldApplyToImage(Dimension outputImageSize) {
         final Configuration config = ConfigurationFactory.getInstance();
         final int minOutputWidth =
-                config.getInt(WATERMARK_OUTPUT_WIDTH_THRESHOLD_CONFIG_KEY, 0);
+                config.getInt(BASIC_STRATEGY_OUTPUT_WIDTH_THRESHOLD_CONFIG_KEY, 0);
         final int minOutputHeight =
-                config.getInt(WATERMARK_OUTPUT_HEIGHT_THRESHOLD_CONFIG_KEY, 0);
+                config.getInt(BASIC_STRATEGY_OUTPUT_HEIGHT_THRESHOLD_CONFIG_KEY, 0);
         return (outputImageSize.width >= minOutputWidth &&
                 outputImageSize.height >= minOutputHeight);
     }
