@@ -32,7 +32,7 @@ public class ColorTest {
     @Test
     public void testToMap() {
         Map<String,Object> map = Color.BITONAL.toMap(new Dimension(0, 0));
-        assertEquals("color", map.get("operation"));
+        assertEquals(Color.class.getSimpleName(), map.get("class"));
         assertEquals("bitonal", map.get("type"));
     }
 

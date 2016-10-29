@@ -72,7 +72,7 @@ public class Redaction implements Operation {
     @Override
     public Map<String, Object> toMap(Dimension fullSize) {
         final HashMap<String,Object> map = new HashMap<>();
-        map.put("operation", "redaction");
+        map.put("class", getClass().getSimpleName());
         map.put("x", getRegion().x);
         map.put("y", getRegion().y);
         map.put("width", getRegion().width);

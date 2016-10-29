@@ -67,7 +67,7 @@ public class RedactionTest {
         Dimension fullSize = new Dimension(500, 500);
 
         Map<String,Object> map = instance.toMap(fullSize);
-        assertEquals("redaction", map.get("operation"));
+        assertEquals(instance.getClass().getSimpleName(), map.get("class"));
         assertEquals(50, map.get("x"));
         assertEquals(60, map.get("y"));
         assertEquals(200, map.get("width"));

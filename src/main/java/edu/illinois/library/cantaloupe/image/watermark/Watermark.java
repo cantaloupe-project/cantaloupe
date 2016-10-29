@@ -67,7 +67,7 @@ public class Watermark implements Operation {
     @Override
     public Map<String, Object> toMap(Dimension fullSize) {
         final HashMap<String,Object> map = new HashMap<>();
-        map.put("operation", "watermark");
+        map.put("class", getClass().getSimpleName());
         map.put("filename", getImage().getName());
         map.put("position", getPosition().toString());
         map.put("inset", getInset());

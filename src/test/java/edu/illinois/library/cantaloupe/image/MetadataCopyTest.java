@@ -32,7 +32,7 @@ public class MetadataCopyTest {
     public void testToMap() throws Exception {
         Dimension fullSize = new Dimension(500, 500);
         Map<String,Object> map = instance.toMap(fullSize);
-        assertEquals("metadata_copy", map.get("operation"));
+        assertEquals(instance.getClass().getSimpleName(), map.get("class"));
     }
 
     @Test

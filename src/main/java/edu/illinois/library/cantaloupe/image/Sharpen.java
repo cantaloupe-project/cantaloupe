@@ -53,7 +53,7 @@ public class Sharpen implements Operation {
     @Override
     public Map<String,Object> toMap(Dimension fullSize) {
         final Map<String,Object> map = new HashMap<>();
-        map.put("operation", "sharpen");
+        map.put("class", getClass().getSimpleName());
         map.put("amount", this.getAmount());
         return map;
     }

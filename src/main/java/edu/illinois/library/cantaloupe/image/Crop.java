@@ -276,7 +276,7 @@ public class Crop implements Operation {
     public Map<String,Object> toMap(Dimension fullSize) {
         final Rectangle rect = getRectangle(fullSize);
         final HashMap<String,Object> map = new HashMap<>();
-        map.put("operation", "crop");
+        map.put("class", getClass().getSimpleName());
         map.put("x", rect.x);
         map.put("y", rect.y);
         map.put("width", rect.width);

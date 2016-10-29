@@ -41,7 +41,7 @@ public class MetadataCopy implements Operation {
     @Override
     public Map<String, Object> toMap(Dimension fullSize) {
         final HashMap<String,Object> map = new HashMap<>();
-        map.put("operation", "metadata_copy");
+        map.put("class", getClass().getSimpleName());
         return map;
     }
 

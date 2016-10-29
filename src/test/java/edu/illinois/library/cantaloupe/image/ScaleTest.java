@@ -210,7 +210,7 @@ public class ScaleTest {
         Dimension resultingSize = scale.getResultingSize(fullSize);
 
         Map<String,Object> map = scale.toMap(fullSize);
-        assertEquals("scale", map.get("operation"));
+        assertEquals(scale.getClass().getSimpleName(), map.get("class"));
         assertEquals(resultingSize.width, map.get("width"));
         assertEquals(resultingSize.height, map.get("height"));
     }

@@ -28,8 +28,8 @@ public interface Operation {
      *                 is being applied.
      * @return Map serialization of the operation that expresses the essence
      *         of the operation relative to the given full size. The map
-     *         should include a string "operation" key pointing to the
-     *         lowercase name of the operation.
+     *         should include a string <code>operation</code> key pointing to
+     *         the simple class name of the operation.
      */
     Map<String,Object> toMap(Dimension fullSize);
 

@@ -1,7 +1,9 @@
 ##
-# Sample Ruby delegate script containing skeletons for all available
-# methods. See the "Delegate Script" section of the user manual for more
-# information.
+# Sample Ruby delegate script containing skeletons for all methods available
+# in the current version of Cantaloupe. This file may change from version to
+# version.
+#
+# See the "Delegate Script" section of the user manual for more information.
 #
 # DO NOT EDIT! Instead, copy to a file named `delegates.rb` and edit that.
 #
@@ -19,10 +21,9 @@ module Cantaloupe
   #                                         dimensions of the source image.
   # @param operations [Array<Hash<String,Object>>] Array of operations in
   #                   order of execution. Only operations that are not no-ops
-  #                   will be included. Every hash contains an "operation" key
-  #                   corresponding to the type of operation. See the Javadoc
-  #                   of e.i.l.c.image.Operation implementations for a list of
-  #                   possible operations.
+  #                   will be included. Every hash contains a "class" key
+  #                   corresponding to the operation class name, which will be
+  #                   one of the e.i.l.c.image.Operation implementations.
   # @param resulting_size [Hash<String,String>] Hash with "width" and "height"
   #                       keys corresponding to the pixel dimensions of the
   #                       resulting image after all operations are applied.
@@ -184,10 +185,9 @@ module Cantaloupe
   # @param identifier [String] Image identifier
   # @param operations [Array<Hash<String,Object>>] Array of operations in
   #                   order of execution. Only operations that are not no-ops
-  #                   will be included. Every hash contains an `operation` key
-  #                   corresponding to the type of operation. See the Javadoc
-  #                   of e.i.l.c.image.Operation implementations for a list of
-  #                   possible operations.
+  #                   will be included. Every hash contains a "class" key
+  #                   corresponding to the operation class name, which will be
+  #                   one of the e.i.l.c.image.Operation implementations.
   # @param resulting_size [Hash<String,String>] Hash with `width` and `height`
   #                       keys corresponding to the pixel dimensions of the
   #                       resulting image after all operations are applied.
@@ -207,5 +207,5 @@ module Cantaloupe
 
 end
 
-# Uncomment to test on the command line (`jruby delegates.rb`)
+# Uncomment to test on the command line (`ruby delegates.rb`)
 # puts Cantaloupe::FilesystemResolver::get_pathname('image.jpg')

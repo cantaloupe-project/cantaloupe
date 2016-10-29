@@ -321,7 +321,7 @@ public class CropTest {
         final Dimension fullSize = new Dimension(100, 100);
 
         Map<String,Object> map = crop.toMap(fullSize);
-        assertEquals("crop", map.get("operation"));
+        assertEquals(crop.getClass().getSimpleName(), map.get("class"));
         assertEquals(25, map.get("x"));
         assertEquals(25, map.get("y"));
         assertEquals(50, map.get("width"));

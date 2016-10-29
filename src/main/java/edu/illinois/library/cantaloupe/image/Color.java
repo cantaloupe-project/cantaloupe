@@ -29,7 +29,7 @@ public enum Color implements Operation {
     @Override
     public Map<String,Object> toMap(Dimension fullSize) {
         final Map<String,Object> map = new HashMap<>();
-        map.put("operation", "color");
+        map.put("class", getClass().getSimpleName());
         map.put("type", this.name().toLowerCase());
         return map;
     }

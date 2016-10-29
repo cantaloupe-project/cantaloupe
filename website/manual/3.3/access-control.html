@@ -93,7 +93,7 @@ module Cantaloupe
   def self.authorized?(identifier, full_size, operations, resulting_size,
                        output_format, request_uri, request_headers, client_ip,
                        cookies)
-    scale = operations.select{ |op| op['type'] == 'scale' }.first
+    scale = operations.select{ |op| op['class'] == 'Scale' }.first
     if scale
       max_scale = 0.5
       return scale['width'] <= full_size['width'] * max_scale and
@@ -208,14 +208,14 @@ end
 
 <p>In this example, requests for images containing any part of the bottom right quadrant of the source image will be denied.</p>
 
-<p>(Also see <a href="redaction.html">redaction.)</p>
+<p>(Also see <a href="redaction.html">redaction</a>.)</p>
 
 {% highlight ruby %}
 module Cantaloupe
   def self.authorized?(identifier, full_size, operations, resulting_size,
                        output_format, request_uri, request_headers, client_ip,
                        cookies)
-    crop = operations.select{ |op| op['type'] == 'crop' }.first
+    crop = operations.select{ |op| op['class'] == 'Crop' }.first
     if crop
       max_x = full_size['width'] / 2
       max_y = full_size['height'] / 2

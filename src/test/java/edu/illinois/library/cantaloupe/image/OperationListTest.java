@@ -36,6 +36,7 @@ public class OperationListTest {
 
     @Before
     public void setUp() {
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         config.setProperty(WatermarkService.WATERMARK_ENABLED_CONFIG_KEY, false);
