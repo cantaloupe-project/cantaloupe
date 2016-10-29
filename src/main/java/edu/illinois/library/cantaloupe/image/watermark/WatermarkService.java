@@ -20,7 +20,7 @@ import java.util.Map;
  * Provides information about watermarking, including whether it is enabled,
  * and access to new {@link Watermark} instances, if so.
  */
-public abstract class WatermarkService {
+public class WatermarkService {
 
     private enum Strategy {
         /** Uses "watermark.BasicStrategy.*" configuration keys to get
@@ -63,12 +63,12 @@ public abstract class WatermarkService {
      * @throws DelegateScriptDisabledException
      * @throws ConfigurationException
      */
-    public static Watermark newWatermark(OperationList opList,
-                                         Dimension fullSize,
-                                         URL requestUrl,
-                                         Map<String,String> requestHeaders,
-                                         String clientIp,
-                                         Map<String,String> cookies)
+    public Watermark newWatermark(OperationList opList,
+                                  Dimension fullSize,
+                                  URL requestUrl,
+                                  Map<String,String> requestHeaders,
+                                  String clientIp,
+                                  Map<String,String> cookies)
             throws IOException, ScriptException,
             DelegateScriptDisabledException, ConfigurationException {
         File image = null;
@@ -109,7 +109,7 @@ public abstract class WatermarkService {
      * @throws ScriptException
      * @throws DelegateScriptDisabledException
      */
-    private static Map<String,Object> getWatermarkDefsFromScript(
+    private Map<String,Object> getWatermarkDefsFromScript(
             OperationList opList, Dimension fullSize, URL requestUrl,
             Map<String,String> requestHeaders, String clientIp,
             Map<String,String> cookies)
@@ -152,7 +152,7 @@ public abstract class WatermarkService {
      * @return File
      * @throws ConfigurationException
      */
-    private static File getBasicImage() throws ConfigurationException {
+    private File getBasicImage() throws ConfigurationException {
         final Configuration config = ConfigurationFactory.getInstance();
         final String path = config.getString(BASIC_STRATEGY_FILE_CONFIG_KEY, "");
         if (path.length() > 0) {
@@ -169,7 +169,7 @@ public abstract class WatermarkService {
      * @return Watermark inset, defaulting to 0 if
      *         {@link WatermarkService#BASIC_STRATEGY_INSET_CONFIG_KEY} is not set.
      */
-    private static int getBasicInset() {
+    private int getBasicInset() {
         final Configuration config = ConfigurationFactory.getInstance();
         return config.getInt(BASIC_STRATEGY_INSET_CONFIG_KEY, 0);
     }
@@ -183,8 +183,7 @@ public abstract class WatermarkService {
      *         set.
      * @throws ConfigurationException
      */
-    private static Position getBasicPosition()
-            throws ConfigurationException {
+    private Position getBasicPosition() throws ConfigurationException {
         final Configuration config = ConfigurationFactory.getInstance();
         final String configValue = config.
                 getString(BASIC_STRATEGY_POSITION_CONFIG_KEY, "");
@@ -201,7 +200,7 @@ public abstract class WatermarkService {
                 BASIC_STRATEGY_POSITION_CONFIG_KEY + " is not set.");
     }
 
-    private static Strategy getStrategy() {
+    private Strategy getStrategy() {
         final Configuration config = ConfigurationFactory.getInstance();
         final String configValue = config.
                 getString(STRATEGY_CONFIG_KEY, "BasicStrategy");
@@ -216,7 +215,7 @@ public abstract class WatermarkService {
     /**
      * @return Whether {@link #ENABLED_CONFIG_KEY} is true.
      */
-    public static boolean isEnabled() {
+    public boolean isEnabled() {
         return ConfigurationFactory.getInstance().
                 getBoolean(ENABLED_CONFIG_KEY, false);
     }
@@ -226,7 +225,7 @@ public abstract class WatermarkService {
      * @return Whether a watermark should be applied to an output image with
      * the given dimensions.
      */
-    public static boolean shouldApplyToImage(Dimension outputImageSize) {
+    public boolean shouldApplyToImage(Dimension outputImageSize) {
         final Configuration config = ConfigurationFactory.getInstance();
         final int minOutputWidth =
                 config.getInt(BASIC_STRATEGY_OUTPUT_WIDTH_THRESHOLD_CONFIG_KEY, 0);

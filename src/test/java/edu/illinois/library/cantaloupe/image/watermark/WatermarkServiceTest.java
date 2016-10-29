@@ -20,6 +20,8 @@ import static org.junit.Assert.*;
 
 public class WatermarkServiceTest {
 
+    private WatermarkService instance;
+
     @Before
     public void setUp() throws Exception {
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");

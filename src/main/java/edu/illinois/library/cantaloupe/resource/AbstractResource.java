@@ -218,8 +218,9 @@ public abstract class AbstractResource extends ServerResource {
 
         // Watermark
         try {
-            if (WatermarkService.isEnabled()) {
-                opList.add(WatermarkService.newWatermark(
+            final WatermarkService service = new WatermarkService();
+            if (service.isEnabled()) {
+                opList.add(service.newWatermark(
                         opList, fullSize, getReference().toUrl(),
                         getRequest().getHeaders().getValuesMap(),
                         getCanonicalClientIpAddress(),

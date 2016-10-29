@@ -114,7 +114,7 @@ public abstract class Java2dUtil {
         BufferedImage markedImage = baseImage;
         final Dimension imageSize = new Dimension(baseImage.getWidth(),
                 baseImage.getHeight());
-        if (WatermarkService.shouldApplyToImage(imageSize)) {
+        if (new WatermarkService().shouldApplyToImage(imageSize)) {
             markedImage = overlayImage(baseImage,
                     getWatermarkImage(watermark),
                     watermark.getPosition(),
