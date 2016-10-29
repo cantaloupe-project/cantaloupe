@@ -29,10 +29,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * <p>Processor using the ImageMagick `convert` and `identify` command-line
- * tools.</p>
+ * <p>Processor using the ImageMagick `magick` (version 7) or `convert` and
+ * `identify` (earlier versions) command-line tools.</p>
  *
  * <p>This class does not implement <var>FileProcessor</var> because testing
  * indicates that reading from streams is significantly faster.</p>
@@ -54,15 +55,56 @@ class ImageMagickProcessor extends MagickProcessor implements StreamProcessor {
             "ImageMagickProcessor.path_to_binaries";
     static final String SHARPEN_CONFIG_KEY = "ImageMagickProcessor.sharpen";
 
+    // ImageMagick 7 uses a `magick` command. Earlier versions use `convert`
+    // and `identify`.
+    private static final AtomicBoolean isUsingVersion7 =
+            new AtomicBoolean(false);
+    private static final Object lock = new Object();
+
     // Lazy-initialized by getFormats()
     protected static HashMap<Format, Set<Format>> supportedFormats;
 
-    ImageMagickProcessor() {
+    static {
+        // Tell ProcessStarter where to find the binaries.
         final Configuration config = ConfigurationFactory.getInstance();
         final String path = config.getString(PATH_TO_BINARIES_CONFIG_KEY);
         if (path != null && path.length() > 0) {
             ProcessStarter.setGlobalSearchPath(path);
         }
+    }
+
+    /**
+     * <p>Checks for ImageMagick 7 by attempting to invoke the `magick`
+     * command. If the invocation fails, we assume that we are using version
+     * <= 6.</p>
+     *
+     * <p>The result is cached.</p>
+     *
+     * @return Whether we appear to be using ImageMagick 7.
+     */
+    private static boolean isUsingVersion7() {
+        if (!isUsingVersion7.get()) {
+            synchronized (lock) {
+                final ProcessBuilder pb = new ProcessBuilder();
+                final List<String> command = new ArrayList<>();
+                command.add(getPath("magick"));
+                pb.command(command);
+                try {
+                    final String commandString = StringUtils.join(pb.command(), " ");
+                    logger.debug("isUsingVersion7(): trying to invoke {}", commandString);
+                    final Process process = pb.start();
+                    process.waitFor();
+                    logger.info("isUsingVersion7(): found magick command; " +
+                            "assuming ImageMagick 7+");
+                    isUsingVersion7.set(true);
+                } catch (Exception e) {
+                    logger.info("isUsingVersion7(): couldn't find magick " +
+                            "command; assuming ImageMagick <7");
+                    isUsingVersion7.set(false);
+                }
+            }
+        }
+        return isUsingVersion7.get();
     }
 
     @Override
@@ -78,6 +120,9 @@ class ImageMagickProcessor extends MagickProcessor implements StreamProcessor {
                                              final Dimension fullSize) {
         final List<String> args = new ArrayList<>();
 
+        if (isUsingVersion7()) {
+            args.add("magick");
+        }
         args.add("convert");
         args.add(format.getPreferredExtension() + ":-"); // read from stdin
 
@@ -198,6 +243,9 @@ class ImageMagickProcessor extends MagickProcessor implements StreamProcessor {
     public ImageInfo getImageInfo() throws ProcessorException {
         try (InputStream inputStream = streamSource.newInputStream()) {
             final List<String> args = new ArrayList<>();
+            if (isUsingVersion7()) {
+                args.add("magick");
+            }
             args.add("identify");
             args.add("-ping");
             args.add("-format");
@@ -210,7 +258,7 @@ class ImageMagickProcessor extends MagickProcessor implements StreamProcessor {
             cmd.setInputProvider(new Pipe(inputStream, null));
             cmd.setOutputConsumer(consumer);
             logger.info("getImageInfo(): invoking {}",
-                    StringUtils.join(args, " ").replace("\n", ""));
+                    StringUtils.join(args, " ").replace("\n", ","));
             cmd.run(args);
 
             final ArrayList<String> output = consumer.getOutput();
@@ -252,7 +300,12 @@ class ImageMagickProcessor extends MagickProcessor implements StreamProcessor {
             // which contains a list of all supported formats.
             final ProcessBuilder pb = new ProcessBuilder();
             final List<String> command = new ArrayList<>();
-            command.add(getPath("identify"));
+            if (isUsingVersion7()) {
+                command.add(getPath("magick"));
+                command.add("identify");
+            } else {
+                command.add(getPath("identify"));
+            }
             command.add("-list");
             command.add("format");
             pb.command(command);
