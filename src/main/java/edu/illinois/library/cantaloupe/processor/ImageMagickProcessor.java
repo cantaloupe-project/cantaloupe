@@ -57,8 +57,7 @@ class ImageMagickProcessor extends MagickProcessor implements StreamProcessor {
 
     // ImageMagick 7 uses a `magick` command. Earlier versions use `convert`
     // and `identify`.
-    private static final AtomicBoolean isUsingVersion7 =
-            new AtomicBoolean(false);
+    private static AtomicBoolean isUsingVersion7;
     private static final Object lock = new Object();
 
     // Lazy-initialized by getFormats()
@@ -83,15 +82,17 @@ class ImageMagickProcessor extends MagickProcessor implements StreamProcessor {
      * @return Whether we appear to be using ImageMagick 7.
      */
     private static boolean isUsingVersion7() {
-        if (!isUsingVersion7.get()) {
+        if (isUsingVersion7 == null) {
             synchronized (lock) {
                 final ProcessBuilder pb = new ProcessBuilder();
                 final List<String> command = new ArrayList<>();
                 command.add(getPath("magick"));
                 pb.command(command);
                 try {
+                    isUsingVersion7 = new AtomicBoolean(false);
                     final String commandString = StringUtils.join(pb.command(), " ");
-                    logger.debug("isUsingVersion7(): trying to invoke {}", commandString);
+                    logger.debug("isUsingVersion7(): trying to invoke {}",
+                            commandString);
                     final Process process = pb.start();
                     process.waitFor();
                     logger.info("isUsingVersion7(): found magick command; " +
