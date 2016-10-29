@@ -34,9 +34,11 @@ public class WatermarkServiceTest {
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         config.setProperty(WatermarkService.ENABLED_CONFIG_KEY, true);
         config.setProperty(WatermarkService.STRATEGY_CONFIG_KEY, "BasicStrategy");
-        config.setProperty(WatermarkService.BASIC_STRATEGY_FILE_CONFIG_KEY, "/dev/null");
-        config.setProperty(WatermarkService.BASIC_STRATEGY_INSET_CONFIG_KEY, 10);
-        config.setProperty(WatermarkService.BASIC_STRATEGY_POSITION_CONFIG_KEY, "top left");
+        config.setProperty(BasicWatermarkService.BASIC_STRATEGY_FILE_CONFIG_KEY, "/dev/null");
+        config.setProperty(BasicWatermarkService.BASIC_STRATEGY_INSET_CONFIG_KEY, 10);
+        config.setProperty(BasicWatermarkService.BASIC_STRATEGY_POSITION_CONFIG_KEY, "top left");
+
+        instance = new WatermarkService();
     }
 
     @Test
@@ -48,7 +50,7 @@ public class WatermarkServiceTest {
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
-        Watermark watermark = WatermarkService.newWatermark(opList, fullSize,
+        Watermark watermark = instance.newWatermark(opList, fullSize,
                 requestUrl, requestHeaders, clientIp, cookies);
         assertEquals(new File("/dev/null"), watermark.getImage());
         assertEquals(10, watermark.getInset());
@@ -57,8 +59,7 @@ public class WatermarkServiceTest {
 
     @Test
     public void testNewWatermarkWithScriptStrategyReturningWatermark() throws Exception {
-        ConfigurationFactory.getInstance().setProperty(
-                WatermarkService.STRATEGY_CONFIG_KEY, "ScriptStrategy");
+        instance.setStrategy(WatermarkService.Strategy.DELEGATE_METHOD);
 
         final OperationList opList = new OperationList();
         opList.setIdentifier(new Identifier("cats"));
@@ -69,7 +70,7 @@ public class WatermarkServiceTest {
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
-        Watermark watermark = WatermarkService.newWatermark(opList, fullSize,
+        Watermark watermark = instance.newWatermark(opList, fullSize,
                 requestUrl, requestHeaders, clientIp, cookies);
         assertEquals(new File("/dev/cats"), watermark.getImage());
         assertEquals(5, watermark.getInset());
@@ -78,8 +79,7 @@ public class WatermarkServiceTest {
 
     @Test
     public void testNewWatermarkWithScriptStrategyReturningFalse() throws Exception {
-        ConfigurationFactory.getInstance().setProperty(
-                WatermarkService.STRATEGY_CONFIG_KEY, "ScriptStrategy");
+        instance.setStrategy(WatermarkService.Strategy.DELEGATE_METHOD);
 
         final OperationList opList = new OperationList();
         opList.setIdentifier(new Identifier("dogs"));
@@ -90,7 +90,7 @@ public class WatermarkServiceTest {
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
-        Watermark watermark = WatermarkService.newWatermark(opList, fullSize,
+        Watermark watermark = instance.newWatermark(opList, fullSize,
                 requestUrl, requestHeaders, clientIp, cookies);
         assertNull(watermark);
     }
@@ -101,38 +101,12 @@ public class WatermarkServiceTest {
         config.clear();
         // false
         config.setProperty(WatermarkService.ENABLED_CONFIG_KEY, false);
-        assertFalse(WatermarkService.isEnabled());
+        instance = new WatermarkService();
+        assertFalse(instance.isEnabled());
         // true
         config.setProperty(WatermarkService.ENABLED_CONFIG_KEY, true);
-        assertTrue(WatermarkService.isEnabled());
-    }
-
-    @Test
-    public void testShouldApplyToImage() {
-        Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
-
-        final Dimension imageSize = new Dimension(100, 100);
-
-        // image width > width threshold, image height > height threshold
-        config.setProperty(WatermarkService.BASIC_STRATEGY_OUTPUT_WIDTH_THRESHOLD_CONFIG_KEY, 50);
-        config.setProperty(WatermarkService.BASIC_STRATEGY_OUTPUT_HEIGHT_THRESHOLD_CONFIG_KEY, 50);
-        assertTrue(WatermarkService.shouldApplyToImage(imageSize));
-
-        // image width < width threshold, image height < height threshold
-        config.setProperty(WatermarkService.BASIC_STRATEGY_OUTPUT_WIDTH_THRESHOLD_CONFIG_KEY, 200);
-        config.setProperty(WatermarkService.BASIC_STRATEGY_OUTPUT_HEIGHT_THRESHOLD_CONFIG_KEY, 200);
-        assertFalse(WatermarkService.shouldApplyToImage(imageSize));
-
-        // image width < width threshold, image height > height threshold
-        config.setProperty(WatermarkService.BASIC_STRATEGY_OUTPUT_WIDTH_THRESHOLD_CONFIG_KEY, 200);
-        config.setProperty(WatermarkService.BASIC_STRATEGY_OUTPUT_HEIGHT_THRESHOLD_CONFIG_KEY, 50);
-        assertFalse(WatermarkService.shouldApplyToImage(imageSize));
-
-        // image width > width threshold, image height < height threshold
-        config.setProperty(WatermarkService.BASIC_STRATEGY_OUTPUT_WIDTH_THRESHOLD_CONFIG_KEY, 50);
-        config.setProperty(WatermarkService.BASIC_STRATEGY_OUTPUT_HEIGHT_THRESHOLD_CONFIG_KEY, 200);
-        assertFalse(WatermarkService.shouldApplyToImage(imageSize));
+        instance = new WatermarkService();
+        assertTrue(instance.isEnabled());
     }
 
 }
