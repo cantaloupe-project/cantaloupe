@@ -34,7 +34,7 @@ public class DelegateWatermarkServiceTest {
     }
 
     @Test
-    public void testGetWatermarkDefsFromScriptReturningWatermark() throws Exception {
+    public void testGetWatermarkPropertiesReturningWatermark() throws Exception {
         final OperationList opList = new OperationList();
         opList.setIdentifier(new Identifier("cats"));
         opList.setOutputFormat(Format.JPG);
@@ -44,7 +44,7 @@ public class DelegateWatermarkServiceTest {
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
-        Map<String,Object> result = instance.getWatermarkDefsFromScript(
+        Map<String,Object> result = instance.getWatermarkProperties(
                 opList, fullSize, requestUrl, requestHeaders, clientIp, cookies);
         assertEquals(new File("/dev/cats"), result.get("file"));
         assertEquals((long) 5, result.get("inset"));
@@ -52,7 +52,7 @@ public class DelegateWatermarkServiceTest {
     }
 
     @Test
-    public void testNewWatermarkWithScriptStrategyReturningFalse() throws Exception {
+    public void testGetWatermarkPropertiesReturningFalse() throws Exception {
         final OperationList opList = new OperationList();
         opList.setIdentifier(new Identifier("dogs"));
         opList.setOutputFormat(Format.JPG);
@@ -62,7 +62,7 @@ public class DelegateWatermarkServiceTest {
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
-        Map<String,Object> result = instance.getWatermarkDefsFromScript(
+        Map<String,Object> result = instance.getWatermarkProperties(
                 opList, fullSize, requestUrl, requestHeaders, clientIp, cookies);
         assertNull(result);
     }

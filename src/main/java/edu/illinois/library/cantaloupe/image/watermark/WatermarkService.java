@@ -85,7 +85,7 @@ public class WatermarkService {
         switch (getStrategy()) {
             case DELEGATE_METHOD:
                 final Map<String,Object> defs =
-                        delegateService.getWatermarkDefsFromScript(
+                        delegateService.getWatermarkProperties(
                                 opList, fullSize, requestUrl, requestHeaders,
                                 clientIp, cookies);
                 if (defs != null) {

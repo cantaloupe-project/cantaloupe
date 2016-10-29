@@ -28,7 +28,7 @@ class DelegateWatermarkService {
      * @throws ScriptException
      * @throws DelegateScriptDisabledException
      */
-    Map<String,Object> getWatermarkDefsFromScript(
+    Map<String,Object> getWatermarkProperties(
             OperationList opList, Dimension fullSize, URL requestUrl,
             Map<String,String> requestHeaders, String clientIp,
             Map<String,String> cookies)
