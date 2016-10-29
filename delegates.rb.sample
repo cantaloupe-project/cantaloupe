@@ -197,8 +197,11 @@ module Cantaloupe
   # @param request_headers [Hash<String,String>]
   # @param client_ip [String]
   # @param cookies [Hash<String,String>]
-  # @return [Hash<String,String>,Boolean] 3-element hash with `pathname`,
-  #         `position`, and `inset` keys; or false to not apply a watermark.
+  # @return [Hash<String,String>,Boolean] For image watermarks, a 3-element
+  #         hash with `position`, `inset`, and `pathname` keys. For string
+  #         watermarks, a 6-element hash with `position`, `inset`, `string`,
+  #         `font`, `font_size`, and `color` keys.
+  #         Return false for no watermark.
   #
   def self.watermark(identifier, operations, resulting_size, output_format,
                      request_uri, request_headers, client_ip, cookies)

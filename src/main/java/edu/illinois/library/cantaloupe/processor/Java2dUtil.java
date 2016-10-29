@@ -8,18 +8,23 @@ import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
+import edu.illinois.library.cantaloupe.image.watermark.ImageWatermark;
 import edu.illinois.library.cantaloupe.image.watermark.Position;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.image.watermark.StringWatermark;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.image.watermark.WatermarkService;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -99,12 +104,13 @@ public abstract class Java2dUtil {
     }
 
     /**
-     * Applies the watermark to the given image.
+     * Applies the given watermark to the given image. The watermark may be a
+     * string ({@link StringWatermark}) or an image ({@link ImageWatermark}).
      *
      * @param baseImage Image to apply the watermark on top of.
      * @param watermark Watermark to apply to the base image.
-     * @return Watermarked image, or the input image if there is no watermark
-     *         set in the application configuration.
+     * @return Watermarked image, or the input image if the watermark should
+     *         not be applied according to the application configuration.
      * @throws ConfigurationException
      * @throws IOException
      */
@@ -114,91 +120,22 @@ public abstract class Java2dUtil {
         BufferedImage markedImage = baseImage;
         final Dimension imageSize = new Dimension(baseImage.getWidth(),
                 baseImage.getHeight());
-        if (new WatermarkService().shouldApplyToImage(imageSize)) {
-            markedImage = overlayImage(baseImage,
-                    getWatermarkImage(watermark),
-                    watermark.getPosition(),
-                    watermark.getInset());
+        if (new WatermarkService().shouldApplyToImage(imageSize)) { // TODO: does this work with ScriptStrategy?
+            if (watermark instanceof ImageWatermark) {
+                markedImage = overlayImage(baseImage,
+                        getWatermarkImage((ImageWatermark) watermark),
+                        watermark.getPosition(),
+                        watermark.getInset());
+            } else if (watermark instanceof StringWatermark) {
+                final StringWatermark sw = (StringWatermark) watermark;
+                markedImage = overlayString(baseImage,
+                        sw.getString(),
+                        sw.getColor(),
+                        watermark.getPosition(),
+                        watermark.getInset());
+            }
         }
         return markedImage;
-    }
-
-    /**
-     * @param baseImage
-     * @param overlayImage
-     * @param position
-     * @param inset Inset in pixels.
-     * @return
-     */
-    private static BufferedImage overlayImage(final BufferedImage baseImage,
-                                              final BufferedImage overlayImage,
-                                              final Position position,
-                                              final int inset) {
-        if (overlayImage != null && position != null) {
-            final Stopwatch watch = new Stopwatch();
-            int overlayX, overlayY;
-            switch (position) {
-                case TOP_LEFT:
-                    overlayX = inset;
-                    overlayY = inset;
-                    break;
-                case TOP_RIGHT:
-                    overlayX = baseImage.getWidth() -
-                            overlayImage.getWidth() - inset;
-                    overlayY = inset;
-                    break;
-                case BOTTOM_LEFT:
-                    overlayX = inset;
-                    overlayY = baseImage.getHeight() -
-                            overlayImage.getHeight() - inset;
-                    break;
-                // case BOTTOM_RIGHT: will be handled in default:
-                case TOP_CENTER:
-                    overlayX = (baseImage.getWidth() -
-                            overlayImage.getWidth()) / 2;
-                    overlayY = inset;
-                    break;
-                case BOTTOM_CENTER:
-                    overlayX = (baseImage.getWidth() -
-                            overlayImage.getWidth()) / 2;
-                    overlayY = baseImage.getHeight() -
-                            overlayImage.getHeight() - inset;
-                    break;
-                case LEFT_CENTER:
-                    overlayX = inset;
-                    overlayY = (baseImage.getHeight() -
-                            overlayImage.getHeight()) / 2;
-                    break;
-                case RIGHT_CENTER:
-                    overlayX = baseImage.getWidth() -
-                            overlayImage.getWidth() - inset;
-                    overlayY = (baseImage.getHeight() -
-                            overlayImage.getHeight()) / 2;
-                    break;
-                case CENTER:
-                    overlayX = (baseImage.getWidth() -
-                            overlayImage.getWidth()) / 2;
-                    overlayY = (baseImage.getHeight() -
-                            overlayImage.getHeight()) / 2;
-                    break;
-                default: // bottom right
-                    overlayX = baseImage.getWidth() -
-                            overlayImage.getWidth() - inset;
-                    overlayY = baseImage.getHeight() -
-                            overlayImage.getHeight() - inset;
-                    break;
-            }
-
-            final Graphics2D g2d = baseImage.createGraphics();
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
-            g2d.drawImage(baseImage, 0, 0, null);
-            g2d.drawImage(overlayImage, overlayX, overlayY, null);
-            g2d.dispose();
-            logger.debug("overlayImage() executed in {} msec",
-                    watch.timeElapsed());
-        }
-        return baseImage;
     }
 
     /**
@@ -281,15 +218,174 @@ public abstract class Java2dUtil {
 
     /**
      * @param watermark
-     * @return Watermark image, or null if
-     *         {@link WatermarkService#BASIC_STRATEGY_FILE_CONFIG_KEY} is not set.
+     * @return Watermark image.
      * @throws IOException
      */
-    static BufferedImage getWatermarkImage(Watermark watermark)
+    static BufferedImage getWatermarkImage(ImageWatermark watermark)
             throws IOException {
         final ImageReader reader =
                 new ImageReader(watermark.getImage(), Format.PNG);
         return reader.read();
+    }
+
+    /**
+     * @param baseImage Image to overlay the image onto.
+     * @param overlayImage Image to overlay.
+     * @param position Position of the overlaid image.
+     * @param inset Inset in pixels.
+     * @return
+     */
+    private static BufferedImage overlayImage(final BufferedImage baseImage,
+                                              final BufferedImage overlayImage,
+                                              final Position position,
+                                              final int inset) {
+        if (overlayImage != null && position != null) {
+            final Stopwatch watch = new Stopwatch();
+            int overlayX, overlayY;
+            switch (position) {
+                case TOP_LEFT:
+                    overlayX = inset;
+                    overlayY = inset;
+                    break;
+                case TOP_RIGHT:
+                    overlayX = baseImage.getWidth() -
+                            overlayImage.getWidth() - inset;
+                    overlayY = inset;
+                    break;
+                case BOTTOM_LEFT:
+                    overlayX = inset;
+                    overlayY = baseImage.getHeight() -
+                            overlayImage.getHeight() - inset;
+                    break;
+                // case BOTTOM_RIGHT: will be handled in default:
+                case TOP_CENTER:
+                    overlayX = (baseImage.getWidth() -
+                            overlayImage.getWidth()) / 2;
+                    overlayY = inset;
+                    break;
+                case BOTTOM_CENTER:
+                    overlayX = (baseImage.getWidth() -
+                            overlayImage.getWidth()) / 2;
+                    overlayY = baseImage.getHeight() -
+                            overlayImage.getHeight() - inset;
+                    break;
+                case LEFT_CENTER:
+                    overlayX = inset;
+                    overlayY = (baseImage.getHeight() -
+                            overlayImage.getHeight()) / 2;
+                    break;
+                case RIGHT_CENTER:
+                    overlayX = baseImage.getWidth() -
+                            overlayImage.getWidth() - inset;
+                    overlayY = (baseImage.getHeight() -
+                            overlayImage.getHeight()) / 2;
+                    break;
+                case CENTER:
+                    overlayX = (baseImage.getWidth() -
+                            overlayImage.getWidth()) / 2;
+                    overlayY = (baseImage.getHeight() -
+                            overlayImage.getHeight()) / 2;
+                    break;
+                default: // bottom right
+                    overlayX = baseImage.getWidth() -
+                            overlayImage.getWidth() - inset;
+                    overlayY = baseImage.getHeight() -
+                            overlayImage.getHeight() - inset;
+                    break;
+            }
+
+            final Graphics2D g2d = baseImage.createGraphics();
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+            g2d.drawImage(baseImage, 0, 0, null);
+            g2d.drawImage(overlayImage, overlayX, overlayY, null);
+            g2d.dispose();
+            logger.debug("overlayImage() executed in {} msec",
+                    watch.timeElapsed());
+        }
+        return baseImage;
+    }
+
+    /**
+     * @param baseImage Image to overlay the string onto.
+     * @param overlayString String to overlay onto the image.
+     * @param color Color of the text.
+     * @param position Position of the overlaid string.
+     * @param inset Inset of the overlaid string in pixels.
+     * @return
+     */
+    private static BufferedImage overlayString(final BufferedImage baseImage,
+                                               final String overlayString,
+                                               final java.awt.Color color,
+                                               final Position position,
+                                               final int inset) {
+        if (overlayString != null && overlayString.length() > 0 &&
+                position != null) {
+            final Stopwatch watch = new Stopwatch();
+
+            final Graphics2D g2d = baseImage.createGraphics();
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+            g2d.drawImage(baseImage, 0, 0, null);
+            g2d.setPaint(color);
+            g2d.setFont(new Font("Serif", Font.BOLD, 20)); // TODO: externalize
+
+            final FontMetrics fm = g2d.getFontMetrics();
+            final int numLines = StringUtils.split(overlayString, "\n").length;
+            final int stringHeight = fm.getHeight() * numLines;
+            final int stringWidth = fm.stringWidth(overlayString);
+
+            int overlayX, overlayY;
+            switch (position) {
+                case TOP_LEFT:
+                    overlayX = inset;
+                    overlayY = inset;
+                    break;
+                case TOP_RIGHT:
+                    overlayX = baseImage.getWidth() - stringWidth - inset;
+                    overlayY = inset;
+                    break;
+                case BOTTOM_LEFT:
+                    overlayX = inset;
+                    overlayY = baseImage.getHeight() - stringHeight - inset;
+                    break;
+                // case BOTTOM_RIGHT: will be handled in default:
+                case TOP_CENTER:
+                    overlayX = (baseImage.getWidth() - stringWidth) / 2;
+                    overlayY = inset;
+                    break;
+                case BOTTOM_CENTER:
+                    overlayX = (baseImage.getWidth() -
+                            fm.stringWidth(overlayString)) / 2;
+                    overlayY = baseImage.getHeight() - stringHeight - inset;
+                    break;
+                case LEFT_CENTER:
+                    overlayX = inset;
+                    overlayY = (baseImage.getHeight() - stringHeight) / 2;
+                    break;
+                case RIGHT_CENTER:
+                    overlayX = baseImage.getWidth() -
+                            fm.stringWidth(overlayString) - inset;
+                    overlayY = (baseImage.getHeight() - stringHeight) / 2;
+                    break;
+                case CENTER:
+                    overlayX = (baseImage.getWidth() -
+                            fm.stringWidth(overlayString)) / 2;
+                    overlayY = (baseImage.getHeight() - stringHeight) / 2;
+                    break;
+                default: // bottom right
+                    overlayX = baseImage.getWidth() -
+                            fm.stringWidth(overlayString) - inset;
+                    overlayY = baseImage.getHeight() - stringHeight - inset;
+                    break;
+            }
+
+            g2d.drawString(overlayString, overlayX, overlayY);
+            g2d.dispose();
+            logger.debug("overlayString() executed in {} msec",
+                    watch.timeElapsed());
+        }
+        return baseImage;
     }
 
     /**

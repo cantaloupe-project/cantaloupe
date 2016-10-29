@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.io.File;
 import java.net.URL;
@@ -34,9 +35,9 @@ public class DelegateWatermarkServiceTest {
     }
 
     @Test
-    public void testGetWatermarkPropertiesReturningWatermark() throws Exception {
+    public void testGetWatermarkReturningImageWatermark() throws Exception {
         final OperationList opList = new OperationList();
-        opList.setIdentifier(new Identifier("cats"));
+        opList.setIdentifier(new Identifier("image"));
         opList.setOutputFormat(Format.JPG);
         final Dimension fullSize = new Dimension(100, 100);
         final URL requestUrl = new URL("http://example.org/");
@@ -44,17 +45,19 @@ public class DelegateWatermarkServiceTest {
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
-        Map<String,Object> result = instance.getWatermarkProperties(
-                opList, fullSize, requestUrl, requestHeaders, clientIp, cookies);
-        assertEquals(new File("/dev/cats"), result.get("file"));
-        assertEquals((long) 5, result.get("inset"));
-        assertEquals(Position.BOTTOM_LEFT, result.get("position"));
+        final ImageWatermark watermark =
+                (ImageWatermark) instance.getWatermark(
+                        opList, fullSize, requestUrl, requestHeaders, clientIp,
+                        cookies);
+        assertEquals(new File("/dev/cats"), watermark.getImage());
+        assertEquals((long) 5, watermark.getInset());
+        assertEquals(Position.BOTTOM_LEFT, watermark.getPosition());
     }
 
     @Test
-    public void testGetWatermarkPropertiesReturningFalse() throws Exception {
+    public void testGetWatermarkReturningStringWatermark() throws Exception {
         final OperationList opList = new OperationList();
-        opList.setIdentifier(new Identifier("dogs"));
+        opList.setIdentifier(new Identifier("string"));
         opList.setOutputFormat(Format.JPG);
         final Dimension fullSize = new Dimension(100, 100);
         final URL requestUrl = new URL("http://example.org/");
@@ -62,9 +65,30 @@ public class DelegateWatermarkServiceTest {
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
-        Map<String,Object> result = instance.getWatermarkProperties(
+        final StringWatermark watermark =
+                (StringWatermark) instance.getWatermark(
+                        opList, fullSize, requestUrl, requestHeaders, clientIp,
+                        cookies);
+        assertEquals("dogs\ndogs", watermark.getString());
+        assertEquals((long) 5, watermark.getInset());
+        assertEquals(Position.BOTTOM_LEFT, watermark.getPosition());
+        assertEquals(Color.red, watermark.getColor());
+    }
+
+    @Test
+    public void testGetWatermarkReturningFalse() throws Exception {
+        final OperationList opList = new OperationList();
+        opList.setIdentifier(new Identifier("bogus"));
+        opList.setOutputFormat(Format.JPG);
+        final Dimension fullSize = new Dimension(100, 100);
+        final URL requestUrl = new URL("http://example.org/");
+        final Map<String,String> requestHeaders = new HashMap<>();
+        final String clientIp = "";
+        final Map<String,String> cookies = new HashMap<>();
+
+        Watermark watermark = instance.getWatermark(
                 opList, fullSize, requestUrl, requestHeaders, clientIp, cookies);
-        assertNull(result);
+        assertNull(watermark);
     }
 
 }

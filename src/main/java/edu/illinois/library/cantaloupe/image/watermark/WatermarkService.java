@@ -8,10 +8,11 @@ import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 
 import javax.script.ScriptException;
 import java.awt.Dimension;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
+
+import static edu.illinois.library.cantaloupe.image.watermark.BasicWatermarkService.TYPE_CONFIG_KEY;
 
 /**
  * Provides information about watermarking, including whether it is enabled,
@@ -29,34 +30,21 @@ public class WatermarkService {
         DELEGATE_METHOD
     }
 
-    public static final String ENABLED_CONFIG_KEY = "watermark.enabled";
-    public static final String STRATEGY_CONFIG_KEY = "watermark.strategy";
+    static final String ENABLED_CONFIG_KEY = "watermark.enabled";
+    static final String STRATEGY_CONFIG_KEY = "watermark.strategy";
 
-    private BasicWatermarkService basicService = new BasicWatermarkService();
-    private DelegateWatermarkService delegateService =
-            new DelegateWatermarkService();
     private boolean isEnabled = false;
     private Strategy strategy;
 
-    public WatermarkService() {
-        setEnabled(ConfigurationFactory.getInstance().
-                getBoolean(ENABLED_CONFIG_KEY, false));
-
-        final Configuration config = ConfigurationFactory.getInstance();
-        final String configValue = config.
-                getString(STRATEGY_CONFIG_KEY, "BasicStrategy");
-        switch (configValue) {
-            case "ScriptStrategy":
-                strategy = Strategy.DELEGATE_METHOD;
-            default:
-                strategy = Strategy.BASIC;
-        }
+    public WatermarkService() throws ConfigurationException {
+        readEnabled();
+        readStrategy();
     }
 
     /**
-     * Factory method that returns a new {@link Watermark} based on either
-     * the configuration, or the delegate script method return value, depending
-     * on the setting of {@link #STRATEGY_CONFIG_KEY}.
+     * Factory method that returns a new {@link Watermark} based on either the
+     * configuration, or the delegate method return value, depending on the
+     * setting of {@link #STRATEGY_CONFIG_KEY}.
      *
      * @param opList Required for ScriptStrategy.
      * @param fullSize Required for ScriptStrategy.
@@ -79,36 +67,25 @@ public class WatermarkService {
                                   Map<String,String> cookies)
             throws IOException, ScriptException,
             DelegateScriptDisabledException, ConfigurationException {
-        File image = null;
-        Integer inset = null;
-        Position position = null;
         switch (getStrategy()) {
-            case DELEGATE_METHOD:
-                final Map<String,Object> defs =
-                        delegateService.getWatermarkProperties(
-                                opList, fullSize, requestUrl, requestHeaders,
-                                clientIp, cookies);
-                if (defs != null) {
-                    image = (File) defs.get("file");
-                    inset = ((Long) defs.get("inset")).intValue();
-                    position = (Position) defs.get("position");
+            case BASIC:
+                switch (ConfigurationFactory.getInstance().
+                        getString(TYPE_CONFIG_KEY, "")) {
+                    case "image":
+                        return new BasicImageWatermarkService().getWatermark();
+                    case "string":
+                        return new BasicStringWatermarkService().getWatermark();
                 }
                 break;
-            default:
-                final BasicWatermarkService basicService =
-                        new BasicWatermarkService();
-                image = basicService.getImage();
-                inset = basicService.getInset();
-                position = basicService.getPosition();
-                break;
-        }
-        if (image != null && position != null) {
-            return new Watermark(image, position, inset);
+            case DELEGATE_METHOD:
+                return new DelegateWatermarkService().getWatermark(
+                        opList, fullSize, requestUrl, requestHeaders, clientIp,
+                        cookies);
         }
         return null;
     }
 
-    private Strategy getStrategy() {
+    Strategy getStrategy() {
         return strategy;
     }
 
@@ -117,6 +94,28 @@ public class WatermarkService {
      */
     public boolean isEnabled() {
         return isEnabled;
+    }
+
+    private void readEnabled() {
+        setEnabled(ConfigurationFactory.getInstance().
+                getBoolean(ENABLED_CONFIG_KEY, false));
+    }
+
+    private void readStrategy() throws ConfigurationException {
+        final Configuration config = ConfigurationFactory.getInstance();
+        final String configValue = config.
+                getString(STRATEGY_CONFIG_KEY, "BasicStrategy");
+        switch (configValue) {
+            case "ScriptStrategy":
+                setStrategy(Strategy.DELEGATE_METHOD);
+                break;
+            case "BasicStrategy":
+                setStrategy(Strategy.BASIC);
+                break;
+            default:
+                throw new ConfigurationException("Unsupported value for " +
+                        STRATEGY_CONFIG_KEY);
+        }
     }
 
     /**
@@ -141,7 +140,7 @@ public class WatermarkService {
     public boolean shouldApplyToImage(Dimension outputImageSize) {
         switch (strategy) {
             case BASIC:
-                return basicService.shouldApplyToImage(outputImageSize);
+                return BasicWatermarkService.shouldApplyToImage(outputImageSize);
             default:
                 return true;
         }

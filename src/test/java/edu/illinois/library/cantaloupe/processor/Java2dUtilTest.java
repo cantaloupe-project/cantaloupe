@@ -8,9 +8,11 @@ import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
+import edu.illinois.library.cantaloupe.image.watermark.ImageWatermark;
 import edu.illinois.library.cantaloupe.image.watermark.Position;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.Before;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
@@ -26,6 +28,13 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 public class Java2dUtilTest {
+
+    @Before
+    public void setUp() {
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        Configuration config = ConfigurationFactory.getInstance();
+        config.clear();
+    }
 
     @Test
     public void testApplyRedactions() throws Exception {
@@ -99,7 +108,7 @@ public class Java2dUtilTest {
         assertEquals(60, blue);
 
         // create a Watermark
-        final Watermark watermark = new Watermark();
+        final ImageWatermark watermark = new ImageWatermark();
         watermark.setImage(TestUtil.getImage("png-rgb-1x1x8.png"));
         watermark.setInset(0);
         watermark.setPosition(Position.TOP_LEFT);
@@ -141,7 +150,7 @@ public class Java2dUtilTest {
         assertEquals(203, blue);
 
         // create a Watermark
-        final Watermark watermark = new Watermark();
+        final ImageWatermark watermark = new ImageWatermark();
         watermark.setImage(TestUtil.getImage("png-rgb-1x1x8.png"));
         final int inset = 2;
         watermark.setInset(inset);
@@ -247,7 +256,7 @@ public class Java2dUtilTest {
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
 
-        Watermark watermark = new Watermark();
+        ImageWatermark watermark = new ImageWatermark();
         watermark.setImage(TestUtil.getImage("png"));
         watermark.setPosition(Position.BOTTOM_RIGHT);
 
