@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.io.File;
 import java.net.URL;
@@ -70,6 +71,7 @@ public class WatermarkServiceTest {
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(BasicWatermarkService.TYPE_CONFIG_KEY, "string");
         config.setProperty(BasicStringWatermarkService.STRING_CONFIG_KEY, "cats");
+        config.setProperty(BasicStringWatermarkService.COLOR_CONFIG_KEY, "green");
         instance = new WatermarkService();
 
         final OperationList opList = new OperationList();
@@ -84,6 +86,7 @@ public class WatermarkServiceTest {
         assertEquals("cats", watermark.getString());
         assertEquals(10, watermark.getInset());
         assertEquals(Position.TOP_LEFT, watermark.getPosition());
+        assertEquals(Color.green, watermark.getColor());
     }
 
     @Test

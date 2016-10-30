@@ -46,7 +46,7 @@ class DelegateWatermarkService {
                 return new ImageWatermark(image, position, inset);
             } else {
                 final String string = (String) defs.get("string");
-                final Color color = Color.getColor((String) defs.get("color"));
+                final Color color = ColorUtil.fromString((String) defs.get("color"));
                 return new StringWatermark(string, position, inset, color);
             }
         }

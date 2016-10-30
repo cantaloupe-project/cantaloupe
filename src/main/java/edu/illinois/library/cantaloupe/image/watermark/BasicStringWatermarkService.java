@@ -43,7 +43,7 @@ class BasicStringWatermarkService extends BasicWatermarkService {
 
     private void readColor() throws ConfigurationException {
         final Configuration config = ConfigurationFactory.getInstance();
-        color = Color.getColor(config.getString(COLOR_CONFIG_KEY));
+        color = ColorUtil.fromString(config.getString(COLOR_CONFIG_KEY));
     }
 
     private void readString() throws ConfigurationException {

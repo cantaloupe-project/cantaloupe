@@ -1,8 +1,40 @@
 package edu.illinois.library.cantaloupe.image.watermark;
 
 import java.awt.Color;
+import java.lang.reflect.Field;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 abstract class ColorUtil {
+
+    static Color fromString(final String string) {
+        // Check for #rgb, #rrggbb, etc.
+        try {
+            String str = string.replace("#", "");
+            return new Color(Integer.parseInt(str, 16));
+        } catch (NumberFormatException e) {
+            // Fine
+        }
+
+        // Check for rgb(r, g, b)
+        Pattern c = Pattern.compile("rgb *\\( *([0-9]+), *([0-9]+), *([0-9]+) *\\)");
+        Matcher m = c.matcher(string.replace(" ", ""));
+        if (m.matches()) {
+            return new Color(Integer.valueOf(m.group(1)),
+                    Integer.valueOf(m.group(2)),
+                    Integer.valueOf(m.group(3)));
+        }
+
+        // Check for java.awt.Color constants
+        try {
+            Field field = Class.forName("java.awt.Color").getField(string);
+            return (Color) field.get(null);
+        } catch (Exception e) {
+            // Fine
+        }
+
+        throw new IllegalArgumentException("Unrecognized color string: " + string);
+    }
 
     /**
      * @return Hexadecimal value of the color in the sRGB color model.

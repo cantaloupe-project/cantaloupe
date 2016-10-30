@@ -554,6 +554,7 @@ watermark.BasicStrategy.image = /path/to/watermark.png
 # To do line break, put a \ at the end of a line.
 watermark.BasicStrategy.string = Copyright ©️ My Great Organization
 
+# Color name, rgb(r,g,b), and #rrggbb syntax are supported.
 watermark.BasicStrategy.string.color = white
 
 # Allowed values: `top left`, `top center`, `top right`, `left center`,
