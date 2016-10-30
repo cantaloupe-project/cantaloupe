@@ -552,8 +552,7 @@ watermark.BasicStrategy.type = string
 watermark.BasicStrategy.image = /path/to/watermark.png
 
 # Watermark text.
-watermark.BasicStrategy.string = Copyright \u00A9️ My Great Organization\
-All rights reserved
+watermark.BasicStrategy.string = Copyright \u00A9️ My Great Organization\nAll rights reserved.
 
 watermark.BasicStrategy.string.font = Helvetica
 

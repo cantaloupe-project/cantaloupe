@@ -240,7 +240,7 @@ public abstract class Java2dUtil {
                                               final BufferedImage overlayImage,
                                               final Position position,
                                               final int inset) {
-        if (overlayImage != null && position != null) {
+        if (overlayImage != null) {
             final Stopwatch watch = new Stopwatch();
             int overlayX, overlayY;
             switch (position) {
@@ -321,8 +321,7 @@ public abstract class Java2dUtil {
                                                final java.awt.Color color,
                                                final Position position,
                                                final int inset) {
-        if (overlayString != null && overlayString.length() > 0 &&
-                position != null) {
+        if (overlayString != null && overlayString.length() > 0) {
             final Stopwatch watch = new Stopwatch();
 
             final Graphics2D g2d = baseImage.createGraphics();
@@ -332,57 +331,67 @@ public abstract class Java2dUtil {
             g2d.setPaint(color);
             g2d.setFont(font);
 
+            // Graphics2D.drawString() does not understand newlines, so each
+            // line has to be drawn separately.
+            final String[] lines = StringUtils.split(overlayString, "\n");
             final FontMetrics fm = g2d.getFontMetrics();
-            final int numLines = StringUtils.split(overlayString, "\n").length;
-            final int stringHeight = fm.getHeight() * numLines;
-            final int stringWidth = fm.stringWidth(overlayString);
-
-            int overlayX, overlayY;
-            switch (position) {
-                case TOP_LEFT:
-                    overlayX = inset;
-                    overlayY = inset;
-                    break;
-                case TOP_RIGHT:
-                    overlayX = baseImage.getWidth() - stringWidth - inset;
-                    overlayY = inset;
-                    break;
-                case BOTTOM_LEFT:
-                    overlayX = inset;
-                    overlayY = baseImage.getHeight() - stringHeight - inset;
-                    break;
-                // case BOTTOM_RIGHT: will be handled in default:
-                case TOP_CENTER:
-                    overlayX = (baseImage.getWidth() - stringWidth) / 2;
-                    overlayY = inset;
-                    break;
-                case BOTTOM_CENTER:
-                    overlayX = (baseImage.getWidth() -
-                            fm.stringWidth(overlayString)) / 2;
-                    overlayY = baseImage.getHeight() - stringHeight - inset;
-                    break;
-                case LEFT_CENTER:
-                    overlayX = inset;
-                    overlayY = (baseImage.getHeight() - stringHeight) / 2;
-                    break;
-                case RIGHT_CENTER:
-                    overlayX = baseImage.getWidth() -
-                            fm.stringWidth(overlayString) - inset;
-                    overlayY = (baseImage.getHeight() - stringHeight) / 2;
-                    break;
-                case CENTER:
-                    overlayX = (baseImage.getWidth() -
-                            fm.stringWidth(overlayString)) / 2;
-                    overlayY = (baseImage.getHeight() - stringHeight) / 2;
-                    break;
-                default: // bottom right
-                    overlayX = baseImage.getWidth() -
-                            fm.stringWidth(overlayString) - inset;
-                    overlayY = baseImage.getHeight() - stringHeight - inset;
-                    break;
+            // The total height is the sum of the height of all lines.
+            final int lineHeight = fm.getHeight();
+            final int totalHeight = lineHeight * lines.length;
+            final int[] lineWidths = new int[lines.length];
+            for (int i = 0; i < lines.length; i++) {
+                final int lineWidth = fm.stringWidth(lines[i]);
+                lineWidths[i] = lineWidth;
             }
 
-            g2d.drawString(overlayString, overlayX, overlayY);
+            for (int i = 0; i < lines.length; i++) {
+                int x, y;
+                switch (position) {
+                    case TOP_LEFT:
+                        x = inset;
+                        y = inset + lineHeight * i;
+                        break;
+                    case TOP_RIGHT:
+                        x = baseImage.getWidth() - lineWidths[i] - inset;
+                        y = inset + lineHeight * i;
+                        break;
+                    case BOTTOM_LEFT:
+                        x = inset;
+                        y = baseImage.getHeight() - totalHeight - inset +
+                                lineHeight * i;
+                        break;
+                    // case BOTTOM_RIGHT: will be handled in default:
+                    case TOP_CENTER:
+                        x = (baseImage.getWidth() - lineWidths[i]) / 2;
+                        y = inset + lineHeight * i;
+                        break;
+                    case BOTTOM_CENTER:
+                        x = (baseImage.getWidth() - lineWidths[i]) / 2;
+                        y = baseImage.getHeight() - totalHeight - inset +
+                                lineHeight * i;
+                        break;
+                    case LEFT_CENTER:
+                        x = inset;
+                        y = (baseImage.getHeight() - totalHeight) / 2 +
+                                lineHeight * i;
+                        break;
+                    case RIGHT_CENTER:
+                        x = baseImage.getWidth() - lineWidths[i] - inset;
+                        y = (baseImage.getHeight() - totalHeight) / 2 +
+                                lineHeight * i;
+                        break;
+                    case CENTER:
+                        x = (baseImage.getWidth() - lineWidths[i]) / 2;
+                        y = (baseImage.getHeight() - totalHeight) / 2;
+                        break;
+                    default: // bottom right
+                        x = baseImage.getWidth() - lineWidths[i] - inset;
+                        y = baseImage.getHeight() - totalHeight - inset +
+                                lineHeight * i;
+                        break;
+                }
+                g2d.drawString(lines[i], x, y);
+            }
             g2d.dispose();
             logger.debug("overlayString() executed in {} msec",
                     watch.timeElapsed());
