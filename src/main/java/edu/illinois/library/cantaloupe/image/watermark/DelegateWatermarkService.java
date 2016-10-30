@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -46,8 +47,11 @@ class DelegateWatermarkService {
                 return new ImageWatermark(image, position, inset);
             } else {
                 final String string = (String) defs.get("string");
+                final Font font = new Font((String) defs.get("font"),
+                        Font.PLAIN,
+                        ((Long) defs.get("font_size")).intValue());
                 final Color color = ColorUtil.fromString((String) defs.get("color"));
-                return new StringWatermark(string, position, inset, color);
+                return new StringWatermark(string, position, inset, font, color);
             }
         }
         return null;

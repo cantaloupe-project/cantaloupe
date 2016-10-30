@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.image.Operation;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,22 +17,23 @@ import java.util.Map;
 public class StringWatermark extends Watermark implements Operation {
 
     private Color color;
+    private Font font;
     private String string;
 
-    /**
-     * No-op constructor.
-     */
-    public StringWatermark() {}
-
     public StringWatermark(String string, Position position, int inset,
-                           Color color) {
+                           Font font, Color color) {
         super(position, inset);
         this.setString(string);
+        this.setFont(font);
         this.setColor(color);
     }
 
     public Color getColor() {
         return color;
+    }
+
+    public Font getFont() {
+        return font;
     }
 
     public String getString() {
@@ -42,6 +44,10 @@ public class StringWatermark extends Watermark implements Operation {
         this.color = color;
     }
 
+    public void setFont(Font font) {
+        this.font = font;
+    }
+
     public void setString(String string) {
         this.string = string;
     }
@@ -49,8 +55,9 @@ public class StringWatermark extends Watermark implements Operation {
     /**
      * @param fullSize Full size of the source image on which the operation
      *                 is being applied.
-     * @return Map with <code>string</code>, <code>color</code>,
-     *         <code>position</code>, and <code>inset</code> keys.
+     * @return Map with <var>string</var>, <var>font</var>,
+     *         <var>font_size</var>, <var>color</var>, <var>position</var>,
+     *         and <var>inset</var> keys.
      */
     @Override
     public Map<String, Object> toMap(Dimension fullSize) {
@@ -59,6 +66,8 @@ public class StringWatermark extends Watermark implements Operation {
         map.put("string", getString());
         map.put("position", getPosition().toString());
         map.put("inset", getInset());
+        map.put("font", getFont().getFamily());
+        map.put("font_size", getFont().getSize());
         map.put("color", ColorUtil.getHex(getColor()));
         return map;
     }
@@ -69,9 +78,13 @@ public class StringWatermark extends Watermark implements Operation {
      */
     @Override
     public String toString() {
-        return String.format("%s_%s_%d_%s",
+        return String.format("%s_%s_%d_%s_%d_%s",
                 getString().replaceAll("[^A-Za-z0-9]", ""),
-                getPosition(), getInset(), ColorUtil.getHex(getColor()));
+                getPosition(),
+                getInset(),
+                getFont().getFamily(),
+                getFont().getSize(),
+                ColorUtil.getHex(getColor()));
     }
 
 }

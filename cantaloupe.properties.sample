@@ -551,8 +551,14 @@ watermark.BasicStrategy.type = string
 # Absolute path of the watermark image. Must be a .png file.
 watermark.BasicStrategy.image = /path/to/watermark.png
 
-# To do line break, put a \ at the end of a line.
-watermark.BasicStrategy.string = Copyright ©️ My Great Organization
+# Watermark text.
+watermark.BasicStrategy.string = Copyright \u00A9️ My Great Organization\
+All rights reserved
+
+watermark.BasicStrategy.string.font = Helvetica
+
+# Font size in points.
+watermark.BasicStrategy.string.font_size = 18
 
 # Color name, rgb(r,g,b), and #rrggbb syntax are supported.
 watermark.BasicStrategy.string.color = white

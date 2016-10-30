@@ -17,22 +17,12 @@ public class ImageWatermarkTest {
 
     @Before
     public void setUp() {
-        instance = new ImageWatermark();
-    }
-
-    @Test
-    public void testConstructor() throws Exception {
-        assertNull(instance.getImage());
-        assertNull(instance.getPosition());
-        assertEquals(0, instance.getInset());
+        instance = new ImageWatermark(new File("/dev/cats"),
+                Position.BOTTOM_RIGHT, 5);
     }
 
     @Test
     public void testToMap() {
-        instance.setImage(new File("/dev/cats"));
-        instance.setInset(5);
-        instance.setPosition(Position.BOTTOM_RIGHT);
-
         Dimension fullSize = new Dimension(100, 100);
 
         Map<String,Object> map = instance.toMap(fullSize);
@@ -44,11 +34,8 @@ public class ImageWatermarkTest {
 
     @Test
     public void testToString() throws IOException {
-        ImageWatermark watermark = new ImageWatermark();
-        watermark.setImage(TestUtil.getImage("jpg"));
-        watermark.setPosition(Position.BOTTOM_LEFT);
-        watermark.setInset(10);
-        assertEquals("jpg_SW_10", watermark.toString());
+        instance.setImage(TestUtil.getImage("jpg"));
+        assertEquals("jpg_SE_5", instance.toString());
     }
 
 }

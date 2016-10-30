@@ -12,8 +12,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
 
-import static edu.illinois.library.cantaloupe.image.watermark.BasicWatermarkService.TYPE_CONFIG_KEY;
-
 /**
  * Provides information about watermarking, including whether it is enabled,
  * and access to new {@link Watermark} instances, if so.
@@ -70,7 +68,7 @@ public class WatermarkService {
         switch (getStrategy()) {
             case BASIC:
                 switch (ConfigurationFactory.getInstance().
-                        getString(TYPE_CONFIG_KEY, "")) {
+                        getString(BasicWatermarkService.TYPE_CONFIG_KEY, "")) {
                     case "image":
                         return new BasicImageWatermarkService().getWatermark();
                     case "string":
@@ -142,6 +140,7 @@ public class WatermarkService {
             case BASIC:
                 return BasicWatermarkService.shouldApplyToImage(outputImageSize);
             default:
+                // The delegate method will decide.
                 return true;
         }
     }

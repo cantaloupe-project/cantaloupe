@@ -27,6 +27,8 @@ public class BasicStringWatermarkServiceTest {
         config.setProperty(BasicWatermarkService.POSITION_CONFIG_KEY, "top left");
         config.setProperty(BasicStringWatermarkService.STRING_CONFIG_KEY, "cats");
         config.setProperty(BasicStringWatermarkService.COLOR_CONFIG_KEY, "red");
+        config.setProperty(BasicStringWatermarkService.FONT_CONFIG_KEY, "Helvetica");
+        config.setProperty(BasicStringWatermarkService.FONT_SIZE_CONFIG_KEY, 14);
 
         instance = new BasicStringWatermarkService();
     }
@@ -38,6 +40,8 @@ public class BasicStringWatermarkServiceTest {
         assertEquals((long) 10, watermark.getInset());
         assertEquals(Position.TOP_LEFT, watermark.getPosition());
         assertEquals(Color.red, watermark.getColor());
+        assertEquals("Helvetica", watermark.getFont().getFamily());
+        assertEquals(14, watermark.getFont().getSize());
     }
 
     @Test

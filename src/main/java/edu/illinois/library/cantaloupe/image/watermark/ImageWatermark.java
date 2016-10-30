@@ -17,11 +17,6 @@ public class ImageWatermark extends Watermark implements Operation {
 
     private File image;
 
-    /**
-     * No-op constructor.
-     */
-    public ImageWatermark() {}
-
     public ImageWatermark(File image, Position position, int inset) {
         super(position, inset);
         setImage(image);

@@ -10,13 +10,14 @@ import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.ImageWatermark;
 import edu.illinois.library.cantaloupe.image.watermark.Position;
-import edu.illinois.library.cantaloupe.image.watermark.Watermark;
+import edu.illinois.library.cantaloupe.image.watermark.StringWatermark;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -88,11 +89,7 @@ public class Java2dUtilTest {
     }
 
     @Test
-    public void testApplyWatermark() throws Exception {
-        // ward off NPEs
-        Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
-
+    public void testApplyWatermarkWithImageWatermark() throws Exception {
         // read the base image into a BufferedImage
         final File fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
         final BufferedImage baseImage = ImageIO.read(fixture);
@@ -108,10 +105,9 @@ public class Java2dUtilTest {
         assertEquals(60, blue);
 
         // create a Watermark
-        final ImageWatermark watermark = new ImageWatermark();
-        watermark.setImage(TestUtil.getImage("png-rgb-1x1x8.png"));
-        watermark.setInset(0);
-        watermark.setPosition(Position.TOP_LEFT);
+        final ImageWatermark watermark = new ImageWatermark(
+                TestUtil.getImage("png-rgb-1x1x8.png"),
+                Position.TOP_LEFT, 0);
 
         // apply it
         final BufferedImage watermarkedImage = Java2dUtil.applyWatermark(
@@ -129,11 +125,7 @@ public class Java2dUtilTest {
     }
 
     @Test
-    public void testApplyWatermarkWithInset() throws Exception {
-        // ward off NPEs
-        Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
-
+    public void testApplyWatermarkWithImageWatermarkAndInset() throws Exception {
         // read the base image into a BufferedImage
         final File fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
         final BufferedImage baseImage = ImageIO.read(fixture);
@@ -150,11 +142,10 @@ public class Java2dUtilTest {
         assertEquals(203, blue);
 
         // create a Watermark
-        final ImageWatermark watermark = new ImageWatermark();
-        watermark.setImage(TestUtil.getImage("png-rgb-1x1x8.png"));
         final int inset = 2;
-        watermark.setInset(inset);
-        watermark.setPosition(Position.BOTTOM_RIGHT);
+        final ImageWatermark watermark = new ImageWatermark(
+                TestUtil.getImage("png-rgb-1x1x8.png"), Position.BOTTOM_RIGHT,
+                inset);
 
         // apply it
         final BufferedImage watermarkedImage = Java2dUtil.applyWatermark(
@@ -167,6 +158,32 @@ public class Java2dUtilTest {
         red = (pixel >> 16) & 0xff;
         green = (pixel >> 8) & 0xff;
         blue = (pixel) & 0xff;
+        assertEquals(255, alpha);
+        assertEquals(0, red);
+        assertEquals(0, green);
+        assertEquals(0, blue);
+    }
+
+    @Test
+    public void testApplyWatermarkWithStringWatermark() throws Exception {
+        // read the base image into a BufferedImage
+        final File fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
+        final BufferedImage baseImage = ImageIO.read(fixture);
+
+        // create a Watermark
+        final StringWatermark watermark = new StringWatermark(
+                "XXXXXX", Position.TOP_LEFT, 0,
+                new Font("Helvetica", Font.PLAIN, 4), Color.black);
+
+        // apply it
+        final BufferedImage watermarkedImage = Java2dUtil.applyWatermark(
+                baseImage, watermark);
+
+        int pixel = watermarkedImage.getRGB(0, 0);
+        int alpha = (pixel >> 24) & 0xff;
+        int red = (pixel >> 16) & 0xff;
+        int green = (pixel >> 8) & 0xff;
+        int blue = (pixel) & 0xff;
         assertEquals(255, alpha);
         assertEquals(0, red);
         assertEquals(0, green);
@@ -253,12 +270,8 @@ public class Java2dUtilTest {
 
     @Test
     public void testGetWatermarkImage() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
-
-        ImageWatermark watermark = new ImageWatermark();
-        watermark.setImage(TestUtil.getImage("png"));
-        watermark.setPosition(Position.BOTTOM_RIGHT);
+        ImageWatermark watermark = new ImageWatermark(
+                TestUtil.getImage("png"), Position.BOTTOM_RIGHT, 0);
 
         assertNotNull(Java2dUtil.getWatermarkImage(watermark));
     }

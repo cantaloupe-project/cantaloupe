@@ -120,7 +120,7 @@ public abstract class Java2dUtil {
         BufferedImage markedImage = baseImage;
         final Dimension imageSize = new Dimension(baseImage.getWidth(),
                 baseImage.getHeight());
-        if (new WatermarkService().shouldApplyToImage(imageSize)) { // TODO: does this work with ScriptStrategy?
+        if (new WatermarkService().shouldApplyToImage(imageSize)) {
             if (watermark instanceof ImageWatermark) {
                 markedImage = overlayImage(baseImage,
                         getWatermarkImage((ImageWatermark) watermark),
@@ -130,6 +130,7 @@ public abstract class Java2dUtil {
                 final StringWatermark sw = (StringWatermark) watermark;
                 markedImage = overlayString(baseImage,
                         sw.getString(),
+                        sw.getFont(),
                         sw.getColor(),
                         watermark.getPosition(),
                         watermark.getInset());
@@ -316,6 +317,7 @@ public abstract class Java2dUtil {
      */
     private static BufferedImage overlayString(final BufferedImage baseImage,
                                                final String overlayString,
+                                               final Font font,
                                                final java.awt.Color color,
                                                final Position position,
                                                final int inset) {
@@ -328,7 +330,7 @@ public abstract class Java2dUtil {
                     RenderingHints.VALUE_ANTIALIAS_ON);
             g2d.drawImage(baseImage, 0, 0, null);
             g2d.setPaint(color);
-            g2d.setFont(new Font("Serif", Font.BOLD, 20)); // TODO: externalize
+            g2d.setFont(font);
 
             final FontMetrics fm = g2d.getFontMetrics();
             final int numLines = StringUtils.split(overlayString, "\n").length;
