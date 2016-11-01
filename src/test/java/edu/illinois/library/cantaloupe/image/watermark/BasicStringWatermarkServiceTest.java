@@ -29,6 +29,8 @@ public class BasicStringWatermarkServiceTest {
         config.setProperty(BasicStringWatermarkService.COLOR_CONFIG_KEY, "red");
         config.setProperty(BasicStringWatermarkService.FONT_CONFIG_KEY, "Helvetica");
         config.setProperty(BasicStringWatermarkService.FONT_SIZE_CONFIG_KEY, 14);
+        config.setProperty(BasicStringWatermarkService.STROKE_COLOR_CONFIG_KEY, "blue");
+        config.setProperty(BasicStringWatermarkService.STROKE_WIDTH_CONFIG_KEY, 3);
 
         instance = new BasicStringWatermarkService();
     }
@@ -42,6 +44,8 @@ public class BasicStringWatermarkServiceTest {
         assertEquals(Color.red, watermark.getColor());
         assertEquals("Helvetica", watermark.getFont().getFamily());
         assertEquals(14, watermark.getFont().getSize());
+        assertEquals(Color.blue, watermark.getStrokeColor());
+        assertEquals(3, watermark.getStrokeWidth(), 0.00001f);
     }
 
     @Test

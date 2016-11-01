@@ -50,8 +50,13 @@ class DelegateWatermarkService {
                 final Font font = new Font((String) defs.get("font"),
                         Font.PLAIN,
                         ((Long) defs.get("font_size")).intValue());
-                final Color color = ColorUtil.fromString((String) defs.get("color"));
-                return new StringWatermark(string, position, inset, font, color);
+                final Color color =
+                        ColorUtil.fromString((String) defs.get("color"));
+                final Color strokeColor =
+                        ColorUtil.fromString((String) defs.get("stroke_color"));
+                final float strokeWidth = (float) defs.get("stroke_width");
+                return new StringWatermark(string, position, inset, font, color,
+                        strokeColor, strokeWidth);
             }
         }
         return null;

@@ -562,6 +562,12 @@ watermark.BasicStrategy.string.font_size = 18
 # Color name, rgb(r,g,b), and #rrggbb syntax are supported.
 watermark.BasicStrategy.string.color = white
 
+# Color name, rgb(r,g,b), and #rrggbb syntax are supported.
+watermark.BasicStrategy.string.stroke.color = white
+
+# Stroke width in points.
+watermark.BasicStrategy.string.stroke.width = 2
+
 # Allowed values: `top left`, `top center`, `top right`, `left center`,
 # `center`, `right center`, `bottom left`, `bottom center`, `bottom right`.
 watermark.BasicStrategy.position = bottom right

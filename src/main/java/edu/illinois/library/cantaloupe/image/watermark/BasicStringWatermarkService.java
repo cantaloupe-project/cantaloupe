@@ -17,37 +17,41 @@ class BasicStringWatermarkService extends BasicWatermarkService {
             "watermark.BasicStrategy.string.font_size";
     static final String STRING_CONFIG_KEY =
             "watermark.BasicStrategy.string";
+    static final String STROKE_COLOR_CONFIG_KEY =
+            "watermark.BasicStrategy.string.stroke.color";
+    static final String STROKE_WIDTH_CONFIG_KEY =
+            "watermark.BasicStrategy.string.stroke.width";
 
     private Color color;
     private Font font;
     private String string;
+    private Color strokeColor;
+    private float strokeWidth;
 
     BasicStringWatermarkService() throws ConfigurationException {
         super();
-        readColor();
-        readFont();
-        readString();
+        readConfig();
     }
 
     StringWatermark getWatermark() {
         return new StringWatermark(string, getPosition(), getInset(), font,
-                color);
+                color, strokeColor, strokeWidth);
     }
 
-    private void readColor() throws ConfigurationException {
+    private void readConfig() throws ConfigurationException {
         final Configuration config = ConfigurationFactory.getInstance();
+        // Fill color
         color = ColorUtil.fromString(config.getString(COLOR_CONFIG_KEY));
-    }
-
-    private void readFont() throws ConfigurationException {
-        final Configuration config = ConfigurationFactory.getInstance();
+        // Font
         font = new Font(config.getString(FONT_CONFIG_KEY), Font.PLAIN,
                 config.getInt(FONT_SIZE_CONFIG_KEY, 18));
-    }
-
-    private void readString() throws ConfigurationException {
-        final Configuration config = ConfigurationFactory.getInstance();
+        // String
         string = config.getString(STRING_CONFIG_KEY, "");
+        // Stroke color
+        strokeColor = ColorUtil.fromString(
+                config.getString(STROKE_COLOR_CONFIG_KEY, "black"));
+        // Stroke width
+        strokeWidth = config.getFloat(STROKE_WIDTH_CONFIG_KEY, 2f);
     }
 
 }

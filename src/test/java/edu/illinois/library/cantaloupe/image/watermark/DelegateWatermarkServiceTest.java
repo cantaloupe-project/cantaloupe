@@ -73,6 +73,8 @@ public class DelegateWatermarkServiceTest {
         assertEquals((long) 5, watermark.getInset());
         assertEquals(Position.BOTTOM_LEFT, watermark.getPosition());
         assertEquals(Color.red, watermark.getColor());
+        assertEquals(Color.blue, watermark.getStrokeColor());
+        assertEquals(3, watermark.getStrokeWidth(), 0.00001f);
     }
 
     @Test

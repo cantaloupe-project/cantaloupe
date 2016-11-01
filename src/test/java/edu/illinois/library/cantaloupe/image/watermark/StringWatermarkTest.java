@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.image.watermark;
 
-import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,7 +18,8 @@ public class StringWatermarkTest {
     @Before
     public void setUp() {
         instance = new StringWatermark("cats", Position.BOTTOM_RIGHT, 5,
-                new Font("Helvetica", Font.PLAIN, 12), Color.blue);
+                new Font("Helvetica", Font.PLAIN, 12),
+                Color.blue, Color.red, 5f);
     }
 
     @Test
@@ -34,12 +34,16 @@ public class StringWatermarkTest {
         assertEquals(instance.getPosition().toString(), map.get("position"));
         assertEquals(instance.getFont().getFamily(), map.get("font"));
         assertEquals(instance.getFont().getSize(), map.get("font_size"));
+        assertEquals(ColorUtil.getHex(instance.getStrokeColor()),
+                map.get("stroke_color"));
+        assertEquals(5f, map.get("stroke_width"));
     }
 
     @Test
     public void testToString() throws IOException {
         instance.setString("DOGSdogs123!@#$%\n%^&*()");
-        assertEquals("DOGSdogs123_SE_5_Helvetica_12_#0000FF", instance.toString());
+        assertEquals("DOGSdogs123_SE_5_Helvetica_12_#0000FF_#FF0000_5.0",
+                instance.toString());
     }
 
 }

@@ -19,13 +19,18 @@ public class StringWatermark extends Watermark implements Operation {
     private Color color;
     private Font font;
     private String string;
+    private Color strokeColor;
+    private float strokeWidth;
 
     public StringWatermark(String string, Position position, int inset,
-                           Font font, Color color) {
+                           Font font, Color color, Color strokeColor,
+                           float strokeWidth) {
         super(position, inset);
         this.setString(string);
         this.setFont(font);
         this.setColor(color);
+        this.setStrokeColor(strokeColor);
+        this.setStrokeWidth(strokeWidth);
     }
 
     public Color getColor() {
@@ -40,6 +45,14 @@ public class StringWatermark extends Watermark implements Operation {
         return string;
     }
 
+    public Color getStrokeColor() {
+        return strokeColor;
+    }
+
+    public float getStrokeWidth() {
+        return strokeWidth;
+    }
+
     public void setColor(Color color) {
         this.color = color;
     }
@@ -50,6 +63,17 @@ public class StringWatermark extends Watermark implements Operation {
 
     public void setString(String string) {
         this.string = string;
+    }
+
+    public void setStrokeColor(Color color) {
+        this.strokeColor = color;
+    }
+
+    /**
+     * @param width Width in pixels.
+     */
+    public void setStrokeWidth(float width) {
+        this.strokeWidth = width;
     }
 
     /**
@@ -69,6 +93,8 @@ public class StringWatermark extends Watermark implements Operation {
         map.put("font", getFont().getFamily());
         map.put("font_size", getFont().getSize());
         map.put("color", ColorUtil.getHex(getColor()));
+        map.put("stroke_color", ColorUtil.getHex(getStrokeColor()));
+        map.put("stroke_width", getStrokeWidth());
         return map;
     }
 
@@ -78,13 +104,15 @@ public class StringWatermark extends Watermark implements Operation {
      */
     @Override
     public String toString() {
-        return String.format("%s_%s_%d_%s_%d_%s",
+        return String.format("%s_%s_%d_%s_%d_%s_%s_%.1f",
                 getString().replaceAll("[^A-Za-z0-9]", ""),
                 getPosition(),
                 getInset(),
                 getFont().getFamily(),
                 getFont().getSize(),
-                ColorUtil.getHex(getColor()));
+                ColorUtil.getHex(getColor()),
+                ColorUtil.getHex(getStrokeColor()),
+                getStrokeWidth());
     }
 
 }

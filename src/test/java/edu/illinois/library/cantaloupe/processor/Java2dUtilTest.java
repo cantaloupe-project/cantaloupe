@@ -173,7 +173,8 @@ public class Java2dUtilTest {
         // create a Watermark
         final StringWatermark watermark = new StringWatermark(
                 "XXXXXX", Position.TOP_LEFT, 0,
-                new Font("Helvetica", Font.PLAIN, 4), Color.black);
+                new Font("Helvetica", Font.PLAIN, 4),
+                Color.black, Color.white, 2f);
 
         // apply it
         final BufferedImage watermarkedImage = Java2dUtil.applyWatermark(

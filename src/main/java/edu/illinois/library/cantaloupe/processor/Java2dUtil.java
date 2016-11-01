@@ -22,12 +22,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.BasicStroke;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -132,6 +136,8 @@ public abstract class Java2dUtil {
                         sw.getString(),
                         sw.getFont(),
                         sw.getColor(),
+                        sw.getStrokeColor(),
+                        sw.getStrokeWidth(),
                         watermark.getPosition(),
                         watermark.getInset());
             }
@@ -310,7 +316,9 @@ public abstract class Java2dUtil {
     /**
      * @param baseImage Image to overlay the string onto.
      * @param overlayString String to overlay onto the image.
-     * @param color Color of the text.
+     * @param fillColor Color of the text.
+     * @param strokeColor Color of the text outline.
+     * @param strokeWidth Width in pixels of the stroke.
      * @param position Position of the overlaid string.
      * @param inset Inset of the overlaid string in pixels.
      * @return
@@ -318,7 +326,9 @@ public abstract class Java2dUtil {
     private static BufferedImage overlayString(final BufferedImage baseImage,
                                                final String overlayString,
                                                final Font font,
-                                               final java.awt.Color color,
+                                               final java.awt.Color fillColor,
+                                               final java.awt.Color strokeColor,
+                                               final float strokeWidth,
                                                final Position position,
                                                final int inset) {
         if (overlayString != null && overlayString.length() > 0) {
@@ -328,7 +338,6 @@ public abstract class Java2dUtil {
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
             g2d.drawImage(baseImage, 0, 0, null);
-            g2d.setPaint(color);
             g2d.setFont(font);
 
             // Graphics2D.drawString() does not understand newlines, so each
@@ -390,6 +399,19 @@ public abstract class Java2dUtil {
                                 lineHeight * i;
                         break;
                 }
+
+                // Draw the text outline.
+                if (strokeWidth > 0.001f) {
+                    final FontRenderContext frc = g2d.getFontRenderContext();
+                    final GlyphVector gv = font.createGlyphVector(frc, lines[i]);
+                    final Shape shape = gv.getOutline(x, y);
+                    g2d.setStroke(new BasicStroke(strokeWidth));
+                    g2d.setPaint(strokeColor);
+                    g2d.draw(shape);
+                }
+
+                // Draw the text.
+                g2d.setPaint(fillColor);
                 g2d.drawString(lines[i], x, y);
             }
             g2d.dispose();

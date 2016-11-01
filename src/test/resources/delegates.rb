@@ -102,7 +102,9 @@ module Cantaloupe
             'position' => 'bottom left',
             'color' => 'red',
             'font' => 'Helvetica',
-            'font_size' => 20
+            'font_size' => 20,
+            'stroke_color' => 'blue',
+            'stroke_width' => 3
         }
     end
     false
