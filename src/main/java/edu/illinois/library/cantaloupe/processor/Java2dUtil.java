@@ -426,10 +426,9 @@ public abstract class Java2dUtil {
                     // Draw the text.
                     g2d.setPaint(fillColor);
                     g2d.drawString(lines[i], x, y);
-
-                    logger.debug("overlayString() executed in {} msec",
-                            watch.timeElapsed());
                 }
+                logger.debug("overlayString() executed in {} msec",
+                        watch.timeElapsed());
             } else {
                 logger.debug("overlayString(): {}x{} text won't fit in {}x{} image",
                         maxWidth + inset, totalHeight + inset,
