@@ -314,6 +314,11 @@ public abstract class Java2dUtil {
     }
 
     /**
+     * <p>Overlays a string on top of an image, for e.g. a text watermark.</p>
+     *
+     * <p>The overlay string will only be drawn if it will fit entirely within
+     * <var>baseImage</var>.</p>
+     *
      * @param baseImage Image to overlay the string onto.
      * @param overlayString String to overlay onto the image.
      * @param fillColor Color of the text.
@@ -347,76 +352,90 @@ public abstract class Java2dUtil {
             // The total height is the sum of the height of all lines.
             final int lineHeight = fm.getHeight();
             final int totalHeight = lineHeight * lines.length;
+            int maxWidth = 0;
             final int[] lineWidths = new int[lines.length];
             for (int i = 0; i < lines.length; i++) {
                 final int lineWidth = fm.stringWidth(lines[i]);
                 lineWidths[i] = lineWidth;
+                if (lineWidth > maxWidth) {
+                    maxWidth = lineWidth;
+                }
             }
 
-            for (int i = 0; i < lines.length; i++) {
-                int x, y;
-                switch (position) {
-                    case TOP_LEFT:
-                        x = inset;
-                        y = inset + lineHeight * i;
-                        break;
-                    case TOP_RIGHT:
-                        x = baseImage.getWidth() - lineWidths[i] - inset;
-                        y = inset + lineHeight * i;
-                        break;
-                    case BOTTOM_LEFT:
-                        x = inset;
-                        y = baseImage.getHeight() - totalHeight - inset +
-                                lineHeight * i;
-                        break;
-                    // case BOTTOM_RIGHT: will be handled in default:
-                    case TOP_CENTER:
-                        x = (baseImage.getWidth() - lineWidths[i]) / 2;
-                        y = inset + lineHeight * i;
-                        break;
-                    case BOTTOM_CENTER:
-                        x = (baseImage.getWidth() - lineWidths[i]) / 2;
-                        y = baseImage.getHeight() - totalHeight - inset +
-                                lineHeight * i;
-                        break;
-                    case LEFT_CENTER:
-                        x = inset;
-                        y = (baseImage.getHeight() - totalHeight) / 2 +
-                                lineHeight * i;
-                        break;
-                    case RIGHT_CENTER:
-                        x = baseImage.getWidth() - lineWidths[i] - inset;
-                        y = (baseImage.getHeight() - totalHeight) / 2 +
-                                lineHeight * i;
-                        break;
-                    case CENTER:
-                        x = (baseImage.getWidth() - lineWidths[i]) / 2;
-                        y = (baseImage.getHeight() - totalHeight) / 2;
-                        break;
-                    default: // bottom right
-                        x = baseImage.getWidth() - lineWidths[i] - inset;
-                        y = baseImage.getHeight() - totalHeight - inset +
-                                lineHeight * i;
-                        break;
-                }
+            // Only draw the text if it will fit completely within the image in
+            // both dimensions.
+            if (maxWidth + inset <= baseImage.getWidth() &&
+                    totalHeight + inset <= baseImage.getHeight()) {
+                for (int i = 0; i < lines.length; i++) {
+                    int x, y;
+                    switch (position) {
+                        case TOP_LEFT:
+                            x = inset;
+                            y = inset + lineHeight * i;
+                            break;
+                        case TOP_RIGHT:
+                            x = baseImage.getWidth() - lineWidths[i] - inset;
+                            y = inset + lineHeight * i;
+                            break;
+                        case BOTTOM_LEFT:
+                            x = inset;
+                            y = baseImage.getHeight() - totalHeight - inset +
+                                    lineHeight * i;
+                            break;
+                        // case BOTTOM_RIGHT: will be handled in default:
+                        case TOP_CENTER:
+                            x = (baseImage.getWidth() - lineWidths[i]) / 2;
+                            y = inset + lineHeight * i;
+                            break;
+                        case BOTTOM_CENTER:
+                            x = (baseImage.getWidth() - lineWidths[i]) / 2;
+                            y = baseImage.getHeight() - totalHeight - inset +
+                                    lineHeight * i;
+                            break;
+                        case LEFT_CENTER:
+                            x = inset;
+                            y = (baseImage.getHeight() - totalHeight) / 2 +
+                                    lineHeight * i;
+                            break;
+                        case RIGHT_CENTER:
+                            x = baseImage.getWidth() - lineWidths[i] - inset;
+                            y = (baseImage.getHeight() - totalHeight) / 2 +
+                                    lineHeight * i;
+                            break;
+                        case CENTER:
+                            x = (baseImage.getWidth() - lineWidths[i]) / 2;
+                            y = (baseImage.getHeight() - totalHeight) / 2;
+                            break;
+                        default: // bottom right
+                            x = baseImage.getWidth() - lineWidths[i] - inset;
+                            y = baseImage.getHeight() - totalHeight - inset +
+                                    lineHeight * i;
+                            break;
+                    }
 
-                // Draw the text outline.
-                if (strokeWidth > 0.001f) {
-                    final FontRenderContext frc = g2d.getFontRenderContext();
-                    final GlyphVector gv = font.createGlyphVector(frc, lines[i]);
-                    final Shape shape = gv.getOutline(x, y);
-                    g2d.setStroke(new BasicStroke(strokeWidth));
-                    g2d.setPaint(strokeColor);
-                    g2d.draw(shape);
-                }
+                    // Draw the text outline.
+                    if (strokeWidth > 0.001f) {
+                        final FontRenderContext frc = g2d.getFontRenderContext();
+                        final GlyphVector gv = font.createGlyphVector(frc, lines[i]);
+                        final Shape shape = gv.getOutline(x, y);
+                        g2d.setStroke(new BasicStroke(strokeWidth));
+                        g2d.setPaint(strokeColor);
+                        g2d.draw(shape);
+                    }
 
-                // Draw the text.
-                g2d.setPaint(fillColor);
-                g2d.drawString(lines[i], x, y);
+                    // Draw the text.
+                    g2d.setPaint(fillColor);
+                    g2d.drawString(lines[i], x, y);
+
+                    logger.debug("overlayString() executed in {} msec",
+                            watch.timeElapsed());
+                }
+            } else {
+                logger.debug("overlayString(): {}x{} text won't fit in {}x{} image",
+                        maxWidth + inset, totalHeight + inset,
+                        baseImage.getWidth(), baseImage.getHeight());
             }
             g2d.dispose();
-            logger.debug("overlayString() executed in {} msec",
-                    watch.timeElapsed());
         }
         return baseImage;
     }
