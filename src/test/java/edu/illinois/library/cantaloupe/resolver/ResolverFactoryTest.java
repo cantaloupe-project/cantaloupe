@@ -1,16 +1,21 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 public class ResolverFactoryTest {
+
+    @Before
+    public void setUp() {
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+    }
 
     @Test
     public void testGetAllResolvers() {
@@ -19,7 +24,6 @@ public class ResolverFactoryTest {
 
     @Test
     public void testGetResolverWithStaticResolver() throws Exception {
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
 
@@ -40,15 +44,6 @@ public class ResolverFactoryTest {
             ResolverFactory.getResolver(identifier);
             fail("Expected exception");
         } catch (ClassNotFoundException e) {
-            // pass
-        }
-
-        // no resolver
-        try {
-            config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY, null);
-            ResolverFactory.getResolver(identifier);
-            fail("Expected exception");
-        } catch (ConfigurationException e) {
             // pass
         }
     }
