@@ -31,6 +31,7 @@ import org.restlet.resource.ResourceException;
 import org.restlet.util.Series;
 import org.slf4j.LoggerFactory;
 
+import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -337,6 +338,15 @@ public class AdminResource extends AbstractResource {
 
         Collections.sort(sortedProxies, new ObjectProxyComparator());
         vars.put("derivativeCaches", sortedProxies);
+
+        ////////////////////////////////////////////////////////////////////
+        /////////////////////// overlays section ///////////////////////////
+        ////////////////////////////////////////////////////////////////////
+
+        vars.put("fonts", GraphicsEnvironment.getLocalGraphicsEnvironment().
+                getAvailableFontFamilyNames());
+        vars.put("currentWatermarkFont", ConfigurationFactory.getInstance().
+                getString("watermark.BasicStrategy.string.font", ""));
 
         return vars;
     }
