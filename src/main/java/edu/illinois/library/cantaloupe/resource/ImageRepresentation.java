@@ -128,12 +128,15 @@ public class ImageRepresentation extends OutputRepresentation {
                 if (processor instanceof FileProcessor &&
                         ((FileProcessor) processor).getSourceFile() != null) {
                     final File sourceFile = ((FileProcessor) processor).getSourceFile();
-                    final InputStream inputStream = new FileInputStream(sourceFile);
-                    IOUtils.copy(inputStream, outputStream);
+                    try (InputStream inputStream = new FileInputStream(sourceFile)) {
+                        IOUtils.copy(inputStream, outputStream);
+                    }
                 } else {
-                    final StreamSource streamSource = ((StreamProcessor) processor).getStreamSource();
-                    final InputStream inputStream = streamSource.newInputStream();
-                    IOUtils.copy(inputStream, outputStream);
+                    final StreamSource streamSource =
+                            ((StreamProcessor) processor).getStreamSource();
+                    try (InputStream inputStream = streamSource.newInputStream()) {
+                        IOUtils.copy(inputStream, outputStream);
+                    }
                 }
                 logger.debug("Streamed with no processing in {} msec: {}",
                         watch.timeElapsed(), opList);
