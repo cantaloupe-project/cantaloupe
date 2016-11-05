@@ -34,23 +34,23 @@ public class ImageRepresentation extends OutputRepresentation {
     public static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
 
     private ImageInfo imageInfo;
+    private OperationList opList;
     private Processor processor;
-    private OperationList ops;
 
     /**
      * @param imageInfo
-     * @param ops
+     * @param opList
      * @param disposition
      * @param processor
      */
     public ImageRepresentation(final ImageInfo imageInfo,
                                final Processor processor,
-                               final OperationList ops,
+                               final OperationList opList,
                                final Disposition disposition) {
-        super(ops.getOutputFormat().getPreferredMediaType());
+        super(opList.getOutputFormat().getPreferredMediaType());
         this.imageInfo = imageInfo;
         this.processor = processor;
-        this.ops = ops;
+        this.opList = opList;
         this.setDisposition(disposition);
     }
 
@@ -66,7 +66,7 @@ public class ImageRepresentation extends OutputRepresentation {
         if (cache != null) {
             OutputStream cacheOutputStream = null;
             try (InputStream inputStream =
-                         cache.getImageInputStream(this.ops)) {
+                         cache.getImageInputStream(this.opList)) {
                 if (inputStream != null) {
                     // A cached image is available; write it to the response
                     // output stream.
@@ -74,7 +74,7 @@ public class ImageRepresentation extends OutputRepresentation {
                 } else {
                     // Create a TeeOutputStream to write to the response output
                     // output stream and the cache pseudo-simultaneously.
-                    cacheOutputStream = cache.getImageOutputStream(this.ops);
+                    cacheOutputStream = cache.getImageOutputStream(this.opList);
                     OutputStream teeStream = new TeeOutputStream(
                             outputStream, cacheOutputStream);
                     doCacheAwareWrite(teeStream, cache);
@@ -106,7 +106,7 @@ public class ImageRepresentation extends OutputRepresentation {
             doWrite(outputStream);
         } catch (IOException e) {
             logger.info(e.getMessage());
-            cache.purge(this.ops);
+            cache.purge(this.opList);
         }
     }
 
@@ -115,7 +115,7 @@ public class ImageRepresentation extends OutputRepresentation {
             final Stopwatch watch = new Stopwatch();
             // If the operations are effectively a no-op, the source image can
             // be streamed right through.
-            if (ops.isNoOp(processor.getSourceFormat())) {
+            if (opList.isNoOp(processor.getSourceFormat())) {
                 if (processor instanceof FileProcessor &&
                         ((FileProcessor) processor).getSourceFile() != null) {
                     final File sourceFile = ((FileProcessor) processor).getSourceFile();
@@ -127,13 +127,13 @@ public class ImageRepresentation extends OutputRepresentation {
                     IOUtils.copy(inputStream, outputStream);
                 }
                 logger.debug("Streamed with no processing in {} msec: {}",
-                        watch.timeElapsed(), ops);
+                        watch.timeElapsed(), opList);
             } else {
-                processor.process(ops, imageInfo, outputStream);
+                processor.process(opList, imageInfo, outputStream);
 
                 logger.debug("{} processed in {} msec: {}",
                         processor.getClass().getSimpleName(),
-                        watch.timeElapsed(), ops);
+                        watch.timeElapsed(), opList);
             }
         } catch (Exception e) {
             throw new IOException(e);
