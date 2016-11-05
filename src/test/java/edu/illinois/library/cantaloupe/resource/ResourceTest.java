@@ -31,7 +31,6 @@ public abstract class ResourceTest {
         ConfigurationFactory.clearInstance();
 
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty("print_stack_trace_on_error_pages", false);
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
                 "true");
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
@@ -46,6 +45,12 @@ public abstract class ResourceTest {
                 TestUtil.getFixturePath() + "/images/");
     }
 
+    /**
+     * Sets up the web server but does not start it, for the sake of
+     * performance. (Not all tests need it.)
+     *
+     * @throws Exception
+     */
     @Before
     public void setUp() throws Exception {
         resetConfiguration();

@@ -12,7 +12,6 @@ import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import edu.illinois.library.cantaloupe.test.WebServer;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.restlet.data.CacheDirective;
@@ -25,7 +24,6 @@ import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +39,7 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testAuthorizationDelegate() throws Exception {
+        webServer.start();
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.jpg");
         client.get();
@@ -57,6 +56,7 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testBasicAuthentication() throws Exception {
+        webServer.start();
         final String username = "user";
         final String secret = "secret";
         StandaloneEntry.getWebServer().stop();
@@ -94,7 +94,8 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testCacheHeadersWhenCachingEnabled() {
+    public void testCacheHeadersWhenClientCachingIsEnabled() throws Exception {
+        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty("cache.client.enabled", "true");
         config.setProperty("cache.client.max_age", "1234");
@@ -130,7 +131,8 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testCacheHeadersWhenCachingDisabled() {
+    public void testCacheHeadersWhenClientCachingIsDisabled() throws Exception {
+        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty("cache.client.enabled", "false");
         config.setProperty("cache.client.max_age", "1234");
@@ -150,7 +152,75 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testContentDispositionHeader() {
+    public void testCacheWhenDerviativeCachingIsEnabled() throws Exception {
+        webServer.start();
+        File cacheFolder = TestUtil.getTempFolder();
+        cacheFolder = new File(cacheFolder.getAbsolutePath() + "/cache");
+        File imageCacheFolder = new File(cacheFolder.getAbsolutePath() + "/image");
+        if (cacheFolder.exists()) {
+            FileUtils.cleanDirectory(cacheFolder);
+        } else {
+            cacheFolder.mkdir();
+        }
+
+        Configuration config = ConfigurationFactory.getInstance();
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
+                "FilesystemCache");
+        config.setProperty("FilesystemCache.pathname",
+                cacheFolder.getAbsolutePath());
+        config.setProperty("FilesystemCache.ttl_seconds", 10);
+        config.setProperty("cache.server.resolve_first", true);
+
+        OperationList ops = TestUtil.newOperationList();
+        ops.setIdentifier(new Identifier(IMAGE));
+        ops.setOutputFormat(Format.JPG);
+
+        assertEquals(0, FileUtils.listFiles(cacheFolder, null, true).size());
+
+        // request an image to cache it
+        getClientForUriPath("/" + IMAGE + "/full/full/0/default.png").get();
+
+        // assert that it has been cached
+        assertEquals(1, FileUtils.listFiles(imageCacheFolder, null, true).size());
+    }
+
+    @Test
+    public void testCacheWhenDerviativeCachingIsEnabledButNegativeCacheQueryArgumentIsSupplied()
+            throws Exception {
+        webServer.start();
+        File cacheFolder = TestUtil.getTempFolder();
+        cacheFolder = new File(cacheFolder.getAbsolutePath() + "/cache");
+        File imageCacheFolder = new File(cacheFolder.getAbsolutePath() + "/image");
+        if (cacheFolder.exists()) {
+            FileUtils.cleanDirectory(cacheFolder);
+        } else {
+            cacheFolder.mkdir();
+        }
+
+        Configuration config = ConfigurationFactory.getInstance();
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
+                "FilesystemCache");
+        config.setProperty("FilesystemCache.pathname",
+                cacheFolder.getAbsolutePath());
+        config.setProperty("FilesystemCache.ttl_seconds", 10);
+        config.setProperty("cache.server.resolve_first", true);
+
+        OperationList ops = TestUtil.newOperationList();
+        ops.setIdentifier(new Identifier(IMAGE));
+        ops.setOutputFormat(Format.JPG);
+
+        assertEquals(0, FileUtils.listFiles(cacheFolder, null, true).size());
+
+        // request an image
+        getClientForUriPath("/" + IMAGE + "/full/full/0/default.png?cache=false").get();
+
+        // assert that it has NOT been cached
+        assertFalse(imageCacheFolder.exists());
+    }
+
+    @Test
+    public void testContentDispositionHeader() throws Exception {
+        webServer.start();
         // no header
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.jpg");
@@ -176,7 +246,8 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testEndpointDisabled() {
+    public void testEndpointDisabled() throws Exception {
+        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.jpg");
@@ -199,6 +270,77 @@ public class ImageResourceTest extends ResourceTest {
         // TODO: write this
     }
 
+    /**
+     * Tests that the Link header respects the <code>base_uri</code>
+     * key in the configuration.
+     */
+    @Test
+    public void testLinkHeader() throws Exception {
+        webServer.start();
+        Configuration config = ConfigurationFactory.getInstance();
+        ClientResource client = getClientForUriPath(
+                "/" + IMAGE + "/full/full/0/default.jpg");
+
+        config.setProperty(AbstractResource.BASE_URI_CONFIG_KEY, "");
+        client.get();
+        Header header = client.getResponse().getHeaders().getFirst("Link");
+        assertTrue(header.getValue().startsWith("<http://localhost"));
+
+        config.setProperty(AbstractResource.BASE_URI_CONFIG_KEY,
+                "https://example.org/");
+        client.get();
+        header = client.getResponse().getHeaders().getFirst("Link");
+        assertTrue(header.getValue().startsWith("<https://example.org/"));
+
+        client.getRequest().getHeaders().add("X-IIIF-ID", "originalID");
+        client.get();
+        header = client.getResponse().getHeaders().getFirst("Link");
+        assertTrue(header.getValue().contains("/originalID/"));
+    }
+
+    @Test
+    public void testMaxPixels() throws Exception {
+        webServer.start();
+        Configuration config = ConfigurationFactory.getInstance();
+        ClientResource client = getClientForUriPath(
+                "/" + IMAGE + "/full/full/0/default.png");
+
+        config.setProperty("max_pixels", 100000000);
+        client.get();
+        assertEquals(Status.SUCCESS_OK, client.getStatus());
+
+        config.setProperty("max_pixels", 1000);
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_FORBIDDEN, client.getStatus());
+        }
+    }
+
+    @Test
+    public void testMaxPixelsIgnoredWhenStreamingSource() throws Exception {
+        webServer.start();
+        Configuration config = ConfigurationFactory.getInstance();
+        ClientResource client = getClientForUriPath(
+                "/" + IMAGE + "/full/full/0/default.jpg");
+        config.setProperty("max_pixels", 1000);
+        client.get();
+        assertEquals(Status.SUCCESS_OK, client.getStatus());
+    }
+
+    @Test
+    public void testNotFound() throws Exception {
+        webServer.start();
+        ClientResource client = getClientForUriPath("/invalid");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_NOT_FOUND, client.getStatus());
+        }
+    }
+
     @Test
     public void testPurgeFromCacheWhenSourceIsMissingAndOptionIsFalse()
             throws Exception {
@@ -213,9 +355,12 @@ public class ImageResourceTest extends ResourceTest {
 
     private void doPurgeFromCacheWhenSourceIsMissing(boolean purgeMissing)
             throws Exception {
+        webServer.start();
         File cacheFolder = TestUtil.getTempFolder();
         cacheFolder = new File(cacheFolder.getAbsolutePath() + "/cache");
-        if (!cacheFolder.exists()) {
+        if (cacheFolder.exists()) {
+            FileUtils.cleanDirectory(cacheFolder);
+        } else {
             cacheFolder.mkdir();
         }
 
@@ -276,75 +421,9 @@ public class ImageResourceTest extends ResourceTest {
         }
     }
 
-    /**
-     * Tests that the Link header respects the <code>base_uri</code>
-     * key in the configuration.
-     */
     @Test
-    public void testLinkHeader() {
-        Configuration config = ConfigurationFactory.getInstance();
-        ClientResource client = getClientForUriPath(
-                "/" + IMAGE + "/full/full/0/default.jpg");
-
-        config.setProperty(AbstractResource.BASE_URI_CONFIG_KEY, null);
-        client.get();
-        Header header = client.getResponse().getHeaders().getFirst("Link");
-        assertTrue(header.getValue().startsWith("<http://localhost"));
-
-        config.setProperty(AbstractResource.BASE_URI_CONFIG_KEY,
-                "https://example.org/");
-        client.get();
-        header = client.getResponse().getHeaders().getFirst("Link");
-        assertTrue(header.getValue().startsWith("<https://example.org/"));
-
-        client.getRequest().getHeaders().add("X-IIIF-ID", "originalID");
-        client.get();
-        header = client.getResponse().getHeaders().getFirst("Link");
-        assertTrue(header.getValue().contains("/originalID/"));
-    }
-
-    @Test
-    public void testMaxPixels() {
-        Configuration config = ConfigurationFactory.getInstance();
-        ClientResource client = getClientForUriPath(
-                "/" + IMAGE + "/full/full/0/default.png");
-
-        config.setProperty("max_pixels", 100000000);
-        client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
-
-        config.setProperty("max_pixels", 1000);
-        try {
-            client.get();
-            fail("Expected exception");
-        } catch (ResourceException e) {
-            assertEquals(Status.CLIENT_ERROR_FORBIDDEN, client.getStatus());
-        }
-    }
-
-    @Test
-    public void testMaxPixelsIgnoredWhenStreamingSource() {
-        Configuration config = ConfigurationFactory.getInstance();
-        ClientResource client = getClientForUriPath(
-                "/" + IMAGE + "/full/full/0/default.jpg");
-        config.setProperty("max_pixels", 1000);
-        client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
-    }
-
-    @Test
-    public void testNotFound() throws IOException {
-        ClientResource client = getClientForUriPath("/invalid/info.json");
-        try {
-            client.get();
-            fail("Expected exception");
-        } catch (ResourceException e) {
-            assertEquals(Status.CLIENT_ERROR_NOT_FOUND, client.getStatus());
-        }
-    }
-
-    @Test
-    public void testGetRepresentationDisposition() {
+    public void testGetRepresentationDisposition() throws Exception {
+        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
 
@@ -386,34 +465,27 @@ public class ImageResourceTest extends ResourceTest {
      */
     @Test
     public void testResolverProcessorCompatibility() throws Exception {
-        WebServer server = new WebServer();
-
-        resetConfiguration();
+        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty("resolver.static", "HttpResolver");
         config.setProperty("HttpResolver.lookup_strategy", "BasicLookupStrategy");
         config.setProperty("HttpResolver.BasicLookupStrategy.url_prefix",
-                server.getUri() + "/");
+                webServer.getHttpHost() + ":" + webServer.getHttpPort() + "/");
         config.setProperty("processor.jp2", "KakaduProcessor");
         config.setProperty("processor.fallback", "KakaduProcessor");
 
+        ClientResource client = getClientForUriPath("/jp2/full/full/0/default.jpg");
         try {
-            server.start();
-            ClientResource client = getClientForUriPath(
-                    "/jp2/full/full/0/default.jpg");
-            try {
-                client.get();
-                fail("Expected exception");
-            } catch (ResourceException e) {
-                assertEquals(Status.SERVER_ERROR_INTERNAL, e.getStatus());
-            }
-        } finally {
-            server.stop();
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.SERVER_ERROR_INTERNAL, e.getStatus());
         }
     }
 
     @Test
-    public void testRestrictToSizes() {
+    public void testRestrictToSizes() throws Exception {
+        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
 
         // not restricted
@@ -437,20 +509,17 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testSlashSubstitution() throws Exception {
-        WebServer server = new WebServer();
+        webServer.start();
         ConfigurationFactory.getInstance().setProperty("slash_substitute", "CATS");
-        try {
-            server.start();
-            ClientResource client = getClientForUriPath("/subfolderCATSjpg/full/full/0/default.jpg");
-            client.get();
-            assertEquals(Status.SUCCESS_OK, client.getResponse().getStatus());
-        } finally {
-            server.stop();
-        }
+
+        ClientResource client = getClientForUriPath("/subfolderCATSjpg/full/full/0/default.jpg");
+        client.get();
+        assertEquals(Status.SUCCESS_OK, client.getResponse().getStatus());
     }
 
     @Test
-    public void testUnavailableSourceFormat() throws IOException {
+    public void testUnavailableSourceFormat() throws Exception {
+        webServer.start();
         ClientResource client = getClientForUriPath("/text.txt/full/full/0/default.jpg");
         try {
             client.get();
@@ -461,7 +530,8 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testInvalidOutputFormat() throws IOException {
+    public void testInvalidOutputFormat() throws Exception {
+        webServer.start();
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.bogus");
         try {
@@ -473,7 +543,8 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testUnavailableOutputFormat() throws IOException {
+    public void testUnavailableOutputFormat() throws Exception {
+        webServer.start();
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.webp");
         try {

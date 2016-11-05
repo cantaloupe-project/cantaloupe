@@ -25,6 +25,7 @@ import org.restlet.Request;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.Disposition;
 import org.restlet.data.Header;
+import org.restlet.data.Parameter;
 import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.resource.ResourceException;
@@ -355,7 +356,8 @@ public abstract class AbstractResource extends ServerResource {
             throw new PayloadTooLargeException();
         }
 
-        return new ImageRepresentation(imageInfo, proc, ops, disposition);
+        return new ImageRepresentation(imageInfo, proc, ops, disposition,
+                isBypassingCache());
     }
 
     /**
@@ -365,23 +367,27 @@ public abstract class AbstractResource extends ServerResource {
      *
      * @param identifier
      * @param proc
-     * @return
-     * @throws Exception
+     * @return ImageInfo for the image with the given identifier, retrieved
+     *         from the given processor.
+     * @throws ProcessorException
+     * @throws CacheException
      */
     protected final ImageInfo getOrReadInfo(final Identifier identifier,
                                             final Processor proc)
             throws ProcessorException, CacheException {
         ImageInfo info = null;
-        DerivativeCache cache = CacheFactory.getDerivativeCache();
-        if (cache != null) {
-            final Stopwatch watch = new Stopwatch();
-            info = cache.getImageInfo(identifier);
-            if (info != null) {
-                logger.debug("Retrieved dimensions of {} from cache in {} msec",
-                        identifier, watch.timeElapsed());
-            } else {
-                info = readInfo(identifier, proc);
-                cache.putImageInfo(identifier, info);
+        if (!isBypassingCache()) {
+            DerivativeCache cache = CacheFactory.getDerivativeCache();
+            if (cache != null) {
+                final Stopwatch watch = new Stopwatch();
+                info = cache.getImageInfo(identifier);
+                if (info != null) {
+                    logger.debug("Retrieved dimensions of {} from cache in {} msec",
+                            identifier, watch.timeElapsed());
+                } else {
+                    info = readInfo(identifier, proc);
+                    cache.putImageInfo(identifier, info);
+                }
             }
         }
         if (info == null) {
@@ -431,6 +437,19 @@ public abstract class AbstractResource extends ServerResource {
             logger.debug("isAuthorized(): delegate script is disabled; allowing.");
             return true;
         }
+    }
+
+    /**
+     * @return Whether there is a <var>cache</var> query parameter set to
+     *         <code>false</code> in the URI.
+     */
+    private boolean isBypassingCache() {
+        boolean bypassingCache = false;
+        Parameter cacheParam = getReference().getQueryAsForm().getFirst("cache");
+        if (cacheParam != null) {
+            bypassingCache = "false".equals(cacheParam.getValue());
+        }
+        return bypassingCache;
     }
 
     /**
