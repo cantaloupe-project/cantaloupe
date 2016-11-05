@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -61,21 +60,27 @@ public class ImageRepresentation extends OutputRepresentation {
     }
 
     /**
-     * Writes the source image to the given output stream.
+     * Writes the image requested in the constructor to the given output
+     * stream, either retrieving it from the derivative cache, or getting it
+     * from a processor (and caching it if so configured) as appropriate.
      *
-     * @param outputStream Response body output stream supplied by Restlet
+     * @param outputStream Response body output stream.
      * @throws IOException
      */
     @Override
     public void write(OutputStream outputStream) throws IOException {
+        // N.B. We don't need to close outputStream after writing to it;
+        // Restlet will take care of that.
         if (!bypassCache) {
+            // The cache will be null if caching is disabled.
             final DerivativeCache cache = CacheFactory.getDerivativeCache();
             if (cache != null) {
                 OutputStream cacheOutputStream = null;
+                // Try to get the image from the cache.
                 try (InputStream inputStream = cache.getImageInputStream(opList)) {
                     if (inputStream != null) {
-                        // A cached image is available; write it to the response
-                        // output stream.
+                        // The image is available in the cache; write it to the
+                        // response output stream.
                         IOUtils.copy(inputStream, outputStream);
                     } else {
                         // Create a TeeOutputStream to write to the response
@@ -83,7 +88,17 @@ public class ImageRepresentation extends OutputRepresentation {
                         cacheOutputStream = cache.getImageOutputStream(opList);
                         OutputStream teeStream = new TeeOutputStream(
                                 outputStream, cacheOutputStream);
-                        doCacheAwareWrite(teeStream, cache);
+                        try {
+                            doWrite(teeStream);
+                        } catch (IOException e) {
+                            // This typically happens when the connection has
+                            // been closed prematurely, as in the case of e.g.
+                            // the client hitting the stop button. The cached
+                            // image has been incompletely written and is
+                            // corrupt, so it must be purged.
+                            logger.info("write(): {}", e.getMessage());
+                            cache.purge(opList);
+                        }
                     }
                 } catch (Exception e) {
                     throw new IOException(e);
@@ -97,25 +112,6 @@ public class ImageRepresentation extends OutputRepresentation {
             }
         } else {
             doWrite(outputStream);
-        }
-    }
-
-    /**
-     * Variant of doWrite() that cleans up incomplete cached images when
-     * the connection has been broken.
-     *
-     * @param outputStream
-     * @param cache
-     * @throws CacheException
-     */
-    private void doCacheAwareWrite(OutputStream outputStream,
-                                   DerivativeCache cache)
-            throws CacheException {
-        try {
-            doWrite(outputStream);
-        } catch (IOException e) {
-            logger.info(e.getMessage());
-            cache.purge(this.opList);
         }
     }
 
