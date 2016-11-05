@@ -48,7 +48,7 @@ public class ApiResourceTest extends ResourceTest {
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(ApiResource.ENABLED_CONFIG_KEY, false);
 
-        ClientResource client = getClientForUriPath(WebApplication.API_PATH + "/" + IDENTIFIER);
+        ClientResource client = getClientForUriPath(WebApplication.CACHE_PATH + "/" + IDENTIFIER);
         client.setChallengeResponse(
                 new ChallengeResponse(ChallengeScheme.HTTP_BASIC, USERNAME, SECRET));
         try {
@@ -61,7 +61,7 @@ public class ApiResourceTest extends ResourceTest {
 
     @Test
     public void testDoPurgeWithNoCredentials() throws Exception {
-        ClientResource client = getClientForUriPath(WebApplication.API_PATH + "/" + IDENTIFIER);
+        ClientResource client = getClientForUriPath(WebApplication.CACHE_PATH + "/" + IDENTIFIER);
         try {
             client.delete();
             fail("Expected exception");
@@ -72,7 +72,7 @@ public class ApiResourceTest extends ResourceTest {
 
     @Test
     public void testDoPurgeWithInvalidCredentials() throws Exception {
-        ClientResource client = getClientForUriPath(WebApplication.API_PATH + "/" + IDENTIFIER);
+        ClientResource client = getClientForUriPath(WebApplication.CACHE_PATH + "/" + IDENTIFIER);
         client.setChallengeResponse(
                 new ChallengeResponse(ChallengeScheme.HTTP_BASIC, "invalid", "invalid"));
         try {
@@ -85,7 +85,7 @@ public class ApiResourceTest extends ResourceTest {
 
     @Test
     public void testDoPurgeWithValidCredentials() throws Exception {
-        ClientResource client = getClientForUriPath(WebApplication.API_PATH + "/" + IDENTIFIER);
+        ClientResource client = getClientForUriPath(WebApplication.CACHE_PATH + "/" + IDENTIFIER);
         client.setChallengeResponse(
                 new ChallengeResponse(ChallengeScheme.HTTP_BASIC, USERNAME, SECRET));
         client.delete();

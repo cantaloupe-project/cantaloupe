@@ -120,6 +120,7 @@ public class WebApplication extends Application {
 
     public static final String ADMIN_PATH = "/admin";
     public static final String API_PATH = "/api";
+    public static final String CACHE_PATH = "/cache";
     public static final String IIIF_PATH = "/iiif";
     public static final String IIIF_1_PATH = "/iiif/1";
     public static final String IIIF_2_PATH = "/iiif/2";
@@ -290,7 +291,7 @@ public class WebApplication extends Application {
             ChallengeAuthenticator apiAuth = createApiAuthenticator();
             apiAuth.setNext(ApiResource.class);
             router.attach(API_PATH + "/configuration", apiAuth);
-            router.attach(API_PATH + "/{identifier}", apiAuth);
+            router.attach(CACHE_PATH + "/{identifier}", apiAuth);
         } catch (ConfigurationException e) {
             getLogger().log(Level.WARNING, e.getMessage());
         }
