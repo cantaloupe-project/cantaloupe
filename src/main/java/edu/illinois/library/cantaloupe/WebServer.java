@@ -8,11 +8,8 @@ import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
-import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
-
-import java.util.Arrays;
 
 /**
  * <p>Provides the web server in standalone mode.</p>
@@ -168,29 +165,18 @@ public class WebServer {
         stop();
         server = new Server();
 
-        // If we are running from a WAR file, tell Jetty to load the war file
-        // via a WebAppContext. Otherwise, use a ServletContextHandler.
+        final WebAppContext context = new WebAppContext();
+        context.setContextPath("/");
+        context.setServer(server);
+        server.setHandler(context);
+
+        // Give the WebAppContext a different WAR to use depending on whether
+        // we are running standalone or from a WAR file.
         final String warPath = StandaloneEntry.getWarFile().getAbsolutePath();
         if (warPath.endsWith(".war")) {
-            WebAppContext context = new WebAppContext();
-            context.setServer(server);
-            context.setConfigurationClasses(Arrays.asList(
-                    "org.eclipse.jetty.webapp.WebInfConfiguration",
-                    "org.eclipse.jetty.webapp.WebXmlConfiguration",
-                    "org.eclipse.jetty.webapp.MetaInfConfiguration",
-                    "org.eclipse.jetty.webapp.FragmentConfiguration",
-                    "org.eclipse.jetty.webapp.JettyWebXmlConfiguration"));
-            context.setContextPath("/");
             context.setWar(warPath);
-            server.setHandler(context);
         } else {
-            ServletContextHandler context = new ServletContextHandler(
-                    ServletContextHandler.NO_SESSIONS);
-            context.setInitParameter("org.restlet.application",
-                    WebApplication.class.getName());
-            context.setResourceBase(System.getProperty("java.io.tmpdir"));
-            context.addServlet(EntryServlet.class, "/*");
-            server.setHandler(context);
+            context.setWar("src/main/webapp");
         }
 
         // Initialize the HTTP server
