@@ -18,7 +18,7 @@
             <param-name>org.restlet.clients</param-name>
             <param-value>CLAP HTTP HTTPS</param-value>
         </init-param>
-        <load-on-startup>1</load-on-startup>
+        <load-on-startup>0</load-on-startup>
     </servlet>
 
     <servlet-mapping>
