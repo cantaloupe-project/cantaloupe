@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
+import org.junit.Before;
 import org.junit.Test;
 import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
@@ -17,6 +18,13 @@ import static org.junit.Assert.*;
  * Functional test of LandingResource.
  */
 public class LandingResourceTest extends ResourceTest {
+
+    @Before
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        webServer.start();
+    }
 
     @Test
     public void testEndpointDisabled() {

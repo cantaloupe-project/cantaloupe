@@ -4,8 +4,6 @@ import org.junit.Test;
 import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
 
-import java.io.IOException;
-
 import static org.junit.Assert.*;
 
 /**
@@ -14,7 +12,8 @@ import static org.junit.Assert.*;
 public class LandingResourceTest extends ResourceTest {
 
     @Test
-    public void testRootUri() throws IOException {
+    public void testRootUri() throws Exception {
+        webServer.start();
         ClientResource client = getClientForUriPath("");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());

@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
+import org.junit.Before;
 import org.junit.Test;
 import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
@@ -18,8 +19,15 @@ import static org.junit.Assert.*;
  */
 public class LandingResourceTest extends ResourceTest {
 
+    @Before
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        webServer.start();
+    }
+
     @Test
-    public void testEndpointDisabled() {
+    public void testEndpointDisabled() throws Exception {
         Configuration config = ConfigurationFactory.getInstance();
         ClientResource client = getClientForUriPath(
                 WebApplication.IIIF_1_PATH);
@@ -38,7 +46,7 @@ public class LandingResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testGet() throws IOException {
+    public void testGet() throws Exception {
         ClientResource client = getClientForUriPath(
                 WebApplication.IIIF_1_PATH);
         client.get();

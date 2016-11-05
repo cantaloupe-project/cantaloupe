@@ -52,7 +52,8 @@ public class Version1_1ConformanceTest {
 
     private WebServer webServer;
 
-    public static void resetConfiguration() {
+    private static void resetConfiguration() {
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         try {
