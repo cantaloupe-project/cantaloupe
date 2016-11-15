@@ -1,19 +1,11 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.image.Color;
-import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Sharpen;
-import edu.illinois.library.cantaloupe.image.Transpose;
-import edu.illinois.library.cantaloupe.image.redaction.Redaction;
-import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
@@ -28,18 +20,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
  * Processor using the <a href="https://pdfbox.apache.org">Apache PDFBox</a>
- * library to render source PDFs, and Java 2D or JAI to perform post-
- * rasterization processing steps.
+ * library to render source PDFs, and Java 2D to perform post-rasterization
+ * processing steps.
  */
-class PdfBoxProcessor extends AbstractProcessor
+class PdfBoxProcessor extends AbstractJava2dProcessor
         implements FileProcessor, StreamProcessor {
 
     private static Logger logger = LoggerFactory.
@@ -195,10 +185,10 @@ class PdfBoxProcessor extends AbstractProcessor
                     break;
                 }
             }
-            ReductionFactor rf = new ReductionFactor();
+            ReductionFactor reductionFactor = new ReductionFactor();
             Float pct = scale.getResultingScale(imageInfo.getSize());
             if (pct != null) {
-                rf = ReductionFactor.forScale(pct);
+                reductionFactor = ReductionFactor.forScale(pct);
             }
 
             // This processor supports a "page" URI query option.
@@ -214,82 +204,21 @@ class PdfBoxProcessor extends AbstractProcessor
             }
             page = Math.max(page, 1);
 
-            final BufferedImage image = readImage(page - 1, rf.factor);
-            postProcessUsingJava2d(image, opList, imageInfo, rf, outputStream);
+            final BufferedImage image = readImage(page - 1, reductionFactor.factor);
+            final Configuration config = ConfigurationFactory.getInstance();
+            postProcessUsingJava2d(
+                    image,
+                    opList,
+                    imageInfo,
+                    reductionFactor,
+                    false,
+                    getUpscaleFilter(),
+                    getDownscaleFilter(),
+                    config.getFloat(SHARPEN_CONFIG_KEY, 0f),
+                    outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
-    }
-
-    private void postProcessUsingJava2d(BufferedImage image,
-                                        final OperationList opList,
-                                        final ImageInfo imageInfo,
-                                        final ReductionFactor reductionFactor,
-                                        final OutputStream outputStream)
-            throws IOException, ProcessorException {
-        Crop crop = null;
-        for (Operation op : opList) {
-            if (op instanceof Crop) {
-                crop = (Crop) op;
-                image = Java2dUtil.cropImage(image, crop);
-                break;
-            }
-        }
-
-        // Redactions happen immediately after cropping.
-        List<Redaction> redactions = new ArrayList<>();
-        for (Operation op : opList) {
-            if (op instanceof Redaction) {
-                redactions.add((Redaction) op);
-            }
-        }
-        image = Java2dUtil.applyRedactions(image, crop, reductionFactor,
-                redactions);
-
-        // Apply most remaining operations.
-        for (Operation op : opList) {
-            if (op instanceof Scale) {
-                final Scale scale = (Scale) op;
-                final Float upOrDown =
-                        scale.getResultingScale(imageInfo.getSize());
-                if (upOrDown != null) {
-                    final Scale.Filter filter =
-                            (upOrDown > 1) ?
-                                    getUpscaleFilter() : getDownscaleFilter();
-                    scale.setFilter(filter);
-                }
-
-                image = Java2dUtil.scaleImage(image, (Scale) op,
-                        reductionFactor);
-            } else if (op instanceof Transpose) {
-                image = Java2dUtil.transposeImage(image, (Transpose) op);
-            } else if (op instanceof Rotate) {
-                image = Java2dUtil.rotateImage(image, (Rotate) op);
-            } else if (op instanceof Color) {
-                image = Java2dUtil.transformColor(image, (Color) op);
-            }
-        }
-
-        // Apply the sharpen operation, if present.
-        final Configuration config = ConfigurationFactory.getInstance();
-        final float sharpenValue = config.getFloat(SHARPEN_CONFIG_KEY, 0);
-        final Sharpen sharpen = new Sharpen(sharpenValue);
-        image = Java2dUtil.sharpenImage(image, sharpen);
-
-        // Apply remaining operations.
-        for (Operation op : opList) {
-            if (op instanceof Watermark) {
-                try {
-                    image = Java2dUtil.applyWatermark(image, (Watermark) op);
-                } catch (ConfigurationException e) {
-                    logger.error(e.getMessage());
-                }
-            }
-        }
-
-        new ImageWriter(opList).
-                write(image, opList.getOutputFormat(), outputStream);
-        image.flush();
     }
 
     private BufferedImage readImage() throws IOException {
