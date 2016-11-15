@@ -412,6 +412,7 @@ public abstract class Java2dUtil {
                                     lineHeight * i;
                             break;
                     }
+                    y += lineHeight * 0.8; // TODO: this is arbitrary fudge
 
                     // Draw the text outline.
                     if (strokeWidth > 0.001f) {
