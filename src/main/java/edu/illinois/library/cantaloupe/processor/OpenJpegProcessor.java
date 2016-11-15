@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
@@ -312,11 +313,11 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
     }
 
     @Override
-    public void process(final OperationList ops,
+    public void process(final OperationList opList,
                         final ImageInfo imageInfo,
                         final OutputStream outputStream)
             throws ProcessorException {
-        if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {
+        if (!getAvailableOutputFormats().contains(opList.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
 
@@ -325,7 +326,7 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
         try {
             final ReductionFactor reductionFactor = new ReductionFactor();
             final ProcessBuilder pb = getProcessBuilder(
-                    ops, imageInfo.getSize(), reductionFactor);
+                    opList, imageInfo.getSize(), reductionFactor);
             logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
@@ -340,14 +341,10 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
                 final BufferedImage image = reader.read();
                 final Configuration config = ConfigurationFactory.getInstance();
                 try {
-                    postProcessUsingJava2d(
-                            image,
-                            ops,
-                            imageInfo,
-                            reductionFactor,
+                    postProcess(image, null, opList, imageInfo,
+                            reductionFactor, Orientation.ROTATE_0,
                             config.getBoolean(NORMALIZE_CONFIG_KEY, false),
-                            getUpscaleFilter(),
-                            getDownscaleFilter(),
+                            getUpscaleFilter(), getDownscaleFilter(),
                             config.getFloat(SHARPEN_CONFIG_KEY, 0f),
                             outputStream);
                     final int code = process.waitFor();

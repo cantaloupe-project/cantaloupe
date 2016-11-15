@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
@@ -208,17 +209,17 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
     }
 
     @Override
-    public void process(final OperationList ops,
+    public void process(final OperationList opList,
                         final ImageInfo imageInfo,
                         final OutputStream outputStream)
             throws ProcessorException {
-        if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {
+        if (!getAvailableOutputFormats().contains(opList.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
 
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
-            final ProcessBuilder pb = getProcessBuilder(ops);
+            final ProcessBuilder pb = getProcessBuilder(opList);
             logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
@@ -233,14 +234,9 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
                 final BufferedImage image = reader.read();
                 final Configuration config = ConfigurationFactory.getInstance();
                 try {
-                    postProcessUsingJava2d(
-                            image,
-                            ops,
-                            imageInfo,
-                            new ReductionFactor(),
-                            false,
-                            getUpscaleFilter(),
-                            getDownscaleFilter(),
+                    postProcess(image, null, opList, imageInfo,
+                            null, Orientation.ROTATE_0, false,
+                            getUpscaleFilter(), getDownscaleFilter(),
                             config.getFloat(SHARPEN_CONFIG_KEY, 0f),
                             outputStream);
                     final int code = process.waitFor();
@@ -273,10 +269,10 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
     }
 
     /**
-     * @param ops
+     * @param opList
      * @return Command string
      */
-    private ProcessBuilder getProcessBuilder(OperationList ops) {
+    private ProcessBuilder getProcessBuilder(OperationList opList) {
         final List<String> command = new ArrayList<>();
         command.add(getPath("ffmpeg"));
         command.add("-i");
@@ -286,8 +282,8 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
         // parameter which gets injected into an -ss flag. FFmpeg supports
         // additional syntax, but this will do for now.
         // https://trac.ffmpeg.org/wiki/Seeking
-        if (ops.getOptions().size() > 0) {
-            String time = (String) ops.getOptions().get("time");
+        if (opList.getOptions().size() > 0) {
+            String time = (String) opList.getOptions().get("time");
             // prevent arbitrary input
             if (time != null &&
                     time.matches("[0-9][0-9]:[0-5][0-9]:[0-5][0-9]")) {
