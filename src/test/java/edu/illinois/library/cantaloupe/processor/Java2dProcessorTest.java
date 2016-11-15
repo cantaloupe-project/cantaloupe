@@ -28,7 +28,8 @@ public class Java2dProcessorTest extends ProcessorTest {
     private Java2dProcessor instance;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
         instance = newInstance();
     }
 
