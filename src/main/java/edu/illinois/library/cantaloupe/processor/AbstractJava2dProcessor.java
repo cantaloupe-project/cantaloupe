@@ -14,6 +14,7 @@ import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
+import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +22,8 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -28,6 +31,68 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
 
     private static Logger logger = LoggerFactory.
             getLogger(AbstractJava2dProcessor.class);
+
+    private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
+            new HashSet<>();
+    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
+            SUPPORTED_IIIF_1_1_QUALITIES = new HashSet<>();
+    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
+            SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
+
+    static {
+        SUPPORTED_IIIF_1_1_QUALITIES.addAll(Arrays.asList(
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
+        SUPPORTED_IIIF_2_0_QUALITIES.addAll(Arrays.asList(
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
+        SUPPORTED_FEATURES.addAll(Arrays.asList(
+                ProcessorFeature.MIRRORING,
+                ProcessorFeature.REGION_BY_PERCENT,
+                ProcessorFeature.REGION_BY_PIXELS,
+                ProcessorFeature.REGION_SQUARE,
+                ProcessorFeature.ROTATION_ARBITRARY,
+                ProcessorFeature.ROTATION_BY_90S,
+                ProcessorFeature.SIZE_ABOVE_FULL,
+                ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
+                ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
+                ProcessorFeature.SIZE_BY_HEIGHT,
+                ProcessorFeature.SIZE_BY_PERCENT,
+                ProcessorFeature.SIZE_BY_WIDTH,
+                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
+    }
+
+    public Set<ProcessorFeature> getSupportedFeatures() {
+        Set<ProcessorFeature> features = new HashSet<>();
+        if (getAvailableOutputFormats().size() > 0) {
+            features.addAll(SUPPORTED_FEATURES);
+        }
+        return features;
+    }
+
+    public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
+    getSupportedIiif1_1Qualities() {
+        Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
+                qualities = new HashSet<>();
+        if (getAvailableOutputFormats().size() > 0) {
+            qualities.addAll(SUPPORTED_IIIF_1_1_QUALITIES);
+        }
+        return qualities;
+    }
+
+    public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
+    getSupportedIiif2_0Qualities() {
+        Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
+                qualities = new HashSet<>();
+        if (getAvailableOutputFormats().size() > 0) {
+            qualities.addAll(SUPPORTED_IIIF_2_0_QUALITIES);
+        }
+        return qualities;
+    }
 
     /**
      * Convenience method for processors that use a Java 2D pipeline.

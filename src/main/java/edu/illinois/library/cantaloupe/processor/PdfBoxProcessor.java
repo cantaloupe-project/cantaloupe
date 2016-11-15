@@ -9,8 +9,6 @@ import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
-import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
-import edu.illinois.library.cantaloupe.resource.iiif.v1.Quality;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.slf4j.Logger;
@@ -21,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -43,43 +40,9 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
     static final String UPSCALE_FILTER_CONFIG_KEY =
             "PdfBoxProcessor.upscale_filter";
 
-    private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
-            new HashSet<>();
-    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-            SUPPORTED_IIIF_1_1_QUALITIES = new HashSet<>();
-    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-            SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
-
     private BufferedImage fullImage;
     private File sourceFile;
     private StreamSource streamSource;
-
-    static {
-        SUPPORTED_IIIF_1_1_QUALITIES.addAll(Arrays.asList(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
-        SUPPORTED_IIIF_2_0_QUALITIES.addAll(Arrays.asList(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
-        SUPPORTED_FEATURES.addAll(Arrays.asList(
-                ProcessorFeature.MIRRORING,
-                ProcessorFeature.REGION_BY_PERCENT,
-                ProcessorFeature.REGION_BY_PIXELS,
-                ProcessorFeature.REGION_SQUARE,
-                ProcessorFeature.ROTATION_ARBITRARY,
-                ProcessorFeature.ROTATION_BY_90S,
-                ProcessorFeature.SIZE_ABOVE_FULL,
-                ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
-                ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
-                ProcessorFeature.SIZE_BY_HEIGHT,
-                ProcessorFeature.SIZE_BY_PERCENT,
-                ProcessorFeature.SIZE_BY_WIDTH,
-                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
-    }
 
     @Override
     public Set<Format> getAvailableOutputFormats() {
@@ -110,36 +73,6 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
             logger.warn("Invalid value for {}", UPSCALE_FILTER_CONFIG_KEY);
         }
         return null;
-    }
-
-    @Override
-    public Set<ProcessorFeature> getSupportedFeatures() {
-        Set<ProcessorFeature> features = new HashSet<>();
-        if (getAvailableOutputFormats().size() > 0) {
-            features.addAll(SUPPORTED_FEATURES);
-        }
-        return features;
-    }
-
-    @Override
-    public Set<Quality> getSupportedIiif1_1Qualities() {
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-                qualities = new HashSet<>();
-        if (getAvailableOutputFormats().size() > 0) {
-            qualities.addAll(SUPPORTED_IIIF_1_1_QUALITIES);
-        }
-        return qualities;
-    }
-
-    @Override
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-    getSupportedIiif2_0Qualities() {
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-                qualities = new HashSet<>();
-        if (getAvailableOutputFormats().size() > 0) {
-            qualities.addAll(SUPPORTED_IIIF_2_0_QUALITIES);
-        }
-        return qualities;
     }
 
     @Override

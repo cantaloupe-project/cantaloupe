@@ -11,7 +11,6 @@ import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
-import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -30,7 +29,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
@@ -77,12 +75,6 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
             "OpenJpegProcessor.upscale_filter";
 
     private static final short MAX_REDUCTION_FACTOR = 5;
-    private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
-            new HashSet<>();
-    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-            SUPPORTED_IIIF_1_1_QUALITIES = new HashSet<>();
-    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-            SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
 
     private static final ExecutorService executorService =
             Executors.newCachedThreadPool();
@@ -94,31 +86,6 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
     private File sourceFile;
 
     static {
-        SUPPORTED_IIIF_1_1_QUALITIES.addAll(Arrays.asList(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
-        SUPPORTED_IIIF_2_0_QUALITIES.addAll(Arrays.asList(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
-        SUPPORTED_FEATURES.addAll(Arrays.asList(
-                ProcessorFeature.MIRRORING,
-                ProcessorFeature.REGION_BY_PERCENT,
-                ProcessorFeature.REGION_BY_PIXELS,
-                ProcessorFeature.REGION_SQUARE,
-                ProcessorFeature.ROTATION_ARBITRARY,
-                ProcessorFeature.ROTATION_BY_90S,
-                ProcessorFeature.SIZE_ABOVE_FULL,
-                ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
-                ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
-                ProcessorFeature.SIZE_BY_HEIGHT,
-                ProcessorFeature.SIZE_BY_PERCENT,
-                ProcessorFeature.SIZE_BY_WIDTH,
-                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
-
         // Due to a quirk of opj_decompress, this processor requires access to
         // /dev/stdout.
         final File devStdout = new File("/dev/stdout");
@@ -177,6 +144,25 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
             outputFormats.addAll(ImageWriter.supportedFormats());
         }
         return outputFormats;
+    }
+
+    /**
+     * Computes the effective size of an image after all crop operations are
+     * applied but excluding any scale operations, in order to use
+     * opj_decompress' -r (reduce) argument.
+     *
+     * @param opList
+     * @param fullSize
+     * @return
+     */
+    private Dimension getCroppedSize(OperationList opList, Dimension fullSize) {
+        Dimension tileSize = (Dimension) fullSize.clone();
+        for (Operation op : opList) {
+            if (op instanceof Crop) {
+                tileSize = ((Crop) op).getRectangle(tileSize).getSize();
+            }
+        }
+        return tileSize;
     }
 
     Scale.Filter getDownscaleFilter() {
@@ -279,37 +265,6 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
     @Override
     public File getSourceFile() {
         return this.sourceFile;
-    }
-
-    @Override
-    public Set<ProcessorFeature> getSupportedFeatures() {
-        Set<ProcessorFeature> features = new HashSet<>();
-        if (getAvailableOutputFormats().size() > 0) {
-            features.addAll(SUPPORTED_FEATURES);
-        }
-        return features;
-    }
-
-    @Override
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-    getSupportedIiif1_1Qualities() {
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-                qualities = new HashSet<>();
-        if (getAvailableOutputFormats().size() > 0) {
-            qualities.addAll(SUPPORTED_IIIF_1_1_QUALITIES);
-        }
-        return qualities;
-    }
-
-    @Override
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-    getSupportedIiif2_0Qualities() {
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-                qualities = new HashSet<>();
-        if (getAvailableOutputFormats().size() > 0) {
-            qualities.addAll(SUPPORTED_IIIF_2_0_QUALITIES);
-        }
-        return qualities;
     }
 
     @Override
@@ -452,25 +407,6 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
         command.add(stdoutSymlink.toString());
 
         return new ProcessBuilder(command);
-    }
-
-    /**
-     * Computes the effective size of an image after all crop operations are
-     * applied but excluding any scale operations, in order to use
-     * opj_decompress' -r (reduce) argument.
-     *
-     * @param opList
-     * @param fullSize
-     * @return
-     */
-    private Dimension getCroppedSize(OperationList opList, Dimension fullSize) {
-        Dimension tileSize = (Dimension) fullSize.clone();
-        for (Operation op : opList) {
-            if (op instanceof Crop) {
-                tileSize = ((Crop) op).getRectangle(tileSize).getSize();
-            }
-        }
-        return tileSize;
     }
 
     private void reset() {
