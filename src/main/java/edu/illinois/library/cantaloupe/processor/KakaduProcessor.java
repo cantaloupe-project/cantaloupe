@@ -1,19 +1,12 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Crop;
-import edu.illinois.library.cantaloupe.image.Sharpen;
-import edu.illinois.library.cantaloupe.image.Transpose;
-import edu.illinois.library.cantaloupe.image.redaction.Redaction;
-import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
@@ -34,7 +27,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import java.awt.Dimension;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
@@ -83,7 +75,7 @@ import java.util.concurrent.Executors;
  *     Usage Examples for the Demonstration Applications Supplied with Kakadu
  *     V7.7</a>
  */
-class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
+class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
 
     private static Logger logger = LoggerFactory.
             getLogger(KakaduProcessor.class);
@@ -389,7 +381,16 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
                         new InputStreamStreamSource(processInputStream),
                         Format.TIF);
                 try {
-                    postProcessUsingJava2d(reader, ops, imageInfo, reductionFactor,
+                    final Configuration config = ConfigurationFactory.getInstance();
+                    postProcessUsingJava2d(
+                            reader,
+                            ops,
+                            imageInfo,
+                            reductionFactor,
+                            config.getBoolean(NORMALIZE_CONFIG_KEY, false),
+                            getUpscaleFilter(),
+                            getDownscaleFilter(),
+                            config.getFloat(SHARPEN_CONFIG_KEY, 0f),
                             outputStream);
                     final int code = process.waitFor();
                     if (code != 0) {
@@ -495,7 +496,7 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
                 }
             } else if (op instanceof Scale) {
                 // kdu_expand is not capable of arbitrary scaling, but it does
-                // offer a -reduce option which is capable of downscaling by
+                // offer a -reduce argument which is capable of downscaling by
                 // factors of 2, significantly speeding decompression. We can
                 // use it if the scale mode is ASPECT_FIT_* and either the
                 // percent is <=50, or the height/width are <=50% of full size.
@@ -556,86 +557,6 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
             }
         }
         return tileSize;
-    }
-
-    private void postProcessUsingJava2d(final ImageReader reader,
-                                        final OperationList opList,
-                                        final ImageInfo imageInfo,
-                                        final ReductionFactor reductionFactor,
-                                        final OutputStream outputStream)
-            throws IOException, ProcessorException {
-        final Configuration config = ConfigurationFactory.getInstance();
-        BufferedImage image = Java2dUtil.reduceTo8Bits(reader.read());
-
-        if (config.getBoolean(NORMALIZE_CONFIG_KEY, false)) {
-            image = Java2dUtil.stretchContrast(image);
-        }
-
-        // The crop has already been applied, but we need to retain a
-        // reference to it for any redactions.
-        Crop crop = null;
-        for (Operation op : opList) {
-            if (op instanceof Crop) {
-                crop = (Crop) op;
-                break;
-            }
-        }
-
-        // Redactions happen immediately after cropping.
-        List<Redaction> redactions = new ArrayList<>();
-        for (Operation op : opList) {
-            if (op instanceof Redaction) {
-                redactions.add((Redaction) op);
-            }
-        }
-        image = Java2dUtil.applyRedactions(image, crop, reductionFactor,
-                redactions);
-
-        // Apply most remaining operations.
-        for (Operation op : opList) {
-            if (op instanceof Scale) {
-                final Scale scale = (Scale) op;
-                final Float upOrDown =
-                        scale.getResultingScale(imageInfo.getSize());
-                if (upOrDown != null) {
-                    final Scale.Filter filter =
-                            (upOrDown > 1) ?
-                                    getUpscaleFilter() : getDownscaleFilter();
-                    scale.setFilter(filter);
-                }
-
-                image = Java2dUtil.scaleImage(image, scale, reductionFactor);
-            } else if (op instanceof Transpose) {
-                image = Java2dUtil.transposeImage(image,
-                        (Transpose) op);
-            } else if (op instanceof Rotate) {
-                image = Java2dUtil.rotateImage(image,
-                        (Rotate) op);
-            } else if (op instanceof Color) {
-                image = Java2dUtil.transformColor(image,
-                        (Color) op);
-            }
-        }
-
-        // Apply the sharpen operation, if present.
-        final float sharpenValue = config.getFloat(SHARPEN_CONFIG_KEY, 0);
-        final Sharpen sharpen = new Sharpen(sharpenValue);
-        image = Java2dUtil.sharpenImage(image, sharpen);
-
-        // Apply all remaining operations.
-        for (Operation op : opList) {
-            if (op instanceof Watermark) {
-                try {
-                    image = Java2dUtil.applyWatermark(image, (Watermark) op);
-                } catch (ConfigurationException e) {
-                    logger.error(e.getMessage());
-                }
-            }
-        }
-
-        new ImageWriter(opList).
-                write(image, opList.getOutputFormat(), outputStream);
-        image.flush();
     }
 
     private void reset() {

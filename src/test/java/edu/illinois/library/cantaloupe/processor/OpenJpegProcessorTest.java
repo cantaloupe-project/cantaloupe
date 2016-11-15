@@ -20,7 +20,8 @@ public class OpenJpegProcessorTest extends ProcessorTest {
     private OpenJpegProcessor instance;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
         instance = newInstance();
     }
 

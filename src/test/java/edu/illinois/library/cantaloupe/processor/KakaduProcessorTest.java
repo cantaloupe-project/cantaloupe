@@ -21,7 +21,8 @@ public class KakaduProcessorTest extends ProcessorTest {
     private KakaduProcessor instance;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
         instance = newInstance();
     }
 
