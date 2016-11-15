@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
@@ -336,10 +337,11 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
                 final ImageReader reader = new ImageReader(
                         new InputStreamStreamSource(processInputStream),
                         Format.BMP);
+                final BufferedImage image = reader.read();
+                final Configuration config = ConfigurationFactory.getInstance();
                 try {
-                    final Configuration config = ConfigurationFactory.getInstance();
                     postProcessUsingJava2d(
-                            reader,
+                            image,
                             ops,
                             imageInfo,
                             reductionFactor,

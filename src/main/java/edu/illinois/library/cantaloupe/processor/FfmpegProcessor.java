@@ -21,6 +21,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -229,10 +230,11 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
                 final ImageReader reader = new ImageReader(
                         new InputStreamStreamSource(processInputStream),
                         Format.BMP);
+                final BufferedImage image = reader.read();
+                final Configuration config = ConfigurationFactory.getInstance();
                 try {
-                    final Configuration config = ConfigurationFactory.getInstance();
                     postProcessUsingJava2d(
-                            reader,
+                            image,
                             ops,
                             imageInfo,
                             new ReductionFactor(),

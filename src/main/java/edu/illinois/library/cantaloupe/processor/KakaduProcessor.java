@@ -27,6 +27,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import java.awt.Dimension;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
@@ -380,10 +381,11 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
                 final ImageReader reader = new ImageReader(
                         new InputStreamStreamSource(processInputStream),
                         Format.TIF);
+                final BufferedImage image = reader.read();
+                final Configuration config = ConfigurationFactory.getInstance();
                 try {
-                    final Configuration config = ConfigurationFactory.getInstance();
                     postProcessUsingJava2d(
-                            reader,
+                            image,
                             ops,
                             imageInfo,
                             reductionFactor,

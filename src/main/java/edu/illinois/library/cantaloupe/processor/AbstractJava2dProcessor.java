@@ -11,7 +11,6 @@ import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.Watermark;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +29,7 @@ abstract class AbstractJava2dProcessor extends AbstractProcessor {
     /**
      * Convenience method for processors that use a Java 2D pipeline.
      *
-     * @param reader
+     * @param sourceImage Image to process.
      * @param opList Operations to apply to the image.
      * @param imageInfo Information about the source image.
      * @param reductionFactor
@@ -43,7 +42,7 @@ abstract class AbstractJava2dProcessor extends AbstractProcessor {
      * @throws IOException
      * @throws ProcessorException
      */
-    void postProcessUsingJava2d(final ImageReader reader,
+    void postProcessUsingJava2d(final BufferedImage sourceImage,
                                 final OperationList opList,
                                 final ImageInfo imageInfo,
                                 final ReductionFactor reductionFactor,
@@ -53,7 +52,7 @@ abstract class AbstractJava2dProcessor extends AbstractProcessor {
                                 final float sharpenValue,
                                 final OutputStream outputStream)
             throws IOException, ProcessorException {
-        BufferedImage image = Java2dUtil.reduceTo8Bits(reader.read());
+        BufferedImage image = Java2dUtil.reduceTo8Bits(sourceImage);
 
         if (normalize) {
             image = Java2dUtil.stretchContrast(image);
