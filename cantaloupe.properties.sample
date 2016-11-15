@@ -257,6 +257,10 @@ StreamProcessor.retrieval_strategy = StreamStrategy
 # Overrides the PATH.
 FfmpegProcessor.path_to_binaries =
 
+# See Java2dProcessor.upscale_filter for a list of available filters.
+FfmpegProcessor.upscale_filter = bicubic
+FfmpegProcessor.downscale_filter = bicubic
+
 # Intensity of an unsharp mask from 0 to 1.
 FfmpegProcessor.sharpen = 0
 
@@ -343,8 +347,7 @@ Java2dProcessor.tif.compression = LZW
 # Overrides the PATH.
 KakaduProcessor.path_to_binaries =
 
-# Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
-# `lanczos3`, `mitchell`, `triangle`.
+# See Java2dProcessor.upscale_filter for a list of available filters.
 KakaduProcessor.upscale_filter = bicubic
 KakaduProcessor.downscale_filter = bicubic
 
@@ -362,8 +365,7 @@ KakaduProcessor.sharpen = 0
 # Overrides the PATH.
 OpenJpegProcessor.path_to_binaries =
 
-# Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
-# `lanczos3`, `mitchell`, `triangle`.
+# See Java2dProcessor.upscale_filter for a list of available filters.
 OpenJpegProcessor.upscale_filter = bicubic
 OpenJpegProcessor.downscale_filter = bicubic
 
@@ -382,8 +384,7 @@ OpenJpegProcessor.sharpen = 0
 # higher factor of this.
 PdfBoxProcessor.dpi = 150
 
-# Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
-# `lanczos3`, `mitchell`, `triangle`.
+# See Java2dProcessor.upscale_filter for a list of available filters.
 PdfBoxProcessor.upscale_filter = bicubic
 PdfBoxProcessor.downscale_filter = bicubic
 

@@ -4,6 +4,8 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.image.Scale;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
@@ -17,6 +19,8 @@ import java.util.HashSet;
 
 import java.util.Set;
 
+import static edu.illinois.library.cantaloupe.processor.FfmpegProcessor.DOWNSCALE_FILTER_CONFIG_KEY;
+import static edu.illinois.library.cantaloupe.processor.FfmpegProcessor.UPSCALE_FILTER_CONFIG_KEY;
 import static org.junit.Assert.*;
 
 /**
@@ -27,7 +31,8 @@ public class FfmpegProcessorTest extends ProcessorTest {
     private FfmpegProcessor instance;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
         instance = newInstance();
     }
 
@@ -53,7 +58,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
                 Set<Format> expectedFormats = new HashSet<>();
                 if (format.getType() != null &&
                         format.getType().equals(Format.Type.VIDEO)) {
-                    expectedFormats.add(Format.JPG);
+                    expectedFormats.addAll(ImageWriter.supportedFormats());
                 }
                 instance.setSourceFormat(format);
                 assertEquals(expectedFormats, instance.getAvailableOutputFormats());
@@ -61,6 +66,52 @@ public class FfmpegProcessorTest extends ProcessorTest {
                 // continue
             }
         }
+    }
+
+    @Test
+    public void testGetDownscaleFilter() {
+        assertNull(instance.getDownscaleFilter());
+
+        final Configuration config = ConfigurationFactory.getInstance();
+        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "bell");
+        assertEquals(Scale.Filter.BELL, instance.getDownscaleFilter());
+        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "bicubic");
+        assertEquals(Scale.Filter.BICUBIC, instance.getDownscaleFilter());
+        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "bspline");
+        assertEquals(Scale.Filter.BSPLINE, instance.getDownscaleFilter());
+        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "box");
+        assertEquals(Scale.Filter.BOX, instance.getDownscaleFilter());
+        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "hermite");
+        assertEquals(Scale.Filter.HERMITE, instance.getDownscaleFilter());
+        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "lanczos3");
+        assertEquals(Scale.Filter.LANCZOS3, instance.getDownscaleFilter());
+        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "mitchell");
+        assertEquals(Scale.Filter.MITCHELL, instance.getDownscaleFilter());
+        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "triangle");
+        assertEquals(Scale.Filter.TRIANGLE, instance.getDownscaleFilter());
+    }
+
+    @Test
+    public void testGetUpscaleFilter() {
+        assertNull(instance.getUpscaleFilter());
+
+        final Configuration config = ConfigurationFactory.getInstance();
+        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "bell");
+        assertEquals(Scale.Filter.BELL, instance.getUpscaleFilter());
+        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "bicubic");
+        assertEquals(Scale.Filter.BICUBIC, instance.getUpscaleFilter());
+        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "bspline");
+        assertEquals(Scale.Filter.BSPLINE, instance.getUpscaleFilter());
+        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "box");
+        assertEquals(Scale.Filter.BOX, instance.getUpscaleFilter());
+        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "hermite");
+        assertEquals(Scale.Filter.HERMITE, instance.getUpscaleFilter());
+        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "lanczos3");
+        assertEquals(Scale.Filter.LANCZOS3, instance.getUpscaleFilter());
+        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "mitchell");
+        assertEquals(Scale.Filter.MITCHELL, instance.getUpscaleFilter());
+        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "triangle");
+        assertEquals(Scale.Filter.TRIANGLE, instance.getUpscaleFilter());
     }
 
     @Override
@@ -74,21 +125,6 @@ public class FfmpegProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void testGetSharpenAmount() {
-        Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(FfmpegProcessor.SHARPEN_CONFIG_KEY, "0");
-        assertEquals(0, instance.getSharpenAmount());
-        config.setProperty(FfmpegProcessor.SHARPEN_CONFIG_KEY, "0.1");
-        assertEquals(3, instance.getSharpenAmount());
-        config.setProperty(FfmpegProcessor.SHARPEN_CONFIG_KEY, "0.2");
-        assertEquals(3, instance.getSharpenAmount());
-        config.setProperty(FfmpegProcessor.SHARPEN_CONFIG_KEY, "0.3");
-        assertEquals(3, instance.getSharpenAmount());
-        config.setProperty(FfmpegProcessor.SHARPEN_CONFIG_KEY, "1");
-        assertEquals(13, instance.getSharpenAmount());
-    }
-
-    @Test
     public void testGetSupportedFeatures() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
         Set<ProcessorFeature> expectedFeatures = new HashSet<>(Arrays.asList(
@@ -96,6 +132,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
                 ProcessorFeature.REGION_BY_PERCENT,
                 ProcessorFeature.REGION_BY_PIXELS,
                 ProcessorFeature.REGION_SQUARE,
+                ProcessorFeature.ROTATION_ARBITRARY,
                 ProcessorFeature.ROTATION_BY_90S,
                 ProcessorFeature.SIZE_ABOVE_FULL,
                 ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
@@ -115,15 +152,15 @@ public class FfmpegProcessorTest extends ProcessorTest {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         OperationList ops = TestUtil.newOperationList();
         instance.process(ops, imageInfo, outputStream);
-        final byte[] zeroSecondFrame = outputStream.toByteArray();
+        final byte[] frame1 = outputStream.toByteArray();
 
         // time option present
         ops.getOptions().put("time", "00:00:05");
         outputStream = new ByteArrayOutputStream();
         instance.process(ops, imageInfo, outputStream);
-        final byte[] fiveSecondFrame = outputStream.toByteArray();
+        final byte[] frame2 = outputStream.toByteArray();
 
-        assertFalse(Arrays.equals(zeroSecondFrame, fiveSecondFrame));
+        assertFalse(Arrays.equals(frame1, frame2));
     }
 
     @Test
@@ -132,6 +169,8 @@ public class FfmpegProcessorTest extends ProcessorTest {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
         Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
                 expectedQualities = new HashSet<>();
+        expectedQualities.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL);
         expectedQualities.add(
                 edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR);
         expectedQualities.add(
@@ -148,6 +187,8 @@ public class FfmpegProcessorTest extends ProcessorTest {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
         Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
                 expectedQualities = new HashSet<>();
+        expectedQualities.add(
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL);
         expectedQualities.add(
                 edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR);
         expectedQualities.add(

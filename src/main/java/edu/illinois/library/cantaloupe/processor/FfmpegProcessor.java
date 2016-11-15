@@ -2,16 +2,12 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.image.Color;
-import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.watermark.Position;
-import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
-import edu.illinois.library.cantaloupe.image.Transpose;
-import edu.illinois.library.cantaloupe.image.watermark.Watermark;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
+import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -25,8 +21,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
-import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -45,14 +39,18 @@ import java.util.concurrent.Executors;
  * and the ffprobe tool to get video information. Works with ffmpeg 2.8 (other
  * versions untested).
  */
-class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
+class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
 
     private static Logger logger = LoggerFactory.
             getLogger(FfmpegProcessor.class);
 
+    static final String DOWNSCALE_FILTER_CONFIG_KEY =
+            "FfmpegProcessor.downscale_filter";
     static final String PATH_TO_BINARIES_CONFIG_KEY =
             "FfmpegProcessor.path_to_binaries";
     static final String SHARPEN_CONFIG_KEY = "FfmpegProcessor.sharpen";
+    static final String UPSCALE_FILTER_CONFIG_KEY =
+            "FfmpegProcessor.upscale_filter";
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
@@ -68,10 +66,12 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
 
     static {
         SUPPORTED_IIIF_1_1_QUALITIES.addAll(Arrays.asList(
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
                 edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
                 edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
                 edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
         SUPPORTED_IIIF_2_0_QUALITIES.addAll(Arrays.asList(
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
                 edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
                 edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
                 edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
@@ -80,6 +80,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
                 ProcessorFeature.REGION_BY_PERCENT,
                 ProcessorFeature.REGION_BY_PIXELS,
                 ProcessorFeature.REGION_SQUARE,
+                ProcessorFeature.ROTATION_ARBITRARY,
                 ProcessorFeature.ROTATION_BY_90S,
                 ProcessorFeature.SIZE_ABOVE_FULL,
                 ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
@@ -106,47 +107,11 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
         return path;
     }
 
-    private static String getWatermarkFilterPosition(final Watermark watermark) {
-        final Position position = watermark.getPosition();
-        final int edgeMargin = watermark.getInset();
-        if (position != null) {
-            switch (position) {
-                case TOP_LEFT:
-                    return String.format("%d:%d", edgeMargin, edgeMargin);
-                case TOP_RIGHT:
-                    return String.format("main_w-overlay_w-%d:%d",
-                            edgeMargin, edgeMargin);
-                case BOTTOM_LEFT:
-                    return String.format("%d:main_h-overlay_h-%d",
-                            edgeMargin, edgeMargin);
-                case BOTTOM_RIGHT:
-                    return String.format(
-                            "main_w-overlay_w-%d:main_h-overlay_h-%d",
-                            edgeMargin, edgeMargin);
-                case TOP_CENTER:
-                    return String.format("(main_w-overlay_w)/2:%d", edgeMargin);
-                case BOTTOM_CENTER:
-                    return String.format(
-                            "(main_w-overlay_w)/2:main_h-overlay_h-%d",
-                            edgeMargin);
-                case LEFT_CENTER:
-                    return String.format("%d:(main_h-overlay_h)/2", edgeMargin);
-                case RIGHT_CENTER:
-                    return String.format(
-                            "main_w-overlay_w-%d:(main_h-overlay_h)/2",
-                            edgeMargin);
-                case CENTER:
-                    return "(main_w-overlay_w)/2:(main_h-overlay_h)/2";
-            }
-        }
-        return null;
-    }
-
     @Override
     public Set<Format> getAvailableOutputFormats() {
         final Set<Format> outputFormats = new HashSet<>();
         if (format.isVideo()) {
-            outputFormats.add(Format.JPG);
+            outputFormats.addAll(ImageWriter.supportedFormats());
         }
         return outputFormats;
     }
@@ -252,19 +217,31 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
 
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
-            final ProcessBuilder pb = getProcessBuilder(ops,
-                    imageInfo.getSize());
+            final ProcessBuilder pb = getProcessBuilder(ops);
             logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
             try (final InputStream processInputStream = process.getInputStream();
                  final InputStream processErrorStream = process.getErrorStream()) {
                 executorService.submit(
-                        new StreamCopier(processInputStream, outputStream));
-                executorService.submit(
                         new StreamCopier(processErrorStream, errorBucket));
+
+                final ImageReader reader = new ImageReader(
+                        new InputStreamStreamSource(processInputStream),
+                        Format.BMP);
                 try {
-                    int code = process.waitFor();
+                    final Configuration config = ConfigurationFactory.getInstance();
+                    postProcessUsingJava2d(
+                            reader,
+                            ops,
+                            imageInfo,
+                            new ReductionFactor(),
+                            false,
+                            getUpscaleFilter(),
+                            getDownscaleFilter(),
+                            config.getFloat(SHARPEN_CONFIG_KEY, 0f),
+                            outputStream);
+                    final int code = process.waitFor();
                     if (code != 0) {
                         logger.error("ffmpeg returned with code {}", code);
                         final String errorStr = errorBucket.toString();
@@ -273,8 +250,10 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
                         }
                     }
                 } finally {
-                    process.destroy();
+                    reader.dispose();
                 }
+            } finally {
+                process.destroy();
             }
         } catch (IOException | InterruptedException e) {
             String msg = e.getMessage();
@@ -293,13 +272,13 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
 
     /**
      * @param ops
-     * @param fullSize The full size of the source image
      * @return Command string
      */
-    private ProcessBuilder getProcessBuilder(OperationList ops,
-                                             Dimension fullSize) {
+    private ProcessBuilder getProcessBuilder(OperationList ops) {
         final List<String> command = new ArrayList<>();
         command.add(getPath("ffmpeg"));
+        command.add("-i");
+        command.add(sourceFile.getAbsolutePath());
 
         // Seeking (to a particular time) is supported via a "time" URL query
         // parameter which gets injected into an -ss flag. FFmpeg supports
@@ -315,137 +294,14 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
             }
         }
 
-        command.add("-i");
-        command.add(sourceFile.getAbsolutePath());
         command.add("-nostdin");
         command.add("-v");
         command.add("quiet");
         command.add("-vframes");
         command.add("1");
         command.add("-an"); // disable audio
-
-        // This is needed to calculate the scale-by-percent.
-        Rectangle visibleArea = new Rectangle(0, 0, fullSize.width,
-                fullSize.height);
-        for (Operation op : ops) {
-            if (op instanceof Crop) {
-                visibleArea = ((Crop) op).getRectangle(fullSize);
-            }
-        }
-
-        final List<String> filters = new ArrayList<>();
-        String filterId = "in";
-        for (Operation op : ops) {
-            if (op instanceof Crop) {
-                Crop crop = (Crop) op;
-                if (!crop.isNoOp()) {
-                    Rectangle cropArea = crop.getRectangle(fullSize);
-                    // ffmpeg will complain if given an out-of-bounds crop area
-                    cropArea.width = Math.min(cropArea.width, fullSize.width - cropArea.x);
-                    cropArea.height = Math.min(cropArea.height, fullSize.height - cropArea.y);
-                    filters.add(String.format("[%s] crop=%d:%d:%d:%d [crop]",
-                            filterId, cropArea.width, cropArea.height,
-                            cropArea.x, cropArea.y));
-                    filterId = "crop";
-                }
-            } else if (op instanceof Scale) {
-                final Scale scale = (Scale) op;
-                if (!scale.isNoOp()) {
-                    if (scale.getPercent() != null) {
-                        int width = Math.round(visibleArea.width * scale.getPercent());
-                        int height = Math.round(visibleArea.height * scale.getPercent());
-                        filters.add(String.format("[%s] scale=%d:%d [scale]",
-                                filterId, width, height));
-                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                        filters.add(String.format("[%s] scale=%d:-1 [scale]",
-                                filterId, scale.getWidth()));
-                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                        filters.add(String.format("[%s] scale=-1:%d [scale]",
-                                filterId, scale.getHeight()));
-                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                        int min = Math.min(scale.getWidth(), scale.getHeight());
-                        filters.add(String.format("[%s] scale=min(%d\\, iw):-1 [scale]",
-                                filterId, min));
-                    } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
-                        filters.add(String.format("[%s] scale=%d:%d [scale]",
-                                filterId, scale.getWidth(), scale.getHeight()));
-                    }
-                    filterId = "scale";
-                }
-            } else if (op instanceof Transpose) {
-                final Transpose transpose = (Transpose) op;
-                switch (transpose) {
-                    case HORIZONTAL:
-                        filters.add(String.format("[%s] hflip [transpose]",
-                                filterId));
-                        break;
-                    case VERTICAL:
-                        filters.add(String.format("[%s] vflip [transpose]",
-                                filterId));
-                        break;
-                }
-                filterId = "transpose";
-            } else if (op instanceof Rotate) {
-                final Rotate rotate = (Rotate) op;
-                if (!rotate.isNoOp()) {
-                    // 0 = 90CounterClockwise and Vertical Transpose (default)
-                    // 1 = 90Clockwise
-                    // 2 = 90CounterClockwise
-                    // 3 = 90Clockwise and Vertical Transpose
-                    switch (Math.round(rotate.getDegrees())) {
-                        case 90:
-                            filters.add(String.format("[%s] transpose=1 [rotate]",
-                                    filterId));
-                            filterId = "rotate";
-                            break;
-                        case 180:
-                            filters.add(String.format("[%s] transpose=1 [rotate1]",
-                                    filterId));
-                            filters.add("[rotate1] transpose=1 [rotate2]");
-                            filterId = "rotate2";
-                            break;
-                        case 270:
-                            filters.add(String.format("[%s] transpose=2 [rotate]",
-                                    filterId));
-                            filterId = "rotate";
-                            break;
-                    }
-                }
-            } else if (op instanceof Color) {
-                final Color color = (Color) op;
-                if (color.equals(Color.GRAY)) {
-                    filters.add(String.format(
-                            "[%s] colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3 [color]",
-                            filterId));
-                    filterId = "color";
-                }
-            }
-        }
-
-        // Apply the sharpen operation, if present.
-        final int sharpenAmount = getSharpenAmount();
-        if (sharpenAmount > 0) {
-            filters.add(String.format("[%s] unsharp=luma_msize_x=%d:luma_msize_y=%d:luma_amount=2.5 [unsharp]",
-                    filterId, sharpenAmount, sharpenAmount));
-            filterId = "unsharp";
-        }
-
-        for (Operation op : ops) {
-            if (op instanceof Watermark) {
-                final Watermark watermark = (Watermark) op;
-                final File watermarkFile = watermark.getImage();
-                filters.add(0, String.format("movie=%s [wm]",
-                        watermarkFile.getAbsolutePath()));
-                filters.add(String.format("[%s][wm] overlay=%s [out]",
-                        filterId, getWatermarkFilterPosition(watermark)));
-            }
-        }
-
-        if (filters.size() > 0) {
-            command.add("-vf");
-            command.add(StringUtils.join(filters, "; "));
-        }
-
+        command.add("-vcodec");
+        command.add("bmp");
         command.add("-f"); // source or output format depending on position
         command.add("image2pipe");
         command.add("pipe:1");
@@ -453,29 +309,26 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
         return new ProcessBuilder(command);
     }
 
-    /**
-     * Translates a sharpen amount from 0-1 from the configuration to an amount
-     * for ffmpeg.
-     *
-     * @see <a href="https://ffmpeg.org/ffmpeg-filters.html#unsharp-1">
-     *      unsharp</a>
-     * @return Normalized sharpen amount for ffmpeg.
-     */
-    int getSharpenAmount() {
-        // The docs mention a max of 63, but the image falls apart way before
-        // that.
-        final float MAX_AMOUNT = 13f;
-        final Configuration config = ConfigurationFactory.getInstance();
-        int amount = Math.round(MAX_AMOUNT *
-                config.getFloat(SHARPEN_CONFIG_KEY, 0));
-
-        // ffmpeg requires an odd amount.
-        if (amount > 1 && amount % 2 == 0) {
-            amount -= 1;
+    Scale.Filter getDownscaleFilter() {
+        final String upscaleFilterStr = ConfigurationFactory.getInstance().
+                getString(DOWNSCALE_FILTER_CONFIG_KEY);
+        try {
+            return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
+        } catch (Exception e) {
+            logger.warn("Invalid value for {}", DOWNSCALE_FILTER_CONFIG_KEY);
         }
-        // ffmpeg won't accept an amount of 1.
-        amount = (amount == 1) ? 3 : amount;
-        return amount;
+        return null;
+    }
+
+    Scale.Filter getUpscaleFilter() {
+        final String upscaleFilterStr = ConfigurationFactory.getInstance().
+                getString(UPSCALE_FILTER_CONFIG_KEY);
+        try {
+            return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
+        } catch (Exception e) {
+            logger.warn("Invalid value for {}", UPSCALE_FILTER_CONFIG_KEY);
+        }
+        return null;
     }
 
 }
