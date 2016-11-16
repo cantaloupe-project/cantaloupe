@@ -15,7 +15,7 @@ title: What's New
 <h2>3.2.1</h2>
 
 <ul>
-  <li>Fixed the <code>get_resolver()</code> delegate method, which enables the use of dynamic resolvers.</li>
+  <li>Fixed a bug that caused the resolver selected by the <code>get_resolver()</code> delegate method to not be initielized properly.</li>
   <li>Fixed a path-handling bug affecting ImageMagickProcessor and GraphicsMagickProcessor primarily in Windows.</li>
   <li>Fixed incorrect image sizes when using FfmpegProcessor with percentage scales above 100%.</li>
   <li>Improved support for 16-bit source images in Java2dProcessor, JaiProcessor, GraphicsMagickProcessor, and ImageMagickProcessor.</li>
