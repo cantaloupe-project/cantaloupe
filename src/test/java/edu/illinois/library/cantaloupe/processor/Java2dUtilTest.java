@@ -186,9 +186,9 @@ public class Java2dUtilTest {
         int green = (pixel >> 8) & 0xff;
         int blue = (pixel) & 0xff;
         assertEquals(255, alpha);
-        assertEquals(0, red);
-        assertEquals(0, green);
-        assertEquals(0, blue);
+        assertEquals(181, red);
+        assertEquals(173, green);
+        assertEquals(158, blue);
     }
 
     @Test
