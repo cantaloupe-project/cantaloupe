@@ -141,11 +141,10 @@ public class ImageMagickProcessorTest extends Im4JavaProcessorTest {
         int red = (pixel >> 16) & 0xff;
         int green = (pixel >> 8) & 0xff;
         int blue = (pixel) & 0xff;
-        // "ImageMagick blue"
         assertEquals(255, alpha);
         assertTrue(red < 5);
-        assertEquals(4, green);
-        assertEquals(254, blue);
+        assertTrue(green < 8);
+        assertTrue(blue > 240);
     }
 
 }

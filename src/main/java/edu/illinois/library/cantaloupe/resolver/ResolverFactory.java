@@ -22,7 +22,7 @@ import java.util.Set;
 public abstract class ResolverFactory {
 
     /**
-     * @return How resolvers are chosen by {@link #getResolver(Identifier)}.
+     * How resolvers are chosen by {@link #getResolver(Identifier)}.
      */
     public enum SelectionStrategy {
         STATIC, DELEGATE_SCRIPT
@@ -41,7 +41,7 @@ public abstract class ResolverFactory {
      * @return Set of instances of each unique resolver.
      */
     public static Set<Resolver> getAllResolvers() {
-        return new HashSet<Resolver>(Arrays.asList(
+        return new HashSet<>(Arrays.asList(
                 new AmazonS3Resolver(),
                 new AzureStorageResolver(),
                 new FilesystemResolver(),
@@ -73,9 +73,7 @@ public abstract class ResolverFactory {
             final String resolverName = config.
                     getString(STATIC_RESOLVER_CONFIG_KEY);
             if (resolverName != null) {
-                final Resolver resolver = newStaticResolver(resolverName);
-                resolver.setIdentifier(identifier);
-                return resolver;
+                return newStaticResolver(resolverName, identifier);
             } else {
                 throw new ConfigurationException(STATIC_RESOLVER_CONFIG_KEY +
                         " is not set to a valid resolver.");
@@ -83,6 +81,9 @@ public abstract class ResolverFactory {
         }
     }
 
+    /**
+     * @return How resolvers are chosen by {@link #getResolver(Identifier)}.
+     */
     public static SelectionStrategy getSelectionStrategy() {
         final Configuration config = Configuration.getInstance();
         return config.getBoolean(DELEGATE_RESOLVER_CONFIG_KEY, false) ?
@@ -91,27 +92,32 @@ public abstract class ResolverFactory {
 
     /**
      * @param resolverName Resolver name
+     * @param identifier Identifier to return a resolver for.
      * @return An instance of the current resolver based on the
      * <code>resolver</code> setting in the configuration.
      * @throws Exception
      * @throws ConfigurationException If there is no resolver specified in the
      * configuration.
      */
-    private static Resolver newStaticResolver(String resolverName)
+    private static Resolver newStaticResolver(String resolverName,
+                                              Identifier identifier)
             throws Exception {
-        return newResolver(resolverName);
+        return newResolver(resolverName, identifier);
     }
 
-    private static Resolver newResolver(String name) throws Exception {
+    private static Resolver newResolver(String name, Identifier identifier)
+            throws Exception {
         Class class_ = Class.forName(ResolverFactory.class.getPackage().getName() +
                 "." + name);
-        return (Resolver) class_.newInstance();
+        Resolver resolver = (Resolver) class_.newInstance();
+        resolver.setIdentifier(identifier);
+        return resolver;
     }
 
     /**
      * Passes the given identifier to the resolver chooser delegate method.
      *
-     * @param identifier Identifier to return a resolver for
+     * @param identifier Identifier to return a resolver for.
      * @return Pathname of the image file corresponding to the given identifier,
      * as reported by the lookup script, or null.
      * @throws IOException If the lookup script configuration key is undefined
@@ -124,7 +130,7 @@ public abstract class ResolverFactory {
         final String[] args = {identifier.toString()};
 
         final Object result = engine.invoke(RESOLVER_CHOOSER_DELEGATE_METHOD, args);
-        return newResolver((String) result);
+        return newResolver((String) result, identifier);
     }
 
 }

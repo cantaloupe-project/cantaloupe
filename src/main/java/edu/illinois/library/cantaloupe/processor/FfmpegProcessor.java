@@ -323,6 +323,15 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
         command.add("1");
         command.add("-an"); // disable audio
 
+        // This is needed to calculate the scale-by-percent.
+        Rectangle visibleArea = new Rectangle(0, 0, fullSize.width,
+                fullSize.height);
+        for (Operation op : ops) {
+            if (op instanceof Crop) {
+                visibleArea = ((Crop) op).getRectangle(fullSize);
+            }
+        }
+
         final List<String> filters = new ArrayList<>();
         String filterId = "in";
         for (Operation op : ops) {
@@ -342,8 +351,8 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
                 final Scale scale = (Scale) op;
                 if (!scale.isNoOp()) {
                     if (scale.getPercent() != null) {
-                        int width = Math.round(fullSize.width * scale.getPercent());
-                        int height = Math.round(fullSize.height * scale.getPercent());
+                        int width = Math.round(visibleArea.width * scale.getPercent());
+                        int height = Math.round(visibleArea.height * scale.getPercent());
                         filters.add(String.format("[%s] scale=%d:%d [scale]",
                                 filterId, width, height));
                     } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
