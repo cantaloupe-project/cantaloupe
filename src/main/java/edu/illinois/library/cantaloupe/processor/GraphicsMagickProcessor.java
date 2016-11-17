@@ -179,6 +179,13 @@ class GraphicsMagickProcessor extends MagickProcessor
         args.add("convert");
         args.add(format.getPreferredExtension() + ":-"); // read from stdin
 
+        // Normalization needs to happen before cropping to maintain the
+        // intensity of cropped regions relative to the full image.
+        final Configuration config = ConfigurationFactory.getInstance();
+        if (config.getBoolean(NORMALIZE_CONFIG_KEY, false)) {
+            args.add("-normalize");
+        }
+
         for (Operation op : ops) {
             if (op instanceof Crop) {
                 Crop crop = (Crop) op;
@@ -251,8 +258,6 @@ class GraphicsMagickProcessor extends MagickProcessor
                     if (ops.getOutputFormat().supportsTransparency()) {
                         args.add("none");
                     } else {
-                        final Configuration config =
-                                ConfigurationFactory.getInstance();
                         args.add(config.getString(BACKGROUND_COLOR_CONFIG_KEY, "black"));
                     }
                     args.add("-rotate");
@@ -269,11 +274,6 @@ class GraphicsMagickProcessor extends MagickProcessor
                         break;
                 }
             }
-        }
-
-        final Configuration config = ConfigurationFactory.getInstance();
-        if (config.getBoolean(NORMALIZE_CONFIG_KEY, false)) {
-            args.add("-normalize");
         }
 
         args.add("-depth");
