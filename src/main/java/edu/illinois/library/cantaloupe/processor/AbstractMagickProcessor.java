@@ -11,7 +11,7 @@ import java.util.Set;
  * Base class for {@link ImageMagickProcessor} and
  * {@link GraphicsMagickProcessor}.
  */
-abstract class MagickProcessor extends AbstractProcessor {
+abstract class AbstractMagickProcessor extends AbstractProcessor {
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();

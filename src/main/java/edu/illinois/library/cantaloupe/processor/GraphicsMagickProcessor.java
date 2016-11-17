@@ -42,7 +42,7 @@ import java.util.Set;
  * setting because telling GM not to preserve metadata means tell it not to
  * preserve an ICC profile. Thus, metadata always passes through.</p>
  */
-class GraphicsMagickProcessor extends MagickProcessor
+class GraphicsMagickProcessor extends AbstractMagickProcessor
         implements StreamProcessor {
 
     private static Logger logger = LoggerFactory.

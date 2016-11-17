@@ -43,7 +43,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * setting because telling IM not to preserve metadata means telling it not to
  * preserve an ICC profile. Thus, metadata always passes through.</p>
  */
-class ImageMagickProcessor extends MagickProcessor implements StreamProcessor {
+class ImageMagickProcessor extends AbstractMagickProcessor implements StreamProcessor {
 
     private static Logger logger = LoggerFactory.
             getLogger(ImageMagickProcessor.class);
