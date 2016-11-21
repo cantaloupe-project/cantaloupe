@@ -232,24 +232,25 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
             String result = (String) expr.evaluate(infoDocument,
                     XPathConstants.STRING);
             // Read the tile dimensions out of the Stiles={n,n} line
-            final Scanner scan = new Scanner(result);
-            while (scan.hasNextLine()) {
-                String line = scan.nextLine().trim();
-                if (line.startsWith("Stiles=")) {
-                    String[] parts = StringUtils.split(line, ",");
-                    if (parts.length == 2) {
-                        final int dim1 = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
-                        final int dim2 = Integer.parseInt(parts[1].replaceAll("[^0-9]", ""));
-                        int tileWidth, tileHeight;
-                        if (width > height) {
-                            tileWidth = Math.max(dim1, dim2);
-                            tileHeight = Math.min(dim1, dim2);
-                        } else {
-                            tileWidth = Math.min(dim1, dim2);
-                            tileHeight = Math.max(dim1, dim2);
+            try(final Scanner scan = new Scanner(result)) {
+                while (scan.hasNextLine()) {
+                    String line = scan.nextLine().trim();
+                    if (line.startsWith("Stiles=")) {
+                        String[] parts = StringUtils.split(line, ",");
+                        if (parts.length == 2) {
+                            final int dim1 = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
+                            final int dim2 = Integer.parseInt(parts[1].replaceAll("[^0-9]", ""));
+                            int tileWidth, tileHeight;
+                            if (width > height) {
+                                tileWidth = Math.max(dim1, dim2);
+                                tileHeight = Math.min(dim1, dim2);
+                            } else {
+                                tileWidth = Math.min(dim1, dim2);
+                                tileHeight = Math.max(dim1, dim2);
+                            }
+                            info.getImages().get(0).tileWidth = tileWidth;
+                            info.getImages().get(0).tileHeight = tileHeight;
                         }
-                        info.getImages().get(0).tileWidth = tileWidth;
-                        info.getImages().get(0).tileHeight = tileHeight;
                     }
                 }
             }
