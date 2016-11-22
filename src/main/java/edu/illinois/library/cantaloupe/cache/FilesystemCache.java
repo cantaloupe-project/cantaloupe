@@ -160,20 +160,21 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         @Override
         public void close() throws IOException {
             try {
-                logger.debug("Moving {} to {}",
-                        tempFile, destinationFile.getName());
-                FileUtils.moveFile(tempFile, destinationFile);
-            } catch (IOException e) {
-                logger.warn(getClass().getName() + ".close(): " + e.getMessage());
-            } finally {
-                logger.debug("Closing stream for {}", toRemove);
                 try {
+                    // Close super in order to release its handle on tempFile.
+                    logger.debug("close(): closing stream for {}", toRemove);
                     super.close();
                 } catch (IOException e) {
-                    logger.warn(e.getMessage(), e);
-                } finally {
-                    imagesBeingWritten.remove(toRemove);
+                    logger.warn("close(): {}", e.getMessage());
                 }
+
+                logger.debug("close(): moving {} to {}",
+                        tempFile, destinationFile.getName());
+                FileUtils.moveFile(tempFile, destinationFile);
+            } catch (Exception e) {
+                logger.warn("close(): {}", e.getMessage());
+            } finally {
+                imagesBeingWritten.remove(toRemove);
             }
         }
 
