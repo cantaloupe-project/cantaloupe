@@ -628,9 +628,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     @Override
     public OutputStream getImageOutputStream(OperationList ops)
             throws CacheException {
-        // If the image is already being written in another thread, it will
-        // exist in the derivativeImagesBeingWritten set. If so, return a dummy output
-        // stream to avoid interfering.
+        // If the image is being written in another thread, it may (or may not)
+        // be present in the derivativeImagesBeingWritten set. If so, return a
+        // null output stream to avoid interfering.
         if (derivativeImagesBeingWritten.contains(ops)) {
             logger.info("getImageOutputStream(OperationList): miss, but " +
                     "cache file for {} is being written in another thread, " +
@@ -638,11 +638,13 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             return new NullOutputStream();
         }
 
+        // ops will be removed from this set when the non-null output stream
+        // returned by this method is closed.
         derivativeImagesBeingWritten.add(ops);
 
         // If the image is being written simultaneously in another process,
-        // there will be a temp file on the filesystem. If so, return a dummy
-        // output stream to avoid interfering.
+        // there may (or may not) be a temp file on the filesystem. If so,
+        // return a null output stream to avoid interfering.
         final File tempFile = getDerivativeImageTempFile(ops);
         if (tempFile.exists()) {
             logger.info("getImageOutputStream(OperationList): miss, but a " +
@@ -650,14 +652,16 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             return new NullOutputStream();
         }
 
-        logger.info("getImageOutputStream(OperationList): miss; caching {}",
-                ops);
-
+        logger.info("getImageOutputStream(OperationList): miss; caching {}", ops);
         try {
-            if (!tempFile.getParentFile().exists()) {
-                if (!tempFile.getParentFile().mkdirs() ||
-                        !tempFile.createNewFile()) {
-                    throw new CacheException("Unable to create " + tempFile);
+            if (!tempFile.getParentFile().isDirectory()) {
+                if (!tempFile.getParentFile().mkdirs()) {
+                    logger.info("getImageOutputStream(OperationList): can't create {}",
+                            tempFile.getParentFile());
+                    // We could threw a CacheException here, but it is probably
+                    // not necessary as we are likely to get here often during
+                    // concurrent invocations.
+                    return new NullOutputStream();
                 }
             }
             final File destFile = getDerivativeImageFile(ops);
