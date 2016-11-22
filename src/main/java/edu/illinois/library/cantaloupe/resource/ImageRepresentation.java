@@ -75,16 +75,20 @@ public class ImageRepresentation extends OutputRepresentation {
                     // Create a TeeOutputStream to write to the response output
                     // output stream and the cache pseudo-simultaneously.
                     cacheOutputStream = cache.getImageOutputStream(this.ops);
-                    OutputStream teeStream = new TeeOutputStream(
-                            outputStream, cacheOutputStream);
-                    doCacheAwareWrite(teeStream, cache);
+                    try {
+                        OutputStream teeStream = new TeeOutputStream(
+                                outputStream, cacheOutputStream);
+                        doCacheAwareWrite(teeStream, cache);
+                    } finally {
+                        // Restlet will close outputStream, but
+                        // cacheOutputStream is our responsibility.
+                        if (cacheOutputStream != null) {
+                            cacheOutputStream.close();
+                        }
+                    }
                 }
             } catch (Exception e) {
                 throw new IOException(e);
-            } finally {
-                if (cacheOutputStream != null) {
-                    cacheOutputStream.close();
-                }
             }
         } else {
             doWrite(outputStream);
