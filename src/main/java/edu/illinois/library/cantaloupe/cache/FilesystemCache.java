@@ -171,8 +171,10 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 logger.debug("close(): moving {} to {}",
                         tempFile, destinationFile.getName());
                 FileUtils.moveFile(tempFile, destinationFile);
-            } catch (Exception e) {
-                logger.warn("close(): {}", e.getMessage());
+            } catch (IOException e) {
+                // This is rarely an issue, as it is common for other
+                // threads/processes to interfere with the move.
+                logger.debug("close(): {}", e.getMessage());
             } finally {
                 imagesBeingWritten.remove(toRemove);
             }
