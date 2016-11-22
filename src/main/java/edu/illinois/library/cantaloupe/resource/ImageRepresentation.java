@@ -86,9 +86,9 @@ public class ImageRepresentation extends OutputRepresentation {
                         // Create a TeeOutputStream to write to the response
                         // output stream and the cache pseudo-simultaneously.
                         cacheOutputStream = cache.getImageOutputStream(opList);
-                        OutputStream teeStream = new TeeOutputStream(
-                                outputStream, cacheOutputStream);
                         try {
+                            OutputStream teeStream = new TeeOutputStream(
+                                    outputStream, cacheOutputStream);
                             doWrite(teeStream);
                         } catch (IOException e) {
                             // This typically happens when the connection has
@@ -98,14 +98,16 @@ public class ImageRepresentation extends OutputRepresentation {
                             // corrupt, so it must be purged.
                             logger.info("write(): {}", e.getMessage());
                             cache.purge(opList);
+                        } finally {
+                            // Restlet will close outputStream, but
+                            // cacheOutputStream is our responsibility.
+                            if (cacheOutputStream != null) {
+                                cacheOutputStream.close();
+                            }
                         }
                     }
                 } catch (Exception e) {
                     throw new IOException(e);
-                } finally {
-                    if (cacheOutputStream != null) {
-                        cacheOutputStream.close();
-                    }
                 }
             } else {
                 doWrite(outputStream);
