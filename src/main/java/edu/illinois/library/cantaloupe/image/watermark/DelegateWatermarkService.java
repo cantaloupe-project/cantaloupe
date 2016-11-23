@@ -55,7 +55,7 @@ class DelegateWatermarkService {
                 final Color strokeColor =
                         ColorUtil.fromString((String) defs.get("stroke_color"));
                 final float strokeWidth =
-                        Float.parseFloat((String) defs.get("stroke_width"));
+                        Float.parseFloat(defs.get("stroke_width").toString());
                 return new StringWatermark(string, position, inset, font, color,
                         strokeColor, strokeWidth);
             }
