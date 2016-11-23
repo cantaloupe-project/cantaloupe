@@ -88,12 +88,24 @@ module Cantaloupe
 
   def self.watermark(identifier, operations, resulting_size, output_format,
       request_uri, request_headers, client_ip, cookies)
-    if identifier == 'cats'
-      return {
-          'pathname' => '/dev/cats',
-          'inset' => 5,
-          'position' => 'bottom left'
-      }
+    case identifier
+      when 'image'
+        return {
+            'pathname' => '/dev/cats',
+            'inset' => 5,
+            'position' => 'bottom left'
+        }
+      when 'string'
+        return {
+            'string' => "dogs\ndogs",
+            'inset' => 5,
+            'position' => 'bottom left',
+            'color' => 'red',
+            'font' => 'Helvetica',
+            'font_size' => 20,
+            'stroke_color' => 'blue',
+            'stroke_width' => 3
+        }
     end
     false
   end

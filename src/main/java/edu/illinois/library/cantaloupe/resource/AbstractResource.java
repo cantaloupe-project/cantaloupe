@@ -7,8 +7,10 @@ import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.MetadataCopy;
+import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.redaction.RedactionService;
+import edu.illinois.library.cantaloupe.image.watermark.Watermark;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -218,12 +220,14 @@ public abstract class AbstractResource extends ServerResource {
 
         // Watermark
         try {
-            if (WatermarkService.isEnabled()) {
-                opList.add(WatermarkService.newWatermark(
+            final WatermarkService service = new WatermarkService();
+            if (service.isEnabled()) {
+                final Watermark watermark = service.newWatermark(
                         opList, fullSize, getReference().toUrl(),
                         getRequest().getHeaders().getValuesMap(),
                         getCanonicalClientIpAddress(),
-                        getRequest().getCookies().getValuesMap()));
+                        getRequest().getCookies().getValuesMap());
+                opList.add((Operation) watermark);
             } else {
                 logger.debug("addNonEndpointOperations(): watermarking is " +
                         "disabled; skipping.");

@@ -2502,20 +2502,12 @@
                                         </select>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td>Image
-                                        <a tabindex="0" class="btn btn-sm cl-help"
-                                           role="button" data-toggle="popover"
-                                           data-trigger="focus"
-                                           data-content="Absolute path of the watermark image. Must be a
-                                           .png file.">?</a>
-                                    </td>
-                                    <td>
-                                        <input type="text" class="form-control"
-                                               name="watermark.BasicStrategy.image"
-                                               data-requires-restart="false">
-                                    </td>
-                                </tr>
+                            </table>
+                        </section>
+
+                        <section id="cl-watermark-basic">
+                            <h3>BasicStrategy</h3>
+                            <table class="table table-striped">
                                 <tr>
                                     <td>Position</td>
                                     <td>
@@ -2577,6 +2569,123 @@
                                     <td>
                                         <input type="number" class="form-control"
                                                name="watermark.BasicStrategy.output_height_threshold"
+                                               min="0"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Type</td>
+                                    <td>
+                                        <select class="form-control"
+                                                name="watermark.BasicStrategy.type"
+                                                data-requires-restart="false">
+                                            <option value="string">String</option>
+                                            <option value="image">Image</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
+                        <section id="cl-watermark-basic-image">
+                            <h4>BasicStrategy (Image)</h4>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Image File
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Absolute path of the watermark image. Must be a
+                                           .png file.">?</a>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                               name="watermark.BasicStrategy.image"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
+                        <section id="cl-watermark-basic-string">
+                            <h4>BasicStrategy (String)</h4>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>String</td>
+                                    <td>
+                                        <textarea class="form-control"
+                                               name="watermark.BasicStrategy.string"
+                                               data-requires-restart="false"></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Font</td>
+                                    <td>
+                                        <select class="form-control"
+                                                name="watermark.BasicStrategy.string.font"
+                                                data-requires-restart="false">
+                                            #foreach ($font in $fonts)
+                                                #if ($font.equals($currentWatermarkFont))
+                                                    <option selected>$font</option>
+                                                #else
+                                                    <option>$font</option>
+                                                #end
+                                            #end
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Font Size
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Font size in points.">?</a>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control"
+                                               name="watermark.BasicStrategy.string.font_size"
+                                               min="0"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Fill Color
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Color name, rgb(r,g,b),
+                                           and #rrggbb syntax are supported.">?</a>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                               name="watermark.BasicStrategy.string.color"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Stroke Color
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Color name, rgb(r,g,b),
+                                           and #rrggbb syntax are supported.">?</a>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                               name="watermark.BasicStrategy.string.stroke.color"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Stroke Width
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Thickness of the text outline in pixels.">?</a>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control"
+                                               name="watermark.BasicStrategy.string.stroke.width"
                                                min="0"
                                                data-requires-restart="false">
                                     </td>

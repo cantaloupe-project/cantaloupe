@@ -539,14 +539,34 @@ AzureStorageCache.ttl_seconds = 2592000
 # Whether to enable watermarking.
 watermark.enabled = false
 
-# Configures how watermarking works. `BasicStrategy` will use the
+# Sets how watermarking is configured. `BasicStrategy` will use the
 # `watermark.BasicStrategy.*` keys in this section. `ScriptStrategy` will
 # use the `watermark` delegate script method. See the user manual for more
 # information.
 watermark.strategy = BasicStrategy
 
+# `string` or `image`.
+watermark.BasicStrategy.type = string
+
 # Absolute path of the watermark image. Must be a .png file.
 watermark.BasicStrategy.image = /path/to/watermark.png
+
+# Watermark text.
+watermark.BasicStrategy.string = Copyright \u00A9️ My Great Organization\nAll rights reserved.
+
+watermark.BasicStrategy.string.font = Helvetica
+
+# Font size in points.
+watermark.BasicStrategy.string.font_size = 18
+
+# Color name, rgb(r,g,b), and #rrggbb syntax are supported.
+watermark.BasicStrategy.string.color = white
+
+# Color name, rgb(r,g,b), and #rrggbb syntax are supported.
+watermark.BasicStrategy.string.stroke.color = white
+
+# Stroke width in points.
+watermark.BasicStrategy.string.stroke.width = 2
 
 # Allowed values: `top left`, `top center`, `top right`, `left center`,
 # `center`, `right center`, `bottom left`, `bottom center`, `bottom right`.
