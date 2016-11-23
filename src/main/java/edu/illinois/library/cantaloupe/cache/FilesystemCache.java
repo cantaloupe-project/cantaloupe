@@ -271,6 +271,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     private final Object lock5 = new Object();
     private final Object lock6 = new Object();
     private final Object lock7 = new Object();
+    private final Object lock8 = new Object();
 
     /**
      * Returns a reversible, filename-safe version of the input string.
@@ -635,50 +636,62 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         }
     }
 
+    /**
+     * @param ops Operation list representing the image to write to.
+     * @return An output stream to write to. The output stream will generally
+     *         write to a temp file and then move it into place when closed.
+     *         It may also write to nothing if an output stream for the same
+     *         operation list has been returned to another thread but not yet
+     *         closed.
+     * @throws CacheException If anything goes wrong.
+     */
     @Override
     public OutputStream getImageOutputStream(OperationList ops)
             throws CacheException {
-        // If the image is being written in another thread, it may (or may not)
-        // be present in the derivativeImagesBeingWritten set. If so, return a
-        // null output stream to avoid interfering.
-        if (derivativeImagesBeingWritten.contains(ops)) {
-            logger.info("getImageOutputStream(OperationList): miss, but " +
-                    "cache file for {} is being written in another thread, " +
-                    "so not caching", ops);
-            return new NullOutputStream();
-        }
-
-        // ops will be removed from this set when the non-null output stream
-        // returned by this method is closed.
-        derivativeImagesBeingWritten.add(ops);
-
-        // If the image is being written simultaneously in another process,
-        // there may (or may not) be a temp file on the filesystem. If so,
-        // return a null output stream to avoid interfering.
         final File tempFile = getDerivativeImageTempFile(ops);
+        // If the image is being written simultaneously in another thread or
+        // process, tempFile may (or may not) already exist on the filesystem.
+        // If so, return a null output stream to avoid interfering.
+        //
+        // N.B. This check is being done for the sake of process-safety, i.e.
+        // so that multiple application instances can share the same cache
+        // storage. If not for that, it could be skipped.
         if (tempFile.exists()) {
             logger.info("getImageOutputStream(OperationList): miss, but a " +
                     "temp file for {} already exists, so not caching", ops);
             return new NullOutputStream();
         }
 
-        logger.info("getImageOutputStream(OperationList): miss; caching {}", ops);
-        try {
-            if (!tempFile.getParentFile().isDirectory()) {
-                if (!tempFile.getParentFile().mkdirs()) {
-                    logger.info("getImageOutputStream(OperationList): can't create {}",
-                            tempFile.getParentFile());
-                    // We could threw a CacheException here, but it is probably
-                    // not necessary as we are likely to get here often during
-                    // concurrent invocations.
-                    return new NullOutputStream();
+        // Synchronize this part because we don't want multiple non-null output
+        // streams for the same operation list being available concurrently.
+        synchronized(lock8) {
+            // If the image is being written in another thread, it will
+            // be present in the derivativeImagesBeingWritten set. If so,
+            // return a null output stream to avoid interfering.
+            if (derivativeImagesBeingWritten.contains(ops)) {
+                logger.info("getImageOutputStream(OperationList): miss, " +
+                        "but cache file for {} is being written in " +
+                        "another thread, so not caching", ops);
+                return new NullOutputStream();
+            } else {
+                logger.info("getImageOutputStream(OperationList): miss; " +
+                        "caching {}", ops);
+
+                // No need to check the return value. If anything went wrong,
+                // the client will find out about it shortly. :D
+                tempFile.getParentFile().mkdirs();
+
+                // ops will be removed from this set when the below output
+                // stream is closed.
+                derivativeImagesBeingWritten.add(ops);
+                try {
+                    return new ConcurrentFileOutputStream(tempFile,
+                            getDerivativeImageFile(ops),
+                            derivativeImagesBeingWritten, ops);
+                } catch (IOException e) {
+                    throw new CacheException(e.getMessage(), e);
                 }
             }
-            final File destFile = getDerivativeImageFile(ops);
-            return new ConcurrentFileOutputStream(
-                    tempFile, destFile, derivativeImagesBeingWritten, ops);
-        } catch (IOException e) {
-            throw new CacheException(e.getMessage(), e);
         }
     }
 
