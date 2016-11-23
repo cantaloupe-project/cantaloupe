@@ -31,21 +31,21 @@ title: Watermarking
   </li>
 </ul>
 
-<p>The watermarking feature overlays an image "watermark" on top of an output image. This can be useful for applying branding, attribution, copyright notices, and so on.</p>
+<p>The watermarking feature overlays an image or text string on top of a derivative (output) image. This can be useful for applying branding, attribution, copyright notices, and so on.</p>
 
 <h2 id="Modes of Operation">Modes of Operation</h2>
 
-<p>The watermarking system offers two "strategies," or modes of operation: a basic strategy, where watermark properties are hard-coded in the configuration file and applied to all requests; and a <a href="#ScriptStrategy">script strategy</a>, where the decision whether or not to apply a watermark depends on the return value of a delegate script method. The <code>watermark.strategy</code> configuration key is used to set the strategy.</p>
+<p>The watermarking system offers two "strategies," or modes of operation: a basic strategy, where watermark properties are hard-coded in the configuration file and applied to all requests; and a <a href="#ScriptStrategy">script strategy</a>, where the decision whether to apply a watermark, and what kind, depends on the return value of a delegate script method. The <code>watermark.strategy</code> configuration key is used to set the strategy.</p>
 
 <h3 id="BasicStrategy">BasicStrategy</h3>
 
-<p>With BasicStrategy, the <code>watermark.BasicStrategy.*</code> keys in the configuration file are used to set a watermark image, position, inset, and minimum size cutoff. This strategy is easy to configure and works well when you intend for the same watermark to be applied to all images.</p>
+<p>With BasicStrategy, the <code>watermark.BasicStrategy.*</code> keys in the configuration file are used to set a watermark type (image or string), position, inset, and others. This strategy is easy to configure and works well when you intend for the same watermark to be applied to all images.</p>
 
 <h3 id="ScriptStrategy">ScriptStrategy</h3>
 
-<p>Perhaps you only want to apply a watermark to some of your images, and to others, you want to apply a different watermark, or no watermark. Perhaps you want to control watermarking based on the client's IP address, or user agent, or whether it possesses a certain cookie. Or, perhaps you only want to apply watermarks to JPEG output images, and not GIFs. Or, perhaps you don't want to apply a watermark to images that have been rotated. All of this is possible by writing just a few lines of code.</p>
+<p>Perhaps you only want to apply an image watermark to some of your images, and to others, you want to apply a string watermark, or no watermark. Perhaps you want to control watermarking based on the client's IP address, or user agent, or whether it possesses a certain cookie. Or, perhaps you only want to apply watermarks to JPEG output images, and not GIFs. Or, perhaps you don't want to apply a watermark to images that have been rotated. All of this is possible by writing just a few lines of code.</p>
 
-<p>With the <code>Cantaloupe::watermark</code> delegate script method, you can tell the image server whether or not to apply a watermark in response to a particular request, in what position to apply it, and what image to apply. An example of how this can be accomplished appears below:</p>
+<p>With the <code>Cantaloupe::watermark()</code> delegate method, you can tell the image server whether to apply a watermark in response to a particular request, and what its properties should be. An example of how this can be accomplished appears below:</p>
 
 {% highlight ruby %}
 module Cantaloupe
@@ -55,7 +55,7 @@ module Cantaloupe
   def self.watermark(identifier, operations, resulting_size, output_format,
                      request_uri, request_headers, client_ip, cookies)
     # If the resulting image is less than this many pixels on a side, don't
-    # apply the watermark.
+    # apply a watermark.
     min_size_cutoff = 300
     return false if resulting_size['width'] < min_size_cutoff or
         resulting_size['height'] < min_size_cutoff
@@ -69,21 +69,26 @@ module Cantaloupe
     # Don't render a watermark on images of cantaloupes.
     return false if identifier.downcase.include?('cantaloupe')
 
-    # Render a different watermark for iOS clients.
+    # Render an image watermark for iOS clients.
     if request_headers.
         select{ |k,v| k.downcase == 'user-agent' and v.include?('iOS') }.any?
       return {
         'pathname' => '/path/to/ios-watermark.png',
         'position' => 'bottom right',
-        'inset' => 0
+        'inset' => 5
       }
     end
 
-    # Render the default watermark for all other clients.
+    # Render a string watermark for all other clients.
     {
-      'pathname' => '/path/to/default-watermark.png',
-      'position' => 'bottom right',
-      'inset' => 10
+      'string' => "This is totally dynamic\nAnd it has multiple lines",
+      'position' => 'bottom left',
+      'inset' => 5,
+      'color' => 'red',
+      'font' => 'Helvetica',
+      'font_size' => 20,
+      'stroke_color' => 'black',
+      'stroke_width' => 1
     }
   end
 end
@@ -91,7 +96,7 @@ end
 
 <h2 id="Requirements">Requirements</h2>
 
-<p>The watermark must be a 24-bit PNG image, either RGB or RGBA. It will be blended pixel-for-pixel into the output image, respecting its alpha channel.</p>
+<p>A watermark image must be a 24-bit PNG, either RGB or RGBA. It will be blended into the output image respecting its alpha channel.</p>
 
 <p><a href="images/watermark-sample.png">Sample watermark (PNG)</a></p>
 
@@ -170,13 +175,13 @@ end
 
 <h3 id="#Performance">Performance</h3>
 
-<p>Watermark application should have minimal impact on response times, adding perhaps a few milliseconds for a typical-sized watermark. One thing to note, though, is that normally, requests for source images with no modification are streamed through with no processing. When watermarking is enabled, this will no longer be the case.</p>
+<p>Watermark application should have minimal impact on response times, adding probably no more than a few milliseconds most of the time. One thing to note, though, is that normally, requests for source images with no modification are streamed through with no processing. When watermarking is enabled, this will no longer be the case.</p>
 
 <h3 id="Zooming Image Viewers">Zooming Image Viewers</h3>
 
 <p>Zooming image viewers display a mosaic of cropped image tiles. When watermarking is enabled, each tile will have a watermark, which may look more or less strange depending on the size of the watermark and the tile size used by the viewer. The image server has no control over this.</p>
 
-<p>One way of getting around this might be to set the <code>watermark.BasicStrategy.output_width_threshold</code> and <code>watermark.BasicStrategy.output_height_threshold</code> configuration options to values that are slightly larger than the tile size used by the zooming image viewer. This will disable watermarking for zooming image viewer tiles, but enable for it for anything larger. Unfortunately, the tile size used by the viewer may differ depending on the source image, as the recommended tile sizes in <a href="endpoints.html">information responses</a> will vary on a per-image basis.</p>
+<p>One way of working around this might be to set the <code>watermark.BasicStrategy.output_width_threshold</code> and <code>watermark.BasicStrategy.output_height_threshold</code> configuration options to values that are slightly larger than the tile size used by the zooming image viewer. This will disable watermarking for image viewer tiles, but enable for it for anything larger. Unfortunately, the tile size used by the viewer may differ depending on the source image, as the recommended tile sizes in <a href="endpoints.html">information responses</a> will vary on a per-image basis.</p>
 
 <h3 id="Caching">Caching</h3>
 
