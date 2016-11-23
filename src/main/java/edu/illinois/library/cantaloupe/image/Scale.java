@@ -89,7 +89,7 @@ public class Scale implements Operation {
     /**
      * @param fullSize
      * @return Resulting scale when the scale is applied to the given full
-     * size; or null if the scale mode is {@link Mode#NON_ASPECT_FILL}.
+     *         size; or null if the scale mode is {@link Mode#NON_ASPECT_FILL}.
      */
     public Float getResultingScale(Dimension fullSize) {
         Float scale = null;
@@ -123,7 +123,7 @@ public class Scale implements Operation {
     /**
      * @param fullSize
      * @return Resulting dimensions when the scale is applied to the given full
-     * size.
+     *         size.
      */
     @Override
     public Dimension getResultingSize(Dimension fullSize) {
@@ -134,38 +134,25 @@ public class Scale implements Operation {
         } else {
             switch (this.getMode()) {
                 case ASPECT_FIT_HEIGHT:
-                    if (this.getHeight() < size.height) {
-                        double scalePct = this.getHeight() /
-                                (double) size.height;
-                        size.width *= scalePct;
-                        size.height *= scalePct;
-                    }
+                    double scalePct = this.getHeight() / (double) size.height;
+                    size.width *= scalePct;
+                    size.height *= scalePct;
                     break;
                 case ASPECT_FIT_WIDTH:
-                    if (this.getWidth() < size.width) {
-                        double scalePct = this.getWidth() /
-                                (double) size.width;
-                        size.width *= scalePct;
-                        size.height *= scalePct;
-                    }
+                    scalePct = this.getWidth() / (double) size.width;
+                    size.width *= scalePct;
+                    size.height *= scalePct;
                     break;
                 case ASPECT_FIT_INSIDE:
-                    if (this.getHeight() < size.height &&
-                            this.getWidth() < size.width) {
-                        double scalePct = Math.min(
-                                this.getWidth() / (double) size.width,
-                                this.getHeight() / (double) size.height);
-                        size.width *= scalePct;
-                        size.height *= scalePct;
-                    }
+                    scalePct = Math.min(
+                            this.getWidth() / (double) size.width,
+                            this.getHeight() / (double) size.height);
+                    size.width *= scalePct;
+                    size.height *= scalePct;
                     break;
                 case NON_ASPECT_FILL:
-                    if (this.getWidth() < size.width) {
-                        size.width = this.getWidth();
-                    }
-                    if (this.getHeight() < size.height) {
-                        size.height = this.getHeight();
-                    }
+                    size.width = this.getWidth();
+                    size.height = this.getHeight();
                     break;
             }
         }
