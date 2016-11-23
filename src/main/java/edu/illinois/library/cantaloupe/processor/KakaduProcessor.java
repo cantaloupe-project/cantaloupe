@@ -362,8 +362,7 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
                 process.destroy();
             }
         } catch (EOFException e) {
-            // This happens frequently in Tomcat, but appears to be harmless.
-            logger.warn("EOFException: {}", e.getMessage());
+            logger.warn("process(): {} ({})", e.getMessage(), opList);
         } catch (IOException | InterruptedException e) {
             String msg = e.getMessage();
             final String errorStr = errorBucket.toString();
