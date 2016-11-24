@@ -69,38 +69,43 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
     private static AmazonS3 client;
 
+    /** Lock object for synchronization */
+    private static final Object lock = new Object();
+
     private static AmazonS3 getClientInstance() {
         if (client == null) {
-            final Configuration config = ConfigurationFactory.getInstance();
+            synchronized (lock) {
+                final Configuration config = ConfigurationFactory.getInstance();
 
-            class ConfigFileCredentials implements AWSCredentials {
-                @Override
-                public String getAWSAccessKeyId() {
-                    return config.getString(ACCESS_KEY_ID_CONFIG_KEY);
+                class ConfigFileCredentials implements AWSCredentials {
+                    @Override
+                    public String getAWSAccessKeyId() {
+                        return config.getString(ACCESS_KEY_ID_CONFIG_KEY);
+                    }
+
+                    @Override
+                    public String getAWSSecretKey() {
+                        return config.getString(SECRET_KEY_CONFIG_KEY);
+                    }
                 }
 
-                @Override
-                public String getAWSSecretKey() {
-                    return config.getString(SECRET_KEY_CONFIG_KEY);
+                AWSCredentials credentials = new ConfigFileCredentials();
+                client = new AmazonS3Client(credentials);
+
+                // a custom endpoint will be used in testing
+                final String endpoint = config.getString(ENDPOINT_CONFIG_KEY);
+                if (endpoint != null) {
+                    logger.info("Using endpoint: {}", endpoint);
+                    client.setEndpoint(endpoint);
                 }
-            }
 
-            AWSCredentials credentials = new ConfigFileCredentials();
-            client = new AmazonS3Client(credentials);
-
-            // a custom endpoint will be used in testing
-            final String endpoint = config.getString(ENDPOINT_CONFIG_KEY);
-            if (endpoint != null) {
-                logger.info("Using endpoint: {}", endpoint);
-                client.setEndpoint(endpoint);
-            }
-
-            final String regionName = config.getString(BUCKET_REGION_CONFIG_KEY);
-            if (regionName != null && regionName.length() > 0) {
-                Regions regions = Regions.fromName(regionName);
-                Region region = Region.getRegion(regions);
-                logger.info("Using region: {}", region);
-                client.setRegion(region);
+                final String regionName = config.getString(BUCKET_REGION_CONFIG_KEY);
+                if (regionName != null && regionName.length() > 0) {
+                    Regions regions = Regions.fromName(regionName);
+                    Region region = Region.getRegion(regions);
+                    logger.info("Using region: {}", region);
+                    client.setRegion(region);
+                }
             }
         }
         return client;
