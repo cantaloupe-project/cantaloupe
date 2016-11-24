@@ -29,8 +29,11 @@ public class FormatTest {
 
     @Test
     public void testGetFormatWithIdentifier() {
+        // Valid extensions
         assertEquals(Format.AVI,
                 Format.getFormat(new Identifier("bla.avi")));
+        assertEquals(Format.AVI,
+                Format.getFormat(new Identifier("bla.AVI")));
         assertEquals(Format.BMP,
                 Format.getFormat(new Identifier("bla.bmp")));
         assertEquals(Format.GIF,
@@ -55,6 +58,8 @@ public class FormatTest {
                 Format.getFormat(new Identifier("bla.webm")));
         assertEquals(Format.WEBP,
                 Format.getFormat(new Identifier("bla.webp")));
+
+        // Invalid extension
         assertEquals(Format.UNKNOWN,
                 Format.getFormat(new Identifier("bla.bogus")));
     }

@@ -105,7 +105,7 @@ public enum Format {
      * @param identifier
      * @return The source format corresponding to the given identifier,
      * assuming that its value will have a recognizable filename extension. If
-     * not, <code>Format.UNKNOWN</code> will be returned.
+     * not, {@link #UNKNOWN} will be returned.
      */
     public static Format getFormat(Identifier identifier) {
         String extension = null;
@@ -114,6 +114,7 @@ public enum Format {
             extension = identifier.toString().substring(i + 1);
         }
         if (extension != null) {
+            extension = extension.toLowerCase();
             for (Format enumValue : Format.values()) {
                 if (enumValue.getExtensions().contains(extension)) {
                     return enumValue;
