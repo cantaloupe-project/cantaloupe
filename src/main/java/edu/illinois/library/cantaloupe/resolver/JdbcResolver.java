@@ -21,6 +21,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * <p>Maps an identifier to a binary/BLOB field in a relational database.</p>
+ *
+ * <p>A custom schema is not required; any schema will work. However, several
+ * delegate methods must be implemented in order to obtain the information
+ * needed to run the SQL queries.</p>
+ *
+ * <p>JDBC drivers are the client's responsibility. A JDBC driver is required
+ * and not included.</p>
+ */
 class JdbcResolver extends AbstractResolver implements StreamResolver {
 
     private static class JdbcStreamSource implements StreamSource {

@@ -21,6 +21,26 @@ import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.util.Collection;
 
+/**
+ * <p>Provides access to source content located on a locally attached
+ * filesystem. Identifiers are mapped to filesystem paths.</p>
+ *
+ * <h3>Format Determination</h3>
+ *
+ * <p>For images with extensions, the extension will be assumed to correctly
+ * denote the image format, based on the return value of
+ * {@link Format#getFormat(Identifier)}. Images with extensions that are
+ * missing or unrecognized will have their "magic number" checked to determine
+ * their format, which will incur a small performance penalty. It is therefore
+ * slightly more efficient to serve images with extensions.</p>
+ *
+ * <h3>Lookup Strategies</h3>
+ *
+ * <p>Two distinct lookup strategies are supported, defined by
+ * {@link #LOOKUP_STRATEGY_CONFIG_KEY}. BasicLookupStrategy locates images by
+ * concatenating a pre-defined path prefix and/or suffix. ScriptLookupStrategy
+ * invokes a delegate method to retrieve a pathname dynamically.</p>
+ */
 class FilesystemResolver extends AbstractResolver
         implements StreamResolver, FileResolver {
 
@@ -120,10 +140,11 @@ class FilesystemResolver extends AbstractResolver
 
     /**
      * @return
-     * @throws FileNotFoundException If the delegate script does not exist
+     * @throws FileNotFoundException If the delegate script does not exist.
      * @throws IOException
-     * @throws ScriptException If the script fails to execute
-     * @throws DelegateScriptDisabledException
+     * @throws ScriptException If the method invocation fails.
+     * @throws DelegateScriptDisabledException If the delegate script is
+     *                                         disabled.
      */
     private String getPathnameWithScriptStrategy()
             throws IOException, ScriptException,

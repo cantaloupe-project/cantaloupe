@@ -13,11 +13,11 @@ public interface StreamResolver extends Resolver {
     /**
      * @return StreamSource for reading the source image identified by the
      *         identifier passed to {@link #setIdentifier}; never null.
-     * @throws FileNotFoundException if the image corresponding to the given
-     * identifier does not exist
-     * @throws AccessDeniedException if the image corresponding to the given
-     * identifier is not readable
-     * @throws IOException if there is some other issue accessing the image
+     * @throws FileNotFoundException If the image corresponding to the given
+     *                               identifier does not exist.
+     * @throws AccessDeniedException If the image corresponding to the given
+     *                               identifier is not readable.
+     * @throws IOException If there is some other issue accessing the image.
      */
     StreamSource getStreamSource() throws IOException;
 

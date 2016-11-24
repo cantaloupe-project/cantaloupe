@@ -25,6 +25,17 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
+ * <p>Maps an identifier to an <a href="https://aws.amazon.com/s3/">Amazon
+ * Simple Storage Service (S3)</a> object, for retrieving images from Amazon
+ * S3.</p>
+ *
+ * <h3>Lookup Strategies</h3>
+ *
+ * <p>Two distinct lookup strategies are supported, defined by
+ * {@link #LOOKUP_STRATEGY_CONFIG_KEY}. BasicLookupStrategy maps identifiers
+ * directly to S3 object keys. ScriptLookupStrategy invokes a delegate method
+ * to retrieve object keys dynamically.</p>
+ *
  * @see <a href="http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/welcome.html">
  *     AWS SDK for Java</a>
  */

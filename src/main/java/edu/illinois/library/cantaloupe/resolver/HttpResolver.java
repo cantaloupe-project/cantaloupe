@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resolver;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
@@ -26,7 +27,24 @@ import java.nio.file.AccessDeniedException;
 import java.util.Arrays;
 
 /**
- * Resolver for serving images from HTTP(S) servers.
+ * <p>Provides access to source content located on an HTTP(S) server.</p>
+ *
+ * <h3>Format Determination</h3>
+ *
+ * <p>For images with extensions, the extension will be assumed to correctly
+ * denote the image format, based on the return value of
+ * {@link Format#getFormat(Identifier)}. For images with extensions that are
+ * missing or unrecognized, the Content-Type header will be checked to
+ * determine their format (in a separate request), which will incur a small
+ * performance penalty. It is therefore more efficient to serve images with
+ * extensions.</p>
+ *
+ * <h3>Lookup Strategies</h3>
+ *
+ * <p>Two distinct lookup strategies are supported, defined by
+ * {@link #LOOKUP_STRATEGY_CONFIG_KEY}. BasicLookupStrategy locates images by
+ * concatenating a pre-defined URL prefix and/or suffix. ScriptLookupStrategy
+ * invokes a delegate method to retrieve a URL dynamically.</p>
  */
 class HttpResolver extends AbstractResolver implements StreamResolver {
 

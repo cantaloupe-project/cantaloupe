@@ -24,6 +24,17 @@ import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 
 /**
+ * <p>Maps an identifier to a
+ * <a href="https://azure.microsoft.com/en-us/services/storage/">Microsoft
+ * Azure Storage</a> blob, for retrieving images from Azure Storage.</p>
+ *
+ * <h3>Lookup Strategies</h3>
+ *
+ * <p>Two distinct lookup strategies are supported, defined by
+ * {@link #LOOKUP_STRATEGY_CONFIG_KEY}. BasicLookupStrategy maps identifiers
+ * directly to blob keys. ScriptLookupStrategy invokes a delegate method to
+ * retrieve blob keys dynamically.</p>
+ *
  * @see <a href="https://github.com/azure/azure-storage-java">
  *     Microsoft Azure Storage DSK for Java</a>
  */

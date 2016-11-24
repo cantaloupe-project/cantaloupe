@@ -10,20 +10,18 @@ import java.io.InputStream;
 public interface StreamSource {
 
     /**
-     * Provides a new ImageInputStream to read from. The returned class may be
-     * a subclass of ImageInputStream that can provide more efficient access.
+     * Provides a new ImageInputStream to read from.
      *
      * @return New input stream to read from.
-     * @throws IOException
+     * @throws IOException If there is any issue creating the stream.
      */
     ImageInputStream newImageInputStream() throws IOException;
 
     /**
-     * Provides a new input stream to read from. The returned class may be an
-     * subclass of InputStream that can provide more efficient access.
+     * Provides a new input stream to read from.
      *
      * @return New input stream to read from.
-     * @throws IOException
+     * @throws IOException If there is any issue creating the stream.
      */
     InputStream newInputStream() throws IOException;
 
