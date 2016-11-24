@@ -28,57 +28,57 @@ public class FormatTest {
     }
 
     @Test
-    public void testGetFormatWithIdentifier() {
+    public void testInferFormatWithIdentifier() {
         // Valid extensions
         assertEquals(Format.AVI,
-                Format.getFormat(new Identifier("bla.avi")));
+                Format.inferFormat(new Identifier("bla.avi")));
         assertEquals(Format.AVI,
-                Format.getFormat(new Identifier("bla.AVI")));
+                Format.inferFormat(new Identifier("bla.AVI")));
         assertEquals(Format.BMP,
-                Format.getFormat(new Identifier("bla.bmp")));
+                Format.inferFormat(new Identifier("bla.bmp")));
         assertEquals(Format.GIF,
-                Format.getFormat(new Identifier("bla.gif")));
+                Format.inferFormat(new Identifier("bla.gif")));
         assertEquals(Format.JP2,
-                Format.getFormat(new Identifier("bla.jp2")));
+                Format.inferFormat(new Identifier("bla.jp2")));
         assertEquals(Format.JPG,
-                Format.getFormat(new Identifier("bla.jpg")));
+                Format.inferFormat(new Identifier("bla.jpg")));
         assertEquals(Format.MOV,
-                Format.getFormat(new Identifier("bla.mov")));
+                Format.inferFormat(new Identifier("bla.mov")));
         assertEquals(Format.MP4,
-                Format.getFormat(new Identifier("bla.mp4")));
+                Format.inferFormat(new Identifier("bla.mp4")));
         assertEquals(Format.MPG,
-                Format.getFormat(new Identifier("bla.mpg")));
+                Format.inferFormat(new Identifier("bla.mpg")));
         assertEquals(Format.PDF,
-                Format.getFormat(new Identifier("bla.pdf")));
+                Format.inferFormat(new Identifier("bla.pdf")));
         assertEquals(Format.PNG,
-                Format.getFormat(new Identifier("bla.png")));
+                Format.inferFormat(new Identifier("bla.png")));
         assertEquals(Format.TIF,
-                Format.getFormat(new Identifier("bla.tif")));
+                Format.inferFormat(new Identifier("bla.tif")));
         assertEquals(Format.WEBM,
-                Format.getFormat(new Identifier("bla.webm")));
+                Format.inferFormat(new Identifier("bla.webm")));
         assertEquals(Format.WEBP,
-                Format.getFormat(new Identifier("bla.webp")));
+                Format.inferFormat(new Identifier("bla.webp")));
 
         // Invalid extension
         assertEquals(Format.UNKNOWN,
-                Format.getFormat(new Identifier("bla.bogus")));
+                Format.inferFormat(new Identifier("bla.bogus")));
     }
 
     @Test
-    public void testGetFormatWithMediaTypeString() {
-        assertEquals(Format.AVI, Format.getFormat("video/avi"));
-        assertEquals(Format.BMP, Format.getFormat("image/bmp"));
-        assertEquals(Format.GIF, Format.getFormat("image/gif"));
-        assertEquals(Format.JP2, Format.getFormat("image/jp2"));
-        assertEquals(Format.JPG, Format.getFormat("image/jpeg"));
-        assertEquals(Format.MOV, Format.getFormat("video/quicktime"));
-        assertEquals(Format.MP4, Format.getFormat("video/mp4"));
-        assertEquals(Format.MPG, Format.getFormat("video/mpeg"));
-        assertEquals(Format.PDF, Format.getFormat("application/pdf"));
-        assertEquals(Format.PNG, Format.getFormat("image/png"));
-        assertEquals(Format.TIF, Format.getFormat("image/tiff"));
-        assertEquals(Format.WEBM, Format.getFormat("video/webm"));
-        assertEquals(Format.WEBP, Format.getFormat("image/webp"));
+    public void testInferFormatWithMediaTypeString() {
+        assertEquals(Format.AVI, Format.inferFormat("video/avi"));
+        assertEquals(Format.BMP, Format.inferFormat("image/bmp"));
+        assertEquals(Format.GIF, Format.inferFormat("image/gif"));
+        assertEquals(Format.JP2, Format.inferFormat("image/jp2"));
+        assertEquals(Format.JPG, Format.inferFormat("image/jpeg"));
+        assertEquals(Format.MOV, Format.inferFormat("video/quicktime"));
+        assertEquals(Format.MP4, Format.inferFormat("video/mp4"));
+        assertEquals(Format.MPG, Format.inferFormat("video/mpeg"));
+        assertEquals(Format.PDF, Format.inferFormat("application/pdf"));
+        assertEquals(Format.PNG, Format.inferFormat("image/png"));
+        assertEquals(Format.TIF, Format.inferFormat("image/tiff"));
+        assertEquals(Format.WEBM, Format.inferFormat("video/webm"));
+        assertEquals(Format.WEBP, Format.inferFormat("image/webp"));
     }
 
     @Test

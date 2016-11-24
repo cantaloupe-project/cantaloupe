@@ -29,7 +29,7 @@ import java.util.Collection;
  *
  * <p>For images with extensions, the extension will be assumed to correctly
  * denote the image format, based on the return value of
- * {@link Format#getFormat(Identifier)}. Images with extensions that are
+ * {@link Format#inferFormat(Identifier)}. Images with extensions that are
  * missing or unrecognized will have their "magic number" checked to determine
  * their format, which will incur a small performance penalty. It is therefore
  * slightly more efficient to serve images with extensions.</p>
@@ -165,7 +165,7 @@ class FilesystemResolver extends AbstractResolver
         if (sourceFormat == null) {
             final File file = new File(getPathname(File.separator));
             checkAccess(file);
-            sourceFormat = Format.getFormat(identifier);
+            sourceFormat = Format.inferFormat(identifier);
             if (sourceFormat.equals(Format.UNKNOWN)) {
                 sourceFormat = detectSourceFormat();
             }
@@ -197,7 +197,7 @@ class FilesystemResolver extends AbstractResolver
         Collection<?> detectedTypes = MimeUtil.getMimeTypes(pathname);
         if (detectedTypes.size() > 0) {
             String detectedType = detectedTypes.toArray()[0].toString();
-            format = Format.getFormat(detectedType);
+            format = Format.inferFormat(detectedType);
         }
         return format;
     }

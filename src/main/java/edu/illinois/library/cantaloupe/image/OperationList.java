@@ -121,7 +121,7 @@ public class OperationList implements Comparable<OperationList>,
      * unmodified source image.
      */
     public boolean isNoOp() {
-        return isNoOp(Format.getFormat(this.getIdentifier()));
+        return isNoOp(Format.inferFormat(this.getIdentifier()));
     }
 
     /**

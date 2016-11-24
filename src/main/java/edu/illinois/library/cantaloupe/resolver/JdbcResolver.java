@@ -163,10 +163,10 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
                         mediaType = functionResult;
                     }
                 } else {
-                    mediaType = Format.getFormat(identifier).
+                    mediaType = Format.inferFormat(identifier).
                             getPreferredMediaType().toString();
                 }
-                sourceFormat = Format.getFormat(mediaType);
+                sourceFormat = Format.inferFormat(mediaType);
             } catch (ScriptException | SQLException |
                     DelegateScriptDisabledException e) {
                 throw new IOException(e.getMessage(), e);

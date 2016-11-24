@@ -33,7 +33,7 @@ import java.util.Arrays;
  *
  * <p>For images with extensions, the extension will be assumed to correctly
  * denote the image format, based on the return value of
- * {@link Format#getFormat(Identifier)}. For images with extensions that are
+ * {@link Format#inferFormat(Identifier)}. For images with extensions that are
  * missing or unrecognized, the Content-Type header will be checked to
  * determine their format (in a separate request), which will incur a small
  * performance penalty. It is therefore more efficient to serve images with
@@ -144,7 +144,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     @Override
     public Format getSourceFormat() throws IOException {
         if (sourceFormat == null) {
-            sourceFormat = Format.getFormat(identifier);
+            sourceFormat = Format.inferFormat(identifier);
             if (sourceFormat == Format.UNKNOWN) {
                 sourceFormat = getSourceFormatFromContentTypeHeader();
             }
@@ -189,7 +189,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
             contentType = resource.getResponse().getHeaders().
                     getFirstValue("Content-Type", true);
             if (contentType != null) {
-                format = Format.getFormat(contentType);
+                format = Format.inferFormat(contentType);
             }
         } catch (ResourceException e) {
             // nothing we can do but log it

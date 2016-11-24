@@ -309,7 +309,7 @@ public final class ImageInfo {
     @JsonIgnore
     public Format getSourceFormat() {
         if (mediaType != null) {
-            return Format.getFormat(mediaType);
+            return Format.inferFormat(mediaType);
         }
         return Format.UNKNOWN;
     }

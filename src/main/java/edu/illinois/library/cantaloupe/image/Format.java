@@ -107,7 +107,7 @@ public enum Format {
      * assuming that its value will have a recognizable filename extension. If
      * not, {@link #UNKNOWN} will be returned.
      */
-    public static Format getFormat(Identifier identifier) {
+    public static Format inferFormat(Identifier identifier) {
         String extension = null;
         int i = identifier.toString().lastIndexOf('.');
         if (i > 0) {
@@ -129,7 +129,7 @@ public enum Format {
      * @return The source format corresponding to the given media type, or
      * <code>Format.UNKNOWN</code> if unknown.
      */
-    public static Format getFormat(String mediaType) {
+    public static Format inferFormat(String mediaType) {
         for (Format enumValue : Format.values()) {
             for (MediaType type : enumValue.getMediaTypes()) {
                 if (type.toString().equals(mediaType)) {

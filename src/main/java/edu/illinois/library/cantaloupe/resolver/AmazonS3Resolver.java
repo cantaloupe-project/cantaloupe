@@ -191,11 +191,11 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
             String contentType = object.getObjectMetadata().getContentType();
             // See if we can determine the format from the Content-Type header.
             if (contentType != null) {
-                sourceFormat = Format.getFormat(contentType);
+                sourceFormat = Format.inferFormat(contentType);
             }
             if (sourceFormat == null || sourceFormat.equals(Format.UNKNOWN)) {
                 // Try to infer a format based on the identifier.
-                sourceFormat = Format.getFormat(identifier);
+                sourceFormat = Format.inferFormat(identifier);
             }
         }
         return sourceFormat;

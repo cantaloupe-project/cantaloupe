@@ -203,7 +203,7 @@ public class ImageResource extends Iiif1Resource {
         Variant preferred = getPreferredVariant(variants);
         if (preferred != null) {
             String mediaTypeStr = preferred.getMediaType().toString();
-            return Format.getFormat(mediaTypeStr);
+            return Format.inferFormat(mediaTypeStr);
         }
         return null;
     }

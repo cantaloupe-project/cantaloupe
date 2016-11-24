@@ -600,7 +600,7 @@ public class Version1_1ConformanceTest {
                 "/full/full/0/native." + format.getPreferredExtension());
 
         // does the current processor support this output format?
-        Format sourceFormat = Format.getFormat(IMAGE);
+        Format sourceFormat = Format.inferFormat(IMAGE);
         Processor processor = ProcessorFactory.getProcessor(sourceFormat);
         if (processor.getAvailableOutputFormats().contains(format)) {
             client.get();
