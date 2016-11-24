@@ -144,7 +144,7 @@ class FilesystemResolver extends AbstractResolver
         if (sourceFormat == null) {
             final File file = new File(getPathname(File.separator));
             checkAccess(file);
-            sourceFormat = ResolverUtil.inferSourceFormat(identifier);
+            sourceFormat = Format.getFormat(identifier);
             if (sourceFormat.equals(Format.UNKNOWN)) {
                 sourceFormat = detectSourceFormat();
             }

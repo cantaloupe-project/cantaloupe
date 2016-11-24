@@ -126,7 +126,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     @Override
     public Format getSourceFormat() throws IOException {
         if (sourceFormat == null) {
-            sourceFormat = ResolverUtil.inferSourceFormat(identifier);
+            sourceFormat = Format.getFormat(identifier);
             if (sourceFormat == Format.UNKNOWN) {
                 sourceFormat = getSourceFormatFromContentTypeHeader();
             }
