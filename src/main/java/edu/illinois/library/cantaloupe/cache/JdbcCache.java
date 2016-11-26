@@ -29,7 +29,7 @@ import java.util.Calendar;
  * <p>This cache requires that a database schema be created manually--it will
  * not do it automatically. The current schema is:</p>
  *
- * CREATE TABLE IF NOT EXISTS {JdbcCache.derivative_image_table} (
+ * <pre>CREATE TABLE IF NOT EXISTS {JdbcCache.derivative_image_table} (
  *     operations VARCHAR(4096) NOT NULL,
  *     image BLOB,
  *     last_accessed DATETIME
