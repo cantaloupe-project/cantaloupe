@@ -271,7 +271,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     private final Object lock5 = new Object();
     private final Object lock6 = new Object();
     private final Object lock7 = new Object();
-    private final Object lock8 = new Object();
 
     /**
      * Returns a reversible, filename-safe version of the input string.
@@ -662,35 +661,31 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             return new NullOutputStream();
         }
 
-        // Synchronize this part because we don't want multiple non-null output
-        // streams for the same operation list being available concurrently.
-        synchronized(lock8) {
-            // If the image is being written in another thread, it will
-            // be present in the derivativeImagesBeingWritten set. If so,
-            // return a null output stream to avoid interfering.
-            if (derivativeImagesBeingWritten.contains(ops)) {
-                logger.info("getImageOutputStream(OperationList): miss, " +
-                        "but cache file for {} is being written in " +
-                        "another thread, so not caching", ops);
-                return new NullOutputStream();
-            } else {
-                logger.info("getImageOutputStream(OperationList): miss; " +
-                        "caching {}", ops);
+        // If the image is being written in another thread, it will
+        // be present in the derivativeImagesBeingWritten set. If so,
+        // return a null output stream to avoid interfering.
+        if (derivativeImagesBeingWritten.contains(ops)) {
+            logger.info("getImageOutputStream(OperationList): miss, " +
+                    "but cache file for {} is being written in " +
+                    "another thread, so not caching", ops);
+            return new NullOutputStream();
+        } else {
+            logger.info("getImageOutputStream(OperationList): miss; " +
+                    "caching {}", ops);
 
-                // No need to check the return value. If anything went wrong,
-                // the client will find out about it shortly. :D
-                tempFile.getParentFile().mkdirs();
+            // No need to check the return value. If anything went wrong,
+            // the client will find out about it shortly. :D
+            tempFile.getParentFile().mkdirs();
 
-                // ops will be removed from this set when the below output
-                // stream is closed.
-                derivativeImagesBeingWritten.add(ops);
-                try {
-                    return new ConcurrentFileOutputStream(tempFile,
-                            getDerivativeImageFile(ops),
-                            derivativeImagesBeingWritten, ops);
-                } catch (IOException e) {
-                    throw new CacheException(e.getMessage(), e);
-                }
+            // ops will be removed from this set when the returned output
+            // stream is closed.
+            derivativeImagesBeingWritten.add(ops);
+            try {
+                return new ConcurrentFileOutputStream(tempFile,
+                        getDerivativeImageFile(ops),
+                        derivativeImagesBeingWritten, ops);
+            } catch (IOException e) {
+                throw new CacheException(e.getMessage(), e);
             }
         }
     }
