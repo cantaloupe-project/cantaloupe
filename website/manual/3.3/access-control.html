@@ -38,7 +38,13 @@ auth.basic.secret = mypassword
 
 <h2 id="Authorization">Authorization</h2>
 
-<p>A custom <a href="delegate-script.html">delegate script</a> method can be used to implement authorization logic ranging from simple to complex. The image server will execute this method upon every image request and, depending on its return value, either authorize the request (by returning HTTP 200 OK), or not (by returning HTTP 403 Forbidden).</p>
+<p>A custom <a href="delegate-script.html">delegate method</a> can be used to implement authorization logic ranging from simple to complex. The image server will invoke this method upon every image request and, depending on its return value, either:</p>
+
+<ul>
+  <li>Authorize the request (by returning HTTP 200 OK);</li>
+  <li>Forbid the request (by returning HTTP 403 Forbidden); or</li>
+  <li>Redirect to a different URL via a response code returned from the method.</li>
+</ul>
 
 <p>The delegate method in question is called <code>authorized?</code>. A skeleton with documented parameters and return values is present in the <span class="filename">delegates.rb.sample</span> file. By default, it just returns <code>true</code>, authorizing all requests.</p>
 
@@ -46,7 +52,7 @@ auth.basic.secret = mypassword
 
 <ul>
   <li>The authorization method will be called on every image request and should therefore be written to be efficient.</li>
-  <li>The authorization method will be called upon requests to all image endpoints, but not information endpoints.</li>
+  <li>The authorization method will be called upon requests to all image endpoints, <strong>but not information endpoints</strong>.</li>
   <li>Implementations should not assume that the underlying source image actually exists, but they should not try to check for it regardless&mdash;the image server will handle that. (But, the check may occur after the delegate method is invoked.)</li>
 </ul>
 
@@ -61,6 +67,7 @@ auth.basic.secret = mypassword
   <li><a href="#example-6">Allow only certain user agents</a></li>
   <li><a href="#example-7">Allow only requests from clients that have an authorization cookie</a></li>
   <li><a href="#example-8">Restrict a region of an image</a></li>
+  <li><a href="#example-9">Redirect to another URL</a></li>
 </ul>
 
 <h4 id="example-1">Inspect the parameters</h4>
@@ -223,6 +230,21 @@ module Cantaloupe
           crop['y'] + crop['height'] > max_y)
     end
     false
+  end
+end
+{% endhighlight %}
+
+<h4 id="example-9">Redirect to another URL</h4>
+
+{% highlight ruby %}
+module Cantaloupe
+  def self.authorized?(identifier, full_size, operations, resulting_size,
+                       output_format, request_uri, request_headers, client_ip,
+                       cookies)
+    {
+      'location' => 'http://example.org/some-other-url',
+      'status_code' => 302
+    }
   end
 end
 {% endhighlight %}
