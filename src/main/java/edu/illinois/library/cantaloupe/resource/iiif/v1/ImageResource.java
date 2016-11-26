@@ -12,13 +12,13 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
-import edu.illinois.library.cantaloupe.resource.AccessDeniedException;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Disposition;
 import org.restlet.data.Reference;
-import org.restlet.representation.OutputRepresentation;
+import org.restlet.representation.Representation;
+import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Variant;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
@@ -57,7 +57,7 @@ public class ImageResource extends Iiif1Resource {
      * @throws Exception
      */
     @Get
-    public OutputRepresentation doGet() throws Exception {
+    public Representation doGet() throws Exception {
         final Map<String,Object> attrs = this.getRequest().getAttributes();
         Identifier identifier =
                 new Identifier(Reference.decode((String) attrs.get("identifier")));
@@ -144,8 +144,9 @@ public class ImageResource extends Iiif1Resource {
 
         final Dimension fullSize = getOrReadInfo(identifier, processor).getSize();
 
-        if (!isAuthorized(ops, fullSize)) {
-            throw new AccessDeniedException();
+        StringRepresentation redirectingRep = checkAuthorization(ops, fullSize);
+        if (redirectingRep != null) {
+            return redirectingRep;
         }
 
         // Will throw an exception if anything is wrong.

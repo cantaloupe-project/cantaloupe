@@ -4,7 +4,16 @@ module Cantaloupe
 
   def self.authorized?(identifier, full_size, operations, resulting_size,
       output_format, request_uri, request_headers, client_ip, cookies)
-    identifier != 'forbidden.jpg'
+    case identifier
+      when 'forbidden.jpg'
+        return false
+      when 'redirect.jpg'
+        return {
+          'location' => 'http://example.org/',
+          'status_code' => 303
+        }
+    end
+    true
   end
 
   def self.extra_iiif2_information_response_keys(identifier)

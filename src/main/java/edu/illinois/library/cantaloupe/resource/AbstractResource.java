@@ -30,6 +30,11 @@ import org.restlet.data.Header;
 import org.restlet.data.Parameter;
 import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
+import org.restlet.data.Status;
+import org.restlet.representation.OutputRepresentation;
+import org.restlet.representation.Representation;
+import org.restlet.representation.StringRepresentation;
+import org.restlet.resource.Resource;
 import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
 import org.restlet.util.Series;
@@ -50,6 +55,7 @@ public abstract class AbstractResource extends ServerResource {
     private static Logger logger = LoggerFactory.
             getLogger(AbstractResource.class);
 
+    public static final String AUTHORIZATION_DELEGATE_METHOD = "authorized?";
     public static final String BASE_URI_CONFIG_KEY = "base_uri";
     public static final String CLIENT_CACHE_ENABLED_CONFIG_KEY =
             "cache.client.enabled";
@@ -244,6 +250,91 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
+     * <p>Invokes the {@link #AUTHORIZATION_DELEGATE_METHOD} delegate method to
+     * determine whether the request is authorized.</p>
+     *
+     * <p>The delegate method may return a boolean or a hash. If it returns
+     * <code>true</code>, the request is authorized. If it returns
+     * <code>false</code>, an {@link AccessDeniedException} will be thrown.</p>
+     *
+     * <p>If it returns a hash, the hash must contain <code>location</code>,
+     * <code>status_code</code>, and <code>status_line</code> keys.</p>
+     *
+     * <p>N.B. The reason there aren't separate delegate methods to perform
+     * authorization and redirecting is because these will often require
+     * similar or identical service requests on the part of the client. Having
+     * one method handle both scenarios simplifies implementation and reduces
+     * cost.</p>
+     *
+     * @param opList Operations requested on the image.
+     * @param fullSize Full size of the requested image.
+     * @return <code>null</code> if the request is authorized. Otherwise, a
+     *         redirecting representation.
+     * @throws IOException
+     * @throws ScriptException
+     * @throws AccessDeniedException If the delegate method returns
+     *                               <code>false</code>.
+     */
+    protected final StringRepresentation checkAuthorization(
+            final OperationList opList, final Dimension fullSize)
+            throws IOException, ScriptException, AccessDeniedException {
+        final Map<String,Integer> fullSizeArg = new HashMap<>();
+        fullSizeArg.put("width", fullSize.width);
+        fullSizeArg.put("height", fullSize.height);
+
+        final Dimension resultingSize = opList.getResultingSize(fullSize);
+        final Map<String,Integer> resultingSizeArg = new HashMap<>();
+        resultingSizeArg.put("width", resultingSize.width);
+        resultingSizeArg.put("height", resultingSize.height);
+
+        final Map opListMap = opList.toMap(fullSize);
+
+        try {
+            final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
+            Object result = engine.invoke(AUTHORIZATION_DELEGATE_METHOD,
+                    opList.getIdentifier().toString(),         // identifier
+                    fullSizeArg,                               // full_size
+                    opListMap.get("operations"),               // operations
+                    resultingSizeArg,                          // resulting_size
+                    opListMap.get("output_format"),            // output_format
+                    getReference().toString(),                 // request_uri
+                    getRequest().getHeaders().getValuesMap(),  // request_headers
+                    getCanonicalClientIpAddress(),             // client_ip
+                    getRequest().getCookies().getValuesMap()); // cookies
+            if (result instanceof Boolean) {
+                if (!((boolean) result)) {
+                    throw new AccessDeniedException();
+                }
+            } else {
+                final Map redirectInfo = (Map) result;
+                final String location = redirectInfo.get("location").toString();
+                // Prevent circular redirects
+                if (!getReference().toString().equals(location)) {
+                    final int statusCode =
+                            Integer.parseInt(redirectInfo.get("status_code").toString());
+                    if (statusCode < 300 || statusCode > 399) {
+                        throw new IllegalArgumentException(
+                                "Status code must be in the range of 300-399.");
+                    }
+
+                    logger.info("checkAuthorization(): redirecting to {} via HTTP {}",
+                            location, statusCode);
+                    final Status status = Status.valueOf(statusCode);
+                    final StringRepresentation rep =
+                            new StringRepresentation("Redirect: " + status.getUri());
+                    getResponse().setLocationRef(location);
+                    getResponse().setStatus(status);
+                    return rep;
+                }
+            }
+        } catch (DelegateScriptDisabledException e) {
+            logger.debug("checkAuthorization(): delegate script is disabled; allowing.");
+            return null;
+        }
+        return null;
+    }
+
+    /**
      * Checks the given operation list against the given image size.
      *
      * @param opList
@@ -394,49 +485,6 @@ public abstract class AbstractResource extends ServerResource {
             info = readInfo(identifier, proc);
         }
         return info;
-    }
-
-    /**
-     * Invokes a delegate script method to determine whether the request is
-     * authorized.
-     *
-     * @param opList
-     * @param fullSize
-     * @return
-     * @throws IOException
-     * @throws ScriptException
-     */
-    protected final boolean isAuthorized(final OperationList opList,
-                                         final Dimension fullSize)
-            throws IOException, ScriptException {
-        final Map<String,Integer> fullSizeArg = new HashMap<>();
-        fullSizeArg.put("width", fullSize.width);
-        fullSizeArg.put("height", fullSize.height);
-
-        final Dimension resultingSize = opList.getResultingSize(fullSize);
-        final Map<String,Integer> resultingSizeArg = new HashMap<>();
-        resultingSizeArg.put("width", resultingSize.width);
-        resultingSizeArg.put("height", resultingSize.height);
-
-        final Map opListMap = opList.toMap(fullSize);
-
-        try {
-            final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-            final String method = "authorized?";
-            return (boolean) engine.invoke(method,
-                    opList.getIdentifier().toString(),         // identifier
-                    fullSizeArg,                               // full_size
-                    opListMap.get("operations"),               // operations
-                    resultingSizeArg,                          // resulting_size
-                    opListMap.get("output_format"),            // output_format
-                    getReference().toString(),                 // request_uri
-                    getRequest().getHeaders().getValuesMap(),  // request_headers
-                    getCanonicalClientIpAddress(),             // client_ip
-                    getRequest().getCookies().getValuesMap()); // cookies
-        } catch (DelegateScriptDisabledException e) {
-            logger.debug("isAuthorized(): delegate script is disabled; allowing.");
-            return true;
-        }
     }
 
     /**

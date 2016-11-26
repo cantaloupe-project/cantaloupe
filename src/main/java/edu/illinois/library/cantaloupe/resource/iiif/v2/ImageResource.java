@@ -13,12 +13,12 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
-import edu.illinois.library.cantaloupe.resource.AccessDeniedException;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
 import org.restlet.data.Disposition;
-import org.restlet.representation.OutputRepresentation;
+import org.restlet.representation.Representation;
+import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
 
@@ -55,7 +55,7 @@ public class ImageResource extends Iiif2Resource {
      * @throws Exception
      */
     @Get
-    public OutputRepresentation doGet() throws Exception {
+    public Representation doGet() throws Exception {
         final Map<String,Object> attrs = this.getRequest().getAttributes();
         // Assemble the URI parameters into a Parameters object
         final Parameters params = new Parameters(
@@ -115,12 +115,13 @@ public class ImageResource extends Iiif2Resource {
         final Dimension fullSize =
                 getOrReadInfo(ops.getIdentifier(), processor).getSize();
 
+        StringRepresentation redirectingRep = checkAuthorization(ops, fullSize);
+        if (redirectingRep != null) {
+            return redirectingRep;
+        }
+
         // Will throw an exception if anything is wrong.
         checkRequest(ops, fullSize);
-
-        if (!isAuthorized(ops, fullSize)) {
-            throw new AccessDeniedException();
-        }
 
         if (ConfigurationFactory.getInstance().
                 getBoolean(RESTRICT_TO_SIZES_CONFIG_KEY, false)) {
