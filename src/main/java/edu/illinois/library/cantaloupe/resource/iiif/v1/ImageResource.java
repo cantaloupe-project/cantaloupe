@@ -71,7 +71,7 @@ public class ImageResource extends Iiif1Resource {
             format = resolver.getSourceFormat();
         } catch (FileNotFoundException e) {
             if (ConfigurationFactory.getInstance().
-                    getBoolean(PURGE_MISSING_CONFIG_KEY, false)) {
+                    getBoolean(Cache.PURGE_MISSING_CONFIG_KEY, false)) {
                 // if the image was not found, purge it from the cache
                 final Cache cache = CacheFactory.getDerivativeCache();
                 if (cache != null) {
@@ -123,7 +123,7 @@ public class ImageResource extends Iiif1Resource {
         // cache contains an image matching the request, skip all the setup and
         // just return the cached image.
         if (!ConfigurationFactory.getInstance().
-                getBoolean(RESOLVE_FIRST_CONFIG_KEY, true)) {
+                getBoolean(Cache.RESOLVE_FIRST_CONFIG_KEY, true)) {
             DerivativeCache cache = CacheFactory.getDerivativeCache();
             if (cache != null) {
                 InputStream inputStream = cache.getImageInputStream(ops);

@@ -32,9 +32,6 @@ public class CacheFactoryTest {
         config.setProperty(key, "");
         assertNull(CacheFactory.getDerivativeCache());
 
-        config.setProperty(key, null);
-        assertNull(CacheFactory.getDerivativeCache());
-
         config.setProperty(key, "bogus");
         assertNull(CacheFactory.getDerivativeCache());
     }

@@ -76,10 +76,6 @@ public abstract class AbstractResource extends ServerResource {
     public static final String MAX_PIXELS_CONFIG_KEY = "max_pixels";
     public static final String PRESERVE_METADATA_CONFIG_KEY =
             "metadata.preserve";
-    public static final String PURGE_MISSING_CONFIG_KEY =
-            "cache.server.purge_missing";
-    public static final String RESOLVE_FIRST_CONFIG_KEY =
-            "cache.server.resolve_first";
     public static final String SLASH_SUBSTITUTE_CONFIG_KEY =
             "slash_substitute";
 

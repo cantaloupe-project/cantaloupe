@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource.admin;
 import edu.illinois.library.cantaloupe.StandaloneEntry;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.WebServer;
+import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
@@ -397,9 +398,9 @@ public class ControlPanelTest {
         new Select(css("[name=\"cache.source\"]")).selectByValue("");
         new Select(css("[name=\"cache.derivative\"]")).
                 selectByVisibleText("FilesystemCache");
-        css("[name=\"cache.server.purge_missing\"]").click();
-        css("[name=\"cache.server.resolve_first\"]").click();
-        css("[name=\"cache.server.ttl_seconds\"]").sendKeys("10");
+        css("[name=\"" + Cache.PURGE_MISSING_CONFIG_KEY + "\"]").click();
+        css("[name=\"" + Cache.RESOLVE_FIRST_CONFIG_KEY + "\"]").click();
+        css("[name=\"" + Cache.TTL_CONFIG_KEY + "\"]").sendKeys("10");
         css("[name=\"cache.server.worker.enabled\"]").click();
         css("[name=\"cache.server.worker.interval\"]").sendKeys("25");
         // AmazonS3Cache
@@ -449,9 +450,9 @@ public class ControlPanelTest {
         assertTrue(config.getBoolean("cache.client.no_transform"));
         assertEquals("", config.getString("cache.source"));
         assertEquals("FilesystemCache", config.getString("cache.derivative"));
-        //assertTrue(config.getBoolean("cache.server.purge_missing")); TODO: why does this not work?
-        assertTrue(config.getBoolean("cache.server.resolve_first"));
-        assertEquals(10, config.getInt("cache.server.ttl_seconds"));
+        //assertTrue(config.getBoolean(Cache.PURGE_MISSING_CONFIG_KEY)); TODO: why does this not work?
+        assertTrue(config.getBoolean(Cache.RESOLVE_FIRST_CONFIG_KEY));
+        assertEquals(10, config.getInt(Cache.TTL_CONFIG_KEY));
         assertTrue(config.getBoolean("cache.server.worker.enabled"));
         assertEquals(25, config.getInt("cache.server.worker.interval"));
         // AmazonS3Cache

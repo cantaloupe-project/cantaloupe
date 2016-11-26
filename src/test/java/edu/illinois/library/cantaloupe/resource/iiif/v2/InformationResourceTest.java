@@ -95,7 +95,7 @@ public class InformationResourceTest extends ResourceTest {
         config.setProperty("FilesystemCache.pathname",
                 cacheFolder.getAbsolutePath());
         config.setProperty(Cache.TTL_CONFIG_KEY, 10);
-        config.setProperty("cache.server.resolve_first", true);
+        config.setProperty(Cache.RESOLVE_FIRST_CONFIG_KEY, true);
 
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier(IMAGE));
@@ -129,7 +129,7 @@ public class InformationResourceTest extends ResourceTest {
         config.setProperty("FilesystemCache.pathname",
                 cacheFolder.getAbsolutePath());
         config.setProperty(Cache.TTL_CONFIG_KEY, 10);
-        config.setProperty("cache.server.resolve_first", true);
+        config.setProperty(Cache.RESOLVE_FIRST_CONFIG_KEY, true);
 
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier(IMAGE));
@@ -193,8 +193,8 @@ public class InformationResourceTest extends ResourceTest {
         config.setProperty("FilesystemCache.pathname",
                 cacheFolder.getAbsolutePath());
         config.setProperty(Cache.TTL_CONFIG_KEY, 10);
-        config.setProperty("cache.server.resolve_first", true);
-        config.setProperty("cache.server.purge_missing", purgeMissing);
+        config.setProperty(Cache.RESOLVE_FIRST_CONFIG_KEY, true);
+        config.setProperty(Cache.PURGE_MISSING_CONFIG_KEY, purgeMissing);
 
         File tempImage = File.createTempFile("temp", ".jpg");
         File image = TestUtil.getImage(IMAGE);

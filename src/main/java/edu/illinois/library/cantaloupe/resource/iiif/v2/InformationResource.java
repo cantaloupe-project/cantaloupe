@@ -81,7 +81,7 @@ public class InformationResource extends Iiif2Resource {
             format = resolver.getSourceFormat();
         } catch (FileNotFoundException e) {
             if (ConfigurationFactory.getInstance().
-                    getBoolean(PURGE_MISSING_CONFIG_KEY, false)) {
+                    getBoolean(Cache.PURGE_MISSING_CONFIG_KEY, false)) {
                 // if the image was not found, purge it from the cache
                 final Cache cache = CacheFactory.getDerivativeCache();
                 if (cache != null) {
