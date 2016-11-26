@@ -13,7 +13,8 @@ title: For Developers
 <h1>For Developers</h1>
 
 <ul>
-  <li><a href="#Building">Building</a></li>
+  <li><a href="#Building the Application">Building the Application</a></li>
+  <li><a href="#Building the Website">Building the Website</a></li>
   <li><a href="#Versioning">Versioning</a></li>
   <li><a href="#Branching">Branching</a></li>
   <li>
@@ -31,9 +32,17 @@ title: For Developers
 
 <hr>
 
-<h3 id="Building">Building</h3>
+<h3 id="Building the Application">Building the Application</h3>
 
-<p>From the project directory, build with the following command: <code>mvn package -Dmaven.test.skip=true</code>. This will create a <span class="filename">.war</span> and <span class="filename">.zip</span> file in the <span class="filename">target</span> subdirectory.</p>
+<p>From the project directory, build with <code>mvn package -Dmaven.test.skip=true</code>. This will create separate <span class="filename">.war</span> and <span class="filename">.zip</span> files in the <span class="filename">target</span> subdirectory.</p>
+
+<hr>
+
+<h3 id="Building the Website">Building the Website</h3>
+
+<p>The website is built using <a href="http://jekyllrb.com">Jekyll</a>. Install that, then <code>cd</code> into the <span class="filename">website</span> directory and run <code>jekyll serve</code>. Open <a href="http://localhost:4000/cantaloupe/">http://localhost:4000/cantaloupe/</a> in a web browser.</p>
+
+<p>An effort is made to keep the documentation in sync with main-branch development. The <a href="upgrading.html">Upgrading</a> and <a href="changes.html">Changes</a> sections in the previewed website are usually up-to-date.</p>
 
 <hr>
 
@@ -47,7 +56,7 @@ title: For Developers
 
 <p>Cantaloupe uses the <a href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow/">Gitflow</a> branching model. <code>develop</code> is the main branch that roughly tracks the current state of the next non-bugfix release. Significant features branch off into feature branches (<code>feature/xxxx</code>), from which they can be integrated into a particular release.</p>
 
-<p>When a major or minor version is ready for release in <code>develop</code>, it branches off into a <code>release/n.n</code> branch. There, its version is formally set and it is then merged into <code>master</code>, where the formal release is tagged.</p>
+<p>When a major or minor version is ready for release in <code>develop</code>, it branches off into a <code>release/n.n</code> branch. There, its version is formally set and it is then merged into <code>master</code>, where the release is tagged.</p>
 
 <p>Bugfixes that would increment a minor version of a release are applied to the release branch for that release, and merged back into <code>develop</code>.</p>
 
