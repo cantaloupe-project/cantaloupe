@@ -44,7 +44,7 @@ title: Caches
 <p>Cantaloupe offers a sophisticated and highly customizable caching subsystem that is capable of meeting a variety of needs while remaining easy to use. Three tiers of cache are available:</p>
 
 <ol>
-  <li><a href="#Client-Side">Client-side caches</a>, which it has no control over but can provide hints to;</li>
+  <li><a href="#Client-Side Caching">Client-side caches</a>, which it has no control over but can provide hints to;</li>
   <li>A <a href="#Source%20Cache">source cache</a>, which caches source images locally on-demand (if they are not already local) for faster reading;</li>
   <li>A <a href="#Derivative%20Cache">derivative cache</a>, which caches processed images and source image metadata such as dimensions.</li>
 </ol>
@@ -179,7 +179,7 @@ cache.client.no_transform = true
 <ul>
   <li><code>FilesystemCache.pathname</code>/
     <ul>
-      <li><span class="filename">source/</span> (if <a href="#Source%20Caching">source caching</a> is enabled)
+      <li><span class="filename">source/</span> (if <a href="#Source Caching">source caching</a> is enabled)
         <ul>
           <li>Intermediate subdirectories based on identifier MD5 checksum, configurable by <code>FilesystemCache.dir.depth</code> and <code>FilesystemCache.dir.name_length</code>
             <ul>
