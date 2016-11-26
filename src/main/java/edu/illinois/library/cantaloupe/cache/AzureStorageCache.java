@@ -44,8 +44,6 @@ class AzureStorageCache implements DerivativeCache {
             "AzureStorageCache.container_name";
     static final String OBJECT_KEY_PREFIX_CONFIG_KEY =
             "AzureStorageCache.object_key_prefix";
-    static final String TTL_SECONDS_CONFIG_KEY =
-            "AzureStorageCache.ttl_seconds";
 
     private static CloudBlobClient client;
 
@@ -246,7 +244,7 @@ class AzureStorageCache implements DerivativeCache {
 
         final Calendar c = Calendar.getInstance();
         c.add(Calendar.SECOND, 0 - ConfigurationFactory.getInstance().
-                getInt(TTL_SECONDS_CONFIG_KEY));
+                getInt(Cache.TTL_CONFIG_KEY));
         final Date cutoffDate = c.getTime();
 
         try {

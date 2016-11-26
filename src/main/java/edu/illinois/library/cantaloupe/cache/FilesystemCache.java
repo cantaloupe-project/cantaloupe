@@ -211,7 +211,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     static final String DIRECTORY_NAME_LENGTH_CONFIG_KEY =
             "FilesystemCache.dir.name_length";
     static final String PATHNAME_CONFIG_KEY = "FilesystemCache.pathname";
-    static final String TTL_CONFIG_KEY = "FilesystemCache.ttl_seconds";
 
     private static final short FILENAME_MAX_LENGTH = 255;
     // https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations

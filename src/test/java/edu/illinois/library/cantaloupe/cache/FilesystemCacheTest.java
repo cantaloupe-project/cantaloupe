@@ -59,7 +59,7 @@ public class FilesystemCacheTest {
         config.setProperty(FilesystemCache.DIRECTORY_NAME_LENGTH_CONFIG_KEY, 2);
         config.setProperty(FilesystemCache.PATHNAME_CONFIG_KEY,
                 fixturePath.toString());
-        config.setProperty(FilesystemCache.TTL_CONFIG_KEY, 0);
+        config.setProperty(Cache.TTL_CONFIG_KEY, 0);
 
         instance = new FilesystemCache();
     }
@@ -322,8 +322,7 @@ public class FilesystemCacheTest {
     @Test
     public void testGetImageFileWithIdentifierWithNonzeroTtl()
             throws Exception {
-        ConfigurationFactory.getInstance().
-                setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
+        ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 1);
 
         Identifier identifier = new Identifier("cats");
         File cacheFile = instance.getSourceImageFile(identifier);
@@ -354,8 +353,7 @@ public class FilesystemCacheTest {
 
     @Test
     public void testGetImageInfoWithNonZeroTtl() throws Exception {
-        ConfigurationFactory.getInstance().
-                setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
+        ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 1);
 
         Identifier identifier = new Identifier("test");
         File file = instance.getInfoFile(identifier);
@@ -385,8 +383,7 @@ public class FilesystemCacheTest {
 
     @Test
     public void testGetImageInputStreamWithOpListWithNonzeroTtl() throws Exception {
-        ConfigurationFactory.getInstance().
-                setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
+        ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 1);
 
         OperationList ops = TestUtil.newOperationList();
         File cacheFile = instance.getDerivativeImageFile(ops);
@@ -538,7 +535,7 @@ public class FilesystemCacheTest {
 
     @Test
     public void testPurgeExpired() throws Exception {
-        ConfigurationFactory.getInstance().setProperty(FilesystemCache.TTL_CONFIG_KEY, 1);
+        ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 1);
 
         Crop crop = new Crop();
         crop.setFull(true);

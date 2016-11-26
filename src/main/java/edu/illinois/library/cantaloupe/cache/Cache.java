@@ -13,6 +13,8 @@ import edu.illinois.library.cantaloupe.processor.ImageInfo;
  */
 public interface Cache {
 
+    String TTL_CONFIG_KEY = "cache.server.ttl_seconds";
+
     /**
      * <p>Cleans up the cache.</p>
      *

@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe;
 
+import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -130,7 +131,7 @@ public class StandaloneEntryTest {
                 "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
                 getCacheDir().getAbsolutePath());
-        config.setProperty("FilesystemCache.ttl_seconds", "1");
+        config.setProperty(Cache.TTL_CONFIG_KEY, "1");
 
         // TODO: write this
 
@@ -161,7 +162,7 @@ public class StandaloneEntryTest {
                 "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
                 getCacheDir().getAbsolutePath());
-        config.setProperty("FilesystemCache.ttl_seconds", "10");
+        config.setProperty(Cache.TTL_CONFIG_KEY, "10");
 
         // cache a dimension
         DerivativeCache cache = CacheFactory.getDerivativeCache();
@@ -214,7 +215,7 @@ public class StandaloneEntryTest {
                 "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
                 getCacheDir().getAbsolutePath());
-        config.setProperty("FilesystemCache.ttl_seconds", "1");
+        config.setProperty(Cache.TTL_CONFIG_KEY, "1");
 
         File.createTempFile("bla1", "tmp", imageDir);
         File.createTempFile("bla1", "tmp", infoDir);

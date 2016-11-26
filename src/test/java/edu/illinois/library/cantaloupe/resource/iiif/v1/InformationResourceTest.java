@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.WebApplication;
+import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -91,7 +92,7 @@ public class InformationResourceTest extends ResourceTest {
                 "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
                 cacheFolder.getAbsolutePath());
-        config.setProperty("FilesystemCache.ttl_seconds", 10);
+        config.setProperty(Cache.TTL_CONFIG_KEY, 10);
         config.setProperty("cache.server.resolve_first", true);
 
         OperationList ops = TestUtil.newOperationList();
@@ -125,7 +126,7 @@ public class InformationResourceTest extends ResourceTest {
                 "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
                 cacheFolder.getAbsolutePath());
-        config.setProperty("FilesystemCache.ttl_seconds", 10);
+        config.setProperty(Cache.TTL_CONFIG_KEY, 10);
         config.setProperty("cache.server.resolve_first", true);
 
         OperationList ops = TestUtil.newOperationList();
@@ -189,7 +190,7 @@ public class InformationResourceTest extends ResourceTest {
                 "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
                 cacheFolder.getAbsolutePath());
-        config.setProperty("FilesystemCache.ttl_seconds", 10);
+        config.setProperty(Cache.TTL_CONFIG_KEY, 10);
         config.setProperty("cache.server.resolve_first", true);
         config.setProperty("cache.server.purge_missing", purgeMissing);
 

@@ -44,7 +44,7 @@ public class JdbcCacheTest {
         config.setProperty(JdbcCache.PASSWORD_CONFIG_KEY, "");
         config.setProperty(JdbcCache.DERIVATIVE_IMAGE_TABLE_CONFIG_KEY, "deriv");
         config.setProperty(JdbcCache.INFO_TABLE_CONFIG_KEY, "info");
-        config.setProperty(JdbcCache.TTL_CONFIG_KEY, 0);
+        config.setProperty(Cache.TTL_CONFIG_KEY, 0);
 
         try (Connection connection = JdbcCache.getConnection()) {
             createTables(connection);
@@ -185,7 +185,7 @@ public class JdbcCacheTest {
 
     @Test
     public void testGetImageInfoWithNonZeroTtl() throws Exception {
-        ConfigurationFactory.getInstance().setProperty(JdbcCache.TTL_CONFIG_KEY, 1);
+        ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 1);
 
         // wait for the seed data to invalidate
         Thread.sleep(1500);
@@ -258,7 +258,7 @@ public class JdbcCacheTest {
     @Test
     public void testGetImageInputStreamWithOpListWithNonzeroTtl()
             throws Exception {
-        ConfigurationFactory.getInstance().setProperty(JdbcCache.TTL_CONFIG_KEY, 1);
+        ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 1);
 
         // wait for the seed data to invalidate
         Thread.sleep(1500);
@@ -337,7 +337,7 @@ public class JdbcCacheTest {
         // ttl = 0
         assertEquals(new Date(Long.MIN_VALUE), instance.oldestValidDate());
         // ttl = 50
-        ConfigurationFactory.getInstance().setProperty(JdbcCache.TTL_CONFIG_KEY, 50);
+        ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 50);
         long expectedTime = Date.from(Instant.now().minus(Duration.ofSeconds(50))).getTime();
         long actualTime = instance.oldestValidDate().getTime();
         assertTrue(Math.abs(actualTime - expectedTime) < 100);
@@ -408,7 +408,7 @@ public class JdbcCacheTest {
     @Test
     public void testPurgeExpired() throws Exception {
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(JdbcCache.TTL_CONFIG_KEY, 1);
+        config.setProperty(Cache.TTL_CONFIG_KEY, 1);
 
         // wait for the seed data to invalidate
         Thread.sleep(1500);

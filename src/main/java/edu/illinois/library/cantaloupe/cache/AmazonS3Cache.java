@@ -130,7 +130,6 @@ class AmazonS3Cache implements DerivativeCache {
     static final String OBJECT_KEY_PREFIX_CONFIG_KEY =
             "AmazonS3Cache.object_key_prefix";
     static final String SECRET_KEY_CONFIG_KEY = "AmazonS3Cache.secret_key";
-    static final String TTL_SECONDS_CONFIG_KEY = "AmazonS3Cache.ttl_seconds";
 
     /** Lazy-initialized by {@link #getClientInstance} */
     private static AmazonS3 client;
@@ -293,7 +292,7 @@ class AmazonS3Cache implements DerivativeCache {
         final String bucketName = getBucketName();
 
         Calendar c = Calendar.getInstance();
-        c.add(Calendar.SECOND, 0 - config.getInt(TTL_SECONDS_CONFIG_KEY));
+        c.add(Calendar.SECOND, 0 - config.getInt(Cache.TTL_CONFIG_KEY));
         Date cutoffDate = c.getTime();
 
         final S3Objects objects = S3Objects.withPrefix(s3, bucketName,

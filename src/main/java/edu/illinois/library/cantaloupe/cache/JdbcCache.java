@@ -139,7 +139,6 @@ class JdbcCache implements DerivativeCache {
     static final String PASSWORD_CONFIG_KEY = "JdbcCache.password";
     static final String INFO_TABLE_CONFIG_KEY = "JdbcCache.info_table";
     static final String MAX_POOL_SIZE_CONFIG_KEY = "JdbcCache.max_pool_size";
-    static final String TTL_CONFIG_KEY = "JdbcCache.ttl_seconds";
     static final String USER_CONFIG_KEY = "JdbcCache.user";
 
     private static HikariDataSource dataSource;

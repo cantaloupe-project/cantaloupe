@@ -399,6 +399,7 @@ public class ControlPanelTest {
                 selectByVisibleText("FilesystemCache");
         css("[name=\"cache.server.purge_missing\"]").click();
         css("[name=\"cache.server.resolve_first\"]").click();
+        css("[name=\"cache.server.ttl_seconds\"]").sendKeys("10");
         css("[name=\"cache.server.worker.enabled\"]").click();
         css("[name=\"cache.server.worker.interval\"]").sendKeys("25");
         // AmazonS3Cache
@@ -408,20 +409,17 @@ public class ControlPanelTest {
         css("[name=\"AmazonS3Cache.bucket.name\"]").sendKeys("bucket");
         css("[name=\"AmazonS3Cache.bucket.region\"]").sendKeys("greenland");
         css("[name=\"AmazonS3Cache.object_key_prefix\"]").sendKeys("obj");
-        css("[name=\"AmazonS3Cache.ttl_seconds\"]").sendKeys("543");
         // AzureStorageCache
         css("#cl-caches li > a[href=\"#AzureStorageCache\"]").click();
         css("[name=\"AzureStorageCache.account_name\"]").sendKeys("bees");
         css("[name=\"AzureStorageCache.account_key\"]").sendKeys("birds");
         css("[name=\"AzureStorageCache.container_name\"]").sendKeys("badger");
         css("[name=\"AzureStorageCache.object_key_prefix\"]").sendKeys("obj");
-        css("[name=\"AzureStorageCache.ttl_seconds\"]").sendKeys("345");
         // FilesystemCache
         css("#cl-caches li > a[href=\"#FilesystemCache\"]").click();
         css("[name=\"FilesystemCache.pathname\"]").sendKeys("/path");
         css("[name=\"FilesystemCache.dir.depth\"]").sendKeys("8");
         css("[name=\"FilesystemCache.dir.name_length\"]").sendKeys("4");
-        css("[name=\"FilesystemCache.ttl_seconds\"]").sendKeys("59");
         // JdbcCache
         css("#cl-caches li > a[href=\"#JdbcCache\"]").click();
         css("[name=\"JdbcCache.url\"]").sendKeys("jdbc://dogs");
@@ -431,7 +429,6 @@ public class ControlPanelTest {
         css("[name=\"JdbcCache.connection_timeout\"]").sendKeys("9");
         css("[name=\"JdbcCache.derivative_image_table\"]").sendKeys("hula");
         css("[name=\"JdbcCache.info_table\"]").sendKeys("box");
-        css("[name=\"JdbcCache.ttl_seconds\"]").sendKeys("9");
 
         // Submit the form
         css("#cl-caches input[type=\"submit\"]").click();
@@ -454,6 +451,7 @@ public class ControlPanelTest {
         assertEquals("FilesystemCache", config.getString("cache.derivative"));
         //assertTrue(config.getBoolean("cache.server.purge_missing")); TODO: why does this not work?
         assertTrue(config.getBoolean("cache.server.resolve_first"));
+        assertEquals(10, config.getInt("cache.server.ttl_seconds"));
         assertTrue(config.getBoolean("cache.server.worker.enabled"));
         assertEquals(25, config.getInt("cache.server.worker.interval"));
         // AmazonS3Cache
@@ -462,18 +460,15 @@ public class ControlPanelTest {
         assertEquals("bucket", config.getString("AmazonS3Cache.bucket.name"));
         assertEquals("greenland", config.getString("AmazonS3Cache.bucket.region"));
         assertEquals("obj", config.getString("AmazonS3Cache.object_key_prefix"));
-        assertEquals("543", config.getString("AmazonS3Cache.ttl_seconds"));
         // AzureStorageCache
         assertEquals("bees", config.getString("AzureStorageCache.account_name"));
         assertEquals("birds", config.getString("AzureStorageCache.account_key"));
         assertEquals("badger", config.getString("AzureStorageCache.container_name"));
         assertEquals("obj", config.getString("AzureStorageCache.object_key_prefix"));
-        assertEquals("345", config.getString("AzureStorageCache.ttl_seconds"));
         // FilesystemCache
         assertEquals("/path", config.getString("FilesystemCache.pathname"));
         assertEquals("8", config.getString("FilesystemCache.dir.depth"));
         assertEquals("4", config.getString("FilesystemCache.dir.name_length"));
-        assertEquals("59", config.getString("FilesystemCache.ttl_seconds"));
         // JdbcCache
         assertEquals("jdbc://dogs", config.getString("JdbcCache.url"));
         assertEquals("person", config.getString("JdbcCache.user"));
@@ -482,7 +477,6 @@ public class ControlPanelTest {
         assertEquals("9", config.getString("JdbcCache.connection_timeout"));
         assertEquals("hula", config.getString("JdbcCache.derivative_image_table"));
         assertEquals("box", config.getString("JdbcCache.info_table"));
-        assertEquals("9", config.getString("JdbcCache.ttl_seconds"));
     }
 
     private void testOverlaysSection() throws Exception {

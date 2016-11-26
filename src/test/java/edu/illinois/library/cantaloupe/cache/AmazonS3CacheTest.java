@@ -44,8 +44,8 @@ public class AmazonS3CacheTest {
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         final Configuration config = ConfigurationFactory.getInstance();
         config.clear();
+        config.setProperty(Cache.TTL_CONFIG_KEY, 1);
         config.setProperty(AmazonS3Cache.OBJECT_KEY_PREFIX_CONFIG_KEY, "test/");
-        config.setProperty(AmazonS3Cache.TTL_SECONDS_CONFIG_KEY, 1);
         config.setProperty(AmazonS3Cache.ACCESS_KEY_ID_CONFIG_KEY, accessKeyId);
         config.setProperty(AmazonS3Cache.BUCKET_NAME_CONFIG_KEY, bucketName);
         //config.setProperty(AmazonS3Cache.BUCKET_REGION_CONFIG_KEY, "us-east-1");

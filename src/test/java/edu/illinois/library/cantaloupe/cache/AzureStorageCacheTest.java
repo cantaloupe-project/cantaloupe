@@ -45,8 +45,8 @@ public class AzureStorageCacheTest {
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
+        config.setProperty(Cache.TTL_CONFIG_KEY, 1);
         config.setProperty(AzureStorageCache.OBJECT_KEY_PREFIX_CONFIG_KEY, "test/");
-        config.setProperty(AzureStorageCache.TTL_SECONDS_CONFIG_KEY, 1);
         config.setProperty(AzureStorageCache.ACCOUNT_NAME_CONFIG_KEY, accountName);
         config.setProperty(AzureStorageCache.ACCOUNT_KEY_CONFIG_KEY, accountKey);
         config.setProperty(AzureStorageCache.CONTAINER_NAME_CONFIG_KEY, container);

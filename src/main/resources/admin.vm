@@ -2006,6 +2006,22 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <td>Time-To-Live
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Time before a cached image becomes
+                                                   stale and needs to be reloaded. Set to 0 for
+                                                   &quot;never.&quot;">?</a>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control"
+                                               name="cache.server.ttl_seconds"
+                                               min="0"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td>
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
@@ -2155,22 +2171,6 @@
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td>Time-To-Live
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Time before a cached image becomes
-                                                   stale and needs to be reloaded. Set to 0 for
-                                                   &quot;never.&quot;">?</a>
-                                            </td>
-                                            <td>
-                                                <input type="number" class="form-control"
-                                                       name="AmazonS3Cache.ttl_seconds"
-                                                       min="0"
-                                                       data-requires-restart="false">
-                                            </td>
-                                        </tr>
                                     </table>
                                 </div>
 
@@ -2230,22 +2230,6 @@
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td>Time-To-Live
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Time before a cached image becomes
-                                                   stale and needs to be reloaded. Set to 0 for
-                                                   &quot;never.&quot;">?</a>
-                                            </td>
-                                            <td>
-                                                <input type="number" class="form-control"
-                                                       name="AzureStorageCache.ttl_seconds"
-                                                       min="0"
-                                                       data-requires-restart="false">
-                                            </td>
-                                        </tr>
                                     </table>
                                 </div>
 
@@ -2297,22 +2281,6 @@
                                                 <input type="number" class="form-control"
                                                        name="FilesystemCache.dir.name_length"
                                                        min="1" max="6"
-                                                       data-requires-restart="false">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Time-To-Live
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Time before a cached image becomes
-                                                   stale and needs to be reloaded. Set to 0 for
-                                                   &quot;never.&quot;">?</a>
-                                            </td>
-                                            <td>
-                                                <input type="number" class="form-control"
-                                                       name="FilesystemCache.ttl_seconds"
-                                                       min="0"
                                                        data-requires-restart="false">
                                             </td>
                                         </tr>
@@ -2395,22 +2363,6 @@
                                             <td>
                                                 <input type="text" class="form-control"
                                                        name="JdbcCache.info_table"
-                                                       data-requires-restart="false">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Time-To-Live
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Time before a cached image becomes
-                                                   stale and needs to be reloaded. Set to 0 for
-                                                   &quot;never.&quot;">?</a>
-                                            </td>
-                                            <td>
-                                                <input type="number" class="form-control"
-                                                       name="JdbcCache.ttl_seconds"
-                                                       min="0"
                                                        data-requires-restart="false">
                                             </td>
                                         </tr>
