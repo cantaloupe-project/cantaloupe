@@ -105,7 +105,7 @@ class Size {
     }
 
     public void setHeight(Integer height) throws IllegalArgumentException {
-        if (height <= 0) {
+        if (height != null && height <= 0) {
             throw new IllegalArgumentException("Height must be a positive integer");
         }
         this.height = height;
@@ -116,7 +116,7 @@ class Size {
      * @throws IllegalArgumentException
      */
     public void setPercent(Float percent) throws IllegalArgumentException {
-        if (percent <= 0) {
+        if (percent != null && percent <= 0) {
             throw new IllegalArgumentException("Percent must be positive");
         }
         this.percent = percent;
@@ -127,7 +127,7 @@ class Size {
     }
 
     public void setWidth(Integer width) throws IllegalArgumentException {
-        if (width <= 0) {
+        if (width != null && width <= 0) {
             throw new IllegalArgumentException("Width must be a positive integer");
         }
         this.width = width;

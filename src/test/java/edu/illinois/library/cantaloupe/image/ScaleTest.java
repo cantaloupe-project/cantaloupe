@@ -191,6 +191,12 @@ public class ScaleTest {
     }
 
     @Test
+    public void testSetNullHeight() {
+        this.scale.setHeight(null);
+        assertNull(scale.getHeight());
+    }
+
+    @Test
     public void testSetPercent() {
         float percent = 0.5f;
         this.scale.setPercent(percent);
@@ -218,6 +224,12 @@ public class ScaleTest {
     }
 
     @Test
+    public void testSetNullPercent() {
+        this.scale.setPercent(null);
+        assertNull(scale.getPercent());
+    }
+
+    @Test
     public void testSetWidth() {
         Integer width = 50;
         this.scale.setWidth(width);
@@ -242,6 +254,12 @@ public class ScaleTest {
         } catch (IllegalArgumentException e) {
             assertEquals("Width must be a positive integer", e.getMessage());
         }
+    }
+
+    @Test
+    public void testSetNullWidth() {
+        this.scale.setWidth(null);
+        assertNull(scale.getWidth());
     }
 
     @Test
