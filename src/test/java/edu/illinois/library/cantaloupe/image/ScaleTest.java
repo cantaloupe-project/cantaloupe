@@ -16,10 +16,29 @@ public class ScaleTest {
     @Before
     public void setUp() {
         this.scale = new Scale();
+    }
+
+    @Test
+    public void testConstructor1() {
         assertEquals(Scale.Mode.ASPECT_FIT_INSIDE, scale.getMode());
         assertNull(scale.getPercent());
         assertNull(scale.getHeight());
         assertNull(scale.getWidth());
+    }
+
+    @Test
+    public void testConstructor2() {
+        this.scale = new Scale(0.3f);
+        assertEquals(Scale.Mode.ASPECT_FIT_INSIDE, scale.getMode());
+        assertEquals(0.3f, scale.getPercent(), 0.00001f);
+    }
+
+    @Test
+    public void testConstructor3() {
+        this.scale = new Scale(300, 200, Scale.Mode.ASPECT_FIT_HEIGHT);
+        assertEquals(Scale.Mode.ASPECT_FIT_HEIGHT, scale.getMode());
+        assertEquals(300, (long) scale.getWidth());
+        assertEquals(200, (long) scale.getHeight());
     }
 
     @Test

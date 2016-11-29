@@ -62,6 +62,28 @@ public class Scale implements Operation {
     private Integer width;
 
     /**
+     * No-op constructor.
+     */
+    public Scale() {}
+
+    public Scale(float percent) {
+        setPercent(percent);
+    }
+
+    /**
+     * @param width May be <code>null</code> if <code>mode</code> is
+     *              {@link Mode#ASPECT_FIT_HEIGHT}.
+     * @param height May be <code>null</code> if <code>mode</code> is
+     *               {@link Mode#ASPECT_FIT_WIDTH}.
+     * @param mode Scale mode.
+     */
+    public Scale(Integer width, Integer height, Mode mode) {
+        setWidth(width);
+        setHeight(height);
+        setMode(mode);
+    }
+
+    /**
      * @return Resample filter to prefer. May be null.
      */
     public Filter getFilter() {
