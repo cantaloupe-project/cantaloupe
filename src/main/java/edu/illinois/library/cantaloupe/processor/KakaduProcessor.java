@@ -362,7 +362,8 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
                 process.destroy();
             }
         } catch (EOFException e) {
-            logger.warn("process(): {} ({})", e.getMessage(), opList);
+            // This will generally not have a message.
+            logger.error("process(): EOFException ({})", e.getMessage(), opList);
         } catch (IOException | InterruptedException e) {
             String msg = e.getMessage();
             final String errorStr = errorBucket.toString();

@@ -132,6 +132,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
         private File destinationFile;
         private Set imagesBeingWritten;
+        private boolean isClosed = false;
         private Object toRemove;
         private File tempFile;
 
@@ -160,24 +161,30 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
         @Override
         public void close() throws IOException {
-            try {
+            // This check prevents double-closing. Clients will frequently wrap
+            // this stream in a TeeOutputStream, which they can't close due to
+            // Restlet's OutputRepresentation.write() API contract, so it (the
+            // tee stream) gets detected and double-closed by the finalizer.
+            // See ImageRepresentation.write() for more info.
+            if (!isClosed) {
+                isClosed = true;
                 try {
-                    // Close super in order to release its handle on tempFile.
-                    logger.debug("close(): closing stream for {}", toRemove);
-                    super.close();
+                    try {
+                        // Close super in order to release its handle on
+                        // tempFile.
+                        logger.debug("close(): closing stream for {}", toRemove);
+                        super.close();
+                    } catch (IOException e) {
+                        logger.warn("close(): {}", e.getMessage());
+                    }
+                    logger.debug("close(): moving {} to {}",
+                            tempFile, destinationFile.getName());
+                    FileUtils.moveFile(tempFile, destinationFile);
                 } catch (IOException e) {
-                    logger.warn("close(): {}", e.getMessage());
+                    logger.warn("close(): {}", e.getMessage(), e);
+                } finally {
+                    imagesBeingWritten.remove(toRemove);
                 }
-
-                logger.debug("close(): moving {} to {}",
-                        tempFile, destinationFile.getName());
-                FileUtils.moveFile(tempFile, destinationFile);
-            } catch (IOException e) {
-                // This is rarely an issue, as it is common for other
-                // threads/processes to interfere with the move.
-                logger.debug("close(): {}", e.getMessage());
-            } finally {
-                imagesBeingWritten.remove(toRemove);
             }
         }
 

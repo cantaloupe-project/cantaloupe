@@ -57,8 +57,7 @@ public class OperationList implements Comparable<OperationList>,
 
     @Override
     public int compareTo(OperationList ops) {
-        int last = this.toString().compareTo(ops.toString());
-        return (last == 0) ? this.toString().compareTo(ops.toString()) : last;
+        return this.toString().compareTo(ops.toString());
     }
 
     /**

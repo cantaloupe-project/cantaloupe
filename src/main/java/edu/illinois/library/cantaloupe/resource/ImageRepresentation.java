@@ -30,8 +30,6 @@ public class ImageRepresentation extends OutputRepresentation {
     private static Logger logger = LoggerFactory.
             getLogger(ImageRepresentation.class);
 
-    static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
-
     private boolean bypassCache = false;
     private ImageInfo imageInfo;
     private OperationList opList;
@@ -39,9 +37,9 @@ public class ImageRepresentation extends OutputRepresentation {
 
     /**
      * @param imageInfo
+     * @param processor Processor configured for writing the image.
      * @param opList
      * @param disposition
-     * @param processor
      * @param bypassCache If true, the cache will not be written to nor read
      *                    from, regardless of whether caching is enabled in the
      *                    application configuration.
@@ -75,7 +73,6 @@ public class ImageRepresentation extends OutputRepresentation {
             // The cache will be null if caching is disabled.
             final DerivativeCache cache = CacheFactory.getDerivativeCache();
             if (cache != null) {
-                OutputStream cacheOutputStream = null;
                 // Try to get the image from the cache.
                 try (InputStream inputStream = cache.getImageInputStream(opList)) {
                     if (inputStream != null) {
@@ -85,8 +82,13 @@ public class ImageRepresentation extends OutputRepresentation {
                     } else {
                         // Create a TeeOutputStream to write to the response
                         // output stream and the cache pseudo-simultaneously.
-                        cacheOutputStream = cache.getImageOutputStream(opList);
-                        try {
+                        // Restlet will close outputStream, but cacheOutputStream
+                        // is our responsibility. (teeStream doesn't matter,
+                        // although the finalizer may close it, so it's important
+                        // that these two output streams' close() method can deal
+                        // with being called twice.)
+                        try (OutputStream cacheOutputStream =
+                                     cache.getImageOutputStream(opList)) {
                             OutputStream teeStream = new TeeOutputStream(
                                     outputStream, cacheOutputStream);
                             doWrite(teeStream);
@@ -98,55 +100,60 @@ public class ImageRepresentation extends OutputRepresentation {
                             // corrupt, so it must be purged.
                             logger.info("write(): {}", e.getMessage());
                             cache.purge(opList);
-                        } finally {
-                            // Restlet will close outputStream, but
-                            // cacheOutputStream is our responsibility.
-                            if (cacheOutputStream != null) {
-                                cacheOutputStream.close();
-                            }
                         }
                     }
                 } catch (Exception e) {
                     throw new IOException(e);
                 }
             } else {
-                doWrite(outputStream);
+                try {
+                    doWrite(outputStream);
+                } catch (Exception e) {
+                    throw new IOException(e);
+                }
             }
         } else {
-            doWrite(outputStream);
+            try {
+                doWrite(outputStream);
+            } catch (Exception e) {
+                throw new IOException(e);
+            }
         }
     }
 
-    private void doWrite(OutputStream outputStream) throws IOException {
-        try {
-            final Stopwatch watch = new Stopwatch();
-            // If the operations are effectively a no-op, the source image can
-            // be streamed through with no processing.
-            if (opList.isNoOp(processor.getSourceFormat())) {
-                if (processor instanceof FileProcessor &&
-                        ((FileProcessor) processor).getSourceFile() != null) {
-                    final File sourceFile = ((FileProcessor) processor).getSourceFile();
-                    try (InputStream inputStream = new FileInputStream(sourceFile)) {
-                        IOUtils.copy(inputStream, outputStream);
-                    }
-                } else {
-                    final StreamSource streamSource =
-                            ((StreamProcessor) processor).getStreamSource();
-                    try (InputStream inputStream = streamSource.newInputStream()) {
-                        IOUtils.copy(inputStream, outputStream);
-                    }
+    /**
+     * @param outputStream Either the response output stream, or a tee stream
+     *                     for writing to the response and the cache
+     *                     pseudo-simultaneously. Will not be closed.
+     * @throws Exception
+     */
+    private void doWrite(OutputStream outputStream) throws Exception {
+        final Stopwatch watch = new Stopwatch();
+        // If the operations are effectively a no-op, the source image can be
+        // streamed through with no processing.
+        if (opList.isNoOp(processor.getSourceFormat())) {
+            if (processor instanceof FileProcessor &&
+                    ((FileProcessor) processor).getSourceFile() != null) {
+                final File sourceFile =
+                        ((FileProcessor) processor).getSourceFile();
+                try (InputStream inputStream = new FileInputStream(sourceFile)) {
+                    IOUtils.copy(inputStream, outputStream);
                 }
-                logger.debug("Streamed with no processing in {} msec: {}",
-                        watch.timeElapsed(), opList);
             } else {
-                processor.process(opList, imageInfo, outputStream);
-
-                logger.debug("{} processed in {} msec: {}",
-                        processor.getClass().getSimpleName(),
-                        watch.timeElapsed(), opList);
+                final StreamSource streamSource =
+                        ((StreamProcessor) processor).getStreamSource();
+                try (InputStream inputStream = streamSource.newInputStream()) {
+                    IOUtils.copy(inputStream, outputStream);
+                }
             }
-        } catch (Exception e) {
-            throw new IOException(e);
+            logger.debug("Streamed with no processing in {} msec: {}",
+                    watch.timeElapsed(), opList);
+        } else {
+            processor.process(opList, imageInfo, outputStream);
+
+            logger.debug("{} processed in {} msec: {}",
+                    processor.getClass().getSimpleName(),
+                    watch.timeElapsed(), opList);
         }
     }
 
