@@ -112,6 +112,43 @@ public class SizeTest {
         }
     }
 
+    /* equals() */
+
+    @Test
+    public void testEquals() {
+        size.setScaleMode(Size.ScaleMode.ASPECT_FIT_INSIDE);
+        size.setWidth(300);
+        size.setHeight(200);
+        Size size2 = new Size();
+        size2.setScaleMode(Size.ScaleMode.ASPECT_FIT_INSIDE);
+        size2.setWidth(300);
+        size2.setHeight(200);
+        assertEquals(size, size2);
+
+        size2.setScaleMode(Size.ScaleMode.ASPECT_FIT_WIDTH);
+        assertNotEquals(size, size2);
+
+        size2.setScaleMode(Size.ScaleMode.ASPECT_FIT_INSIDE);
+        size2.setWidth(299);
+        assertNotEquals(size, size2);
+
+        size2.setWidth(300);
+        size2.setHeight(199);
+        assertNotEquals(size, size2);
+
+        size2.setHeight(200);
+        size2.setScaleMode(null);
+        assertNotEquals(size, size2);
+
+        size2.setScaleMode(Size.ScaleMode.ASPECT_FIT_INSIDE);
+        size2.setWidth(null);
+        assertNotEquals(size, size2);
+
+        size2.setWidth(300);
+        size2.setHeight(null);
+        assertNotEquals(size, size2);
+    }
+
     /* setHeight() */
 
     @Test

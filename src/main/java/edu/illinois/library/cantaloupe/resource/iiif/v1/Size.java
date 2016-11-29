@@ -81,6 +81,15 @@ class Size {
         return size;
     }
 
+    @Override
+    public boolean equals(Object object) {
+        if (object instanceof Size) {
+            Size otherSize = (Size) object;
+            return toString().equals(otherSize.toString());
+        }
+        return false;
+    }
+
     public Integer getHeight() {
         return height;
     }
