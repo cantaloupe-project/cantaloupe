@@ -16,7 +16,7 @@ title: What's New
 
 <ul>
   <li>Fixed inability to upscale by pixels.</li>
-  <li>Eliminated a spurious FilesystemCache log warning.</li>
+  <li>Fixed a bug in FilesystemCache that caused zero-byte files to be written and an HTTP 500 response when handling concurrent identical requests.</li>
 </ul>
 
 <h2>3.2.1</h2>
