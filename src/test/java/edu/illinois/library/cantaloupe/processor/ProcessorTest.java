@@ -100,7 +100,6 @@ public abstract class ProcessorTest {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
         OperationList ops = new OperationList();
         ops.setIdentifier(new Identifier("bla"));
         ops.add(crop);
@@ -117,9 +116,7 @@ public abstract class ProcessorTest {
         crop.setY(20f);
         crop.setWidth(50f);
         crop.setHeight(50f);
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        scale.setPercent(0.8f);
+        Scale scale = new Scale(0.8f);
         OperationList ops = new OperationList();
         ops.setIdentifier(new Identifier("bla"));
         ops.add(crop);
@@ -197,28 +194,16 @@ public abstract class ProcessorTest {
     public void testProcessWithScaleOperation() throws Exception {
         List<Scale> scales = new ArrayList<>();
         Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
         scales.add(scale);
-        scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
-        scale.setWidth(20);
+        scale = new Scale(20, null, Scale.Mode.ASPECT_FIT_WIDTH);
         scales.add(scale);
-        scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
-        scale.setHeight(20);
+        scale = new Scale(null, 20, Scale.Mode.ASPECT_FIT_HEIGHT);
         scales.add(scale);
-        scale = new Scale();
-        scale.setPercent(0.5f);
+        scale = new Scale(0.5f);
         scales.add(scale);
-        scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        scale.setWidth(20);
-        scale.setHeight(20);
+        scale = new Scale(20, 20, Scale.Mode.ASPECT_FIT_INSIDE);
         scales.add(scale);
-        scale = new Scale();
-        scale.setMode(Scale.Mode.NON_ASPECT_FILL);
-        scale.setWidth(20);
-        scale.setHeight(20);
+        scale = new Scale(20, 20, Scale.Mode.NON_ASPECT_FILL);
         scales.add(scale);
         for (Scale scale_ : scales) {
             OperationList ops = TestUtil.newOperationList();

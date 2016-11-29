@@ -20,7 +20,7 @@ public class ScaleTest {
 
     @Test
     public void testConstructor1() {
-        assertEquals(Scale.Mode.ASPECT_FIT_INSIDE, scale.getMode());
+        assertEquals(Scale.Mode.FULL, scale.getMode());
         assertNull(scale.getPercent());
         assertNull(scale.getHeight());
         assertNull(scale.getWidth());
@@ -164,17 +164,11 @@ public class ScaleTest {
     public void testIsNoOp() {
         scale.setMode(Scale.Mode.FULL);
         assertTrue(scale.isNoOp());
-        scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
-        scale.setPercent(1f);
+        scale = new Scale(1f);
         assertTrue(scale.isNoOp());
-        scale = new Scale();
-        scale.setPercent(0.5f);
+        scale = new Scale(0.5f);
         assertFalse(scale.isNoOp());
-        scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        scale.setWidth(100);
-        scale.setHeight(100);
+        scale = new Scale(100, 100, Scale.Mode.ASPECT_FIT_INSIDE);
         assertFalse(scale.isNoOp());
         scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
         assertFalse(scale.isNoOp());
@@ -299,41 +293,25 @@ public class ScaleTest {
     @Test
     public void testToString() {
         Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
         assertEquals("none", scale.toString());
 
-        scale = new Scale();
-        scale.setWidth(50);
-        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        scale = new Scale(50, null, Scale.Mode.ASPECT_FIT_WIDTH);
         assertEquals("50,", scale.toString());
 
-        scale = new Scale();
-        scale.setHeight(50);
-        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        scale = new Scale(null, 50, Scale.Mode.ASPECT_FIT_HEIGHT);
         assertEquals(",50", scale.toString());
 
-        scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        scale.setPercent(0.5f);
+        scale = new Scale(0.5f);
         assertEquals("50%", scale.toString());
 
-        scale = new Scale();
-        scale.setWidth(50);
-        scale.setHeight(40);
-        scale.setMode(Scale.Mode.NON_ASPECT_FILL);
+        scale = new Scale(50, 40, Scale.Mode.NON_ASPECT_FILL);
         assertEquals("50,40", scale.toString());
 
-        scale = new Scale();
-        scale.setWidth(50);
-        scale.setHeight(40);
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        scale = new Scale(50, 40, Scale.Mode.ASPECT_FIT_INSIDE);
         assertEquals("!50,40", scale.toString());
 
-        scale = new Scale();
-        scale.setWidth(50);
-        scale.setHeight(40);
+        scale = new Scale(50, 40, Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setFilter(Scale.Filter.LANCZOS3);
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         assertEquals("!50,40,lanczos3", scale.toString());
     }
 

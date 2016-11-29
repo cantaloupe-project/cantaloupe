@@ -112,7 +112,6 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
             // a reduction factor in order to use a scale-appropriate
             // rasterization DPI.
             Scale scale = new Scale();
-            scale.setMode(Scale.Mode.FULL);
             for (Operation op : opList) {
                 if (op instanceof Scale) {
                     scale = (Scale) op;

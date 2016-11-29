@@ -102,8 +102,7 @@ public class JdbcCacheTest {
         crop.setY(50f);
         crop.setWidth(50f);
         crop.setHeight(50f);
-        Scale scale = new Scale();
-        scale.setPercent(0.9f);
+        Scale scale = new Scale(0.9f);
         Rotate rotate = new Rotate();
         Format format = Format.JPG;
         ops = new OperationList();
@@ -123,9 +122,7 @@ public class JdbcCacheTest {
         crop.setY(20f);
         crop.setWidth(50f);
         crop.setHeight(90f);
-        scale = new Scale();
-        scale.setWidth(40);
-        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        scale = new Scale(40, null, Scale.Mode.ASPECT_FIT_WIDTH);
         rotate = new Rotate(15);
         format = Format.PNG;
         ops = new OperationList();

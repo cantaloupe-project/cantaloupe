@@ -58,6 +58,7 @@ class Size {
                     size.setScaleMode(ScaleMode.ASPECT_FIT_HEIGHT);
                     size.setHeight(Integer.parseInt(StringUtils.stripStart(uriSize, ",")));
                 } else if (uriSize.startsWith("pct:")) {
+                    size.setScaleMode(ScaleMode.ASPECT_FIT_INSIDE);
                     size.setPercent(Float.parseFloat(StringUtils.stripStart(uriSize, "pct:")));
                 } else if (uriSize.startsWith("!")) {
                     size.setScaleMode(ScaleMode.ASPECT_FIT_INSIDE);

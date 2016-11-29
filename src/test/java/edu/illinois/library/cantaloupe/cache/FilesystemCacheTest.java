@@ -252,7 +252,6 @@ public class FilesystemCacheTest {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
         Rotate rotate = new Rotate(0);
         Format format = Format.TIF;
 
@@ -540,7 +539,6 @@ public class FilesystemCacheTest {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
 
         // add a source image
         OperationList ops = TestUtil.newOperationList();

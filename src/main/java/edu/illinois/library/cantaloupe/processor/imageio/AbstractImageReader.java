@@ -278,7 +278,6 @@ abstract class AbstractImageReader {
 
         Crop crop = null;
         Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
         for (Operation op : ops) {
             if (op instanceof Crop) {
                 crop = (Crop) op;

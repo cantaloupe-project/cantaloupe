@@ -57,7 +57,7 @@ public class Scale implements Operation {
 
     private Filter filter;
     private Integer height;
-    private Mode scaleMode = Mode.ASPECT_FIT_INSIDE;
+    private Mode scaleMode = Mode.FULL;
     private Float percent;
     private Integer width;
 
@@ -68,6 +68,7 @@ public class Scale implements Operation {
 
     public Scale(float percent) {
         setPercent(percent);
+        setMode(Mode.ASPECT_FIT_INSIDE);
     }
 
     /**

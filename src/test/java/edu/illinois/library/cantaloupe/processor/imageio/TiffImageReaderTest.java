@@ -80,9 +80,7 @@ public class TiffImageReaderTest {
         crop.setWidth(40f);
         crop.setHeight(40f);
         ops.add(crop);
-        Scale scale = new Scale();
-        scale.setWidth(35);
-        scale.setHeight(35);
+        Scale scale = new Scale(35, 35, Scale.Mode.ASPECT_FIT_INSIDE);
         ops.add(scale);
         Orientation orientation = Orientation.ROTATE_0;
         ReductionFactor rf = new ReductionFactor();

@@ -125,15 +125,13 @@ public class JaiUtilTest {
 
         // test with no-op scale
         Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
         RenderedOp scaledImage = JaiUtil.scaleImage(image, scale);
         assertSame(image, scaledImage);
 
         // test with non-no-op crop
         final float percent = 0.5f;
         final double fudge = 0.00000001f;
-        scale = new Scale();
-        scale.setPercent(percent);
+        scale = new Scale(percent);
         scaledImage = JaiUtil.scaleImage(image, scale);
         assertEquals(image.getWidth() * percent, scaledImage.getWidth(), fudge);
         assertEquals(image.getHeight() * percent, scaledImage.getHeight(), fudge);

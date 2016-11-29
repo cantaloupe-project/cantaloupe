@@ -150,7 +150,6 @@ class TiffImageReader extends AbstractImageReader {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
         for (Operation op : ops) {
             if (op instanceof Crop) {
                 crop = (Crop) op;
@@ -196,7 +195,6 @@ class TiffImageReader extends AbstractImageReader {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
         for (Operation op : ops) {
             if (op instanceof Crop) {
                 crop = (Crop) op;

@@ -27,7 +27,6 @@ public class OperationListTest {
         crop.setFull(true);
         ops.add(crop);
         Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
         ops.add(scale);
         ops.add(new Rotate(0));
         ops.setOutputFormat(Format.JPG);
@@ -87,7 +86,6 @@ public class OperationListTest {
         crop.setFull(true);
         ops2.add(crop);
         Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
         ops2.add(scale);
         ops2.add(new Rotate(0));
         ops2.setOutputFormat(Format.JPG);
@@ -129,7 +127,6 @@ public class OperationListTest {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
         Rotate rotate = new Rotate();
         ops.add(crop);
         ops.add(scale);
@@ -141,9 +138,7 @@ public class OperationListTest {
         crop.setUnit(Crop.Unit.PERCENT);
         crop.setWidth(0.5f);
         crop.setHeight(0.5f);
-        scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        scale.setPercent(0.5f);
+        scale = new Scale(0.5f);
         ops.add(crop);
         ops.add(scale);
         assertEquals(new Dimension(75, 50), ops.getResultingSize(fullSize));
@@ -156,7 +151,6 @@ public class OperationListTest {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
         Rotate rotate = new Rotate(0);
         Format format = Format.JPG;
         ops = new OperationList();
@@ -173,7 +167,6 @@ public class OperationListTest {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
         ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier"));
         ops.add(crop);
@@ -188,7 +181,6 @@ public class OperationListTest {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
         ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier.gif"));
         ops.add(crop);
@@ -207,7 +199,6 @@ public class OperationListTest {
         crop.setWidth(30f);
         crop.setHeight(30f);
         Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
         ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier.gif"));
         ops.add(crop);
@@ -236,9 +227,7 @@ public class OperationListTest {
     public void testIsNoOp6() {
         Crop crop = new Crop();
         crop.setFull(true);
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        scale.setPercent(0.5f);
+        Scale scale = new Scale(0.5f);
         ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier.gif"));
         ops.add(crop);
@@ -253,7 +242,6 @@ public class OperationListTest {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
         ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier.gif"));
         ops.add(crop);
@@ -268,7 +256,6 @@ public class OperationListTest {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
         ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier.gif"));
         ops.add(crop);
@@ -283,7 +270,6 @@ public class OperationListTest {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
         ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier.gif"));
         ops.add(crop);
@@ -299,7 +285,6 @@ public class OperationListTest {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
         ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier.gif"));
         ops.add(crop);
@@ -367,7 +352,6 @@ public class OperationListTest {
         ops.add(crop);
         // no-op scale
         Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
         ops.add(scale);
         ops.add(new Rotate(0));
         ops.setOutputFormat(Format.JPG);
@@ -394,8 +378,7 @@ public class OperationListTest {
         crop.setWidth(20f);
         crop.setHeight(22f);
         ops.add(crop);
-        Scale scale = new Scale();
-        scale.setPercent(0.4f);
+        Scale scale = new Scale(0.4f);
         ops.add(scale);
         ops.add(new Rotate(15));
         ops.add(Color.BITONAL);

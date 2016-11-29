@@ -323,7 +323,6 @@ public class Java2dUtilTest {
 
         // Scale.Mode.FULL
         Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
         BufferedImage outImage = Java2dUtil.scaleImage(inImage, scale);
         assertSame(inImage, outImage);
 
@@ -350,8 +349,7 @@ public class Java2dUtilTest {
         assertEquals(50, outImage.getHeight());
 
         // scale-by percent
-        scale = new Scale();
-        scale.setPercent(0.25f);
+        scale = new Scale(0.25f);
         outImage = Java2dUtil.scaleImage(inImage, scale);
         assertEquals(25, outImage.getWidth());
         assertEquals(25, outImage.getHeight());
@@ -374,36 +372,28 @@ public class Java2dUtilTest {
                 BufferedImage.TYPE_INT_RGB);
 
         // Scale.Mode.ASPECT_FIT_WIDTH
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
-        scale.setWidth(50);
+        Scale scale = new Scale(50, null, Scale.Mode.ASPECT_FIT_WIDTH);
         ReductionFactor rf = new ReductionFactor(1);
         BufferedImage outImage = Java2dUtil.scaleImage(inImage, scale, rf);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // Scale.Mode.ASPECT_FIT_HEIGHT
-        scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
-        scale.setHeight(50);
+        scale = new Scale(null, 50, Scale.Mode.ASPECT_FIT_HEIGHT);
         rf = new ReductionFactor(1);
         outImage = Java2dUtil.scaleImage(inImage, scale, rf);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // Scale.Mode.ASPECT_FIT_INSIDE
-        scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        scale.setWidth(50);
-        scale.setHeight(50);
+        scale = new Scale(50, 50, Scale.Mode.ASPECT_FIT_INSIDE);
         rf = new ReductionFactor(1);
         outImage = Java2dUtil.scaleImage(inImage, scale, rf);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // scale-by-percent
-        scale = new Scale();
-        scale.setPercent(0.25f);
+        scale = new Scale(0.25f);
         rf = new ReductionFactor(2);
         outImage = Java2dUtil.scaleImage(inImage, scale, rf);
         assertEquals(100, outImage.getWidth());
