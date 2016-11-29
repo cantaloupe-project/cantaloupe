@@ -31,8 +31,6 @@ public class ImageRepresentation extends OutputRepresentation {
     private static Logger logger = LoggerFactory.
             getLogger(ImageRepresentation.class);
 
-    public static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
-
     private ImageInfo imageInfo;
     private Processor processor;
     private OperationList ops;

@@ -79,6 +79,8 @@ public abstract class AbstractResource extends ServerResource {
     public static final String SLASH_SUBSTITUTE_CONFIG_KEY =
             "slash_substitute";
 
+    private static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
+
     /**
      * @return Map of template variables common to most or all views, such as
      * variables that appear in a common header.
@@ -166,7 +168,7 @@ public abstract class AbstractResource extends ServerResource {
                 disposition.setType(Disposition.TYPE_ATTACHMENT);
                 disposition.setFilename(
                         identifier.toString().replaceAll(
-                                ImageRepresentation.FILENAME_CHARACTERS, "_") +
+                                FILENAME_CHARACTERS, "_") +
                                 "." + outputFormat.getPreferredExtension());
                 break;
         }
