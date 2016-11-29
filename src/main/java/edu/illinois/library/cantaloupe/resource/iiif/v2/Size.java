@@ -165,8 +165,7 @@ class Size {
      */
     public String toString() {
         String str = "";
-        if (this.getScaleMode() != null &&
-                this.getScaleMode().equals(ScaleMode.MAX)) {
+        if (ScaleMode.MAX.equals(this.getScaleMode())) {
             // Use "full" because "max" is not available in Image API 2.0.
             str += "full";
         } else if (this.getPercent() != null) {
