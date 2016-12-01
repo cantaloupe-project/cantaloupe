@@ -35,26 +35,40 @@ public class StandaloneEntry {
      */
     public static void main(String[] args) throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
+        if (config == null) {
+            usage();
+            System.exit(-1);
+        }
         final File configFile = config.getFile();
         if (configFile == null) {
-            System.out.println("Usage: java " +
-                    "-D" + ConfigurationFactory.CONFIG_VM_ARGUMENT +
-                    "=cantaloupe.properties -jar " + getWarFile().getName());
+            usage();
             System.exit(-1);
         }
         if (!configFile.exists()) {
             System.out.println("Does not exist: " + configFile);
+            usage();
             System.exit(-1);
         }
         if (!configFile.isFile()) {
             System.out.println("Not a file: " + configFile);
+            usage();
             System.exit(-1);
         }
         if (!configFile.canRead()) {
             System.out.println("Not readable: " + configFile);
+            usage();
             System.exit(-1);
         }
         getWebServer().start();
+    }
+
+    /**
+     * Print program usage.
+     */
+    private static void usage() {
+        System.out.println("Usage: java " +
+                "-D" + ConfigurationFactory.CONFIG_VM_ARGUMENT +
+                "=cantaloupe.properties -jar " + getWarFile().getName());
     }
 
     static File getWarFile() {
