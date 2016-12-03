@@ -165,22 +165,20 @@ public class OperationList implements Comparable<OperationList>,
     }
 
     /**
-     * <p>Serializes the instance to a map with the following format:</p>
+     * <p>Serializes the instance to a map with the following format
+     * (expressed in JSON, with {@link Map}s expresses as objects and
+     * {@link List}s expressed as arrays):</p>
      *
-     * <pre>{@link Map}
-     *   "identifier" =&gt;
-     *     result of {@link Identifier#toString()}
-     *   "operations" =&gt;
-     *     {@link List}
-     *       {@link Map}
-     *         lowercase {@link Operation} class name => result of {@link Operation#toMap(Dimension)}
-     *       ...
-     *   "options" =&gt;
-     *     {@link Map}
-     *       "key" => "value"
-     *       ...
-     *   "output_format" =&gt;
-     *     result of {@link Format#toMap}</pre>
+     * <pre>{
+     *     "identifier": "result of {@link Identifier#toString()}",
+     *     "operations": [
+     *         "result of {@link Operation#toMap(Dimension)}"
+     *     ],
+     *     "options": {
+     *         "key": "value"
+     *     },
+     *     "output_format": "result of {@link Format#toMap}"
+     * }</pre>
      *
      * @param fullSize Full size of the source image on which the instance is
      *                 being applied.
@@ -191,7 +189,7 @@ public class OperationList implements Comparable<OperationList>,
         // identifier
         map.put("identifier", getIdentifier().toString());
         // operations
-        List<Map<String,Object>> opsList = new ArrayList<>();
+        final List<Map<String,Object>> opsList = new ArrayList<>();
         for (Operation op : this) {
             if (!op.isNoOp()) {
                 opsList.add(op.toMap(fullSize));
