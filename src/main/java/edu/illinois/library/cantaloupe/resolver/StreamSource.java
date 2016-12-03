@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resolver;
 
+import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,7 +11,14 @@ import java.io.InputStream;
 public interface StreamSource {
 
     /**
-     * Provides a new ImageInputStream to read from.
+     * <p>Provides a new ImageInputStream to read from.</p>
+     *
+     * <p>N.B. ImageInputStream is an ImageIO class that supports seeking,
+     * among other benefits, making it much more efficient than an InputStream
+     * in certain contexts. Implementations are highly encouraged to return a
+     * full-fledged ImageInputStream, but if they can't, they can simply return
+     * a wrapped InputStream using
+     * {@link ImageIO#createImageInputStream(Object)}.</p>
      *
      * @return New input stream to read from.
      * @throws IOException If there is any issue creating the stream.
