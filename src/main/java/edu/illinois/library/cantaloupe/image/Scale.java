@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.image;
 
 import com.mortennobel.imagescaling.ResampleFilter;
 import com.mortennobel.imagescaling.ResampleFilters;
+import edu.illinois.library.cantaloupe.util.StringUtil;
 
 import java.awt.Dimension;
 import java.util.HashMap;
@@ -280,7 +281,7 @@ public class Scale implements Operation {
         if (this.isNoOp()) {
             return "none";
         } else if (this.getPercent() != null) {
-            str += NumberUtil.removeTrailingZeroes(this.getPercent() * 100) + "%";
+            str += StringUtil.removeTrailingZeroes(this.getPercent() * 100) + "%";
         } else {
             if (this.getMode().equals(Mode.ASPECT_FIT_INSIDE)) {
                 str += "!";

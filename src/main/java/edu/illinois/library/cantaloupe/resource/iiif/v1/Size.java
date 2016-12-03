@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.image.Scale;
+import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -164,7 +165,7 @@ class Size {
         if (this.getScaleMode() == ScaleMode.FULL) {
             str += "full";
         } else if (this.getPercent() != null) {
-            str += "pct:" + NumberUtil.formatForUrl(this.getPercent());
+            str += "pct:" + StringUtil.removeTrailingZeroes(this.getPercent());
         } else {
             if (this.getScaleMode() == ScaleMode.ASPECT_FIT_INSIDE) {
                 str += "!";

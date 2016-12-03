@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.image;
 
+import edu.illinois.library.cantaloupe.util.StringUtil;
+
 import java.awt.Dimension;
 import java.util.HashMap;
 import java.util.Map;
@@ -87,7 +89,7 @@ public class Rotate implements Operation {
      */
     @Override
     public String toString() {
-        return NumberUtil.removeTrailingZeroes(this.getDegrees());
+        return StringUtil.removeTrailingZeroes(this.getDegrees());
     }
 
 }

@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.image.Scale;
+import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -169,7 +170,7 @@ class Size {
             // Use "full" because "max" is not available in Image API 2.0.
             str += "full";
         } else if (this.getPercent() != null) {
-            str += "pct:" + NumberUtil.formatForUrl(this.getPercent());
+            str += "pct:" + StringUtil.removeTrailingZeroes(this.getPercent());
         } else {
             if (this.getScaleMode() == ScaleMode.ASPECT_FIT_INSIDE) {
                 str += "!";

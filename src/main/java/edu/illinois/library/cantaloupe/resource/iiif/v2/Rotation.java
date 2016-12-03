@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.util.StringUtil;
 
 /**
  * Encapsulates the "rotation" component of an IIIF request URI.
@@ -115,7 +116,7 @@ class Rotation implements Comparable<Object> {
         if (this.shouldMirror()) {
             str += "!";
         }
-        str += NumberUtil.formatForUrl(this.getDegrees());
+        str += StringUtil.removeTrailingZeroes(this.getDegrees());
         return str;
     }
 

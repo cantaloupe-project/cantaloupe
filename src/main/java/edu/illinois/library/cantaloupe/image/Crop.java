@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.image;
 
+import edu.illinois.library.cantaloupe.util.StringUtil;
+
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.util.HashMap;
@@ -312,15 +314,15 @@ public class Crop implements Operation {
                 str+= "square";
             } else {
                 if (this.getUnit().equals(Unit.PERCENT)) {
-                    x = NumberUtil.removeTrailingZeroes(this.getX() * 100) + "%";
-                    y = NumberUtil.removeTrailingZeroes(this.getY() * 100) + "%";
-                    width = NumberUtil.removeTrailingZeroes(this.getWidth() * 100) + "%";
-                    height = NumberUtil.removeTrailingZeroes(this.getHeight() * 100) + "%";
+                    x = StringUtil.removeTrailingZeroes(this.getX() * 100) + "%";
+                    y = StringUtil.removeTrailingZeroes(this.getY() * 100) + "%";
+                    width = StringUtil.removeTrailingZeroes(this.getWidth() * 100) + "%";
+                    height = StringUtil.removeTrailingZeroes(this.getHeight() * 100) + "%";
                 } else {
                     x = Integer.toString(Math.round(this.getX()));
                     y = Integer.toString(Math.round(this.getY()));
-                    width = NumberUtil.removeTrailingZeroes(this.getWidth());
-                    height = NumberUtil.removeTrailingZeroes(this.getHeight());
+                    width = StringUtil.removeTrailingZeroes(this.getWidth());
+                    height = StringUtil.removeTrailingZeroes(this.getHeight());
                 }
                 str += String.format("%s,%s,%s,%s", x, y, width, height);
             }
