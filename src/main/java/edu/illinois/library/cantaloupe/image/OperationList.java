@@ -152,7 +152,7 @@ public class OperationList implements Comparable<OperationList>,
     }
 
     @Override
-    public Iterator iterator() {
+    public Iterator<Operation> iterator() {
         return operations.iterator();
     }
 
