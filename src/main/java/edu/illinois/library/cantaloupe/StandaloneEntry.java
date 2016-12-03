@@ -10,24 +10,51 @@ import java.security.ProtectionDomain;
 /**
  * <p>Serves as the main application class in a standalone context.</p>
  *
- * <p>This class will be unavailable in a Servlet container, so should not be
- * referred to externally if at all possible. It should also have as few
- * dependencies as possible.</p>
+ * <p>This class will be unavailable in a Servlet container, so it should not
+ * be referred to externally. It should also have as few dependencies as
+ * possible.</p>
  */
 public class StandaloneEntry {
+
+    /**
+     * When set to "true", calls to {@link System#exit} will be disabled,
+     * essential for testing output-to-console-followed-by-exit.
+     */
+    static String TEST_VM_OPTION = "cantaloupe.test";
 
     private static WebServer webServer;
 
     /**
+     * Calls {@link System#exit(int)} unless {@link #isTesting()} returns
+     * <code>true</code>.
+     *
+     * @param status Process return status.
+     */
+    private static void exitUnlessTesting(int status) {
+        if (!isTesting()) {
+            System.exit(status);
+        }
+    }
+
+    /**
+     * @return Whether the value of the {@link #TEST_VM_OPTION} VM option is
+     *         <code>true</code>.
+     */
+    private static boolean isTesting() {
+        return "true".equals(System.getProperty(TEST_VM_OPTION));
+    }
+
+    /**
      * <p>Checks the configuration VM option and starts the embedded web
-     * container. The following configuration options are supported:</p>
+     * container. The following configuration options are available:</p>
      *
      * <dl>
-     *     <dt><code>-Dcantaloupe.config</code> option supplied:</dt>
-     *     <dd>Will use the configuration file at the corresponding
-     *     pathname.</dd>
-     *     <dt>No <code>-Dcantaloupe.config</code> option supplied:</dt>
-     *     <dd>Will attempt to get configuration from the environment.</dd>
+     *     <dt><code>-Dcantaloupe.config</code></dt>
+     *     <dd>Use the configuration file at the corresponding pathname.
+     *     Required.</dd>
+     *     <dt><code>-Dcantaloupe.test</code></dt>
+     *     <dd>If set to <code>true</code>, calls to {@link System#exit(int)}
+     *     will be disabled. Should only be supplied when testing.</dd>
      * </dl>
      *
      * @param args Ignored.
@@ -37,38 +64,27 @@ public class StandaloneEntry {
         final Configuration config = ConfigurationFactory.getInstance();
         if (config == null) {
             printUsage();
-            System.exit(-1);
-        }
-        final File configFile = config.getFile();
-        if (configFile == null) {
-            printUsage();
-            System.exit(-1);
-        }
-        if (!configFile.exists()) {
-            System.out.println("Does not exist: " + configFile);
-            printUsage();
-            System.exit(-1);
-        }
-        if (!configFile.isFile()) {
-            System.out.println("Not a file: " + configFile);
-            printUsage();
-            System.exit(-1);
-        }
-        if (!configFile.canRead()) {
-            System.out.println("Not readable: " + configFile);
-            printUsage();
-            System.exit(-1);
+            exitUnlessTesting(-1);
+        } else {
+            final File configFile = config.getFile();
+            if (configFile == null) {
+                printUsage();
+                exitUnlessTesting(-1);
+            } else if (!configFile.exists()) {
+                System.out.println("Does not exist: " + configFile + "\n");
+                printUsage();
+                exitUnlessTesting(-1);
+            } else if (!configFile.isFile()) {
+                System.out.println("Not a file: " + configFile + "\n");
+                printUsage();
+                exitUnlessTesting(-1);
+            } else if (!configFile.canRead()) {
+                System.out.println("Not readable: " + configFile + "\n");
+                printUsage();
+                exitUnlessTesting(-1);
+            }
         }
         getWebServer().start();
-    }
-
-    /**
-     * Print program usage.
-     */
-    private static void printUsage() {
-        System.out.println("Usage: java " +
-                "-D" + ConfigurationFactory.CONFIG_VM_ARGUMENT +
-                "=cantaloupe.properties -jar " + getWarFile().getName());
     }
 
     static File getWarFile() {
@@ -86,6 +102,22 @@ public class StandaloneEntry {
             webServer = new WebServer();
         }
         return webServer;
+    }
+
+    /**
+     * Prints program usage.
+     */
+    private static void printUsage() {
+        System.out.println(usage());
+    }
+
+    /**
+     * @return Program usage.
+     */
+    static String usage() {
+        return "Usage: java " +
+                "-D" + ConfigurationFactory.CONFIG_VM_ARGUMENT +
+                "=cantaloupe.properties -jar " + getWarFile().getName();
     }
 
 }

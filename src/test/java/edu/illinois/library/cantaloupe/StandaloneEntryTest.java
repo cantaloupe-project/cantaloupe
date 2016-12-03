@@ -27,11 +27,13 @@ import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -43,6 +45,9 @@ public class StandaloneEntryTest {
 
     private static Client httpClient = new Client(new Context(), Protocol.HTTP);
 
+    private final ByteArrayOutputStream systemOutput = new ByteArrayOutputStream();
+    private final ByteArrayOutputStream systemError = new ByteArrayOutputStream();
+
     // http://stackoverflow.com/questions/6141252/dealing-with-system-exit0-in-junit-tests
     @Rule
     public final ExpectedSystemExit exit = ExpectedSystemExit.none();
@@ -50,6 +55,7 @@ public class StandaloneEntryTest {
     private static void resetConfiguration() throws IOException {
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT,
                 TestUtil.getFixture("config.properties").getAbsolutePath());
+        System.setProperty(StandaloneEntry.TEST_VM_OPTION, "true");
 
         ConfigurationFactory.clearInstance();
         final Configuration config = ConfigurationFactory.getInstance();
@@ -61,6 +67,32 @@ public class StandaloneEntryTest {
                 "FilesystemResolver");
         config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
                 "Java2dProcessor");
+    }
+
+    private ClientResource getHttpClientForUriPath(String path) {
+        final Reference url = new Reference("http://localhost:" + HTTP_PORT + path);
+        final ClientResource resource = new ClientResource(url);
+        resource.setNext(httpClient);
+        return resource;
+    }
+
+    private void deleteCacheDir() throws IOException {
+        FileUtils.deleteDirectory(getCacheDir());
+    }
+
+    private File getCacheDir() throws IOException {
+        File directory = new File(".");
+        String cwd = directory.getCanonicalPath();
+        Path path = Paths.get(cwd, "src", "test", "resources", "cache");
+        return path.toFile();
+    }
+
+    /**
+     * Redirects stdout/stderr output to byte arrays for analysis.
+     */
+    private void redirectOutput() {
+        System.setOut(new PrintStream(systemOutput));
+        System.setErr(new PrintStream(systemError));
     }
 
     @Before
@@ -77,34 +109,83 @@ public class StandaloneEntryTest {
         System.clearProperty(EntryServlet.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT);
     }
 
+    // missing config VM option
+
     @Test
-    public void testMainWithMissingConfigFileArgumentExits() throws Exception {
+    public void testMainWithMissingConfigOptionPrintsUsage() throws Exception {
+        redirectOutput();
+        System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
+        StandaloneEntry.main(new String[] {});
+        assertEquals(StandaloneEntry.usage(), systemOutput.toString().trim());
+    }
+
+    @Test
+    public void testMainWithMissingConfigOptionExits() throws Exception {
+        System.clearProperty(StandaloneEntry.TEST_VM_OPTION);
         exit.expectSystemExitWithStatus(-1);
         System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
         StandaloneEntry.main(new String[] {});
     }
 
+    // empty config VM option
+
     @Test
-    public void testMainWithEmptyConfigFileArgumentExits() throws Exception {
-        exit.expectSystemExitWithStatus(-1);
+    public void testMainWithEmptyConfigOptionPrintsUsage() throws Exception {
+        redirectOutput();
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "");
         StandaloneEntry.main(new String[] {});
     }
 
     @Test
+    public void testMainWithEmptyConfigOptionExits() throws Exception {
+        System.clearProperty(StandaloneEntry.TEST_VM_OPTION);
+        exit.expectSystemExitWithStatus(-1);
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "");
+        StandaloneEntry.main(new String[] {});
+    }
+
+    // missing config file
+
+    @Test
+    public void testMainWithInvalidConfigFileArgumentPrintsUsage() throws Exception {
+        redirectOutput();
+        String path = "/bla/bla/bla";
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, path);
+        StandaloneEntry.main(new String[] {});
+        assertEquals("Does not exist: " + path + "\n\n" + StandaloneEntry.usage(),
+                systemOutput.toString().trim());
+    }
+
+    @Test
     public void testMainWithInvalidConfigFileArgumentExits() throws Exception {
+        System.clearProperty(StandaloneEntry.TEST_VM_OPTION);
         exit.expectSystemExitWithStatus(-1);
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "/bla/bla/bla");
         StandaloneEntry.main(new String[] {});
     }
 
+    // config file is a directory
+
+    @Test
+    public void testMainWithDirectoryConfigFileArgumentPrintsUsage() throws Exception {
+        redirectOutput();
+        String path = TestUtil.getFixture("bla").getParentFile().getAbsolutePath();
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, path);
+        StandaloneEntry.main(new String[] {});
+        assertEquals("Not a file: " + path + "\n\n" + StandaloneEntry.usage(),
+                systemOutput.toString().trim());
+    }
+
     @Test
     public void testMainWithDirectoryConfigFileArgumentExits() throws Exception {
+        System.clearProperty(StandaloneEntry.TEST_VM_OPTION);
         exit.expectSystemExitWithStatus(-1);
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT,
                 TestUtil.getFixture("bla").getParentFile().getAbsolutePath());
         StandaloneEntry.main(new String[] {});
     }
+
+    // valid config file
 
     @Test
     public void testMainWithValidConfigFileArgumentStartsServer() throws Exception {
@@ -236,24 +317,6 @@ public class StandaloneEntryTest {
 
         assertEquals(1, imageDir.listFiles().length);
         assertEquals(1, infoDir.listFiles().length);
-    }
-
-    private ClientResource getHttpClientForUriPath(String path) {
-        final Reference url = new Reference("http://localhost:" + HTTP_PORT + path);
-        final ClientResource resource = new ClientResource(url);
-        resource.setNext(httpClient);
-        return resource;
-    }
-
-    private void deleteCacheDir() throws IOException {
-        FileUtils.deleteDirectory(getCacheDir());
-    }
-
-    private File getCacheDir() throws IOException {
-        File directory = new File(".");
-        String cwd = directory.getCanonicalPath();
-        Path path = Paths.get(cwd, "src", "test", "resources", "cache");
-        return path.toFile();
     }
 
 }
