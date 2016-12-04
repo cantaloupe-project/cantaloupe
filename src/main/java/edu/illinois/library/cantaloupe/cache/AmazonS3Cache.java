@@ -20,6 +20,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
+import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,8 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * @see <a href="http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/welcome.html">
@@ -49,11 +52,12 @@ class AmazonS3Cache implements DerivativeCache {
      * not provided, the library will have to buffer the contents of the input
      * stream in order to calculate it. Amazon S3 explicitly requires that the
      * content length be sent in the request headers before any of the data is
-     * sent.</blockquote>
+     * sent."</blockquote>
      *
-     * <p>Since the S3 client does not deal with OutputStreams as the
-     * {@link Cache} interface requires, this custom output stream buffers
-     * written data in a byte array before uploading it to S3.</p>
+     * <p>Since it is therefore not possible to write an OutputStream of
+     * unknown length to the S3 client as the {@link Cache} interface requires,
+     * this output stream buffers written data in a byte array before uploading
+     * it to S3.</p>
      */
     private static class AmazonS3OutputStream extends OutputStream {
 
@@ -67,15 +71,26 @@ class AmazonS3Cache implements DerivativeCache {
         private final ObjectMetadata metadata;
         private final String objectKey;
         private final AmazonS3 s3;
+        private final Set<String> uploadingKeys;
 
+        /**
+         * @param s3            S3 client.
+         * @param bucketName    S3 bucket name.
+         * @param objectKey     S3 object key.
+         * @param metadata      S3 object metadata.
+         * @param uploadingKeys Set of keys of objects currently being uploaded
+         *                      to S3 in any thread.
+         */
         AmazonS3OutputStream(final AmazonS3 s3,
                              final String bucketName,
                              final String objectKey,
-                             final ObjectMetadata metadata) {
+                             final ObjectMetadata metadata,
+                             final Set<String> uploadingKeys) {
             this.bucketName = bucketName;
             this.s3 = s3;
             this.objectKey = objectKey;
             this.metadata = metadata;
+            this.uploadingKeys = uploadingKeys;
         }
 
         @Override
@@ -95,6 +110,8 @@ class AmazonS3Cache implements DerivativeCache {
                         watch.timeElapsed());
             } catch (AmazonS3Exception e) {
                 throw new IOException(e.getMessage(), e);
+            } finally {
+                uploadingKeys.remove(objectKey);
             }
         }
 
@@ -133,6 +150,9 @@ class AmazonS3Cache implements DerivativeCache {
 
     /** Lazy-initialized by {@link #getClientInstance} */
     private static AmazonS3 client;
+
+    private static final Set<String> uploadingKeys =
+            new ConcurrentSkipListSet<>();
 
     static synchronized AmazonS3 getClientInstance() {
         if (client == null) {
@@ -221,15 +241,18 @@ class AmazonS3Cache implements DerivativeCache {
     @Override
     public OutputStream getImageOutputStream(OperationList opList)
             throws CacheException {
-        final String bucketName = getBucketName();
-        final AmazonS3 s3 = getClientInstance();
         final String objectKey = getObjectKey(opList);
-
-        final ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentType(
-                opList.getOutputFormat().getPreferredMediaType().toString());
-
-        return new AmazonS3OutputStream(s3, bucketName, objectKey, metadata);
+        if (!uploadingKeys.contains(objectKey)) {
+            uploadingKeys.add(objectKey);
+            final String bucketName = getBucketName();
+            final AmazonS3 s3 = getClientInstance();
+            final ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentType(
+                    opList.getOutputFormat().getPreferredMediaType().toString());
+            return new AmazonS3OutputStream(s3, bucketName, objectKey,
+                    metadata, uploadingKeys);
+        }
+        return new NullOutputStream();
     }
 
     /**
@@ -251,7 +274,7 @@ class AmazonS3Cache implements DerivativeCache {
 
     /**
      * @return Value of {@link #OBJECT_KEY_PREFIX_CONFIG_KEY} with trailing
-     * slash.
+     *         slash.
      */
     String getObjectKeyPrefix() {
         String prefix = ConfigurationFactory.getInstance().
@@ -330,28 +353,36 @@ class AmazonS3Cache implements DerivativeCache {
     @Override
     public void putImageInfo(Identifier identifier, ImageInfo imageInfo)
             throws CacheException {
-        final AmazonS3 s3 = getClientInstance();
-        final String bucketName = getBucketName();
         final String objectKey = getObjectKey(identifier);
-        try {
-            final String json = imageInfo.toJson();
-            final byte[] jsonBytes = json.getBytes(StandardCharsets.UTF_8);
+        if (!uploadingKeys.contains(objectKey)) {
+            uploadingKeys.add(objectKey);
+            try {
+                final AmazonS3 s3 = getClientInstance();
+                final String bucketName = getBucketName();
+                final String json = imageInfo.toJson();
+                final byte[] jsonBytes = json.getBytes(StandardCharsets.UTF_8);
 
-            final ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentType("application/json");
-            metadata.setContentEncoding("UTF-8");
-            metadata.setContentLength(jsonBytes.length);
+                final ObjectMetadata metadata = new ObjectMetadata();
+                metadata.setContentType("application/json");
+                metadata.setContentEncoding("UTF-8");
+                metadata.setContentLength(jsonBytes.length);
 
-            final InputStream s3Stream = new ByteArrayInputStream(jsonBytes);
+                final InputStream s3Stream = new ByteArrayInputStream(jsonBytes);
 
-            final Stopwatch watch = new Stopwatch();
-            final PutObjectRequest request = new PutObjectRequest(
-                    bucketName, objectKey, s3Stream, metadata);
-            s3.putObject(request);
-            logger.info("putImageInfo(): wrote {} to bucket {} in {} msec",
-                    objectKey, bucketName, watch.timeElapsed());
-        } catch (AmazonS3Exception | JsonProcessingException e) {
-            throw new CacheException(e.getMessage(), e);
+                final Stopwatch watch = new Stopwatch();
+                final PutObjectRequest request = new PutObjectRequest(
+                        bucketName, objectKey, s3Stream, metadata);
+                s3.putObject(request);
+                logger.info("putImageInfo(): wrote {} to bucket {} in {} msec",
+                        objectKey, bucketName, watch.timeElapsed());
+            } catch (AmazonS3Exception | JsonProcessingException e) {
+                throw new CacheException(e.getMessage(), e);
+            } finally {
+                uploadingKeys.remove(objectKey);
+            }
+        } else {
+            logger.debug("putImageInfo(): {} is being written in another " +
+                    "thread; aborting.");
         }
     }
 

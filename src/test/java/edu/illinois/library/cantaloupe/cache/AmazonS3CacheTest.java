@@ -23,7 +23,17 @@ import java.io.OutputStream;
 
 import static org.junit.Assert.*;
 
+/**
+ * This test depends on a file located at ~/.s3/cantaloupe with the following
+ * contents:
+ *
+ * AWSAccessKeyId=xxxx
+ * AWSSecretKey=xxxx
+ * TestBucket=(uuid)
+ */
 public class AmazonS3CacheTest {
+
+    private final int S3_UPLOAD_WAIT = 3000;
 
     private Identifier identifier = new Identifier("jpg-rgb-64x56x8-baseline.jpg");
     private ImageInfo imageInfo = new ImageInfo(64, 56, Format.JPG);
@@ -44,11 +54,10 @@ public class AmazonS3CacheTest {
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         final Configuration config = ConfigurationFactory.getInstance();
         config.clear();
-        config.setProperty(Cache.TTL_CONFIG_KEY, 1);
+        config.setProperty(Cache.TTL_CONFIG_KEY, 2);
         config.setProperty(AmazonS3Cache.OBJECT_KEY_PREFIX_CONFIG_KEY, "test/");
         config.setProperty(AmazonS3Cache.ACCESS_KEY_ID_CONFIG_KEY, accessKeyId);
         config.setProperty(AmazonS3Cache.BUCKET_NAME_CONFIG_KEY, bucketName);
-        //config.setProperty(AmazonS3Cache.BUCKET_REGION_CONFIG_KEY, "us-east-1");
         config.setProperty(AmazonS3Cache.SECRET_KEY_CONFIG_KEY, secretKey);
 
         instance = new AmazonS3Cache();
@@ -106,6 +115,9 @@ public class AmazonS3CacheTest {
         fileInputStream.close();
         outputStream.close();
 
+        // wait for it to upload
+        Thread.sleep(S3_UPLOAD_WAIT);
+
         // download the image
         InputStream s3InputStream = instance.getImageInputStream(opList);
         ByteArrayOutputStream s3ByteStream = new ByteArrayOutputStream();
@@ -135,6 +147,8 @@ public class AmazonS3CacheTest {
         IOUtils.copy(inputStream, outputStream);
         inputStream.close();
         outputStream.close();
+
+        Thread.sleep(S3_UPLOAD_WAIT);
 
         assertObjectCount(1);
     }
@@ -221,6 +235,8 @@ public class AmazonS3CacheTest {
         inputStream.close();
         outputStream.close();
 
+        Thread.sleep(S3_UPLOAD_WAIT);
+
         // add an ImageInfo
         instance.putImageInfo(identifier, imageInfo);
 
@@ -236,6 +252,8 @@ public class AmazonS3CacheTest {
 
     @Test
     public void testPurgeExpired() throws Exception {
+        ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 4);
+
         // add an image
         InputStream inputStream = new FileInputStream(
                 TestUtil.getImage(identifier.toString()));
@@ -263,6 +281,8 @@ public class AmazonS3CacheTest {
         Identifier otherId = new Identifier("cats");
         ImageInfo otherInfo = new ImageInfo(64, 56, Format.GIF);
         instance.putImageInfo(otherId, otherInfo);
+
+        Thread.sleep(S3_UPLOAD_WAIT);
 
         assertObjectCount(4);
 
