@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.cache;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.blob.BlobOutputStream;
 import com.microsoft.azure.storage.blob.CloudBlob;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
@@ -13,6 +14,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
+import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,12 +28,63 @@ import java.net.URLEncoder;
 import java.security.InvalidKeyException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * @see <a href="https://github.com/azure/azure-storage-java">
  *     Microsoft Azure Storage DSK for Java</a>
  */
 class AzureStorageCache implements DerivativeCache {
+
+    private static class AzureStorageOutputStream extends OutputStream {
+
+        private String blobKey;
+        private BlobOutputStream blobOutputStream;
+        private Set<String> uploadingKeys;
+
+        AzureStorageOutputStream(String blobKey,
+                                 BlobOutputStream blobOutputStream,
+                                 Set<String> uploadingKeys) {
+            this.blobKey = blobKey;
+            this.blobOutputStream = blobOutputStream;
+            this.uploadingKeys = uploadingKeys;
+        }
+
+        @Override
+        public void close() throws IOException {
+            try {
+                blobOutputStream.close();
+            } finally {
+                try {
+                    super.close();
+                } finally {
+                    uploadingKeys.remove(blobKey);
+                }
+            }
+        }
+
+        @Override
+        public void flush() throws IOException {
+            blobOutputStream.flush();
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            blobOutputStream.write(b);
+        }
+
+        @Override
+        public void write(byte[] b) throws IOException {
+            blobOutputStream.write(b);
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            blobOutputStream.write(b, off, len);
+        }
+
+    }
 
     private static Logger logger = LoggerFactory.
             getLogger(AzureStorageCache.class);
@@ -46,6 +99,13 @@ class AzureStorageCache implements DerivativeCache {
             "AzureStorageCache.object_key_prefix";
 
     private static CloudBlobClient client;
+
+    /**
+     * Set of blob keys currently being written to Azure Storage from any
+     * thread.
+     */
+    private static final Set<String> uploadingKeys =
+            new ConcurrentSkipListSet<>();
 
     static synchronized CloudBlobClient getClientInstance() {
         if (client == null) {
@@ -136,21 +196,25 @@ class AzureStorageCache implements DerivativeCache {
     @Override
     public OutputStream getImageOutputStream(OperationList opList)
             throws CacheException {
-        final String containerName = getContainerName();
-
-        final CloudBlobClient client = getClientInstance();
         final String objectKey = getObjectKey(opList);
+        if (!uploadingKeys.contains(objectKey)) {
+            uploadingKeys.add(objectKey);
+            final String containerName = getContainerName();
+            final CloudBlobClient client = getClientInstance();
+            try {
+                final CloudBlobContainer container =
+                        client.getContainerReference(containerName);
+                final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
+                blob.getProperties().setContentType(opList.getOutputFormat().
+                        getPreferredMediaType().toString());
 
-        try {
-            final CloudBlobContainer container =
-                    client.getContainerReference(containerName);
-            final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
-            blob.getProperties().setContentType(opList.getOutputFormat().
-                    getPreferredMediaType().toString());
-            return blob.openOutputStream();
-        } catch (URISyntaxException | StorageException e) {
-            throw new CacheException(e.getMessage(), e);
+                return new AzureStorageOutputStream(
+                        objectKey, blob.openOutputStream(), uploadingKeys);
+            } catch (URISyntaxException | StorageException e) {
+                throw new CacheException(e.getMessage(), e);
+            }
         }
+        return new NullOutputStream();
     }
 
     /**
@@ -289,30 +353,24 @@ class AzureStorageCache implements DerivativeCache {
     @Override
     public void putImageInfo(Identifier identifier, ImageInfo imageInfo)
             throws CacheException {
-        final String containerName = getContainerName();
-
-        final CloudBlobClient client = getClientInstance();
         final String objectKey = getObjectKey(identifier);
+        if (!uploadingKeys.contains(objectKey)) {
+            uploadingKeys.add(objectKey);
+            try {
+                final String containerName = getContainerName();
+                final CloudBlobClient client = getClientInstance();
+                final CloudBlobContainer container =
+                        client.getContainerReference(containerName);
+                final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
+                blob.getProperties().setContentType("application/json");
+                blob.getProperties().setContentEncoding("UTF-8");
 
-        OutputStream os = null;
-        try {
-            final CloudBlobContainer container =
-                    client.getContainerReference(containerName);
-            final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
-            blob.getProperties().setContentType("application/json");
-            blob.getProperties().setContentEncoding("UTF-8");
-
-            os = blob.openOutputStream();
-            imageInfo.writeAsJson(os);
-        } catch (IOException | URISyntaxException | StorageException e) {
-            throw new CacheException(e.getMessage(), e);
-        } finally {
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
-                }
+                // writeAsJson() will close this.
+                OutputStream os = new AzureStorageOutputStream(
+                        objectKey, blob.openOutputStream(), uploadingKeys);
+                imageInfo.writeAsJson(os);
+            } catch (IOException | URISyntaxException | StorageException e) {
+                throw new CacheException(e.getMessage(), e);
             }
         }
     }

@@ -25,6 +25,14 @@ import java.net.URISyntaxException;
 
 import static org.junit.Assert.*;
 
+/**
+ * This test depends on a file located at ~/.azure/cantaloupe containing the
+ * following:
+ *
+ * account_name=xxxx
+ * account_key=xxxx
+ * test_container=xxxx
+ */
 public class AzureStorageCacheTest {
 
     private Identifier identifier = new Identifier("jpg-rgb-64x56x8-baseline.jpg");
