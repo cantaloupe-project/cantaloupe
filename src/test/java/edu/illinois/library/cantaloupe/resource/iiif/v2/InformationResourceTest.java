@@ -341,7 +341,7 @@ public class InformationResourceTest extends ResourceTest {
         client.getRequest().getHeaders().add("X-Forwarded-Proto", "HTTP");
         client.getRequest().getHeaders().add("X-Forwarded-Host", "example.org");
         client.getRequest().getHeaders().add("X-Forwarded-Port", "8080");
-        client.getRequest().getHeaders().add("X-Forwarded-Path", "/cats");
+        client.getRequest().getHeaders().add("X-Forwarded-Path", "/cats/");
         client.getRequest().getHeaders().add("X-IIIF-ID", "originalID");
         client.get();
         String json = client.getResponse().getEntityAsText();
