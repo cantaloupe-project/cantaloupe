@@ -1,5 +1,9 @@
 package edu.illinois.library.cantaloupe.script;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -8,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import javax.script.Invocable;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,9 +29,38 @@ class RubyScriptEngine extends AbstractScriptEngine implements ScriptEngine {
     /** Top-level Ruby module containing methods to invoke. */
     static final String TOP_MODULE = "Cantaloupe";
 
+    private Cache<Object, Object> invocationCache;
     private final Object lock = new Object();
     private javax.script.ScriptEngine scriptEngine;
     private final AtomicBoolean scriptIsLoading = new AtomicBoolean(false);
+
+    RubyScriptEngine() {
+        final Configuration config = ConfigurationFactory.getInstance();
+        final long maxSize = config.getLong(
+                METHOD_INVOCATION_CACHE_MAX_SIZE_CONFIG_KEY, 100000);
+        invocationCache = Caffeine.newBuilder().maximumSize(maxSize).build();
+    }
+
+    /**
+     * @param methodName Name of the method being invoked.
+     * @param args Method arguments.
+     * @return The cache key corresponding to the given arguments.
+     */
+    private Object getCacheKey(String methodName, Object... args) {
+        // The cache key is comprised of the method name at position 0 followed
+        // by the arguments at succeeding positions.
+        List<Object> key = Arrays.asList(args);
+        key = new ArrayList<>(key);
+        key.add(0, methodName);
+        return key;
+    }
+
+    /**
+     * @return The method invocation cache.
+     */
+    Cache<Object, Object> getInvocationCache() {
+        return invocationCache;
+    }
 
     /**
      * @param methodName Full method name including module names.
@@ -53,6 +87,9 @@ class RubyScriptEngine extends AbstractScriptEngine implements ScriptEngine {
     }
 
     /**
+     * N.B. Clients should not modify the returned object nor any of its owned
+     * objects, as this could disrupt the invocation cache.
+     *
      * @param methodName Method to invoke, including all prefixes except the
      *                   top-level one in {@link #TOP_MODULE}.
      * @param args Arguments to pass to the method.
@@ -74,17 +111,17 @@ class RubyScriptEngine extends AbstractScriptEngine implements ScriptEngine {
                 }
             }
         }
-        try {
-            final Object returnValue = ((Invocable) scriptEngine).
-                    invokeMethod(
-                            scriptEngine.eval(getModuleName(methodName)),
-                            getUnqualifiedMethodName(methodName), args);
-            logger.debug("invoke({}::{}): exec time: {} msec",
-                    TOP_MODULE, methodName, watch.timeElapsed());
-            return returnValue;
-        } catch (NoSuchMethodException e) {
-            throw new ScriptException(e);
+
+        Object returnValue;
+        final Configuration config = ConfigurationFactory.getInstance();
+        if (config.getBoolean(METHOD_INVOCATION_CACHE_ENABLED_CONFIG_KEY, false)) {
+            returnValue = retrieveFromCacheOrInvoke(methodName, args);
+        } else {
+            returnValue = doInvoke(methodName, args);
         }
+        logger.debug("invoke({}::{}): exec time: {} msec",
+                TOP_MODULE, methodName, watch.timeElapsed());
+        return returnValue;
     }
 
     @Override
@@ -94,6 +131,32 @@ class RubyScriptEngine extends AbstractScriptEngine implements ScriptEngine {
         scriptEngine = new ScriptEngineManager().getEngineByName("jruby");
         scriptEngine.eval(code);
         scriptIsLoading.set(false);
+    }
+
+    private Object retrieveFromCacheOrInvoke(String methodName, Object... args)
+            throws ScriptException {
+        final Object cacheKey = getCacheKey(methodName, args);
+        Object returnValue = invocationCache.getIfPresent(cacheKey);
+        if (returnValue != null) {
+            logger.debug("invoke({}::{}): cache hit (skipping invocation)",
+                    TOP_MODULE, methodName);
+        } else {
+            logger.debug("invoke({}::{}): cache miss", TOP_MODULE, methodName);
+            returnValue = doInvoke(methodName, args);
+            invocationCache.put(cacheKey, returnValue);
+        }
+        return returnValue;
+    }
+
+    private Object doInvoke(String methodName, Object... args)
+            throws ScriptException {
+        try {
+            return ((Invocable) scriptEngine).invokeMethod(
+                    scriptEngine.eval(getModuleName(methodName)),
+                    getUnqualifiedMethodName(methodName), args);
+        } catch (NoSuchMethodException e) {
+            throw new ScriptException(e);
+        }
     }
 
 }

@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.script;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,6 +15,8 @@ public class RubyScriptEngineTest {
 
     @Before
     public void setUp() {
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        ConfigurationFactory.clearInstance();
         instance = new RubyScriptEngine();
     }
 
@@ -79,6 +83,28 @@ public class RubyScriptEngineTest {
         } catch (ClassCastException e) {
             // pass
         }
+    }
+
+    @Test
+    public void testInvokeWithCacheEnabled() throws Exception {
+        Configuration config = ConfigurationFactory.getInstance();
+        config.setProperty(ScriptEngine.METHOD_INVOCATION_CACHE_ENABLED_CONFIG_KEY, true);
+
+        final String code = "module Cantaloupe\n" +
+                "SOMETHING = 1\n" +
+                "def self.func2(arg)\n" +
+                "arg\n" +
+                "end\n" +
+                "end";
+        instance.load(code);
+        final String function = "func2";
+
+        for (int i = 0; i < 3; i++) {
+            String result = (String) instance.invoke(function, String.valueOf(i));
+            assertEquals(String.valueOf(i), result);
+        }
+
+        assertEquals(3, instance.getInvocationCache().estimatedSize());
     }
 
 }
