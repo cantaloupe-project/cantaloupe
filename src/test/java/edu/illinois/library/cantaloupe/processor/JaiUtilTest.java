@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
@@ -9,12 +11,12 @@ import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.Before;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -28,6 +30,12 @@ import static org.junit.Assert.*;
 public class JaiUtilTest {
 
     private static final String IMAGE = "images/jpg-rgb-64x56x8-baseline.jpg";
+
+    @Before
+    public void setUp() {
+        ConfigurationFactory.clearInstance();
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+    }
 
     @Test
     public void testCropImage() throws Exception {
@@ -168,9 +176,9 @@ public class JaiUtilTest {
         final Rectangle rightHalf = new Rectangle(50, 0, 50, 100);
 
         final Graphics2D g2d = image.createGraphics();
-        g2d.setColor(Color.DARK_GRAY);
+        g2d.setColor(java.awt.Color.DARK_GRAY);
         g2d.fill(leftHalf);
-        g2d.setColor(Color.LIGHT_GRAY);
+        g2d.setColor(java.awt.Color.LIGHT_GRAY);
         g2d.fill(rightHalf);
 
         RenderedOp renderedOp = JaiUtil.getAsRenderedOp(RenderedOp.wrapRenderedImage(image));
@@ -182,6 +190,16 @@ public class JaiUtilTest {
 
         assertEquals(-16777216, image.getRGB(10, 10));
         assertEquals(-1, image.getRGB(90, 90));
+    }
+
+    @Test
+    public void testTransformColor() throws Exception {
+        RenderedOp image = getFixture(IMAGE);
+        Color color = Color.GRAY;
+        RenderedOp result = JaiUtil.transformColor(image, color);
+        assertEquals(1, result.getSampleModel().getNumBands());
+        assertEquals(8, result.getColorModel().getComponentSize(0));
+        // TODO: test Color.BITONAL
     }
 
     @Test
