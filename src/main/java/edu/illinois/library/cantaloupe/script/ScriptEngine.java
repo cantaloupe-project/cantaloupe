@@ -9,8 +9,14 @@ import javax.script.ScriptException;
  */
 public interface ScriptEngine {
 
+    String METHOD_INVOCATION_CACHE_ENABLED_CONFIG_KEY =
+            "delegate_script.cache.enabled";
+    String METHOD_INVOCATION_CACHE_MAX_SIZE_CONFIG_KEY =
+            "delegate_script.cache.max_size";
+
     /**
-     * Invokes a method.
+     * Invokes a method. Implementations should employ a cache respecting the
+     * settings of the cache configuration constants.
      *
      * @param methodName Name of the method to invoke.
      * @param args Objects to pass to the method as arguments.

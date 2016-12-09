@@ -72,6 +72,13 @@ delegate_script.enabled = false
 # file, and then the current working directory.
 delegate_script.pathname = delegates.rb
 
+# Enables the invocation cache, which caches method invocations and
+# return values in memory. See the user manual for more information.
+delegate_script.cache.enabled = false
+
+# !! Maximum size of the cache. This is a pretty much a wild guess.
+delegate_script.cache.max_size = 1000000
+
 ###########################################################################
 # ENDPOINTS
 ###########################################################################
