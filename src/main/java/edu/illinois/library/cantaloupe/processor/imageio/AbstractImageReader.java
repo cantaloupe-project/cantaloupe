@@ -85,8 +85,11 @@ abstract class AbstractImageReader {
      */
     private boolean canIgnoreMetadata() {
         final Configuration config = ConfigurationFactory.getInstance();
-        return (!config.getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false) &&
-                !config.getBoolean("metadata.respect_orientation", false));
+        final boolean preserveMetadata = config.getBoolean(
+                AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false);
+        final boolean respectOrientation = config.getBoolean(
+                "metadata.respect_orientation", false);
+        return (!preserveMetadata && !respectOrientation);
     }
 
     protected void createReader() throws IOException {
