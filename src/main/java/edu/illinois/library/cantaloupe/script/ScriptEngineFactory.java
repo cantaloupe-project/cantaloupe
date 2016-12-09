@@ -24,6 +24,14 @@ public abstract class ScriptEngineFactory {
     private static ScriptEngine scriptEngine;
 
     /**
+     * Nullifies the ScriptEngine instance returned by
+     * {@link #getScriptEngine()}.
+     */
+    static synchronized void clearInstance() {
+        scriptEngine = null;
+    }
+
+    /**
      * @return Shared ScriptEngine instance, ready for use.
      * @throws FileNotFoundException If the delegate script specified in the
      *                               application configuration was not found.

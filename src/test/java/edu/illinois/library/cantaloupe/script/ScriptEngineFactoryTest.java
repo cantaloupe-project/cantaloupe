@@ -15,8 +15,10 @@ public class ScriptEngineFactoryTest {
 
     @Before
     public void setUp() throws Exception {
+        ScriptEngineFactory.clearInstance();
+        ConfigurationFactory.clearInstance();
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
                 "true");
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
@@ -57,22 +59,24 @@ public class ScriptEngineFactoryTest {
     }
 
     @Test
-    public void testGetScriptEngineWithMissingScript() throws Exception {
+    public void testGetScriptEngineWithNoScript() throws Exception {
         Configuration config = ConfigurationFactory.getInstance();
-        // bogus script
         config.setProperty(
-                ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
-                "/bla/bla/blaasdfasdfasfd");
+                ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY, "");
         try {
             ScriptEngineFactory.getScriptEngine();
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
         }
+    }
 
-        // empty value
+    @Test
+    public void testGetScriptEngineWithBogusScript() throws Exception {
+        Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(
-                ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY, "");
+                ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
+                "/bla/bla/blaasdfasdfasfd");
         try {
             ScriptEngineFactory.getScriptEngine();
             fail("Expected exception");
