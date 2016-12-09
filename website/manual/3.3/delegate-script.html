@@ -14,6 +14,7 @@ title: Delegate Script
 
 <ul>
   <li><a href="#Rules">Rules</a></li>
+  <li><a href="#Caching">Caching</a></li>
   <li><a href="#Example">Example</a></li>
   <li><a href="#Testing%20Script%20Methods">Testing Script Methods</a></li>
 </ul>
@@ -41,6 +42,16 @@ title: Delegate Script
 <p>Starting in version 3.3, the delegate script is reloaded whenever the script file changes. (Previously, it was reloaded on each request.) Be aware, though, that code that has already been loaded into the JRuby runtime cannot be unloaded. For example, when a method is changed, it will overwrite the old version; but constants cannot be redefined.</p>
 
 <div class="alert alert-danger">Note: generally, neither method arguments nor return values are sanitized or validated. <strong>Be very careful to write defensive, injection-aware code.</strong></div>
+
+<h2 id="Caching">Caching</h2>
+
+<p>Since version 3.3, the <code>delegate_script.cache.enabled</code> option is available to cache delegate method invocations. The cache is an in-memory least-recently-used (LRU) cache with infinite time-to-live and a maximum size specified by <code>delegate_script.cache.max_size</code>. When this limit is approached, the oldest invocations will be purged automatically.</p>
+
+<p>As of this writing, no research has gone into determining an optimal maximum cache size. The number will depend on how much memory is available to the JVM as well as which delegate methods are being invoked most often.</p>
+
+<p>Because the cache is memory-based, it will be cleared when the application is stopped.</p>
+
+<p>Note that cached invocations are <strong>not</strong> purged when the script file is edited and auto-reloaded.</p>
 
 <hr>
 
