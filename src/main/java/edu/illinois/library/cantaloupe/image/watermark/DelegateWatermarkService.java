@@ -106,12 +106,22 @@ class DelegateWatermarkService {
         if (result == null || (result instanceof Boolean && !((Boolean) result))) {
             return null;
         }
-        Map<String,Object> map = (Map<String,Object>) result;
-        if (map.get("pathname") != null) {
-            map.put("pathname", new File((String) map.get("pathname")));
+
+        // The result is expected to be a map. Cast it to that and copy its
+        // keys and values into a new map that we can tweak before returning.
+        final Map<String,Object> resultMap = ((Map<String,Object>) result);
+        final Map<String,Object> properties = new HashMap<>();
+
+        for (final String key : resultMap.keySet()) {
+            properties.put(key, resultMap.get(key));
         }
-        map.put("position", Position.fromString((String) map.get("position")));
-        return map;
+        if (properties.get("pathname") != null) {
+            properties.put("pathname",
+                    new File((String) properties.get("pathname")));
+        }
+        properties.put("position",
+                Position.fromString((String) properties.get("position")));
+        return properties;
     }
 
 }
