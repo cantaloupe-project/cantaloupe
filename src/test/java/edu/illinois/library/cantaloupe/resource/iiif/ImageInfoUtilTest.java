@@ -35,6 +35,18 @@ public class ImageInfoUtilTest {
         minTileSize = 100;
         assertEquals(new Dimension(60, 50),
                 ImageInfoUtil.smallestTileSize(fullSize, minTileSize));
+
+        // Test rounding up with odd dimensions
+        fullSize = new Dimension(2001, 2001);
+        minTileSize = 1000;
+        assertEquals(new Dimension(1001, 1001),
+                ImageInfoUtil.smallestTileSize(fullSize, minTileSize));
+
+        // Test rounding up with odd dimensions
+        fullSize = new Dimension(2001, 2001);
+        minTileSize = 100;
+        assertEquals(new Dimension(126, 126),
+                ImageInfoUtil.smallestTileSize(fullSize, minTileSize));
     }
 
     @Test

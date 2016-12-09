@@ -35,8 +35,9 @@ public class ImageInfoUtil {
         Dimension nextSize = (Dimension) size.clone();
         while (nextSize.width >= minDimension && nextSize.height >= minDimension) {
             size = (Dimension) nextSize.clone();
-            nextSize.width /= 2f;
-            nextSize.height /= 2f;
+            // Round up fractional pixels to prevent narrow edge tiles.
+            nextSize.width = (int) Math.ceil(nextSize.width / 2f);
+            nextSize.height = (int) Math.ceil(nextSize.height / 2f);
         }
         return size;
     }
