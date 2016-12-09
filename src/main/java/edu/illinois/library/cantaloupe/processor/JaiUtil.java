@@ -34,11 +34,15 @@ abstract class JaiUtil {
      *         less.
      */
     static RenderedOp convertTo8Bits(RenderedOp inImage) {
-        if (inImage.getColorModel().getComponentSize(0) != 8) {
+        final int componentSize = inImage.getColorModel().getComponentSize(0);
+        if (componentSize != 8) {
             // This seems to clip the color depth to 8-bit. Not sure why it
             // works.
             final ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
+
+            logger.debug("convertTo8Bits(): converting {}-bit to 8-bit",
+                    componentSize);
             inImage = JAI.create("format", pb, inImage.getRenderingHints());
         }
         return inImage;
