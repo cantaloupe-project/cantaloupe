@@ -199,16 +199,14 @@ abstract class JaiUtil {
      *
      * <p>N.B. The image quality of the <code>Scale</code> operator is quite
      * poor and so {@link #scaleImageUsingSubsampleAverage(RenderedOp, Scale,
-     * ReductionFactor)} should be used instead if possible. Unfortunately,
-     * this method has to remain around due to a bug in JAI (see inline comment
-     * in {@link JaiProcessor#process}).</p>
+     * ReductionFactor)} should be used instead, if possible.</p>
      *
      * @param inImage       Image to scale.
      * @param scale         Requested size ignoring any reduction factor.
      *                      Clients should call
      *                      {@link Operation#isNoOp(Dimension, OperationList)}
      *                      before invoking.
-     * @param interpolation Interpolation
+     * @param interpolation Interpolation.
      * @param rf            Reduction factor that has already been applied to
      *                      <code>inImage</code>.
      * @return Scaled image, or the input image if the given scale is a no-op.
@@ -229,13 +227,6 @@ abstract class JaiUtil {
                 yScale = scale.getPercent() / rf.getScale();
             }
 
-            // Enforce a minimum scale of 3 pixels on a side.
-            // OpenSeadragon has been known to request smaller.
-            double minXScale = 3f / (double) sourceWidth;
-            double minYScale = 3f / (double) sourceHeight;
-            xScale = (xScale < minXScale) ? minXScale : xScale;
-            yScale = (yScale < minYScale) ? minYScale : yScale;
-
             logger.debug("scaleImage(): width: {}%; height: {}%",
                     xScale * 100, yScale * 100);
             final ParameterBlock pb = new ParameterBlock();
@@ -255,7 +246,8 @@ abstract class JaiUtil {
      * Interpolation, ReductionFactor)} using the JAI
      * <code>SubsampleAverage</code> operator.
      *
-     * @param inImage Image to scale.
+     * @param inImage Image to scale. Must be at least 3 pixels on the
+     *                smallest side.
      * @param scale   Requested size ignoring any reduction factor. Clients
      *                should call
      *                {@link Operation#isNoOp(Dimension, OperationList)}
@@ -280,13 +272,8 @@ abstract class JaiUtil {
                 yScale = scale.getPercent() / rf.getScale();
             }
 
-            // Enforce a minimum scale of 3 pixels on a side.
-            double minXScale = 3f / (double) sourceWidth;
-            double minYScale = 3f / (double) sourceHeight;
-            xScale = (xScale < minXScale) ? minXScale : xScale;
-            yScale = (yScale < minYScale) ? minYScale : yScale;
-
-            logger.debug("scaleImage(): width: {}%; height: {}%",
+            logger.debug("scaleImageUsingSubsampleAverage(): " +
+                            "width: {}%; height: {}%",
                     xScale * 100, yScale * 100);
             final ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
