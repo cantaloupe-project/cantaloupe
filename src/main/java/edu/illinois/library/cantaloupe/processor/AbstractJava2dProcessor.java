@@ -18,6 +18,7 @@ import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -128,6 +129,7 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
         }
 
         BufferedImage image = Java2dUtil.reduceTo8Bits(sourceImage);
+        final Dimension fullSize = imageInfo.getSize();
 
         if (normalize) {
             image = Java2dUtil.stretchContrast(image);
@@ -138,12 +140,10 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
         Crop crop = new Crop(0, 0, image.getWidth(), image.getHeight(),
                 orientation, imageInfo.getSize());
         for (Operation op : opList) {
-            if (op instanceof Crop) {
-                crop = (Crop) op;
-                if (readerHints != null &&
-                        !readerHints.contains(ImageReader.Hint.ALREADY_CROPPED)) {
-                    image = Java2dUtil.cropImage(image, crop, reductionFactor);
-                }
+            if (op instanceof Crop && !crop.isNoOp(fullSize, opList) &&
+                    readerHints != null &&
+                    !readerHints.contains(ImageReader.Hint.ALREADY_CROPPED)) {
+                image = Java2dUtil.cropImage(image, (Crop) op, reductionFactor);
             }
         }
 
@@ -151,7 +151,9 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
         List<Redaction> redactions = new ArrayList<>();
         for (Operation op : opList) {
             if (op instanceof Redaction) {
-                redactions.add((Redaction) op);
+                if (!op.isNoOp(fullSize, opList)) {
+                    redactions.add((Redaction) op);
+                }
             }
         }
         image = Java2dUtil.applyRedactions(image, crop, reductionFactor,
@@ -159,34 +161,38 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
 
         // Apply most remaining operations.
         for (Operation op : opList) {
-            if (op instanceof Scale) {
-                final Scale scale = (Scale) op;
-                final Float upOrDown =
-                        scale.getResultingScale(imageInfo.getSize());
-                if (upOrDown != null) {
-                    final Scale.Filter filter =
-                            (upOrDown > 1) ? upscaleFilter : downscaleFilter;
-                    scale.setFilter(filter);
+            if (!op.isNoOp(fullSize, opList)) {
+                if (op instanceof Scale) {
+                    final Scale scale = (Scale) op;
+                    final Float upOrDown =
+                            scale.getResultingScale(imageInfo.getSize());
+                    if (upOrDown != null) {
+                        final Scale.Filter filter =
+                                (upOrDown > 1) ? upscaleFilter : downscaleFilter;
+                        scale.setFilter(filter);
+                    }
+                    image = Java2dUtil.scaleImage(image, scale, reductionFactor);
+                } else if (op instanceof Transpose) {
+                    image = Java2dUtil.transposeImage(image, (Transpose) op);
+                } else if (op instanceof Rotate) {
+                    Rotate rotation = (Rotate) op;
+                    rotation.addDegrees(orientation.getDegrees());
+                    image = Java2dUtil.rotateImage(image, rotation);
+                } else if (op instanceof Color) {
+                    image = Java2dUtil.transformColor(image, (Color) op);
                 }
-                image = Java2dUtil.scaleImage(image, scale, reductionFactor);
-            } else if (op instanceof Transpose) {
-                image = Java2dUtil.transposeImage(image, (Transpose) op);
-            } else if (op instanceof Rotate) {
-                Rotate rotation = (Rotate) op;
-                rotation.addDegrees(orientation.getDegrees());
-                image = Java2dUtil.rotateImage(image, rotation);
-            } else if (op instanceof Color) {
-                image = Java2dUtil.transformColor(image, (Color) op);
             }
         }
 
         // Apply the sharpen operation, if present.
         final Sharpen sharpen = new Sharpen(sharpenValue);
-        image = Java2dUtil.sharpenImage(image, sharpen);
+        if (!sharpen.isNoOp(fullSize, opList)) {
+            image = Java2dUtil.sharpenImage(image, sharpen);
+        }
 
         // Apply all remaining operations.
         for (Operation op : opList) {
-            if (op instanceof Watermark) {
+            if (op instanceof Watermark && !op.isNoOp(fullSize, opList)) {
                 try {
                     image = Java2dUtil.applyWatermark(image, (Watermark) op);
                 } catch (ConfigurationException e) {
@@ -197,7 +203,6 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
 
         new ImageWriter(opList).
                 write(image, opList.getOutputFormat(), outputStream);
-        image.flush();
     }
 
 }

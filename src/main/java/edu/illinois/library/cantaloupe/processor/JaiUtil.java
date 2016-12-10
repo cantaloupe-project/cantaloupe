@@ -2,6 +2,8 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.image.Operation;
+import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
@@ -49,8 +51,10 @@ abstract class JaiUtil {
     }
 
     /**
-     * @param inImage Image to crop
-     * @param crop    Crop operation
+     * @param inImage Image to crop.
+     * @param crop    Crop operation. Clients should call
+     *                {@link Operation#isNoOp(Dimension, OperationList)}
+     *                before invoking.
      * @return Cropped image, or the input image if the given operation is a
      *         no-op.
      */
@@ -59,20 +63,23 @@ abstract class JaiUtil {
     }
 
     /**
-     * Crops the given image taking into account a reduction factor
-     * (<code>reductionFactor</code>). In other words, the dimensions of the
-     * input image have already been halved <code>reductionFactor</code> times
-     * but the given region is relative to the full-sized image.
+     * Crops the given image taking into account a reduction factor. In other
+     * words, the dimensions of the input image have already been halved
+     * <code>reductionFactor</code> times but the given crop region is relative
+     * to the full-sized image.
      *
-     * @param inImage Image to crop
-     * @param crop    Crop operation
+     * @param inImage Image to crop.
+     * @param crop    Crop operation. Clients should call
+     *                {@link Operation#isNoOp(Dimension, OperationList)}
+     *                before invoking.
      * @param rf      Number of times the dimensions of
-     *                <code>inImage</code> have already been halved
-     *                relative to the full-sized version
+     *                <code>inImage</code> have already been halved relative to
+     *                the full-sized version.
      * @return Cropped image, or the input image if the given operation is a
      *         no-op.
      */
-    static RenderedOp cropImage(RenderedOp inImage, Crop crop,
+    static RenderedOp cropImage(RenderedOp inImage,
+                                Crop crop,
                                 ReductionFactor rf) {
         if (!crop.isNoOp()) {
             // Calculate the region x, y, and actual width/height.
@@ -103,7 +110,7 @@ abstract class JaiUtil {
                 requestedWidth = (int) Math.round(regionWidth);
                 requestedHeight = (int) Math.round(regionHeight);
             }
-            // prevent width/height from exceeding the image bounds
+            // Prevent width/height from exceeding the image bounds.
             croppedWidth = (x + requestedWidth > inImage.getWidth()) ?
                     inImage.getWidth() - x : requestedWidth;
             croppedHeight = (y + requestedHeight > inImage.getHeight()) ?
@@ -125,7 +132,7 @@ abstract class JaiUtil {
 
     /**
      * @param inImage Image to get a RenderedOp of.
-     * @return RenderedOp
+     * @return RenderedOp version of <code>inImage</code>.
      */
     static RenderedOp getAsRenderedOp(PlanarImage inImage) {
         final ParameterBlock pb = new ParameterBlock();
@@ -146,7 +153,8 @@ abstract class JaiUtil {
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
 
-            final double multiplier = Math.pow(2, targetSize) / Math.pow(2, componentSize);
+            final double multiplier = Math.pow(2, targetSize) /
+                    Math.pow(2, componentSize);
             // Per-band constants to multiply by.
             final double[] constants = {multiplier};
             pb.add(constants);
@@ -171,8 +179,7 @@ abstract class JaiUtil {
         if (!rotate.isNoOp()) {
             logger.debug("rotateImage(): rotating {} degrees",
                     rotate.getDegrees());
-
-            ParameterBlock pb = new ParameterBlock();
+            final ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
             pb.add(inImage.getWidth() / 2.0f);                   // x origin
             pb.add(inImage.getHeight() / 2.0f);                  // y origin
@@ -184,16 +191,26 @@ abstract class JaiUtil {
     }
 
     /**
-     * Scales an image using JAI, taking an already-applied reduction factor
-     * into account. (In other words, the dimensions of the input image have
-     * already been halved <code>reductionFactor</code> times but the given
-     * size is relative to the full-sized image.)
+     * <p>Scales an image using the JAI <code>Scale</code> operator, taking an
+     * already-applied reduction factor into account. (In other words, the
+     * dimensions of the input image have already been halved
+     * <code>reductionFactor</code> times but the given size is relative to the
+     * full-sized image.)</p>
      *
-     * @param inImage       Image to scale
-     * @param scale         Requested size ignoring any reduction factor
+     * <p>N.B. The image quality of the <code>Scale</code> operator is quite
+     * poor and so {@link #scaleImageUsingSubsampleAverage(RenderedOp, Scale,
+     * ReductionFactor)} should be used instead if possible. Unfortunately,
+     * this method has to remain around due to a bug in JAI (see inline comment
+     * in {@link JaiProcessor#process}).</p>
+     *
+     * @param inImage       Image to scale.
+     * @param scale         Requested size ignoring any reduction factor.
+     *                      Clients should call
+     *                      {@link Operation#isNoOp(Dimension, OperationList)}
+     *                      before invoking.
      * @param interpolation Interpolation
      * @param rf            Reduction factor that has already been applied to
-     *                      <code>inImage</code>
+     *                      <code>inImage</code>.
      * @return Scaled image, or the input image if the given scale is a no-op.
      */
     static RenderedOp scaleImage(RenderedOp inImage, Scale scale,
@@ -235,14 +252,16 @@ abstract class JaiUtil {
 
     /**
      * Better-quality alternative to {@link #scaleImage(RenderedOp, Scale,
-     * Interpolation, ReductionFactor)}. Unfortunately, that method has to
-     * remain around due to a bug in JAI (see inline comment in
-     * {@link JaiProcessor#process}).
+     * Interpolation, ReductionFactor)} using the JAI
+     * <code>SubsampleAverage</code> operator.
      *
-     * @param inImage Image to scale
-     * @param scale   Requested size ignoring any reduction factor
+     * @param inImage Image to scale.
+     * @param scale   Requested size ignoring any reduction factor. Clients
+     *                should call
+     *                {@link Operation#isNoOp(Dimension, OperationList)}
+     *                before invoking.
      * @param rf      Reduction factor that has already been applied to
-     *                <code>inImage</code>
+     *                <code>inImage</code>.
      * @return Scaled image, or the input image if the given scale is a no-op.
      */
     static RenderedOp scaleImageUsingSubsampleAverage(RenderedOp inImage,
@@ -378,28 +397,25 @@ abstract class JaiUtil {
      */
     @SuppressWarnings({"deprecation"}) // really, JAI itself is basically deprecated
     static RenderedOp transformColor(RenderedOp inImage, Color color) {
-        RenderedOp filteredImage = inImage;
-        if (!color.isNoOp()) {
-            // convert to grayscale
-            ParameterBlock pb = new ParameterBlock();
-            pb.addSource(inImage);
-            final int numBands = OpImage.getExpandedNumBands(
-                    inImage.getSampleModel(), inImage.getColorModel());
-            double[][] matrix = new double[1][numBands + 1];
-            matrix[0][0] = 0.114;
-            matrix[0][1] = 0.587;
-            matrix[0][2] = 0.299;
-            for (int i = 3; i <= numBands; i++) {
-                matrix[0][i] = 0;
-            }
-            pb.add(matrix);
-            filteredImage = JAI.create("bandcombine", pb, null);
-            if (color == Color.BITONAL) {
-                pb = new ParameterBlock();
-                pb.addSource(filteredImage);
-                pb.add(1.0 * 128);
-                filteredImage = JAI.create("binarize", pb);
-            }
+        // convert to grayscale
+        ParameterBlock pb = new ParameterBlock();
+        pb.addSource(inImage);
+        final int numBands = OpImage.getExpandedNumBands(
+                inImage.getSampleModel(), inImage.getColorModel());
+        double[][] matrix = new double[1][numBands + 1];
+        matrix[0][0] = 0.114;
+        matrix[0][1] = 0.587;
+        matrix[0][2] = 0.299;
+        for (int i = 3; i <= numBands; i++) {
+            matrix[0][i] = 0;
+        }
+        pb.add(matrix);
+        RenderedOp filteredImage = JAI.create("bandcombine", pb, null);
+        if (color == Color.BITONAL) {
+            pb = new ParameterBlock();
+            pb.addSource(filteredImage);
+            pb.add(1.0 * 128);
+            filteredImage = JAI.create("binarize", pb);
         }
         return filteredImage;
     }

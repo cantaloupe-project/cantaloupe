@@ -22,6 +22,7 @@ title: What's New
   <li>Auto-computed tile sizes of source images with an odd number of pixels in a dimension in information responses are rounded up, to prevent clients from requesting narrow edge tiles.</li>
   <li>Added an optional delegate method cache.</li>
   <li>A <code>cache=false</code> URL query option can be used in all endpoints to bypass the derivative cache per-request.</li>
+  <li>Operations that would have no effect in their context&mdash;for example, a crop to 300x200, followed by a scale-to-fit to 300 pixels wide&mdash;are skipped.</li>
   <li>The delegate script is reloaded on change rather than per-request.</li>
   <li>Added support for PDFs containing JBIG2-encoded images to PdfBoxProcessor.</li>
   <li>In standalone mode, the application is initialized at startup rather than upon the first request.</li>

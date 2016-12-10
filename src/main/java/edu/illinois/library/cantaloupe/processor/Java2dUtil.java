@@ -6,6 +6,8 @@ import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Operation;
+import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.redaction.Redaction;
 import edu.illinois.library.cantaloupe.image.watermark.ImageWatermark;
@@ -146,10 +148,12 @@ public abstract class Java2dUtil {
     }
 
     /**
-     * @param inImage Image to crop
-     * @param crop Crop operation
+     * @param inImage Image to crop.
+     * @param crop Crop operation. Clients should call
+     *             {@link Operation#isNoOp(Dimension, OperationList)}
+     *             before invoking.
      * @return Cropped image, or the input image if the given operation is a
-     * no-op.
+     *         no-op.
      */
     static BufferedImage cropImage(final BufferedImage inImage,
                                    final Crop crop) {
@@ -162,12 +166,14 @@ public abstract class Java2dUtil {
      * input image have already been halved <code>reductionFactor</code> times
      * but the given region is relative to the full-sized image.
      *
-     * @param inImage Image to crop
-     * @param crop Crop operation
+     * @param inImage Image to crop.
+     * @param crop Crop operation. Clients should call
+     *             {@link Operation#isNoOp(Dimension, OperationList)} before
+     *             invoking.
      * @param rf Number of times the dimensions of <code>inImage</code> have
-     *           already been halved relative to the full-sized version
+     *           already been halved relative to the full-sized version.
      * @return Cropped image, or the input image if the given operation is a
-     * no-op.
+     *         no-op.
      */
     static BufferedImage cropImage(final BufferedImage inImage,
                                    final Crop crop,
@@ -536,8 +542,10 @@ public abstract class Java2dUtil {
     /**
      * Scales an image using Graphics2D.
      *
-     * @param inImage Image to scale
-     * @param scale   Scale operation
+     * @param inImage Image to scale.
+     * @param scale   Scale operation. Clients should call
+     *                {@link Operation#isNoOp(Dimension, OperationList)}
+     *                before invoking.
      * @return Downscaled image, or the input image if the given scale is a
      *         no-op.
      */
@@ -552,11 +560,14 @@ public abstract class Java2dUtil {
      * been halved <code>rf</code> times but the given size is relative to the
      * full-sized image.
      *
-     * @param inImage Image to scale
+     * @param inImage Image to scale.
      * @param scale Requested size ignoring any reduction factor. If no
      *              resample filter is set, a reasonable default will be used.
+     *              Clients should call
+     *              {@link Operation#isNoOp(Dimension, OperationList)}
+     *              before invoking.
      * @param rf Reduction factor that has already been applied to
-     *           <code>inImage</code>
+     *           <code>inImage</code>.
      * @return Downscaled image, or the input image if the given scale is a
      *         no-op.
      */

@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.media.jai.Interpolation;
 import javax.media.jai.RenderedOp;
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
@@ -115,19 +116,20 @@ class JaiProcessor extends AbstractImageIoProcessor
     }
 
     @Override
-    public void process(final OperationList ops,
+    public void process(final OperationList opList,
                         final ImageInfo imageInfo,
                         final OutputStream outputStream)
             throws ProcessorException {
-        if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {
+        if (!getAvailableOutputFormats().contains(opList.getOutputFormat())) {
             throw new UnsupportedOutputFormatException();
         }
 
         final ImageReader reader = getReader();
         try {
             final Orientation orientation = getEffectiveOrientation();
+            final Dimension fullSize = imageInfo.getSize();
             final ReductionFactor rf = new ReductionFactor();
-            final RenderedImage renderedImage = reader.readRendered(ops,
+            final RenderedImage renderedImage = reader.readRendered(opList,
                     orientation, rf);
             RenderedOp renderedOp = JaiUtil.getAsRenderedOp(
                     RenderedOp.wrapRenderedImage(renderedImage));
@@ -140,10 +142,10 @@ class JaiProcessor extends AbstractImageIoProcessor
             if (config.getBoolean(NORMALIZE_CONFIG_KEY, false)) {
                 // If we are performing a crop, normalize only the crop area.
                 boolean cropping = false;
-                for (Operation op : ops) {
+                for (Operation op : opList) {
                     if (op instanceof Crop) {
                         Crop crop = (Crop) op;
-                        if (!crop.isNoOp()) {
+                        if (!crop.isNoOp(fullSize, opList)) {
                             cropping = true;
                             renderedOp = JaiUtil.stretchContrast(renderedOp, crop);
                             break;
@@ -155,62 +157,67 @@ class JaiProcessor extends AbstractImageIoProcessor
                 }
             }
 
-            for (Operation op : ops) {
-                if (op instanceof Crop) {
-                    renderedOp = JaiUtil.cropImage(renderedOp, (Crop) op, rf);
-                } else if (op instanceof Scale && !op.isNoOp()) {
-                    /*
-                    JAI has a bug that causes it to fail on right-edge
-                    deflate-compressed tiles when using the
-                    SubsampleAverage operation, as well as the scale operation
-                    with any interpolation other than nearest-neighbor. The
-                    error is an ArrayIndexOutOfBoundsException in
-                    PlanarImage.cobbleByte().
-                    Example: /iiif/2/56324x18006-pyramidal-tiled-deflate.tif/32768,0,23556,18006/737,/0/default.jpg
-                    So, the strategy is:
-                    1) if the TIFF is deflate-compressed, use the scale
-                       operation with nearest-neighbor interpolation, which
-                       is horrible, but better than nothing.
-                    2) otherwise, use the SubsampleAverage operation.
-                    */
-                    if (getSourceFormat().equals(Format.TIF) &&
-                        reader.getCompression(0).equals(Compression.ZLIB)) {
-                        logger.debug("process(): detected " +
-                                "ZLib-compressed TIFF; using the scale " +
-                                "operator with nearest-neighbor " +
-                                "interpolation.");
-                        renderedOp = JaiUtil.scaleImage(renderedOp, (Scale) op,
-                                Interpolation.getInstance(Interpolation.INTERP_NEAREST),
-                                rf);
-                    } else {
-                        renderedOp = JaiUtil.scaleImageUsingSubsampleAverage(
-                                renderedOp, (Scale) op, rf);
+            for (Operation op : opList) {
+                if (!op.isNoOp(fullSize, opList)) {
+                    if (op instanceof Crop) {
+                        renderedOp = JaiUtil.cropImage(renderedOp, (Crop) op, rf);
+                    } else if (op instanceof Scale) {
+                        /*
+                        JAI has a bug that causes it to fail on right-edge
+                        deflate-compressed tiles when using the
+                        SubsampleAverage operation, as well as the scale
+                        operation with any interpolation other than nearest-
+                        neighbor. The error is an ArrayIndexOutOfBoundsException
+                        in PlanarImage.cobbleByte().
+                        Example: /iiif/2/56324x18006-pyramidal-tiled-deflate.tif/32768,0,23556,18006/737,/0/default.jpg
+                        So, the strategy is:
+                        1) if the TIFF is deflate-compressed, use the scale
+                           operation with nearest-neighbor interpolation, which
+                           is horrible, but better than nothing.
+                        2) otherwise, use the SubsampleAverage operation.
+                        */
+                        if (getSourceFormat().equals(Format.TIF) &&
+                                reader.getCompression(0).equals(Compression.ZLIB)) {
+                            logger.debug("process(): detected " +
+                                    "ZLib-compressed TIFF; using the scale " +
+                                    "operator with nearest-neighbor " +
+                                    "interpolation.");
+                            renderedOp = JaiUtil.scaleImage(renderedOp, (Scale) op,
+                                    Interpolation.getInstance(Interpolation.INTERP_NEAREST),
+                                    rf);
+                        } else {
+                            renderedOp = JaiUtil.scaleImageUsingSubsampleAverage(
+                                    renderedOp, (Scale) op, rf);
+                        }
+                    } else if (op instanceof Transpose) {
+                        renderedOp = JaiUtil.
+                                transposeImage(renderedOp, (Transpose) op);
+                    } else if (op instanceof Rotate) {
+                        Rotate rotate = (Rotate) op;
+                        rotate.addDegrees(orientation.getDegrees());
+                        renderedOp = JaiUtil.rotateImage(renderedOp, rotate);
+                    } else if (op instanceof Color) {
+                        renderedOp = JaiUtil.
+                                transformColor(renderedOp, (Color) op);
                     }
-                } else if (op instanceof Transpose) {
-                    renderedOp = JaiUtil.
-                            transposeImage(renderedOp, (Transpose) op);
-                } else if (op instanceof Rotate) {
-                    Rotate rotate = (Rotate) op;
-                    rotate.addDegrees(orientation.getDegrees());
-                    renderedOp = JaiUtil.rotateImage(renderedOp, rotate);
-                } else if (op instanceof Color) {
-                    renderedOp = JaiUtil.
-                            transformColor(renderedOp, (Color) op);
                 }
             }
 
             // Apply the sharpen operation, if present.
             final float sharpenValue = config.getFloat(SHARPEN_CONFIG_KEY, 0);
             final Sharpen sharpen = new Sharpen(sharpenValue);
-            renderedOp = JaiUtil.sharpenImage(renderedOp, sharpen);
+            if (!sharpen.isNoOp(fullSize, opList)) {
+                renderedOp = JaiUtil.sharpenImage(renderedOp, sharpen);
+            }
 
             // Apply remaining operations.
             BufferedImage image = null;
-            for (Operation op : ops) {
-                if (op instanceof Watermark) {
+            for (Operation op : opList) {
+                if (op instanceof Watermark && !op.isNoOp(fullSize, opList)) {
                     // Let's cheat and apply the watermark using Java 2D.
                     // There seems to be minimal performance penalty in doing
-                    // this, and doing it in JAI is harder.
+                    // this, and doing it in JAI is harder (or impossible in
+                    // the case of drawing text).
                     image = renderedOp.getAsBufferedImage();
                     try {
                         image = Java2dUtil.applyWatermark(image,
@@ -220,13 +227,13 @@ class JaiProcessor extends AbstractImageIoProcessor
                     }
                 }
             }
-            final ImageWriter writer = new ImageWriter(ops,
+            final ImageWriter writer = new ImageWriter(opList,
                     reader.getMetadata(0));
 
             if (image != null) {
-                writer.write(image, ops.getOutputFormat(), outputStream);
+                writer.write(image, opList.getOutputFormat(), outputStream);
             } else {
-                writer.write(renderedOp, ops.getOutputFormat(), outputStream);
+                writer.write(renderedOp, opList.getOutputFormat(), outputStream);
             }
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
