@@ -7,7 +7,6 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
-import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -76,7 +75,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
     public void testProcessPreservesMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
         config.clear();
-        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
         assertXmpPresent(true);
     }
 
@@ -84,7 +83,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
     public void testProcessStripsMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
         config.clear();
-        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false);
+        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, false);
         // Metadata shouldn't be stripped, because it would also strip the ICC
         // profile.
         assertXmpPresent(true);
@@ -93,7 +92,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
     private void assertXmpPresent(boolean yesOrNo) throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
         config.clear();
-        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, yesOrNo);
+        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, yesOrNo);
 
         OperationList ops = new OperationList();
         ops.setIdentifier(new Identifier("bla"));

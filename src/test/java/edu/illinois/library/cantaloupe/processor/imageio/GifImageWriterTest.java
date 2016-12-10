@@ -4,7 +4,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.MetadataCopy;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.resource.AbstractResource;
+import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -38,7 +38,7 @@ public class GifImageWriterTest {
     public void setUp() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
         // Disable metadata preservation (will be re-enabled in certain tests)
-        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false);
+        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, false);
 
         // Read an image fixture into memory
         final File fixture = TestUtil.getImage("gif-xmp.gif");
@@ -130,7 +130,7 @@ public class GifImageWriterTest {
     private GifImageWriter getWriter() throws IOException {
         OperationList opList = new OperationList();
         if (ConfigurationFactory.getInstance().
-                getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false)) {
+                getBoolean(Processor.PRESERVE_METADATA_CONFIG_KEY, false)) {
             opList.add(new MetadataCopy());
         }
         return new GifImageWriter(opList, metadata);

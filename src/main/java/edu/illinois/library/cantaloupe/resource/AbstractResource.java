@@ -31,10 +31,7 @@ import org.restlet.data.Parameter;
 import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.data.Status;
-import org.restlet.representation.OutputRepresentation;
-import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
-import org.restlet.resource.Resource;
 import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
 import org.restlet.util.Series;
@@ -80,8 +77,6 @@ public abstract class AbstractResource extends ServerResource {
     public static final String CONTENT_DISPOSITION_CONFIG_KEY =
             "endpoint.iiif.content_disposition";
     public static final String MAX_PIXELS_CONFIG_KEY = "max_pixels";
-    public static final String PRESERVE_METADATA_CONFIG_KEY =
-            "metadata.preserve";
     public static final String SLASH_SUBSTITUTE_CONFIG_KEY =
             "slash_substitute";
 
@@ -246,7 +241,7 @@ public abstract class AbstractResource extends ServerResource {
 
         // Metadata copies
         if (ConfigurationFactory.getInstance().
-                getBoolean(PRESERVE_METADATA_CONFIG_KEY, false)) {
+                getBoolean(Processor.PRESERVE_METADATA_CONFIG_KEY, false)) {
             opList.add(new MetadataCopy());
         }
     }

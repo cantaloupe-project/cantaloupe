@@ -8,11 +8,11 @@ import edu.illinois.library.cantaloupe.image.Operation;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.processor.ReductionFactor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
-import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,7 +86,7 @@ abstract class AbstractImageReader {
     private boolean canIgnoreMetadata() {
         final Configuration config = ConfigurationFactory.getInstance();
         final boolean preserveMetadata = config.getBoolean(
-                AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false);
+                Processor.PRESERVE_METADATA_CONFIG_KEY, false);
         final boolean respectOrientation = config.getBoolean(
                 "metadata.respect_orientation", false);
         return (!preserveMetadata && !respectOrientation);

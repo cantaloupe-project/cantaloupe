@@ -39,9 +39,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * indicates that reading from streams is significantly faster.</p>
  *
  * <p>This processor does not respect the
- * {@link edu.illinois.library.cantaloupe.resource.AbstractResource#PRESERVE_METADATA_CONFIG_KEY}
- * setting because telling IM not to preserve metadata means telling it not to
- * preserve an ICC profile. Thus, metadata always passes through.</p>
+ * {@link Processor#PRESERVE_METADATA_CONFIG_KEY} setting because telling IM
+ * not to preserve metadata means telling it not to preserve an ICC profile.
+ * Therefore, metadata always passes through.</p>
  */
 class ImageMagickProcessor extends AbstractMagickProcessor implements StreamProcessor {
 

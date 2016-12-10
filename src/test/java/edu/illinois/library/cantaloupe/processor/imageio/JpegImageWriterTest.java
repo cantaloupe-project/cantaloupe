@@ -4,7 +4,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.MetadataCopy;
 import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.resource.AbstractResource;
+import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 import org.w3c.dom.Node;
@@ -42,7 +42,7 @@ public class JpegImageWriterTest {
     @Test
     public void testWriteWithBufferedImageAndExifMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("jpg-exif.jpg");
         final JpegImageReader reader = new JpegImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
@@ -56,7 +56,7 @@ public class JpegImageWriterTest {
     @Test
     public void testWriteWithBufferedImageAndIptcMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("jpg-iptc.jpg");
         final JpegImageReader reader = new JpegImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
@@ -70,7 +70,7 @@ public class JpegImageWriterTest {
     @Test
     public void testWriteWithBufferedImageAndXmpMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("jpg-xmp.jpg");
         final JpegImageReader reader = new JpegImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
@@ -97,7 +97,7 @@ public class JpegImageWriterTest {
     @Test
     public void testWriteWithPlanarImageAndExifMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("jpg-exif.jpg");
         final JpegImageReader reader = new JpegImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
@@ -112,7 +112,7 @@ public class JpegImageWriterTest {
     @Test
     public void testWriteWithPlanarImageAndIptcMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("jpg-iptc.jpg");
         final JpegImageReader reader = new JpegImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
@@ -127,7 +127,7 @@ public class JpegImageWriterTest {
     @Test
     public void testWriteWithPlanarImageAndXmpMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("jpg-xmp.jpg");
         final JpegImageReader reader = new JpegImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
@@ -229,7 +229,7 @@ public class JpegImageWriterTest {
     private JpegImageWriter getWriter(Metadata metadata) throws IOException {
         OperationList opList = new OperationList();
         if (ConfigurationFactory.getInstance().
-                getBoolean(AbstractResource.PRESERVE_METADATA_CONFIG_KEY, false)) {
+                getBoolean(Processor.PRESERVE_METADATA_CONFIG_KEY, false)) {
             opList.add(new MetadataCopy());
         }
         return new JpegImageWriter(opList, metadata);

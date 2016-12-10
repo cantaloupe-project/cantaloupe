@@ -19,6 +19,8 @@ import java.util.Set;
  */
 public interface Processor {
 
+    String PRESERVE_METADATA_CONFIG_KEY = "metadata.preserve";
+
     /**
      * @return Output formats available for the set source format, or an
      * empty set if none.
