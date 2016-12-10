@@ -685,16 +685,20 @@ public abstract class Java2dUtil {
                                       final Sharpen sharpen) {
         BufferedImage sharpenedImage = inImage;
         if (!sharpen.isNoOp()) {
-            final Stopwatch watch = new Stopwatch();
+            if (inImage.getWidth() > 2 && inImage.getHeight() > 2) {
+                final Stopwatch watch = new Stopwatch();
 
-            final ResampleOp resampleOp = new ResampleOp(
-                    inImage.getWidth(), inImage.getHeight());
-            resampleOp.setUnsharpenMask(sharpen.getAmount());
+                final ResampleOp resampleOp = new ResampleOp(
+                        inImage.getWidth(), inImage.getHeight());
+                resampleOp.setUnsharpenMask(sharpen.getAmount());
+                sharpenedImage = resampleOp.filter(inImage, null);
 
-            sharpenedImage = resampleOp.filter(inImage, null);
-
-            logger.debug("sharpenImage(): sharpened by {} in {} msec",
-                    sharpen.getAmount(), watch.timeElapsed());
+                logger.debug("sharpenImage(): sharpened by {} in {} msec",
+                        sharpen.getAmount(), watch.timeElapsed());
+            } else {
+                logger.debug("sharpenImage(): image must be at least 3 " +
+                        "pixels on a side; skipping");
+            }
         }
         return sharpenedImage;
     }
