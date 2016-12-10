@@ -78,12 +78,12 @@ abstract class AbstractImageIoProcessor extends AbstractProcessor {
 
     /**
      * @return Effective orientation of the image, respecting the setting of
-     *         {@link #RESPECT_ORIENTATION_CONFIG_KEY}. Never null.
+     *         {@link Processor#RESPECT_ORIENTATION_CONFIG_KEY}. Never null.
      */
     protected Orientation getEffectiveOrientation() throws IOException {
         Orientation orientation = null;
         if (ConfigurationFactory.getInstance().
-                getBoolean(RESPECT_ORIENTATION_CONFIG_KEY, false)) {
+                getBoolean(Processor.RESPECT_ORIENTATION_CONFIG_KEY, false)) {
             orientation = reader.getMetadata(0).getOrientation();
         }
         if (orientation == null) {

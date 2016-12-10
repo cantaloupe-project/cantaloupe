@@ -20,6 +20,7 @@ import java.util.Set;
 public interface Processor {
 
     String PRESERVE_METADATA_CONFIG_KEY = "metadata.preserve";
+    String RESPECT_ORIENTATION_CONFIG_KEY = "metadata.respect_orientation";
 
     /**
      * @return Output formats available for the set source format, or an

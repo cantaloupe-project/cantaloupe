@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import static edu.illinois.library.cantaloupe.processor.AbstractProcessor.RESPECT_ORIENTATION_CONFIG_KEY;
+import static edu.illinois.library.cantaloupe.processor.Processor.RESPECT_ORIENTATION_CONFIG_KEY;
 import static org.junit.Assert.*;
 
 public class JaiProcessorTest extends ProcessorTest {
