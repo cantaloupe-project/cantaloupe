@@ -30,6 +30,15 @@ public class ColorTest {
     }
 
     @Test
+    public void testIsNoOpWithArguments() {
+        Dimension fullSize = new Dimension(600, 400);
+        OperationList opList = new OperationList();
+        opList.add(new Crop(0, 0, 300, 200));
+        assertFalse(Color.BITONAL.isNoOp(fullSize, opList));
+        assertFalse(Color.GRAY.isNoOp(fullSize, opList));
+    }
+
+    @Test
     public void testToMap() {
         Map<String,Object> map = Color.BITONAL.toMap(new Dimension(0, 0));
         assertEquals(Color.class.getSimpleName(), map.get("class"));

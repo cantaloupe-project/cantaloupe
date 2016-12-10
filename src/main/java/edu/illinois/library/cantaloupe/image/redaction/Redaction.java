@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.image.redaction;
 
 import edu.illinois.library.cantaloupe.image.Crop;
 import edu.illinois.library.cantaloupe.image.Operation;
+import edu.illinois.library.cantaloupe.image.OperationList;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -60,6 +61,17 @@ public class Redaction implements Operation {
     public boolean isNoOp() {
         return (region == null || region.getWidth() < 1 ||
                 region.getHeight() < 1);
+    }
+
+    @Override
+    public boolean isNoOp(Dimension fullSize, OperationList opList) {
+        if (isNoOp()) {
+            return true;
+        }
+        final Dimension resultingSize = opList.getResultingSize(fullSize);
+        final Rectangle resultingImage = new Rectangle(0, 0,
+                resultingSize.width, resultingSize.height);
+        return !getRegion().intersects(resultingImage);
     }
 
     /**

@@ -197,6 +197,32 @@ public class Scale implements Operation {
                 (this.getPercent() == null && this.getHeight() == null && this.getWidth() == null);
     }
 
+    @Override
+    public boolean isNoOp(Dimension fullSize, OperationList opList) {
+        if (isNoOp()) {
+            return true;
+        }
+
+        Dimension cropSize = fullSize;
+        for (Operation op : opList) {
+            if (op instanceof Crop) {
+                cropSize = op.getResultingSize(cropSize);
+            }
+        }
+
+        switch (getMode()) {
+            case ASPECT_FIT_WIDTH:
+                return getWidth() == cropSize.width;
+            case ASPECT_FIT_HEIGHT:
+                return getHeight() == cropSize.height;
+            default:
+                if (getPercent() != null) {
+                    return Math.abs(this.getPercent() - 1f) < 0.000001f;
+                }
+                return getWidth() == cropSize.width && getHeight() == cropSize.height;
+        }
+    }
+
     /**
      * @param filter Resample filter to prefer.
      */

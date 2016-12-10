@@ -30,6 +30,14 @@ public class TransposeTest {
     }
 
     @Test
+    public void testIsNoOpWithArguments() {
+        Dimension fullSize = new Dimension(600, 400);
+        OperationList opList = new OperationList();
+        opList.add(new Crop(0, 0, 300, 200));
+        assertFalse(transpose.isNoOp(fullSize, opList));
+    }
+
+    @Test
     public void testToMap() {
         Map<String,Object> map = transpose.toMap(new Dimension(0, 0));
         assertEquals(transpose.getClass().getSimpleName(), map.get("class"));

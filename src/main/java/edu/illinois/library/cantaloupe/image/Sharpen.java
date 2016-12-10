@@ -30,6 +30,11 @@ public class Sharpen implements Operation {
         return !(getAmount() > 0.000001f);
     }
 
+    @Override
+    public boolean isNoOp(Dimension fullSize, OperationList opList) {
+        return isNoOp();
+    }
+
     public float getAmount() {
         return amount;
     }

@@ -58,6 +58,20 @@ public class RotateTest {
     }
 
     @Test
+    public void testIsNoOpWithArguments() {
+        Dimension fullSize = new Dimension(600, 400);
+        OperationList opList = new OperationList();
+        opList.add(new Crop(0, 0, 300, 200));
+        assertTrue(rotate.isNoOp(fullSize, opList));
+        rotate.setDegrees(30);
+        assertFalse(rotate.isNoOp(fullSize, opList));
+        rotate.setDegrees(0.001f);
+        assertFalse(rotate.isNoOp(fullSize, opList));
+        rotate.setDegrees(0.00001f);
+        assertTrue(rotate.isNoOp(fullSize, opList));
+    }
+
+    @Test
     public void testSetDegrees() {
         float degrees = 50f;
         this.rotate.setDegrees(degrees);

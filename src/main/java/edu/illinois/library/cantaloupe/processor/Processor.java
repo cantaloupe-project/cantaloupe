@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
+import java.awt.Dimension;
 import java.io.OutputStream;
 import java.util.Set;
 
@@ -59,10 +60,10 @@ public interface Processor {
      * <p>Performs the supplied operations on an image, reading it from the
      * supplied stream, and writing the result to the supplied stream.</p>
      *
-     * <p>Operations should be applied in the order they appear in the
+     * <p>Operations should be applied in the order they occur in the
      * OperationList iterator. For the sake of efficiency, implementations
-     * should check whether each one is a no-op
-     * ({@link edu.illinois.library.cantaloupe.image.Operation#isNoOp()})
+     * should check whether each one is a no-op using
+     * {@link edu.illinois.library.cantaloupe.image.Operation#isNoOp(Dimension, OperationList)}
      * before performing it.</p>
      *
      * <p>Implementations should get the full size of the source image from

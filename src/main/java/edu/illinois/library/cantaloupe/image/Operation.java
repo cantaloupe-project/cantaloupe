@@ -18,10 +18,26 @@ public interface Operation {
     Dimension getResultingSize(Dimension fullSize);
 
     /**
-     * @return Whether application of the operation will result in an identical
-     *         source image.
+     * N.B. {@link #isNoOp(Dimension, OperationList)} is more reliable.
+     *
+     * @return Whether applying the operation on its own would result in an
+     *         unmodified image.
      */
     boolean isNoOp();
+
+    /**
+     * Contextually-aware counterpart to {@link #isNoOp()}. For example, a
+     * scale operation specifying a scale to 300x200, when the given operation
+     * list contains a crop of 300x200, would return <code>true</code>.
+     *
+     * @param fullSize Full size of the source image.
+     * @param opList Operation list of which the operation may or may not be a
+     *               member.
+     * @return Whether applying the operation in the context of the given
+     *         full size and operation list would result in an unmodified
+     *         image.
+     */
+    boolean isNoOp(Dimension fullSize, OperationList opList);
 
     /**
      * @param fullSize Full size of the source image on which the operation

@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.image.redaction;
 
 import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.image.OperationList;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -60,6 +61,20 @@ public class RedactionTest {
         // null region
         instance = new Redaction(null);
         assertTrue(instance.isNoOp());
+    }
+
+    @Test
+    public void testIsNoOpWithArguments() {
+        final Dimension fullSize = new Dimension(600, 400);
+        final OperationList opList = new OperationList();
+        opList.add(new Crop(0, 0, 400, 300));
+
+        // in bounds
+        assertFalse(instance.isNoOp(fullSize, opList));
+
+        // out of bounds
+        instance = new Redaction(new Rectangle(420, 305, 20, 20));
+        assertTrue(instance.isNoOp(fullSize, opList));
     }
 
     @Test

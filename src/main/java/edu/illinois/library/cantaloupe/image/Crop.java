@@ -211,12 +211,27 @@ public class Crop implements Operation {
     public boolean isNoOp() {
         if (this.isFull()) {
             return true;
-        } else if (this.getUnit().equals(Unit.PERCENT) &&
+        } else if (Unit.PERCENT.equals(this.getUnit()) &&
                 Math.abs(this.getWidth() - 1f) < 0.000001f &&
                 Math.abs(this.getHeight() - 1f) < 0.000001f) {
             return true;
         }
         return false;
+    }
+
+    /**
+     * @param fullSize
+     * @param opList
+     * @return Whether the crop is effectively a no-op.
+     */
+    @Override
+    public boolean isNoOp(Dimension fullSize, OperationList opList) {
+        if (isNoOp()) {
+            return true;
+        }
+        return Unit.PIXELS.equals(getUnit()) &&
+                fullSize.width == Math.round(getWidth()) &&
+                fullSize.height == Math.round(getHeight());
     }
 
     public void setFull(boolean isFull) {

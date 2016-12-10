@@ -177,6 +177,38 @@ public class ScaleTest {
     }
 
     @Test
+    public void testIsNoOpWithArguments() {
+        Dimension fullSize = new Dimension(600, 400);
+        OperationList opList = new OperationList();
+        opList.add(new Crop(0, 0, 300, 200));
+
+        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        scale.setPercent(0.5f);
+        assertFalse(scale.isNoOp(fullSize, opList));
+
+        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        scale.setWidth(300);
+        assertTrue(scale.isNoOp(fullSize, opList));
+
+        scale = new Scale();
+        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        scale.setHeight(200);
+        assertTrue(scale.isNoOp(fullSize, opList));
+
+        scale = new Scale();
+        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        scale.setWidth(300);
+        scale.setHeight(200);
+        assertTrue(scale.isNoOp(fullSize, opList));
+
+        scale = new Scale();
+        scale.setMode(Scale.Mode.NON_ASPECT_FILL);
+        scale.setWidth(300);
+        scale.setHeight(200);
+        assertTrue(scale.isNoOp(fullSize, opList));
+    }
+
+    @Test
     public void testSetHeight() {
         Integer height = 50;
         this.scale.setHeight(height);

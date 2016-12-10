@@ -1,8 +1,11 @@
 package edu.illinois.library.cantaloupe.image.watermark;
 
+import edu.illinois.library.cantaloupe.image.Operation;
+import edu.illinois.library.cantaloupe.image.OperationList;
+
 import java.awt.Dimension;
 
-public abstract class Watermark {
+public abstract class Watermark implements Operation {
 
     private int inset = 0;
     private Position position;
@@ -26,6 +29,11 @@ public abstract class Watermark {
 
     public boolean isNoOp() {
         return false;
+    }
+
+    @Override
+    public boolean isNoOp(Dimension fullSize, OperationList opList) {
+        return isNoOp();
     }
 
     public void setInset(int inset) {

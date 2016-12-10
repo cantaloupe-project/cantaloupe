@@ -29,6 +29,14 @@ public class MetadataCopyTest {
     }
 
     @Test
+    public void testIsNoOpWithArguments() {
+        Dimension fullSize = new Dimension(600, 400);
+        OperationList opList = new OperationList();
+        opList.add(new Crop(0, 0, 300, 200));
+        assertFalse(instance.isNoOp(fullSize, opList));
+    }
+
+    @Test
     public void testToMap() throws Exception {
         Dimension fullSize = new Dimension(500, 500);
         Map<String,Object> map = instance.toMap(fullSize);

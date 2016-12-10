@@ -60,6 +60,11 @@ public class Rotate implements Operation {
         return (Math.abs(getDegrees()) < 0.0001f);
     }
 
+    @Override
+    public boolean isNoOp(Dimension fullSize, OperationList opList) {
+        return isNoOp();
+    }
+
     /**
      * @param degrees Degrees of rotation between 0 and 360
      * @throws IllegalArgumentException

@@ -21,6 +21,11 @@ public enum Color implements Operation {
         return false;
     }
 
+    @Override
+    public boolean isNoOp(Dimension fullSize, OperationList opList) {
+        return isNoOp();
+    }
+
     /**
      * @param fullSize Ignored.
      * @return Map with a <code>type</code> key corresponding to the

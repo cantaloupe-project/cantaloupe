@@ -33,6 +33,16 @@ public class MetadataCopy implements Operation {
     }
 
     /**
+     * @param fullSize
+     * @param opList
+     * @return False.
+     */
+    @Override
+    public boolean isNoOp(Dimension fullSize, OperationList opList) {
+        return isNoOp();
+    }
+
+    /**
      * @param fullSize Full size of the source image on which the operation
      *                 is being applied.
      * @return Single-entry map with key of <var>operation</var> pointing to

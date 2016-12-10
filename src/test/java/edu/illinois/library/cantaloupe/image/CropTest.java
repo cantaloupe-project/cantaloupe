@@ -157,7 +157,7 @@ public class CropTest {
     }
 
     @Test
-    public void testIsNull() {
+    public void testIsNoOp() {
         // new instance
         Crop crop = new Crop();
         assertFalse(crop.isNoOp());
@@ -178,6 +178,15 @@ public class CropTest {
         crop.setWidth(50f);
         crop.setHeight(50f);
         assertFalse(crop.isNoOp());
+    }
+
+    @Test
+    public void testIsNoOpWithArguments() {
+        Dimension fullSize = new Dimension(600, 400);
+        OperationList opList = new OperationList();
+        crop.setWidth(600);
+        crop.setHeight(400);
+        assertTrue(crop.isNoOp(fullSize, opList));
     }
 
     @Test
