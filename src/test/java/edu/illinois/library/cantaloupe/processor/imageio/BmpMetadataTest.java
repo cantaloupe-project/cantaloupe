@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
-import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 

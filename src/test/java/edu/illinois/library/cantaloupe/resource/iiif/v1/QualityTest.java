@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.image.Color;
+import edu.illinois.library.cantaloupe.operation.Color;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

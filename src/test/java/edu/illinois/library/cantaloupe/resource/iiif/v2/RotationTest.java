@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.operation.Transpose;
 import org.junit.Before;
 import org.junit.Test;
 

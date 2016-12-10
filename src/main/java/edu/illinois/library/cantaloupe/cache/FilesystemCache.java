@@ -2,9 +2,9 @@ package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.Operation;
-import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.operation.Identifier;
+import edu.illinois.library.cantaloupe.operation.Operation;
+import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;

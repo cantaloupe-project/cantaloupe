@@ -2,8 +2,8 @@ package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.image.MetadataCopy;
-import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.operation.MetadataCopy;
+import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;

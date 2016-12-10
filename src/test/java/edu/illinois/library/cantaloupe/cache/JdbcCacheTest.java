@@ -2,12 +2,12 @@ package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.image.Crop;
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.Rotate;
-import edu.illinois.library.cantaloupe.image.Scale;
+import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.Format;
+import edu.illinois.library.cantaloupe.operation.Identifier;
+import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.Rotate;
+import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.IOUtils;

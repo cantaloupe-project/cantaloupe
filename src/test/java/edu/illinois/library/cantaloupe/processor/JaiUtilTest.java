@@ -1,14 +1,14 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.image.Color;
-import edu.illinois.library.cantaloupe.image.Crop;
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.Orientation;
-import edu.illinois.library.cantaloupe.image.Rotate;
-import edu.illinois.library.cantaloupe.image.Sharpen;
-import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.operation.Color;
+import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.Format;
+import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.Orientation;
+import edu.illinois.library.cantaloupe.operation.Rotate;
+import edu.illinois.library.cantaloupe.operation.Sharpen;
+import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;

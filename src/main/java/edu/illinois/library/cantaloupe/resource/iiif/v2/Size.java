@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import edu.illinois.library.cantaloupe.image.Scale;
+import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 
@@ -34,7 +34,7 @@ class Size {
             this.equivalentScaleMode = equivalentScaleMode;
         }
 
-        public edu.illinois.library.cantaloupe.image.Scale.Mode toMode() {
+        public edu.illinois.library.cantaloupe.operation.Scale.Mode toMode() {
             return this.equivalentScaleMode;
         }
 

@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.operation.Format;
 import org.junit.Before;
 import org.junit.Test;
 

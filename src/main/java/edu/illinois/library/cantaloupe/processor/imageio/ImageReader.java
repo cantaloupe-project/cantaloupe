@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.operation.Format;
+import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.processor.ReductionFactor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
@@ -194,7 +194,7 @@ public class ImageReader {
      * the returned image will require cropping.</p>
      *
      * @param opList          Note that if a
-     *                        {@link edu.illinois.library.cantaloupe.image.Crop}
+     *                        {@link edu.illinois.library.cantaloupe.operation.Crop}
      *                        operation is present, it will be modified
      *                        according to the <code>orientation</code>
      *                        argument.
@@ -237,7 +237,7 @@ public class ImageReader {
      * tile layout and/or subimages, if possible.</p>
      *
      * @param opList          Note that if a
-     *                        {@link edu.illinois.library.cantaloupe.image.Crop}
+     *                        {@link edu.illinois.library.cantaloupe.operation.Crop}
      *                        operation is present, it will be modified
      *                        according to the <code>orientation</code>
      *                        argument.

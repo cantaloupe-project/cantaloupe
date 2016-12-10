@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.operation.Format;
+import edu.illinois.library.cantaloupe.operation.Identifier;
+import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.ParameterList;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Reference;

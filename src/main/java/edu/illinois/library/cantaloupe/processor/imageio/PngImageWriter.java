@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.operation.Format;
+import edu.illinois.library.cantaloupe.operation.OperationList;
 import org.w3c.dom.NodeList;
 
 import javax.imageio.IIOImage;

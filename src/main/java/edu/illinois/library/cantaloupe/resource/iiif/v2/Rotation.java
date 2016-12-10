@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import edu.illinois.library.cantaloupe.image.Rotate;
-import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.operation.Rotate;
+import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.util.StringUtil;
 
 /**

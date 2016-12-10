@@ -1,13 +1,13 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.image.Color;
-import edu.illinois.library.cantaloupe.image.Crop;
-import edu.illinois.library.cantaloupe.image.Operation;
-import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.Sharpen;
-import edu.illinois.library.cantaloupe.image.Rotate;
-import edu.illinois.library.cantaloupe.image.Scale;
-import edu.illinois.library.cantaloupe.image.Transpose;
+import edu.illinois.library.cantaloupe.operation.Color;
+import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.Operation;
+import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.Sharpen;
+import edu.illinois.library.cantaloupe.operation.Rotate;
+import edu.illinois.library.cantaloupe.operation.Scale;
+import edu.illinois.library.cantaloupe.operation.Transpose;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

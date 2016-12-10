@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.test;
 
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.OperationList;
-import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.operation.Identifier;
+import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.Format;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;

@@ -1,13 +1,8 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
-import edu.illinois.library.cantaloupe.image.Orientation;
-import org.apache.commons.lang3.StringUtils;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import edu.illinois.library.cantaloupe.operation.Orientation;
 
 import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.metadata.IIOMetadataNode;
 
 /**
  * @see <a href="https://docs.oracle.com/javase/7/docs/api/javax/imageio/metadata/doc-files/gif_metadata.html">

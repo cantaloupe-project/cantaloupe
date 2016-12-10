@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.operation.Format;
+import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
 import java.awt.Dimension;
@@ -66,7 +66,7 @@ public interface Processor {
      * <p>Operations should be applied in the order they occur in the
      * OperationList iterator. For the sake of efficiency, implementations
      * should check whether each one is a no-op using
-     * {@link edu.illinois.library.cantaloupe.image.Operation#isNoOp(Dimension, OperationList)}
+     * {@link edu.illinois.library.cantaloupe.operation.Operation#isNoOp(Dimension, OperationList)}
      * before performing it.</p>
      *
      * <p>Implementations should get the full size of the source image from

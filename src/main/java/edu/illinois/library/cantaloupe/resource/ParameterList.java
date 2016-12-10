@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.operation.OperationList;
 
 /**
  * Encapsulates a list of endpoint request parameters.

@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.image.Crop;
+import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.util.StringUtil;
 
 /**

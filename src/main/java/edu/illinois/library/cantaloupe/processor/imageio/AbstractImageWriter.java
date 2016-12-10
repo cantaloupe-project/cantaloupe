@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
-import edu.illinois.library.cantaloupe.image.MetadataCopy;
-import edu.illinois.library.cantaloupe.image.Operation;
-import edu.illinois.library.cantaloupe.image.OperationList;
+import edu.illinois.library.cantaloupe.operation.MetadataCopy;
+import edu.illinois.library.cantaloupe.operation.Operation;
+import edu.illinois.library.cantaloupe.operation.OperationList;
 
 import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriteParam;

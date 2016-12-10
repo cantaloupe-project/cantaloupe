@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.operation.Identifier;
 
 import java.io.File;
 import java.io.OutputStream;

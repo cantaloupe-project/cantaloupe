@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.image.Scale;
+import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 
@@ -29,8 +29,8 @@ class Size {
         /** <code>full</code> in an IIIF request URI */
         FULL;
 
-        public edu.illinois.library.cantaloupe.image.Scale.Mode toMode() {
-            return edu.illinois.library.cantaloupe.image.Scale.Mode.
+        public edu.illinois.library.cantaloupe.operation.Scale.Mode toMode() {
+            return edu.illinois.library.cantaloupe.operation.Scale.Mode.
                     valueOf(this.toString());
         }
 
