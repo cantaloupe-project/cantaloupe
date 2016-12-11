@@ -1,8 +1,6 @@
 # OS junk
-.chkbit
 .DS_Store
 Thumbs.db
-.chkbit
 
 # IDE/Maven junk
 .idea/*
@@ -11,7 +9,6 @@ nbactions.xml
 dependency-reduced-pom.xml
 
 # App config
-/cantaloupe.json
 /cantaloupe.properties
 /delegates.rb
 /test.properties
@@ -19,4 +16,3 @@ dependency-reduced-pom.xml
 
 # Auto-generated content
 /target
-
