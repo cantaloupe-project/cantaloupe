@@ -1,0 +1,16 @@
+# Cantaloupe unit test configuration file. DO NOT EDIT; copy to test.properties
+# and edit that.
+
+# Used by Selenium for Control Panel tests.
+# https://github.com/mozilla/geckodriver
+webdriver.gecko = /usr/local/bin/geckodriver
+
+# Used by AmazonS3ResolverTest and AmazonS3CacheTest.
+amazons3.access_key_id =
+amazons3.secret_key =
+amazons3.bucket =
+
+# Used by AzureStorageResolverTest and AzureStorageCacheTest.
+azurestorage.account_name =
+azurestorage.account_key =
+azurestorage.container =

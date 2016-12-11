@@ -1,65 +1,112 @@
 package edu.illinois.library.cantaloupe.resolver;
 
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.blob.CloudBlobClient;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.Format;
 import edu.illinois.library.cantaloupe.operation.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import static org.junit.Assert.*;
 
 /**
- * <p>Tests AzureStorageResolver against Azure Storage. Requires an AWS
- * account).</p>
- *
- * <p>This test requires a file to be present at
- * {user.home}/.azure/cantaloupe that is formatted as such:</p>
- *
- * <pre>account_name=xxxxxx
- * account_key=xxxxxx
- * container=xxxxxx</pre>
- *
- * <p>Also, the container must contain an image called
- * orion-hubble-4096.jpg.</p>
+ * Tests AzureStorageResolver against Azure Storage. Requires an AWS account).
  */
 public class AzureStorageResolverTest {
 
-    private static final Identifier IDENTIFIER =
-            new Identifier("orion-hubble-4096.jpg");
+    private static final String OBJECT_KEY = "jpeg.jpg";
 
     private AzureStorageResolver instance;
 
-    @Before
-    public void setUp() throws IOException {
-        FileInputStream fis = new FileInputStream(new File(
-                System.getProperty("user.home") + "/.azure/cantaloupe"));
-        String authInfo = IOUtils.toString(fis);
-        String[] lines = StringUtils.split(authInfo, "\n");
-        final String accountName = lines[0].replace("account_name=", "").trim();
-        final String accountKey = lines[1].replace("account_key=", "").trim();
-        final String container = lines[2].replace("container=", "").trim();
+    @BeforeClass
+    public static void uploadFixtures() throws Exception {
+        final CloudBlobClient client = client();
+        try (FileInputStream fis = new FileInputStream(TestUtil.getImage("jpg-rgb-64x56x8-line.jpg"))) {
+            final CloudBlobContainer container =
+                    client.getContainerReference(getContainer());
+            final CloudBlockBlob blob = container.getBlockBlobReference(OBJECT_KEY);
+            blob.getProperties().setContentType("image/jpeg");
 
+            try (OutputStream os = blob.openOutputStream()) {
+                IOUtils.copy(fis, os);
+            }
+        }
+    }
+
+    @AfterClass
+    public static void removeFixtures() throws Exception {
+        final CloudBlobClient client = client();
+        final CloudBlobContainer container =
+                client.getContainerReference(getContainer());
+        final CloudBlockBlob blob = container.getBlockBlobReference(OBJECT_KEY);
+        blob.deleteIfExists();
+    }
+
+    private static CloudBlobClient client() throws Exception {
+        final String accountName = getAccountName();
+        final String accountKey = getAccountKey();
+
+        final String connectionString = String.format(
+                "DefaultEndpointsProtocol=https;" +
+                        "AccountName=%s;" +
+                        "AccountKey=%s", accountName, accountKey);
+        final CloudStorageAccount account =
+                CloudStorageAccount.parse(connectionString);
+        CloudBlobClient client = account.createCloudBlobClient();
+        client.getContainerReference(getContainer()).createIfNotExists();
+        return client;
+    }
+
+    private static String getAccountName() {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.AZURE_ACCOUNT_NAME.getKey());
+    }
+
+    private static String getAccountKey() {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.AZURE_ACCOUNT_KEY.getKey());
+    }
+
+    private static String getContainer() {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.AZURE_CONTAINER.getKey());
+    }
+
+    @Before
+    public void setUp() throws Exception {
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        ConfigurationFactory.clearInstance();
+
         Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
-        config.setProperty(AzureStorageResolver.CONTAINER_NAME_CONFIG_KEY, container);
-        config.setProperty(AzureStorageResolver.ACCOUNT_NAME_CONFIG_KEY, accountName);
-        config.setProperty(AzureStorageResolver.ACCOUNT_KEY_CONFIG_KEY, accountKey);
+        config.setProperty(AzureStorageResolver.CONTAINER_NAME_CONFIG_KEY,
+                getContainer());
+        config.setProperty(AzureStorageResolver.ACCOUNT_NAME_CONFIG_KEY,
+                getAccountName());
+        config.setProperty(AzureStorageResolver.ACCOUNT_KEY_CONFIG_KEY,
+                getAccountKey());
         config.setProperty(AzureStorageResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "BasicLookupStrategy");
 
         instance = new AzureStorageResolver();
-        instance.setIdentifier(IDENTIFIER);
+        instance.setIdentifier(new Identifier(OBJECT_KEY));
     }
 
     @Test

@@ -1,17 +1,25 @@
 package edu.illinois.library.cantaloupe.resolver;
 
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.Format;
 import edu.illinois.library.cantaloupe.operation.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -19,46 +27,88 @@ import java.io.IOException;
 import static org.junit.Assert.*;
 
 /**
- * <p>Tests AmazonS3Resolver against Amazon S3 -- the actual AWS S3, not a
- * mock, which has pros and cons (pro: guaranteed accuracy; con: need an AWS
- * account).</p>
- *
- * <p>This test requires a file to be present at {user.home}/.s3/cantaloupe
- * that is formatted as such:</p>
- *
- * <pre>AWSAccessKeyId=xxxxxx
- * AWSSecretKey=xxxxxx
- * Bucket=xxxxxx</pre>
- *
- * <p>Also, the bucket must contain an image called f50.jpg.</p>
+ * Tests AmazonS3Resolver against Amazon S3. An AWS account is required.
  */
 public class AmazonS3ResolverTest {
 
-    private static final Identifier IDENTIFIER = new Identifier("f50.jpg");
+    private static final String OBJECT_KEY = "jpeg.jpg";
 
     private AmazonS3Resolver instance;
 
-    @Before
-    public void setUp() throws IOException {
-        FileInputStream fis = new FileInputStream(new File(
-                System.getProperty("user.home") + "/.s3/cantaloupe"));
-        String authInfo = IOUtils.toString(fis);
-        String[] lines = StringUtils.split(authInfo, "\n");
-        final String accessKeyId = lines[0].replace("AWSAccessKeyId=", "").trim();
-        final String secretKey = lines[1].replace("AWSSecretKey=", "").trim();
-        final String bucket = lines[2].replace("Bucket=", "").trim();
+    @BeforeClass
+    public static void uploadFixtures() throws IOException {
+        final AmazonS3 s3 = client();
+        try (FileInputStream fis = new FileInputStream(TestUtil.getImage("jpg-rgb-64x56x8-line.jpg"));
+             ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            IOUtils.copy(fis, baos);
+            byte[] imageBytes = baos.toByteArray();
 
+            final ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentType("image/jpeg");
+            metadata.setContentLength(imageBytes.length);
+
+            try (ByteArrayInputStream s3Stream = new ByteArrayInputStream(imageBytes)) {
+                final PutObjectRequest request = new PutObjectRequest(
+                        getBucket(), OBJECT_KEY, s3Stream, metadata);
+                s3.putObject(request);
+            }
+        }
+    }
+
+    @AfterClass
+    public static void removeFixtures() {
+        final AmazonS3 s3 = client();
+        s3.deleteObject(getBucket(), OBJECT_KEY);
+    }
+
+    private static AmazonS3 client() {
+        class ConfigFileCredentials implements AWSCredentials {
+            @Override
+            public String getAWSAccessKeyId() {
+                return getAccessKeyId();
+            }
+
+            @Override
+            public String getAWSSecretKey() {
+                return getSecretKey();
+            }
+        }
+        AWSCredentials credentials = new ConfigFileCredentials();
+        return new AmazonS3Client(credentials);
+    }
+
+    private static String getAccessKeyId() {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.S3_ACCESS_KEY_ID.getKey());
+    }
+
+    private static String getBucket() {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.S3_BUCKET.getKey());
+    }
+
+    private static String getSecretKey() {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.S3_SECRET_KEY.getKey());
+    }
+
+    @Before
+    public void setUp() throws Exception {
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        ConfigurationFactory.clearInstance();
+
         Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
-        config.setProperty(AmazonS3Resolver.BUCKET_NAME_CONFIG_KEY, bucket);
-        config.setProperty(AmazonS3Resolver.ACCESS_KEY_ID_CONFIG_KEY, accessKeyId);
-        config.setProperty(AmazonS3Resolver.SECRET_KEY_CONFIG_KEY, secretKey);
+        config.setProperty(AmazonS3Resolver.BUCKET_NAME_CONFIG_KEY, getBucket());
+        config.setProperty(AmazonS3Resolver.ACCESS_KEY_ID_CONFIG_KEY, getAccessKeyId());
+        config.setProperty(AmazonS3Resolver.SECRET_KEY_CONFIG_KEY, getSecretKey());
         config.setProperty(AmazonS3Resolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "BasicLookupStrategy");
 
         instance = new AmazonS3Resolver();
-        instance.setIdentifier(IDENTIFIER);
+        instance.setIdentifier(new Identifier(OBJECT_KEY));
     }
 
     @Test

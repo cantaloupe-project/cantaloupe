@@ -8,10 +8,10 @@ import edu.illinois.library.cantaloupe.operation.Format;
 import edu.illinois.library.cantaloupe.operation.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
+import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,14 +23,6 @@ import java.io.OutputStream;
 
 import static org.junit.Assert.*;
 
-/**
- * This test depends on a file located at ~/.s3/cantaloupe with the following
- * contents:
- *
- * AWSAccessKeyId=xxxx
- * AWSSecretKey=xxxx
- * TestBucket=(uuid)
- */
 public class AmazonS3CacheTest {
 
     private final int S3_UPLOAD_WAIT = 3000;
@@ -40,25 +32,35 @@ public class AmazonS3CacheTest {
     private AmazonS3Cache instance;
     private OperationList opList = new OperationList(identifier, Format.JPG);
 
+    private static String getAccessKeyId() {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.S3_ACCESS_KEY_ID.getKey());
+    }
+
+    private static String getBucket() {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.S3_BUCKET.getKey());
+    }
+
+    private static String getSecretKey() {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.S3_SECRET_KEY.getKey());
+    }
+
     @Before
     public void setUp() throws Exception {
-        FileInputStream fis = new FileInputStream(new File(
-                System.getProperty("user.home") + "/.s3/cantaloupe"));
-        String authInfo = IOUtils.toString(fis);
-        String[] lines = StringUtils.split(authInfo, "\n");
-
-        final String accessKeyId = lines[0].replace("AWSAccessKeyId=", "").trim();
-        final String secretKey = lines[1].replace("AWSSecretKey=", "").trim();
-        final String bucketName = lines[3].replace("TestBucket=", "").trim();
-
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        ConfigurationFactory.clearInstance();
+
         final Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
         config.setProperty(Cache.TTL_CONFIG_KEY, 2);
         config.setProperty(AmazonS3Cache.OBJECT_KEY_PREFIX_CONFIG_KEY, "test/");
-        config.setProperty(AmazonS3Cache.ACCESS_KEY_ID_CONFIG_KEY, accessKeyId);
-        config.setProperty(AmazonS3Cache.BUCKET_NAME_CONFIG_KEY, bucketName);
-        config.setProperty(AmazonS3Cache.SECRET_KEY_CONFIG_KEY, secretKey);
+        config.setProperty(AmazonS3Cache.ACCESS_KEY_ID_CONFIG_KEY, getAccessKeyId());
+        config.setProperty(AmazonS3Cache.BUCKET_NAME_CONFIG_KEY, getBucket());
+        config.setProperty(AmazonS3Cache.SECRET_KEY_CONFIG_KEY, getSecretKey());
 
         instance = new AmazonS3Cache();
     }

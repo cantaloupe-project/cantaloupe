@@ -14,6 +14,7 @@ dependency-reduced-pom.xml
 /cantaloupe.json
 /cantaloupe.properties
 /delegates.rb
+/test.properties
 /watermark.*
 
 # Auto-generated content

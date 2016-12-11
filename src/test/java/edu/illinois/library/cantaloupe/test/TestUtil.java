@@ -3,6 +3,10 @@ package edu.illinois.library.cantaloupe.test;
 import edu.illinois.library.cantaloupe.operation.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Format;
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -48,6 +52,16 @@ public abstract class TestUtil {
 
     public static File getTempFolder() throws IOException {
         return new File(System.getProperty("java.io.tmpdir"));
+    }
+
+    public static Configuration getTestConfig() {
+        try {
+            return new PropertiesConfiguration("./test.properties");
+        } catch (ConfigurationException e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+        }
+        return new BaseConfiguration();
     }
 
     /**

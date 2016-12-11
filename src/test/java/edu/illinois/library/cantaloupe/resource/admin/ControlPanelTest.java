@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
+import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -26,8 +27,8 @@ public class ControlPanelTest {
     private static final String username = "admin";
     private static final String secret = "secret";
 
-    private WebDriver webDriver = new FirefoxDriver();
-    private WebServer webServer = StandaloneEntry.getWebServer();
+    private WebDriver webDriver;
+    private WebServer webServer;
 
     private WebElement css(String selector) {
         return webDriver.findElement(By.cssSelector(selector));
@@ -42,6 +43,13 @@ public class ControlPanelTest {
 
     @Before
     public void setUp() throws Exception {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        System.setProperty("webdriver.gecko.driver",
+                testConfig.getString(ConfigurationConstants.GECKO_WEBDRIVER.getKey()));
+
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        ConfigurationFactory.clearInstance();
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(WebApplication.ADMIN_SECRET_CONFIG_KEY, secret);
         config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
@@ -49,9 +57,12 @@ public class ControlPanelTest {
         config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
                 "Java2dProcessor");
 
+        webServer = StandaloneEntry.getWebServer();
         webServer.setHttpEnabled(true);
         webServer.setHttpPort(TestUtil.getOpenPort());
         webServer.start();
+
+        webDriver = new FirefoxDriver();
     }
 
     @After

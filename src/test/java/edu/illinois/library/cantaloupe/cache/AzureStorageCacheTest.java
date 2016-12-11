@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.operation.Format;
 import edu.illinois.library.cantaloupe.operation.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
+import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -25,14 +26,6 @@ import java.net.URISyntaxException;
 
 import static org.junit.Assert.*;
 
-/**
- * This test depends on a file located at ~/.azure/cantaloupe containing the
- * following:
- *
- * account_name=xxxx
- * account_key=xxxx
- * test_container=xxxx
- */
 public class AzureStorageCacheTest {
 
     private Identifier identifier = new Identifier("jpg-rgb-64x56x8-baseline.jpg");
@@ -40,24 +33,35 @@ public class AzureStorageCacheTest {
     private AzureStorageCache instance;
     private OperationList opList = new OperationList(identifier, Format.JPG);
 
+    private static String getAccountName() {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.AZURE_ACCOUNT_NAME.getKey());
+    }
+
+    private static String getAccountKey() {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.AZURE_ACCOUNT_KEY.getKey());
+    }
+
+    private static String getContainer() {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.AZURE_CONTAINER.getKey());
+    }
+
     @Before
     public void setUp() throws Exception {
-        FileInputStream fis = new FileInputStream(new File(
-                System.getProperty("user.home") + "/.azure/cantaloupe"));
-        String authInfo = IOUtils.toString(fis);
-        String[] lines = org.apache.commons.lang3.StringUtils.split(authInfo, "\n");
-        final String accountName = lines[0].replace("account_name=", "").trim();
-        final String accountKey = lines[1].replace("account_key=", "").trim();
-        final String container = lines[3].replace("test_container=", "").trim();
-
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        ConfigurationFactory.clearInstance();
+
         Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
         config.setProperty(Cache.TTL_CONFIG_KEY, 1);
         config.setProperty(AzureStorageCache.OBJECT_KEY_PREFIX_CONFIG_KEY, "test/");
-        config.setProperty(AzureStorageCache.ACCOUNT_NAME_CONFIG_KEY, accountName);
-        config.setProperty(AzureStorageCache.ACCOUNT_KEY_CONFIG_KEY, accountKey);
-        config.setProperty(AzureStorageCache.CONTAINER_NAME_CONFIG_KEY, container);
+        config.setProperty(AzureStorageCache.ACCOUNT_NAME_CONFIG_KEY, getAccountName());
+        config.setProperty(AzureStorageCache.ACCOUNT_KEY_CONFIG_KEY, getAccountKey());
+        config.setProperty(AzureStorageCache.CONTAINER_NAME_CONFIG_KEY, getContainer());
 
         instance = new AzureStorageCache();
     }
