@@ -81,7 +81,7 @@ public class Crop implements Operation {
      * @param fullSize Dimensions of the un-rotated image.
      */
     public void applyOrientation(Orientation orientation, Dimension fullSize) {
-        if (isNoOp() || getWidth() < 1 || getHeight() < 1) {
+        if (!hasEffect() || getWidth() < 1 || getHeight() < 1) {
             return;
         }
         switch (orientation) {
@@ -208,15 +208,15 @@ public class Crop implements Operation {
      * @return Whether the crop is effectively a no-op.
      */
     @Override
-    public boolean isNoOp() {
+    public boolean hasEffect() {
         if (this.isFull()) {
-            return true;
+            return false;
         } else if (Unit.PERCENT.equals(this.getUnit()) &&
                 Math.abs(this.getWidth() - 1f) < 0.000001f &&
                 Math.abs(this.getHeight() - 1f) < 0.000001f) {
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
     /**
@@ -225,13 +225,13 @@ public class Crop implements Operation {
      * @return Whether the crop is effectively a no-op.
      */
     @Override
-    public boolean isNoOp(Dimension fullSize, OperationList opList) {
-        if (isNoOp()) {
-            return true;
+    public boolean hasEffect(Dimension fullSize, OperationList opList) {
+        if (!hasEffect()) {
+            return false;
         }
-        return Unit.PIXELS.equals(getUnit()) &&
+        return !(Unit.PIXELS.equals(getUnit()) &&
                 fullSize.width == Math.round(getWidth()) &&
-                fullSize.height == Math.round(getHeight());
+                fullSize.height == Math.round(getHeight()));
     }
 
     public void setFull(boolean isFull) {
@@ -321,9 +321,7 @@ public class Crop implements Operation {
     @Override
     public String toString() {
         String str = "";
-        if (this.isNoOp()) {
-            str += "none";
-        } else {
+        if (hasEffect()) {
             String x, y, width, height;
             if (this.getShape().equals(Shape.SQUARE)) {
                 str+= "square";
@@ -341,6 +339,8 @@ public class Crop implements Operation {
                 }
                 str += String.format("%s,%s,%s,%s", x, y, width, height);
             }
+        } else {
+            str += "none";
         }
         return str;
     }

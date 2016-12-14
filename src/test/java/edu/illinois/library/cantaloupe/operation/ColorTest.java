@@ -24,18 +24,18 @@ public class ColorTest {
     }
 
     @Test
-    public void testIsNoOp() {
-        assertFalse(Color.BITONAL.isNoOp());
-        assertFalse(Color.GRAY.isNoOp());
+    public void testHasEffect() {
+        assertTrue(Color.BITONAL.hasEffect());
+        assertTrue(Color.GRAY.hasEffect());
     }
 
     @Test
-    public void testIsNoOpWithArguments() {
+    public void testHasEffectWithArguments() {
         Dimension fullSize = new Dimension(600, 400);
         OperationList opList = new OperationList();
         opList.add(new Crop(0, 0, 300, 200));
-        assertFalse(Color.BITONAL.isNoOp(fullSize, opList));
-        assertFalse(Color.GRAY.isNoOp(fullSize, opList));
+        assertTrue(Color.BITONAL.hasEffect(fullSize, opList));
+        assertTrue(Color.GRAY.hasEffect(fullSize, opList));
     }
 
     @Test

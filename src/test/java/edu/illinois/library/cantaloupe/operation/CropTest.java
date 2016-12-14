@@ -157,36 +157,36 @@ public class CropTest {
     }
 
     @Test
-    public void testIsNoOp() {
+    public void testHasEffect() {
         // new instance
         Crop crop = new Crop();
-        assertFalse(crop.isNoOp());
+        assertTrue(crop.hasEffect());
         // 100% crop
         crop = new Crop();
         crop.setUnit(Crop.Unit.PERCENT);
         crop.setWidth(1f);
         crop.setHeight(1f);
-        assertTrue(crop.isNoOp());
+        assertFalse(crop.hasEffect());
         // <100% crop
         crop = new Crop();
         crop.setUnit(Crop.Unit.PERCENT);
         crop.setWidth(0.8f);
         crop.setHeight(0.8f);
-        assertFalse(crop.isNoOp());
+        assertTrue(crop.hasEffect());
         // pixel crop
         crop = new Crop();
         crop.setWidth(50f);
         crop.setHeight(50f);
-        assertFalse(crop.isNoOp());
+        assertTrue(crop.hasEffect());
     }
 
     @Test
-    public void testIsNoOpWithArguments() {
+    public void testHasEffectWithArguments() {
         Dimension fullSize = new Dimension(600, 400);
         OperationList opList = new OperationList();
         crop.setWidth(600);
         crop.setHeight(400);
-        assertTrue(crop.isNoOp(fullSize, opList));
+        assertFalse(crop.hasEffect(fullSize, opList));
     }
 
     @Test

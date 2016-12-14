@@ -47,28 +47,28 @@ public class RotateTest {
     }
 
     @Test
-    public void testIsNoOp() {
-        assertTrue(rotate.isNoOp());
+    public void testHasEffect() {
+        assertFalse(rotate.hasEffect());
         rotate.setDegrees(30);
-        assertFalse(rotate.isNoOp());
+        assertTrue(rotate.hasEffect());
         rotate.setDegrees(0.001f);
-        assertFalse(rotate.isNoOp());
+        assertTrue(rotate.hasEffect());
         rotate.setDegrees(0.00001f);
-        assertTrue(rotate.isNoOp());
+        assertFalse(rotate.hasEffect());
     }
 
     @Test
-    public void testIsNoOpWithArguments() {
+    public void testHasEffectWithArguments() {
         Dimension fullSize = new Dimension(600, 400);
         OperationList opList = new OperationList();
         opList.add(new Crop(0, 0, 300, 200));
-        assertTrue(rotate.isNoOp(fullSize, opList));
+        assertFalse(rotate.hasEffect(fullSize, opList));
         rotate.setDegrees(30);
-        assertFalse(rotate.isNoOp(fullSize, opList));
+        assertTrue(rotate.hasEffect(fullSize, opList));
         rotate.setDegrees(0.001f);
-        assertFalse(rotate.isNoOp(fullSize, opList));
+        assertTrue(rotate.hasEffect(fullSize, opList));
         rotate.setDegrees(0.00001f);
-        assertTrue(rotate.isNoOp(fullSize, opList));
+        assertFalse(rotate.hasEffect(fullSize, opList));
     }
 
     @Test

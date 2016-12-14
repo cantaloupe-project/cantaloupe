@@ -53,7 +53,7 @@ abstract class JaiUtil {
     /**
      * @param inImage Image to crop.
      * @param crop    Crop operation. Clients should call
-     *                {@link Operation#isNoOp(Dimension, OperationList)}
+     *                {@link Operation#hasEffect(Dimension, OperationList)}
      *                before invoking.
      * @return Cropped image, or the input image if the given operation is a
      *         no-op.
@@ -70,7 +70,7 @@ abstract class JaiUtil {
      *
      * @param inImage Image to crop.
      * @param crop    Crop operation. Clients should call
-     *                {@link Operation#isNoOp(Dimension, OperationList)}
+     *                {@link Operation#hasEffect(Dimension, OperationList)}
      *                before invoking.
      * @param rf      Number of times the dimensions of
      *                <code>inImage</code> have already been halved relative to
@@ -81,7 +81,7 @@ abstract class JaiUtil {
     static RenderedOp cropImage(RenderedOp inImage,
                                 Crop crop,
                                 ReductionFactor rf) {
-        if (!crop.isNoOp()) {
+        if (crop.hasEffect()) {
             // Calculate the region x, y, and actual width/height.
             final double scale = rf.getScale();
             final double regionX = crop.getX() * scale;
@@ -176,7 +176,7 @@ abstract class JaiUtil {
      *         is a no-op.
      */
     static RenderedOp rotateImage(RenderedOp inImage, Rotate rotate) {
-        if (!rotate.isNoOp()) {
+        if (rotate.hasEffect()) {
             logger.debug("rotateImage(): rotating {} degrees",
                     rotate.getDegrees());
             final ParameterBlock pb = new ParameterBlock();
@@ -204,7 +204,7 @@ abstract class JaiUtil {
      * @param inImage       Image to scale.
      * @param scale         Requested size ignoring any reduction factor.
      *                      Clients should call
-     *                      {@link Operation#isNoOp(Dimension, OperationList)}
+     *                      {@link Operation#hasEffect(Dimension, OperationList)}
      *                      before invoking.
      * @param interpolation Interpolation.
      * @param rf            Reduction factor that has already been applied to
@@ -214,7 +214,7 @@ abstract class JaiUtil {
     static RenderedOp scaleImage(RenderedOp inImage, Scale scale,
                                  Interpolation interpolation,
                                  ReductionFactor rf) {
-        if (!scale.isNoOp()) {
+        if (scale.hasEffect()) {
             final int sourceWidth = inImage.getWidth();
             final int sourceHeight = inImage.getHeight();
             final Dimension scaledSize = scale.getResultingSize(
@@ -250,7 +250,7 @@ abstract class JaiUtil {
      *                smallest side.
      * @param scale   Requested size ignoring any reduction factor. Clients
      *                should call
-     *                {@link Operation#isNoOp(Dimension, OperationList)}
+     *                {@link Operation#hasEffect(Dimension, OperationList)}
      *                before invoking.
      * @param rf      Reduction factor that has already been applied to
      *                <code>inImage</code>.
@@ -259,7 +259,7 @@ abstract class JaiUtil {
     static RenderedOp scaleImageUsingSubsampleAverage(RenderedOp inImage,
                                                       Scale scale,
                                                       ReductionFactor rf) {
-        if (!scale.isNoOp()) {
+        if (scale.hasEffect()) {
             final int sourceWidth = inImage.getWidth();
             final int sourceHeight = inImage.getHeight();
             final Dimension scaledSize = scale.getResultingSize(
@@ -297,7 +297,7 @@ abstract class JaiUtil {
      */
     static RenderedOp sharpenImage(RenderedOp inImage,
                                    final Sharpen sharpen) {
-        if (!sharpen.isNoOp()) {
+        if (sharpen.hasEffect()) {
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
             pb.add(null);

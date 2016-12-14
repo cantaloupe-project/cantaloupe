@@ -25,21 +25,21 @@ public class MetadataCopy implements Operation {
     }
 
     /**
-     * @return False.
+     * @return True.
      */
     @Override
-    public boolean isNoOp() {
-        return false;
+    public boolean hasEffect() {
+        return true;
     }
 
     /**
      * @param fullSize
      * @param opList
-     * @return False.
+     * @return True.
      */
     @Override
-    public boolean isNoOp(Dimension fullSize, OperationList opList) {
-        return isNoOp();
+    public boolean hasEffect(Dimension fullSize, OperationList opList) {
+        return hasEffect();
     }
 
     /**

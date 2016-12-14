@@ -150,7 +150,7 @@ public abstract class Java2dUtil {
     /**
      * @param inImage Image to crop.
      * @param crop Crop operation. Clients should call
-     *             {@link Operation#isNoOp(Dimension, OperationList)}
+     *             {@link Operation#hasEffect(Dimension, OperationList)}
      *             before invoking.
      * @return Cropped image, or the input image if the given operation is a
      *         no-op.
@@ -168,7 +168,7 @@ public abstract class Java2dUtil {
      *
      * @param inImage Image to crop.
      * @param crop Crop operation. Clients should call
-     *             {@link Operation#isNoOp(Dimension, OperationList)} before
+     *             {@link Operation#hasEffect(Dimension, OperationList)} before
      *             invoking.
      * @param rf Number of times the dimensions of <code>inImage</code> have
      *           already been halved relative to the full-sized version.
@@ -181,7 +181,7 @@ public abstract class Java2dUtil {
         final Dimension croppedSize = crop.getResultingSize(
                 new Dimension(inImage.getWidth(), inImage.getHeight()));
         BufferedImage croppedImage;
-        if (crop.isNoOp() || (croppedSize.width == inImage.getWidth() &&
+        if (!crop.hasEffect() || (croppedSize.width == inImage.getWidth() &&
                 croppedSize.height == inImage.getHeight())) {
             croppedImage = inImage;
         } else {
@@ -504,7 +504,7 @@ public abstract class Java2dUtil {
     static BufferedImage rotateImage(final BufferedImage inImage,
                                      final Rotate rotate) {
         BufferedImage rotatedImage = inImage;
-        if (!rotate.isNoOp()) {
+        if (rotate.hasEffect()) {
             final Stopwatch watch = new Stopwatch();
             final double radians = Math.toRadians(rotate.getDegrees());
             final int sourceWidth = inImage.getWidth();
@@ -544,7 +544,7 @@ public abstract class Java2dUtil {
      *
      * @param inImage Image to scale.
      * @param scale   Scale operation. Clients should call
-     *                {@link Operation#isNoOp(Dimension, OperationList)}
+     *                {@link Operation#hasEffect(Dimension, OperationList)}
      *                before invoking.
      * @return Downscaled image, or the input image if the given scale is a
      *         no-op.
@@ -564,7 +564,7 @@ public abstract class Java2dUtil {
      * @param scale Requested size ignoring any reduction factor. If no
      *              resample filter is set, a reasonable default will be used.
      *              Clients should call
-     *              {@link Operation#isNoOp(Dimension, OperationList)}
+     *              {@link Operation#hasEffect(Dimension, OperationList)}
      *              before invoking.
      * @param rf Reduction factor that has already been applied to
      *           <code>inImage</code>.
@@ -642,7 +642,7 @@ public abstract class Java2dUtil {
         targetSize.height = (targetSize.height < 3) ? 3 : targetSize.height;
 
         BufferedImage scaledImage = inImage;
-        if (!scale.isNoOp() && (targetSize.width != sourceSize.width &&
+        if (scale.hasEffect() && (targetSize.width != sourceSize.width &&
                 targetSize.height != sourceSize.height)) {
             final Stopwatch watch = new Stopwatch();
 
@@ -684,7 +684,7 @@ public abstract class Java2dUtil {
     static BufferedImage sharpenImage(final BufferedImage inImage,
                                       final Sharpen sharpen) {
         BufferedImage sharpenedImage = inImage;
-        if (!sharpen.isNoOp()) {
+        if (sharpen.hasEffect()) {
             if (inImage.getWidth() > 2 && inImage.getHeight() > 2) {
                 final Stopwatch watch = new Stopwatch();
 

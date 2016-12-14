@@ -355,7 +355,7 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
         for (Operation op : opList) {
             if (op instanceof Crop) {
                 final Crop crop = (Crop) op;
-                if (!crop.isNoOp()) {
+                if (crop.hasEffect()) {
                     Rectangle rect = crop.getRectangle(imageSize);
                     command.add("-d");
                     command.add(String.format("%d,%d,%d,%d",

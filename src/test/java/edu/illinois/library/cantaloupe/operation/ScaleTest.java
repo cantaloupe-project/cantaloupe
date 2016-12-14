@@ -161,51 +161,51 @@ public class ScaleTest {
     }
 
     @Test
-    public void testIsNoOp() {
+    public void testHasEffect() {
         scale.setMode(Scale.Mode.FULL);
-        assertTrue(scale.isNoOp());
+        assertFalse(scale.hasEffect());
         scale = new Scale(1f);
-        assertTrue(scale.isNoOp());
+        assertFalse(scale.hasEffect());
         scale = new Scale(0.5f);
-        assertFalse(scale.isNoOp());
+        assertTrue(scale.hasEffect());
         scale = new Scale(100, 100, Scale.Mode.ASPECT_FIT_INSIDE);
-        assertFalse(scale.isNoOp());
+        assertTrue(scale.hasEffect());
         scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
-        assertFalse(scale.isNoOp());
+        assertTrue(scale.hasEffect());
         scale.setMode(Scale.Mode.NON_ASPECT_FILL);
-        assertFalse(scale.isNoOp());
+        assertTrue(scale.hasEffect());
     }
 
     @Test
-    public void testIsNoOpWithArguments() {
+    public void testHasEffectWithArguments() {
         Dimension fullSize = new Dimension(600, 400);
         OperationList opList = new OperationList();
         opList.add(new Crop(0, 0, 300, 200));
 
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setPercent(0.5f);
-        assertFalse(scale.isNoOp(fullSize, opList));
+        assertTrue(scale.hasEffect(fullSize, opList));
 
         scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
         scale.setWidth(300);
-        assertTrue(scale.isNoOp(fullSize, opList));
+        assertFalse(scale.hasEffect(fullSize, opList));
 
         scale = new Scale();
         scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
         scale.setHeight(200);
-        assertTrue(scale.isNoOp(fullSize, opList));
+        assertFalse(scale.hasEffect(fullSize, opList));
 
         scale = new Scale();
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setWidth(300);
         scale.setHeight(200);
-        assertTrue(scale.isNoOp(fullSize, opList));
+        assertFalse(scale.hasEffect(fullSize, opList));
 
         scale = new Scale();
         scale.setMode(Scale.Mode.NON_ASPECT_FILL);
         scale.setWidth(300);
         scale.setHeight(200);
-        assertTrue(scale.isNoOp(fullSize, opList));
+        assertFalse(scale.hasEffect(fullSize, opList));
     }
 
     @Test

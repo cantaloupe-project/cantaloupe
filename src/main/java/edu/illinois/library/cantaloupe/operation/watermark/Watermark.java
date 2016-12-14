@@ -27,13 +27,13 @@ public abstract class Watermark implements Operation {
         return fullSize;
     }
 
-    public boolean isNoOp() {
-        return false;
+    public boolean hasEffect() {
+        return true;
     }
 
     @Override
-    public boolean isNoOp(Dimension fullSize, OperationList opList) {
-        return isNoOp();
+    public boolean hasEffect(Dimension fullSize, OperationList opList) {
+        return hasEffect();
     }
 
     public void setInset(int inset) {

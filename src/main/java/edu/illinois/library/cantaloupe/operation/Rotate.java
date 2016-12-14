@@ -56,13 +56,13 @@ public class Rotate implements Operation {
     }
 
     @Override
-    public boolean isNoOp() {
-        return (Math.abs(getDegrees()) < 0.0001f);
+    public boolean hasEffect() {
+        return (Math.abs(getDegrees()) > 0.0001f);
     }
 
     @Override
-    public boolean isNoOp(Dimension fullSize, OperationList opList) {
-        return isNoOp();
+    public boolean hasEffect(Dimension fullSize, OperationList opList) {
+        return hasEffect();
     }
 
     /**

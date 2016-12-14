@@ -145,7 +145,7 @@ class JaiProcessor extends AbstractImageIoProcessor
                 for (Operation op : opList) {
                     if (op instanceof Crop) {
                         Crop crop = (Crop) op;
-                        if (!crop.isNoOp(fullSize, opList)) {
+                        if (crop.hasEffect(fullSize, opList)) {
                             cropping = true;
                             renderedOp = JaiUtil.stretchContrast(renderedOp, crop);
                             break;
@@ -158,7 +158,7 @@ class JaiProcessor extends AbstractImageIoProcessor
             }
 
             for (Operation op : opList) {
-                if (!op.isNoOp(fullSize, opList)) {
+                if (op.hasEffect(fullSize, opList)) {
                     if (op instanceof Crop) {
                         renderedOp = JaiUtil.cropImage(renderedOp, (Crop) op, rf);
                     } else if (op instanceof Scale) {
@@ -217,14 +217,14 @@ class JaiProcessor extends AbstractImageIoProcessor
             // Apply the sharpen operation, if present.
             final float sharpenValue = config.getFloat(SHARPEN_CONFIG_KEY, 0);
             final Sharpen sharpen = new Sharpen(sharpenValue);
-            if (!sharpen.isNoOp(fullSize, opList)) {
+            if (sharpen.hasEffect(fullSize, opList)) {
                 renderedOp = JaiUtil.sharpenImage(renderedOp, sharpen);
             }
 
             // Apply remaining operations.
             BufferedImage image = null;
             for (Operation op : opList) {
-                if (op instanceof Watermark && !op.isNoOp(fullSize, opList)) {
+                if (op instanceof Watermark && op.hasEffect(fullSize, opList)) {
                     // Let's cheat and apply the watermark using Java 2D.
                     // There seems to be minimal performance penalty in doing
                     // this, and doing it in JAI is harder (or impossible in

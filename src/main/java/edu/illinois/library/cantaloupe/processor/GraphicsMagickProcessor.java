@@ -189,7 +189,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
         for (Operation op : ops) {
             if (op instanceof Crop) {
                 Crop crop = (Crop) op;
-                if (!crop.isNoOp(fullSize, ops)) {
+                if (crop.hasEffect(fullSize, ops)) {
                     args.add("-crop");
                     if (crop.getShape().equals(Crop.Shape.SQUARE)) {
                         final int shortestSide =
@@ -220,7 +220,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                 }
             } else if (op instanceof Scale) {
                 Scale scale = (Scale) op;
-                if (!scale.isNoOp(fullSize, ops)) {
+                if (scale.hasEffect(fullSize, ops)) {
                     args.add("-resize");
                     if (scale.getPercent() != null) {
                         final String arg = (scale.getPercent() * 100) + "%";
@@ -250,7 +250,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                 }
             } else if (op instanceof Rotate) {
                 final Rotate rotate = (Rotate) op;
-                if (!rotate.isNoOp(fullSize, ops)) {
+                if (rotate.hasEffect(fullSize, ops)) {
                     // If the output format supports transparency, make the
                     // background transparent. Otherwise, use a
                     // user-configurable background color.

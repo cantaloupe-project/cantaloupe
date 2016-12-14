@@ -20,13 +20,13 @@ public enum Transpose implements Operation {
     }
 
     @Override
-    public boolean isNoOp() {
-        return false;
+    public boolean hasEffect() {
+        return true;
     }
 
     @Override
-    public boolean isNoOp(Dimension fullSize, OperationList opList) {
-        return isNoOp();
+    public boolean hasEffect(Dimension fullSize, OperationList opList) {
+        return hasEffect();
     }
 
     /**

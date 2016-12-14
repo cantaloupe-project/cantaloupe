@@ -24,16 +24,16 @@ public class MetadataCopyTest {
     }
 
     @Test
-    public void testIsNoOp() {
-        assertFalse(instance.isNoOp());
+    public void testHasEffect() {
+        assertTrue(instance.hasEffect());
     }
 
     @Test
-    public void testIsNoOpWithArguments() {
+    public void testhasEffectWithArguments() {
         Dimension fullSize = new Dimension(600, 400);
         OperationList opList = new OperationList();
         opList.add(new Crop(0, 0, 300, 200));
-        assertFalse(instance.isNoOp(fullSize, opList));
+        assertTrue(instance.hasEffect(fullSize, opList));
     }
 
     @Test

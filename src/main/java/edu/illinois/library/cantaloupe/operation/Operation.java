@@ -18,26 +18,25 @@ public interface Operation {
     Dimension getResultingSize(Dimension fullSize);
 
     /**
-     * N.B. {@link #isNoOp(Dimension, OperationList)} is more reliable.
+     * N.B. {@link #hasEffect(Dimension, OperationList)} is more reliable.
      *
-     * @return Whether applying the operation on its own would result in an
-     *         unmodified image.
+     * @return Whether applying the operation on its own would change the image
+     *         in any way.
      */
-    boolean isNoOp();
+    boolean hasEffect();
 
     /**
-     * Contextually-aware counterpart to {@link #isNoOp()}. For example, a
+     * Contextually-aware counterpart to {@link #hasEffect()}. For example, a
      * scale operation specifying a scale to 300x200, when the given operation
-     * list contains a crop of 300x200, would return <code>true</code>.
+     * list contains a crop of 300x200, would return <code>false</code>.
      *
      * @param fullSize Full size of the source image.
      * @param opList Operation list of which the operation may or may not be a
      *               member.
      * @return Whether applying the operation in the context of the given
-     *         full size and operation list would result in an unmodified
-     *         image.
+     *         full size and operation list would result in an changed image.
      */
-    boolean isNoOp(Dimension fullSize, OperationList opList);
+    boolean hasEffect(Dimension fullSize, OperationList opList);
 
     /**
      * @param fullSize Full size of the source image on which the operation

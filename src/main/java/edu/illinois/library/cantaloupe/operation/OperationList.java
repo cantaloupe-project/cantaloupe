@@ -136,7 +136,7 @@ public class OperationList implements Comparable<OperationList>,
             return false;
         }
         for (Operation op : this) {
-            if (!op.isNoOp()) {
+            if (op.hasEffect()) {
                 // 1. Ignore watermarks when the output formats is PDF.
                 // 2. Ignore MetadataCopies. If the instance would otherwise
                 //    be a no-op, metadata will get passed through anyway, and
@@ -191,7 +191,7 @@ public class OperationList implements Comparable<OperationList>,
         // operations
         final List<Map<String,Object>> opsList = new ArrayList<>();
         for (Operation op : this) {
-            if (!op.isNoOp()) {
+            if (op.hasEffect()) {
                 opsList.add(op.toMap(fullSize));
             }
         }
@@ -214,7 +214,7 @@ public class OperationList implements Comparable<OperationList>,
         final List<String> parts = new ArrayList<>();
         parts.add(getIdentifier().toString());
         for (Operation op : this) {
-            if (!op.isNoOp()) {
+            if (op.hasEffect()) {
                 final String opName = op.getClass().getSimpleName().toLowerCase();
                 parts.add(opName + ":" + op.toString());
             }

@@ -25,16 +25,16 @@ public class TransposeTest {
     }
 
     @Test
-    public void testIsNoOp() {
-        assertFalse(transpose.isNoOp());
+    public void testHasEffect() {
+        assertTrue(transpose.hasEffect());
     }
 
     @Test
-    public void testIsNoOpWithArguments() {
+    public void testHasEffectWithArguments() {
         Dimension fullSize = new Dimension(600, 400);
         OperationList opList = new OperationList();
         opList.add(new Crop(0, 0, 300, 200));
-        assertFalse(transpose.isNoOp(fullSize, opList));
+        assertTrue(transpose.hasEffect(fullSize, opList));
     }
 
     @Test

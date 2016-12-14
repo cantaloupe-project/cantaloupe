@@ -449,7 +449,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         parts.add(cacheRoot + subfolderPath + File.separator +
                 identifierFilename);
         for (Operation op : ops) {
-            if (!op.isNoOp()) {
+            if (op.hasEffect()) {
                 parts.add(filenameSafe(op.toString()));
             }
         }

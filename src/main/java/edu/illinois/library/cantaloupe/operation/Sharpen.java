@@ -26,13 +26,13 @@ public class Sharpen implements Operation {
     }
 
     @Override
-    public boolean isNoOp() {
-        return !(getAmount() > 0.000001f);
+    public boolean hasEffect() {
+        return (getAmount() > 0.000001f);
     }
 
     @Override
-    public boolean isNoOp(Dimension fullSize, OperationList opList) {
-        return isNoOp();
+    public boolean hasEffect(Dimension fullSize, OperationList opList) {
+        return hasEffect();
     }
 
     public float getAmount() {

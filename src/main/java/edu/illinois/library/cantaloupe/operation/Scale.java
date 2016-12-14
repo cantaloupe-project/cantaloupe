@@ -191,16 +191,16 @@ public class Scale implements Operation {
     }
 
     @Override
-    public boolean isNoOp() {
-        return (this.getMode() == Mode.FULL) ||
-                (this.getPercent() != null && Math.abs(this.getPercent() - 1f) < 0.000001f) ||
-                (this.getPercent() == null && this.getHeight() == null && this.getWidth() == null);
+    public boolean hasEffect() {
+        return (!Mode.FULL.equals(getMode())) &&
+                ((getPercent() != null && Math.abs(getPercent() - 1f) > 0.000001f) ||
+                        (getPercent() == null && (getHeight() != null || getWidth() != null)));
     }
 
     @Override
-    public boolean isNoOp(Dimension fullSize, OperationList opList) {
-        if (isNoOp()) {
-            return true;
+    public boolean hasEffect(Dimension fullSize, OperationList opList) {
+        if (!hasEffect()) {
+            return false;
         }
 
         Dimension cropSize = fullSize;
@@ -212,14 +212,14 @@ public class Scale implements Operation {
 
         switch (getMode()) {
             case ASPECT_FIT_WIDTH:
-                return getWidth() == cropSize.width;
+                return getWidth() != cropSize.width;
             case ASPECT_FIT_HEIGHT:
-                return getHeight() == cropSize.height;
+                return getHeight() != cropSize.height;
             default:
                 if (getPercent() != null) {
-                    return Math.abs(this.getPercent() - 1f) < 0.000001f;
+                    return Math.abs(this.getPercent() - 1f) > 0.000001f;
                 }
-                return getWidth() == cropSize.width && getHeight() == cropSize.height;
+                return getWidth() != cropSize.width || getHeight() != cropSize.height;
         }
     }
 
@@ -304,7 +304,7 @@ public class Scale implements Operation {
     @Override
     public String toString() {
         String str = "";
-        if (this.isNoOp()) {
+        if (!hasEffect()) {
             return "none";
         } else if (this.getPercent() != null) {
             str += StringUtil.removeTrailingZeroes(this.getPercent() * 100) + "%";

@@ -58,20 +58,20 @@ public class Redaction implements Operation {
     }
 
     @Override
-    public boolean isNoOp() {
-        return (region == null || region.getWidth() < 1 ||
-                region.getHeight() < 1);
+    public boolean hasEffect() {
+        return (region != null && region.getWidth() > 0 &&
+                region.getHeight() > 0);
     }
 
     @Override
-    public boolean isNoOp(Dimension fullSize, OperationList opList) {
-        if (isNoOp()) {
-            return true;
+    public boolean hasEffect(Dimension fullSize, OperationList opList) {
+        if (!hasEffect()) {
+            return false;
         }
         final Dimension resultingSize = opList.getResultingSize(fullSize);
         final Rectangle resultingImage = new Rectangle(0, 0,
                 resultingSize.width, resultingSize.height);
-        return !getRegion().intersects(resultingImage);
+        return getRegion().intersects(resultingImage);
     }
 
     /**

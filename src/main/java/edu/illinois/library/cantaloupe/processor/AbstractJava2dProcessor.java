@@ -140,7 +140,7 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
         Crop crop = new Crop(0, 0, image.getWidth(), image.getHeight(),
                 orientation, imageInfo.getSize());
         for (Operation op : opList) {
-            if (op instanceof Crop && !crop.isNoOp(fullSize, opList) &&
+            if (op instanceof Crop && crop.hasEffect(fullSize, opList) &&
                     readerHints != null &&
                     !readerHints.contains(ImageReader.Hint.ALREADY_CROPPED)) {
                 image = Java2dUtil.cropImage(image, (Crop) op, reductionFactor);
@@ -151,7 +151,7 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
         List<Redaction> redactions = new ArrayList<>();
         for (Operation op : opList) {
             if (op instanceof Redaction) {
-                if (!op.isNoOp(fullSize, opList)) {
+                if (op.hasEffect(fullSize, opList)) {
                     redactions.add((Redaction) op);
                 }
             }
@@ -161,7 +161,7 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
 
         // Apply most remaining operations.
         for (Operation op : opList) {
-            if (!op.isNoOp(fullSize, opList)) {
+            if (op.hasEffect(fullSize, opList)) {
                 if (op instanceof Scale) {
                     final Scale scale = (Scale) op;
                     final Float upOrDown =
@@ -186,13 +186,13 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
 
         // Apply the sharpen operation, if present.
         final Sharpen sharpen = new Sharpen(sharpenValue);
-        if (!sharpen.isNoOp(fullSize, opList)) {
+        if (sharpen.hasEffect(fullSize, opList)) {
             image = Java2dUtil.sharpenImage(image, sharpen);
         }
 
         // Apply all remaining operations.
         for (Operation op : opList) {
-            if (op instanceof Watermark && !op.isNoOp(fullSize, opList)) {
+            if (op instanceof Watermark && op.hasEffect(fullSize, opList)) {
                 try {
                     image = Java2dUtil.applyWatermark(image, (Watermark) op);
                 } catch (ConfigurationException e) {

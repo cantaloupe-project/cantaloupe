@@ -387,7 +387,7 @@ public class OperationListTest {
         List<String> parts = new ArrayList<>();
         parts.add(ops.getIdentifier().toString());
         for (Operation op : ops) {
-            if (!op.isNoOp()) {
+            if (op.hasEffect()) {
                 parts.add(op.getClass().getSimpleName().toLowerCase() + ":" +
                         op.toString());
             }

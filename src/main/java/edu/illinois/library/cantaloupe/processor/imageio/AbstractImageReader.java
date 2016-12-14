@@ -325,7 +325,7 @@ abstract class AbstractImageReader {
                 iioReader.getWidth(0), iioReader.getHeight(0));
         final Rectangle regionRect = crop.getRectangle(fullSize);
         BufferedImage bestImage = null;
-        if (scale.isNoOp()) {
+        if (!scale.hasEffect()) {
             bestImage = tileAwareRead(0, regionRect, hints);
             logger.debug("readSmallestUsableSubimage(): using a {}x{} source " +
                             "image (0x reduction factor)",
@@ -558,7 +558,7 @@ abstract class AbstractImageReader {
         final Rectangle regionRect = crop.getRectangle(fullSize);
         final ImageReadParam param = iioReader.getDefaultReadParam();
         RenderedImage bestImage = null;
-        if (scale.isNoOp()) {
+        if (!scale.hasEffect()) {
             bestImage = iioReader.readAsRenderedImage(0, param);
             logger.debug("readSmallestUsableSubimage(): using a {}x{} " +
                             "source image (0x reduction factor)",

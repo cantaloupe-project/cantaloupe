@@ -47,20 +47,20 @@ public class RedactionTest {
     }
 
     @Test
-    public void testIsNoOp() {
-        assertFalse(instance.isNoOp());
+    public void testHasEffect() {
+        assertTrue(instance.hasEffect());
 
         // zero width
         instance = new Redaction(new Rectangle(50, 60, 0, 100));
-        assertTrue(instance.isNoOp());
+        assertFalse(instance.hasEffect());
 
         // zero height
         instance = new Redaction(new Rectangle(50, 60, 50, 0));
-        assertTrue(instance.isNoOp());
+        assertFalse(instance.hasEffect());
 
         // null region
         instance = new Redaction(null);
-        assertTrue(instance.isNoOp());
+        assertFalse(instance.hasEffect());
     }
 
     @Test
@@ -70,11 +70,11 @@ public class RedactionTest {
         opList.add(new Crop(0, 0, 400, 300));
 
         // in bounds
-        assertFalse(instance.isNoOp(fullSize, opList));
+        assertTrue(instance.hasEffect(fullSize, opList));
 
         // out of bounds
         instance = new Redaction(new Rectangle(420, 305, 20, 20));
-        assertTrue(instance.isNoOp(fullSize, opList));
+        assertFalse(instance.hasEffect(fullSize, opList));
     }
 
     @Test
