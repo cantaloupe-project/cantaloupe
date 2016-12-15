@@ -12,7 +12,8 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * HTTP server that serves an image.
+ * HTTP server that serves static content using the fixture path as its root.
+ * Call {@link #start()} and then {@link #getUri()} to get its URL.
  */
 public class WebServer {
 
