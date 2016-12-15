@@ -25,7 +25,7 @@ public class BasicImageOverlayServiceTest {
         config.setProperty(BasicOverlayService.TYPE_CONFIG_KEY, "image");
         config.setProperty(BasicOverlayService.INSET_CONFIG_KEY, 10);
         config.setProperty(BasicOverlayService.POSITION_CONFIG_KEY, "top left");
-        config.setProperty(BasicImageOverlayService.FILE_CONFIG_KEY, "/dev/null");
+        config.setProperty(BasicImageOverlayService.IMAGE_CONFIG_KEY, "/dev/null");
 
         instance = new BasicImageOverlayService();
     }

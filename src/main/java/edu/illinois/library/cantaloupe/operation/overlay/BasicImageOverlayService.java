@@ -8,7 +8,7 @@ import java.io.File;
 
 class BasicImageOverlayService extends BasicOverlayService {
 
-    static final String FILE_CONFIG_KEY = "overlays.BasicStrategy.image";
+    static final String IMAGE_CONFIG_KEY = "overlays.BasicStrategy.image";
 
     private File image;
 
@@ -30,11 +30,11 @@ class BasicImageOverlayService extends BasicOverlayService {
 
     private void readImage() throws ConfigurationException {
         final Configuration config = ConfigurationFactory.getInstance();
-        final String path = config.getString(FILE_CONFIG_KEY, "");
+        final String path = config.getString(IMAGE_CONFIG_KEY, "");
         if (path.length() > 0) {
             image = new File(path);
         } else {
-            throw new ConfigurationException(FILE_CONFIG_KEY + " is not set.");
+            throw new ConfigurationException(IMAGE_CONFIG_KEY + " is not set.");
         }
     }
 
