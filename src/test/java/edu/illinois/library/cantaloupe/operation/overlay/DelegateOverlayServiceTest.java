@@ -49,7 +49,7 @@ public class DelegateOverlayServiceTest {
                 (ImageOverlay) instance.getOverlay(
                         opList, fullSize, requestUrl, requestHeaders, clientIp,
                         cookies);
-        assertEquals(new File("/dev/cats"), overlay.getImage());
+        assertEquals(new File("/dev/cats"), overlay.getFile());
         assertEquals((long) 5, overlay.getInset());
         assertEquals(Position.BOTTOM_LEFT, overlay.getPosition());
     }

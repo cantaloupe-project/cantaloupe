@@ -543,7 +543,7 @@ overlays.strategy = BasicStrategy
 # `string` or `image`.
 overlays.BasicStrategy.type = string
 
-# Absolute path of the overlay image. Must be a .png file.
+# Absolute path or URL of the overlay image. Must be a PNG file.
 overlays.BasicStrategy.image = /path/to/overlay.png
 
 # Overlay text.

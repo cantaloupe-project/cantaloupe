@@ -100,7 +100,7 @@ module Cantaloupe
     case identifier
       when 'image'
         return {
-            'pathname' => '/dev/cats',
+            'image' => '/dev/cats',
             'inset' => 5,
             'position' => 'bottom left'
         }

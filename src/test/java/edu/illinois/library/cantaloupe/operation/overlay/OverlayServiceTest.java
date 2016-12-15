@@ -61,7 +61,7 @@ public class OverlayServiceTest {
 
         ImageOverlay overlay = (ImageOverlay) instance.newOverlay(
                 opList, fullSize, requestUrl, requestHeaders, clientIp, cookies);
-        assertEquals(new File("/dev/null"), overlay.getImage());
+        assertEquals(new File("/dev/null"), overlay.getFile());
         assertEquals(10, overlay.getInset());
         assertEquals(Position.TOP_LEFT, overlay.getPosition());
     }
@@ -105,7 +105,7 @@ public class OverlayServiceTest {
 
         ImageOverlay overlay = (ImageOverlay) instance.newOverlay(
                 opList, fullSize, requestUrl, requestHeaders, clientIp, cookies);
-        assertEquals(new File("/dev/cats"), overlay.getImage());
+        assertEquals(new File("/dev/cats"), overlay.getFile());
         assertEquals(5, overlay.getInset());
         assertEquals(Position.BOTTOM_LEFT, overlay.getPosition());
     }

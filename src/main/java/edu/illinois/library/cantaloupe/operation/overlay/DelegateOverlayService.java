@@ -11,6 +11,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,9 +45,14 @@ class DelegateOverlayService {
         if (defs != null) {
             final int inset = ((Long) defs.get("inset")).intValue();
             final Position position = (Position) defs.get("position");
-            final File image = (File) defs.get("pathname");
-            if (image != null) {
-                return new ImageOverlay(image, position, inset);
+            final String location = (String) defs.get("image");
+            if (location != null) {
+                try {
+                    URL url = new URL(location);
+                    return new ImageOverlay(url, position, inset);
+                } catch (MalformedURLException e) {
+                    return new ImageOverlay(new File(location), position, inset);
+                }
             } else {
                 final String string = (String) defs.get("string");
                 final Font font = new Font((String) defs.get("font"),

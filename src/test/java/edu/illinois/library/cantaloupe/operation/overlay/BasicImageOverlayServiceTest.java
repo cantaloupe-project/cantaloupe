@@ -33,7 +33,7 @@ public class BasicImageOverlayServiceTest {
     @Test
     public void testGetOverlay() {
         final ImageOverlay overlay = instance.getOverlay();
-        assertEquals(new File("/dev/null"), overlay.getImage());
+        assertEquals(new File("/dev/null"), overlay.getFile());
         assertEquals((long) 10, overlay.getInset());
         assertEquals(Position.TOP_LEFT, overlay.getPosition());
     }

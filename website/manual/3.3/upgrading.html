@@ -52,8 +52,9 @@ title: Upgrading
       <li><code>AzureStorageCache.ttl_seconds</code></li>
     </ul>
   </li>
-  <li>If you are using the <code>authorized?()</code> or <code>overlay()</code> delegate methods, note that the contents of the <code>operations</code> argument have changed; see the new sample delegate script for more information.</li>
-  <li>Rename the <code>watermark()</code> delegate script method to <code>overlay()</code>.</li>
+  <li>If you are using the <code>authorized?()</code> or <code>watermark()</code> delegate methods, note that the contents of the <code>operations</code> argument have changed; see the new sample delegate script for more information.</li>
+  <li>If you are using the <code>watermark()</code> delegate method, note that the <code>pathname</code> key in the returned hash must be changed to <code>image</code>.</li>
+  <li>Rename the <code>watermark()</code> delegate method to <code>overlay()</code>.</li>
 </ul>
 
 <h2>From 3.1.2 to 3.2</h2>

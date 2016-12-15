@@ -31,7 +31,9 @@ title: Overlays
   </li>
 </ul>
 
-<p>The overlays feature (called "watermarking" prior to version 3.3) overlays an image or text string on top of a derivative (output) image. This can be useful for applying watermarks, branding, attribution, copyright notices, and so on.</p>
+<p>The overlay feature (called "watermarking" prior to version 3.3) overlays an image or text string on top of a derivative (output) image. This can be useful for watermarking, branding, attributions, copyright notices, and so on.</p>
+
+<p>As of version 3.3, overlay images can be located on the local filesystem or a web server. Regardless, they are cached in memory after being loaded the first time, so there is no performance penalty for web-server-hosted overlay images.</p>
 
 <h2 id="Modes of Operation">Modes of Operation</h2>
 
@@ -96,7 +98,9 @@ end
 
 <h2 id="Requirements">Requirements</h2>
 
-<p>An overlay must be a 24-bit PNG image, either RGB or RGBA. It will be blended into the output image respecting its alpha channel.</p>
+<p>An overlay must be a 24-bit PNG image, either RGB or RGBA.</p>
+
+<p>When using multiple different image overlays, their filenames must all be different, regardless of where they reside.</p>
 
 <p><a href="images/overlay-sample.png">Sample overlay (PNG)</a></p>
 

@@ -19,6 +19,7 @@ import edu.illinois.library.cantaloupe.operation.overlay.StringOverlay;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.overlay.OverlayService;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
+import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -39,6 +40,7 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -236,9 +238,11 @@ public abstract class Java2dUtil {
      */
     static BufferedImage getOverlayImage(ImageOverlay overlay)
             throws IOException {
-        final ImageReader reader =
-                new ImageReader(overlay.getImage(), Format.PNG);
-        return reader.read();
+        try (InputStream is = overlay.openStream()) {
+            InputStreamStreamSource isss = new InputStreamStreamSource(is);
+            final ImageReader reader = new ImageReader(isss, Format.PNG);
+            return reader.read();
+        }
     }
 
     /**
