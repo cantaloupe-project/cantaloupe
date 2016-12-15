@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.operation.watermark;
+package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
@@ -19,9 +19,9 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class DelegateWatermarkServiceTest {
+public class DelegateOverlayServiceTest {
 
-    private DelegateWatermarkService instance;
+    private DelegateOverlayService instance;
 
     @Before
     public void setUp() throws Exception {
@@ -31,11 +31,11 @@ public class DelegateWatermarkServiceTest {
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
 
-        instance = new DelegateWatermarkService();
+        instance = new DelegateOverlayService();
     }
 
     @Test
-    public void testGetWatermarkReturningImageWatermark() throws Exception {
+    public void testGetOverlayReturningImageOverlay() throws Exception {
         final OperationList opList = new OperationList();
         opList.setIdentifier(new Identifier("image"));
         opList.setOutputFormat(Format.JPG);
@@ -45,17 +45,17 @@ public class DelegateWatermarkServiceTest {
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
-        final ImageWatermark watermark =
-                (ImageWatermark) instance.getWatermark(
+        final ImageOverlay overlay =
+                (ImageOverlay) instance.getOverlay(
                         opList, fullSize, requestUrl, requestHeaders, clientIp,
                         cookies);
-        assertEquals(new File("/dev/cats"), watermark.getImage());
-        assertEquals((long) 5, watermark.getInset());
-        assertEquals(Position.BOTTOM_LEFT, watermark.getPosition());
+        assertEquals(new File("/dev/cats"), overlay.getImage());
+        assertEquals((long) 5, overlay.getInset());
+        assertEquals(Position.BOTTOM_LEFT, overlay.getPosition());
     }
 
     @Test
-    public void testGetWatermarkReturningStringWatermark() throws Exception {
+    public void testGetOverlayReturningStringOverlay() throws Exception {
         final OperationList opList = new OperationList();
         opList.setIdentifier(new Identifier("string"));
         opList.setOutputFormat(Format.JPG);
@@ -65,20 +65,20 @@ public class DelegateWatermarkServiceTest {
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
-        final StringWatermark watermark =
-                (StringWatermark) instance.getWatermark(
+        final StringOverlay overlay =
+                (StringOverlay) instance.getOverlay(
                         opList, fullSize, requestUrl, requestHeaders, clientIp,
                         cookies);
-        assertEquals("dogs\ndogs", watermark.getString());
-        assertEquals((long) 5, watermark.getInset());
-        assertEquals(Position.BOTTOM_LEFT, watermark.getPosition());
-        assertEquals(Color.red, watermark.getColor());
-        assertEquals(Color.blue, watermark.getStrokeColor());
-        assertEquals(3, watermark.getStrokeWidth(), 0.00001f);
+        assertEquals("dogs\ndogs", overlay.getString());
+        assertEquals((long) 5, overlay.getInset());
+        assertEquals(Position.BOTTOM_LEFT, overlay.getPosition());
+        assertEquals(Color.red, overlay.getColor());
+        assertEquals(Color.blue, overlay.getStrokeColor());
+        assertEquals(3, overlay.getStrokeWidth(), 0.00001f);
     }
 
     @Test
-    public void testGetWatermarkReturningFalse() throws Exception {
+    public void testGetOverlayReturningFalse() throws Exception {
         final OperationList opList = new OperationList();
         opList.setIdentifier(new Identifier("bogus"));
         opList.setOutputFormat(Format.JPG);
@@ -88,9 +88,9 @@ public class DelegateWatermarkServiceTest {
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
-        Watermark watermark = instance.getWatermark(
+        Overlay overlay = instance.getOverlay(
                 opList, fullSize, requestUrl, requestHeaders, clientIp, cookies);
-        assertNull(watermark);
+        assertNull(overlay);
     }
 
 }

@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.operation.watermark;
+package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
@@ -19,9 +19,9 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class WatermarkServiceTest {
+public class OverlayServiceTest {
 
-    private WatermarkService instance;
+    private OverlayService instance;
 
     @Before
     public void setUp() throws Exception {
@@ -34,24 +34,24 @@ public class WatermarkServiceTest {
                 "true");
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
-        config.setProperty(WatermarkService.ENABLED_CONFIG_KEY, true);
-        config.setProperty(WatermarkService.STRATEGY_CONFIG_KEY, "BasicStrategy");
-        config.setProperty(BasicWatermarkService.TYPE_CONFIG_KEY, "image");
-        config.setProperty(BasicWatermarkService.INSET_CONFIG_KEY, 10);
-        config.setProperty(BasicWatermarkService.POSITION_CONFIG_KEY, "top left");
-        config.setProperty(BasicImageWatermarkService.FILE_CONFIG_KEY, "/dev/null");
+        config.setProperty(OverlayService.ENABLED_CONFIG_KEY, true);
+        config.setProperty(OverlayService.STRATEGY_CONFIG_KEY, "BasicStrategy");
+        config.setProperty(BasicOverlayService.TYPE_CONFIG_KEY, "image");
+        config.setProperty(BasicOverlayService.INSET_CONFIG_KEY, 10);
+        config.setProperty(BasicOverlayService.POSITION_CONFIG_KEY, "top left");
+        config.setProperty(BasicImageOverlayService.FILE_CONFIG_KEY, "/dev/null");
 
-        instance = new WatermarkService();
+        instance = new OverlayService();
     }
 
     @Test
     public void testConstructor() {
         assertTrue(instance.isEnabled());
-        assertEquals(WatermarkService.Strategy.BASIC, instance.getStrategy());
+        assertEquals(OverlayService.Strategy.BASIC, instance.getStrategy());
     }
 
     @Test
-    public void testNewWatermarkWithBasicImageStrategy() throws Exception {
+    public void testNewOverlayWithBasicImageStrategy() throws Exception {
         final OperationList opList = new OperationList();
         final Dimension fullSize = new Dimension(0, 0);
         final URL requestUrl = new URL("http://example.org/");
@@ -59,20 +59,20 @@ public class WatermarkServiceTest {
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
-        ImageWatermark watermark = (ImageWatermark) instance.newWatermark(
+        ImageOverlay overlay = (ImageOverlay) instance.newOverlay(
                 opList, fullSize, requestUrl, requestHeaders, clientIp, cookies);
-        assertEquals(new File("/dev/null"), watermark.getImage());
-        assertEquals(10, watermark.getInset());
-        assertEquals(Position.TOP_LEFT, watermark.getPosition());
+        assertEquals(new File("/dev/null"), overlay.getImage());
+        assertEquals(10, overlay.getInset());
+        assertEquals(Position.TOP_LEFT, overlay.getPosition());
     }
 
     @Test
-    public void testNewWatermarkWithBasicStringStrategy() throws Exception {
+    public void testNewOverlayWithBasicStringStrategy() throws Exception {
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(BasicWatermarkService.TYPE_CONFIG_KEY, "string");
-        config.setProperty(BasicStringWatermarkService.STRING_CONFIG_KEY, "cats");
-        config.setProperty(BasicStringWatermarkService.COLOR_CONFIG_KEY, "green");
-        instance = new WatermarkService();
+        config.setProperty(BasicOverlayService.TYPE_CONFIG_KEY, "string");
+        config.setProperty(BasicStringOverlayService.STRING_CONFIG_KEY, "cats");
+        config.setProperty(BasicStringOverlayService.COLOR_CONFIG_KEY, "green");
+        instance = new OverlayService();
 
         final OperationList opList = new OperationList();
         final Dimension fullSize = new Dimension(0, 0);
@@ -81,18 +81,18 @@ public class WatermarkServiceTest {
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
-        StringWatermark watermark = (StringWatermark) instance.newWatermark(
+        StringOverlay overlay = (StringOverlay) instance.newOverlay(
                 opList, fullSize, requestUrl, requestHeaders, clientIp, cookies);
-        assertEquals("cats", watermark.getString());
-        assertEquals(10, watermark.getInset());
-        assertEquals(Position.TOP_LEFT, watermark.getPosition());
-        assertEquals(Color.green, watermark.getColor());
+        assertEquals("cats", overlay.getString());
+        assertEquals(10, overlay.getInset());
+        assertEquals(Position.TOP_LEFT, overlay.getPosition());
+        assertEquals(Color.green, overlay.getColor());
     }
 
     @Test
-    public void testNewWatermarkWithScriptStrategyReturningImageWatermark()
+    public void testNewOverlayWithScriptStrategyReturningImageOverlay()
             throws Exception {
-        instance.setStrategy(WatermarkService.Strategy.DELEGATE_METHOD);
+        instance.setStrategy(OverlayService.Strategy.DELEGATE_METHOD);
 
         final OperationList opList = new OperationList();
         opList.setIdentifier(new Identifier("image"));
@@ -103,17 +103,17 @@ public class WatermarkServiceTest {
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
-        ImageWatermark watermark = (ImageWatermark) instance.newWatermark(
+        ImageOverlay overlay = (ImageOverlay) instance.newOverlay(
                 opList, fullSize, requestUrl, requestHeaders, clientIp, cookies);
-        assertEquals(new File("/dev/cats"), watermark.getImage());
-        assertEquals(5, watermark.getInset());
-        assertEquals(Position.BOTTOM_LEFT, watermark.getPosition());
+        assertEquals(new File("/dev/cats"), overlay.getImage());
+        assertEquals(5, overlay.getInset());
+        assertEquals(Position.BOTTOM_LEFT, overlay.getPosition());
     }
 
     @Test
-    public void testNewWatermarkWithScriptStrategyReturningStringWatermark()
+    public void testNewOverlayWithScriptStrategyReturningStringOverlay()
             throws Exception {
-        instance.setStrategy(WatermarkService.Strategy.DELEGATE_METHOD);
+        instance.setStrategy(OverlayService.Strategy.DELEGATE_METHOD);
 
         final OperationList opList = new OperationList();
         opList.setIdentifier(new Identifier("string"));
@@ -124,16 +124,16 @@ public class WatermarkServiceTest {
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
-        StringWatermark watermark = (StringWatermark) instance.newWatermark(
+        StringOverlay overlay = (StringOverlay) instance.newOverlay(
                 opList, fullSize, requestUrl, requestHeaders, clientIp, cookies);
-        assertEquals("dogs\ndogs", watermark.getString());
-        assertEquals(5, watermark.getInset());
-        assertEquals(Position.BOTTOM_LEFT, watermark.getPosition());
+        assertEquals("dogs\ndogs", overlay.getString());
+        assertEquals(5, overlay.getInset());
+        assertEquals(Position.BOTTOM_LEFT, overlay.getPosition());
     }
 
     @Test
-    public void testNewWatermarkWithScriptStrategyReturningFalse() throws Exception {
-        instance.setStrategy(WatermarkService.Strategy.DELEGATE_METHOD);
+    public void testNewOverlayWithScriptStrategyReturningFalse() throws Exception {
+        instance.setStrategy(OverlayService.Strategy.DELEGATE_METHOD);
 
         final OperationList opList = new OperationList();
         opList.setIdentifier(new Identifier("bogus"));
@@ -144,9 +144,9 @@ public class WatermarkServiceTest {
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
-        Watermark watermark = instance.newWatermark(opList, fullSize,
+        Overlay overlay = instance.newOverlay(opList, fullSize,
                 requestUrl, requestHeaders, clientIp, cookies);
-        assertNull(watermark);
+        assertNull(overlay);
     }
 
 }

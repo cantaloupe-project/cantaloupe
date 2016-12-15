@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.operation.watermark;
+package edu.illinois.library.cantaloupe.operation.overlay;
 
 import java.awt.Color;
 import java.lang.reflect.Field;

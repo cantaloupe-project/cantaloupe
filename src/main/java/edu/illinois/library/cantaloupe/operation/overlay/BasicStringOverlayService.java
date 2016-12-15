@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.operation.watermark;
+package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
@@ -7,20 +7,20 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import java.awt.Color;
 import java.awt.Font;
 
-class BasicStringWatermarkService extends BasicWatermarkService {
+class BasicStringOverlayService extends BasicOverlayService {
 
     static final String COLOR_CONFIG_KEY =
-            "watermark.BasicStrategy.string.color";
+            "overlays.BasicStrategy.string.color";
     static final String FONT_CONFIG_KEY =
-            "watermark.BasicStrategy.string.font";
+            "overlays.BasicStrategy.string.font";
     static final String FONT_SIZE_CONFIG_KEY =
-            "watermark.BasicStrategy.string.font_size";
+            "overlays.BasicStrategy.string.font_size";
     static final String STRING_CONFIG_KEY =
-            "watermark.BasicStrategy.string";
+            "overlays.BasicStrategy.string";
     static final String STROKE_COLOR_CONFIG_KEY =
-            "watermark.BasicStrategy.string.stroke.color";
+            "overlays.BasicStrategy.string.stroke.color";
     static final String STROKE_WIDTH_CONFIG_KEY =
-            "watermark.BasicStrategy.string.stroke.width";
+            "overlays.BasicStrategy.string.stroke.width";
 
     private Color color;
     private Font font;
@@ -28,13 +28,13 @@ class BasicStringWatermarkService extends BasicWatermarkService {
     private Color strokeColor;
     private float strokeWidth;
 
-    BasicStringWatermarkService() throws ConfigurationException {
+    BasicStringOverlayService() throws ConfigurationException {
         super();
         readConfig();
     }
 
-    StringWatermark getWatermark() {
-        return new StringWatermark(string, getPosition(), getInset(), font,
+    StringOverlay getOverlay() {
+        return new StringOverlay(string, getPosition(), getInset(), font,
                 color, strokeColor, strokeWidth);
     }
 

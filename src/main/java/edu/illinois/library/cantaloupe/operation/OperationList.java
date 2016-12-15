@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.operation;
 
-import edu.illinois.library.cantaloupe.operation.watermark.Watermark;
+import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import org.apache.commons.lang3.StringUtils;
 
 import java.awt.Dimension;
@@ -137,11 +137,11 @@ public class OperationList implements Comparable<OperationList>,
         }
         for (Operation op : this) {
             if (op.hasEffect()) {
-                // 1. Ignore watermarks when the output formats is PDF.
+                // 1. Ignore overlays when the output formats is PDF.
                 // 2. Ignore MetadataCopies. If the instance would otherwise
                 //    be a no-op, metadata will get passed through anyway, and
                 //    if it isn't, then this method will return false anyway.
-                if (!(op instanceof Watermark &&                 // (1)
+                if (!(op instanceof Overlay &&                   // (1)
                         getOutputFormat().equals(Format.PDF)) && // (1)
                         !(op instanceof MetadataCopy)) {         // (2)
                     return false;

@@ -315,7 +315,7 @@ public class OperationListTest {
     }
 
     @Test
-    public void testIsNoOpWithPdfSourceAndPdfOutputAndWatermark() {
+    public void testIsNoOpWithPdfSourceAndPdfOutputAndOverlay() {
         // same format
         ops = new OperationList();
         ops.setIdentifier(new Identifier("identifier.pdf"));

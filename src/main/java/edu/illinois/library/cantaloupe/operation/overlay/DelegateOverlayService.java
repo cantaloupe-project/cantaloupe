@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.operation.watermark;
+package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
@@ -15,7 +15,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-class DelegateWatermarkService {
+class DelegateOverlayService {
 
     /**
      * @param opList
@@ -30,13 +30,15 @@ class DelegateWatermarkService {
      * @throws ScriptException
      * @throws DelegateScriptDisabledException
      */
-    Watermark getWatermark(
-            OperationList opList, Dimension fullSize, URL requestUrl,
-            Map<String,String> requestHeaders, String clientIp,
-            Map<String,String> cookies)
+    Overlay getOverlay(OperationList opList,
+                       Dimension fullSize,
+                       URL requestUrl,
+                       Map<String,String> requestHeaders,
+                       String clientIp,
+                       Map<String,String> cookies)
             throws IOException, ScriptException,
             DelegateScriptDisabledException {
-        final Map<String,Object> defs = getWatermarkProperties(
+        final Map<String,Object> defs = overlayProperties(
                 opList, fullSize, requestUrl, requestHeaders, clientIp,
                 cookies);
         if (defs != null) {
@@ -44,7 +46,7 @@ class DelegateWatermarkService {
             final Position position = (Position) defs.get("position");
             final File image = (File) defs.get("pathname");
             if (image != null) {
-                return new ImageWatermark(image, position, inset);
+                return new ImageOverlay(image, position, inset);
             } else {
                 final String string = (String) defs.get("string");
                 final Font font = new Font((String) defs.get("font"),
@@ -56,7 +58,7 @@ class DelegateWatermarkService {
                         ColorUtil.fromString((String) defs.get("stroke_color"));
                 final float strokeWidth =
                         Float.parseFloat(defs.get("stroke_width").toString());
-                return new StringWatermark(string, position, inset, font, color,
+                return new StringOverlay(string, position, inset, font, color,
                         strokeColor, strokeWidth);
             }
         }
@@ -64,7 +66,7 @@ class DelegateWatermarkService {
     }
 
     /**
-     * Invokes the watermark delegate method to retrieve watermark properties.
+     * Invokes the overlay delegate method to retrieve overlay properties.
      *
      * @param opList
      * @param fullSize
@@ -72,16 +74,16 @@ class DelegateWatermarkService {
      * @param requestHeaders
      * @param clientIp
      * @param cookies
-     * @return For image watermarks, a map with <var>inset</var>,
+     * @return For image overlays, a map with <var>inset</var>,
      *         <var>position</var>, and <var>pathname</var> keys. For string
-     *         watermarks, a map with <var>inset</var>, <var>position</var>,
+     *         overlays, a map with <var>inset</var>, <var>position</var>,
      *         <var>string</var>, <var>color</var>, <var>font</var>, and
-     *         <var>font_size</var> keys. <var>null</var> for no watermark.
+     *         <var>font_size</var> keys. <var>null</var> for no overlay.
      * @throws IOException
      * @throws ScriptException
      * @throws DelegateScriptDisabledException
      */
-    private Map<String,Object> getWatermarkProperties(
+    private Map<String,Object> overlayProperties(
             OperationList opList, Dimension fullSize, URL requestUrl,
             Map<String,String> requestHeaders, String clientIp,
             Map<String,String> cookies)
@@ -93,7 +95,7 @@ class DelegateWatermarkService {
         resultingSizeArg.put("height", resultingSize.height);
 
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final String method = "watermark";
+        final String method = "overlay";
         final Object result = engine.invoke(method,
                 opList.getIdentifier().toString(),           // identifier
                 opList.toMap(fullSize).get("operations"),    // operations

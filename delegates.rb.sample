@@ -161,27 +161,9 @@ module Cantaloupe
   end
 
   ##
-  # Tells the server what regions of an image to redact in response to a
-  # particular request. Will be called upon all image requests to any
-  # endpoint if `redaction.enabled` is set to `true` in the configuration
-  # file.
-  #
-  # @param identifier [String] Image identifier
-  # @param request_headers [Hash<String,String>]
-  # @param client_ip [String]
-  # @param cookies [Hash<String,String>]
-  # @return [Array<Hash<String,Integer>>] Array of hashes, each with `x`, `y`,
-  #         `width`, and `height` keys; or an empty array if no redactions are
-  #         to be applied.
-  #
-  def self.redactions(identifier, request_headers, client_ip, cookies)
-    []
-  end
-
-  ##
-  # Tells the server what watermark, if any, to apply to an image in response
+  # Tells the server what overlay, if any, to apply to an image in response
   # to a particular request. Will be called upon all image requests to any
-  # endpoint if `watermark.enabled` is set to `true` and `watermark.strategy`
+  # endpoint if `overlays.enabled` is set to `true` and `overlays.strategy`
   # is set to `ScriptStrategy` in the configuration file.
   #
   # @param identifier [String] Image identifier
@@ -199,15 +181,33 @@ module Cantaloupe
   # @param request_headers [Hash<String,String>]
   # @param client_ip [String]
   # @param cookies [Hash<String,String>]
-  # @return [Hash<String,String>,Boolean] For image watermarks, a 3-element
+  # @return [Hash<String,String>,Boolean] For image overlays, a 3-element
   #         hash with `position`, `inset`, and `pathname` keys. For string
-  #         watermarks, an 8-element hash with `position`, `inset`, `string`,
+  #         overlays, an 8-element hash with `position`, `inset`, `string`,
   #         `font`, `font_size`, `color`, `stroke_color`, and `stroke_width`
-  #         keys. Return false for no watermark.
+  #         keys. Return false for no overlay.
   #
-  def self.watermark(identifier, operations, resulting_size, output_format,
+  def self.overlay(identifier, operations, resulting_size, output_format,
                      request_uri, request_headers, client_ip, cookies)
     false
+  end
+
+  ##
+  # Tells the server what regions of an image to redact in response to a
+  # particular request. Will be called upon all image requests to any
+  # endpoint if `redaction.enabled` is set to `true` in the configuration
+  # file.
+  #
+  # @param identifier [String] Image identifier
+  # @param request_headers [Hash<String,String>]
+  # @param client_ip [String]
+  # @param cookies [Hash<String,String>]
+  # @return [Array<Hash<String,Integer>>] Array of hashes, each with `x`, `y`,
+  #         `width`, and `height` keys; or an empty array if no redactions are
+  #         to be applied.
+  #
+  def self.redactions(identifier, request_headers, client_ip, cookies)
+    []
   end
 
 end

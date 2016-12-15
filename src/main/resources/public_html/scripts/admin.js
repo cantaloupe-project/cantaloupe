@@ -116,7 +116,7 @@ var Form = function(config) {
             '[name="cache.client.enabled"], [name="cache.server.worker.enabled"]');
         // Overlays
         showOrHideAllOtherTableRows(
-            '[name="watermark.enabled"], [name="redaction.enabled"]');
+            '[name="overlays.enabled"], [name="redaction.enabled"]');
         // Delegate Script
         showOrHideAllOtherTableRows('[name="delegate_script.enabled"]');
         // Logging

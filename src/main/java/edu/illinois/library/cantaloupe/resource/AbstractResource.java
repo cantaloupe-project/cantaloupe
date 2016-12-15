@@ -10,12 +10,12 @@ import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.redaction.RedactionService;
-import edu.illinois.library.cantaloupe.operation.watermark.Watermark;
+import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import edu.illinois.library.cantaloupe.operation.Format;
 import edu.illinois.library.cantaloupe.operation.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.watermark.WatermarkService;
+import edu.illinois.library.cantaloupe.operation.overlay.OverlayService;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
@@ -217,24 +217,24 @@ public abstract class AbstractResource extends ServerResource {
             logger.error(e.getMessage(), e);
         }
 
-        // Watermark
+        // Overlay
         try {
-            final WatermarkService service = new WatermarkService();
+            final OverlayService service = new OverlayService();
             if (service.isEnabled()) {
-                final Watermark watermark = service.newWatermark(
+                final Overlay overlay = service.newOverlay(
                         opList, fullSize, getReference().toUrl(),
                         getRequest().getHeaders().getValuesMap(),
                         getCanonicalClientIpAddress(),
                         getRequest().getCookies().getValuesMap());
-                opList.add((Operation) watermark);
+                opList.add((Operation) overlay);
             } else {
-                logger.debug("addNonEndpointOperations(): watermarking is " +
+                logger.debug("addNonEndpointOperations(): overlays are " +
                         "disabled; skipping.");
             }
         } catch (DelegateScriptDisabledException e) {
             // no problem
             logger.debug("addNonEndpointOperations(): delegate script is " +
-                    "disabled; skipping watermark.");
+                    "disabled; skipping overlay.");
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }

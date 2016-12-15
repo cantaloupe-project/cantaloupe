@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.operation.watermark;
+package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
@@ -13,34 +13,34 @@ import java.net.URL;
 import java.util.Map;
 
 /**
- * Provides information about watermarking, including whether it is enabled,
- * and access to new {@link Watermark} instances, if so.
+ * Provides information about overlays, including whether they are enabled,
+ * and access to new {@link Overlay} instances, if so.
  */
-public class WatermarkService {
+public class OverlayService {
 
     enum Strategy {
-        /** Uses <code>watermark.BasicStrategy.*</code> configuration keys to
-         * get global watermark properties. */
+        /** Uses <code>overlays.BasicStrategy.*</code> configuration keys to
+         * get global overlay properties. */
         BASIC,
 
-        /** Uses the result of a delegate method to get watermark properties
+        /** Uses the result of a delegate method to get overlay properties
          * per-request. */
         DELEGATE_METHOD
     }
 
-    static final String ENABLED_CONFIG_KEY = "watermark.enabled";
-    static final String STRATEGY_CONFIG_KEY = "watermark.strategy";
+    static final String ENABLED_CONFIG_KEY = "overlays.enabled";
+    static final String STRATEGY_CONFIG_KEY = "overlays.strategy";
 
     private boolean isEnabled = false;
     private Strategy strategy;
 
-    public WatermarkService() throws ConfigurationException {
+    public OverlayService() throws ConfigurationException {
         readEnabled();
         readStrategy();
     }
 
     /**
-     * Factory method that returns a new {@link Watermark} based on either the
+     * Factory method that returns a new {@link Overlay} based on either the
      * configuration, or the delegate method return value, depending on the
      * setting of {@link #STRATEGY_CONFIG_KEY}.
      *
@@ -50,33 +50,33 @@ public class WatermarkService {
      * @param requestHeaders Required for ScriptStrategy.
      * @param clientIp Required for ScriptStrategy.
      * @param cookies Required for ScriptStrategy.
-     * @return Watermark respecting the watermark strategy and given arguments,
+     * @return Overlay respecting the overlay strategy and given arguments,
      *         or null.
      * @throws IOException
      * @throws ScriptException
      * @throws DelegateScriptDisabledException
      * @throws ConfigurationException
      */
-    public Watermark newWatermark(OperationList opList,
-                                  Dimension fullSize,
-                                  URL requestUrl,
-                                  Map<String,String> requestHeaders,
-                                  String clientIp,
-                                  Map<String,String> cookies)
+    public Overlay newOverlay(OperationList opList,
+                              Dimension fullSize,
+                              URL requestUrl,
+                              Map<String,String> requestHeaders,
+                              String clientIp,
+                              Map<String,String> cookies)
             throws IOException, ScriptException,
             DelegateScriptDisabledException, ConfigurationException {
         switch (getStrategy()) {
             case BASIC:
                 switch (ConfigurationFactory.getInstance().
-                        getString(BasicWatermarkService.TYPE_CONFIG_KEY, "")) {
+                        getString(BasicOverlayService.TYPE_CONFIG_KEY, "")) {
                     case "image":
-                        return new BasicImageWatermarkService().getWatermark();
+                        return new BasicImageOverlayService().getOverlay();
                     case "string":
-                        return new BasicStringWatermarkService().getWatermark();
+                        return new BasicStringOverlayService().getOverlay();
                 }
                 break;
             case DELEGATE_METHOD:
-                return new DelegateWatermarkService().getWatermark(
+                return new DelegateOverlayService().getOverlay(
                         opList, fullSize, requestUrl, requestHeaders, clientIp,
                         cookies);
         }
@@ -88,7 +88,7 @@ public class WatermarkService {
     }
 
     /**
-     * @return Whether watermarking is enabled.
+     * @return Whether overlays are enabled.
      */
     public boolean isEnabled() {
         return isEnabled;
@@ -117,14 +117,14 @@ public class WatermarkService {
     }
 
     /**
-     * @param enabled Whether watermarking should be enabled.
+     * @param enabled Whether overlays should be enabled.
      */
     void setEnabled(boolean enabled) {
         isEnabled = enabled;
     }
 
     /**
-     * @param strategy Watermark strategy to use.
+     * @param strategy Overlay strategy to use.
      */
     void setStrategy(Strategy strategy) {
         this.strategy = strategy;
@@ -132,13 +132,13 @@ public class WatermarkService {
 
     /**
      * @param outputImageSize
-     * @return Whether a watermark should be applied to an output image with
+     * @return Whether an overlay should be applied to an output image with
      *         the given dimensions.
      */
     public boolean shouldApplyToImage(Dimension outputImageSize) {
         switch (strategy) {
             case BASIC:
-                return BasicWatermarkService.shouldApplyToImage(outputImageSize);
+                return BasicOverlayService.shouldApplyToImage(outputImageSize);
             default:
                 // The delegate method will decide.
                 return true;

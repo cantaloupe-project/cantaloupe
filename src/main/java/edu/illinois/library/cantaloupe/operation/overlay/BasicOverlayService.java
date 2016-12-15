@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.operation.watermark;
+package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
@@ -6,24 +6,24 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 
 import java.awt.Dimension;
 
-abstract class BasicWatermarkService {
+abstract class BasicOverlayService {
 
     static final String INSET_CONFIG_KEY =
-            "watermark.BasicStrategy.inset";
+            "overlays.BasicStrategy.inset";
     static final String OUTPUT_HEIGHT_THRESHOLD_CONFIG_KEY =
-            "watermark.BasicStrategy.output_height_threshold";
+            "overlays.BasicStrategy.output_height_threshold";
     static final String OUTPUT_WIDTH_THRESHOLD_CONFIG_KEY =
-            "watermark.BasicStrategy.output_width_threshold";
+            "overlays.BasicStrategy.output_width_threshold";
     static final String POSITION_CONFIG_KEY =
-            "watermark.BasicStrategy.position";
-    static final String TYPE_CONFIG_KEY = "watermark.BasicStrategy.type";
+            "overlays.BasicStrategy.position";
+    static final String TYPE_CONFIG_KEY = "overlays.BasicStrategy.type";
 
     private int inset;
     private Position position;
 
     /**
      * @param outputImageSize
-     * @return Whether a watermark should be applied to an output image with
+     * @return Whether an overlay should be applied to an output image with
      * the given dimensions.
      */
     static boolean shouldApplyToImage(Dimension outputImageSize) {
@@ -36,26 +36,26 @@ abstract class BasicWatermarkService {
                 outputImageSize.height >= minOutputHeight);
     }
 
-    BasicWatermarkService() throws ConfigurationException {
+    BasicOverlayService() throws ConfigurationException {
         readPosition();
         readInset();
     }
 
     /**
-     * @return Watermark inset.
+     * @return Overlay inset.
      */
     protected int getInset() {
         return inset;
     }
 
     /**
-     * @return Watermark position.
+     * @return Overlay position.
      */
     protected Position getPosition() {
         return position;
     }
 
-    abstract Watermark getWatermark();
+    abstract Overlay getOverlay();
 
     private void readInset() {
         final Configuration config = ConfigurationFactory.getInstance();

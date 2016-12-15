@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.operation.watermark;
+package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
@@ -6,13 +6,13 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 
 import java.io.File;
 
-class BasicImageWatermarkService extends BasicWatermarkService {
+class BasicImageOverlayService extends BasicOverlayService {
 
-    static final String FILE_CONFIG_KEY = "watermark.BasicStrategy.image";
+    static final String FILE_CONFIG_KEY = "overlays.BasicStrategy.image";
 
     private File image;
 
-    BasicImageWatermarkService() throws ConfigurationException {
+    BasicImageOverlayService() throws ConfigurationException {
         super();
         readImage();
     }
@@ -24,8 +24,8 @@ class BasicImageWatermarkService extends BasicWatermarkService {
         return image;
     }
 
-    ImageWatermark getWatermark() {
-        return new ImageWatermark(getImage(), getPosition(), getInset());
+    ImageOverlay getOverlay() {
+        return new ImageOverlay(getImage(), getPosition(), getInset());
     }
 
     private void readImage() throws ConfigurationException {

@@ -148,9 +148,9 @@ class Parameters implements ParameterList, Comparable<Parameters> {
     }
 
     /**
-     * @return OperationList analog of the parameters. Note that any
-     * additional operations that may need to be performed, such as
-     * watermarking, will not be included.
+     * @return OperationList analog of the parameters. Note that any additional
+     * operations that may need to be performed, such as overlays, will not be
+     * included.
      */
     @Override
     public OperationList toOperationList() {

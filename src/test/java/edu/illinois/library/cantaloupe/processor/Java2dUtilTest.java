@@ -8,9 +8,9 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
-import edu.illinois.library.cantaloupe.operation.watermark.ImageWatermark;
-import edu.illinois.library.cantaloupe.operation.watermark.Position;
-import edu.illinois.library.cantaloupe.operation.watermark.StringWatermark;
+import edu.illinois.library.cantaloupe.operation.overlay.ImageOverlay;
+import edu.illinois.library.cantaloupe.operation.overlay.Position;
+import edu.illinois.library.cantaloupe.operation.overlay.StringOverlay;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -89,7 +89,7 @@ public class Java2dUtilTest {
     }
 
     @Test
-    public void testApplyWatermarkWithImageWatermark() throws Exception {
+    public void testApplyOverlayWithImageOverlay() throws Exception {
         // read the base image into a BufferedImage
         final File fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
         final BufferedImage baseImage = ImageIO.read(fixture);
@@ -104,16 +104,16 @@ public class Java2dUtilTest {
         assertEquals(90, green);
         assertEquals(60, blue);
 
-        // create a Watermark
-        final ImageWatermark watermark = new ImageWatermark(
+        // create a Overlay
+        final ImageOverlay overlay = new ImageOverlay(
                 TestUtil.getImage("png-rgb-1x1x8.png"),
                 Position.TOP_LEFT, 0);
 
         // apply it
-        final BufferedImage watermarkedImage = Java2dUtil.applyWatermark(
-                baseImage, watermark);
+        final BufferedImage overlaidImage = Java2dUtil.applyOverlay(
+                baseImage, overlay);
 
-        pixel = watermarkedImage.getRGB(0, 0);
+        pixel = overlaidImage.getRGB(0, 0);
         alpha = (pixel >> 24) & 0xff;
         red = (pixel >> 16) & 0xff;
         green = (pixel >> 8) & 0xff;
@@ -125,7 +125,7 @@ public class Java2dUtilTest {
     }
 
     @Test
-    public void testApplyWatermarkWithImageWatermarkAndInset() throws Exception {
+    public void testApplyOverlayWithImageOverlayAndInset() throws Exception {
         // read the base image into a BufferedImage
         final File fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
         final BufferedImage baseImage = ImageIO.read(fixture);
@@ -141,17 +141,17 @@ public class Java2dUtilTest {
         assertEquals(222, green);
         assertEquals(203, blue);
 
-        // create a Watermark
+        // create a Overlay
         final int inset = 2;
-        final ImageWatermark watermark = new ImageWatermark(
+        final ImageOverlay overlay = new ImageOverlay(
                 TestUtil.getImage("png-rgb-1x1x8.png"), Position.BOTTOM_RIGHT,
                 inset);
 
         // apply it
-        final BufferedImage watermarkedImage = Java2dUtil.applyWatermark(
-                baseImage, watermark);
+        final BufferedImage overlaidImage = Java2dUtil.applyOverlay(
+                baseImage, overlay);
 
-        pixel = watermarkedImage.getRGB(
+        pixel = overlaidImage.getRGB(
                 baseImage.getWidth() - inset - 1,
                 baseImage.getHeight() - inset - 1);
         alpha = (pixel >> 24) & 0xff;
@@ -165,22 +165,22 @@ public class Java2dUtilTest {
     }
 
     @Test
-    public void testApplyWatermarkWithStringWatermark() throws Exception {
+    public void testApplyOverlayWithStringOverlay() throws Exception {
         // read the base image into a BufferedImage
         final File fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
         final BufferedImage baseImage = ImageIO.read(fixture);
 
-        // create a Watermark
-        final StringWatermark watermark = new StringWatermark(
+        // create a Overlay
+        final StringOverlay overlay = new StringOverlay(
                 "XXXXXX", Position.TOP_LEFT, 0,
                 new Font("Helvetica", Font.PLAIN, 4),
                 Color.black, Color.white, 2f);
 
         // apply it
-        final BufferedImage watermarkedImage = Java2dUtil.applyWatermark(
-                baseImage, watermark);
+        final BufferedImage overlaidImage = Java2dUtil.applyOverlay(
+                baseImage, overlay);
 
-        int pixel = watermarkedImage.getRGB(0, 0);
+        int pixel = overlaidImage.getRGB(0, 0);
         int alpha = (pixel >> 24) & 0xff;
         int red = (pixel >> 16) & 0xff;
         int green = (pixel >> 8) & 0xff;
@@ -270,11 +270,10 @@ public class Java2dUtilTest {
     }
 
     @Test
-    public void testGetWatermarkImage() throws Exception {
-        ImageWatermark watermark = new ImageWatermark(
+    public void testGetOverlayImage() throws Exception {
+        ImageOverlay overlay = new ImageOverlay(
                 TestUtil.getImage("png"), Position.BOTTOM_RIGHT, 0);
-
-        assertNotNull(Java2dUtil.getWatermarkImage(watermark));
+        assertNotNull(Java2dUtil.getOverlayImage(overlay));
     }
 
     @Test

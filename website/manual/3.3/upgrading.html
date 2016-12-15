@@ -30,13 +30,18 @@ title: Upgrading
       <li><code>KakaduProcessor.normalize</code></li>
       <li><code>OpenJpegProcessor.normalize</code></li>
       <li><code>cache.server.ttl_seconds</code></li>
-      <li><code>watermark.BasicStrategy.type</code></li>
-      <li><code>watermark.BasicStrategy.string</code></li>
-      <li><code>watermark.BasicStrategy.string.font</code></li>
-      <li><code>watermark.BasicStrategy.string.font_size</code></li>
-      <li><code>watermark.BasicStrategy.string.color</code></li>
-      <li><code>watermark.BasicStrategy.string.stroke.color</code></li>
-      <li><code>watermark.BasicStrategy.string.stroke.width</code></li>
+      <li><code>overlays.BasicStrategy.type</code></li>
+      <li><code>overlays.BasicStrategy.string</code></li>
+      <li><code>overlays.BasicStrategy.string.font</code></li>
+      <li><code>overlays.BasicStrategy.string.font_size</code></li>
+      <li><code>overlays.BasicStrategy.string.color</code></li>
+      <li><code>overlays.BasicStrategy.string.stroke.color</code></li>
+      <li><code>overlays.BasicStrategy.string.stroke.width</code></li>
+    </ul>
+  </li>
+  <li>Rename the following keys:
+    <ul>
+      <li><code>watermark.*</code> to <code>overlays.*</code></li>
     </ul>
   </li>
   <li>Remove the following keys from the configuration:
@@ -47,7 +52,8 @@ title: Upgrading
       <li><code>AzureStorageCache.ttl_seconds</code></li>
     </ul>
   </li>
-  <li>If you are using the <code>authorized?()</code> or <code>watermark()</code> delegate methods, note that the contents of the <code>operations</code> argument have changed; see the new sample delegate script for more information.</li>
+  <li>If you are using the <code>authorized?()</code> or <code>overlay()</code> delegate methods, note that the contents of the <code>operations</code> argument have changed; see the new sample delegate script for more information.</li>
+  <li>Rename the <code>watermark()</code> delegate script method to <code>overlay()</code>.</li>
 </ul>
 
 <h2>From 3.1.2 to 3.2</h2>

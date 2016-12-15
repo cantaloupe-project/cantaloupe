@@ -528,58 +528,58 @@ AzureStorageCache.container_name =
 AzureStorageCache.object_key_prefix =
 
 ###########################################################################
-# WATERMARKING
+# OVERLAYS
 ###########################################################################
 
-# Whether to enable watermarking.
-watermark.enabled = false
+# Whether to enable overlays.
+overlays.enabled = false
 
-# Sets how watermarking is configured. `BasicStrategy` will use the
-# `watermark.BasicStrategy.*` keys in this section. `ScriptStrategy` will
-# use the `watermark` delegate script method. See the user manual for more
+# Specifies how overlays are configured. `BasicStrategy` will use the
+# `overlays.BasicStrategy.*` keys in this section. `ScriptStrategy` will
+# use the `overlay` delegate script method. See the user manual for more
 # information.
-watermark.strategy = BasicStrategy
+overlays.strategy = BasicStrategy
 
 # `string` or `image`.
-watermark.BasicStrategy.type = string
+overlays.BasicStrategy.type = string
 
-# Absolute path of the watermark image. Must be a .png file.
-watermark.BasicStrategy.image = /path/to/watermark.png
+# Absolute path of the overlay image. Must be a .png file.
+overlays.BasicStrategy.image = /path/to/overlay.png
 
-# Watermark text.
-watermark.BasicStrategy.string = Copyright \u00A9️ My Great Organization\nAll rights reserved.
+# Overlay text.
+overlays.BasicStrategy.string = Copyright \u00A9️ My Great Organization\nAll rights reserved.
 
-watermark.BasicStrategy.string.font = Helvetica
+overlays.BasicStrategy.string.font = Helvetica
 
 # Font size in points.
-watermark.BasicStrategy.string.font_size = 18
+overlays.BasicStrategy.string.font_size = 18
 
 # Color name, rgb(r,g,b), and #rrggbb syntax are supported.
-watermark.BasicStrategy.string.color = white
+overlays.BasicStrategy.string.color = white
 
 # Color name, rgb(r,g,b), and #rrggbb syntax are supported.
-watermark.BasicStrategy.string.stroke.color = white
+overlays.BasicStrategy.string.stroke.color = white
 
-# Stroke width in points.
-watermark.BasicStrategy.string.stroke.width = 2
+# Stroke width in pixels.
+overlays.BasicStrategy.string.stroke.width = 2
 
 # Allowed values: `top left`, `top center`, `top right`, `left center`,
 # `center`, `right center`, `bottom left`, `bottom center`, `bottom right`.
-watermark.BasicStrategy.position = bottom right
+overlays.BasicStrategy.position = bottom right
 
-# Pixel margin between the watermark and the image edge.
-watermark.BasicStrategy.inset = 10
+# Pixel margin between the overlay and the image edge.
+overlays.BasicStrategy.inset = 10
 
-# Output images less than this many pixels wide will not receive a watermark.
-# Set to 0 to add the watermark regardless.
-watermark.BasicStrategy.output_width_threshold = 400
+# Output images less than this many pixels wide will not receive an overlay.
+# Set to 0 to add the overlay regardless.
+overlays.BasicStrategy.output_width_threshold = 400
 
-# Output images less than this many pixels tall will not receive a watermark.
-# Set to 0 to add the watermark regardless.
-watermark.BasicStrategy.output_height_threshold = 300
+# Output images less than this many pixels tall will not receive an overlay.
+# Set to 0 to add the overlay regardless.
+overlays.BasicStrategy.output_height_threshold = 300
 
 ###########################################################################
-# REDACTION
+# REDACTIONS
 ###########################################################################
 
 # Whether to enable redactions. See the user manual for information about

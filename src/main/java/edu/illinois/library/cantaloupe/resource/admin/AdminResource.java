@@ -345,8 +345,8 @@ public class AdminResource extends AbstractResource {
 
         vars.put("fonts", GraphicsEnvironment.getLocalGraphicsEnvironment().
                 getAvailableFontFamilyNames());
-        vars.put("currentWatermarkFont", ConfigurationFactory.getInstance().
-                getString("watermark.BasicStrategy.string.font", ""));
+        vars.put("currentOverlayFont", ConfigurationFactory.getInstance().
+                getString("overlays.BasicStrategy.string.font", ""));
 
         return vars;
     }

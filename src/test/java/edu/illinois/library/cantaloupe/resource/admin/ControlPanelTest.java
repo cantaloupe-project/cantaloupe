@@ -495,24 +495,24 @@ public class ControlPanelTest {
         css("#cl-overlays-button").click();
 
         // Fill in the form
-        css("[name=\"watermark.enabled\"]").click();
-        new Select(css("[name=\"watermark.strategy\"]")).
+        css("[name=\"overlays.enabled\"]").click();
+        new Select(css("[name=\"overlays.strategy\"]")).
                 selectByValue("BasicStrategy");
-        new Select(css("[name=\"watermark.BasicStrategy.position\"]")).
+        new Select(css("[name=\"overlays.BasicStrategy.position\"]")).
                 selectByValue("bottom left");
-        css("[name=\"watermark.BasicStrategy.inset\"]").sendKeys("35");
-        css("[name=\"watermark.BasicStrategy.output_width_threshold\"]").sendKeys("5");
-        css("[name=\"watermark.BasicStrategy.output_height_threshold\"]").sendKeys("6");
-        new Select(css("[name=\"watermark.BasicStrategy.type\"]")).
+        css("[name=\"overlays.BasicStrategy.inset\"]").sendKeys("35");
+        css("[name=\"overlays.BasicStrategy.output_width_threshold\"]").sendKeys("5");
+        css("[name=\"overlays.BasicStrategy.output_height_threshold\"]").sendKeys("6");
+        new Select(css("[name=\"overlays.BasicStrategy.type\"]")).
                 selectByValue("string");
-        css("[name=\"watermark.BasicStrategy.image\"]").sendKeys("/image.png");
-        css("[name=\"watermark.BasicStrategy.string\"]").sendKeys("cats");
-        new Select(css("[name=\"watermark.BasicStrategy.string.font\"]")).
+        css("[name=\"overlays.BasicStrategy.image\"]").sendKeys("/image.png");
+        css("[name=\"overlays.BasicStrategy.string\"]").sendKeys("cats");
+        new Select(css("[name=\"overlays.BasicStrategy.string.font\"]")).
                 selectByValue("Helvetica");
-        css("[name=\"watermark.BasicStrategy.string.font_size\"]").sendKeys("13");
-        css("[name=\"watermark.BasicStrategy.string.color\"]").sendKeys("#d0d0d0");
-        css("[name=\"watermark.BasicStrategy.string.stroke.color\"]").sendKeys("#e0e0e0");
-        css("[name=\"watermark.BasicStrategy.string.stroke.width\"]").sendKeys("5");
+        css("[name=\"overlays.BasicStrategy.string.font_size\"]").sendKeys("13");
+        css("[name=\"overlays.BasicStrategy.string.color\"]").sendKeys("#d0d0d0");
+        css("[name=\"overlays.BasicStrategy.string.stroke.color\"]").sendKeys("#e0e0e0");
+        css("[name=\"overlays.BasicStrategy.string.stroke.width\"]").sendKeys("5");
         css("[name=\"redaction.enabled\"]").click();
 
         // Submit the form
@@ -522,32 +522,32 @@ public class ControlPanelTest {
 
         // Assert that the application configuration has been updated correctly
         final Configuration config = ConfigurationFactory.getInstance();
-        assertTrue(config.getBoolean("watermark.enabled"));
-        assertEquals("BasicStrategy", config.getString("watermark.strategy"));
+        assertTrue(config.getBoolean("overlays.enabled"));
+        assertEquals("BasicStrategy", config.getString("overlays.strategy"));
         assertEquals("bottom left",
-                config.getString("watermark.BasicStrategy.position"));
+                config.getString("overlays.BasicStrategy.position"));
         assertEquals("35",
-                config.getString("watermark.BasicStrategy.inset"));
+                config.getString("overlays.BasicStrategy.inset"));
         assertEquals("5",
-                config.getString("watermark.BasicStrategy.output_width_threshold"));
+                config.getString("overlays.BasicStrategy.output_width_threshold"));
         assertEquals("6",
-                config.getString("watermark.BasicStrategy.output_height_threshold"));
+                config.getString("overlays.BasicStrategy.output_height_threshold"));
         assertEquals("string",
-                config.getString("watermark.BasicStrategy.type"));
+                config.getString("overlays.BasicStrategy.type"));
         assertEquals("/image.png",
-                config.getString("watermark.BasicStrategy.image"));
+                config.getString("overlays.BasicStrategy.image"));
         assertEquals("cats",
-                config.getString("watermark.BasicStrategy.string"));
+                config.getString("overlays.BasicStrategy.string"));
         assertEquals("Helvetica",
-                config.getString("watermark.BasicStrategy.string.font"));
+                config.getString("overlays.BasicStrategy.string.font"));
         assertEquals("13",
-                config.getString("watermark.BasicStrategy.string.font_size"));
+                config.getString("overlays.BasicStrategy.string.font_size"));
         assertEquals("#d0d0d0",
-                config.getString("watermark.BasicStrategy.string.color"));
+                config.getString("overlays.BasicStrategy.string.color"));
         assertEquals("#e0e0e0",
-                config.getString("watermark.BasicStrategy.string.stroke.color"));
+                config.getString("overlays.BasicStrategy.string.stroke.color"));
         assertEquals("5",
-                config.getString("watermark.BasicStrategy.string.stroke.width"));
+                config.getString("overlays.BasicStrategy.string.stroke.width"));
         assertTrue(config.getBoolean("redaction.enabled"));
     }
 

@@ -11,7 +11,7 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
-import edu.illinois.library.cantaloupe.operation.watermark.Watermark;
+import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
@@ -192,9 +192,9 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
 
         // Apply all remaining operations.
         for (Operation op : opList) {
-            if (op instanceof Watermark && op.hasEffect(fullSize, opList)) {
+            if (op instanceof Overlay && op.hasEffect(fullSize, opList)) {
                 try {
-                    image = Java2dUtil.applyWatermark(image, (Watermark) op);
+                    image = Java2dUtil.applyOverlay(image, (Overlay) op);
                 } catch (ConfigurationException e) {
                     logger.error(e.getMessage());
                 }

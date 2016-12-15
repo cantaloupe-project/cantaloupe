@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.operation.watermark;
+package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
@@ -11,13 +11,13 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class ImageWatermarkTest {
+public class ImageOverlayTest {
 
-    private ImageWatermark instance;
+    private ImageOverlay instance;
 
     @Before
     public void setUp() {
-        instance = new ImageWatermark(new File("/dev/cats"),
+        instance = new ImageOverlay(new File("/dev/cats"),
                 Position.BOTTOM_RIGHT, 5);
     }
 

@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.operation.watermark;
+package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.operation.Operation;
 
@@ -8,16 +8,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <p>Encapsulates an image watermark applied to an image.</p>
+ * <p>Encapsulates an image overlay applied to an image.</p>
  *
- * <p>Instances should be obtained from the
- * {@link WatermarkService}.</p>
+ * <p>Instances should be obtained from the {@link OverlayService}.</p>
  */
-public class ImageWatermark extends Watermark implements Operation {
+public class ImageOverlay extends Overlay implements Operation {
 
     private File image;
 
-    public ImageWatermark(File image, Position position, int inset) {
+    public ImageOverlay(File image, Position position, int inset) {
         super(position, inset);
         setImage(image);
     }

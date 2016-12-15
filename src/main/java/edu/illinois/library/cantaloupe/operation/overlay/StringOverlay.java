@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.operation.watermark;
+package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.operation.Operation;
 
@@ -9,12 +9,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <p>Encapsulates a string watermark applied to an image.</p>
+ * <p>Encapsulates a string overlay applied to an image.</p>
  *
  * <p>Instances should be obtained from the
- * {@link WatermarkService}.</p>
+ * {@link OverlayService}.</p>
  */
-public class StringWatermark extends Watermark implements Operation {
+public class StringOverlay extends Overlay implements Operation {
 
     private Color color;
     private Font font;
@@ -22,9 +22,9 @@ public class StringWatermark extends Watermark implements Operation {
     private Color strokeColor;
     private float strokeWidth;
 
-    public StringWatermark(String string, Position position, int inset,
-                           Font font, Color color, Color strokeColor,
-                           float strokeWidth) {
+    public StringOverlay(String string, Position position, int inset,
+                         Font font, Color color, Color strokeColor,
+                         float strokeWidth) {
         super(position, inset);
         this.setString(string);
         this.setFont(font);

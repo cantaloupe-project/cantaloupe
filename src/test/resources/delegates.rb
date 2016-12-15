@@ -95,7 +95,7 @@ module Cantaloupe
     redactions
   end
 
-  def self.watermark(identifier, operations, resulting_size, output_format,
+  def self.overlay(identifier, operations, resulting_size, output_format,
       request_uri, request_headers, client_ip, cookies)
     case identifier
       when 'image'

@@ -12,7 +12,7 @@ dependency-reduced-pom.xml
 /cantaloupe.properties
 /delegates.rb
 /test.properties
-/watermark.*
+/overlay.*
 
 # Auto-generated content
 /target

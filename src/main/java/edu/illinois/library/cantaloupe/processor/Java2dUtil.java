@@ -10,14 +10,14 @@ import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
-import edu.illinois.library.cantaloupe.operation.watermark.ImageWatermark;
-import edu.illinois.library.cantaloupe.operation.watermark.Position;
+import edu.illinois.library.cantaloupe.operation.overlay.ImageOverlay;
+import edu.illinois.library.cantaloupe.operation.overlay.Position;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Transpose;
-import edu.illinois.library.cantaloupe.operation.watermark.StringWatermark;
-import edu.illinois.library.cantaloupe.operation.watermark.Watermark;
-import edu.illinois.library.cantaloupe.operation.watermark.WatermarkService;
+import edu.illinois.library.cantaloupe.operation.overlay.StringOverlay;
+import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
+import edu.illinois.library.cantaloupe.operation.overlay.OverlayService;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.lang3.StringUtils;
@@ -65,7 +65,7 @@ public abstract class Java2dUtil {
     /**
      * Redacts regions from the given image.
      *
-     * @param baseImage Image to apply the watermark on top of.
+     * @param baseImage Image to apply the overlay on top of.
      * @param appliedCrop Crop already applied to <code>baseImage</code>.
      * @param reductionFactor Reduction factor already applied to
      *                        <code>baseImage</code>.
@@ -110,38 +110,38 @@ public abstract class Java2dUtil {
     }
 
     /**
-     * Applies the given watermark to the given image. The watermark may be a
-     * string ({@link StringWatermark}) or an image ({@link ImageWatermark}).
+     * Applies the given overlay to the given image. The overlay may be a
+     * string ({@link StringOverlay}) or an image ({@link ImageOverlay}).
      *
-     * @param baseImage Image to apply the watermark on top of.
-     * @param watermark Watermark to apply to the base image.
-     * @return Watermarked image, or the input image if the watermark should
-     *         not be applied according to the application configuration.
+     * @param baseImage Image to apply the overlay on top of.
+     * @param overlay Overlay to apply to the base image.
+     * @return Overlaid image, or the input image if the overlay should not be
+     *         applied according to the application configuration.
      * @throws ConfigurationException
      * @throws IOException
      */
-    static BufferedImage applyWatermark(final BufferedImage baseImage,
-                                        final Watermark watermark)
+    static BufferedImage applyOverlay(final BufferedImage baseImage,
+                                      final Overlay overlay)
             throws ConfigurationException, IOException {
         BufferedImage markedImage = baseImage;
         final Dimension imageSize = new Dimension(baseImage.getWidth(),
                 baseImage.getHeight());
-        if (new WatermarkService().shouldApplyToImage(imageSize)) {
-            if (watermark instanceof ImageWatermark) {
+        if (new OverlayService().shouldApplyToImage(imageSize)) {
+            if (overlay instanceof ImageOverlay) {
                 markedImage = overlayImage(baseImage,
-                        getWatermarkImage((ImageWatermark) watermark),
-                        watermark.getPosition(),
-                        watermark.getInset());
-            } else if (watermark instanceof StringWatermark) {
-                final StringWatermark sw = (StringWatermark) watermark;
+                        getOverlayImage((ImageOverlay) overlay),
+                        overlay.getPosition(),
+                        overlay.getInset());
+            } else if (overlay instanceof StringOverlay) {
+                final StringOverlay sw = (StringOverlay) overlay;
                 markedImage = overlayString(baseImage,
                         sw.getString(),
                         sw.getFont(),
                         sw.getColor(),
                         sw.getStrokeColor(),
                         sw.getStrokeWidth(),
-                        watermark.getPosition(),
-                        watermark.getInset());
+                        overlay.getPosition(),
+                        overlay.getInset());
             }
         }
         return markedImage;
@@ -230,14 +230,14 @@ public abstract class Java2dUtil {
     }
 
     /**
-     * @param watermark
-     * @return Watermark image.
+     * @param overlay
+     * @return Overlay image.
      * @throws IOException
      */
-    static BufferedImage getWatermarkImage(ImageWatermark watermark)
+    static BufferedImage getOverlayImage(ImageOverlay overlay)
             throws IOException {
         final ImageReader reader =
-                new ImageReader(watermark.getImage(), Format.PNG);
+                new ImageReader(overlay.getImage(), Format.PNG);
         return reader.read();
     }
 
@@ -320,7 +320,7 @@ public abstract class Java2dUtil {
     }
 
     /**
-     * <p>Overlays a string on top of an image, for e.g. a text watermark.</p>
+     * <p>Overlays a string on top of an image, for e.g. a text overlay.</p>
      *
      * <p>The overlay string will only be drawn if it will fit entirely within
      * <var>baseImage</var>.</p>

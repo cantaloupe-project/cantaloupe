@@ -2418,7 +2418,7 @@
                 <div role="tabpanel" class="tab-pane" id="cl-overlays">
                     <form method="post">
                         <section>
-                            <h2>Watermarking</h2>
+                            <h2>Overlays</h2>
                             <table class="table table-striped">
                                 <tr>
                                     <td></td>
@@ -2426,7 +2426,7 @@
                                         <div class="checkbox">
                                             <label>
                                                 <input type="checkbox"
-                                                       name="watermark.enabled"
+                                                       name="overlays.enabled"
                                                        value="true"
                                                        data-requires-restart="false">
                                                 Enabled
@@ -2439,15 +2439,15 @@
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="Configures how watermarking works.
+                                           data-content="Configures how overlays work.
                                            &quot;Basic&quot;will use the other configuration options in
                                            this section. &quot;Delegate Script&quot; will use the
-                                           &lt;code&gt;watermark&lt;/code&gt; delegate script method.
+                                           &lt;code&gt;overlay&lt;/code&gt; delegate script method.
                                            See the user manual for more information.">?</a>
                                     </td>
                                     <td>
                                         <select class="form-control"
-                                                name="watermark.strategy"
+                                                name="overlays.strategy"
                                                 data-requires-restart="false">
                                             <option value="BasicStrategy">Basic</option>
                                             <option value="DelegateScript">Delegate Script</option>
@@ -2457,14 +2457,14 @@
                             </table>
                         </section>
 
-                        <section id="cl-watermark-basic">
+                        <section id="cl-overlays-basic">
                             <h3>BasicStrategy</h3>
                             <table class="table table-striped">
                                 <tr>
                                     <td>Position</td>
                                     <td>
                                         <select class="form-control"
-                                                name="watermark.BasicStrategy.position"
+                                                name="overlays.BasicStrategy.position"
                                                 data-requires-restart="false">
                                             <option value="top left">Top Left</option>
                                             <option value="top center">Top Center</option>
@@ -2483,12 +2483,12 @@
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="Pixel margin between the watermark and the
+                                           data-content="Pixel margin between the overlay and the
                                            image edge.">?</a>
                                     </td>
                                     <td>
                                         <input type="number" class="form-control"
-                                               name="watermark.BasicStrategy.inset"
+                                               name="overlays.BasicStrategy.inset"
                                                min="0"
                                                data-requires-restart="false">
                                     </td>
@@ -2499,12 +2499,12 @@
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
                                            data-content="Output images less than this many pixels wide
-                                           will not receive a watermark. Set to 0 to add the watermark
+                                           will not receive an overlay. Set to 0 to add the overlay
                                            regardless.">?</a>
                                     </td>
                                     <td>
                                         <input type="number" class="form-control"
-                                               name="watermark.BasicStrategy.output_width_threshold"
+                                               name="overlays.BasicStrategy.output_width_threshold"
                                                min="0"
                                                data-requires-restart="false">
                                     </td>
@@ -2515,12 +2515,12 @@
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
                                            data-content="Output images less than this many pixels tall
-                                           will not receive a watermark. Set to 0 to add the watermark
+                                           will not receive an overlay. Set to 0 to add the overlay
                                            regardless.">?</a>
                                     </td>
                                     <td>
                                         <input type="number" class="form-control"
-                                               name="watermark.BasicStrategy.output_height_threshold"
+                                               name="overlays.BasicStrategy.output_height_threshold"
                                                min="0"
                                                data-requires-restart="false">
                                     </td>
@@ -2529,7 +2529,7 @@
                                     <td>Type</td>
                                     <td>
                                         <select class="form-control"
-                                                name="watermark.BasicStrategy.type"
+                                                name="overlays.BasicStrategy.type"
                                                 data-requires-restart="false">
                                             <option value="string">String</option>
                                             <option value="image">Image</option>
@@ -2539,7 +2539,7 @@
                             </table>
                         </section>
 
-                        <section id="cl-watermark-basic-image">
+                        <section id="cl-overlays-basic-image">
                             <h4>BasicStrategy (Image)</h4>
                             <table class="table table-striped">
                                 <tr>
@@ -2547,26 +2547,26 @@
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="Absolute path of the watermark image. Must be a
+                                           data-content="Absolute path of the overlay image. Must be a
                                            .png file.">?</a>
                                     </td>
                                     <td>
                                         <input type="text" class="form-control"
-                                               name="watermark.BasicStrategy.image"
+                                               name="overlays.BasicStrategy.image"
                                                data-requires-restart="false">
                                     </td>
                                 </tr>
                             </table>
                         </section>
 
-                        <section id="cl-watermark-basic-string">
+                        <section id="cl-overlays-basic-string">
                             <h4>BasicStrategy (String)</h4>
                             <table class="table table-striped">
                                 <tr>
                                     <td>String</td>
                                     <td>
                                         <textarea class="form-control"
-                                               name="watermark.BasicStrategy.string"
+                                               name="overlays.BasicStrategy.string"
                                                data-requires-restart="false"></textarea>
                                     </td>
                                 </tr>
@@ -2574,10 +2574,10 @@
                                     <td>Font</td>
                                     <td>
                                         <select class="form-control"
-                                                name="watermark.BasicStrategy.string.font"
+                                                name="overlays.BasicStrategy.string.font"
                                                 data-requires-restart="false">
                                             #foreach ($font in $fonts)
-                                                #if ($font.equals($currentWatermarkFont))
+                                                #if ($font.equals($currentOverlayFont))
                                                     <option selected>$font</option>
                                                 #else
                                                     <option>$font</option>
@@ -2595,7 +2595,7 @@
                                     </td>
                                     <td>
                                         <input type="number" class="form-control"
-                                               name="watermark.BasicStrategy.string.font_size"
+                                               name="overlays.BasicStrategy.string.font_size"
                                                min="0"
                                                data-requires-restart="false">
                                     </td>
@@ -2610,7 +2610,7 @@
                                     </td>
                                     <td>
                                         <input type="text" class="form-control"
-                                               name="watermark.BasicStrategy.string.color"
+                                               name="overlays.BasicStrategy.string.color"
                                                data-requires-restart="false">
                                     </td>
                                 </tr>
@@ -2624,7 +2624,7 @@
                                     </td>
                                     <td>
                                         <input type="text" class="form-control"
-                                               name="watermark.BasicStrategy.string.stroke.color"
+                                               name="overlays.BasicStrategy.string.stroke.color"
                                                data-requires-restart="false">
                                     </td>
                                 </tr>
@@ -2637,7 +2637,7 @@
                                     </td>
                                     <td>
                                         <input type="number" class="form-control"
-                                               name="watermark.BasicStrategy.string.stroke.width"
+                                               name="overlays.BasicStrategy.string.stroke.width"
                                                min="0"
                                                data-requires-restart="false">
                                     </td>

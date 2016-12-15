@@ -13,7 +13,7 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
-import edu.illinois.library.cantaloupe.operation.watermark.Watermark;
+import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.processor.imageio.Compression;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
@@ -224,15 +224,15 @@ class JaiProcessor extends AbstractImageIoProcessor
             // Apply remaining operations.
             BufferedImage image = null;
             for (Operation op : opList) {
-                if (op instanceof Watermark && op.hasEffect(fullSize, opList)) {
-                    // Let's cheat and apply the watermark using Java 2D.
+                if (op instanceof Overlay && op.hasEffect(fullSize, opList)) {
+                    // Let's cheat and apply the overlay using Java 2D.
                     // There seems to be minimal performance penalty in doing
                     // this, and doing it in JAI is harder (or impossible in
                     // the case of drawing text).
                     image = renderedOp.getAsBufferedImage();
                     try {
-                        image = Java2dUtil.applyWatermark(image,
-                                (Watermark) op);
+                        image = Java2dUtil.applyOverlay(image,
+                                (Overlay) op);
                     } catch (ConfigurationException e) {
                         logger.error(e.getMessage());
                     }

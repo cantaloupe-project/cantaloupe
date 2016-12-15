@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.operation.watermark;
+package edu.illinois.library.cantaloupe.operation.overlay;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -11,13 +11,13 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class StringWatermarkTest {
+public class StringOverlayTest {
 
-    private StringWatermark instance;
+    private StringOverlay instance;
 
     @Before
     public void setUp() {
-        instance = new StringWatermark("cats", Position.BOTTOM_RIGHT, 5,
+        instance = new StringOverlay("cats", Position.BOTTOM_RIGHT, 5,
                 new Font("Helvetica", Font.PLAIN, 12),
                 Color.blue, Color.red, 5f);
     }
