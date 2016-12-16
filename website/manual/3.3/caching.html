@@ -165,36 +165,34 @@ cache.client.no_transform = true
 
 <h4 id="FilesystemCache">FilesystemCache</h4>
 
-<p>FilesystemCache caches content in a filesystem hierarchy. The location of the root directory is configurable with the <code>FilesystemCache.pathname</code> configuration key.</p>
-
-<p>Some filesystems have per-directory file count limits, or thresholds beyond which performance starts to degrade. To work around this, cache files are stored in subdirectory trees consisting of leading fragments of MD5 identifier checksums. Ultimately, the cache structure looks like:</p>
+<p>FilesystemCache caches content in a filesystem tree. The tree structure looks like:</p>
 
 <ul>
   <li><code>FilesystemCache.pathname</code>/
     <ul>
-      <li><span class="filename">source/</span> (if <a href="#Source Caching">source caching</a> is enabled)
+      <li><span class="filename">source/</span> <a href="#FilesystemCache-1">(1)</a>
         <ul>
-          <li>Intermediate subdirectories based on identifier MD5 checksum, configurable by <code>FilesystemCache.dir.depth</code> and <code>FilesystemCache.dir.name_length</code>
+          <li>Intermediate subdirectories <a href="#FilesystemCache-2">(2)</a>
             <ul>
-              <li><span class="filename">{identifier string representation}</span></li>
+              <li><span class="filename">{hashed identifier}</span> <a href="#FilesystemCache-3">(3)</a></li>
             </ul>
           </li>
         </ul>
       </li>
       <li><span class="filename">image/</span>
         <ul>
-          <li>Intermediate subdirectories based on identifier MD5 checksum, configurable by <code>FilesystemCache.dir.depth</code> and <code>FilesystemCache.dir.name_length</code>
+          <li>Intermediate subdirectories <a href="#FilesystemCache-2">(2)</a>
             <ul>
-              <li><span class="filename">{operation list string representation}.{output format extension}</span></li>
+              <li><span class="filename">{hashed identifier}{operation list string representation}.{output format extension}</span> <a href="#FilesystemCache-3">(3)</a></li>
             </ul>
           </li>
         </ul>
       </li>
       <li><span class="filename">info/</span>
         <ul>
-          <li>Intermediate subdirectories based on identifier MD5 checksum, configurable by <code>FilesystemCache.dir.depth</code> and <code>FilesystemCache.dir.name_length</code>
+          <li>Intermediate subdirectories <a href="#FilesystemCache-2">(2)</a>
             <ul>
-              <li><span class="filename">{identifier}.json</span></li>
+              <li><span class="filename">{hashed identifier}.json</span> <a href="#FilesystemCache-3">(3)</a></li>
             </ul>
           </li>
         </ul>
@@ -202,6 +200,14 @@ cache.client.no_transform = true
     </ul>
   </li>
 </ul>
+
+<ol>
+  <li id="FilesystemCache-1">Empty unless <a href="#Source%20Cache">source caching</a> is enabled.</li>
+  <li id="FilesystemCache-2">Some filesystems have per-directory file count limits, or thresholds beyond which performance starts to degrade. To work around this, cache files are stored in subdirectory trees consisting of leading fragments of identifier MD5 hashes, configurable by <code>FilesystemCache.dir.depth</code> and <code>FilesystemCache.dir.name_length</code>.</li>
+  <li id="FilesystemCache-3">Identifiers in filenames are MD5-hashed in order to allow for identifiers longer than the filesystem's filename length limit.</li>
+</ol>
+
+<p>Cache files are created with a <span class="filename">.tmp</span> extension and moved into place when closed for writing.</p>
 
 <p>FilesystemCache is process-safe: it is safe to point multiple server instances at the same cache directory.</p>
 

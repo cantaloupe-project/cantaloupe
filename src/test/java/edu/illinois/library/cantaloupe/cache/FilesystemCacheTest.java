@@ -69,6 +69,45 @@ public class FilesystemCacheTest {
         FileUtils.deleteDirectory(fixturePath);
     }
 
+    /* filenameFor(Identifier) */
+
+    @Test
+    public void testFilenameFor() {
+        Identifier identifier = new Identifier("cats");
+        assertEquals("8ebf601f8b808c32b8d2fb570c2e0fbdbb388add",
+                FilesystemCache.filenameFor(identifier));
+    }
+
+    /* filenameFor(Identifier) */
+
+    @Test
+    public void testFilenameSafe() {
+        String test = "abcABC123!@#$%^&*()_+";
+        assertEquals("abcABC123%21%40%23%24%25%5E%26%2A%28%29_%2B",
+                FilesystemCache.filenameSafe(test));
+    }
+
+    @Test
+    public void testFilenameSafeWithLongArgument() {
+        // Create a string longer than FilesystemCache.FILENAME_MAX_LENGTH
+        String test = "abcABC123!@#$%^&*()_+abcABC123!@#$%^&*()_+" +
+                "abcABC123!@#$%^&*()_+abcABC123!@#$%^&*()_+" +
+                "abcABC123!@#$%^&*()_+abcABC123!@#$%^&*()_+" +
+                "abcABC123!@#$%^&*()_+abcABC123!@#$%^&*()_+" +
+                "abcABC123!@#$%^&*()_+abcABC123!@#$%^&*()_+" +
+                "abcABC123!@#$%^&*()_+abcABC123!@#$%^&*()_+" +
+                "abcABC123!@#$%^&*()_+abcABC123!@#$%^&*()_+";
+        assertTrue(test.length() > FilesystemCache.FILENAME_MAX_LENGTH);
+
+        String expected = "abcABC123%21%40%23%24%25%5E%26%2A%28%29_%2BabcABC123" +
+                "%21%40%23%24%25%5E%26%2A%28%29_%2BabcABC123%21%40%" +
+                "23%24%25%5E%26%2A%28%29_%2BabcABC123%21%40%23%24%2" +
+                "5%5E%26%2A%28%29_%2BabcABC123%21%40%23%24%25%5E%26" +
+                "%2A%28%29_%2BabcABC12";
+        assertEquals(223, expected.length());
+        assertEquals(expected, FilesystemCache.filenameSafe(test));
+    }
+
     /* getHashedStringBasedSubdirectory(String) */
 
     @Test
@@ -234,7 +273,7 @@ public class FilesystemCacheTest {
                 File.separator,
                 getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator,
-                FilesystemCache.filenameSafe(identifier.toString()),
+                FilesystemCache.filenameFor(identifier),
                 FilesystemCache.filenameSafe(crop.toString()),
                 FilesystemCache.filenameSafe(scale.toString()),
                 FilesystemCache.filenameSafe(rotate.toString()),
@@ -267,7 +306,7 @@ public class FilesystemCacheTest {
                 File.separator,
                 getHashedStringBasedSubdirectory(ops.getIdentifier().toString()),
                 File.separator,
-                FilesystemCache.filenameSafe(identifier.toString()),
+                FilesystemCache.filenameFor(identifier),
                 format);
         assertEquals(new File(expected), instance.getDerivativeImageFile(ops));
     }
@@ -444,7 +483,7 @@ public class FilesystemCacheTest {
                 File.separator,
                 getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator,
-                FilesystemCache.filenameSafe(identifier.toString()));
+                FilesystemCache.filenameFor(identifier));
         assertEquals(new File(expected), instance.getInfoFile(identifier));
     }
 
@@ -466,7 +505,7 @@ public class FilesystemCacheTest {
                 File.separator,
                 getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator,
-                FilesystemCache.filenameSafe(identifier.toString()));
+                FilesystemCache.filenameFor(identifier));
         assertEquals(new File(expected), instance.getSourceImageFile(identifier));
     }
 

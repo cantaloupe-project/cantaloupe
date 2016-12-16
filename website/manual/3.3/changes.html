@@ -19,13 +19,14 @@ title: What's New
   <li>Overlay images are cached in memory for improved performance.</li>
   <li>Added RESTful API endpoints to purge images from the cache and retrieve and update the configuration.</li>
   <li>Added the ability to redirect to another URL via the <code>authorized?()</code> delegate method.</li>
+  <li>FilesystemCache supports identifiers longer than the filesystem's filename length limit.</li>
   <li>Added an auto-normalize option to all image processors.</li>
   <li>ImageMagickProcessor supports ImageMagick 7.</li>
-  <li>FfmpegProcessor uses a Java 2D processing pipeline rather than doing all processing with ffmpeg.</li>
-  <li>Auto-computed tile sizes of source images with an odd number of pixels in a dimension in information responses are rounded up, to prevent clients from requesting narrow edge tiles.</li>
-  <li>Added an optional delegate method cache.</li>
+  <li>FfmpegProcessor uses a Java 2D processing pipeline, giving it more capabilities.</li>
+  <li>Auto-computed tile sizes of source images with an odd number of pixels in a dimension in information responses are rounded up, to prevent clients from requesting extremely narrow edge tiles.</li>
+  <li>Added an optional delegate method invocation cache.</li>
   <li>A <code>cache=false</code> URL query option can be used in all endpoints to bypass the derivative cache per-request.</li>
-  <li>Operations that would have no effect in their context&mdash;for example, a crop to 300x200, followed by a scale-to-fit to 300 pixels wide&mdash;are skipped.</li>
+  <li>Operations that would have no effect in their context&mdash;for example, a crop to 300&times;200, followed by a scale-to-fit to 300 pixels wide&mdash;are skipped.</li>
   <li>The delegate script is reloaded on change rather than per-request.</li>
   <li>Added support for PDFs containing JBIG2-encoded images to PdfBoxProcessor.</li>
   <li>In standalone mode, the application is initialized at startup rather than upon the first request.</li>

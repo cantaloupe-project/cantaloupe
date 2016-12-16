@@ -44,14 +44,64 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Cache using a filesystem folder, storing source images, derivative images,
- * and infos in separate subdirectories.
+ * <p>Cache using a filesystem, storing source images, derivative images,
+ * and infos in separate subdirectories.</p>
+ *
+ * <p>The tree structure looks like:</p>
+ *
+ * <ul>
+ *     <li>{@link #PATHNAME_CONFIG_KEY}/
+ *         <ul>
+ *             <li>source/
+ *                 <ul>
+ *                     <li>Intermediate subdirectories (see [1])
+ *                         <ul>
+ *                             <li>{identifier hash (see [2])} (see [3])</li>
+ *                         </ul>
+ *                     </li>
+ *                 </ul>
+ *             </li>
+ *             <li>image/
+ *                 <ul>
+ *                     <li>Intermediate subdirectories (see [1])
+ *                         <ul>
+ *                             <li>{identifier hash (see [2])}{operation list
+ *                             string representation}.{derivative format
+ *                             extension} (see [3])</li>
+ *                         </ul>
+ *                     </li>
+ *                 </ul>
+ *             </li>
+ *             <li>info/
+ *                 <ul>
+ *                     <li>Intermediate subdirectories (see [1])
+ *                         <ul>
+ *                             <li>{identifier hash (see [2])}.json (see
+ *                             [3])</li>
+ *                         </ul>
+ *                     </li>
+ *                 </ul>
+ *             </li>
+ *         </ul>
+ *     </li>
+ * </ul>
+ *
+ * <ol>
+ *     <li>Subdirectories are based on identifier MD5 hash, configurable by
+ *     {@link #DIRECTORY_DEPTH_CONFIG_KEY} and
+ *     {@link #DIRECTORY_NAME_LENGTH_CONFIG_KEY}</li>
+ *     <li>The hash algorithm is specified by {@link #HASH_ALGORITHM}.</li>
+ *     <li>Identifiers in filenames are hashed in order to allow for identifiers
+ *     longer than the filesystem's filename length limit.</li>
+ *     <li>Cache files are created with a .tmp extension and moved into place
+ *     when closed for writing.</li>
+ * </ol>
  */
 class FilesystemCache implements SourceCache, DerivativeCache {
 
     /**
-     * Used by {@link Files#walkFileTree} to delete all temp and zero-byte
-     * files within a directory tree.
+     * Used by {@link Files#walkFileTree} to delete all temporary (*.tmp) and
+     * zero-byte files within a directory tree.
      */
     private static class CacheCleaner extends SimpleFileVisitor<Path> {
 
@@ -219,11 +269,16 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             "FilesystemCache.dir.name_length";
     static final String PATHNAME_CONFIG_KEY = "FilesystemCache.pathname";
 
-    private static final short FILENAME_MAX_LENGTH = 255;
+    static final short FILENAME_MAX_LENGTH = 255;
     // https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations
     private static final Pattern FILENAME_SAFE_PATTERN =
             Pattern.compile("[^A-Za-z0-9_\\-]");
 
+    // Algorithm used for hashing identifiers to create filenames & pathnames.
+    // Will be passed to MessageDigest.getInstance(). MD5 is chosen for its
+    // practical combination of efficiency and collision resistance.
+    // N.B. filenameSafe() must be updated when changing this.
+    private static final String HASH_ALGORITHM = "MD5";
     private static final String SOURCE_IMAGE_FOLDER = "source";
     private static final String DERIVATIVE_IMAGE_FOLDER = "image";
     private static final String INFO_FOLDER = "info";
@@ -279,10 +334,32 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     private final Object lock7 = new Object();
 
     /**
-     * Returns a reversible, filename-safe version of the input string.
-     * Use {@link java.net.URLDecoder#decode} to reverse.
+     * Counterpart of {@link #filenameSafe(String)} exclusively for identifiers.
+     * {@link #filenameSafe(String)}
      *
-     * @param inputString String to make filename-safe
+     * @param identifier Identifier to get a filename-safe string for.
+     * @return Filename-safe string version of the identifier.
+     */
+    static String filenameFor(final Identifier identifier) {
+        try {
+            final MessageDigest digest =
+                    MessageDigest.getInstance(HASH_ALGORITHM);
+            digest.update(identifier.toString().getBytes(Charset.forName("UTF8")));
+            return Hex.encodeHexString(digest.digest());
+        } catch (NoSuchAlgorithmException e) {
+            logger.error("filenameFor(): {}", e.getMessage(), e);
+        }
+        return identifier.toString(); // This should never hit.
+    }
+
+    /**
+     * <p>Returns a filename-safe string with a maximum length of
+     * {@link #FILENAME_MAX_LENGTH} - (identifier checksum length).</p>
+     *
+     * <p>N.B. For creating filename-safe strings from identifiers, use
+     * {@link #filenameFor(Identifier)} instead.</p>
+     *
+     * @param inputString String to make filename-safe.
      * @return Filename-safe string
      */
     static String filenameSafe(String inputString) {
@@ -296,21 +373,24 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         }
         matcher.appendTail(sb);
 
+        // Needs to remain in sync with HASH_ALGORITHM
+        final short md5Length = 32;
         final String encoded = sb.toString();
-        final int end = Math.min(encoded.length(), FILENAME_MAX_LENGTH);
+        final int end = Math.min(encoded.length(),
+                FILENAME_MAX_LENGTH - md5Length);
         return encoded.substring(0, end);
     }
 
     /**
      * @param uniqueString String from which to derive the path.
      * @return Directory path composed of fragments of a hash of the given
-     * string.
+     *         string.
      */
     static String getHashedStringBasedSubdirectory(String uniqueString) {
         final StringBuilder path = new StringBuilder();
         try {
-            // Use a fast algo. Collisions don't matter.
-            final MessageDigest digest = MessageDigest.getInstance("MD5");
+            final MessageDigest digest =
+                    MessageDigest.getInstance(HASH_ALGORITHM);
             digest.update(uniqueString.getBytes(Charset.forName("UTF8")));
             final String sum = Hex.encodeHexString(digest.digest());
 
@@ -358,8 +438,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * {@link #PATHNAME_CONFIG_KEY} is not set.
      * @throws CacheException
      */
-    static String getRootDerivativeImagePathname()
-            throws CacheException {
+    static String getRootDerivativeImagePathname() throws CacheException {
         return getRootPathname() + File.separator + DERIVATIVE_IMAGE_FOLDER;
     }
 
@@ -444,8 +523,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         final String subfolderPath = StringUtils.stripEnd(
                 getHashedStringBasedSubdirectory(ops.getIdentifier().toString()),
                 File.separator);
-        final String identifierFilename =
-                filenameSafe(ops.getIdentifier().toString());
+        final String identifierFilename = filenameFor(ops.getIdentifier());
         parts.add(cacheRoot + subfolderPath + File.separator +
                 identifierFilename);
         for (Operation op : ops) {
@@ -475,8 +553,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             }
 
             public boolean accept(File dir, String name) {
-                // TODO: when the identifier is "cats", "catsup" will also match
-                return name.startsWith(filenameSafe(identifier.toString()));
+                return name.startsWith(filenameFor(identifier));
             }
         }
 
@@ -711,7 +788,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         final String subfolderPath = StringUtils.stripEnd(
                 getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator);
-        final String identifierFilename = filenameSafe(identifier.toString());
+        final String identifierFilename = filenameFor(identifier);
         final String pathname = cacheRoot + subfolderPath + File.separator +
                 identifierFilename + INFO_EXTENSION;
         return new File(pathname);
@@ -734,9 +811,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         final String subfolderPath = StringUtils.stripEnd(
                 getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator);
-        final String identifierFilename = filenameSafe(identifier.toString());
         final String baseName = cacheRoot + subfolderPath + File.separator +
-                identifierFilename;
+                filenameFor(identifier);
         return new File(baseName);
     }
 
