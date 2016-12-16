@@ -153,11 +153,12 @@
       <artifactId>commons-lang3</artifactId>
       <version>3.4</version>
     </dependency>
-    <!-- Provides PDFBox for PdfBoxProcessor -->
+    <!-- Provides PDFBox for PdfBoxProcessor. Note that there are also some
+    other dependencies in this POM used only by PDFBox. -->
     <dependency>
       <groupId>org.apache.pdfbox</groupId>
       <artifactId>pdfbox</artifactId>
-      <version>2.0.1</version>
+      <version>2.0.4</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
