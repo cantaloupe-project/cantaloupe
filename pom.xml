@@ -173,6 +173,12 @@
       <type>pom</type>
       <version>3.1.0</version>
     </dependency>
+    <!-- Assists PDFBox in decoding certain PDFs -->
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk15on</artifactId>
+      <version>1.55</version>
+    </dependency>
     <!-- Supports <if> expressions in logback.xml -->
     <dependency>
       <groupId>org.codehaus.janino</groupId>
