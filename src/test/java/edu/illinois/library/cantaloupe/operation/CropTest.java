@@ -187,6 +187,10 @@ public class CropTest {
         crop.setWidth(600);
         crop.setHeight(400);
         assertFalse(crop.hasEffect(fullSize, opList));
+
+        crop = new Crop();
+        crop.setShape(Crop.Shape.SQUARE);
+        assertTrue(crop.hasEffect(fullSize, opList));
     }
 
     @Test

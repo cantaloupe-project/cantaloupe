@@ -229,6 +229,10 @@ public class Crop implements Operation {
         if (!hasEffect()) {
             return false;
         }
+        if (Shape.SQUARE.equals(getShape()) &&
+                fullSize.width != fullSize.height) {
+            return true;
+        }
         return !(Unit.PIXELS.equals(getUnit()) &&
                 fullSize.width == Math.round(getWidth()) &&
                 fullSize.height == Math.round(getHeight()));
