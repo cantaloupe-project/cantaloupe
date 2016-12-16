@@ -296,7 +296,9 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
                 final BufferedImage image = reader.read();
                 final Configuration config = ConfigurationFactory.getInstance();
                 try {
-                    postProcess(image, null, opList, imageInfo,
+                    Set<ImageReader.Hint> hints = new HashSet<>();
+                    hints.add(ImageReader.Hint.ALREADY_CROPPED);
+                    postProcess(image, hints, opList, imageInfo,
                             reductionFactor, Orientation.ROTATE_0,
                             config.getBoolean(NORMALIZE_CONFIG_KEY, false),
                             getUpscaleFilter(), getDownscaleFilter(),
