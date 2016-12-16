@@ -165,7 +165,7 @@ cache.client.no_transform = true
 
 <h4 id="FilesystemCache">FilesystemCache</h4>
 
-<p>FilesystemCache caches content in filesystem hierarchy. The location of the root directory is configurable with the <code>FilesystemCache.pathname</code> configuration key.</p>
+<p>FilesystemCache caches content in a filesystem hierarchy. The location of the root directory is configurable with the <code>FilesystemCache.pathname</code> configuration key.</p>
 
 <p>Some filesystems have per-directory file count limits, or thresholds beyond which performance starts to degrade. To work around this, cache files are stored in subdirectory trees consisting of leading fragments of MD5 identifier checksums. Ultimately, the cache structure looks like:</p>
 
