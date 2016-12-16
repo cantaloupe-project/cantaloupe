@@ -113,7 +113,7 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
      * @throws ProcessorException
      */
     void postProcess(final BufferedImage sourceImage,
-                     final Set<ImageReader.Hint> readerHints,
+                     Set<ImageReader.Hint> readerHints,
                      final OperationList opList,
                      final ImageInfo imageInfo,
                      ReductionFactor reductionFactor,
@@ -126,6 +126,9 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
             throws IOException, ProcessorException {
         if (reductionFactor == null) {
             reductionFactor = new ReductionFactor();
+        }
+        if (readerHints == null) {
+            readerHints = new HashSet<>();
         }
 
         BufferedImage image = Java2dUtil.reduceTo8Bits(sourceImage);
@@ -140,10 +143,12 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
         Crop crop = new Crop(0, 0, image.getWidth(), image.getHeight(),
                 orientation, imageInfo.getSize());
         for (Operation op : opList) {
-            if (op instanceof Crop && crop.hasEffect(fullSize, opList) &&
-                    readerHints != null &&
-                    !readerHints.contains(ImageReader.Hint.ALREADY_CROPPED)) {
-                image = Java2dUtil.cropImage(image, (Crop) op, reductionFactor);
+            if (op instanceof Crop) {
+                crop = (Crop) op;
+                if (crop.hasEffect(fullSize, opList) &&
+                        !readerHints.contains(ImageReader.Hint.ALREADY_CROPPED)) {
+                    image = Java2dUtil.cropImage(image, crop, reductionFactor);
+                }
             }
         }
 
