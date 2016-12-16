@@ -14,9 +14,29 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 
 public abstract class TestUtil {
+
+    public static int countFiles(File dir) {
+        List<File> allFiles = new ArrayList<>();
+        Queue<File> dirs = new LinkedList<>();
+        dirs.add(dir);
+        while (!dirs.isEmpty()) {
+            for (File f : dirs.poll().listFiles()) {
+                if (f.isDirectory()) {
+                    dirs.add(f);
+                } else if (f.isFile()) {
+                    allFiles.add(f);
+                }
+            }
+        }
+        return allFiles.size();
+    }
 
     public static File getCurrentWorkingDirectory() throws IOException {
         File directory = new File(".");
