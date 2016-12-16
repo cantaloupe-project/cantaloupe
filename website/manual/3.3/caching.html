@@ -122,7 +122,7 @@ cache.client.no_transform = true
   <dt>Conservative (<code>cache.server.resolve_first = true</code>)</dt>
   <dd>Source images are looked up and verified to exist before cached representations are returned. This precludes returning a cached representation when the underlying resource no longer exists, but also impairs response times by a variable amount, depending on the resolver.</dd>
   <dt>Aggressive (<code>cache.server.resolve_first = false</code>)</dt>
-  <dd>Cached representations are returned immediately, if available. This is faster, but it can lead to inconsistency between the cache and the underlying source image storage, if the latter is not static.</dd>
+  <dd>Cached representations are returned immediately, if available. This is faster, but inconsistency can develop between the cache and the underlying source image storage, if the latter is not static.</dd>
 </dl>
 
 <hr>
@@ -133,13 +133,20 @@ cache.client.no_transform = true
 
 <h4 id="Manual Maintenance">Manual</h4>
 
-<p>To purge all expired content, start Cantaloupe with the <code>-Dcantaloupe.cache.purge_expired</code> option.</p>
+<p>To purge all expired content, launch with the <code>-Dcantaloupe.cache.purge_expired</code> option.</p>
 
-<p>To purge all content, expired or not, start Cantaloupe with the <code>-Dcantaloupe.cache.purge</code> option.</p>
+<p>To purge all content, expired or not, launch with the <code>-Dcantaloupe.cache.purge</code> option.</p>
 
-<p>To purge only images related to a given identifier (version 3.3 or later), use the <a href="remote-management.html#REST%20API">REST API</a>.</p>
+<p>To purge all content related to a given identifier, expired or not, there are two options:</p>
 
-<p>Caches are careful not to leave miscellaneous detritus (like temp files) lying around. In case anything slips through, the above commands will take care of it. To <strong>only</strong> clean the cache while leaving all content alone, expired or not, start Cantaloupe with the <code>-Dcantaloupe.cache.clean</code> option.</p>
+<ol>
+  <li>Launch with the <code>-Dcantaloupe.cache.purge=<em>identifier</em></code> option.</li>
+  <li>Use the <a href="remote-management.html#REST%20API">REST API</a>.</li>
+</ol>
+
+<p>(Both of these were added in 3.3.)</p>
+
+<p>Caches are careful not to leave miscellaneous detritus (like temp files) lying around. In case anything slips through, the above commands will take care of it. To <strong>only</strong> clean the cache while leaving all content alone, expired or not, launch with the <code>-Dcantaloupe.cache.clean</code> option.</p>
 
 <p>When Cantaloupe is started with any of these arguments, it will run in a special mode in which the web server will not be started, and exit when done. Thus, any of these tasks can be run in a separate process, on the live cache store, while the main server instance remains running.</p>
 
@@ -155,7 +162,7 @@ cache.client.no_transform = true
 
 <ol>
   <li>Performing maintenance more often;</li>
-  <li>Reducing the time-to-live (using the <code>*Cache.ttl_seconds</code> configuration keys);</li>
+  <li>Reducing the time-to-live (using the <code>cache.server.ttl_seconds</code> configuration key);</li>
   <li>Increasing the threshold by allocating more storage.</li>
 </ol>
 

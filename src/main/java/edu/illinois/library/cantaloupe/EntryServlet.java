@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.CacheWorkerRunner;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.logging.LoggerUtil;
+import edu.illinois.library.cantaloupe.operation.Identifier;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.restlet.data.Protocol;
@@ -75,19 +76,45 @@ public class EntryServlet extends ServerServlet {
                 System.out.println("Done.");
                 System.exit(0);
             } else if (System.getProperty(PURGE_CACHE_VM_ARGUMENT) != null) {
-                Cache cache = CacheFactory.getSourceCache();
-                if (cache != null) {
-                    System.out.println("Purging the source cache...");
-                    cache.purge();
+                // Two variants of this argument are supported:
+                // -Dcantaloupe.cache.purge (purge everything)
+                // -Dcantaloupe.cache.purge=identifier (purge all content
+                // related to the given identifier)
+                final String purgeArg =
+                        System.getProperty(PURGE_CACHE_VM_ARGUMENT);
+                if (purgeArg.length() > 0) {
+                    Identifier identifier = new Identifier(purgeArg);
+                    Cache cache = CacheFactory.getSourceCache();
+                    if (cache != null) {
+                        System.out.println("Purging " + identifier +
+                                " from the source cache...");
+                        cache.purgeImage(identifier);
+                    } else {
+                        System.out.println("Source cache is disabled.");
+                    }
+                    cache = CacheFactory.getDerivativeCache();
+                    if (cache != null) {
+                        System.out.println("Purging " + identifier +
+                                " from the derivative cache...");
+                        cache.purgeImage(identifier);
+                    } else {
+                        System.out.println("Derivative cache is disabled.");
+                    }
                 } else {
-                    System.out.println("Source cache is disabled.");
-                }
-                cache = CacheFactory.getDerivativeCache();
-                if (cache != null) {
-                    System.out.println("Purging the derivative cache...");
-                    cache.purge();
-                } else {
-                    System.out.println("Derivative cache is disabled.");
+                    Cache cache = CacheFactory.getSourceCache();
+                    if (cache != null) {
+                        System.out.println("Purging the source cache...");
+                        cache.purge();
+                    } else {
+                        System.out.println("Source cache is disabled.");
+                    }
+                    cache = CacheFactory.getDerivativeCache();
+                    if (cache != null) {
+                        System.out.println("Purging the derivative cache...");
+                        cache.purge();
+                    } else {
+                        System.out.println("Derivative cache is disabled.");
+                    }
                 }
                 System.out.println("Done.");
                 System.exit(0);

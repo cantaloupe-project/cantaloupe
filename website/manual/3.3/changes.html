@@ -17,7 +17,8 @@ title: What's New
   <li>Added textual overlays.</li>
   <li>Overlay images can be located on the filesystem or an HTTP(S) server.</li>
   <li>Overlay images are cached in memory for improved performance.</li>
-  <li>Added RESTful API endpoints to purge images from the cache and retrieve and update the configuration.</li>
+  <li>Added RESTful API endpoints to purge individual images from the cache and retrieve and update the configuration.</li>
+  <li>The <code>-Dcantaloupe.cache.purge</code> VM option accepts an identifier argument to purge content related to individual identifiers.</li>
   <li>Added the ability to redirect to another URL via the <code>authorized?()</code> delegate method.</li>
   <li>FilesystemCache supports identifiers longer than the filesystem's filename length limit.</li>
   <li>Added an auto-normalize option to all image processors.</li>

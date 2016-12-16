@@ -195,6 +195,9 @@ public class StandaloneEntryTest {
         assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
     }
 
+    /**
+     * Tests startup with the -Dcantaloupe.cache.clean VM option.
+     */
     @Test
     public void testMainWithCleanCacheArg() throws Exception {
         exit.expectSystemExitWithStatus(0);
@@ -228,6 +231,9 @@ public class StandaloneEntryTest {
         }
     }
 
+    /**
+     * Tests startup with the -Dcantaloupe.cache.purge VM option.
+     */
     @Test
     public void testMainWithPurgeCacheArg() throws Exception {
         exit.expectSystemExitWithStatus(0);
@@ -253,10 +259,11 @@ public class StandaloneEntryTest {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("dogs"));
         ops.add(new Rotate(15));
-        OutputStream wbc = cache.getImageOutputStream(ops);
-        InputStream rbc = new FileInputStream(
-                TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));
-        IOUtils.copy(rbc, wbc);
+        try (OutputStream wbc = cache.getImageOutputStream(ops);
+             InputStream rbc = new FileInputStream(
+                     TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"))) {
+            IOUtils.copy(rbc, wbc);
+        }
 
         // assert that they've been cached
         assertEquals(1, FileUtils.listFiles(imageDir, null, true).size());
@@ -275,10 +282,74 @@ public class StandaloneEntryTest {
         }
 
         // assert that they've been purged
-        assertEquals(0, imageDir.listFiles().length);
-        assertEquals(0, infoDir.listFiles().length);
+        assertEquals(0, TestUtil.countFiles(imageDir));
+        assertEquals(0, TestUtil.countFiles(infoDir));
     }
 
+    /**
+     * Tests startup with the -Dcantaloupe.cache.purge=identifier VM option.
+     */
+    @Test
+    public void testMainWithPurgeIdentifierArg() throws Exception {
+        exit.expectSystemExitWithStatus(0);
+
+        final File cacheDir = getCacheDir();
+        final File imageDir = new File(cacheDir.getAbsolutePath() + "/image");
+        final File infoDir = new File(cacheDir.getAbsolutePath() + "/info");
+
+        // set up the cache
+        resetConfiguration();
+        Configuration config = ConfigurationFactory.getInstance();
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
+                "FilesystemCache");
+        config.setProperty("FilesystemCache.pathname",
+                getCacheDir().getAbsolutePath());
+        config.setProperty(Cache.TTL_CONFIG_KEY, "10");
+
+        // cache a couple of dimensions
+        DerivativeCache cache = CacheFactory.getDerivativeCache();
+        cache.putImageInfo(new Identifier("cats"), new ImageInfo(500, 500));
+        cache.putImageInfo(new Identifier("dogs"), new ImageInfo(500, 500));
+
+        // cache a couple of images
+        OperationList ops = TestUtil.newOperationList();
+        ops.setIdentifier(new Identifier("cats"));
+        ops.add(new Rotate(15));
+        try (OutputStream wbc = cache.getImageOutputStream(ops);
+             InputStream rbc = new FileInputStream(TestUtil.getImage("jpg"))) {
+            IOUtils.copy(rbc, wbc);
+        }
+
+        ops.setIdentifier(new Identifier("dogs"));
+        try (OutputStream wbc = cache.getImageOutputStream(ops);
+             InputStream rbc = new FileInputStream(TestUtil.getImage("jpg"))) {
+            IOUtils.copy(rbc, wbc);
+        }
+
+        // assert that they've been cached
+        assertEquals(2, FileUtils.listFiles(imageDir, null, true).size());
+        assertEquals(2, FileUtils.listFiles(infoDir, null, true).size());
+
+        // purge one identifier
+        System.setProperty(EntryServlet.PURGE_CACHE_VM_ARGUMENT, "dogs");
+        StandaloneEntry.main(new String[] {});
+
+        // Cause the Servlet to be loaded
+        try {
+            getHttpClientForUriPath("/").get();
+        } catch (ResourceException e) {
+            // This is expected, as the server has called System.exit() before
+            // it could generate a response.
+        }
+
+        // assert that they've been purged
+        assertEquals(1, TestUtil.countFiles(imageDir));
+        assertEquals(1, TestUtil.countFiles(infoDir));
+    }
+
+    /**
+     * Tests startup with the -Dcantaloupe.cache.purge_expired VM option.
+     */
     @Test
     public void testMainWithPurgeExpiredCacheArg() throws Exception {
         exit.expectSystemExitWithStatus(0);
@@ -315,8 +386,8 @@ public class StandaloneEntryTest {
             // it could generate a response.
         }
 
-        assertEquals(1, imageDir.listFiles().length);
-        assertEquals(1, infoDir.listFiles().length);
+        assertEquals(1, TestUtil.countFiles(imageDir));
+        assertEquals(1, TestUtil.countFiles(infoDir));
     }
 
 }
