@@ -20,9 +20,9 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 /**
- * Functional test of ApiResource.
+ * Functional test of APIResource.
  */
-public class ApiResourceTest extends ResourceTest {
+public class APIResourceTest extends ResourceTest {
 
     private static final String IDENTIFIER = "jpg";
     private static final String USERNAME = "admin";
@@ -34,7 +34,7 @@ public class ApiResourceTest extends ResourceTest {
         super.setUp();
 
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(ApiResource.ENABLED_CONFIG_KEY, true);
+        config.setProperty(APIResource.ENABLED_CONFIG_KEY, true);
         config.setProperty(WebApplication.API_USERNAME_CONFIG_KEY, USERNAME);
         config.setProperty(WebApplication.API_SECRET_CONFIG_KEY, SECRET);
 
@@ -46,7 +46,7 @@ public class ApiResourceTest extends ResourceTest {
     @Test
     public void testDoPurgeWithEndpointDisabled() {
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(ApiResource.ENABLED_CONFIG_KEY, false);
+        config.setProperty(APIResource.ENABLED_CONFIG_KEY, false);
 
         ClientResource client = getClientForUriPath(WebApplication.CACHE_PATH + "/" + IDENTIFIER);
         client.setChallengeResponse(

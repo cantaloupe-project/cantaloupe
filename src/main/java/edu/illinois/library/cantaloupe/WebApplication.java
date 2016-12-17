@@ -8,7 +8,7 @@ import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatExceptio
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
 import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
-import edu.illinois.library.cantaloupe.resource.api.ApiResource;
+import edu.illinois.library.cantaloupe.resource.api.APIResource;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
@@ -289,7 +289,7 @@ public class WebApplication extends Application {
 
         try {
             ChallengeAuthenticator apiAuth = createApiAuthenticator();
-            apiAuth.setNext(ApiResource.class);
+            apiAuth.setNext(APIResource.class);
             router.attach(CONFIGURATION_PATH, apiAuth);
             router.attach(CACHE_PATH + "/{identifier}", apiAuth);
         } catch (ConfigurationException e) {

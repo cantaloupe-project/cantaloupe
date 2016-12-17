@@ -23,10 +23,10 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class ApiResource extends AbstractResource {
+public class APIResource extends AbstractResource {
 
     private static org.slf4j.Logger logger = LoggerFactory.
-            getLogger(ApiResource.class);
+            getLogger(APIResource.class);
 
     static final String ENABLED_CONFIG_KEY = "endpoint.api.enabled";
 
