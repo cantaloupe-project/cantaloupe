@@ -404,8 +404,8 @@ class KakaduProcessor extends AbstractProcessor  implements FileProcessor {
                 process.destroy();
             }
         } catch (EOFException e) {
-            // This happens frequently in Tomcat, but appears to be harmless.
-            logger.warn("EOFException: {}", e.getMessage());
+            // This will generally not have a message.
+            logger.error("process(): EOFException ({})", e.getMessage(), ops);
         } catch (IOException | InterruptedException e) {
             String msg = e.getMessage();
             final String errorStr = errorBucket.toString();

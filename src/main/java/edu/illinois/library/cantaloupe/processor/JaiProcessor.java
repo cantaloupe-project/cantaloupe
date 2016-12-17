@@ -159,7 +159,17 @@ class JaiProcessor extends AbstractImageIoProcessor
                         renderedOp = JaiUtil.scaleImage(renderedOp, (Scale) op,
                                 Interpolation.getInstance(Interpolation.INTERP_NEAREST),
                                 rf);
+                    } else if (renderedOp.getWidth() < 3 ||
+                            renderedOp.getHeight() < 3) {
+                        // SubsampleAverage requires the image to be at least 3
+                        // pixels on a side. So, again use the Scale operation,
+                        // with a better (but still bad [but it doesn't matter
+                        // because of the tiny dimension(s)]) filter.
+                        renderedOp = JaiUtil.scaleImage(renderedOp, (Scale) op,
+                                Interpolation.getInstance(Interpolation.INTERP_BILINEAR),
+                                rf);
                     } else {
+                        // All clear to use SubsampleAverage.
                         renderedOp = JaiUtil.scaleImageUsingSubsampleAverage(
                                 renderedOp, (Scale) op, rf);
                     }

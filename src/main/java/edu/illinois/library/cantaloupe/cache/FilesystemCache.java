@@ -131,6 +131,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
         private File destinationFile;
         private Set imagesBeingWritten;
+        private boolean isClosed = false;
         private Object toRemove;
         private File tempFile;
 
@@ -159,18 +160,27 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
         @Override
         public void close() throws IOException {
-            try {
-                logger.debug("Moving {} to {}",
-                        tempFile, destinationFile.getName());
-                FileUtils.moveFile(tempFile, destinationFile);
-            } catch (IOException e) {
-                logger.warn(getClass().getName() + ".close(): " + e.getMessage());
-            } finally {
-                logger.debug("Closing stream for {}", toRemove);
+            // This check prevents double-closing. Clients will frequently wrap
+            // this stream in a TeeOutputStream, which they can't close due to
+            // Restlet's OutputRepresentation.write() API contract, so it (the
+            // tee stream) gets detected and double-closed by the finalizer.
+            // See ImageRepresentation.write() for more info.
+            if (!isClosed) {
+                isClosed = true;
                 try {
-                    super.close();
+                    try {
+                        // Close super in order to release its handle on
+                        // tempFile.
+                        logger.debug("close(): closing stream for {}", toRemove);
+                        super.close();
+                    } catch (IOException e) {
+                        logger.warn("close(): {}", e.getMessage());
+                    }
+                    logger.debug("close(): moving {} to {}",
+                            tempFile, destinationFile.getName());
+                    FileUtils.moveFile(tempFile, destinationFile);
                 } catch (IOException e) {
-                    logger.warn(e.getMessage(), e);
+                    logger.warn("close(): {}", e.getMessage(), e);
                 } finally {
                     imagesBeingWritten.remove(toRemove);
                 }
@@ -585,21 +595,23 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     @Override
     public OutputStream getImageOutputStream(Identifier identifier)
             throws CacheException {
-        // If the image is already being written in another thread, it will
-        // exist in the sourceImagesBeingWritten set. If so, return a dummy
+        // If the image is being written in another thread, it may (or may not)
+        // be present in the sourceImagesBeingWritten set. If so, return a null
         // output stream to avoid interfering.
         if (sourceImagesBeingWritten.contains(identifier)) {
-            logger.info("getImageOutputStream(Identifier): miss, but a cache " +
+            logger.info("getImageOutputStream(Identifier): miss, but cache " +
                     "file for {} is being written in another thread, so not " +
                     "caching", identifier);
             return new NullOutputStream();
         }
 
+        // identifier will be removed from this set when the non-null output
+        // stream returned by this method is closed.
         sourceImagesBeingWritten.add(identifier);
 
-        // If the image is being written in another process, there will be a
-        // temp file on the filesystem. If so, return a dummy output stream
-        // to avoid interfering.
+        // If the image is being written simultaneously in another process,
+        // there may (or may not) be a temp file on the filesystem. If so,
+        // return a null output stream to avoid interfering.
         final File tempFile = getSourceImageTempFile(identifier);
         if (tempFile.exists()) {
             logger.info("getImageOutputStream(Identifier): miss, but a temp " +
@@ -609,12 +621,15 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
         logger.info("getImageOutputStream(Identifier): miss; caching {}",
                 identifier);
-
         try {
-            if (!tempFile.getParentFile().exists()) {
-                if (!tempFile.getParentFile().mkdirs() ||
-                        !tempFile.createNewFile()) {
-                    throw new CacheException("Unable to create " + tempFile);
+            if (!tempFile.getParentFile().isDirectory()) {
+                if (!tempFile.getParentFile().mkdirs()) {
+                    logger.info("getImageOutputStream(Identifier): can't create {}",
+                            tempFile.getParentFile());
+                    // We could threw a CacheException here, but it is probably
+                    // not necessary as we are likely to get here often during
+                    // concurrent invocations.
+                    return new NullOutputStream();
                 }
             }
             final File destFile = getSourceImageFile(identifier);
@@ -628,9 +643,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     @Override
     public OutputStream getImageOutputStream(OperationList ops)
             throws CacheException {
-        // If the image is already being written in another thread, it will
-        // exist in the derivativeImagesBeingWritten set. If so, return a dummy output
-        // stream to avoid interfering.
+        // If the image is being written in another thread, it may (or may not)
+        // be present in the derivativeImagesBeingWritten set. If so, return a
+        // null output stream to avoid interfering.
         if (derivativeImagesBeingWritten.contains(ops)) {
             logger.info("getImageOutputStream(OperationList): miss, but " +
                     "cache file for {} is being written in another thread, " +
@@ -638,11 +653,13 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             return new NullOutputStream();
         }
 
+        // ops will be removed from this set when the non-null output stream
+        // returned by this method is closed.
         derivativeImagesBeingWritten.add(ops);
 
         // If the image is being written simultaneously in another process,
-        // there will be a temp file on the filesystem. If so, return a dummy
-        // output stream to avoid interfering.
+        // there may (or may not) be a temp file on the filesystem. If so,
+        // return a null output stream to avoid interfering.
         final File tempFile = getDerivativeImageTempFile(ops);
         if (tempFile.exists()) {
             logger.info("getImageOutputStream(OperationList): miss, but a " +
@@ -650,14 +667,16 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             return new NullOutputStream();
         }
 
-        logger.info("getImageOutputStream(OperationList): miss; caching {}",
-                ops);
-
+        logger.info("getImageOutputStream(OperationList): miss; caching {}", ops);
         try {
-            if (!tempFile.getParentFile().exists()) {
-                if (!tempFile.getParentFile().mkdirs() ||
-                        !tempFile.createNewFile()) {
-                    throw new CacheException("Unable to create " + tempFile);
+            if (!tempFile.getParentFile().isDirectory()) {
+                if (!tempFile.getParentFile().mkdirs()) {
+                    logger.info("getImageOutputStream(OperationList): can't create {}",
+                            tempFile.getParentFile());
+                    // We could threw a CacheException here, but it is probably
+                    // not necessary as we are likely to get here often during
+                    // concurrent invocations.
+                    return new NullOutputStream();
                 }
             }
             final File destFile = getDerivativeImageFile(ops);

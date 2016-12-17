@@ -79,6 +79,8 @@ public abstract class AbstractResource extends ServerResource {
     public static final String SLASH_SUBSTITUTE_CONFIG_KEY =
             "slash_substitute";
 
+    private static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
+
     /**
      * @return Map of template variables common to most or all views, such as
      * variables that appear in a common header.
@@ -114,21 +116,21 @@ public abstract class AbstractResource extends ServerResource {
             rootRef.setPath(StringUtils.stripEnd(baseRef.getPath(), "/"));
         } else {
             final Series<Header> headers = request.getHeaders();
-            final String protocolStr = headers.getFirstValue("X-Forwarded-Proto",
-                    true, "HTTP");
-            final String hostStr = headers.getFirstValue("X-Forwarded-Host",
-                    true, null);
-            final String portStr = headers.getFirstValue("X-Forwarded-Port",
-                    true, "80");
-            final String pathStr = headers.getFirstValue("X-Forwarded-Path",
-                    true, null);
+            final String hostStr = headers.getFirstValue(
+                    "X-Forwarded-Host", true, null);
             if (hostStr != null) {
+                final String protocolStr = headers.getFirstValue(
+                        "X-Forwarded-Proto", true, "HTTP");
+                final String portStr = headers.getFirstValue(
+                        "X-Forwarded-Port", true, "80");
+                final String pathStr = headers.getFirstValue(
+                        "X-Forwarded-Path", true, "");
                 logger.debug("Assembling base URI from X-Forwarded headers. " +
                                 "Proto: {}; Host: {}; Port: {}; Path: {}",
                         protocolStr, hostStr, portStr, pathStr);
 
                 rootRef.setHostDomain(hostStr);
-                rootRef.setPath(pathStr);
+                rootRef.setPath(StringUtils.stripEnd(pathStr, "/"));
 
                 final Protocol protocol = protocolStr.toUpperCase().equals("HTTPS") ?
                         Protocol.HTTPS : Protocol.HTTP;
@@ -166,7 +168,7 @@ public abstract class AbstractResource extends ServerResource {
                 disposition.setType(Disposition.TYPE_ATTACHMENT);
                 disposition.setFilename(
                         identifier.toString().replaceAll(
-                                ImageRepresentation.FILENAME_CHARACTERS, "_") +
+                                FILENAME_CHARACTERS, "_") +
                                 "." + outputFormat.getPreferredExtension());
                 break;
         }
