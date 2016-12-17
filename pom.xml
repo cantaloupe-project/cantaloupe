@@ -13,7 +13,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <restlet.version>2.3.7</restlet.version>
+    <restlet.version>2.3.8</restlet.version>
   </properties>
 
   <developers>
