@@ -24,7 +24,6 @@ import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
-import org.restlet.resource.ResourceException;
 
 /**
  * Handles IIIF Image API 2.x information requests.
@@ -50,12 +49,6 @@ public class InformationResource extends IIIF2Resource {
             redirectSeeOther(newRef);
             return new EmptyRepresentation();
         }
-    }
-
-    @Override
-    protected void doInit() throws ResourceException {
-        super.doInit();
-        getResponseCacheDirectives().addAll(getCacheDirectives());
     }
 
     /**
@@ -114,6 +107,11 @@ public class InformationResource extends IIIF2Resource {
         } else {
             rep.setMediaType(new MediaType("application/json"));
         }
+
+        // Add client cache header(s) if configured to do so. We do this later
+        // rather than sooner to prevent them from being sent along with an
+        // error response.
+        getResponseCacheDirectives().addAll(getCacheDirectives());
 
         rep.getObjectWriter().
                 without(SerializationFeature.WRITE_NULL_MAP_VALUES).
