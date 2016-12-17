@@ -310,7 +310,7 @@ public class InformationResourceTest extends ResourceTest {
         String json = client.getResponse().getEntityAsText();
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
-        assertEquals("http://localhost:" + PORT +
+        assertEquals("http://localhost:" + port +
                 WebApplication.IIIF_1_PATH + "/" + IMAGE, info.id);
     }
 

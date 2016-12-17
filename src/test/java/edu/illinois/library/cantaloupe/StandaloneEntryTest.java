@@ -43,7 +43,7 @@ public class StandaloneEntryTest {
 
     private static final int HTTP_PORT = TestUtil.getOpenPort();
 
-    private static Client httpClient = new Client(new Context(), Protocol.HTTP);
+    private Client httpClient;
 
     private final ByteArrayOutputStream systemOutput = new ByteArrayOutputStream();
     private final ByteArrayOutputStream systemError = new ByteArrayOutputStream();
@@ -69,8 +69,8 @@ public class StandaloneEntryTest {
                 "Java2dProcessor");
     }
 
-    private ClientResource getHttpClientForUriPath(String path) {
-        final Reference url = new Reference("http://localhost:" + HTTP_PORT + path);
+    private ClientResource getClientResource() {
+        final Reference url = new Reference("http://localhost:" + HTTP_PORT + "/");
         final ClientResource resource = new ClientResource(url);
         resource.setNext(httpClient);
         return resource;
@@ -96,12 +96,15 @@ public class StandaloneEntryTest {
     }
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws Exception {
         resetConfiguration();
+        httpClient = new Client(new Context(), Protocol.HTTP);
+        httpClient.start();
     }
 
     @After
-    public void tearDown() throws IOException {
+    public void tearDown() throws Exception {
+        httpClient.stop();
         deleteCacheDir();
         System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
         System.clearProperty(EntryServlet.CLEAN_CACHE_VM_ARGUMENT);
@@ -190,7 +193,7 @@ public class StandaloneEntryTest {
     @Test
     public void testMainWithValidConfigFileArgumentStartsServer() throws Exception {
         StandaloneEntry.main(new String[] {});
-        ClientResource resource = getHttpClientForUriPath("/");
+        ClientResource resource = getClientResource();
         resource.get();
         assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
     }
@@ -224,7 +227,7 @@ public class StandaloneEntryTest {
 
         // Cause the Servlet to be loaded
         try {
-            getHttpClientForUriPath("/").get();
+            getClientResource().get();
         } catch (ResourceException e) {
             // This is expected, as the server has called System.exit() before
             // it could generate a response.
@@ -275,7 +278,7 @@ public class StandaloneEntryTest {
 
         // Cause the Servlet to be loaded
         try {
-            getHttpClientForUriPath("/").get();
+            getClientResource().get();
         } catch (ResourceException e) {
             // This is expected, as the server has called System.exit() before
             // it could generate a response.
@@ -336,7 +339,7 @@ public class StandaloneEntryTest {
 
         // Cause the Servlet to be loaded
         try {
-            getHttpClientForUriPath("/").get();
+            getClientResource().get();
         } catch (ResourceException e) {
             // This is expected, as the server has called System.exit() before
             // it could generate a response.
@@ -380,7 +383,7 @@ public class StandaloneEntryTest {
 
         // Cause the Servlet to be loaded
         try {
-            getHttpClientForUriPath("/").get();
+            getClientResource().get();
         } catch (ResourceException e) {
             // This is expected, as the server has called System.exit() before
             // it could generate a response.

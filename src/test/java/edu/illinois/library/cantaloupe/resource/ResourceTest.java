@@ -21,10 +21,10 @@ import java.io.IOException;
 public abstract class ResourceTest {
 
     protected static final String IMAGE = "jpg-rgb-64x56x8-baseline.jpg";
-    protected static final Integer PORT = TestUtil.getOpenPort();
 
-    protected static Client client = new Client(new Context(), Protocol.HTTP);
-    protected static WebServer webServer = StandaloneEntry.getWebServer();
+    protected final Integer port = TestUtil.getOpenPort();
+    protected WebServer webServer;
+    protected Client client;
 
     public static void resetConfiguration() throws IOException {
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
@@ -54,17 +54,23 @@ public abstract class ResourceTest {
     @Before
     public void setUp() throws Exception {
         resetConfiguration();
+
+        webServer = StandaloneEntry.getWebServer();
         webServer.setHttpEnabled(true);
-        webServer.setHttpPort(PORT);
+        webServer.setHttpPort(port);
+
+        client = new Client(new Context(), Protocol.HTTP);
+        client.start();
     }
 
     @After
     public void tearDown() throws Exception {
+        client.stop();
         webServer.stop();
     }
 
     protected ClientResource getClientForUriPath(String path) {
-        Reference url = new Reference("http://localhost:" + PORT + path);
+        Reference url = new Reference("http://localhost:" + port + path);
         ClientResource resource = new ClientResource(url);
         resource.setNext(client);
         return resource;

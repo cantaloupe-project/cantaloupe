@@ -313,7 +313,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         Map<String,Object> info =
                 (Map<String,Object>) mapper.readValue(json, TreeMap.class);
-        assertEquals("http://localhost:" + PORT +
+        assertEquals("http://localhost:" + port +
                 WebApplication.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
     }
 
