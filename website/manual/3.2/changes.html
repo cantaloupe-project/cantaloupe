@@ -17,8 +17,9 @@ title: What's New
 <ul>
   <li>Fixed inability to upscale by pixels.</li>
   <li>Fixed an error in response to requests for images less than 3 pixels on a side when sharpening is enabled, in all processors using the Java 2D pipeline.</li>
-  <li>Fixed an error in JaiProcessor when attempting to scale an image less than 3 pixels on the smallest side.</li> 
+  <li>Fixed an error in JaiProcessor when attempting to scale an image less than 3 pixels on the smallest side.</li>
   <li>Fixed a bug in FilesystemCache that caused zero-byte files to be written and an HTTP 500 response when handling concurrent identical requests.</li>
+  <li>Error responses include a more appropriate <code>Cache-Control</code> header rather than the one set in the configuration.</li>
   <li>Trailing slashes in <code>X-Forwarded-Path</code> header values are trimmed off, preventing double-slashes from appearing in generated URLs.</li>
 </ul>
 
