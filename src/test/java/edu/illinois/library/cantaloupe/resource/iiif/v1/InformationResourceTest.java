@@ -318,7 +318,7 @@ public class InformationResourceTest extends ResourceTest {
     public void testUrisInJsonWithBaseUriOverride() throws Exception {
         webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Iiif1Resource.BASE_URI_CONFIG_KEY,
+        config.setProperty(IIIF1Resource.BASE_URI_CONFIG_KEY,
                 "http://example.org/");
 
         ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
@@ -351,7 +351,7 @@ public class InformationResourceTest extends ResourceTest {
     public void testBaseUriOverridesProxyHeaders() throws Exception {
         webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Iiif1Resource.BASE_URI_CONFIG_KEY,
+        config.setProperty(IIIF1Resource.BASE_URI_CONFIG_KEY,
                 "https://example.net/");
 
         ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");

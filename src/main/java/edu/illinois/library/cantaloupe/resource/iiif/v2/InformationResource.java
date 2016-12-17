@@ -32,13 +32,13 @@ import org.restlet.resource.ResourceException;
  * @see <a href="http://iiif.io/api/image/2.1/#information-request">Information
  * Requests</a>
  */
-public class InformationResource extends Iiif2Resource {
+public class InformationResource extends IIIF2Resource {
 
     /**
      * Redirects /{identifier} to /{identifier}/info.json, respecting the
      * Servlet context root.
      */
-    public static class RedirectingResource extends Iiif2Resource {
+    public static class RedirectingResource extends IIIF2Resource {
         @Get
         public Representation doGet() {
             final String identifier = (String) this.getRequest().

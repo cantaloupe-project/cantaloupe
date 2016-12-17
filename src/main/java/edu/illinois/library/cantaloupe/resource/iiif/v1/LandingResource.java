@@ -10,7 +10,7 @@ import org.restlet.resource.Get;
 /**
  * Handles the IIIF Image API 1.1 landing page.
  */
-public class LandingResource extends Iiif1Resource {
+public class LandingResource extends IIIF1Resource {
 
     @Get
     public Representation doGet() throws Exception {

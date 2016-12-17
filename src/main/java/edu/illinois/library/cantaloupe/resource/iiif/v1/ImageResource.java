@@ -37,7 +37,7 @@ import java.util.Set;
  * @see <a href="http://iiif.io/api/image/1.1/#url-syntax-image-request">Image
  * Request Operations</a>
  */
-public class ImageResource extends Iiif1Resource {
+public class ImageResource extends IIIF1Resource {
 
     /**
      * Format to assume when no extension is present in the URI.

@@ -35,7 +35,7 @@ import java.util.Set;
  * @see <a href="http://iiif.io/api/image/2.0/#image-request-parameters">Image
  * Request Operations</a>
  */
-public class ImageResource extends Iiif2Resource {
+public class ImageResource extends IIIF2Resource {
 
     public static final String CONTENT_DISPOSITION_CONFIG_KEY =
             "endpoint.iiif.content_disposition";
