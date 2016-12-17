@@ -100,7 +100,7 @@ public class ApiResourceTest extends ResourceTest {
     public void testGetConfiguration() throws Exception {
         System.setProperty("cats", "yes");
 
-        ClientResource client = getClientForUriPath(WebApplication.CONFIGURATION_PATH + "/configuration");
+        ClientResource client = getClientForUriPath(WebApplication.CONFIGURATION_PATH);
         client.setChallengeResponse(
                 new ChallengeResponse(ChallengeScheme.HTTP_BASIC, USERNAME, SECRET));
         client.get();
@@ -116,7 +116,7 @@ public class ApiResourceTest extends ResourceTest {
         entityMap.put("test", "cats");
         String entity = new ObjectMapper().writer().writeValueAsString(entityMap);
 
-        ClientResource client = getClientForUriPath(WebApplication.CONFIGURATION_PATH + "/configuration");
+        ClientResource client = getClientForUriPath(WebApplication.CONFIGURATION_PATH);
         client.setChallengeResponse(
                 new ChallengeResponse(ChallengeScheme.HTTP_BASIC, USERNAME, SECRET));
         client.put(entity, MediaType.APPLICATION_JSON);
