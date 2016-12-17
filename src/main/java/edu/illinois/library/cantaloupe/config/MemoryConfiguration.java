@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.config;
 import org.apache.commons.configuration.ConversionException;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -149,7 +148,7 @@ class MemoryConfiguration implements Configuration {
     /**
      * No-op.
      */
-    public void save() throws IOException {}
+    public void save() {}
 
     public void setProperty(String key, Object value) {
         configuration.put(key, value);
