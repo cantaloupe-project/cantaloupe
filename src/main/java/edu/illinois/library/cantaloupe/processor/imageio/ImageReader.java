@@ -33,14 +33,18 @@ public class ImageReader {
 
     public enum Hint {
         ALREADY_CROPPED
+        /**
+         * Returned by a reader. The reader has read only the requested region
+         * of the image and there will be no need to crop it any further.
+         */
     }
 
     private Metadata cachedMetadata;
     private AbstractImageReader reader;
 
     static {
-        // The application will handle caching itself, if so configured, so
-        // so the ImageIO cache would only slow things down.
+        // The application will handle caching itself, if so configured. The
+        // ImageIO cache would only slow things down.
         ImageIO.setUseCache(false);
     }
 
@@ -187,7 +191,7 @@ public class ImageReader {
     }
 
     /**
-     * <p>Attempts to read an image as efficiently as possible, utilizing its
+     * <p>Attempts to read an image as efficiently as possible, exploiting its
      * tile layout and/or subimages, if possible.</p>
      *
      * <p>After reading, clients should check the reader hints to see whether
@@ -200,13 +204,13 @@ public class ImageReader {
      *                        argument.
      * @param orientation     Orientation of the source image data, e.g. as
      *                        reported by embedded metadata.
-     * @param reductionFactor {@link ReductionFactor#factor} property will be
-     *                        modified to reflect the reduction factor of the
-     *                        returned image.
+     * @param reductionFactor The {@link ReductionFactor#factor} property will
+     *                        be modified to reflect the reduction factor of
+     *                        the returned image.
      * @param hints           Will be populated by information returned from
      *                        the reader.
      * @return BufferedImage best matching the given parameters, guaranteed to
-     *         not be of {@link BufferedImage#TYPE_CUSTOM}. Clients should
+     *         not be of type {@link BufferedImage#TYPE_CUSTOM}. Clients should
      *         check the hints set to see whether they need to perform
      *         additional cropping.
      * @throws IOException
@@ -233,7 +237,7 @@ public class ImageReader {
     }
 
     /**
-     * <p>Attempts to reads an image as efficiently as possible, utilizing its
+     * <p>Attempts to reads an image as efficiently as possible, exploiting its
      * tile layout and/or subimages, if possible.</p>
      *
      * @param opList          Note that if a
@@ -243,9 +247,9 @@ public class ImageReader {
      *                        argument.
      * @param orientation     Orientation of the source image data, e.g. as
      *                        reported by embedded metadata.
-     * @param reductionFactor {@link ReductionFactor#factor} property will be
-     *                        modified to reflect the reduction factor of the
-     *                        returned image.
+     * @param reductionFactor The {@link ReductionFactor#factor} property will
+     *                        be modified to reflect the reduction factor of
+     *                        the returned image.
      * @return RenderedImage best matching the given parameters.
      * @throws IOException
      * @throws ProcessorException

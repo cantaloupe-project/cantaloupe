@@ -96,7 +96,9 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
     }
 
     /**
-     * Convenience method for processors that use a Java 2D pipeline.
+     * Convenience method for processors that use a Java 2D pipeline. Generally
+     * a processor will read an image, and then pass it to this method to
+     * process it and write the result.
      *
      * @param sourceImage Image to process.
      * @param readerHints Hints from the image reader. May be <code>null</code>.

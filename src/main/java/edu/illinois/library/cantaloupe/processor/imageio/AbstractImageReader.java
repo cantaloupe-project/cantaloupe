@@ -248,7 +248,7 @@ abstract class AbstractImageReader {
     }
 
     /**
-     * <p>Attempts to read an image as efficiently as possible, utilizing its
+     * <p>Attempts to read an image as efficiently as possible, exploiting its
      * tile layout and/or subimages, if possible.</p>
      *
      * <p>After reading, clients should check the reader hints to see whether
@@ -257,8 +257,8 @@ abstract class AbstractImageReader {
      * @param ops
      * @param orientation     Orientation of the source image data as reported
      *                        by e.g. embedded metadata.
-     * @param reductionFactor {@link ReductionFactor#factor} property will be
-     *                        modified to reflect the reduction factor of the
+     * @param reductionFactor The {@link ReductionFactor#factor} property will
+     *                        be modified to reflect the reduction factor of the
      *                        returned image.
      * @param hints           Will be populated by information returned from
      *                        the reader.
@@ -308,8 +308,8 @@ abstract class AbstractImageReader {
      *
      * @param crop   Requested crop
      * @param scale  Requested scale
-     * @param rf     {@link ReductionFactor#factor} will be set to the reduction
-     *               factor of the returned image.
+     * @param rf     The {@link ReductionFactor#factor} will be set to the
+     *               reduction factor of the returned image.
      * @param hints  Will be populated by information returned by the reader.
      * @return The smallest image fitting the requested crop and scale
      *         operations from the given reader.
@@ -414,12 +414,12 @@ abstract class AbstractImageReader {
      * cropping will have already been performed according to the
      * <code>requestedSourceArea</code> parameter.</p>
      *
-     * @param imageIndex   Index of the image to read from the ImageReader.
-     * @param region       Image region to retrieve. The returned image will be
-     *                     this size or smaller if it would overlap the right
-     *                     or bottom edge of the source image.
-     * @param hints        Will be populated with information returned from the
-     *                     reader.
+     * @param imageIndex Index of the image to read from the ImageReader.
+     * @param region     Image region to retrieve. The returned image will be
+     *                   this size or smaller if it would overlap the right or
+     *                   bottom edge of the source image.
+     * @param hints      Will be populated with information returned from the
+     *                   reader.
      * @return Image
      * @throws IOException
      */
@@ -496,14 +496,14 @@ abstract class AbstractImageReader {
     }
 
     /**
-     * <p>Attempts to reads an image as efficiently as possible, utilizing its
+     * <p>Attempts to reads an image as efficiently as possible, exploiting its
      * tile layout and/or subimages, if possible.</p>
      *
      * @param ops
      * @param orientation     Orientation of the source image data, e.g. as
      *                        reported by embedded metadata.
-     * @param reductionFactor {@link ReductionFactor#factor} property will be
-     *                        modified to reflect the reduction factor of the
+     * @param reductionFactor The {@link ReductionFactor#factor} property will
+     *                        be modified to reflect the reduction factor of the
      *                        returned image.
      * @return RenderedImage best matching the given parameters.
      * @throws IOException
@@ -541,12 +541,12 @@ abstract class AbstractImageReader {
      * Reads the smallest image that can fulfill the given crop and scale from
      * a multi-resolution image.
      *
-     * @param crop   Requested crop
-     * @param scale  Requested scale
-     * @param rf     {@link ReductionFactor#factor} will be set to the reduction
-     *               factor of the returned image.
+     * @param crop  Requested crop
+     * @param scale Requested scale
+     * @param rf    The {@link ReductionFactor#factor} will be set to the
+     *              reduction factor of the returned image.
      * @return The smallest image fitting the requested crop and scale
-     * operations from the given reader.
+     *         operations from the given reader.
      * @throws IOException
      */
     protected RenderedImage readSmallestUsableSubimage(final Crop crop,
@@ -586,7 +586,7 @@ abstract class AbstractImageReader {
                         bestImage.getWidth(), bestImage.getHeight());
             } else if (numImages > 1) {
                 // Loop through the reduced images from smallest to largest to
-                // find the first one that can supply the requested scale
+                // find the first one that can supply the requested scale.
                 for (int i = numImages - 1; i >= 0; i--) {
                     final int subimageWidth = iioReader.getWidth(i);
                     final int subimageHeight = iioReader.getHeight(i);
