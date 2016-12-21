@@ -612,12 +612,14 @@ log.application.level = debug
 log.application.ConsoleAppender.enabled = true
 
 log.application.FileAppender.enabled = false
-log.application.FileAppender.pathname = /path/to/logs/cantaloupe.log
+log.application.FileAppender.pathname = /path/to/logs/application.log
 
+# RollingFileAppender is an alternative to using something like
+# FileAppender + logrotate.
 log.application.RollingFileAppender.enabled = false
-log.application.RollingFileAppender.pathname = /path/to/logs/cantaloupe.log
+log.application.RollingFileAppender.pathname = /path/to/logs/application.log
 log.application.RollingFileAppender.policy = TimeBasedRollingPolicy
-log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/cantaloupe-%d{yyyy-MM-dd}.log
+log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/application-%d{yyyy-MM-dd}.log
 log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30
 
 # See the "SyslogAppender" section for a list of facilities:
@@ -636,6 +638,8 @@ log.access.ConsoleAppender.enabled = false
 log.access.FileAppender.enabled = false
 log.access.FileAppender.pathname = /path/to/logs/access.log
 
+# RollingFileAppender is an alternative to using something like
+# FileAppender + logrotate.
 log.access.RollingFileAppender.enabled = false
 log.access.RollingFileAppender.pathname = /path/to/logs/access.log
 log.access.RollingFileAppender.policy = TimeBasedRollingPolicy
