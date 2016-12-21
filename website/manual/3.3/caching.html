@@ -74,6 +74,31 @@ cache.client.no_transform = true
 
 <div class="alert alert-info">Note: the Cache-Control header must have a particular structure&mdash;not just any combination of the above will work. See <a href="http://condor.depaul.edu/dmumaugh/readings/handouts/SE435/HTTP/node24.html">this brief overview</a>, for example.</div>
 
+<p>The <code>Cache-Control</code> header works as follows:</p>
+
+<dl>
+  <dt><code>cache.client.enabled = true</code></dt>
+  <dd>
+    <dl>
+      <dt>HTTP 2xx responses</dt>
+      <dd>The <code>Cache-Control</code> header is returned according to the <code>cache.client.*</code> keys in the configuration.</dd>
+      <dt>HTTP 3xx responses</dt>
+      <dd>No <code>Cache-Control</code> header.</dd>
+      <dt>HTTP 4xx &amp; 5xx responses</dt>
+      <dd><code>Cache-Control: must-revalidate,no-cache,no-store</code></dd>
+    </dl>
+  </dd>
+  <dt><code>cache.client.enabled = false</code></dt>
+  <dd>
+    <dl>
+      <dt>HTTP 2xx &amp; 3xx responses</dt>
+      <dd>No <code>Cache-Control</code> header.</dd>
+      <dt>HTTP 4xx &amp; 5xx responses</dt>
+      <dd><code>Cache-Control: must-revalidate,no-cache,no-store</code></dd>
+    </dl>
+  </dd>
+</dl>
+
 <hr>
 
 <h2 id="Server-Side Caching">Server-Side Caching</h2>
