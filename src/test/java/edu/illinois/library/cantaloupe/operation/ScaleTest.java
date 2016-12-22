@@ -111,7 +111,7 @@ public class ScaleTest {
         // down
         scale.setWidth(400);
         scale.setHeight(200);
-        assertEquals(new Dimension(400, 266), scale.getResultingSize(fullSize));
+        assertEquals(new Dimension(400, 267), scale.getResultingSize(fullSize));
         // up
         scale.setWidth(1200);
         scale.setHeight(600);
@@ -209,6 +209,76 @@ public class ScaleTest {
     }
 
     @Test
+    public void testIsUp() {
+        Dimension size = new Dimension(600, 400);
+        // Percent
+        scale = new Scale();
+        scale.setPercent(0.5f); // down
+        assertFalse(scale.isUp(size));
+        scale.setPercent(1f); // even
+        assertFalse(scale.isUp(size));
+        scale.setPercent(1.2f); // up
+        assertTrue(scale.isUp(size));
+
+        // FULL
+        scale = new Scale();
+        scale.setMode(Scale.Mode.FULL);
+        assertFalse(scale.isUp(size));
+
+        // ASPECT_FIT_WIDTH
+        scale = new Scale();
+        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        scale.setWidth(300); // down
+        assertFalse(scale.isUp(size));
+        scale.setWidth(600); // even
+        assertFalse(scale.isUp(size));
+        scale.setWidth(800); // up
+        assertTrue(scale.isUp(size));
+
+        // ASPECT_FIT_HEIGHT
+        scale = new Scale();
+        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        scale.setHeight(200); // down
+        assertFalse(scale.isUp(size));
+        scale.setHeight(400); // even
+        assertFalse(scale.isUp(size));
+        scale.setHeight(600); // up
+        assertTrue(scale.isUp(size));
+
+        // ASPECT_FIT_INSIDE
+        scale = new Scale();
+        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        scale.setWidth(300); // down
+        scale.setHeight(200);
+        assertFalse(scale.isUp(size));
+        scale.setWidth(600); // even
+        scale.setHeight(400);
+        assertFalse(scale.isUp(size));
+        scale.setWidth(800); // up
+        scale.setHeight(600);
+        assertTrue(scale.isUp(size));
+
+        // NON_ASPECT_FILL
+        scale = new Scale();
+        scale.setMode(Scale.Mode.NON_ASPECT_FILL);
+        scale.setWidth(300); // down
+        scale.setHeight(200);
+        assertFalse(scale.isUp(size));
+        scale.setWidth(600); // even
+        scale.setHeight(400);
+        assertFalse(scale.isUp(size));
+        scale.setWidth(800); // up
+        scale.setHeight(600);
+        assertTrue(scale.isUp(size));
+        scale.setWidth(500);
+        scale.setHeight(800);
+        assertTrue(scale.isUp(size));
+        scale.setWidth(900);
+        scale.setHeight(300);
+        assertTrue(scale.isUp(size));
+    }
+
+    @Test
     public void testSetHeight() {
         Integer height = 50;
         this.scale.setHeight(height);
@@ -245,7 +315,8 @@ public class ScaleTest {
     public void testSetPercent() {
         float percent = 0.5f;
         this.scale.setPercent(percent);
-        assertEquals(percent, this.scale.getPercent(), 0.000001f);
+        assertEquals(percent, scale.getPercent(), 0.000001f);
+        assertEquals(Scale.Mode.ASPECT_FIT_INSIDE, scale.getMode());
     }
 
     @Test

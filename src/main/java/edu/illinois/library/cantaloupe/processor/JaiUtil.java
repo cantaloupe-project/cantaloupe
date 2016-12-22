@@ -211,7 +211,8 @@ abstract class JaiUtil {
      *                      <code>inImage</code>.
      * @return Scaled image, or the input image if the given scale is a no-op.
      */
-    static RenderedOp scaleImage(RenderedOp inImage, Scale scale,
+    static RenderedOp scaleImage(RenderedOp inImage,
+                                 Scale scale,
                                  Interpolation interpolation,
                                  ReductionFactor rf) {
         if (scale.hasEffect()) {
@@ -242,9 +243,13 @@ abstract class JaiUtil {
     }
 
     /**
-     * Better-quality alternative to {@link #scaleImage(RenderedOp, Scale,
-     * Interpolation, ReductionFactor)} using the JAI
-     * <code>SubsampleAverage</code> operator.
+     * <p>Better-quality alternative to {@link #scaleImage(RenderedOp, Scale,
+     * Interpolation, ReductionFactor)} using JAI's
+     * <code>SubsampleAverage</code> operator.</p>
+     *
+     * <p>N.B. The <code>SubsampleAverage</code> operator is not capable of
+     * upscaling. If asked to upscale, this method will use the inferior-quality
+     * <code>Scale</code> operator instead.</p>
      *
      * @param inImage Image to scale. Must be at least 3 pixels on the
      *                smallest side.
@@ -259,9 +264,17 @@ abstract class JaiUtil {
     static RenderedOp scaleImageUsingSubsampleAverage(RenderedOp inImage,
                                                       Scale scale,
                                                       ReductionFactor rf) {
-        if (scale.hasEffect()) {
-            final int sourceWidth = inImage.getWidth();
-            final int sourceHeight = inImage.getHeight();
+        final int sourceWidth = inImage.getWidth();
+        final int sourceHeight = inImage.getHeight();
+        final Dimension fullSize = new Dimension(sourceWidth, sourceHeight);
+
+        if (scale.isUp(fullSize)) {
+            logger.debug("scaleImageUsingSubsampleAverage(): can't upscale; " +
+                    "invoking scaleImage() instead");
+            return scaleImage(inImage, scale,
+                    Interpolation.getInstance(Interpolation.INTERP_BILINEAR),
+                    rf);
+        } else if (scale.hasEffect()) {
             final Dimension scaledSize = scale.getResultingSize(
                     new Dimension(sourceWidth, sourceHeight));
 

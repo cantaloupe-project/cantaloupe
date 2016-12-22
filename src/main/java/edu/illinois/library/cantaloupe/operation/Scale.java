@@ -159,20 +159,20 @@ public class Scale implements Operation {
             switch (this.getMode()) {
                 case ASPECT_FIT_HEIGHT:
                     double scalePct = this.getHeight() / (double) size.height;
-                    size.width *= scalePct;
-                    size.height *= scalePct;
+                    size.width = (int) Math.round(size.width * scalePct);
+                    size.height = (int) Math.round(size.height * scalePct);
                     break;
                 case ASPECT_FIT_WIDTH:
                     scalePct = this.getWidth() / (double) size.width;
-                    size.width *= scalePct;
-                    size.height *= scalePct;
+                    size.width = (int) Math.round(size.width * scalePct);
+                    size.height = (int) Math.round(size.height * scalePct);
                     break;
                 case ASPECT_FIT_INSIDE:
                     scalePct = Math.min(
                             this.getWidth() / (double) size.width,
                             this.getHeight() / (double) size.height);
-                    size.width *= scalePct;
-                    size.height *= scalePct;
+                    size.width = (int) Math.round(size.width * scalePct);
+                    size.height = (int) Math.round(size.height * scalePct);
                     break;
                 case NON_ASPECT_FILL:
                     size.width = this.getWidth();
@@ -224,6 +224,18 @@ public class Scale implements Operation {
     }
 
     /**
+     * @param comparedToSize
+     * @return Whether the instance would effectively upscale the image it is
+     *         applied to, i.e. whether the resulting image would have more
+     *         pixels.
+     */
+    public boolean isUp(Dimension comparedToSize) {
+        Dimension resultingSize = getResultingSize(comparedToSize);
+        return resultingSize.width * resultingSize.height >
+                comparedToSize.width * comparedToSize.height;
+    }
+
+    /**
      * @param filter Resample filter to prefer.
      */
     public void setFilter(Filter filter) {
@@ -242,13 +254,17 @@ public class Scale implements Operation {
     }
 
     /**
-     * @param percent Float greater than 0
+     * N.B. Invoking this method also sets the instance's mode to
+     * {@link Mode#ASPECT_FIT_INSIDE}.
+     *
+     * @param percent Float greater than 0.
      * @throws IllegalArgumentException
      */
     public void setPercent(Float percent) throws IllegalArgumentException {
         if (percent != null && percent <= 0) {
             throw new IllegalArgumentException("Percent must be greater than zero");
         }
+        this.setMode(Mode.ASPECT_FIT_INSIDE);
         this.percent = percent;
     }
 
@@ -257,7 +273,7 @@ public class Scale implements Operation {
     }
 
     /**
-     * @param width Integer greater than 0
+     * @param width Integer greater than 0.
      * @throws IllegalArgumentException
      */
     public void setWidth(Integer width) throws IllegalArgumentException {
