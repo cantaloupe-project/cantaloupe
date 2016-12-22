@@ -312,7 +312,7 @@ public class Version2_0ConformanceTest {
         Representation rep = client.getResponseEntity();
         BufferedImage image = ImageIO.read(rep.getStream());
         assertEquals(50, image.getWidth());
-        assertEquals(43, image.getHeight());
+        assertEquals(44, image.getHeight());
     }
 
     /**
