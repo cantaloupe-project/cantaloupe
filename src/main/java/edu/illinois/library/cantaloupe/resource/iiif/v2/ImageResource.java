@@ -20,6 +20,7 @@ import org.restlet.data.Disposition;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
+import org.restlet.resource.ResourceException;
 
 import java.awt.Dimension;
 import java.io.FileNotFoundException;
@@ -40,6 +41,12 @@ public class ImageResource extends IIIF2Resource {
             "endpoint.iiif.content_disposition";
     public static final String RESTRICT_TO_SIZES_CONFIG_KEY =
             "endpoint.iiif.2.restrict_to_sizes";
+
+    @Override
+    protected void doInit() throws ResourceException {
+        super.doInit();
+        getResponseCacheDirectives().addAll(getCacheDirectives());
+    }
 
     /**
      * Responds to IIIF Image requests.
@@ -151,11 +158,6 @@ public class ImageResource extends IIIF2Resource {
         }
 
         this.addLinkHeader(params);
-
-        // Add client cache header(s) if configured to do so. We do this later
-        // rather than sooner to prevent them from being sent along with an
-        // error response.
-        getResponseCacheDirectives().addAll(getCacheDirectives());
 
         return getRepresentation(ops, format, disposition, processor);
     }
