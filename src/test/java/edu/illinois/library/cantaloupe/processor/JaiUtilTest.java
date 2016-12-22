@@ -5,12 +5,14 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rotate;
+import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Sharpen;
 import edu.illinois.library.cantaloupe.image.Transpose;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 
+import javax.media.jai.Interpolation;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
 import java.awt.image.RenderedImage;
@@ -110,31 +112,233 @@ public class JaiUtilTest {
     }
 
     @Test
-    public void testScaleImage() {
-        // TODO: write this
-        /*
+    public void testScaleImage() throws Exception {
         RenderedOp image = getFixture(IMAGE);
+        final Interpolation interpolation =
+                Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
+        final ReductionFactor rf = new ReductionFactor();
+        final double fudge = 0.00000001f;
 
-        // test with no-op scale
+        // test with Mode.FULL
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
-        RenderedOp scaledImage = JaiUtil.scaleImage(image, scale);
+        RenderedOp scaledImage = JaiUtil.scaleImage(image, scale, interpolation, rf);
         assertSame(image, scaledImage);
 
-        // test with non-no-op crop
-        final float percent = 0.5f;
-        final double fudge = 0.00000001f;
+        // Mode.ASPECT_FIT_WIDTH
         scale = new Scale();
+        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        // down
+        int width = 50;
+        scale.setWidth(width);
+        scaledImage = JaiUtil.scaleImage(image, scale, interpolation, rf);
+        assertEquals(width, scaledImage.getWidth(), fudge);
+        assertEquals(
+                Math.round((width / (float) image.getWidth()) * image.getHeight()),
+                scaledImage.getHeight(), fudge);
+        // up
+        width = 90;
+        scale.setWidth(width);
+        scaledImage = JaiUtil.scaleImage(image, scale, interpolation, rf);
+        assertEquals(width, scaledImage.getWidth(), fudge);
+        assertEquals(
+                Math.round((width / (float) image.getWidth()) * image.getHeight()),
+                scaledImage.getHeight(), fudge);
+
+        // Mode.ASPECT_FIT_HEIGHT
+        scale = new Scale();
+        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        // down
+        int height = 25;
+        scale.setHeight(height);
+        scaledImage = JaiUtil.scaleImage(image, scale, interpolation, rf);
+        assertEquals(
+                Math.round((height / (float) image.getHeight()) * image.getWidth()),
+                scaledImage.getWidth(), fudge);
+        assertEquals(height, scaledImage.getHeight(), fudge);
+        // up
+        height = 90;
+        scale.setHeight(height);
+        scaledImage = JaiUtil.scaleImage(image, scale, interpolation, rf);
+        assertEquals(
+                Math.round((height / (float) image.getHeight()) * image.getWidth()),
+                scaledImage.getWidth(), fudge);
+        assertEquals(height, scaledImage.getHeight(), fudge);
+
+        // Mode.ASPECT_FIT_INSIDE
+        scale = new Scale();
+        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        // down
+        width = 40;
+        height = 38;
+        scale.setWidth(width);
+        scale.setHeight(height);
+        scaledImage = JaiUtil.scaleImage(image, scale, interpolation, rf);
+        assertEquals(width, scaledImage.getWidth(), fudge);
+        assertEquals(
+                Math.round((width / (float) image.getWidth()) * image.getHeight()),
+                scaledImage.getHeight(), fudge);
+        // up
+        width = 90;
+        height = 88;
+        scale.setWidth(width);
+        scale.setHeight(height);
+        scaledImage = JaiUtil.scaleImage(image, scale, interpolation, rf);
+        assertEquals(width, scaledImage.getWidth(), fudge);
+        assertEquals(
+                Math.round((width / (float) image.getWidth()) * image.getHeight()),
+                scaledImage.getHeight(), fudge);
+
+        // Mode.NON_ASPECT_FILL
+        scale = new Scale();
+        scale.setMode(Scale.Mode.NON_ASPECT_FILL);
+        // down
+        width = 45;
+        height = 42;
+        scale.setWidth(width);
+        scale.setHeight(height);
+        scaledImage = JaiUtil.scaleImage(image, scale, interpolation, rf);
+        assertEquals(width, scaledImage.getWidth(), fudge);
+        assertEquals(height, scaledImage.getHeight(), fudge);
+        // up
+        width = 85;
+        height = 82;
+        scale.setWidth(width);
+        scale.setHeight(height);
+        scaledImage = JaiUtil.scaleImage(image, scale, interpolation, rf);
+        assertEquals(width, scaledImage.getWidth(), fudge);
+        assertEquals(height, scaledImage.getHeight(), fudge);
+
+        // Percent
+        scale = new Scale();
+        // down
+        float percent = 0.5f;
         scale.setPercent(percent);
-        scaledImage = JaiUtil.scaleImage(image, scale);
+        scaledImage = JaiUtil.scaleImage(image, scale, interpolation, rf);
         assertEquals(image.getWidth() * percent, scaledImage.getWidth(), fudge);
         assertEquals(image.getHeight() * percent, scaledImage.getHeight(), fudge);
-        */
+        // up
+        percent = 1.1f;
+        scale.setPercent(percent);
+        scaledImage = JaiUtil.scaleImage(image, scale, interpolation, rf);
+        assertEquals(Math.round(image.getWidth() * percent),
+                scaledImage.getWidth());
+        assertEquals(Math.round(image.getHeight() * percent),
+                scaledImage.getHeight());
     }
 
     @Test
-    public void testScaleImageUsingSubsampleAverage() {
-        // TODO: write this
+    public void testScaleImageUsingSubsampleAverage() throws Exception {
+        RenderedOp image = getFixture(IMAGE);
+        final ReductionFactor rf = new ReductionFactor();
+        final double fudge = 0.00000001f;
+
+        // test with Mode.FULL
+        Scale scale = new Scale();
+        scale.setMode(Scale.Mode.FULL);
+        RenderedOp scaledImage = JaiUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
+        assertSame(image, scaledImage);
+
+        // Mode.ASPECT_FIT_WIDTH
+        scale = new Scale();
+        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        // down
+        int width = 50;
+        scale.setWidth(width);
+        scaledImage = JaiUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
+        assertEquals(width, scaledImage.getWidth(), fudge);
+        assertEquals(
+                Math.round((width / (float) image.getWidth()) * image.getHeight()),
+                scaledImage.getHeight(), fudge);
+        // up
+        width = 80;
+        scale.setWidth(width);
+        scaledImage = JaiUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
+        assertEquals(width, scaledImage.getWidth(), fudge);
+        assertEquals(
+                Math.round((width / (float) image.getWidth()) * image.getHeight()),
+                scaledImage.getHeight(), fudge);
+
+        // Mode.ASPECT_FIT_HEIGHT
+        scale = new Scale();
+        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        // down
+        int height = 36;
+        scale.setHeight(height);
+        scaledImage = JaiUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
+        assertEquals(
+                Math.round((height / (float) image.getHeight()) * image.getWidth()),
+                scaledImage.getWidth(), fudge);
+        assertEquals(height, scaledImage.getHeight(), fudge);
+        // up
+        height = 72;
+        scale.setHeight(height);
+        scaledImage = JaiUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
+        assertEquals(
+                Math.round((height / (float) image.getHeight()) * image.getWidth()),
+                scaledImage.getWidth(), fudge);
+        assertEquals(height, scaledImage.getHeight(), fudge);
+
+        // Mode.ASPECT_FIT_INSIDE
+        scale = new Scale();
+        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        // down
+        width = 40;
+        height = 40;
+        scale.setWidth(width);
+        scale.setHeight(height);
+        scaledImage = JaiUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
+        assertEquals(width, scaledImage.getWidth(), fudge);
+        assertEquals(
+                Math.round((height / (float) image.getWidth()) * image.getHeight()),
+                scaledImage.getHeight(), fudge);
+        // up
+        width = 90;
+        height = 90;
+        scale.setWidth(width);
+        scale.setHeight(height);
+        scaledImage = JaiUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
+        assertEquals(width, scaledImage.getWidth(), fudge);
+        assertEquals(
+                Math.round((width / (float) image.getWidth()) * image.getHeight()),
+                scaledImage.getHeight(), fudge);
+
+        // Mode.NON_ASPECT_FILL
+        scale = new Scale();
+        scale.setMode(Scale.Mode.NON_ASPECT_FILL);
+        // down
+        width = 45;
+        height = 42;
+        scale.setWidth(width);
+        scale.setHeight(height);
+        scaledImage = JaiUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
+        assertEquals(width, scaledImage.getWidth(), fudge);
+        assertEquals(height, scaledImage.getHeight(), fudge);
+        // up
+        width = 90;
+        height = 88;
+        scale.setWidth(width);
+        scale.setHeight(height);
+        scaledImage = JaiUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
+        assertEquals(width, scaledImage.getWidth(), fudge);
+        assertEquals(height, scaledImage.getHeight(), fudge);
+
+        // Percent
+        scale = new Scale();
+        // down
+        float percent = 0.5f;
+        scale.setPercent(percent);
+        scaledImage = JaiUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
+        assertEquals(image.getWidth() * percent, scaledImage.getWidth(), fudge);
+        assertEquals(image.getHeight() * percent, scaledImage.getHeight(), fudge);
+        // up
+        percent = 1.2f;
+        scale.setPercent(percent);
+        scaledImage = JaiUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
+        assertEquals(Math.round(image.getWidth() * percent),
+                scaledImage.getWidth());
+        assertEquals(Math.round(image.getHeight() * percent),
+                scaledImage.getHeight());
     }
 
     @Test
