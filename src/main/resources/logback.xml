@@ -7,7 +7,7 @@
         <filter class="edu.illinois.library.cantaloupe.logging.StandardOutputLogFilter" />
         <encoder>
             <!-- %white and %gray seem to be inverted as of version 1.1.7 -->
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %highlight(%-5level) %white(%logger{36}) - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %highlight(%-5level) %cyan(%logger{15}) - %msg%n</pattern>
         </encoder>
         <withJansi>true</withJansi>
     </appender>
@@ -17,7 +17,7 @@
         <filter class="edu.illinois.library.cantaloupe.logging.ApplicationLogFilter" />
         <filter class="edu.illinois.library.cantaloupe.logging.StandardErrorLogFilter" />
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %highlight(%-5level) %cyan(%logger{36}) - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %highlight(%-5level) %cyan(%logger{15}) - %msg%n</pattern>
         </encoder>
         <withJansi>true</withJansi>
     </appender>
