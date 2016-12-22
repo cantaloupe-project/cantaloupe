@@ -92,7 +92,7 @@ public class ScaleTest {
         // down
         scale.setWidth(400);
         scale.setHeight(200);
-        assertEquals(new Dimension(400, 266), scale.getResultingSize(fullSize));
+        assertEquals(new Dimension(400, 267), scale.getResultingSize(fullSize));
         // up
         scale.setWidth(1200);
         scale.setHeight(600);

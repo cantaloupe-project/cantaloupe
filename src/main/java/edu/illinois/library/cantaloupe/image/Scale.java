@@ -135,20 +135,20 @@ public class Scale implements Operation {
             switch (this.getMode()) {
                 case ASPECT_FIT_HEIGHT:
                     double scalePct = this.getHeight() / (double) size.height;
-                    size.width *= scalePct;
-                    size.height *= scalePct;
+                    size.width = (int) Math.round(size.width * scalePct);
+                    size.height = (int) Math.round(size.height * scalePct);
                     break;
                 case ASPECT_FIT_WIDTH:
                     scalePct = this.getWidth() / (double) size.width;
-                    size.width *= scalePct;
-                    size.height *= scalePct;
+                    size.width = (int) Math.round(size.width * scalePct);
+                    size.height = (int) Math.round(size.height * scalePct);
                     break;
                 case ASPECT_FIT_INSIDE:
                     scalePct = Math.min(
                             this.getWidth() / (double) size.width,
                             this.getHeight() / (double) size.height);
-                    size.width *= scalePct;
-                    size.height *= scalePct;
+                    size.width = (int) Math.round(size.width * scalePct);
+                    size.height = (int) Math.round(size.height * scalePct);
                     break;
                 case NON_ASPECT_FILL:
                     size.width = this.getWidth();
