@@ -174,6 +174,18 @@ public class Scale implements Operation {
     }
 
     /**
+     * @param comparedToSize
+     * @return Whether the instance would effectively upscale the image it is
+     *         applied to, i.e. whether the resulting image would have more
+     *         pixels.
+     */
+    public boolean isUp(Dimension comparedToSize) {
+        Dimension resultingSize = getResultingSize(comparedToSize);
+        return resultingSize.width * resultingSize.height >
+                comparedToSize.width * comparedToSize.height;
+    }
+
+    /**
      * @param filter Resample filter to prefer.
      */
     public void setFilter(Filter filter) {
