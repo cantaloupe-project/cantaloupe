@@ -1303,8 +1303,8 @@
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="Automatically normalizes
-                                                   brightness and contrast.">?</a>
+                                                   data-content="Adjusts levels to utilize available
+                                                   dynamic range.">?</a>
                                             </td>
                                             <td>
                                                 <div class="checkbox">
@@ -1375,8 +1375,8 @@
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="Automatically normalizes
-                                                   brightness and contrast.">?</a>
+                                                   data-content="Expands contrast to utilize available
+                                                   dynamic range.">?</a>
                                             </td>
                                             <td>
                                                 <div class="checkbox">
@@ -1415,8 +1415,10 @@
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="Automatically normalizes
-                                                   brightness and contrast.">?</a>
+                                                   data-content="Expands contrast to utilize
+                                                   available dynamic range. This forces the entire
+                                                   source image to be read into memory, so can
+                                                   be slow with large images.">?</a>
                                             </td>
                                             <td>
                                                 <div class="checkbox">
@@ -1514,8 +1516,10 @@
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="Automatically normalizes
-                                                   brightness and contrast.">?</a>
+                                                   data-content="Expands contrast to utilize
+                                                   available dynamic range. This forces the entire
+                                                   source image to be read into memory, so can
+                                                   be slow with large images.">?</a>
                                             </td>
                                             <td>
                                                 <div class="checkbox">
@@ -1626,8 +1630,9 @@
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="Automatically normalizes
-                                                   brightness and contrast.">?</a>
+                                                   data-content="Expands contrast to utilize available
+                                                   dynamic range. This forces the entire image area
+                                                   to be read into memory.">?</a>
                                             </td>
                                             <td>
                                                 <div class="checkbox">
@@ -1704,8 +1709,9 @@
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="Automatically normalizes
-                                                   brightness and contrast.">?</a>
+                                                   data-content="Expands contrast to utilize available
+                                                   dynamic range. This forces the entire image area
+                                                   to be read into memory.">?</a>
                                             </td>
                                             <td>
                                                 <div class="checkbox">

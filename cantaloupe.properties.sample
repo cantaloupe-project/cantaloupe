@@ -311,7 +311,8 @@ ImageMagickProcessor.sharpen = 0
 # JaiProcessor
 #----------------------------------------
 
-# Expands contrast to utilize available dynamic range.
+# Expands contrast to utilize available dynamic range. This forces the entire
+# source image to be read into memory, so can be slow with large images.
 JaiProcessor.normalize = false
 
 # Intensity of an unsharp mask from 0 to 1.
@@ -333,7 +334,8 @@ JaiProcessor.tif.compression = LZW
 Java2dProcessor.upscale_filter = bicubic
 Java2dProcessor.downscale_filter = bicubic
 
-# Expands contrast to utilize available dynamic range.
+# Expands contrast to utilize available dynamic range. This forces the entire
+# source image to be read into memory, so can be slow with large images.
 Java2dProcessor.normalize = false
 
 # Intensity of an unsharp mask from 0 to 1.
@@ -354,12 +356,13 @@ Java2dProcessor.tif.compression = LZW
 # Overrides the PATH.
 KakaduProcessor.path_to_binaries =
 
+# Expands contrast to utilize available dynamic range. This forces the entire
+# image area to be read into memory.
+KakaduProcessor.normalize = false
+
 # See Java2dProcessor.upscale_filter for a list of available filters.
 KakaduProcessor.upscale_filter = bicubic
 KakaduProcessor.downscale_filter = bicubic
-
-# Expands contrast to utilize available dynamic range.
-KakaduProcessor.normalize = false
 
 # Intensity of an unsharp mask from 0 to 1.
 KakaduProcessor.sharpen = 0
@@ -372,12 +375,13 @@ KakaduProcessor.sharpen = 0
 # Overrides the PATH.
 OpenJpegProcessor.path_to_binaries =
 
+# Expands contrast to utilize available dynamic range. This forces the entire
+# image area to be read into memory.
+OpenJpegProcessor.normalize = false
+
 # See Java2dProcessor.upscale_filter for a list of available filters.
 OpenJpegProcessor.upscale_filter = bicubic
 OpenJpegProcessor.downscale_filter = bicubic
-
-# Expands contrast to utilize available dynamic range.
-OpenJpegProcessor.normalize = false
 
 # Intensity of an unsharp mask from 0 to 1.
 OpenJpegProcessor.sharpen = 0
